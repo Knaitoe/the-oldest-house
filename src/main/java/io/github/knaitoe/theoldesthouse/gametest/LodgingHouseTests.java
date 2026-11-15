@@ -735,4 +735,57 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_kept") public static void keptDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.607: N5 and N6, the two accounts
+    @GameTest(template="empty",batch="lodging_accounts",timeoutTicks=2000)
+    public static void theTwoMenGiveTheirAccountsAndDanielCanBeArmed(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_accounts_a",P);var q=f.player("lodging_accounts_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                var daniel=who[LodgingPeople.DANIEL];var dan=who[LodgingPeople.DAN];
+                // Before Act II, Dan has no account, and Daniel only the first exchange.
+                f.at(p,P,-7.5,0,-24.5);f.at(q,P,dan.getX()-b.getX()+1.2,0,dan.getZ()-b.getZ());
+                LodgingPeople.talk(p,daniel,own(p));Talk.close(p);
+                LodgingPeople.talk(p,daniel,own(p));
+                h.assertFalse(own(p).getBoolean(LodgingPeople.DANIEL_TOLD),"no account before the glass");
+                Talk.close(p);
+                // Act II: the glass is over, nothing cut.
+                at(l,b,LodgingStory.AFTER,who);
+                LodgingPeople.talk(p,daniel,own(p));
+                h.assertTrue(own(p).getBoolean(LodgingPeople.DANIEL_TOLD),"a reader he has spoken to has his account in Act II");
+                has(h,p,LodgingPeople.name(LodgingPeople.DANIEL,own(p))+": "+LodgingTexts.DANIEL_ACCOUNT[3]);
+                h.assertFalse(Talk.choose(p,LodgingTexts.R_DIDNT_KNOW),"\"He didn't know\" is not offered to a reader who has not heard Dan's side");
+                h.assertFalse(Talk.choose(p,LodgingTexts.R_GIVE),"nothing to give with an empty hand");
+                Talk.close(p);
+                // Dan's account; told Daniel is still here, he says Vera told him he had gone home.
+                LodgingPeople.talk(q,dan,own(q));
+                has(h,q,"Dan: "+LodgingTexts.DAN_DOG[0]);
+                h.assertFalse(Talk.choose(q,LodgingTexts.R_STILL),"a reader who does not know Daniel cannot tell Dan about him");
+                Talk.close(q);
+                var oq=own(q);oq.putBoolean(LodgingInjury.SAW_DANIEL_CUT,true);LiteraryVignettes.save(LabyrinthData.get(s),q.getUUID(),P,oq);
+                LodgingPeople.talk(q,dan,own(q));
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_STILL),"a reader who saw Daniel's hand can tell Dan he is still here");
+                has(h,q,"Dan: "+LodgingTexts.DAN_NO[0]);has(h,q,"Dan: "+LodgingTexts.DAN_NO[1]);
+                h.assertTrue(own(q).getBoolean(LodgingPeople.HEARD_DAN_SIDE)&&LodgingStory.house(s,b).getBoolean(LodgingPeople.DAN_KNOWS),"the reader has heard Dan's side; the house has Dan knowing");
+                Talk.close(q);
+                // q goes to Daniel with an axe: he has met him now, has his account, may say Dan didn't know, and gives it.
+                f.at(q,P,-6.5,0,-24.5);q.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_AXE));
+                LodgingPeople.talk(q,daniel,own(q));Talk.close(q);LodgingPeople.talk(q,daniel,own(q));
+                h.assertTrue(own(q).getBoolean(LodgingPeople.DANIEL_TOLD),"the second reader has his account too");
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_DIDNT_KNOW),"a reader who heard Dan's side can say he didn't know");
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_GIVE),"the axe is offered");
+                h.assertTrue(LodgingPeople.armed(daniel)&&daniel.getMainHandItem().is(net.minecraft.world.item.Items.IRON_AXE)&&q.getMainHandItem().isEmpty(),"Daniel holds the reader's axe; the reader no longer does");
+                h.assertTrue(LodgingStory.house(s,b).getBoolean(LodgingPeople.ARMED)&&own(q).getBoolean(LodgingPeople.GAVE_WEAPON),"the house and the reader have it");
+                h.assertTrue(own(q).getBoolean(LodgingInjury.SAW_DANIEL_CUT)?Talk.lines(q).stream().noneMatch(x->x.endsWith(": "+LodgingTexts.DANIEL_GOOD)):true,"a reader who saw the rule is not told \"Good.\"");
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_HURT_SELF),"a reader who saw the cut can warn him");
+                has(h,q,LodgingPeople.name(LodgingPeople.DANIEL,own(q))+": "+LodgingTexts.DANIEL_MAKE);
+                h.assertFalse(Talk.choose(q,LodgingTexts.R_GIVE),"he is not given a second");
+                Talk.close(q);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_accounts") public static void accountsDone(ServerLevel l){done();}
 }

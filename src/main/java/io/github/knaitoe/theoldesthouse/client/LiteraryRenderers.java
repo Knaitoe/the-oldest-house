@@ -1058,12 +1058,18 @@ public final class LiteraryRenderers {
         CleanerKit(CastRenderer parent,EntityRendererProvider.Context c){super(parent,c.getItemInHandRenderer());hands=c.getItemInHandRenderer();}
         /** 0.4.532: on the telephone, the receiver in June's bent hand is drawn at her ear (CastModel.receiver), as it is, at its own size. */
         @Override protected void renderArmWithItem(net.minecraft.world.entity.LivingEntity e,net.minecraft.world.item.ItemStack s,net.minecraft.world.item.ItemDisplayContext ctx,net.minecraft.world.entity.HumanoidArm arm,PoseStack p,MultiBufferSource out,int light){
+            // 0.4.607: Daniel, strapped, holds what he is given down against the frame, along his leg, not out at the room.
+            if(e instanceof LiteraryActor a&&io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.is(a)&&strapped(a.gesture())&&!s.isEmpty()){
+                p.pushPose();getParentModel().translateToHand(arm,p);heldDown(p,arm==net.minecraft.world.entity.HumanoidArm.LEFT);hands.renderItem(e,s,ctx,arm==net.minecraft.world.entity.HumanoidArm.LEFT,p,out,light);p.popPose();return;}
             if(arm!=net.minecraft.world.entity.HumanoidArm.RIGHT||!getParentModel().onPhone()){super.renderArmWithItem(e,s,ctx,arm,p,out,light);return;}
             if(s.isEmpty())return;
             p.pushPose();getParentModel().receiver(p);hands.renderItem(e,s,net.minecraft.world.item.ItemDisplayContext.NONE,false,p,out,light);p.popPose();
         }
         @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.role()==LiteraryActor.STRANGER&&(a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.WindowCleaner.CLEANER||io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.cast(a.phase())))super.render(p,out,light,a,walk,amount,partial,age,yaw,pitch);}
     }
+    static boolean strapped(int gesture){return gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.HELD||gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.STRAIN;}
+    /** 0.4.607: from a hanging hand, a held thing turned to hang down along the leg (vanilla's hand set-up, then a quarter turn back). */
+    public static void heldDown(PoseStack p,boolean left){p.mulPose(Axis.XP.rotationDegrees(-90));p.mulPose(Axis.YP.rotationDegrees(180));p.translate((left?-1:1)/16F,.125F,-.625F);p.mulPose(Axis.XP.rotationDegrees(-78));}
     /** 0.4.253: Kelly's wheelchair, the same model as the empty chair block, drawn under her while she sits in it, turned with her. */
     private static final class WheelchairLayer extends net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryActor,CastModel>{
         WheelchairLayer(CastRenderer parent){super(parent);}
