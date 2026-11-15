@@ -140,7 +140,7 @@ public final class LodgingHouseTests {
         // What is said reaches a reader when the tick ends.
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
-            h.assertTrue(why.contains(LodgingTexts.FRAME)&&why.contains(LodgingTexts.DANIELS_FRAME)&&why.contains(LodgingTexts.SHUTTERS)&&why.contains(LodgingTexts.GLASS)&&why.contains(LodgingTexts.RATCHET)&&why.contains(LodgingTexts.DEAD_POST),"each says what it is: "+why);
+            h.assertTrue(why.contains(LodgingTexts.FRAME)&&why.contains(LodgingTexts.DANIELS_FRAME)&&why.contains(LodgingTexts.SHUTTERS)&&why.contains(LodgingTexts.GLASS)&&why.contains(LodgingTexts.RATCHET)&&why.stream().anyMatch(w->w.startsWith(LodgingTexts.DEAD_POST)),"each says what it is: "+why);
             // Daniel's bolt is drawn by the first hand, and the second opens the door.
             f.click(p,P,LodgingSite.DANIEL_DOOR);
             h.assertTrue(!LodgingSite.open(l,b,LodgingSite.DANIEL_DOOR)&&!LodgingBlock.bolted(l.getBlockState(b.offset(LodgingSite.DANIEL_DOOR)))&&!LodgingBlock.bolted(l.getBlockState(b.offset(LodgingSite.DANIEL_DOOR.above()))),"the first hand draws the bolt, both cells");
@@ -954,4 +954,65 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_vera") public static void veraDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.610: N9, the cellar
+    @GameTest(template="empty",batch="lodging_cellar",timeoutTicks=3000)
+    public static void theDeadPostsWedgeComesOutAndTheBodyComesApart(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_cellar_a",P);var q=f.player("lodging_cellar_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        var post=LodgingSite.DEAD_POST;var shoe=b.offset(post);
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);
+                // One reader in the cellar facing the post, the other upstairs in the hall.
+                f.at(p,P,post.getX()+3.5,LodgingSite.CELLAR,post.getZ()+.5);p.setYRot(90);p.setXRot(10);
+                f.at(q,P,1.5,LodgingSite.GROUND,-3.5);
+                h.assertTrue(LodgingPeople.onFloor(who[LodgingPeople.FAILED_POST]),"the body sits tied at the post's foot");
+                // A hand on it says so; a crouched hand knocks the wedge out.
+                LodgingHouse.click(p,b,post,own(p));
+                h.assertTrue(l.getBlockState(shoe).getValue(LodgingBlock.STAGE)==1,"a plain hand leaves the wedge in");
+                p.setShiftKeyDown(true);LodgingHouse.click(p,b,post.above(),own(p));p.setShiftKeyDown(false);
+                h.assertTrue(l.getBlockState(shoe).getValue(LodgingBlock.STAGE)==2,"a crouched hand on the post kicks the wedge out");
+                h.assertTrue(own(p).getBoolean(LodgingCellar.KICKED)&&!own(q).getBoolean(LodgingCellar.KICKED),"who kicked it is the reader's own");
+                h.assertTrue(LodgingStory.house(s,b).contains(LodgingCellar.OUT_AT),"the house keeps when it came out");
+            })
+            .thenWaitUntil(()->h.assertTrue(who[LodgingPeople.FAILED_POST].gesture()==LodgingPeople.LOOSE,"the wrist slips first: "+who[LodgingPeople.FAILED_POST].gesture()))
+            .thenExecute(()->{
+                h.assertTrue(LodgingPeople.onFloor(who[LodgingPeople.FAILED_POST]),"it still sits on the floor coming loose");
+                h.assertFalse(own(p).getBoolean(LodgingCellar.KNOWS_THIRD),"nothing learned from a slipped wrist");
+                var hs=LodgingStory.house(s,b);hs.putInt("Clock",hs.getInt("Clock")+LodgingCellar.LOOSEN);LodgingStory.save(s,b,hs);
+            })
+            .thenWaitUntil(()->{h.assertTrue(who[LodgingPeople.FAILED_POST].gesture()==LodgingPeople.LOOSE+1,"the arm drops away: "+who[LodgingPeople.FAILED_POST].gesture());
+                h.assertTrue(own(p).getBoolean(LodgingCellar.KNOWS_THIRD),"the reader watching learns the third way");})
+            .thenExecute(()->{
+                h.assertFalse(own(q).getBoolean(LodgingCellar.KNOWS_THIRD),"the reader upstairs saw nothing");
+                var hs=LodgingStory.house(s,b);hs.putInt("Clock",hs.getInt("Clock")+LodgingCellar.LOOSEN*5);LodgingStory.save(s,b,hs);
+            })
+            .thenWaitUntil(()->h.assertTrue(who[LodgingPeople.FAILED_POST].gesture()==LodgingPeople.LOOSE+3,"four stages and no more: "+who[LodgingPeople.FAILED_POST].gesture()))
+            .thenExecute(()->{
+                // Driven back, it is tied and still.
+                p.setShiftKeyDown(true);LodgingHouse.click(p,b,post,own(p));p.setShiftKeyDown(false);
+                h.assertTrue(l.getBlockState(shoe).getValue(LodgingBlock.STAGE)==1,"the wedge goes back in");
+                h.assertFalse(LodgingStory.house(s,b).contains(LodgingCellar.OUT_AT),"the house forgets when it came out");
+                h.assertTrue(own(p).getBoolean(LodgingCellar.KNOWS_THIRD),"what the reader learned stays learned");
+            })
+            .thenWaitUntil(()->h.assertTrue(who[LodgingPeople.FAILED_POST].gesture()==LodgingPeople.TIED,"tied again: "+who[LodgingPeople.FAILED_POST].gesture()))
+            .thenExecute(()->{
+                // The one who knows can put it to Vera; the other cannot.
+                var vera=who[LodgingPeople.VERA];var v=rel(b,vera);f.at(p,P,v.x+1.2,v.y,v.z);f.at(q,P,v.x-1.2,v.y,v.z);
+                LodgingPeople.talk(p,vera,own(p));
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_CELLAR),"the reader who saw it can say so: "+Talk.replies(p));
+                has(h,p,"Vera: "+LodgingTexts.VERA_CELLAR);
+                h.assertFalse(Talk.replies(p).contains(LodgingTexts.R_CELLAR),"once");
+                h.assertTrue(own(p).getInt(LodgingVera.ANSWER)==LodgingVera.NONE,"saying so is not an answer");
+                Talk.close(p);
+                LodgingPeople.talk(q,vera,own(q));
+                h.assertFalse(Talk.replies(q).contains(LodgingTexts.R_CELLAR),"the reader who did not see it cannot");
+                Talk.close(q);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_cellar") public static void cellarDone(ServerLevel l){done();}
 }

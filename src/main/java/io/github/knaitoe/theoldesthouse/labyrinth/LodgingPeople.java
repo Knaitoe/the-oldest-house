@@ -75,13 +75,16 @@ public final class LodgingPeople {
     public static final int BATTER=10,REACH=11,DRAG=12,HURT=13,PIN=14;
     /** 0.4.608: Rae looking down at the key in her hand, held low, the other hand under it. */
     public static final int KEY=15;
+    /** 0.4.610 (LodgingCellar): the dead post's body coming loose at the joins, four stages, LOOSE to LOOSE+3. */
+    public static final int LOOSE=16;
+    public static boolean loose(int gesture){return gesture>=LOOSE&&gesture<LOOSE+4;}
     /** 0.4.606: the sheet a man's marks put him in: Dan's and Daniel's hands cut by the glass, or pricked by the pin. */
     public static @Nullable String dressed(int phase,int marks){
         int who=phase-FIRST;if(who!=DAN&&who!=DANIEL||marks==0)return null;
         return skin(phase)+((marks&LodgingInjury.CUT)!=0?"_cut":"_prick");
     }
     /** Somebody tied sitting at the foot of the post: on the floor, for the seat a body is drawn in (ActorSeat). */
-    public static boolean onFloor(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==FIRST+FAILED_POST&&a.gesture()==TIED;}
+    public static boolean onFloor(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==FIRST+FAILED_POST&&(a.gesture()==TIED||loose(a.gesture()));}
 
     /** Where each is, from the house's base, which way they face (degrees; 0 is south, toward the front door), and what they are doing. */
     public record Spot(double x,double y,double z,float look,int gesture){}
@@ -167,7 +170,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
@@ -184,7 +187,7 @@ public final class LodgingPeople {
         }
     }
     /** Arrived where the chapter has them: turned the way the place faces, doing what they do there. */
-    static void settle(LiteraryActor a,Spot to){if(a.gesture()!=to.gesture()&&!(to.gesture()==POCKET&&a.gesture()==SHOW)&&a.gesture()!=PIN)a.gesture(to.gesture());}
+    static void settle(LiteraryActor a,Spot to){if(a.gesture()!=to.gesture()&&!(to.gesture()==POCKET&&a.gesture()==SHOW)&&a.gesture()!=PIN&&!loose(a.gesture()))a.gesture(to.gesture());}
     /** 0.4.606: Dan holds his hand out until then (for the pin). */
     static void showHand(BlockPos b,long until){household(b).showUntil=until;}
     static float yawTo(Entity a,Vec3 at){var d=at.subtract(a.position());return (float)(Mth.atan2(d.z,d.x)*Mth.RAD_TO_DEG)-90;}

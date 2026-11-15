@@ -39,7 +39,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <li>NUMBER: a guest room's enamel number, one to six by stage. TALLY: marks on a wall, eight hands of them by stage.</li>
  * <li>SILL, POST, SHOE, RATCHET: the frames' shared support in the cellar: the sill, a timber half a cell high laid along its run
  * (FACING north or south lays it north and south); a post; a post's foot in its iron shoe with the wedge driven, sitting on the sill
- * (stage 1 on the bare floor); a post (stage 1 with rope burns round it); and the ratchet that holds the sill (stage 1 its wheel).</li>
+ * (stage 1 on the bare floor; 0.4.610 stage 2 that one with its wedge knocked out and lying beside it); a post (stage 1 with rope burns round it); and the ratchet that holds the sill (stage 1 its wheel).</li>
  * </ul>
  */
 public final class LodgingBlock extends HorizontalDirectionalBlock {
@@ -51,7 +51,7 @@ public final class LodgingBlock extends HorizontalDirectionalBlock {
         public boolean leaf(){return this==DOOR||this==BOLT_DOOR||this==SERVICE||this==JIB||this==CUPBOARD;}
         /** How many stages it draws; the rest draw stage 0. */
         public int stages(){return switch(this){case DOOR,SERVICE,JIB,CUPBOARD->4;case BOLT_DOOR,FRAME_SIDE,FRAME_BACK,TALLY->8;case FRAME_HEAD,NUMBER->6;case LAMP,HALL_STAND->3;
-            case WINDOW,RAIL,BANISTER,FIREPLACE,BENCH,RATCHET,SHOE,POST->2;default->1;};}
+            case WINDOW,RAIL,BANISTER,FIREPLACE,BENCH,RATCHET,POST->2;case SHOE->4;default->1;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);
@@ -86,7 +86,7 @@ public final class LodgingBlock extends HorizontalDirectionalBlock {
             case NUMBER->t(f,4,4,15,12,12,16);
             case TALLY->Shapes.empty();
             case POST->Block.box(2,0,2,14,16,14);
-            case SHOE->stage==1?Shapes.or(Block.box(1,0,1,15,5,15),Block.box(2,5,2,14,16,14)):Shapes.or(t(f,2,0,0,14,8,16),Block.box(1,8,1,15,13,15),Block.box(2,13,2,14,16,14));
+            case SHOE->stage==1||stage==2?Shapes.or(Block.box(1,0,1,15,5,15),Block.box(2,5,2,14,16,14)):Shapes.or(t(f,2,0,0,14,8,16),Block.box(1,8,1,15,13,15),Block.box(2,13,2,14,16,14));
             case RATCHET->stage==1?t(f,1,0,4,15,16,12):t(f,0,0,3,16,16,13);
         };
     }

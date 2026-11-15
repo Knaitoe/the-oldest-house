@@ -1,0 +1,298 @@
+{
+  "textures": {
+    "end": "the_oldest_house:block/lodging/timber_end",
+    "iron": "the_oldest_house:block/lodging/iron",
+    "side": "the_oldest_house:block/lodging/timber",
+    "wedge": "the_oldest_house:block/lodging/wedge",
+    "particle": "the_oldest_house:block/lodging/timber_end"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            11,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            11,
+            15,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            11,
+            15,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            11,
+            15,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#iron",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        5,
+        2
+      ],
+      "to": [
+        14,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#end",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ],
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#end",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        0,
+        12
+      ],
+      "to": [
+        9,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wedge",
+          "uv": [
+            7,
+            14,
+            12,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wedge",
+          "uv": [
+            4,
+            14,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#wedge",
+          "uv": [
+            0,
+            14,
+            4,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#wedge",
+          "uv": [
+            12,
+            14,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#wedge",
+          "uv": [
+            4,
+            12,
+            9,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#wedge",
+          "uv": [
+            4,
+            12,
+            9,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4,
+        -0.02,
+        12
+      ],
+      "to": [
+        9,
+        0,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#wedge",
+          "uv": [
+            4,
+            12,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#wedge",
+          "uv": [
+            4,
+            16,
+            9,
+            15.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9,
+        -0.02,
+        15
+      ],
+      "to": [
+        9,
+        0,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#wedge",
+          "uv": [
+            0,
+            16,
+            1,
+            15.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4,
+        -0.02,
+        15
+      ],
+      "to": [
+        4,
+        0,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#wedge",
+          "uv": [
+            15,
+            16,
+            16,
+            15.98
+          ]
+        }
+      }
+    }
+  ]
+}
