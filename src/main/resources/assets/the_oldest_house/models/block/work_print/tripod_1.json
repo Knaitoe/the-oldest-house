@@ -241,7 +241,7 @@
         7.5
       ],
       "rotation": {
-        "angle": 22.5,
+        "angle": -22.5,
         "axis": "z",
         "origin": [
           8,
@@ -259,12 +259,12 @@
             16
           ]
         },
-        "east": {
+        "west": {
           "texture": "#l",
           "uv": [
-            8.5,
+            7.52,
             5,
-            8.48,
+            7.5,
             16
           ]
         },
@@ -292,7 +292,7 @@
         8.52
       ],
       "rotation": {
-        "angle": 22.5,
+        "angle": -22.5,
         "axis": "z",
         "origin": [
           8,
@@ -310,12 +310,12 @@
             16
           ]
         },
-        "east": {
+        "west": {
           "texture": "#l",
           "uv": [
-            7.52,
+            8.5,
             5,
-            7.5,
+            8.48,
             16
           ]
         },
@@ -333,50 +333,17 @@
     {
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
-        7.5,
+        8.5,
         0,
-        7.48
-      ],
-      "to": [
-        7.5,
-        9.74289,
-        7.5
-      ],
-      "rotation": {
-        "angle": 22.5,
-        "axis": "z",
-        "origin": [
-          8,
-          11,
-          8
-        ]
-      },
-      "faces": {
-        "west": {
-          "texture": "#l",
-          "uv": [
-            7.52,
-            6.25711,
-            7.5,
-            16
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8,
-        11,
         7.48
       ],
       "to": [
         8.5,
-        11,
+        9.74289,
         7.5
       ],
       "rotation": {
-        "angle": 22.5,
+        "angle": -22.5,
         "axis": "z",
         "origin": [
           8,
@@ -385,40 +352,7 @@
         ]
       },
       "faces": {
-        "up": {
-          "texture": "#l",
-          "uv": [
-            8,
-            7.52,
-            8.5,
-            7.5
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        7.5,
-        0,
-        8.5
-      ],
-      "to": [
-        7.5,
-        9.74289,
-        8.52
-      ],
-      "rotation": {
-        "angle": 22.5,
-        "axis": "z",
-        "origin": [
-          8,
-          11,
-          8
-        ]
-      },
-      "faces": {
-        "west": {
+        "east": {
           "texture": "#l",
           "uv": [
             8.5,
@@ -432,17 +366,17 @@
     {
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
-        8,
+        7.5,
         11,
-        8.5
+        7.48
       ],
       "to": [
-        8.5,
+        8,
         11,
-        8.52
+        7.5
       ],
       "rotation": {
-        "angle": 22.5,
+        "angle": -22.5,
         "axis": "z",
         "origin": [
           8,
@@ -454,9 +388,75 @@
         "up": {
           "texture": "#l",
           "uv": [
+            7.5,
+            7.52,
             8,
+            7.5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.5,
+        0,
+        8.5
+      ],
+      "to": [
+        8.5,
+        9.74289,
+        8.52
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          11,
+          8
+        ]
+      },
+      "faces": {
+        "east": {
+          "texture": "#l",
+          "uv": [
+            7.52,
+            6.25711,
+            7.5,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.5,
+        11,
+        8.5
+      ],
+      "to": [
+        8,
+        11,
+        8.52
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          11,
+          8
+        ]
+      },
+      "faces": {
+        "up": {
+          "texture": "#l",
+          "uv": [
+            7.5,
             8.5,
-            8.5,
+            8,
             8.48
           ]
         }
