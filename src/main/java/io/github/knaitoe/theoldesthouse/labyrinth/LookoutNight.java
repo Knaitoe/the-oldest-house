@@ -288,6 +288,7 @@ public final class LookoutNight {
         LookoutTower.setWall(l,b,wall,LookoutTower.CZ,LookoutBlock.Kind.BROKEN,0);sound(l,wallOutside(b,wall,5),LookoutRegistry.SHATTER.get(),1.6F,1F);
         endWhistle(l,b,t);t.putBoolean("Over",true);
         for(var p:readers){
+            VignetteGate.failed(p); // 0.4.599
             var own=own(p);own.putInt("Broke202",own.getInt("Broke202")+1);own.putBoolean("Alidade202",false);save(p,own);
             HousePackets.send(p,new HouseFadePayload(4,40,30));var foot=at(b,new Vec3(LookoutTower.CX+4.5,0,LookoutTower.CZ+6.5));
             p.teleportTo(l,foot.x,foot.y,foot.z,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();

@@ -111,6 +111,7 @@ public final class FoyerEncounter {
         if(age<60||age<200&&(visitor==null||visitor.distanceToSqr(p)>2.4))return;
         if(own.getBoolean("FoyerEnding136")){if(!LabyrinthDoors.isBusy(p))own.putBoolean("FoyerEnding136",false);else return;}
         own.putBoolean("FoyerEnding136",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);
+        VignetteGate.failed(p); // 0.4.599
         if(!LabyrinthDoors.sendBack(p,10,20,30,arrived->{var d=LabyrinthData.get(arrived.server);var t=LiteraryVignettes.personal(d,arrived.getUUID(),PLACE);t.putBoolean("FoyerFailureReturned136",true);t.putBoolean("FoyerEnding136",false);t.putInt("FoyerFailures136",t.getInt("FoyerFailures136")+1);t.putBoolean("Ready",false);LiteraryVignettes.save(d,arrived.getUUID(),PLACE,t);stop(arrived);})){own.putBoolean("FoyerEnding136",false);}
     }
     public static void returned(ServerPlayer p,LabyrinthData.Door door){

@@ -268,6 +268,7 @@ public final class PolaroidTrail {
     }
     /** Looked at the flash as it went off: the visit goes white and the reader is back on the porch. */
     static void caught(ServerPlayer p,BlockPos b,CompoundTag own,int visit){
+        VignetteGate.failed(p); // 0.4.599
         HousePackets.send(p,new PolaroidFlashPayload(60,1F));
         own.putInt("Caught204",own.getInt("Caught204")+1);own.putBoolean("Haunted204",true);
         clearVisit(p,b,own,visit);own.putInt("CrawlTicks204",0);

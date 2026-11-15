@@ -341,6 +341,7 @@ public final class Polybius {
     }
     /** A fourth play: the screen keeps the reader, they come to at the front at closing time, and their name is off every table. */
     static void fail(ServerPlayer p){
+        VignetteGate.failed(p); // 0.4.599
         var b=base(p);var own=own(p);
         int struck=PolybiusScores.strike(p.server,p.getUUID());
         own.putBoolean("Lost217",true);own.remove("Call217");own.putInt("Plays217",0);own.putInt("Taken217",own.getInt("Taken217")+1);own.putInt("Struck217",struck);save(p,own);

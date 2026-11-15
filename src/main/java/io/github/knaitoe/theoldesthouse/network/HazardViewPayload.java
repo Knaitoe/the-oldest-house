@@ -18,5 +18,7 @@ public record HazardViewPayload(int mode,BlockPos base,CompoundTag view) impleme
      * client, which keeps what its reader did: nothing of where they were is sent.
      */
     public static HazardViewPayload mirror(BlockPos b,int delay,boolean answer,net.minecraft.world.phys.Vec3 door){var t=new CompoundTag();t.putInt("Delay",delay);t.putBoolean("Answer",answer);t.putDouble("X",door.x);t.putDouble("Y",door.y);t.putDouble("Z",door.z);return new HazardViewPayload(1,b,t);}
+    /** 0.4.599, the rising stair: its reader is on the stair, and in the shaft's water their own client lets them rise no faster than {@code pull} falling (HazardClient). */
+    public static HazardViewPayload undertow(BlockPos b,float pull){var t=new CompoundTag();t.putFloat("Pull",pull);return new HazardViewPayload(3,b,t);}
     @Override public Type<HazardViewPayload> type(){return TYPE;}
 }

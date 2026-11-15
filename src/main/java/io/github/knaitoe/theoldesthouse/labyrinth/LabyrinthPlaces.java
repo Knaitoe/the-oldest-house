@@ -145,10 +145,31 @@ public final class LabyrinthPlaces {
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
-                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.BIKE_NIGHT ? BikeNightSite.BASE_Y : place == LabyrinthPlace.BLACK_CITY ? CitySite.BASE_Y : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : place == LabyrinthPlace.PITT ? PittCave.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.LAST_CROSSING || place == LabyrinthPlace.BARN_WELL || place == LabyrinthPlace.DARK_SPIRAL || place == LabyrinthPlace.DARK_EDGE || place == LabyrinthPlace.SPHINX_STAIR || place == LabyrinthPlace.SPHINX_SHELF ? 14 : place == LabyrinthPlace.SPHINX_VESTIBULE ? 1 : FLOOR_IN_SLOT),
+                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.BIKE_NIGHT ? BikeNightSite.BASE_Y : place == LabyrinthPlace.BLACK_CITY ? CitySite.BASE_Y : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : place == LabyrinthPlace.PITT ? PittCave.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.LAST_CROSSING || place == LabyrinthPlace.BARN_WELL || place == LabyrinthPlace.DARK_SPIRAL || place == LabyrinthPlace.DARK_EDGE || place == LabyrinthPlace.SPHINX_STAIR || place == LabyrinthPlace.SPHINX_SHELF ? 14 : place == LabyrinthPlace.SPHINX_VESTIBULE ? 1 : floorInSlot(place)),
                 origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
                         : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
+    }
+
+    private static final java.util.Map<LabyrinthPlace, Integer> FLOORS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * 0.4.599: the row of its slot an interior room's floor stands on. The usual fifth, unless the room is deeper or taller than
+     * that leaves room for: then as near the fifth as keeps the whole room, floor to ceiling, inside its slot. The slots of a
+     * column stand one on another, and each is filled solid before its room is carved, so a room that reached out of its slot
+     * lost those rows to the room over or under it, or took them from it, whichever was carved second. The rising stair, on the
+     * fifth row and three rows too tall for a slot, lost its head that way (the owner, 9 November: "this hazard map is impossible
+     * to pass."); ten other rooms reached one to four rows below their slots. A room taller than a slot cannot be helped here,
+     * and stays on the fifth (HazardVarietyTests.everyInteriorRoomStandsInTheSlotItIsCarvedIn).
+     */
+    private static int floorInSlot(LabyrinthPlace place) {
+        return FLOORS.computeIfAbsent(place, p -> {
+            BoundingBox room = p.room();
+            if (room == null || NovelRooms.outside(p) || NovelVignettes.isNovel(p) || LabyrinthMaze.isMaze(p)) return FLOOR_IN_SLOT;
+            room = DomesticLives.extend(p, room);
+            int lowest = -Math.min(room.minY(), -1), highest = SLOT_HEIGHT - 1 - Math.max(room.maxY(), VESTIBULE_TOP);
+            return lowest > highest ? FLOOR_IN_SLOT : Math.max(lowest, Math.min(highest, FLOOR_IN_SLOT));
+        });
     }
 
     /** The vestibule volume relative to a place's base: south of the door, door wall row included. */

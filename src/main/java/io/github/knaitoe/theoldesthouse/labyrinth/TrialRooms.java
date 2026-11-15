@@ -76,7 +76,7 @@ public final class TrialRooms {
     static void rest(ServerLevel l,BlockPos b,LabyrinthPlace place,CompoundTag room){
         if(place==LabyrinthPlace.STILL_LIGHT){settle(l,b);room.putInt("StillFade",0);if(lit(room))lamps(l,b,room,false);}
         else if(place==LabyrinthPlace.SOFT_FLOOR)softSettle(l,b,true);
-        else if(place==LabyrinthPlace.RISING_STAIR){flood(l,b,0);room.putInt("RisingEmpty",0);}
+        else if(place==LabyrinthPlace.RISING_STAIR){flood(l,b,0);room.putInt("RisingEmpty",0);room.remove("RisingFrom");}
         else if(place==LabyrinthPlace.FOLLOWING_DOOR){for(int i=0;i<DOORWAYS.size();i++)shutDoorway(l,b,i);room.putInt("FollowOpen",-1);}
     }
 
@@ -277,16 +277,41 @@ public final class TrialRooms {
 
     // ---- The rising stair ----
 
-    /** The shaft is nine by nine (x -4..4, z -12..-4); the landing at its foot (z -1, -2) is behind a door in its south wall. */
-    public static final int SHAFT_HALF=4,SHAFT_NEAR=-4,SHAFT_FAR=-12,SHAFT_TOP=24;
-    /** The treads, one a cell round the walls, each half a block above the last: forty-four of them, up to the landing at the head. */
+    /**
+     * The shaft is nine by nine (x -4..4, z -12..-4); the landing at its foot (z -1, -2) is behind a door in its south wall.
+     * 0.4.599 (owner, 9 November, of this room: "this hazard map is impossible to pass."): the room is twenty-four blocks from its
+     * floor to its vault, the height of the slot it is carved in (LabyrinthPlaces.SLOT_HEIGHT), and stands on the slot's first row
+     * (LabyrinthPlaces.baseAtSpacing). It was twenty-seven, on the fifth: its top seven rows, with the last treads, the landing at
+     * the head and the far door, lay in the slot of the room over it. Whichever of the two was carved second took them.
+     */
+    public static final int SHAFT_HALF=4,SHAFT_NEAR=-4,SHAFT_FAR=-12,SHAFT_TOP=21;
+    /**
+     * The cells of the stair, one round the walls after another, up to the landing at the head: forty-four, six of them gaps.
+     * 0.4.599: a tread stands half a block above the one before it whether or not a cell is missing between them, as the room's
+     * notes always said (a gap used to be a whole block up as well as a stride across). The thirty-eight treads climb nineteen
+     * blocks, where forty-four cells used to climb twenty-two.
+     */
     public static final int TREADS=44;
-    /** The treads missing, each a single stride to jump. */
+    /** The treads missing, each a single stride to jump, up half a block. None is at a corner, and none is next to another. */
     public static final Set<Integer> GAPS=Set.of(6,14,22,30,38,41);
     /** Ticks between one layer of water and the next; the layers the water fills, from the shaft floor up; ticks between draining layers. */
-    public static final int RISE=30,LAYERS=21,DRAIN=4;
+    public static final int RISE=30,LAYERS=18,DRAIN=4;
+    /**
+     * 0.4.599: how long the water waits once a reader is on the treads. It used to come at the room clock's next thirtieth tick after
+     * anyone stepped into the shaft: a second and a half at most, and sometimes the next tick.
+     */
+    public static final int HEAD_START=60;
+    /**
+     * 0.4.599, the undertow: in the shaft's water nobody goes up. On the reader's own client (HazardClient), the most a reader in it
+     * can be rising is this much falling, a tick; walking is untouched. It used to be a push on the server, sent as the reader's
+     * whole motion every tick, which stopped them where they stood: the water reached their feet and they could neither walk the
+     * treads under it, reach a pocket nor go back down to the door.
+     */
+    public static final float PULL=.12F;
     /** The two pockets: the doorway a reader steps through from a tread, and the air trapped above the cell behind it. */
-    public static final BlockPos POCKET_LOW=new BlockPos(5,4,-8),POCKET_HIGH=new BlockPos(-5,12,-8);
+    public static final BlockPos POCKET_LOW=new BlockPos(5,4,-9),POCKET_HIGH=new BlockPos(-5,11,-7);
+    /** The landing at the head: four cells along the north wall from the last tread, and the row in front of them; its floor's row. */
+    public static final int HEAD_WEST=0,HEAD_EAST=3,HEAD=18;
     /** Where the water is measured: the middle of the shaft, clear of every tread. */
     public static final BlockPos PROBE=new BlockPos(-2,0,-8);
     /** The cell of the ring at a step round it, clockwise from the foot of the stair beside the door. */
@@ -298,8 +323,18 @@ public final class TrialRooms {
         if(i<28)return new int[]{-SHAFT_HALF,SHAFT_FAR+1+(i-20)};
         return new int[]{-SHAFT_HALF+1+(i-28),SHAFT_NEAR};
     }
-    /** A tread's top, in half blocks above the shaft floor. */
-    public static int treadTop2(int i){return i+1;}
+    /** A tread's top, in half blocks above the shaft floor: half a block for every tread below it, and nothing for a gap. */
+    public static int treadTop2(int i){int gaps=0;for(int g:GAPS)if(g<i)gaps++;return i+1-gaps;}
+    /** In the shaft itself, by a place relative to the room: not a pocket and not the landing at the foot. Where the undertow is. */
+    public static boolean inShaft(double x,double z){return x>=-SHAFT_HALF&&x<SHAFT_HALF+1&&z>=SHAFT_FAR&&z<SHAFT_NEAR+1;}
+    /**
+     * 0.4.599, the undertow's whole rule, for the reader's own client (HazardClient) and for the case that walks a body up the
+     * stair: in the shaft's water, a body rising, or falling slower than {@code pull} a tick, is left falling at {@code pull}.
+     * Sideways it keeps what it had.
+     */
+    public static net.minecraft.world.phys.Vec3 pulled(double x,double z,boolean inWater,net.minecraft.world.phys.Vec3 motion,float pull){
+        return inWater&&inShaft(x,z)&&motion.y>-pull?new net.minecraft.world.phys.Vec3(motion.x,-pull,motion.z):motion;
+    }
     /** Where a tread stands: its block and whether it is a half step. */
     public static BlockPos tread(int i){int[] c=ring(i);int t2=treadTop2(i);return new BlockPos(c[0],t2%2==0?t2/2-1:(t2-1)/2,c[1]);}
     public static boolean halfTread(int i){return treadTop2(i)%2==1;}
@@ -316,7 +351,7 @@ public final class TrialRooms {
         box(l,b,-1,0,-2,1,3,-1,air);box(l,b,-1,-1,-2,1,-1,-1,landing);
         box(l,b,0,0,-3,0,1,-3,air);LabyrinthBuilder.placeDoor(l,b.offset(0,0,-3),net.minecraft.core.Direction.SOUTH);
         for(int i=0;i<TREADS;i++)if(!GAPS.contains(i)){var at=tread(i);set(l,b,at.getX(),at.getY(),at.getZ(),TrialBlock.of(TrialBlock.Kind.RISING_TREAD,halfTread(i)?1:0));}
-        box(l,b,0,21,SHAFT_FAR,3,21,SHAFT_FAR+1,landing);
+        box(l,b,HEAD_WEST,HEAD,SHAFT_FAR,HEAD_EAST,HEAD,SHAFT_FAR+1,landing);
         for(var door:List.of(POCKET_LOW,POCKET_HIGH)){for(var at:pocketWater(door))set(l,b,at.getX(),at.getY(),at.getZ(),air);for(var at:pocketAir(door))set(l,b,at.getX(),at.getY(),at.getZ(),air);}
         for(int y:List.of(2,8,14,20)){set(l,b,5,y,-11,window);set(l,b,-5,y,-5,window);set(l,b,-2,y,SHAFT_FAR-1,window);}
         LabyrinthBuilder.entrance(l,b,wall,landing,ceiling);
@@ -342,18 +377,22 @@ public final class TrialRooms {
     public static void flood(ServerLevel l,BlockPos b,int layers){for(int y=0;y<LAYERS;y++)layer(l,b,y,y<layers);}
 
     private static void risingStair(ServerLevel l,BlockPos b,CompoundTag room,long clock,List<ServerPlayer> readers){
-        boolean anyone=false;
-        for(var p:readers)if(onStair(b,p.position()))anyone=true;
+        boolean anyone=false,climbing=false;
+        for(var p:readers)if(onStair(b,p.position())){anyone=true;if(p.getY()-b.getY()>=.45)climbing=true;}
         int level=water(l,b);
+        // 0.4.599: the water waits for a reader to be on the treads, and then HEAD_START more. Standing on the shaft floor brings none.
+        if(climbing&&!room.contains("RisingFrom"))room.putLong("RisingFrom",clock);
         if(anyone){room.putInt("RisingEmpty",0);
-            if(clock%RISE==0&&level<LAYERS){layer(l,b,level,true);l.playSound(null,b.offset(0,level,-8),SoundEvents.BUCKET_EMPTY,SoundSource.BLOCKS,.9F,.5F);}
+            long since=room.contains("RisingFrom")?clock-room.getLong("RisingFrom")-HEAD_START:-1;
+            if(since>=0&&since%RISE==0&&level<LAYERS){layer(l,b,level,true);l.playSound(null,b.offset(0,level,-8),SoundEvents.BUCKET_EMPTY,SoundSource.BLOCKS,.9F,.5F);}
         }else{int empty=room.getInt("RisingEmpty")+1;room.putInt("RisingEmpty",empty);
             if(empty>=20&&level>0&&clock%DRAIN==0){layer(l,b,level-1,false);if(level%4==1)l.playSound(null,b.offset(0,level,-8),SoundEvents.BUCKET_FILL,SoundSource.BLOCKS,.7F,.5F);}
+            // Dry again, with nobody on the stair: whoever climbs next has their head start.
+            if(water(l,b)==0)room.remove("RisingFrom");
         }
         for(var p:readers){
-            var rel=p.position().subtract(b.getX(),b.getY(),b.getZ());
-            boolean shaft=rel.x>=-SHAFT_HALF&&rel.x<SHAFT_HALF+1&&rel.z>=SHAFT_FAR&&rel.z<SHAFT_NEAR+1;
-            if(shaft&&l.getFluidState(p.blockPosition()).is(net.minecraft.tags.FluidTags.WATER)){p.push(0,-.05,0);p.hurtMarked=true;}
+            // 0.4.599: the undertow is the reader's own client's to apply (PULL); the server only says they are on this stair.
+            if(clock%5==0&&onStair(b,p.position()))io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,io.github.knaitoe.theoldesthouse.network.HazardViewPayload.undertow(b,PULL));
             if(l.getFluidState(BlockPos.containing(p.getEyePosition())).is(net.minecraft.tags.FluidTags.WATER)&&p.getAirSupply()<=0){
                 p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-1.5,180,0);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);p.resetFallDistance();p.setAirSupply(p.getMaxAirSupply());
                 p.displayClientMessage(Component.literal("The landing again, and the taste of the water.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);

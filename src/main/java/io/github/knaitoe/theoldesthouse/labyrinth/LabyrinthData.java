@@ -279,6 +279,19 @@ public final class LabyrinthData extends SavedData {
     }
 
     /**
+     * 0.4.599: as {@link #nodeKey}, for a hall one crossing down this reader's way back: the hall they took their last door from,
+     * while that crossing is still theirs to go back by.
+     */
+    public long nodeKeyBelow(UUID player, LabyrinthPlace place) {
+        Deque<Waypoint> stack = returns.get(player);
+        if (stack == null || stack.isEmpty()) return nodeKey(player, place);
+        List<Waypoint> below = new ArrayList<>(stack);
+        below.remove(0);
+        java.util.Collections.reverse(below);
+        return routeKey(below, place);
+    }
+
+    /**
      * 0.4.402: the key for a place reached by the given way back, bottom (first crossing) first, exactly as {@link #nodeKey} computes it
      * for a reader whose way back that is (TeleportAnchor: a reader taken to a friend takes up the friend's way through the House).
      */

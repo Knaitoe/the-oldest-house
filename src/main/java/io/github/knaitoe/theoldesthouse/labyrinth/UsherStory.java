@@ -243,6 +243,7 @@ public final class UsherStory {
      * them home: in Poe nothing follows the narrator out.
      */
     private static void buried(ServerPlayer p, BlockPos b, CompoundTag own) {
+        VignetteGate.failed(p); // 0.4.599
         var l = p.serverLevel();
         own.putBoolean("Fell0507", false);
         own.putBoolean("Buried0507", true);

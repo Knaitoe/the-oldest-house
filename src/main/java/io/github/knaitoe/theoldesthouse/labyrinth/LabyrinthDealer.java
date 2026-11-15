@@ -504,6 +504,11 @@ public final class LabyrinthDealer {
 
     /** Turns one door of the place the player is in into an ordinary way on, and remembers it there. */
     public static void openWayOn(LabyrinthData data, UUID player, LabyrinthData.Door door, LabyrinthPlace here, RandomSource random) {
+        openWayOn(data, player, door, here, random, data.nodeKey(player, here));
+    }
+
+    /** As above, remembered under {@code key}: the hall's place on the reader's road when they are not standing in it (0.4.599). */
+    public static void openWayOn(LabyrinthData data, UUID player, LabyrinthData.Door door, LabyrinthPlace here, RandomSource random, long key) {
         List<LabyrinthPlace> gray = new ArrayList<>(grayAvailable(data, player));
         gray.remove(here);
         gray.removeIf(p -> !onward(p) || LabyrinthPacing.anomaly(p) || LabyrinthPacing.physicalTrial(p));
@@ -515,7 +520,6 @@ public final class LabyrinthDealer {
         if (!standing.isEmpty()) gray = standing;
         LabyrinthPlace next = gray.isEmpty() ? LabyrinthPlace.JUNCTION : weightedGray(gray, data, player, random);
         data.deal(player, door, next.id(), false);
-        long key = data.nodeKey(player, here);
         Map<String, LabyrinthData.Deal> now = new LinkedHashMap<>();
         for (LabyrinthData.Door each : dealtDoors(data, here)) {
             LabyrinthData.Deal deal = data.deal(player, each);

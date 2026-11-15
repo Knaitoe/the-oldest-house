@@ -290,6 +290,24 @@ public final class LabyrinthDoors {
         return true;
     }
 
+    /**
+     * 0.4.599 (owner, 9 November: "once a player fails a vignette that simply bounces them to the exit, if the vignette is retriable, it
+     * should disappear and lead to a normal hallway."): the story that was behind this door failed this reader and put them out, and
+     * is gone from it. The door is dealt an ordinary way on, remembered in the hall it stands in, so the same road finds the hall
+     * there again; the story is the dealer's to put behind some other door. {@code held}: their way back still ends at this door
+     * (they went on by the story's own way on), so the hall's place on their road is one crossing down. A door their own wedge holds
+     * keeps what it holds.
+     */
+    static boolean gone(ServerPlayer player, LabyrinthData.Door door, boolean held) {
+        if (door.command || !LabyrinthData.DEALT.equals(door.destination)) return false;
+        LabyrinthPlace here = placeOf(player.server, door);
+        LabyrinthData data = LabyrinthData.get(player.server);
+        if (here == null || Wedges.pin(data, player.getUUID(), door.id) != null) return false;
+        LabyrinthDealer.openWayOn(data, player.getUUID(), door, here, player.getRandom(),
+                held ? data.nodeKeyBelow(player.getUUID(), here) : data.nodeKey(player.getUUID(), here));
+        return true;
+    }
+
     /** A private scene someone else is in: this reader's door opens onto an ordinary way on instead, and the scene stays theirs to find. */
     private static boolean elsewhere(ServerPlayer player, LabyrinthData.Door door) {
         if (rerouting || !LabyrinthData.DEALT.equals(door.destination)) return false;
@@ -821,6 +839,8 @@ public final class LabyrinthDoors {
         fadeTo(player, target, fadeIn, hold, fadeOut,p->{
             if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
             INSIDE.remove(p.getUUID());
+            // 0.4.599: a story that failed them is gone from the door they took (VignetteGate.failed).
+            VignetteGate.sentBack(p,back);
             arrived.accept(p);
         });
         return true;

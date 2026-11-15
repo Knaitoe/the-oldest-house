@@ -457,6 +457,7 @@ public final class WinchesterHouse {
     }
     /** The thirteenth stroke: hammering close all round, the dark, and the front door. */
     static void walled(ServerPlayer p, BlockPos b, CompoundTag own) {
+        VignetteGate.failed(p); // 0.4.599
         own.putBoolean("InRun", false);own.putInt("Walled", own.getInt("Walled") + 1);own.putInt("Strikes", 0);
         for (int i = 0; i < 6; i++) sound(p, p.position().add(Math.cos(i) * 1.5, 1 + (i % 2), Math.sin(i) * 1.5), LiteraryRegistry.WINCHESTER_HAMMER.get(), 1.2F, .8F + i * .07F);
         HousePackets.send(p, new HouseFadePayload(6, 30, 24));
