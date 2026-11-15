@@ -208,3 +208,10 @@ happen in play as well as in a test: anyone who leaves the kitchen with a visito
 
 The kitchen now puts away any visitor's body in and round it that is not the one it keeps, when it stands empty and before it makes
 anyone new (`KitchenVisitors.strays`). Run here: the cast namespace whole.
+
+## 0.4.603: Tilly's mouth while she sleeps
+
+The owner, asked whose face: "tilly sleeping in the pell house, i believe" (of "any way to shift painted faces with the opened
+mouths?"). Her sleep look was painted with the 'slack' mouth, a little open, so a dark gap sat in the middle of her sleeping face.
+It is the closed mouth now, as June's sleep look has always been (`tools/draw_pell_faces.py`; only `pell_faces_tilly.png` changes).
+Her speaking cells are unchanged. Checked: the face tool's check, and the sheet's sleep cells side by side before and after.
