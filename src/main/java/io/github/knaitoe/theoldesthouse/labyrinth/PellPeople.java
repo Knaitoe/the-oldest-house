@@ -92,7 +92,10 @@ public final class PellPeople {
         SHOWING=28,
         // 0.4.570, their errands (PellIdle): June stirring the pot, wiping the table down, and with her hands at the sink or the kettle;
         // Tilly's free hand flat on something, feeling along it, and up at the height marks by Nessa's door; Callum wringing out his jumper.
-        STIR=29,WIPE=30,WASH=31,FEEL=32,MEASURE=33,WRING=34;
+        STIR=29,WIPE=30,WASH=31,FEEL=32,MEASURE=33,WRING=34,
+        // 0.4.601: Tilly on a reader's arm, her left hand up at it and her cane down ahead of her in her right (PellArm); Callum with
+        // his hands out in front of him for a ball, or the ball in them; and with his arms out after it, thrown (PellCatch).
+        ARM=35,CATCH=36,THROW=37;
     /** 0.4.535: the marks a look follows (LiteraryActor.marks): June's right hand wrapped, after the laundry (PellHand). */
     public static final int WRAPPED=1;
     /**
@@ -147,6 +150,17 @@ public final class PellPeople {
         final java.util.Map<UUID,Integer> askedIn=new java.util.HashMap<>();
         /** 0.4.582: who has taken plates down from the cupboard this visit (PellJobs.cupboard). */
         final java.util.Set<UUID> tookPlates=new java.util.HashSet<>();
+        /** 0.4.601, catch with Callum (PellCatch): the ball in the air that is being answered, who threw it and from where their hand
+         *  was, and when; where the catching is (PellCatch.NONE, HELD, BACK), when he caught it and when he threw it; how long its
+         *  reader's throw took to reach him; how many there-and-backs have been kept going; when a ball last came down inside the
+         *  house, and since when one has lain in the pool's yard; and what has been said once this visit. */
+        UUID ball,ballBy;Vec3 ballFrom;long ballAt,caughtAt,thrownAt,ballIndoors,ballPooled;int catching,rally,ballFlight;boolean ballMissed,ballPassed,ballJune;
+        /** 0.4.601, Tilly on a reader's arm (PellArm): where the walk is (PellArm.OFF, LED, BACK), whose arm she has and since when;
+         *  the way she has come, for her to go back by; until when her hand is on something, and when she was last stopped at the
+         *  lot's edge; since when her reader has been too far off; which of the house's things she has had her word on; and in which
+         *  of the house's waits she last said what she says on taking an arm. */
+        int arm,armWindow;UUID armWith;long armAt,armTouch,armEdge,armFar;final java.util.ArrayList<Vec3> armTrail=new java.util.ArrayList<>();
+        final java.util.Set<PellThing.Kind> armSaid=java.util.EnumSet.noneOf(PellThing.Kind.class);
         /** Which way each faces when at rest, and who walked this tick (their heads are the walk's). */
         final float[] rest=new float[COUNT];final boolean[] moving=new boolean[COUNT];
         /** The visit: begun again from the start when fresh; how far it has got; when the next line may come. */
@@ -289,7 +303,7 @@ public final class PellPeople {
     static Household household(BlockPos b){return HOUSES.computeIfAbsent(b.immutable(),k->new Household());}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()+PellSite.WEST,b.getY()-4,b.getZ()+PellSite.NORTH,b.getX()+PellSite.EAST+1,b.getY()+PellSite.ROOF+2,b.getZ()+2);}
-    private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
+    static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
     static Vec3 world(BlockPos b,Spot s){return new Vec3(b.getX()+s.x(),b.getY(),b.getZ()+s.z());}
 
     /** One of them at this house, if their body is here. */
@@ -414,12 +428,16 @@ public final class PellPeople {
         if(who==CALLUM&&h.callumStrip){var lines=h.callumFed?PellTexts.CALLUM_EATING:PellTexts.CALLUM_ON_LINE;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         // 0.4.530: on the line at night, Callum stands and does not move for the hand.
         if(who==CALLUM&&h.callumOut){PellHouse.cue(p,PellTexts.CALLUM_NIGHT[h.said[who]++%PellTexts.CALLUM_NIGHT.length]);own.putBoolean("TouchedCallumAtNight",true);return;}
+        // 0.4.601: the ball held out to him (PellCatch).
+        if(who==CALLUM&&PellCatch.shown(p,b,h,a,own))return;
         if(who==CALLUM){var lines=h.seated[who]?PellTexts.CALLUM_TABLE:PellTexts.CALLUM_HAND;PellHouse.cue(p,lines[h.said[who]++%lines.length]);return;}
         // 0.4.532: on the telephone to Gail she lifts a finger; holding it out, the reader takes it.
         if(who==JUNE&&PellCall.june(p,b,own))return;
         // 0.4.533: in the water at first light she swims on.
         if(who==JUNE&&PellSwim.inWater(b)){PellHouse.cue(p,PellTexts.JUNE_SWIMMING);return;}
         // 0.4.571: Tilly's question, or the book, still waiting on this reader comes up again (PellCompany).
+        // 0.4.601: on a reader's arm, a hand on her lets her go (PellArm).
+        if(who==TILLY&&PellArm.hand(p,b,h,a,own))return;
         if(who==TILLY&&PellCompany.resume(p,b,h))return;
         if(a.saying())return;
         // 0.4.533: a week in, June has other things to say by day than her first day's.

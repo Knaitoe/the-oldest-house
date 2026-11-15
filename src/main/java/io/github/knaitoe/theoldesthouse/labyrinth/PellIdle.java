@@ -93,7 +93,15 @@ public final class PellIdle {
     }
 
     /** Nobody is out on anything: what the visit does next may go ahead. */
-    static boolean home(PellPeople.Household h){for(int who=0;who<3;who++)if(h.idleState[who]!=OFF)return false;return true;}
+    static boolean home(PellPeople.Household h){
+        // 0.4.601: nor is Tilly out on a reader's arm or on her way back from it (PellArm), nor has Callum a ball in his hands (PellCatch).
+        if(h.arm!=PellArm.OFF||PellCatch.busy(h))return false;
+        for(int who=0;who<3;who++)if(h.idleState[who]!=OFF)return false;return true;
+    }
+    /** 0.4.601: whatever one of them was at is put down where they stand, and they are out on nothing: Tilly, taking a reader's arm. */
+    static void drop(ServerLevel l,BlockPos b,PellPeople.Household h,int who,LiteraryActor a){
+        settle(l,b,h,who,a);h.way[who].clear();h.perchTo[who]=null;h.idleState[who]=OFF;h.idleErrand[who]=null;
+    }
     /** The house's errands forgotten, as the visit begins again. */
     static void reset(PellPeople.Household h){
         for(int who=0;who<3;who++){h.idleState[who]=OFF;h.idleErrand[who]=null;h.idleNext[who]=0;h.idleTurn[who]=0;}
@@ -125,6 +133,10 @@ public final class PellIdle {
             var a=PellPeople.find(l,b,who);if(a==null)continue;
             // A reader as Tilly does what they do; Tilly is theirs.
             if(who==PellPeople.TILLY&&h.tillyReader!=null){h.idleState[who]=OFF;continue;}
+            // 0.4.601: on a reader's arm, or on her way back from it, she is out on nothing of her own (PellArm); with a ball in his
+            // hands Callum's errand waits for him to throw it (PellCatch).
+            if(who==PellPeople.TILLY&&h.arm!=PellArm.OFF)continue;
+            if(who==PellPeople.CALLUM&&PellCatch.busy(h))continue;
             // 0.4.571: with a book being read to her, she leaves what she was at, goes home, and from there to the edge of the bed.
             if(who==PellPeople.TILLY&&!due&&PellCompany.listening(h)&&h.idleErrand[who]!=LISTEN){
                 if(h.idleState[who]==OUT||h.idleState[who]==AT){recall(l,b,h,who,a,window);continue;}

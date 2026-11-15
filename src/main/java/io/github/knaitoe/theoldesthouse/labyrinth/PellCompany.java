@@ -87,19 +87,25 @@ public final class PellCompany {
         new Tell(7,o->(o.getInt("Rules")&PellTexts.RULE_GARAGE)!=0||seen(o,PellThing.Kind.CAMP_BED),PellTexts.TELL_GARAGE,PellTexts.TILLY_TOO_FAR),
         new Tell(8,o->(o.getInt("Rules")&PellTexts.RULE_POOL)!=0,PellTexts.TELL_POOL,PellTexts.TILLY_SMELL_IT),
         new Tell(9,o->seen(o,PellThing.Kind.CHORE_CHART),PellTexts.TELL_CHART,PellTexts.TILLY_FELT_EDGE),
-        new Tell(10,o->seen(o,PellThing.Kind.SEEDLING),PellTexts.TELL_STAKE,PellTexts.TILLY_GOT_HERE_TODAY)),
+        new Tell(10,o->seen(o,PellThing.Kind.SEEDLING),PellTexts.TELL_STAKE,PellTexts.TILLY_GOT_HERE_TODAY),
+        // 0.4.601: a reader who has had the ball back from Callum can tell her of it (PellCatch).
+        new Tell(11,o->o.getInt(PellCatch.CATCHES)>0,PellTexts.TELL_CATCH,PellTexts.TILLY_COPIES)),
         WEEK=List.of(
         new Tell(16,o->true,PellTexts.TELL_POOL_OPEN,PellTexts.TILLY_UP_AND_BACK),
         new Tell(19,o->true,PellTexts.TELL_HAIR,PellTexts.TILLY_A_WEEK),
         new Tell(17,o->o.getBoolean("SawDoorstep"),PellTexts.TELL_DOORSTEP,PellTexts.TILLY_NEXT_TO_HER),
         new Tell(18,o->o.getBoolean("SawKnifeGone"),PellTexts.TELL_KNIFE,PellTexts.TILLY_NOT_ME),
         new Tell(20,o->o.getBoolean("HeardNessaAtDinner")||o.getBoolean("HeardNessaAtBedtime"),PellTexts.TELL_NAME,PellTexts.TILLY_SAYS_SORRY),
-        new Tell(21,o->o.getBoolean("SawSeedlingGrown"),PellTexts.TELL_GROWN,PellTexts.TILLY_HER_HAND_OVER));
+        new Tell(21,o->o.getBoolean("SawSeedlingGrown"),PellTexts.TELL_GROWN,PellTexts.TILLY_HER_HAND_OVER),
+        // 0.4.601: the catch, if she was not told of it the first week.
+        new Tell(22,o->o.getInt(PellCatch.CATCHES)>0&&(o.getInt(TOLD)&1<<11)==0,PellTexts.TELL_CATCH,PellTexts.TILLY_COPIES));
     private static List<Tell> tells(PellPeople.Household h){return h.visit>=2?WEEK:FIRST;}
     /** The line of hers that asks: her first on the first visit, her last a week in. */
     static String asks(int visit){return visit>=2?PellTexts.TILLY_WEEK_TALK[PellTexts.TILLY_WEEK_TALK.length-1]:PellTexts.TILLY_TALK[0];}
-    /** Whether this reader has anything left to tell her this visit: something seen and not told, or the kind word. */
-    private static boolean anything(PellPeople.Household h,CompoundTag own){
+    /** Whether this reader has anything left to answer her with this visit: something seen and not told, or the kind word; or
+     *  (0.4.601) their arm, to take her to it (PellArm). */
+    private static boolean anything(ServerLevel l,BlockPos b,PellPeople.Household h,CompoundTag own){
+        if(PellArm.available(l,b,h))return true;
         int told=own.getInt(TOLD);boolean any=false;
         for(var t:tells(h)){if((told&1<<t.bit())!=0)any=true;else if(t.when().test(own))return true;}
         return !any&&(told&1<<(h.visit>=2?SAME:NICE))==0;
@@ -109,7 +115,7 @@ public final class PellCompany {
      * her in Nessa's room in each of the house's waits (the afternoon, the evening) is asked, if that reader has anything to tell.
      */
     static boolean asksFirst(ServerPlayer p,BlockPos b,PellPeople.Household h,CompoundTag own){
-        if(h.readingTo!=null||free(p.serverLevel(),b,h)==null||!anything(h,own))return false;
+        if(h.readingTo!=null||free(p.serverLevel(),b,h)==null||!anything(p.serverLevel(),b,h,own))return false;
         int window=PellIdle.window(h);Integer before=h.askedIn.put(p.getUUID(),window);
         return before==null||before!=window;
     }
@@ -118,7 +124,7 @@ public final class PellCompany {
      * exchange is begun with her line in it; true then, and the replies are offered once she has said it (offer).
      */
     static boolean opens(ServerPlayer p,BlockPos b,PellPeople.Household h,CompoundTag own,String line){
-        if(!line.equals(asks(h.visit))||h.readingTo!=null||free(p.serverLevel(),b,h)==null||!anything(h,own))return false;
+        if(!line.equals(asks(h.visit))||h.readingTo!=null||free(p.serverLevel(),b,h)==null||!anything(p.serverLevel(),b,h,own))return false;
         h.askedIn.put(p.getUUID(),PellIdle.window(h));
         Talk.begin(p,TELL,WHO);Talk.line(p,WHO,line);
         return true;
@@ -135,6 +141,9 @@ public final class PellCompany {
         for(var t:tells(h))if((told&1<<t.bit())!=0)any=true;
         for(var t:tells(h)){if(replies.size()>=4)break;if((told&1<<t.bit())==0&&t.when().test(own))replies.add(Talk.reply(t.say(),q->told(q,t.bit(),t.answer())));}
         if(!any&&(told&1<<kind)==0)replies.add(Talk.reply(h.visit>=2?PellTexts.TELL_SAME:PellTexts.TELL_NICE,q->told(q,kind,h.visit>=2?PellTexts.TILLY_BEING_KIND:PellTexts.TILLY_ALWAYS_SAY)));
+        // 0.4.601: or their arm, to take her to it (PellArm).
+        var base=LiteraryVignettes.base(p,PellHouse.PLACE);
+        if(base!=null&&PellArm.available(p.serverLevel(),base,h))replies.add(Talk.reply(PellTexts.TELL_COME,PellArm::take));
         if(replies.isEmpty()){Talk.end(p);return;}
         replies.add(Talk.act(PellTexts.TELL_ENOUGH,Talk::close));
         Talk.ask(p,replies);

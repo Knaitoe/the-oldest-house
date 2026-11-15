@@ -11,7 +11,8 @@ docs/PELL_HOUSE_SENSES_0_4_546.md, what only a reader playing Tilly hears: a wom
 of Nessa's bed; the chest freezer's hum in the laundry; and tape hiss from the shed. The hum and the hiss are four seconds each, sent
 again as each ends, so they fade in and out at their ends. From docs/PELL_HOUSE_NOTES_0_4_570.md, the people's own small things while
 the house waits on its hour: a wooden spoon round a saucepan, the kitchen tap run, a cloth over the table, the kettle coming to the boil,
-and water dripping off Callum onto the floor.
+and water dripping off Callum onto the floor. From docs/PELL_HOUSE_NOTES_0_4_601.md: a tennis ball coming down on a floor, or into a
+pair of hands (three takes).
 
 Synthesized from oscillators and noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it
 happens. Run from the repository root. Existing files are kept, so the committed sounds only change when deleted first. --check
@@ -42,9 +43,10 @@ ROWS = {
     'wipe': ('A cloth over a table', 8),
     'kettle': ('A kettle comes to the boil', 12),
     'drip': ('Water dripping', 8),
+    'ball': ('A ball bounces', 14),
 }
 # 0.4.536: sounds with more than one take; the game picks one each time.
-TAKES = {'tape_voice': 3, 'cane': 3}
+TAKES = {'tape_voice': 3, 'cane': 3, 'ball': 3}
 
 
 def files(name):
@@ -568,10 +570,27 @@ def drip():
     return out
 
 
+def ball(take):
+    # 0.4.601: a tennis ball landing: the felt's soft slap, and under it the short low note of the air in it, gone in a tenth of a
+    # second. Three takes (a little higher or lower, the slap a little more or less), so a ball bouncing down a hall is not one clip
+    # over and over. Each is its own seed, so adding them changed none of the sounds before them.
+    r = np.random.default_rng(60100 + take)
+    n = seconds(.26)
+    out = np.zeros(n)
+    k = seconds(.14)
+    tk = times(k)
+    f = 150 + 18 * take
+    note = np.sin(2 * np.pi * f * tk * (1 + .35 * np.exp(-tk / .012))) * np.exp(-tk / .03)
+    slap = band(r.standard_normal(k), 350, 2200) * np.exp(-tk / .009) * (.5 + .08 * take)
+    place(out, note * .9 + slap, .01)
+    return band(out, 80, 3200)
+
+
 MAKERS = {'car_away': car_away, 'tape': tape, 'brush': brush, 'lock': lock, 'paint': paint, 'tin': tin, 'hand': hand, 'tape_play': tape_play,
           'tape_voice_1': lambda: tape_voice(1), 'tape_voice_2': lambda: tape_voice(2), 'tape_voice_3': lambda: tape_voice(3), 'scrub': scrub,
           'car_come': car_come, 'cane_1': lambda: cane(1), 'cane_2': lambda: cane(2), 'cane_3': lambda: cane(3), 'singing': singing, 'hum': hum,
-          'hiss': hiss, 'stir': stir, 'tap': tap, 'wipe': wipe, 'kettle': kettle, 'drip': drip}
+          'hiss': hiss, 'stir': stir, 'tap': tap, 'wipe': wipe, 'kettle': kettle, 'drip': drip,
+          'ball_1': lambda: ball(1), 'ball_2': lambda: ball(2), 'ball_3': lambda: ball(3)}
 
 
 def main():

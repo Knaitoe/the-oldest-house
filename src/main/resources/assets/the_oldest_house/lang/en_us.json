@@ -1940,5 +1940,7 @@
   "block.the_oldest_house.swimmer_pool_lamp": "Pool Light",
   "block.the_oldest_house.swimmer_pool_lamp_off": "Pool Light",
   "subtitles.the_oldest_house.ward.bed_call": "A bed calls",
-  "subtitles.the_oldest_house.ward.tube": "A carrier arrives"
+  "subtitles.the_oldest_house.ward.tube": "A carrier arrives",
+  "item.the_oldest_house.pell_ball": "Tennis Ball",
+  "subtitles.the_oldest_house.pell.ball": "A ball bounces"
 }

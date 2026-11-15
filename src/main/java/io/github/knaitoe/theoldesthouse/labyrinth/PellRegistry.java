@@ -98,6 +98,8 @@ public final class PellRegistry {
     public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> PLATES=ITEMS.register("pell_plates",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(4))),
         BOWL=ITEMS.register("pell_bowl",()->new PellBowlItem(new net.minecraft.world.item.Item.Properties().stacksTo(1))),
         BOWL_WATER=ITEMS.register("pell_bowl_water",()->new PellBowlItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.601: the tennis ball from beside the kennel, thrown (PellBallItem, PellCatch). Drawn by tools/draw_pell_people.py. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> BALL=ITEMS.register("pell_ball",()->new PellBallItem(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     /** 0.4.525: the house's sounds, made by tools/generate_pell_audio.py: Gail's car leaving (PellVisit); and from 0.4.527 the home
      *  tape on the television, the hairbrush at bedtime, and a door's lock turning when June locks up; from 0.4.530 the brush on the
      *  line at night and the tin's lid (PellNight). */
@@ -120,7 +122,9 @@ public final class PellRegistry {
         SINGING=sound("pell.singing"),HUM=sound("pell.hum"),HISS=sound("pell.hiss"),
         // 0.4.570, their own small things while the house waits (PellIdle; docs/PELL_HOUSE_NOTES_0_4_570.md): a spoon round a saucepan,
         // the tap run, a cloth over the table, the kettle coming to the boil, and water dripping off Callum.
-        STIR=sound("pell.stir"),TAP=sound("pell.tap"),WIPE=sound("pell.wipe"),KETTLE=sound("pell.kettle"),DRIP=sound("pell.drip");
+        STIR=sound("pell.stir"),TAP=sound("pell.tap"),WIPE=sound("pell.wipe"),KETTLE=sound("pell.kettle"),DRIP=sound("pell.drip"),
+        // 0.4.601: a tennis ball coming down on a floor, or into a pair of hands (docs/PELL_HOUSE_NOTES_0_4_601.md).
+        BALL_BOUNCE=sound("pell.ball");
     private PellRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);SOUNDS.register(bus);}
 }

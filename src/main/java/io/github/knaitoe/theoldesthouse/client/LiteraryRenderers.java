@@ -477,6 +477,16 @@ public final class LiteraryRenderers {
                     float t=net.minecraft.util.Mth.sin(age*.42F)*.14F;
                     rightArm.xRot=-.62F+t*.5F;leftArm.xRot=-.62F-t*.5F;rightArm.yRot=-.52F;leftArm.yRot=.52F;rightArm.zRot=t;leftArm.zRot=t;
                 }
+                // 0.4.601: Tilly on a reader's arm (PellArm): her left hand up and out at it, the cane down ahead of her in her right
+                // as she holds it standing (CANE).
+                case PellPeople.ARM->{
+                    leftArm.xRot=-.95F+net.minecraft.util.Mth.sin(age*.09F)*.03F;leftArm.yRot=.34F;leftArm.zRot=0;
+                    rightArm.xRot=-.32F;rightArm.yRot=-.08F;rightArm.zRot=.04F;
+                }
+                // 0.4.601, catch (PellCatch): Callum's hands out in front of him, a little apart, for a ball coming or one in them;
+                // and his arms out straight after it, thrown.
+                case PellPeople.CATCH->{rightArm.xRot=leftArm.xRot=-1.05F;rightArm.yRot=-.26F;leftArm.yRot=.26F;rightArm.zRot=leftArm.zRot=0;}
+                case PellPeople.THROW->{rightArm.xRot=leftArm.xRot=-1.7F;rightArm.yRot=-.1F;leftArm.yRot=.1F;rightArm.zRot=leftArm.zRot=0;}
                 default->{}
             }
             hat.copyFrom(head);

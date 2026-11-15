@@ -6330,5 +6330,22 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.ward.tube"
+  },
+  "pell.ball": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:pell/ball_1",
+        "attenuation_distance": 14
+      },
+      {
+        "name": "the_oldest_house:pell/ball_2",
+        "attenuation_distance": 14
+      },
+      {
+        "name": "the_oldest_house:pell/ball_3",
+        "attenuation_distance": 14
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.pell.ball"
   }
 }
