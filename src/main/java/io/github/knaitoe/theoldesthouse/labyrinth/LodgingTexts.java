@@ -60,6 +60,11 @@ public final class LodgingTexts {
         String who=name==null||name.isEmpty()?"somebody else's":name+"'s";
         return awake?"Its eyes are open. It has "+who+" face, and it is not looking at anybody.":"Asleep under the blanket, a body with "+who+" face. Its eyes move under the lids.";
     }
+    // 0.4.605: N3. DANIEL_SHOUTS is the script's; the rest are new here.
+    public static final String DANIEL_SHOUTS="Is that him? Is that him out there?",
+        HATCH_LOOK="Through the hatch: a bare room, a cot, a chair turned to the back wall, and a man held standing in a doorcase there.",
+        THROUGH_DOOR="Close to the door, low. Somebody on the other side stops moving.",
+        STRAPS="Each strap goes through an iron loop and is buckled, and each buckle is locked. There is a keyhole in each.";
     public static final String VERA_WORKS="Vera folds a cloth into a square and sets it on the others.";
     public static final String MAN_IN_FRAME="The man in the frame";
     public static final String[] DANIEL_LISTEN={"You're not her. You're staying here? Listen to me.","There's a key for these. She keeps it, or the woman with her does.",

@@ -533,4 +533,78 @@ public final class LodgingHouseTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="lodging_rooms_given") public static void roomsGivenDone(ServerLevel l){done();}
+
+    /**
+     * 0.4.605, Daniel through the wall (docs/ONES_INSIDE_DANIEL_0_4_605.md). From the back passage he is not spoken to through his shut
+     * door with a hand on him, but is crouched at it; through the food hatch, once it is open, from the passage; and in his room. Dan's
+     * voice in the hall brings him against the frame, heel to its back and shouting, once a minute, and a reader near enough hears it.
+     * The straps are locked.
+     */
+    @GameTest(template="empty",batch="lodging_daniel",timeoutTicks=3000)
+    public static void danielIsSpokenToThroughTheHatchAndTheDoorAndHammersWhenDanSpeaks(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_daniel_a",P);var q=f.player("lodging_daniel_b",P);var l=f.level(P);var b=f.base(P);
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        final long[] at={0};
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                var daniel=who[LodgingPeople.DANIEL];
+                // At his shut door, standing: a hand on him through it says nothing.
+                p.teleportTo(l,b.getX()-7.5,b.getY(),b.getZ()-14.5,180,0);p.setShiftKeyDown(false);
+                LodgingPeople.talk(p,daniel,own(p));
+                h.assertFalse(Talk.lines(p).contains(LodgingTexts.MAN_IN_FRAME+": "+LodgingTexts.DANIEL_LISTEN[0]),"nobody speaks to him through a shut door with a hand on him: "+Talk.lines(p));
+                // Crouched at it, a hand on the door speaks through it, and the bolt stays shot.
+                p.setShiftKeyDown(true);
+                h.assertTrue(LodgingHouse.click(p,b,LodgingSite.DANIEL_DOOR,own(p)),"the door answers a crouched hand");
+                has(h,p,LodgingTexts.MAN_IN_FRAME+": "+LodgingTexts.DANIEL_LISTEN[0]);
+                h.assertTrue(LodgingBlock.bolted(l.getBlockState(b.offset(LodgingSite.DANIEL_DOOR))),"speaking through the door leaves its bolt shot");
+                h.assertTrue(own(p).getBoolean(LodgingDaniel.THROUGH_DOOR),"the reader's record has the door");
+                Talk.close(p);p.setShiftKeyDown(false);
+                // The food hatch, from the west passage: a hand opens it, the next speaks to him through it, a crouched one shuts it.
+                p.teleportTo(l,b.getX()-14.5,b.getY(),b.getZ()-21.5,-90,0);
+                h.assertFalse(LodgingHouse.hatchOpen(l,b,LodgingSite.FOOD_HATCH),"the hatch starts shut");
+                LodgingHouse.click(p,b,LodgingSite.FOOD_HATCH,own(p));
+                h.assertTrue(LodgingHouse.hatchOpen(l,b,LodgingSite.FOOD_HATCH),"a hand opens the hatch");
+                LodgingHouse.click(p,b,LodgingSite.FOOD_HATCH,own(p));
+                h.assertTrue(LodgingHouse.hatchOpen(l,b,LodgingSite.FOOD_HATCH)&&!Talk.lines(p).isEmpty()&&own(p).getBoolean(LodgingDaniel.THROUGH_HATCH),"the next speaks to him through it: "+Talk.lines(p));
+                Talk.close(p);p.setShiftKeyDown(true);
+                LodgingHouse.click(p,b,LodgingSite.FOOD_HATCH,own(p));
+                h.assertFalse(LodgingHouse.hatchOpen(l,b,LodgingSite.FOOD_HATCH),"a crouched hand shuts it");
+                p.setShiftKeyDown(false);
+                // Dan speaks in the hall: Daniel strains in the frame and shouts; a reader in the back passage hears it.
+                q.teleportTo(l,b.getX()-8.5,b.getY(),b.getZ()-14.5,180,0);
+                var dan=who[LodgingPeople.DAN];p.teleportTo(l,dan.getX()+1.2,b.getY(),dan.getZ(),90,0);
+                h.assertFalse(LodgingDaniel.straining(b),"he hangs in the frame before Dan has spoken");
+                LodgingPeople.talk(p,dan,own(p));
+                h.assertTrue(LodgingDaniel.straining(b)&&daniel.gesture()==LodgingPeople.STRAIN,"Dan's voice brings Daniel against the frame: gesture "+daniel.gesture());
+                h.assertTrue(own(q).getBoolean(LodgingDaniel.HEARD_HAMMER),"the reader in the back passage hears it");
+                at[0]=l.getGameTime();Talk.close(p);
+            })
+            .thenWaitUntil(()->h.assertTrue(l.getGameTime()>=at[0]+LodgingDaniel.HAMMER+2,"waiting for him to stop"))
+            .thenExecute(()->{
+                var daniel=who[LodgingPeople.DANIEL];
+                h.assertTrue(!LodgingDaniel.straining(b)&&daniel.gesture()==LodgingPeople.HELD,"he hangs in the frame again: "+daniel.gesture());
+                // Dan again, straight after: not again for a minute.
+                var dan=who[LodgingPeople.DAN];
+                LodgingPeople.talk(p,dan,own(p));if(!Talk.lines(p).isEmpty())Talk.close(p);
+                h.assertFalse(LodgingDaniel.straining(b),"not again inside the minute");
+                // In his room: the bolt drawn, a hand on him speaks; the straps are locked.
+                p.setShiftKeyDown(false);p.teleportTo(l,b.getX()-7.5,b.getY(),b.getZ()-14.5,180,0);
+                LodgingHouse.click(p,b,LodgingSite.DANIEL_DOOR,own(p));
+                h.assertFalse(LodgingBlock.bolted(l.getBlockState(b.offset(LodgingSite.DANIEL_DOOR))),"a standing hand draws the bolt");
+                p.teleportTo(l,b.getX()-7.5,b.getY(),b.getZ()-26.5,180,0);
+                LodgingPeople.talk(p,daniel,own(p));
+                h.assertFalse(Talk.lines(p).isEmpty(),"in his room a hand on him speaks to him");Talk.close(p);
+                BlockPos strap=null;
+                for(int dx=-1;dx<=1;dx+=2)for(int dy=0;dy<=2;dy++){var c=LodgingSite.DANIEL_FRAME.offset(dx,dy,0);var st=l.getBlockState(b.offset(c));
+                    if(LodgingBlock.is(st,LodgingBlock.Kind.FRAME_SIDE)&&(st.getValue(LodgingBlock.STAGE)&4)!=0)strap=c;}
+                h.assertTrue(strap!=null,"his frame has its straps");
+                LodgingHouse.click(p,b,strap,own(p));
+                h.assertTrue(own(p).getBoolean(LodgingDaniel.FELT_STRAPS),"a hand on the straps is told they are locked");
+                h.assertTrue(daniel.position().distanceTo(LodgingPeople.world(b,LodgingPeople.SPOTS[LodgingPeople.DANIEL]))<.05,"and he is still held in the frame");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_daniel") public static void danielDone(ServerLevel l){done();}
 }

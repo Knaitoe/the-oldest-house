@@ -237,7 +237,7 @@ public final class LiteraryRenderers {
          * behind its head to the post, a palm flat on a hatch with the head tipped to it, fingers hooked round a door's frame.
          */
         private void lodging(int gesture,float age,boolean speaking){
-            final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8;
+            final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8,STRAIN=9;
             float fret=net.minecraft.util.Mth.sin(age*.11F);
             switch(gesture){
                 case WAIT->{rightArm.xRot=-.62F+fret*.03F;rightArm.yRot=-.5F;rightArm.zRot=0;leftArm.xRot=-.62F-fret*.03F;leftArm.yRot=.5F;leftArm.zRot=0;}
@@ -250,6 +250,14 @@ public final class LiteraryRenderers {
                     bentArm.xRot=0;bentArm.yRot=0;bentArm.zRot=.5F+pull;forearm.xRot=.75F;forearm.yRot=0;forearm.zRot=-3.4F;
                     bentArmLeft.xRot=0;bentArmLeft.yRot=0;bentArmLeft.zRot=-.5F-pull;forearmLeft.xRot=.75F;forearmLeft.yRot=0;forearmLeft.zRot=3.4F;
                     if(!speaking)head.xRot+=.32F;}
+                case STRAIN->{
+                    // 0.4.605: against the straps, the wrists where they are held; the body jerked forward off the plaster and the head up,
+                    // shouting; a heel driven back against the frame on each blow.
+                    rightArm.visible=false;leftArm.visible=false;bentArm.visible=true;bentArmLeft.visible=true;
+                    float jerk=Math.abs(net.minecraft.util.Mth.sin(age*.52F));float pull=jerk*.14F;
+                    bentArm.xRot=-.12F*jerk;bentArm.yRot=0;bentArm.zRot=.42F+pull;forearm.xRot=.75F;forearm.yRot=0;forearm.zRot=-3.4F+pull*.5F;
+                    bentArmLeft.xRot=-.12F*jerk;bentArmLeft.yRot=0;bentArmLeft.zRot=-.42F-pull;forearmLeft.xRot=.75F;forearmLeft.yRot=0;forearmLeft.zRot=3.4F-pull*.5F;
+                    body.xRot+=.07F*jerk;head.xRot-=.28F+.06F*jerk;rightLeg.xRot=.42F*jerk;leftLeg.xRot=-.05F*jerk;}
                 case TIED->{rightArm.xRot=-3.3F;rightArm.yRot=0;rightArm.zRot=-.14F;leftArm.xRot=-3.3F;leftArm.yRot=0;leftArm.zRot=.14F;head.xRot+=.4F;}
                 case HATCH->{rightArm.xRot=-1.75F;rightArm.yRot=0;rightArm.zRot=0;head.zRot=.2F;}
                 case FRAME->{leftArm.xRot=-1.4F;leftArm.yRot=.55F;leftArm.zRot=0;head.xRot+=net.minecraft.util.Mth.sin(age*.25F)*.05F;}
