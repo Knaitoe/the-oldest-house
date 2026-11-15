@@ -627,92 +627,6 @@
           8
         ],
         "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "north": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.03,
-            7.970000000000001,
-            7.970000000000001
-          ]
-        },
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            7.97,
-            4.03,
-            7.8124,
-            7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        8.25
-      ],
-      "to": [
-        15,
-        1.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "south": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.03,
-            7.970000000000001,
-            7.970000000000001
-          ]
-        },
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            4.1876,
-            4.03,
-            4.03,
-            7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        7.73
-      ],
-      "to": [
-        15,
-        1.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
         "angle": 45,
         "rescale": false
       },
@@ -741,22 +655,22 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         1,
-        6,
+        1,
         8.25
       ],
       "to": [
         15,
-        6.35,
+        1.35,
         8.27
       ],
       "rotation": {
         "origin": [
           8,
-          6.175,
+          1.175,
           8
         ],
         "axis": "z",
-        "angle": -45,
+        "angle": 45,
         "rescale": false
       },
       "faces": {
@@ -769,15 +683,6 @@
             7.970000000000001
           ]
         },
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            4.1876,
-            4.03,
-            4.03,
-            7.97
-          ]
-        },
         "west": {
           "texture": "#atlas",
           "uv": [
@@ -794,69 +699,17 @@
       "from": [
         1,
         6,
-        7.73
-      ],
-      "to": [
-        15,
-        6.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "north": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.03,
-            7.970000000000001,
-            7.970000000000001
-          ]
-        },
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            7.97,
-            4.03,
-            7.8124,
-            7.97
-          ]
-        },
-        "west": {
-          "texture": "#atlas",
-          "uv": [
-            4.1876,
-            4.03,
-            4.03,
-            7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11,
         7.71
       ],
       "to": [
         15,
-        11.35,
+        6.35,
         7.75
       ],
       "rotation": {
         "origin": [
           8,
-          11.175,
+          6.175,
           8
         ],
         "axis": "z",
@@ -871,6 +724,15 @@
             4.03,
             7.970000000000001,
             7.970000000000001
+          ]
+        },
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            7.97,
+            4.03,
+            7.6548,
+            7.97
           ]
         },
         "west": {
@@ -888,18 +750,18 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         1,
-        11,
+        6,
         8.25
       ],
       "to": [
         15,
-        11.35,
-        8.27
+        6.35,
+        8.29
       ],
       "rotation": {
         "origin": [
           8,
-          11.175,
+          6.175,
           8
         ],
         "axis": "z",
@@ -916,12 +778,21 @@
             7.970000000000001
           ]
         },
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            4.3452,
+            4.03,
+            4.03,
+            7.97
+          ]
+        },
         "west": {
           "texture": "#atlas",
           "uv": [
             7.97,
             4.03,
-            7.8124,
+            7.6548,
             7.97
           ]
         }
@@ -931,18 +802,18 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         1,
-        11,
+        6,
         7.69
       ],
       "to": [
         15,
-        11.35,
+        6.35,
         7.75
       ],
       "rotation": {
         "origin": [
           8,
-          11.175,
+          6.175,
           8
         ],
         "axis": "z",
@@ -967,6 +838,110 @@
             7.4972,
             7.97
           ]
+        },
+        "west": {
+          "texture": "#atlas",
+          "uv": [
+            4.5028,
+            4.03,
+            4.03,
+            7.97
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6,
+        8.25
+      ],
+      "to": [
+        15,
+        6.35,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "south": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.03,
+            7.970000000000001,
+            7.970000000000001
+          ]
+        },
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            4.5028,
+            4.03,
+            4.03,
+            7.97
+          ]
+        },
+        "west": {
+          "texture": "#atlas",
+          "uv": [
+            7.97,
+            4.03,
+            7.4972,
+            7.97
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11,
+        7.67
+      ],
+      "to": [
+        15,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.03,
+            7.970000000000001,
+            7.970000000000001
+          ]
+        },
+        "west": {
+          "texture": "#atlas",
+          "uv": [
+            4.6604,
+            4.03,
+            4.03,
+            7.97
+          ]
         }
       }
     },
@@ -980,7 +955,93 @@
       "to": [
         15,
         11.35,
-        8.29
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "south": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.03,
+            7.970000000000001,
+            7.970000000000001
+          ]
+        },
+        "west": {
+          "texture": "#atlas",
+          "uv": [
+            7.97,
+            4.03,
+            7.3396,
+            7.97
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11,
+        7.65
+      ],
+      "to": [
+        15,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "north": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.03,
+            7.970000000000001,
+            7.970000000000001
+          ]
+        },
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            7.97,
+            4.03,
+            7.182,
+            7.97
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11,
+        8.25
+      ],
+      "to": [
+        15,
+        11.35,
+        8.35
       ],
       "rotation": {
         "origin": [
@@ -1005,529 +1066,10 @@
         "east": {
           "texture": "#atlas",
           "uv": [
-            4.3452,
+            4.818,
             4.03,
             4.03,
             7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        7.71
-      ],
-      "to": [
-        15,
-        1.35,
-        7.73
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "north": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.03,
-            7.970000000000001,
-            7.970000000000001
-          ]
-        },
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            7.8124,
-            4.03,
-            7.97,
-            7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        7.73
-      ],
-      "to": [
-        1,
-        1.24607,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "west": {
-          "texture": "#atlas",
-          "uv": [
-            4.1876,
-            5.19995,
-            4.03,
-            7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1.10393,
-        1.35,
-        7.73
-      ],
-      "to": [
-        4.28947,
-        1.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.05925,
-            4.1876,
-            4.95575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        1.35,
-        7.73
-      ],
-      "to": [
-        7.825,
-        1.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            4.1876,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        1.35,
-        7.73
-      ],
-      "to": [
-        15,
-        1.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.1876,
-            7.97,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        1,
-        7.73
-      ],
-      "to": [
-        15,
-        1,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            7.97,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        1,
-        7.73
-      ],
-      "to": [
-        7.825,
-        1,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            7.97,
-            5.95075,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        7.73
-      ],
-      "to": [
-        4.28947,
-        1,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            7.97,
-            4.95575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        8.25
-      ],
-      "to": [
-        1,
-        1.24607,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "west": {
-          "texture": "#atlas",
-          "uv": [
-            7.97,
-            5.19995,
-            7.8124,
-            7.97
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        1.35,
-        8.25
-      ],
-      "to": [
-        15,
-        1.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            7.97,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        1.35,
-        8.25
-      ],
-      "to": [
-        7.825,
-        1.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            7.97,
-            5.95075,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1.10393,
-        1.35,
-        8.25
-      ],
-      "to": [
-        4.28947,
-        1.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.05925,
-            7.97,
-            4.95575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        8.25
-      ],
-      "to": [
-        4.28947,
-        1,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.1876,
-            4.95575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        1,
-        8.25
-      ],
-      "to": [
-        7.825,
-        1,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            4.1876,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        1,
-        8.25
-      ],
-      "to": [
-        15,
-        1,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.1876,
-            7.97,
-            4.03
           ]
         }
       }
@@ -1773,1510 +1315,14 @@
     {
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
-        11.71053,
-        6.35,
+        15,
+        1,
         8.25
       ],
       "to": [
         15,
-        6.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            7.97,
-            7.97,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        6.35,
-        8.25
-      ],
-      "to": [
-        11.36053,
-        6.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            6.94575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        6.35,
-        8.25
-      ],
-      "to": [
-        7.825,
-        6.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            7.97,
-            5.95075,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        6.35,
-        8.25
-      ],
-      "to": [
-        4.28947,
-        6.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            7.97,
-            4.95575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        6,
-        8.25
-      ],
-      "to": [
-        4.28947,
-        6,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.1876,
-            4.95575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        6,
-        8.25
-      ],
-      "to": [
-        7.825,
-        6,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            4.1876,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        6,
-        8.25
-      ],
-      "to": [
-        11.36053,
-        6,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.1876,
-            6.94575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        6,
-        8.25
-      ],
-      "to": [
-        15,
-        6,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            4.1876,
-            7.97,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        6.35,
-        7.73
-      ],
-      "to": [
-        4.28947,
-        6.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.1876,
-            4.95575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        6.35,
-        7.73
-      ],
-      "to": [
-        7.825,
-        6.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            4.1876,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        6.35,
-        7.73
-      ],
-      "to": [
-        11.36053,
-        6.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.1876,
-            6.94575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        6.35,
-        7.73
-      ],
-      "to": [
-        15,
-        6.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            4.1876,
-            7.97,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        6,
-        7.73
-      ],
-      "to": [
-        15,
-        6,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            7.97,
-            7.97,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        6,
-        7.73
-      ],
-      "to": [
-        11.36053,
-        6,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            6.94575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        6,
-        7.73
-      ],
-      "to": [
-        7.825,
-        6,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            7.97,
-            5.95075,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        6,
-        7.73
-      ],
-      "to": [
-        4.28947,
-        6,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          6.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            7.97,
-            4.95575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        15,
-        11.10393,
-        7.71
-      ],
-      "to": [
-        15,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            7.97,
-            4.03,
-            7.6548,
-            6.80005
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11.35,
-        7.71
-      ],
-      "to": [
-        7.825,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.3452,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11.35,
-        7.71
-      ],
-      "to": [
-        11.36053,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.3452,
-            6.94575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        11.35,
-        7.71
-      ],
-      "to": [
-        15,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            4.3452,
-            7.97,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        11,
-        7.71
-      ],
-      "to": [
-        14.89607,
-        11,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            7.97,
-            7.94075,
-            7.6548
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11,
-        7.71
-      ],
-      "to": [
-        11.36053,
-        11,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            6.94575,
-            7.6548
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11,
-        7.71
-      ],
-      "to": [
-        7.825,
-        11,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            7.97,
-            5.95075,
-            7.6548
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        15,
-        11.10393,
-        8.25
-      ],
-      "to": [
-        15,
-        11.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "east": {
-          "texture": "#atlas",
-          "uv": [
-            4.1876,
-            4.03,
-            4.03,
-            6.80005
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        11.35,
-        8.25
-      ],
-      "to": [
-        15,
-        11.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            7.97,
-            7.97,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11.35,
-        8.25
-      ],
-      "to": [
-        11.36053,
-        11.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            6.94575,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11.35,
-        8.25
-      ],
-      "to": [
-        7.825,
-        11.35,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            7.97,
-            5.95075,
-            7.8124
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11,
-        8.25
-      ],
-      "to": [
-        7.825,
-        11,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.1876,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11,
-        8.25
-      ],
-      "to": [
-        11.36053,
-        11,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.1876,
-            6.94575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        11.71053,
-        11,
-        8.25
-      ],
-      "to": [
-        14.89607,
-        11,
-        8.27
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            7.04425,
-            4.1876,
-            7.94075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11.10393,
-        7.69
-      ],
-      "to": [
-        1,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "west": {
-          "texture": "#atlas",
-          "uv": [
-            4.5028,
-            4.03,
-            4.03,
-            6.80005
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11.35,
-        7.69
-      ],
-      "to": [
-        4.28947,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            4.5028,
-            4.95575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        11.35,
-        7.69
-      ],
-      "to": [
-        7.825,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            4.5028,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11.35,
-        7.69
-      ],
-      "to": [
-        15,
-        11.35,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.5028,
-            7.97,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11,
-        7.69
-      ],
-      "to": [
-        15,
-        11,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            7.97,
-            7.4972
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        11,
-        7.69
-      ],
-      "to": [
-        7.825,
-        11,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            7.97,
-            5.95075,
-            7.4972
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1.10393,
-        11,
-        7.69
-      ],
-      "to": [
-        4.28947,
-        11,
-        7.75
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.05925,
-            7.97,
-            4.95575,
-            7.4972
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11.10393,
-        8.25
-      ],
-      "to": [
-        1,
-        11.35,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "west": {
-          "texture": "#atlas",
-          "uv": [
-            7.97,
-            4.03,
-            7.6548,
-            6.80005
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11.35,
-        8.25
-      ],
-      "to": [
-        15,
-        11.35,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.97,
-            7.97,
-            7.6548
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        11.35,
-        8.25
-      ],
-      "to": [
-        7.825,
-        11.35,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            7.97,
-            5.95075,
-            7.6548
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        11.35,
-        8.25
-      ],
-      "to": [
-        4.28947,
-        11.35,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "up": {
-          "texture": "#atlas",
-          "uv": [
-            4.03,
-            7.97,
-            4.95575,
-            7.6548
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1.10393,
-        11,
-        8.25
-      ],
-      "to": [
-        4.28947,
-        11,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            4.05925,
-            4.3452,
-            4.95575,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        4.63947,
-        11,
-        8.25
-      ],
-      "to": [
-        7.825,
-        11,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            5.05425,
-            4.3452,
-            5.95075,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        11,
-        8.25
-      ],
-      "to": [
-        15,
-        11,
-        8.29
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          11.175,
-          8
-        ],
-        "axis": "z",
-        "angle": 45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            4.3452,
-            7.97,
-            4.03
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1,
-        1,
-        7.71
-      ],
-      "to": [
-        1,
         1.24607,
-        7.73
+        8.27
       ],
       "rotation": {
         "origin": [
@@ -3285,17 +1331,1989 @@
           8
         ],
         "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            4.1876,
+            5.19995,
+            4.03,
+            7.97
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        1.35,
+        8.25
+      ],
+      "to": [
+        14.89607,
+        1.35,
+        8.27
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          1.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.94075,
+            7.8124
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        1.35,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        1.35,
+        8.27
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          1.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.8124
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        1.35,
+        8.25
+      ],
+      "to": [
+        7.825,
+        1.35,
+        8.27
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          1.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            5.95075,
+            7.8124
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        1,
+        8.25
+      ],
+      "to": [
+        7.825,
+        1,
+        8.27
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          1.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.1876,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        1,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        1,
+        8.27
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          1.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.1876,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        1,
+        8.25
+      ],
+      "to": [
+        15,
+        1,
+        8.27
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          1.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.1876,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6.35,
+        7.71
+      ],
+      "to": [
+        4.28947,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
         "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.3452,
+            4.95575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6.35,
+        7.71
+      ],
+      "to": [
+        7.825,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            4.3452,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6.35,
+        7.71
+      ],
+      "to": [
+        11.36053,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.3452,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6.35,
+        7.71
+      ],
+      "to": [
+        15,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.3452,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6,
+        7.71
+      ],
+      "to": [
+        15,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.97,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6,
+        7.71
+      ],
+      "to": [
+        11.36053,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6,
+        7.71
+      ],
+      "to": [
+        7.825,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            7.97,
+            5.95075,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6,
+        7.71
+      ],
+      "to": [
+        4.28947,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            4.95575,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6.35,
+        8.25
+      ],
+      "to": [
+        15,
+        6.35,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.97,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6.35,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        6.35,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6.35,
+        8.25
+      ],
+      "to": [
+        7.825,
+        6.35,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            7.97,
+            5.95075,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6.35,
+        8.25
+      ],
+      "to": [
+        4.28947,
+        6.35,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            4.95575,
+            7.6548
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6,
+        8.25
+      ],
+      "to": [
+        4.28947,
+        6,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.3452,
+            4.95575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6,
+        8.25
+      ],
+      "to": [
+        7.825,
+        6,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            4.3452,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        6,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.3452,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6,
+        8.25
+      ],
+      "to": [
+        15,
+        6,
+        8.29
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.3452,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6.35,
+        7.69
+      ],
+      "to": [
+        4.28947,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.5028,
+            4.95575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6.35,
+        7.69
+      ],
+      "to": [
+        7.825,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            4.5028,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6.35,
+        7.69
+      ],
+      "to": [
+        11.36053,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.5028,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6.35,
+        7.69
+      ],
+      "to": [
+        15,
+        6.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.5028,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6,
+        7.69
+      ],
+      "to": [
+        15,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.97,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6,
+        7.69
+      ],
+      "to": [
+        11.36053,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6,
+        7.69
+      ],
+      "to": [
+        7.825,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            7.97,
+            5.95075,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6,
+        7.69
+      ],
+      "to": [
+        4.28947,
+        6,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            4.95575,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6.35,
+        8.25
+      ],
+      "to": [
+        15,
+        6.35,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.97,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6.35,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        6.35,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6.35,
+        8.25
+      ],
+      "to": [
+        7.825,
+        6.35,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            7.97,
+            5.95075,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6.35,
+        8.25
+      ],
+      "to": [
+        4.28947,
+        6.35,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            4.95575,
+            7.4972
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        6,
+        8.25
+      ],
+      "to": [
+        4.28947,
+        6,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.5028,
+            4.95575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        6,
+        8.25
+      ],
+      "to": [
+        7.825,
+        6,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            4.5028,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        6,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        6,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.5028,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        6,
+        8.25
+      ],
+      "to": [
+        15,
+        6,
+        8.31
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          6.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.5028,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        11.10393,
+        7.67
+      ],
+      "to": [
+        15,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            7.97,
+            4.03,
+            7.3396,
+            6.80005
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11.35,
+        7.67
+      ],
+      "to": [
+        7.825,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.6604,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11.35,
+        7.67
+      ],
+      "to": [
+        11.36053,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.6604,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        11.35,
+        7.67
+      ],
+      "to": [
+        15,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.6604,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        11,
+        7.67
+      ],
+      "to": [
+        14.89607,
+        11,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.94075,
+            7.3396
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11,
+        7.67
+      ],
+      "to": [
+        11.36053,
+        11,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.3396
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11,
+        7.67
+      ],
+      "to": [
+        7.825,
+        11,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            5.95075,
+            7.3396
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        15,
+        11.10393,
+        8.25
+      ],
+      "to": [
+        15,
+        11.35,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "east": {
+          "texture": "#atlas",
+          "uv": [
+            4.6604,
+            4.03,
+            4.03,
+            6.80005
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        11.35,
+        8.25
+      ],
+      "to": [
+        15,
+        11.35,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            7.97,
+            7.97,
+            7.3396
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11.35,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        11.35,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            6.94575,
+            7.3396
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11.35,
+        8.25
+      ],
+      "to": [
+        7.825,
+        11.35,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            5.95075,
+            7.3396
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11,
+        8.25
+      ],
+      "to": [
+        7.825,
+        11,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.6604,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11,
+        8.25
+      ],
+      "to": [
+        11.36053,
+        11,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.6604,
+            6.94575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        11.71053,
+        11,
+        8.25
+      ],
+      "to": [
+        14.89607,
+        11,
+        8.33
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            7.04425,
+            4.6604,
+            7.94075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11.10393,
+        7.65
+      ],
+      "to": [
+        1,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
         "rescale": false
       },
       "faces": {
         "west": {
           "texture": "#atlas",
           "uv": [
+            4.818,
             4.03,
-            5.19995,
-            4.1876,
-            7.97
+            4.03,
+            6.80005
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1,
+        11.35,
+        7.65
+      ],
+      "to": [
+        4.28947,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            4.818,
+            4.95575,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        11.35,
+        7.65
+      ],
+      "to": [
+        7.825,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            4.818,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11.35,
+        7.65
+      ],
+      "to": [
+        15,
+        11.35,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.818,
+            7.97,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11,
+        7.65
+      ],
+      "to": [
+        15,
+        11,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            7.97,
+            7.97,
+            7.182
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        11,
+        7.65
+      ],
+      "to": [
+        7.825,
+        11,
+        7.75
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            7.97,
+            5.95075,
+            7.182
           ]
         }
       }
@@ -3304,32 +3322,32 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         1.10393,
-        1.35,
-        7.71
+        11,
+        7.65
       ],
       "to": [
         4.28947,
-        1.35,
-        7.73
+        11,
+        7.75
       ],
       "rotation": {
         "origin": [
           8,
-          1.175,
+          11.175,
           8
         ],
         "axis": "z",
-        "angle": -45,
+        "angle": 45,
         "rescale": false
       },
       "faces": {
-        "up": {
+        "down": {
           "texture": "#atlas",
           "uv": [
             4.05925,
-            4.03,
+            7.97,
             4.95575,
-            4.1876
+            7.182
           ]
         }
       }
@@ -3337,33 +3355,33 @@
     {
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
-        4.63947,
-        1.35,
-        7.71
+        1,
+        11.10393,
+        8.25
       ],
       "to": [
-        7.825,
-        1.35,
-        7.73
+        1,
+        11.35,
+        8.35
       ],
       "rotation": {
         "origin": [
           8,
-          1.175,
+          11.175,
           8
         ],
         "axis": "z",
-        "angle": -45,
+        "angle": 45,
         "rescale": false
       },
       "faces": {
-        "up": {
+        "west": {
           "texture": "#atlas",
           "uv": [
-            5.05425,
+            7.97,
             4.03,
-            5.95075,
-            4.1876
+            7.182,
+            6.80005
           ]
         }
       }
@@ -3372,22 +3390,22 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         8.175,
-        1.35,
-        7.71
+        11.35,
+        8.25
       ],
       "to": [
         15,
-        1.35,
-        7.73
+        11.35,
+        8.35
       ],
       "rotation": {
         "origin": [
           8,
-          1.175,
+          11.175,
           8
         ],
         "axis": "z",
-        "angle": -45,
+        "angle": 45,
         "rescale": false
       },
       "faces": {
@@ -3395,43 +3413,9 @@
           "texture": "#atlas",
           "uv": [
             6.04925,
-            4.03,
             7.97,
-            4.1876
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        8.175,
-        1,
-        7.71
-      ],
-      "to": [
-        15,
-        1,
-        7.73
-      ],
-      "rotation": {
-        "origin": [
-          8,
-          1.175,
-          8
-        ],
-        "axis": "z",
-        "angle": -45,
-        "rescale": false
-      },
-      "faces": {
-        "down": {
-          "texture": "#atlas",
-          "uv": [
-            6.04925,
-            7.8124,
             7.97,
-            7.97
+            7.182
           ]
         }
       }
@@ -3440,32 +3424,32 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         4.63947,
-        1,
-        7.71
+        11.35,
+        8.25
       ],
       "to": [
         7.825,
-        1,
-        7.73
+        11.35,
+        8.35
       ],
       "rotation": {
         "origin": [
           8,
-          1.175,
+          11.175,
           8
         ],
         "axis": "z",
-        "angle": -45,
+        "angle": 45,
         "rescale": false
       },
       "faces": {
-        "down": {
+        "up": {
           "texture": "#atlas",
           "uv": [
             5.05425,
-            7.8124,
+            7.97,
             5.95075,
-            7.97
+            7.182
           ]
         }
       }
@@ -3474,32 +3458,134 @@
       "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
       "from": [
         1,
-        1,
-        7.71
+        11.35,
+        8.25
       ],
       "to": [
         4.28947,
-        1,
-        7.73
+        11.35,
+        8.35
       ],
       "rotation": {
         "origin": [
           8,
-          1.175,
+          11.175,
           8
         ],
         "axis": "z",
-        "angle": -45,
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "up": {
+          "texture": "#atlas",
+          "uv": [
+            4.03,
+            7.97,
+            4.95575,
+            7.182
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        1.10393,
+        11,
+        8.25
+      ],
+      "to": [
+        4.28947,
+        11,
+        8.35
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
         "rescale": false
       },
       "faces": {
         "down": {
           "texture": "#atlas",
           "uv": [
-            4.03,
-            7.8124,
+            4.05925,
+            4.818,
             4.95575,
-            7.97
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        4.63947,
+        11,
+        8.25
+      ],
+      "to": [
+        7.825,
+        11,
+        8.35
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            5.05425,
+            4.818,
+            5.95075,
+            4.03
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.175,
+        11,
+        8.25
+      ],
+      "to": [
+        15,
+        11,
+        8.35
+      ],
+      "rotation": {
+        "origin": [
+          8,
+          11.175,
+          8
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      },
+      "faces": {
+        "down": {
+          "texture": "#atlas",
+          "uv": [
+            6.04925,
+            4.818,
+            7.97,
+            4.03
           ]
         }
       }

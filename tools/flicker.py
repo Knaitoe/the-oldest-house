@@ -43,13 +43,36 @@ HAIR = 2e-5
 REACH = .05
 # What the cure writes on each face it lays, so that it can be told from the pieces a model was drawn with.
 LAID = 'laid over the face behind it so the two do not flicker (tools/flicker.py)'
+# The cure has to come out the same under every Python and on every machine, or the workflow fails a model this tool wrote
+# itself. It did once, on the film set's softbox: three slats of one size cross in one plane, the tool told which was the
+# larger by the last digit of a sum, and Python 3.12 adds floats up a little more exactly than 3.11 does. So a face's size is
+# read off its piece's own sides (_area), where two of one size are the same number; every sum is fsum, which rounds once and
+# the same everywhere; the five turns the game allows are worked from square roots, which every machine rounds alike, and not
+# from the C library's sine and cosine; and a length is the square root of such a sum.
+_sum = math.fsum
+_HALF = math.sqrt(.5)
+_EIGHTH = (math.sqrt((1 + _HALF) / 2), math.sqrt((1 - _HALF) / 2))
+_TURNS = {0: (1.0, 0.0), 45: (_HALF, _HALF), -45: (_HALF, -_HALF), 22.5: _EIGHTH, -22.5: (_EIGHTH[0], -_EIGHTH[1])}
+
+
+def _turn(angle):
+    """The cosine and sine of a piece's turn."""
+    if angle in _TURNS:
+        return _TURNS[angle]
+    a = math.radians(angle)
+    return math.cos(a), math.sin(a)
+
+
+def _far(a, b):
+    """How far apart two points are."""
+    return math.sqrt(_sum((p - q) * (p - q) for p, q in zip(a, b)))
 
 
 def turned(p, r):
     """A point about the origin, turned as a model's piece is."""
     if not r:
         return p
-    a = math.radians(r['angle']); c, s = math.cos(a), math.sin(a)
+    c, s = _turn(r['angle'])
     x, y, z = p
     if r['axis'] == 'z':
         return (x * c - y * s, x * s + y * c, z)
@@ -65,7 +88,7 @@ def placed(p, r):
     o = r['origin']
     q = turned((p[0] - o[0], p[1] - o[1], p[2] - o[2]), r)
     if r.get('rescale'):
-        s = 1 / math.cos(math.pi / 8 if abs(r['angle']) == 22.5 else math.pi / 4)
+        s = 1 / (_EIGHTH[0] if abs(r['angle']) == 22.5 else _HALF)
         q = tuple(c if axis == r['axis'] else c * s for c, axis in zip(q, 'xyz'))
     return (q[0] + o[0], q[1] + o[1], q[2] + o[2])
 
@@ -104,7 +127,7 @@ def across(n):
     """Two ways across a plane, square to each other and to the way it faces."""
     ref = (1, 0, 0) if abs(n[0]) < .9 else (0, 1, 0)
     u = (n[1] * ref[2] - n[2] * ref[1], n[2] * ref[0] - n[0] * ref[2], n[0] * ref[1] - n[1] * ref[0])
-    m = math.sqrt(sum(c * c for c in u)); u = tuple(c / m for c in u)
+    m = math.sqrt(_sum(c * c for c in u)); u = tuple(c / m for c in u)
     return u, (n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0])
 
 
@@ -138,7 +161,7 @@ def both(subject, clipper):
 
 
 def twice(poly):
-    return sum(poly[i][0] * poly[(i + 1) % len(poly)][1] - poly[(i + 1) % len(poly)][0] * poly[i][1] for i in range(len(poly)))
+    return _sum(poly[i][0] * poly[(i + 1) % len(poly)][1] - poly[(i + 1) % len(poly)][0] * poly[i][1] for i in range(len(poly)))
 
 
 def within(x, y, poly):
@@ -149,7 +172,7 @@ def within(x, y, poly):
 
 def narrow(poly):
     """How wide a shape is across its narrow way, near enough: twice its area over the way round it."""
-    round_it = sum(math.hypot(poly[i][0] - poly[(i + 1) % len(poly)][0], poly[i][1] - poly[(i + 1) % len(poly)][1]) for i in range(len(poly)))
+    round_it = _sum(_far(poly[i], poly[(i + 1) % len(poly)]) for i in range(len(poly)))
     return abs(twice(poly)) / round_it if round_it else 0.0
 
 
@@ -182,7 +205,7 @@ class Shown:
         grains = []
         for way, uway in ((self.across, self.uacross), (self.down, self.udown)):
             pixels_along = (abs(uway[0]) * self.w + abs(uway[1]) * self.h) / 16
-            grains.append(math.hypot(*way) / pixels_along if pixels_along > 1e-9 else 1e9)
+            grains.append(math.sqrt(_sum(c * c for c in way)) / pixels_along if pixels_along > 1e-9 else 1e9)
         self.grain = min(grains)
 
     def where(self, x, y):
@@ -250,14 +273,14 @@ def fights(parts, near=NEAR, least=.003, pixels=None, close=6, gaps=False, thin=
     planes = {}
     for i, e in enumerate(parts):
         for k, f, pts, n in quads(e):
-            d = sum(n[j] * pts[0][j] for j in range(3))
+            d = _sum(n[j] * pts[0][j] for j in range(3))
             planes.setdefault(tuple(round(c, 4) + 0.0 for c in n), (n, []))[1].append((d, i, k, f, pts))
     found = []
     for n, faces in planes.values():
         u, v = across(n)
         flat = []
         for d, i, k, f, pts in sorted(faces, key=lambda t: t[0]):
-            poly = [(sum(q[j] * u[j] for j in range(3)), sum(q[j] * v[j] for j in range(3))) for q in pts]
+            poly = [(_sum(q[j] * u[j] for j in range(3)), _sum(q[j] * v[j] for j in range(3))) for q in pts]
             if abs(twice(poly)) < 1e-9:
                 continue                                      # a face with no size is not drawn
             flat.append([d, i, k, look(f) if pixels is None else None, poly if twice(poly) >= 0 else poly[::-1], f, poly, None])
@@ -334,17 +357,18 @@ def clashes(parts, near=NEAR, least=.003, thin=0, cover=COVER):
     planes = {}
     for i, e in enumerate(parts):
         for k, f, pts, n in quads(e):
-            d = sum(n[j] * pts[0][j] for j in range(3))
+            d = _sum(n[j] * pts[0][j] for j in range(3))
             planes.setdefault(tuple(round(c, 4) + 0.0 for c in n), (n, []))[1].append((d, i, k, f, pts))
     found = []
     for n, faces in planes.values():
         u, v = across(n)
         flat = []
         for d, i, k, f, pts in faces:
-            poly = [(sum(q[j] * u[j] for j in range(3)), sum(q[j] * v[j] for j in range(3))) for q in pts]
+            poly = [(_sum(q[j] * u[j] for j in range(3)), _sum(q[j] * v[j] for j in range(3))) for q in pts]
             if abs(twice(poly)) < 1e-9:
                 continue
-            flat.append((round(d, 6), -abs(twice(poly)) / 2, i, k, f, poly if twice(poly) >= 0 else poly[::-1], poly))
+            # The larger stays behind, and of two alike the earlier piece: by the piece's own sides, as settle orders them.
+            flat.append((round(d, 6), -_area(parts, (i, k)), i, k, f, poly if twice(poly) >= 0 else poly[::-1], poly))
         flat.sort(key=lambda t: t[:4])
         for a in range(len(flat)):
             da, _, ia, ka, fa, pa, ra = flat[a]
@@ -393,7 +417,7 @@ def _flat(e, k):
     """One face of a piece on its own plane: its shape counter-clockwise, and its four corners in the game's order."""
     for _, _, pts, n in quads({**e, 'faces': {k: e['faces'][k]}}):
         u, v = across(n)
-        poly = [(sum(q[j] * u[j] for j in range(3)), sum(q[j] * v[j] for j in range(3))) for q in pts]
+        poly = [(_sum(q[j] * u[j] for j in range(3)), _sum(q[j] * v[j] for j in range(3))) for q in pts]
         return (poly if twice(poly) >= 0 else poly[::-1]), poly
 
 
@@ -431,7 +455,7 @@ def _resides(out, made, near):
                         e['faces'][side] = edge
         for k, f, pts, n in quads(e):
             if not mine or k == mine[1]:
-                groups.setdefault(tuple(round(c, 4) + 0.0 for c in n), (n, []))[1].append((sum(n[j] * pts[0][j] for j in range(3)), i, pts))
+                groups.setdefault(tuple(round(c, 4) + 0.0 for c in n), (n, []))[1].append((_sum(n[j] * pts[0][j] for j in range(3)), i, pts))
     strips = []
     for lid in out:
         if id(lid) not in made:
@@ -443,11 +467,11 @@ def _resides(out, made, near):
         u, v = across(n)
 
         def flat(q):
-            return (sum(q[j] * u[j] for j in range(3)), sum(q[j] * v[j] for j in range(3)))
+            return (_sum(q[j] * u[j] for j in range(3)), _sum(q[j] * v[j] for j in range(3)))
         plane = e[end][axis]
         corner = _corners(lid)[k][0]
-        at_lid = sum(n[j] * c for j, c in enumerate(placed(corner, r)))
-        at_face = sum(n[j] * c for j, c in enumerate(placed(tuple(plane if j == axis else corner[j] for j in range(3)), r)))
+        at_lid = _sum(n[j] * c for j, c in enumerate(placed(corner, r)))
+        at_face = _sum(n[j] * c for j, c in enumerate(placed(tuple(plane if j == axis else corner[j] for j in range(3)), r)))
         for side in list(lid['faces'])[1:]:
             where = _corners(lid)[side]
             inner = [i for i in range(4) if abs(where[i][axis] - plane) < 1e-9]
@@ -455,7 +479,7 @@ def _resides(out, made, near):
             if first is None:
                 continue
             a, b = flat(placed(where[first], r)), flat(placed(where[(first + 1) % 4], r))
-            long = math.dist(a, b)
+            long = _far(a, b)
             if long < 1e-9:
                 continue
             o = flat(turned(NORMAL[side], r))
@@ -495,8 +519,8 @@ def _sides_off(out, near):
         for (i, k), others in sorted(cuts.items()):
             piece = out[i]
             shape, corners = _flat(piece, k)
-            a, b = max(((corners[n], corners[(n + 1) % 4]) for n in (0, 1)), key=lambda edge: math.dist(*edge))
-            long = math.dist(a, b)
+            a, b = max(((corners[n], corners[(n + 1) % 4]) for n in (0, 1)), key=lambda edge: _far(*edge))
+            long = _far(a, b)
             spans = []
             for j, kj in others:
                 shared = both(shape, _flat(out[j], kj)[0])
@@ -529,7 +553,7 @@ def settle(parts, slip=SLIP, near=NEAR):
         depth, corners = {}, {}
         for i, e in enumerate(out):
             for k, f, pts, n in quads(e):
-                depth[(i, k)] = sum(n[j] * pts[0][j] for j in range(3))
+                depth[(i, k)] = _sum(n[j] * pts[0][j] for j in range(3))
                 corners[(i, k)] = (tuple(round(c, 4) + 0.0 for c in n), tuple(sorted(tuple(round(c, 4) for c in q) for q in pts)))
         twins = {}
         for face, where in corners.items():
@@ -570,7 +594,7 @@ def _copy(e, k, by):
     axis, end, way = AXIS[k]
     r = e.get('rotation')
     if r and r.get('rescale') and 'xyz'[axis] != r['axis']:
-        by *= math.cos(math.pi / 8 if abs(r['angle']) == 22.5 else math.pi / 4)
+        by *= _EIGHTH[0] if abs(r['angle']) == 22.5 else _HALF
     at = _number(e[end][axis] + way * by)
     start, stop = list(e['from']), list(e['to'])
     start[axis], stop[axis] = sorted((e[end][axis], at))
@@ -643,15 +667,15 @@ def _strip(piece, k, first, lo, hi):
         if key in piece:
             out[key] = copy.deepcopy(piece[key])
     along = [b[j] - a[j] for j in range(3)]; across_it = [c[j] - a[j] for j in range(3)]
-    la = sum(x * x for x in along); lc = sum(x * x for x in across_it)
+    la = _sum(x * x for x in along); lc = _sum(x * x for x in across_it)
     if la < 1e-12 or lc < 1e-12:
         return None
     ua = (uv[(first + 1) % 4][0] - uv[first][0], uv[(first + 1) % 4][1] - uv[first][1])
     uc = (uv[(first - 1) % 4][0] - uv[first][0], uv[(first - 1) % 4][1] - uv[first][1])
     want = []
     for q in _corners(out)[k]:
-        t = sum((q[j] - a[j]) * along[j] for j in range(3)) / la
-        w = sum((q[j] - a[j]) * across_it[j] for j in range(3)) / lc
+        t = _sum((q[j] - a[j]) * along[j] for j in range(3)) / la
+        w = _sum((q[j] - a[j]) * across_it[j] for j in range(3)) / lc
         want.append((uv[first][0] + t * ua[0] + w * uc[0], uv[first][1] + t * ua[1] + w * uc[1]))
     face = _fit(out, k, piece['faces'][k], want)
     if not face:
@@ -684,7 +708,7 @@ def _side(piece, k, side):
             want.append(uv[i])
             continue
         j = next(n for n in ((i + 1) % 4, (i - 1) % 4) if n not in edge)   # the corner across the face from this one
-        far = math.dist(where[k][i], where[k][j])
+        far = _far(where[k][i], where[k][j])
         if far < 1e-9:
             return None
         want.append((uv[i][0] + deep / far * (uv[j][0] - uv[i][0]), uv[i][1] + deep / far * (uv[j][1] - uv[i][1])))
@@ -719,12 +743,12 @@ def doubled(parts, pixels, cover=COVER):
     planes = {}
     for i, e in enumerate(parts):
         for k, f, pts, n in quads(e):
-            planes.setdefault(tuple(round(c, 4) + 0.0 for c in n), (n, []))[1].append((sum(n[j] * pts[0][j] for j in range(3)), i, k, f, pts))
+            planes.setdefault(tuple(round(c, 4) + 0.0 for c in n), (n, []))[1].append((_sum(n[j] * pts[0][j] for j in range(3)), i, k, f, pts))
     found = []
     for n, faces in planes.values():
         u, v = across(n); same = {}
         for d, i, k, f, pts in faces:
-            where = tuple(sorted((round(sum(q[j] * u[j] for j in range(3)), 4), round(sum(q[j] * v[j] for j in range(3)), 4)) for q in pts))
+            where = tuple(sorted((round(_sum(q[j] * u[j] for j in range(3)), 4), round(_sum(q[j] * v[j] for j in range(3)), 4)) for q in pts))
             same.setdefault((where, f.get('texture'), tuple(pictured(parts[i], k, f))), []).append((d, i, k, f))
         for (where, name, uv), group in same.items():
             group.sort(key=lambda row: row[:3])

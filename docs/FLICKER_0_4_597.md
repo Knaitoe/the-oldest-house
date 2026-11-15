@@ -55,9 +55,9 @@ Of the 514, 197 flickered over more than sixteen square pixels and 39 over less 
 {"__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)", "from": [0.5, 0, 1.98], "to": [5, 4, 2], "faces": {"north": {"texture": "#tread", "uv": [0, 0, 16, 16]}, "west": {"texture": "#tread", "uv": [0.02667, 0, 0, 16]}, "up": {"texture": "#tread", "uv": [0, 0.02667, 16, 0]}, "down": {"texture": "#tread", "uv": [0, 16, 16, 15.97333]}}}
 ```
 
-**A side that would itself clash is cut back.** A side can land in one plane with the face of some other piece that stands against the border. There the side is cut away, and the other piece stands in its place. What is left of a side is kept as strips of its own. Of 33,550 pixels of border round the laid pieces, 18,225 have a side over them.
+**A side that would itself clash is cut back.** A side can land in one plane with the face of some other piece that stands against the border. There the side is cut away, and the other piece stands in its place. What is left of a side is kept as strips of its own. Of 33,457 pixels of border round the laid pieces, 18,154 have a side over them.
 
-**Which face shows.** Where one face is already a little behind the other, it stays behind. Of two in one plane, the smaller shows. Of two the same size, the later piece shows. The smaller is nearly always the thing laid on the larger: a clasp on a ledger, a grille on a record player, a rail on a bed's head.
+**Which face shows.** Where one face is already a little behind the other, it stays behind. Of two in one plane, the smaller shows. Of two the same size, the later piece shows. The smaller is nearly always the thing laid on the larger: a clasp on a ledger, a grille on a record player, a rail on a bed's head. A face's size is read off its piece's own sides, so two of one size are the same number (see what the workflow found, below).
 
 **How far proud.** A fiftieth of a pixel, and it is a trade. What is laid is seen as a step that deep: about a pixel on the screen from one block away, half a pixel from two. And it holds only as far as the game's depth can tell it from what is under it: by arithmetic (a near plane at 0.05 blocks, 24 bits of depth) about thirty blocks, past which the speckle comes back, a few pixels across at that distance. A twentieth held to fifty blocks and was a pixel wide from two blocks away. A fiftieth is also the gap two models already had by design, and they are let be. Where one laid piece lies over another, the upper stands two or three fiftieths proud: 153 of them do.
 
@@ -65,7 +65,7 @@ Of the 514, 197 flickered over more than sixteen square pixels and 39 over less 
 
 **One by hand.** The payphone's water is see-through, and a copy laid over it would have drawn it twice. Its back and underside now stop a hair short of the set's, in its own tool.
 
-In all, 1,856 pieces are laid in 525 models, with 3,119 whole sides and 2,313 strips, and the three payphones are redrawn: 528 files. The pack's faces go from 112,503 to 119,791.
+In all, 1,853 pieces are laid in 525 models, with 3,122 whole sides and 2,304 strips, and the three payphones are redrawn: 528 files. The pack's faces go from 112,503 to 119,782. (As first pushed these were 1,856, 3,119, 2,313 and 119,791. Nine models were settled again after what the workflow found, below.)
 
 ## How it stays cured
 
@@ -77,9 +77,33 @@ In all, 1,856 pieces are laid in 525 models, with 3,119 whole sides and 2,313 st
 
 Thirty-four tools write models without naming their pieces in a way the change could find. Their models do not flicker today, and the workflow's check will stop one that later does.
 
+## What the workflow found
+
+The first push of this release (run 1636) failed the quick job a minute in, and every other job was skipped. What failed was the film set's own tool: `differs .../models/block/barrett/softbox.json`. The model the tool wrote here was not the model the same tool wrote there.
+
+**Why.** The softbox has three slats of one size that cross in one plane. Of two faces in one plane the larger stays behind, and the tool told the larger by an area added up from the faces' corners after turning them. For three slats of one size that sum came out different in its last digit, and the last digit decided. The workflow runs Python 3.12, which adds floats up a little more exactly than the 3.11 the tools were run under here, so there the digit fell the other way. Four models settled differently under 3.12 and 3.13: the softbox, the two trail fences and the film camera. The workflow stops at the first.
+
+**What changed in `tools/flicker.py`.**
+
+- A face's size is read off its piece's own sides. Two faces of one size are then the same number, and the rule's second half decides, as it says: of two alike, the earlier piece stays behind.
+- Every sum is `math.fsum`, which rounds once and the same under every Python.
+- The five turns the game allows are worked from square roots, which every machine rounds alike, and not from the C library's sine and cosine. A length is the square root of such a sum.
+
+**What it changed in the pack.** Nine models settle differently by the rule than they did by the digit, and are settled again: the softbox, the two trail fences, the fan ladder's piece at 22 degrees, the film set's plate, the masque's tripod and the work print's three tripods. In each, faces of one size that cross in one plane change places, a fiftieth of a pixel deep.
+
+**Checked.**
+
+- Python 3.11, 3.12 and 3.13 settle all 5,477 models that have pieces to the same thing, and to what is on disk. `--check` passes under each, and `--cure` settles nothing.
+- The cure run again with its sums added up three other ways (in order, backwards, with a carry) and its turns taken from the C library gives the same 5,477 answers each time. Nothing now hangs on a last digit.
+- All 198 tool commands the workflow runs pass under Python 3.12 with the imaging library the workflow installs, and under 3.11.
+- Six of the nine drawn square-on as they were settled and as they are, from each side where their bare pieces flicker (17 views), and looked at. Nothing flickers in either, and the two differ in at most 213 of a view's 57,600 pixels, at the crossings. The work print's three tripods show nothing to draw: their crossing faces carry the same pixels.
+- The package and branding checks on a built jar.
+
+**Not checked.** The nine models were not looked at in a client, and the proof chain was not run again: what changed in them is which of two like faces stands a fiftieth of a pixel in front. That the tools are run here under the workflow's Python before a push is now a rule in the working notes, not a check the repository makes.
+
 ## What changed in the repository
 
-- `tools/flicker.py`, rewritten.
+- `tools/flicker.py`, rewritten, and after the workflow's finding made to settle a model the same under every Python.
 - 143 other tools: how they write and check.
 - 528 model files.
 - `.github/workflows/build.yml`: one line in the quick job.
