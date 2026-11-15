@@ -75,6 +75,23 @@ public final class LodgingTexts {
         GRIP_BROKEN="Its hand comes off you.",
         TAKEN="In the dark behind the paper it lets go of you, and goes on without you.",
         STRUCK_FAILED="It stops where it is put, and comes on again.";
+    // 0.4.607: N5 and N6. The accounts, Daniel's answers and Dan's are the script's; the reply labels R_GIVE and R_STILL and the grey
+    // lines are new here.
+    public static final String[] DANIEL_ACCOUNT={
+        "She said a week. I'd been working nights for a year. She said I could sleep a week and something would go out and do my days, and when the week was done it would come back, and I'd go out, and nobody would know.",
+        "It didn't come back. I asked her where it was. She said it was getting on well.",
+        "The food comes through the hatch. I mended the chair. I mended it again.",
+        "I want the key. I want my name. I want whatever's left."};
+    public static final String R_DIDNT_KNOW="He didn't know.",R_WAIT="Wait.",R_GIVE="Give it to him.",R_HURT_SELF="If you hurt him, you hurt yourself. I watched it.",
+        DANIEL_GOOD="Good.",DANIEL_MAKE="Then he'd better not make me.",
+        DANIEL_SILENT="He looks at you, and says nothing to that.",DANIEL_TAKES="He takes it in the hand the strap leaves free, and holds it down against the frame.",
+        DANIEL_ARMED="He has it still, held down against the frame.";
+    public static final String[] DAN_DOG={
+        "There's a woman two doors down from me with a dog that's too old for the stairs. I carry it up for her, morning and night. Six years. Rae can tell you. She thinks I'm the nicest man in the street.",
+        "That happened. I don't care what else happened. That happened."};
+    public static final String DAN_STAND="When it comes to it, what does that mean? Standing with me.",
+        R_STILL="He's still here, in the room at the back. She's still using him.";
+    public static final String[] DAN_NO={"No. Vera told me he'd gone home. She said he had his own life and didn't want this one.","Show me."};
     public static final String VERA_WORKS="Vera folds a cloth into a square and sets it on the others.";
     public static final String MAN_IN_FRAME="The man in the frame";
     public static final String[] DANIEL_LISTEN={"You're not her. You're staying here? Listen to me.","There's a key for these. She keeps it, or the woman with her does.",

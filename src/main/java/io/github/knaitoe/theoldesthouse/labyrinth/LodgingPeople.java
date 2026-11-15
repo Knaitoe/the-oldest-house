@@ -102,6 +102,11 @@ public final class LodgingPeople {
     /** Each reader's own record of what was said (LodgingHouse.own). */
     public static final String RAE_ASKED="RaeAsked0602",RAE_ANSWER="RaeAnswer0602",ASKED_WRONG="AskedWrong0602",ASKED_PLACE="AskedPlace0602",DAN_MET="DanMet0602",DAN_SLEEP="DanSleep0602",
         VERA_MET="VeraMet0602",DANIEL_MET="DanielMet0602",KNOWS_DANIEL="KnowsDaniel0602",TOLD_DAN_HERE="ToldDanHere0602",DANIEL_ANSWER="DanielAnswer0602";
+    /** 0.4.607 (N5, N6): each reader's record of the two accounts and the weapon. */
+    public static final String DANIEL_TOLD="DanielTold0607",DAN_TOLD="DanTold0607",HEARD_DAN_SIDE="HeardDanSide0607",TOLD_DAN_DRAINED="ToldDanDrained0607",
+        SAID_DIDNT_KNOW="SaidDidntKnow0607",SAID_WAIT="SaidWait0607",GAVE_WEAPON="GaveWeapon0607",WARNED_DANIEL="WarnedDaniel0607";
+    /** The house's: Daniel has a weapon; Dan has been told Daniel is still in the house, and asked to be shown. */
+    public static final String ARMED="DanielArmed0607",DAN_KNOWS="DanKnows0607";
     /** What a reader told Rae: nothing yet, that they would stay with Dan, that they would see Vera first, that it was not their business. */
     public static final int UNDECIDED=0,STAY=1,VERA_FIRST=2,NOT_MINE=3;
     /** What a reader told Daniel: nothing yet, that they would get him out, that they would come back, nothing at all. */
@@ -286,7 +291,16 @@ public final class LodgingPeople {
 
     // Dan, asked for himself.
     private static void dan(ServerPlayer p,LiteraryActor dan,CompoundTag own){
-        if(own.getBoolean(DAN_MET)&&own.getBoolean(DAN_SLEEP)&&own.getBoolean(ASKED_PLACE)){LodgingHouse.cue(p,LodgingTexts.DAN_SITS);return;}
+        // 0.4.607 (N6): once the glass has gone one way or the other, Dan has his own account for each reader, once.
+        var b=LiteraryVignettes.base(p,PLACE);
+        if(b!=null&&actTwo(p,b)&&!own.getBoolean(DAN_TOLD)){
+            own.putBoolean(DAN_TOLD,true);own.putBoolean(DAN_MET,true);LodgingHouse.save(p,own);
+            Talk.begin(p,TALK+DAN,"Dan");
+            for(var line:LodgingTexts.DAN_DOG)says(p,dan,"Dan",line);
+            if(promisedDan(own))says(p,dan,"Dan",LodgingTexts.DAN_STAND);
+            danAsks(p);return;
+        }
+        if(own.getBoolean(DAN_MET)&&own.getBoolean(DAN_SLEEP)&&own.getBoolean(ASKED_PLACE)&&!canTellDan(p,own)){LodgingHouse.cue(p,LodgingTexts.DAN_SITS);return;}
         Talk.begin(p,TALK+DAN,"Dan");
         if(!own.getBoolean(DAN_MET)){own.putBoolean(DAN_MET,true);LodgingHouse.save(p,own);says(p,dan,"Dan",LodgingTexts.DAN_FINE[0]);says(p,dan,"Dan",LodgingTexts.DAN_FINE[1]);}
         else LodgingHouse.cue(p,LodgingTexts.DAN_LOOKS_UP);
@@ -296,9 +310,27 @@ public final class LodgingPeople {
         var own=LodgingHouse.own(p);var replies=new java.util.ArrayList<Talk.Reply>();
         if(!own.getBoolean(DAN_SLEEP))replies.add(Talk.reply(LodgingTexts.R_WRONG_DAN,LodgingPeople::askedSleep));
         if(!own.getBoolean(ASKED_PLACE))replies.add(Talk.reply(LodgingTexts.R_PLACE,r->askedPlace(r,false)));
+        if(canTellDan(p,own))replies.add(Talk.reply(LodgingTexts.R_STILL,LodgingPeople::toldDanDrained));
         if(replies.isEmpty()){Talk.end(p);return;}
         replies.add(Talk.act(LodgingTexts.R_LEAVE_DAN,Talk::close));
         Talk.ask(p,replies);
+    }
+    /** Act II has begun: the glass has broken or the body was kept off (N4 over). */
+    static boolean actTwo(ServerPlayer p,BlockPos b){return LodgingStory.stage(p.server,b)>=LodgingStory.AFTER;}
+    /** Whether this reader can tell Dan that Daniel is still being used: they know Daniel, and Dan has not seen him at the frame. */
+    private static boolean canTellDan(ServerPlayer p,CompoundTag own){
+        var b=LiteraryVignettes.base(p,PLACE);if(b==null||!actTwo(p,b)||own.getBoolean(TOLD_DAN_DRAINED))return false;
+        if(LodgingStory.stage(p.server,b)>=LodgingStory.PINNED)return false;
+        return own.getBoolean(DANIEL_MET)||own.getBoolean(LodgingInjury.SAW_DANIEL_CUT);
+    }
+    /** N6: told Daniel is still being drained. What he says is what this reader has heard of Dan's side. */
+    private static void toldDanDrained(ServerPlayer p){
+        var own=LodgingHouse.own(p);own.putBoolean(TOLD_DAN_DRAINED,true);own.putBoolean(HEARD_DAN_SIDE,true);LodgingHouse.save(p,own);
+        var dan=near(p,DAN);if(dan==null){Talk.close(p);return;}
+        for(var line:LodgingTexts.DAN_NO)says(p,dan,"Dan",line);
+        var b=LiteraryVignettes.base(p,PLACE);
+        if(b!=null){var h=LodgingStory.house(p.server,b);h.putBoolean(DAN_KNOWS,true);LodgingStory.save(p.server,b,h);}
+        Talk.end(p);
     }
     private static void askedSleep(ServerPlayer p){
         var own=LodgingHouse.own(p);own.putBoolean(DAN_SLEEP,true);LodgingHouse.save(p,own);
@@ -323,8 +355,12 @@ public final class LodgingPeople {
     private static void daniel(ServerPlayer p,LiteraryActor daniel,CompoundTag own){
         String name=name(DANIEL,own);
         Talk.begin(p,TALK+DANIEL,name);
+        var b=LiteraryVignettes.base(p,PLACE);
         if(!own.getBoolean(DANIEL_MET)){own.putBoolean(DANIEL_MET,true);LodgingHouse.save(p,own);for(var line:LodgingTexts.DANIEL_LISTEN)says(p,daniel,name,line);}
+        // 0.4.607 (N5): in Act II, a reader he has spoken to before has his account, once.
+        else if(b!=null&&actTwo(p,b)&&!own.getBoolean(DANIEL_TOLD)){own.putBoolean(DANIEL_TOLD,true);LodgingHouse.save(p,own);for(var line:LodgingTexts.DANIEL_ACCOUNT)says(p,daniel,name,line);}
         else says(p,daniel,name,LodgingTexts.DANIEL_LISTEN[LodgingTexts.DANIEL_LISTEN.length-1]);
+        if(armed(daniel))LodgingHouse.cue(p,LodgingTexts.DANIEL_ARMED);
         danielAsks(p);
     }
     private static void danielAsks(ServerPlayer p){
@@ -332,6 +368,14 @@ public final class LodgingPeople {
         if(!own.getBoolean(TOLD_DAN_HERE))replies.add(Talk.reply(LodgingTexts.R_DAN_HERE,LodgingPeople::toldDanHere));
         if(!own.getBoolean(KNOWS_DANIEL))replies.add(Talk.reply(LodgingTexts.R_WHO,LodgingPeople::askedWho));
         if(!promisedDaniel(own))replies.add(Talk.reply(LodgingTexts.R_FREE,r->danielAnswered(r,FREE_HIM)));
+        // 0.4.607 (N5): once his account is told.
+        if(own.getBoolean(DANIEL_TOLD)){
+            if(own.getBoolean(HEARD_DAN_SIDE)&&!own.getBoolean(SAID_DIDNT_KNOW))replies.add(Talk.reply(LodgingTexts.R_DIDNT_KNOW,LodgingPeople::saidDidntKnow));
+            if(sawTheRule(own)&&!own.getBoolean(WARNED_DANIEL))replies.add(Talk.reply(LodgingTexts.R_HURT_SELF,LodgingPeople::warnedDaniel));
+            var d=near(p,DANIEL);
+            if(d!=null&&!armed(d)&&weapon(p.getMainHandItem()))replies.add(Talk.act(LodgingTexts.R_GIVE,LodgingPeople::gaveWeapon));
+            if(!own.getBoolean(SAID_WAIT))replies.add(Talk.reply(LodgingTexts.R_WAIT,LodgingPeople::saidWait));
+        }
         replies.add(Talk.reply(LodgingTexts.R_BACK,r->danielAnswered(r,COME_BACK)));
         replies.add(Talk.act(LodgingTexts.R_NOTHING,r->danielAnswered(r,SILENT)));
         Talk.ask(p,replies);
@@ -347,6 +391,40 @@ public final class LodgingPeople {
         says(p,daniel,name(DANIEL,own),LodgingTexts.DANIEL_NAME);
         own.putBoolean(KNOWS_DANIEL,true);LodgingHouse.save(p,own);
         LodgingHouse.cue(p,LodgingTexts.DANIEL_LOOKS);says(p,daniel,"Daniel",LodgingTexts.DANIEL_COUNTING);
+        danielAsks(p);
+    }
+    /** Something that cuts or strikes. */
+    public static boolean weapon(net.minecraft.world.item.ItemStack s){
+        var i=s.getItem();
+        return i instanceof net.minecraft.world.item.SwordItem||i instanceof net.minecraft.world.item.AxeItem||i instanceof net.minecraft.world.item.TridentItem
+            ||i instanceof net.minecraft.world.item.MaceItem||i instanceof net.minecraft.world.item.ShearsItem;
+    }
+    /** Whether Daniel has a weapon in his hand. */
+    public static boolean armed(LiteraryActor daniel){return weapon(daniel.getMainHandItem());}
+    /** Whether this reader has seen the rule shown: the cut on either man, or the pin. */
+    static boolean sawTheRule(CompoundTag own){return own.getBoolean(LodgingInjury.SAW_DAN_CUT)||own.getBoolean(LodgingInjury.SAW_DANIEL_CUT)||own.getBoolean(LodgingInjury.SAW_PIN);}
+    private static void saidDidntKnow(ServerPlayer p){
+        var own=LodgingHouse.own(p);own.putBoolean(SAID_DIDNT_KNOW,true);LodgingHouse.save(p,own);
+        if(near(p,DANIEL)==null){Talk.close(p);return;}
+        LodgingHouse.cue(p,LodgingTexts.DANIEL_SILENT);danielAsks(p);
+    }
+    private static void warnedDaniel(ServerPlayer p){
+        var own=LodgingHouse.own(p);own.putBoolean(WARNED_DANIEL,true);LodgingHouse.save(p,own);
+        var daniel=near(p,DANIEL);if(daniel==null){Talk.close(p);return;}
+        says(p,daniel,name(DANIEL,own),LodgingTexts.DANIEL_MAKE);danielAsks(p);
+    }
+    private static void saidWait(ServerPlayer p){var own=LodgingHouse.own(p);own.putBoolean(SAID_WAIT,true);LodgingHouse.save(p,own);Talk.close(p);}
+    /** The reader hands him what they hold. It is the reader's own, and it is his now. */
+    private static void gaveWeapon(ServerPlayer p){
+        var daniel=near(p,DANIEL);var held=p.getMainHandItem();
+        if(daniel==null||!weapon(held)||armed(daniel)){Talk.close(p);return;}
+        var own=LodgingHouse.own(p);own.putBoolean(GAVE_WEAPON,true);LodgingHouse.save(p,own);
+        daniel.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,held.split(1));daniel.setDropChance(net.minecraft.world.entity.EquipmentSlot.MAINHAND,0);
+        var b=LiteraryVignettes.base(p,PLACE);
+        if(b!=null){var h=LodgingStory.house(p.server,b);h.putBoolean(ARMED,true);LodgingStory.save(p.server,b,h);}
+        LodgingHouse.cue(p,LodgingTexts.DANIEL_TAKES);
+        // A reader who knows nothing of the rule is told "Good."; one who has seen it may still warn him (the reply stays).
+        if(!sawTheRule(own))says(p,daniel,name(DANIEL,own),LodgingTexts.DANIEL_GOOD);
         danielAsks(p);
     }
     private static void danielAnswered(ServerPlayer p,int answer){
