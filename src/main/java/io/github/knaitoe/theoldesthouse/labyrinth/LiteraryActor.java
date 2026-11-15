@@ -87,7 +87,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * as low; the bar's whistle is four, which is also the plain reach. A body whose scene keeps its own gestures takes neither of the
      * shared poses. A scene that gives its cast a gesture table of its own belongs in this list.
      */
-    public boolean ownGestures(){int phase=phase();return role()==STRANGER&&(LastOrders.cast(phase)||Kept.cast(phase)||Pinehook.cast(phase)||Truant.phase(phase)||Drawing.cast(phase)||Corner.cast(phase)||BikeNightGus.cast(phase)||BikeNightBullies.cast(phase)||CalderPeople.cast(phase)||BikeNightSpecters.cast(phase)||PellPeople.cast(phase));}
+    public boolean ownGestures(){int phase=phase();return role()==STRANGER&&(LastOrders.cast(phase)||Kept.cast(phase)||Pinehook.cast(phase)||Truant.phase(phase)||Drawing.cast(phase)||Corner.cast(phase)||BikeNightGus.cast(phase)||BikeNightBullies.cast(phase)||CalderPeople.cast(phase)||BikeNightSpecters.cast(phase)||PellPeople.cast(phase)||LodgingPeople.cast(phase));}
     /** On all fours (Costume Night's crawl, 0.4.103), and as low as that. */
     public boolean crawling(){return gesture()==CostumeNight.CRAWL&&!ownGestures();}
     /** Both arms out in front (the plain reach). */
@@ -110,7 +110,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         super.lerpTo(x,y,z,yaw,pitch,steps);
     }
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
-    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER&&phase!=BorrascaStory.GROWN||BorrascaStory.townChild(role,phase)||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT||role==ROAD_WOMAN?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER&&phase!=BorrascaStory.GROWN?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:role==STRANGER&&phase==BikeNightSpecters.GOBLIN?.42:role==STRANGER&&BikeNightGus.cast(phase)?.54:role==STRANGER&&BikeNightBullies.cast(phase)?BikeNightBullies.size(phase):role==STRANGER&&CalderPeople.cast(phase)?CalderPeople.size(phase):role==STRANGER&&PellPeople.cast(phase)?PellPeople.size(phase):role==STRANGER&&Drawing.child(phase)||Corner.child(phase)?.68:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
+    public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER&&phase!=BorrascaStory.GROWN||BorrascaStory.townChild(role,phase)||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT||role==ROAD_WOMAN?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER&&phase!=BorrascaStory.GROWN?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:role==STRANGER&&phase==BikeNightSpecters.GOBLIN?.42:role==STRANGER&&BikeNightGus.cast(phase)?.54:role==STRANGER&&BikeNightBullies.cast(phase)?BikeNightBullies.size(phase):role==STRANGER&&CalderPeople.cast(phase)?CalderPeople.size(phase):role==STRANGER&&PellPeople.cast(phase)?PellPeople.size(phase):role==STRANGER&&LodgingPeople.cast(phase)?LodgingPeople.size(phase):role==STRANGER&&Drawing.child(phase)||Corner.child(phase)?.68:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
     /**
      * 0.4.596: one of a reader's own stories' people, set down on the great staircase (StairCompany). Theirs alone to see; no story's
@@ -306,7 +306,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * (only Callum turns his, and the server turns it); a still mob's body is otherwise brought round to its head after half a
      * second, on the client as well as the server.
      */
-    public boolean holdsBody(){return role()==STRANGER&&PellPeople.cast(phase());}
+    public boolean holdsBody(){return role()==STRANGER&&(PellPeople.cast(phase())||LodgingPeople.cast(phase()));}
     @Override protected net.minecraft.world.entity.ai.control.BodyRotationControl createBodyControl(){
         return new net.minecraft.world.entity.ai.control.BodyRotationControl(this){
             @Override public void clientTick(){if(holdsBody()||ActorSeat.of(LiteraryActor.this)!=null){yBodyRot=getYRot();return;}super.clientTick();}

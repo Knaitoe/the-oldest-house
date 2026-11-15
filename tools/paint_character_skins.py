@@ -33,6 +33,13 @@ TRUANT_INK = '#2e3550'
 PELL_TOWEL = '#e9e7df'
 
 
+def june_paint(d,look,h):
+    # 0.4.602 (owner, of June's hand: "white flecks on a portion of june's hand? unsure why that is"): the line's paint at the quick
+    # of two nails (0.4.524) was two lone near-white pixels and read as flecks. It is worked into the tips of two fingers now: the
+    # paint gone chalky and sunk into the skin at the nail, fading up the finger.
+    for x in (1,2):
+        d.point((x,h-1),fill=mix(look.skin,'#eceae2',.42));d.point((x,h-2),fill=mix(look.skin,'#eceae2',.16))
+
 def towelling(d, box, color):
     """0.4.533: towelling's loops over a box: a lighter and a darker pixel to every other cell of every other row, offset row to row."""
     x0, y0, x1, y1 = box
@@ -286,6 +293,21 @@ LOOKS = {
     # 0.4.540 (docs/PELL_HOUSE_FREEZER_0_4_540.md): Nessa, as she is in the freezer: the face of every photograph in the house (dark hair
     # to her shoulders), the skin gone pale with cold, her party dress from the birthday tapes, her feet bare, and frost in her hair.
     'literary_pell_nessa': Look('#e6d6cc','#2a1e18','long','#cfa6bc','#cfa6bc','dress','#efe2e8',eyes='#4a3a2e',mark='pell_nessa',sleeve=4,face_style='child',shoes='#e6d6cc'),
+    # 0.4.602, The Ones Already Inside (docs/THE_ONES_ALREADY_INSIDE_PLAN.md): the four, and the failed bodies.
+    # Rae, Dan's friend from outside, in the coat she came in.
+    'literary_lodging_rae': Look('#a8785a','#2c221e','ponytail','#7a5c46','#3a3c44','coat','#c8b48a',eyes='#3e3228',age=1,shoes='#3a3230'),
+    # Dan, on the hall bench in his coat: shaved, his hair cut and parted. He has had a life outside.
+    'literary_lodging_dan': Look('#d2a686','#5e4a38','part','#4e5864','#3c3a36','coat','#b9ad92',eyes='#56626c',age=1,level_eyes=True),
+    # Vera, who keeps the house: her hair pinned up, a dark dress to the ankle under an apron.
+    'literary_lodging_vera': Look('#dcbda6','#9a958c','bun','#3e444c','#3e444c','dress','#e8e3d6',eyes='#4e5a64',age=2,mark='cottage_apron',sleeve=10,shoes='#2a2826'),
+    # Daniel: the same man, kept in one room for years. The same hair gone long and the same eyes; a beard; the skin of somebody
+    # who has not been out; a shirt washed grey.
+    'literary_lodging_daniel': Look('#d9c4b2','#5e4a38','long','#a39f94','#55524b','ragged','#8a867a',eyes='#56626c',age=1,beard='full',mark='lodging_daniel',sleeve=6,level_eyes=True),
+    # The failed bodies, in what they were wearing when their arrangements went wrong: what is left of a suit, a faded dress,
+    # a nightshirt. Their faces are no longer kept up.
+    'literary_lodging_failed_post': Look('#cfc5b2','#6b635a','receding','#5d5b54','#4b4943','suit','#8f8a7a',eyes='#77756a',age=1,mark='lodging_failed_tied'),
+    'literary_lodging_failed_dress': Look('#d3c9b8','#857868','bun','#8a7f78','#8a7f78','dress','#b3aa9a',eyes='#7b7a70',mark='lodging_failed',sleeve=10),
+    'literary_lodging_failed_shirt': Look('#c8bfae','#3f3933','close','#9a9588','#63615a','ragged','#aaa594',eyes='#737268',mark='lodging_failed',sleeve=6),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -777,6 +799,19 @@ def face(look):
             d.rectangle((10,5,12,9),fill=skin);d.line((10,6,12,7),fill=shade(hair,-4));d.line((10,8,12,8),fill='#e9e2ce');d.point((11,8),fill=rgb(look.eyes))
             d.line((10,9,12,9),fill=shade(skin,-24))
             d.line((5,13,8,13),fill=shade(skin,-9));d.line((6,13,8,13),fill=shade(skin,-44));d.line((9,12,10,11),fill=shade(skin,-44));d.point((11,11),fill=shade(skin,-20))
+    if look.mark=='lodging_daniel':
+        # 0.4.602: years in one room. Shadow under both eyes, the brows drawn down toward the nose, the cheeks gone in.
+        for x in (3,10):d.line((x,9,x+2,9),fill=shade(skin,-26))
+        d.point((5,7),fill=shade(hair,-4));d.point((10,7),fill=shade(hair,-4))
+        d.line((2,10,2,12),fill=shade(skin,-22));d.line((13,10,13,12),fill=shade(skin,-22))
+    if look.mark.startswith('lodging_failed'):
+        # 0.4.602: a face nobody keeps up any more. No brows; the lids come half down over dull eyes that do not agree (the
+        # picture's right one sits a pixel low); the mouth a thin line a pixel off the middle; and a seam along the jaw.
+        for x in (3,10):d.rectangle((x,6,x+2,9),fill=skin)
+        d.line((3,7,5,7),fill=shade(skin,-30));d.line((3,8,5,8),fill='#cfc8b6');d.point((4,8),fill=rgb(look.eyes))
+        d.line((10,8,12,8),fill=shade(skin,-30));d.line((10,9,12,9),fill='#cfc8b6');d.point((11,9),fill=rgb(look.eyes))
+        d.rectangle((6,13,9,14),fill=skin);d.line((7,13,10,13),fill=shade(skin,-46))
+        d.line((1,15,14,15),fill=shade(skin,-34));d.point((0,14),fill=shade(skin,-34));d.point((15,14),fill=shade(skin,-34))
     if look.mark.startswith('borrasca_dana'):
         # Dull eyes under heavy lids, shadow under them, the cheeks hollow and the mouth a little open. Straight ahead, or (aside)
         # both gone to her right.
@@ -1528,8 +1563,7 @@ def paint(look):
                 if look.mark in ('pell_june','pell_june_hand'):
                     # 0.4.524: her sleeves pushed up past the elbow, bunched; and on her right hand paint at the quick of two nails.
                     d.rectangle((0,cuff-3,w-1,cuff-1),fill=shade(look.cloth,12));d.line((0,cuff-2,w-1,cuff-2),fill=shade(look.cloth,-16))
-                    if ai==0 and side=='front':
-                        for x in (1,3):d.point((x,h-1),fill='#eceae2')
+                    if ai==0 and side=='front':june_paint(d,look,h)
                 if look.mark=='pell_june_hand' and ai==0:
                     # 0.4.535: her right hand wrapped in a tea towel from the wrist over the knuckles: cream linen with its blue stripe
                     # round the top, folded twice round, the end tucked in at the back, and a faint mark come through over the knuckles.
@@ -1545,8 +1579,7 @@ def paint(look):
                     if look.mark=='pell_june_robe':
                         d.rectangle((0,0,w-1,cuff-1),fill=PELL_ROBE);towelling(d,(0,0,w-1,cuff-4),PELL_ROBE)
                         d.rectangle((0,cuff-3,w-1,cuff-1),fill=shade(PELL_ROBE,-8));d.line((0,cuff-1,w-1,cuff-1),fill=shade(PELL_ROBE,-26))
-                    if ai==0 and side=='front':
-                        for x in (1,3):d.point((x,h-1),fill='#eceae2')
+                    if ai==0 and side=='front':june_paint(d,look,h)
             elif side=='top' and look.mark in ('pell_june_robe','pell_june_swim'):
                 art=panel((w,h),PELL_ROBE if look.mark=='pell_june_robe' else look.skin,'cloth' if look.mark=='pell_june_robe' else 'skin',side)
             elif side=='bottom' and look.mark=='pell_june_hand' and ai==0:art=panel((w,h),PELL_TOWEL,'cloth',side)
@@ -1811,6 +1844,15 @@ def paint(look):
             for x in range(8):px(x,8+y,blood[(x*3+y*5+x*y)%4])
         for x,y in ((1,9),(5,11),(3,14),(6,13)):px(x,y,'#a01e18')
         for x,y in ((2,12),(6,9)):px(x,y,'#2e0504')
+    if look.mark=='lodging_failed_tied':
+        # 0.4.602: rope round the wrists of the one tied to the post (the left arm is drawn from the right arm's pixels, so one
+        # painted wrist is both): three turns over the cuff, the lay of the rope across them, and the skin gone dark above it.
+        d=ImageDraw.Draw(im)
+        for side,box in net(40,16,4,12,4).items():
+            if side in ('top','bottom'):continue
+            x0,y0,x1,y1=[round(v*S) for v in box]
+            d.rectangle((x0,y1-9,x1-1,y1-7),fill='#b39b6e');d.line((x0,y1-10,x1-1,y1-10),fill=shade(look.skin,-34))
+            for x in range(x0,x1,2):d.point((x,y1-9),fill='#8a744c');d.point((x+1,y1-8),fill='#8a744c');d.point((x,y1-7),fill='#8a744c')
     # Native 256-square / 512x256 archive dimensions; art itself remains the exact two-pixel grid.
     return im.resize((look.logical*4,256),Image.Resampling.NEAREST)
 

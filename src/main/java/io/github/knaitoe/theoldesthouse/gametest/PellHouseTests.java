@@ -1898,8 +1898,10 @@ public final class PellHouseTests {
         .thenExecute(()->{told(p);hand(p,phone);})
         .thenIdle(1).thenExecute(()->{
             h.assertTrue(told(p).contains(PellTexts.thing(PHONE,0)),"a hand on the telephone afterwards: what it is");
-            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);PellPeople.vacate(b);
-        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"both have had the first visit: the house begins again a week in"))
+            // 0.4.602 (owner: "it doesn't seem week 2 of the pell house began when re-entering its door"): out through the House's door
+            // and straight back in, by the arrival itself, with no wait for the house to stand empty.
+            f.at(p,P,.5,0,-30);f.at(q,P,-6.5,0,-30);LiteraryVignettes.onArrive(p,P);LiteraryVignettes.onArrive(q,P);
+        }).thenWaitUntil(()->h.assertTrue(PellWeek.visit(b)==2&&PellVisit.step(b)==PellVisit.SETTLED,"both have had the first visit, gone out and come straight back: the house begins again a week in"))
         .thenExecute(()->{
             h.assertTrue(PellVisit.car(l,b)==null&&PellPeople.find(l,b,PellPeople.GAIL)==null,"without Gail or her car");
             h.assertTrue(thing(l,b,-7,1,-69,PHONE,0)&&PellCall.caller(b)==null,"the receiver on its hook, nobody on the line");

@@ -31,6 +31,10 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         // 0.4.540: June on the step stool beside the freezer, its seat nine up.
         if(a.role()==LiteraryActor.STRANGER&&PellPeople.cast(a.phase())&&PellThing.is(state,PellThing.Kind.STOOL))return new ActorSeat(9,state.getValue(PellThing.FACING));
         if(PellThing.seat(state))return new ActorSeat(PellThing.seatHeight(state),state.getValue(PellThing.FACING));
+        // 0.4.602: the lodging house's hall bench, its seat eight up, where Dan sits; and a failed body sat on the cellar's floor, tied
+        // to the dead post.
+        if(LodgingBlock.is(state,LodgingBlock.Kind.BENCH))return new ActorSeat(8,state.getValue(LodgingBlock.FACING));
+        if(LodgingPeople.onFloor(a))return new ActorSeat(1,null);
         // 0.4.550: the lodging house's chairs, armchairs and settee.
         if(LodgingThing.seat(state))return new ActorSeat(LodgingThing.seatHeight(state),state.getValue(LodgingThing.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.

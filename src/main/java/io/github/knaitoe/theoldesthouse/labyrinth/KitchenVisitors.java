@@ -196,12 +196,21 @@ public final class KitchenVisitors {
         for(var it=PENDING.iterator();it.hasNext();){var p=it.next();if(l.getGameTime()<p.at())continue;it.remove();if(l.getEntity(p.actor()) instanceof LiteraryActor who&&who.isAlive()){who.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);speak(who,p.text());}}
         if(s.getTickCount()%20==0)second(s,l,b);
     }
+    /**
+     * 0.4.602: a visitor the kitchen has forgotten. One whose chunk was not loaded when the kitchen looked for them is let go
+     * ({@link #current} finds nobody), and comes back with the chunk beside whoever came next: two Johnnys. Any visitor's body in
+     * and round the kitchen other than {@code keep} is put away, when the kitchen is empty and before anyone new is made.
+     */
+    static void strays(ServerLevel l,BlockPos b,@Nullable LiteraryActor keep){
+        for(var v:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(32),v->v!=keep&&v.role()==LiteraryActor.STRANGER&&cast(v.phase())!=null)){WALKS.remove(v.getUUID());v.discard();}
+    }
     /** Once a second while anyone is in the kitchen. */
     static void second(MinecraftServer s,ServerLevel l,BlockPos b){
         var here=inKitchen(s);var t=shared(s);var a=current(l);
         if(here.isEmpty()){
             // Nobody to sit with: whoever was here has gone by the time anyone comes back.
             if(a!=null){a.discard();WALKS.remove(a.getUUID());}
+            strays(l,b,null);
             if(t.getBoolean("Opened")&&doorwayClear(l,b)){t.remove("Opened");LabyrinthDoors.setDoorOpen(l,b.offset(ENTRY),false,null);shared(s,t);}
             if(t.contains("Who")){t.remove("Who");t.remove("Actor");t.putInt("Next",t.getInt("Occ")+GAP);shared(s,t);}
             return;
@@ -284,6 +293,7 @@ public final class KitchenVisitors {
         var v=cast(phase);if(v==null)return null;var s=l.getServer();
         var start=behind(l,b);if(start==null)return null;
         var old=current(l);if(old!=null){WALKS.remove(old.getUUID());old.discard();}
+        strays(l,b,null);
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(FamiliarRoom.KITCHEN,null);a.appearance(LiteraryActor.STRANGER,phase);a.setNoGravity(true);a.setCustomNameVisible(false);
         a.moveTo(start.x,start.y,start.z,180,0);a.setYBodyRot(180);a.setYHeadRot(180);

@@ -54,6 +54,8 @@ final class NativeTestPlayers {
         Object packet;while((packet=channel.readOutbound())!=null){if(packet instanceof net.minecraft.network.protocol.Packet<?> nativePacket)out.add(nativePacket);io.netty.util.ReferenceCountUtil.release(packet);}
         return out;
     }
+    /** Sends on what the server is holding for this player until the end of its tick, so a case can read it within the tick. */
+    static void flush(ServerPlayer p){var connection=CONNECTIONS.get(p.getUUID());if(connection!=null)connection.flushChannel();}
     static void remove(ServerPlayer p){
         p.server.getPlayerList().remove(p);var connection=CONNECTIONS.remove(p.getUUID());
         if(connection!=null)connection.disconnect(Component.literal("Native test complete"));

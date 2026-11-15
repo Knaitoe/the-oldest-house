@@ -27,6 +27,31 @@ public final class LodgingTexts {
         DEAD_POST="A post with its own shoe and wedge, standing on the bare floor. Nothing above it. Rope burns go round it at the height of a pair of wrists.",
         TALLY="Marks in fives, scratched with something blunt. Then marks that are not in fives. Then marks that are only lines.",
         BOLT_DRAWN="The bolt is on this side. It slides back easily; it is used.";
+    // 0.4.602: the four, in the panel. Their lines are the neutral script's (docs/THE_ONES_ALREADY_INSIDE_PLAN.md, N1 to N3), as it has
+    // them; RAE_THANKS, the reply labels R_WRONG_DAN, R_LEAVE_DAN and R_NOTHING, and the grey lines are new here.
+    public static final String[] RAE_REQUEST={"Oh, thank God. You're staying here? You must be. Nobody comes in that door who isn't.","I need a favour. It's a small one.",
+        "This is Dan. He isn't well. The woman who keeps this house said she'd see him, and I have to go and find her.","Will you stay with him? Only till I'm back. He doesn't want to be on his own with her."};
+    public static final String[] DAN_FINE={"I'm fine.","I'm not fine. But I can sit in a hall on my own.","You don't have to. She asks everybody for things."};
+    public static final String R_STAY="I'll stay with him.",R_WRONG="What's wrong with him?",R_PLACE="What is this place?",R_VERA="I'd rather see this Vera first.",R_NOT="It isn't my business.";
+    public static final String RAE_HAND="His hand, to start with. Show them, Dan.",DAN_SHOWS="Dan takes his hand out of his pocket. The first finger stays bent when the others open.",
+        DAN_SPRING="Since the spring. And other things.",RAE_ARRANGEMENT="There was an arrangement here once. Vera promised to put it right if it ever went wrong. It's gone wrong.",
+        DAN_PLACE="A boarding house. I stayed here once, a long time ago. I remember the stairs and not much else.",RAE_COME="Then come with me. She'll be upstairs, or in the back.",
+        RAE_NO="No. It isn't.",DAN_GOOD="Good for you.",RAE_THANKS="Thank you. I won't be long.",RAE_WATCHES="Rae is watching the stair.";
+    public static final String R_WRONG_DAN="What's wrong?",R_LEAVE_DAN="Leave him be.",DAN_SLEEPING="I've stopped sleeping. I don't like what my hands do when I'm not watching them.",
+        DAN_SITS="Dan keeps one hand in his coat pocket.",DAN_LOOKS_UP="Dan looks up.";
+    public static final String[] VERA_GUESTS={"You'll be the new guests. Good. Your rooms are ready.","Nobody touches anything in this house that isn't theirs. You'll find that easy."};
+    public static final String VERA_WORKS="Vera folds a cloth into a square and sets it on the others.";
+    public static final String MAN_IN_FRAME="The man in the frame";
+    public static final String[] DANIEL_LISTEN={"You're not her. You're staying here? Listen to me.","There's a key for these. She keeps it, or the woman with her does.",
+        "Get me out of this frame before she brings him down. If she brings him down it's finished."};
+    public static final String R_DAN_HERE="Dan's here.",R_WHO="Who are you?",R_FREE="I'll get you out.",R_BACK="I'll come back.",R_NOTHING="Say nothing.";
+    public static final String DANIEL_VOICE="I know he's here. I'd know that voice anywhere. It's mine.",DANIEL_NAME="Daniel. This was my room for a week.",DANIEL_LOOKS="He looks at the marked wall.",
+        DANIEL_COUNTING="I stopped counting.",DANIEL_KEY="Then get the key. Don't let her see you take it.";
+    /** What a failed body is doing when a hand is put on it. */
+    public static String failed(int who){return switch(who){
+        case LodgingPeople.FAILED_POST->"Tied to the post by the wrists. Its fingers go on doing up a button that is not there.";
+        case LodgingPeople.FAILED_DRESS->"It keeps one hand flat on the hatch, as somebody waits at a door they have knocked on.";
+        default->"Its fingers are hooked round the door's frame. It counts under its breath, loses its place, and starts again.";};}
     // 0.4.550: what is in the rooms.
     public static final String BED="A bed, made and turned down for the night.",
         BED_VERA="A narrow bed, made so tight the blanket does not crease.",
