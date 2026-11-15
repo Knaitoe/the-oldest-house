@@ -274,6 +274,13 @@ public final class LiteraryRenderers {
                 case 22->{rightArm.visible=false;leftArm.visible=false;bentArm.visible=true;bentArmLeft.visible=true;
                     bentArm.xRot=-.55F;bentArm.yRot=.35F;bentArm.zRot=.2F;forearm.xRot=-2.35F;forearm.yRot=0;forearm.zRot=0;
                     bentArmLeft.xRot=-.55F;bentArmLeft.yRot=-.35F;bentArmLeft.zRot=-.2F;forearmLeft.xRot=-2.35F;forearmLeft.yRot=0;forearmLeft.zRot=0;}
+                // 0.4.614 (LodgingComplete, E2): Dan with his right hand flat over his own mouth, the elbow out; the other hand hanging.
+                case 23->{rightArm.visible=false;bentArm.visible=true;
+                    float tr=net.minecraft.util.Mth.sin(age*.7F)*.015F;
+                    bentArm.xRot=-1.1F;bentArm.yRot=-.8F;bentArm.zRot=.35F;forearm.xRot=-2.45F+tr;forearm.yRot=0;forearm.zRot=-.6F;
+                    leftArm.xRot=.05F;leftArm.yRot=0;leftArm.zRot=-.04F;head.xRot+=.12F;}
+                // Rae with both hands up at his wrist, drawing it down, leaning in to him.
+                case 24->{rightArm.xRot=-1.3F;rightArm.yRot=-.3F;rightArm.zRot=0;leftArm.xRot=-1.2F;leftArm.yRot=.34F;leftArm.zRot=0;body.xRot+=.06F;head.xRot-=.06F;}
                 // 0.4.610 (LodgingCellar): the dead post's body with the wedge out, coming loose at the joins in four stages, awake, trembling.
                 // The parts drift from their sockets (a gap opens at shoulder and neck) as well as turning; arms' x set from their rest,
                 // never added to, so nothing walks off across frames.

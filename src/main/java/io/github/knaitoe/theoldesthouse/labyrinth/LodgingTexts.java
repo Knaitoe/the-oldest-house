@@ -178,6 +178,29 @@ public final class LodgingTexts {
         VERA_CALLS="One of you. Up here. Not Rae.",
         R_WHEN_YOU_CALL="When you call.",
         VERA_SENT_YES="Good. You'll hear me.",VERA_SENT_NO="Then I'll ask the next one up the stair.",VERA_NOT_YOU="Not you. Go back down.";
+    // 0.4.614: E2. Every line here is new but Dan's "Rae." and Vera's "It settles. It's temporary.", which are the plan's.
+    public static final String R_HOLD_DANIEL="Take his shoulders.",R_LET_DANIEL_GO="Let go of him.",
+        YOUR_CALL="It is your hands she is calling for.",
+        DAN_WHAT="What are you doing to him?",
+        YOU_HOLD_DANIEL="You take him by the shoulders. He is thin under the shirt, and he pulls against you.",
+        YOU_LET_DANIEL_GO="You take your hands off him.",
+        DANIEL_HELD_BY_YOU="Don't. I'll stand. I'll stand for you.",
+        ROOM_SHALLOWER="The back wall of the room is nearer than it was. There are fewer boards in front of it.",
+        DANIEL_PULLS_OUT="Let go. I'm not going back into it.",
+        VERA_LOST="Then he stays as he is. I won't ask twice.",
+        VOICE_GOES_ON="His voice goes on in the wall after there is no room left for him.",
+        DAN_RAE="Rae.",
+        DANIEL_UNDER="...old dog called. The one that slept under the stairs.",
+        UNDER_IT="Under it, from the same mouth, Daniel's voice finishes what he was asking.",
+        VERA_SETTLES="It settles. It's temporary.",
+        RAE_TAKES="Dan holds his hand over his own mouth. Rae takes hold of his wrist to bring it down, so that he will talk to her.";
+    /** Vera, from the frame with a steadied body there; or calling down the stair to whoever promised. */
+    public static final String[] VERA_NOW={"It's time. Bring him to his frame, and hold him there.","Hold him till I say. It goes quicker with more hands."},
+        VERA_COME_DOWN={"Now. Whoever said they would, come down to his frame.","Bring him, and hold him. It goes quicker with more hands."};
+    /** Daniel as the room takes him: a line at each third. */
+    public static final String[] DANIEL_HELD={"No. I'm in the room. I'm still in the room.","Rae. Rae, the window's the wrong way round.","There isn't any floor behind me."};
+    /** His voice in the wall, after. */
+    public static final String[] DANIEL_WALL={"In the mornings the light came along the floor as far as the chair.","I used to wait for it to reach my feet. Rae, what was the..."};
     // 0.4.613: E1. Every line here is new.
     public static final String R_GO_BACK="You could go back through. He'd walk out.",R_TAKE_HIM="Then we'll take you.",R_STOP_DAN="It isn't coming. Stop.",
         DAN_REFUSES="No. I've only just got here.",DAN_FORCED="Don't. Don't, I can walk.",DAN_LET_GO="Nobody's holding me. Nobody's holding me now.",
@@ -293,6 +316,11 @@ public final class LodgingTexts {
             case LodgingReturn.PANIC->"Dan went back through the frame because Vera told him it was the one safe place in the house, and Daniel came out of it.";
             default->"Dan went back through the frame because he said he would, and Daniel came out of it.";});
         if(own.getBoolean(LodgingReturn.HEARD_DOG))p.add("The old dog was called Pilot.");
+        // 0.4.614: E2.
+        if(own.getBoolean(LodgingComplete.SAW))p.add("Daniel was held in his frame until the room closed up behind him, and Dan was left to himself.");
+        if(own.getBoolean(LodgingComplete.HELD)&&!own.getBoolean(LodgingComplete.LET_GO))p.add("Your hands were on his shoulders while it happened.");
+        else if(own.getBoolean(LodgingComplete.HELD))p.add("Your hands were on his shoulders, and then they were not.");
+        if(own.getBoolean(LodgingComplete.HEARD_UNDER))p.add("Dan said Rae's name, and another voice went on under it.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.ONES_INSIDE),name,pages(String.join("\n\n",p)));
     }
 }

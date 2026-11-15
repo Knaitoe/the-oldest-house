@@ -136,7 +136,7 @@ public final class LodgingReturn {
     }
     /** Vera, set against and with nobody's hands promised her, uses what the walls did to him. */
     private static boolean panic(ServerLevel l,BlockPos b,CompoundTag h,CompoundTag in,@Nullable LiteraryActor dan,int clock){
-        if(dan==null||in.getBoolean("PanicStopped")||!ready(l.getServer(),b))return false;
+        if(dan==null||in.getBoolean("PanicStopped")||!ready(l.getServer(),b)||LodgingComplete.begun(l.getServer(),b))return false;
         var v=LodgingTaken.vera(h);var t=LodgingTaken.state(h);
         if(v.getInt("Phase")!=LodgingTaken.V_CALLED||v.getInt("Agreed")>0||!t.getBoolean("DanWalled")||clock-v.getInt("At")<PANIC_AFTER)return false;
         var vera=LodgingPeople.find(l,b,LodgingPeople.VERA);
@@ -168,16 +168,19 @@ public final class LodgingReturn {
     }
     /** Where he sets out from: the parlor, Daniel's room, or the hall and passage. */
     private static String zone(BlockPos b,LiteraryActor dan){var r=LodgingInjury.rel(b,dan);return LodgingSite.inParlor(r)?"parlor":LodgingSite.inDaniels(r)?"daniels":"hall";}
-    private static List<Vec3> route(BlockPos b,CompoundTag in){
-        return switch(in.getString("From")){
+    private static List<Vec3> route(BlockPos b,CompoundTag in){return route(in.getString("From"));}
+    /** From a zone (parlor, daniels, hall) to in front of the frame, through the real doors. */
+    static List<Vec3> route(String from){
+        return switch(from){
             // Out past the armchair's corner first, then the door; into Daniel's room clear of his chair.
             case "parlor"->List.of(new Vec3(-5.6,0,-7.6),new Vec3(-5.6,0,-8.5),new Vec3(-2.6,0,-8.5),new Vec3(0,0,-8.5),new Vec3(0,0,-14),new Vec3(-7.5,0,-14),new Vec3(-7.5,0,-18.5),new Vec3(-5.6,0,-20),new Vec3(-5.6,0,-26.6),FRONT);
             case "daniels"->List.of(FRONT);
             default->List.of(new Vec3(0,0,-5.5),new Vec3(0,0,-14),new Vec3(-7.5,0,-14),new Vec3(-7.5,0,-18.5),new Vec3(-5.6,0,-20),new Vec3(-5.6,0,-26.6),FRONT);
         };
     }
-    private static Map<Integer,BlockPos> doors(CompoundTag in){
-        return switch(in.getString("From")){
+    private static Map<Integer,BlockPos> doors(CompoundTag in){return doors(in.getString("From"));}
+    static Map<Integer,BlockPos> doors(String from){
+        return switch(from){
             case "parlor"->Map.of(2,LodgingSite.PARLOR_DOOR,6,LodgingSite.DANIEL_DOOR);
             case "daniels"->Map.of();
             default->Map.of(3,LodgingSite.DANIEL_DOOR);
@@ -192,7 +195,7 @@ public final class LodgingReturn {
         var s=p.server;var in=state(LodgingStory.house(s,b));int ph=in.getInt("Phase");
         var replies=new ArrayList<Talk.Reply>();
         if(ph==GOING&&in.getInt("Way")==PANIC)replies.add(Talk.reply(LodgingTexts.R_STOP_DAN,LodgingReturn::stop));
-        else if(ph==NONE&&ready(s,b)&&knows(own)){
+        else if(ph==NONE&&ready(s,b)&&knows(own)&&!LodgingComplete.begun(s,b)){
             if(!in.getBoolean("Refused"))replies.add(Talk.reply(LodgingTexts.R_GO_BACK,LodgingReturn::putIt));
             else if(!holding(in,p))replies.add(Talk.reply(LodgingTexts.R_TAKE_HIM,LodgingReturn::take));
         }else if(ph==GOING&&in.getInt("Way")==FORCE&&knows(own)&&!holding(in,p))replies.add(Talk.reply(LodgingTexts.R_TAKE_HIM,LodgingReturn::take));

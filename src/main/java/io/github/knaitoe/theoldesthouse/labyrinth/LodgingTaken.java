@@ -104,13 +104,13 @@ public final class LodgingTaken {
     /** Beside a guest room's bed at the pillow end, on the door's side. */
     static Vec3 bedside(int room){var bed=LodgingSite.bed(room);int s=room<3?-1:1;return new Vec3(s<0?-7.5:8.5,5,bed.getZ()+.5);}
     /** Vera's place at the frame, and the double's: in front of the frame, facing it. */
-    static final LodgingPeople.Spot VERA_AT=new LodgingPeople.Spot(-6.0,LodgingSite.GROUND,-26.9,140,LodgingPeople.WAIT),
+    public static final LodgingPeople.Spot VERA_AT=new LodgingPeople.Spot(-6.0,LodgingSite.GROUND,-26.9,140,LodgingPeople.WAIT),
         DOUBLE_AT=new LodgingPeople.Spot(-7.5,LodgingSite.GROUND,-27.45,180,STAND);
     /** Vera from Daniel's room up to the workroom (his door on leg 3, the workroom's on leg 10), to stand by her table. */
     static final List<Vec3> TO_WORKROOM=List.of(new Vec3(-5.6,0,-24),new Vec3(-5.6,0,-20),new Vec3(-7.5,0,-18.5),new Vec3(-7.5,0,-14),new Vec3(0,0,-14),
         new Vec3(0,0,-5),new Vec3(3.5,0,-5.5),new Vec3(3.5,5,-12.5),new Vec3(.5,5,-15),new Vec3(.5,5,-19.5),new Vec3(-3.5,5,-19.5),new Vec3(-6.5,5,-20.8));
     static final Map<Integer,BlockPos> WORKROOM_DOORS=Map.of(3,LodgingSite.DANIEL_DOOR,10,LodgingSite.WORK_DOOR);
-    static final LodgingPeople.Spot VERA_WORKROOM=new LodgingPeople.Spot(-6.5,LodgingSite.UPPER,-20.8,90,LodgingPeople.WAIT);
+    public static final LodgingPeople.Spot VERA_WORKROOM=new LodgingPeople.Spot(-6.5,LodgingSite.UPPER,-20.8,90,LodgingPeople.WAIT);
 
     // ------------------------------------------------------------------------------------------------ state
     static CompoundTag state(CompoundTag house){if(!house.contains(STATE))house.put(STATE,new CompoundTag());return house.getCompound(STATE);}
@@ -465,7 +465,7 @@ public final class LodgingTaken {
             }
             case V_ASK->{
                 var body=LodgingDoubles.sleeper(l,b,v.getInt("Room"));
-                if(body!=null){var at=LodgingPeople.world(b,DOUBLE_AT);if(body.position().distanceToSqr(at)>.0004)body.setPos(at.x,at.y,at.z);body.setYRot(DOUBLE_AT.look());body.setYBodyRot(DOUBLE_AT.look());}
+                if(body!=null&&!LodgingComplete.begun(l.getServer(),b)){var at=LodgingPeople.world(b,DOUBLE_AT);if(body.position().distanceToSqr(at)>.0004)body.setPos(at.x,at.y,at.z);body.setYRot(DOUBLE_AT.look());body.setYBodyRot(DOUBLE_AT.look());}
                 if(v.getBoolean("Asked")||!v.hasUUID("For"))return false;
                 var p=l.getServer().getPlayerList().getPlayer(v.getUUID("For"));
                 if(p==null||p.isSpectator()||!here.contains(p)||p.distanceToSqr(vera)>8*8||!p.hasLineOfSight(vera))return false;
