@@ -268,6 +268,7 @@ public final class LeftRightGame {
         for(var p:group){var o=own(p);o.putInt("Lunged205",o.getInt("Lunged205")+1);save(p,o);
             HousePackets.send(p,new LeftRightFogPayload(0));FOG.remove(p.getUUID());
             cue(p,"She was there before you had turned your head.");
+            VignetteGate.failed(p); // 0.4.599
             if(!LabyrinthDoors.sendBack(p,4,30,30,q->{}))teleport(p,b,.5,0,-2.5,180,0);}
         var fresh=new CompoundTag();road(s,fresh);LeftRightRoad.dress(l,b,1,1,LeftRightRoad.JUNCTION);
         return null;
@@ -305,6 +306,7 @@ public final class LeftRightGame {
             if(lock>0){var ahead=p.position().add(look.x*3,0,look.z*3);l.sendParticles(p,LINE,true,b.getX()+(Math.abs(rel(p,b).z)>Math.abs(LeftRightRoad.DIVIDER_END)?(rel(p,b).x<0?-7:7):0)+.5,b.getY()+.1,ahead.z,3,.05,0,1.5,0);}
             if(held>=GAZE_TAKE){o.putInt("Taken205",o.getInt("Taken205")+1);o.putInt("Gaze205",0);o.putInt("GazeHeld205",0);save(p,o);ungaze(p);
                 cue(p,"Somebody parted the curtain and looked back at you.");HousePackets.send(p,new HouseFadePayload(2,20,30));
+                VignetteGate.failed(p); // 0.4.599
                 if(!LabyrinthDoors.sendBack(p,4,30,30,q->{}))teleport(p,b,.5,0,-2.5,180,0);continue;}
             save(p,o);
         }

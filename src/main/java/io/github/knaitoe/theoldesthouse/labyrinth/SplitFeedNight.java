@@ -122,6 +122,8 @@ public final class SplitFeedNight {
         if(UncannyStories.failed(own)||own.getBoolean("Completed"))return;
         var l=p.serverLevel();
         own.putBoolean("UncannyFailed",true);own.putString("Failure",outcome);own.putBoolean("Ready",false);
+        // 0.4.599: the night is lost and there is nothing left here but to go; the house is gone from the door they came by.
+        VignetteGate.failed(p);
         own.putLong("Slaughter201",l.getGameTime());
         var door=Vec3.atCenterOf(b.offset(UncannyRooms.PARENTS_DOOR));var bed=Vec3.atCenterOf(b.offset(BED_A));
         doll.gesture(0);doll.moveTo(b.getX()+6.5,b.getY()+5,b.getZ()-23.5,180,0);doll.appearance(LiteraryActor.UNCANNY_MARIONETTE,0);

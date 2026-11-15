@@ -219,6 +219,11 @@ def report(players):
             print(f"  left Witness story rooms {len(leaves)} times, {len(retreats)} unresolved (retreats)")
             for place, count in Counter(event.get("place", "?") for event in retreats).most_common(5):
                 print(f"    retreated from {place} x{count}")
+        put_out = [event for event in rows if event["event"] == "story_put_out"]
+        if put_out:
+            print(f"  stories that failed the reader and went from their door: {len(put_out)}")
+            for place, count in Counter(event.get("place", "?") for event in put_out).most_common(5):
+                print(f"    put out of {place} x{count}")
         deaths = [event for event in rows if event["event"] == "death"]
         if deaths:
             print(f"  deaths {len(deaths)}")

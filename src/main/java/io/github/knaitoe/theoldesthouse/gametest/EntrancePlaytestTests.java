@@ -26,6 +26,9 @@ public final class EntrancePlaytestTests {
     @AfterBatch(batch="finished_passage143") public static void passageDone(ServerLevel l){close();}
     @AfterBatch(batch="onward_doors144") public static void onwardDone(ServerLevel l){close();}
     @AfterBatch(batch="onward_saved144") public static void onwardSavedDone(ServerLevel l){close();}
+    @AfterBatch(batch="put_out599") public static void putOutDone(ServerLevel l){close();}
+    @AfterBatch(batch="put_out_back599") public static void putOutBackDone(ServerLevel l){close();}
+    @AfterBatch(batch="put_out_family599") public static void putOutFamilyDone(ServerLevel l){close();}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);return p;}
     private static void at(ServerPlayer p,ServerLevel l,BlockPos at){p.stopRiding();p.teleportTo(l,at.getX()+.5,at.getY(),at.getZ()+.5,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();p.hasChangedDimension();p.resetFallDistance();}
     private static void click(ServerPlayer p,BlockPos at){p.gameMode.useItemOn(p,p.serverLevel(),p.getMainHandItem(),InteractionHand.MAIN_HAND,new BlockHitResult(at.getCenter(),Direction.SOUTH,at,false));}
@@ -305,6 +308,170 @@ public final class EntrancePlaytestTests {
                 f.reload();var saved=f.data().door(OnwardDoors.id(scene));
                 h.assertTrue(saved!=null&&LabyrinthData.DEALT.equals(saved.destination)&&saved.lower.equals(onward[0].lower),"the way on survives a reload");
             }).thenSucceed();
+    }
+
+    /**
+     * 0.4.599 (owner, 9 November: "once a player fails a vignette that simply bounces them to the exit, if the vignette is retriable, it
+     * should disappear and lead to a normal hallway."). A reader steps back out of a story of their own accord, and it is quiet behind
+     * its door as it always was. They go in again, the story fails them, and they walk out: the door is dealt an ordinary hall, the
+     * hall remembers it, and it takes them there.
+     */
+    @GameTest(template="empty",batch="put_out599",timeoutTicks=4000)
+    public static void aStoryThatFailsAReaderIsGoneFromItsDoorAndOneTheyStepOutOfIsQuiet(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"put_out_reader");var scene=LabyrinthPlace.HILL_NURSERY;var story=WitnessAccount.Story.of(scene.id());
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));for(var hall:HALLS)hold(f,hall);hold(f,scene);
+        boolean[] ticking={false};LabyrinthData.Door[] west={null},entry={null};
+        h.onEachTick(()->{if(ticking[0])tick(p);});
+        Runnable in=()->{f.data().deal(p.getUUID(),west[0],scene.id(),false);at(p,f.in,west[0].lower.relative(west[0].facing));click(p,west[0].lower);};
+        // From inside, the entry only opens; walking back out through it is what takes a reader back.
+        Runnable open=()->{at(p,f.level(scene),entry[0].lower.relative(entry[0].facing.getOpposite(),2));click(p,entry[0].lower);};
+        Runnable out=()->at(p,f.level(scene),entry[0].lower.relative(entry[0].facing,2));
+        java.util.function.BooleanSupplier inScene=()->!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==scene;
+        java.util.function.BooleanSupplier inJunction=()->!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.JUNCTION;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, the ordinary halls and the nursery are resident"))
+            .thenExecute(()->{
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:HALLS)buildHall(f,hall);
+                f.build(scene);
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");entry[0]=f.data().door(scene.entryDoorId());
+                ticking[0]=true;in.run();
+            })
+            .thenWaitUntil(()->h.assertTrue(inScene.getAsBoolean(),"the reader comes into the story by its entry"))
+            .thenExecute(open).thenIdle(2).thenExecute(out)
+            .thenWaitUntil(()->h.assertTrue(inJunction.getAsBoolean(),"walking back out of the entry takes them to the hall they came from"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);
+                h.assertTrue(VignetteGate.dormant(f.data(),p.getUUID(),west[0])&&deal!=null&&deal.place().equals(scene.id()),"a story they stepped back out of is quiet behind its door, and still behind it: "+deal);
+                in.run();
+            })
+            .thenWaitUntil(()->h.assertTrue(inScene.getAsBoolean(),"dealt again, the door takes them back in"))
+            .thenExecute(()->{
+                h.assertTrue(!VignetteGate.failedVisit(f.data(),p.getUUID()),"a new visit has not failed");
+                VignetteGate.failed(p);
+                h.assertTrue(VignetteGate.failedVisit(f.data(),p.getUUID()),"the story has failed them this visit");
+                open.run();
+            })
+            .thenIdle(2).thenExecute(out)
+            .thenWaitUntil(()->h.assertTrue(inJunction.getAsBoolean(),"put out, they walk back to the hall they came from"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);var to=deal==null?null:LabyrinthPlace.byId(deal.place());
+                h.assertTrue(!VignetteGate.dormant(f.data(),p.getUUID(),west[0]),"the door is not quiet");
+                h.assertTrue(HALLS.contains(to),"the story is gone from the door: it is dealt an ordinary hall ("+deal+")");
+                var remembered=f.data().node(p.getUUID(),f.data().nodeKey(p.getUUID(),LabyrinthPlace.JUNCTION));
+                h.assertTrue(remembered!=null&&remembered.get(west[0].id)!=null&&remembered.get(west[0].id).place().equals(to.id()),"the hall remembers the door so: "+remembered);
+                h.assertTrue(!VignetteGate.failedVisit(f.data(),p.getUUID())&&!LabyrinthDealer.finishedFor(f.data(),p.getUUID(),scene)&&!WitnessAccount.has(f.data(),p.getUUID(),story),"the story is unfinished, and theirs to be dealt again");
+                at(p,f.in,west[0].lower.relative(west[0].facing));click(p,west[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&HALLS.contains(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the door they failed behind opens onto an ordinary hall (at "+LabyrinthPlaces.placeAt(f.origin,p.blockPosition())+")"))
+            .thenExecute(()->h.assertTrue(p.isAlive()&&p.getHealth()==20&&f.data().returnDepth(p.getUUID())==1,"one ordinary crossing, and the reader is untouched"))
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.599: the two other roads out. A story that sends a reader back under a fade without failing them (the end of a take) is
+     * still behind its door; one that fails them and sends them back is gone from it. And a reader the story has failed who goes on
+     * by its own way on finds the door behind them dealt a hall too, remembered in the hall one crossing down their way back.
+     */
+    @GameTest(template="empty",batch="put_out_back599",timeoutTicks=4000)
+    public static void aStoryThatThrowsAReaderBackOrThatTheyGoOnFromIsGoneFromItsDoorToo(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"thrown_back_reader");var scene=LabyrinthPlace.HILL_NURSERY;
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));for(var hall:HALLS)hold(f,hall);hold(f,scene);
+        boolean[] ticking={false};LabyrinthData.Door[] west={null},onward={null};
+        h.onEachTick(()->{if(ticking[0])tick(p);});
+        Runnable knock=()->{at(p,f.in,west[0].lower.relative(west[0].facing));click(p,west[0].lower);};
+        java.util.function.BooleanSupplier inScene=()->!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==scene;
+        java.util.function.BooleanSupplier inJunction=()->!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.JUNCTION;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, the ordinary halls and the nursery are resident"))
+            .thenExecute(()->{
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:HALLS)buildHall(f,hall);
+                f.build(scene);
+                h.assertTrue(OnwardDoors.install(f.level(scene),f.base(scene),scene),"the nursery's way on goes in");onward[0]=f.data().door(OnwardDoors.id(scene));
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");f.data().deal(p.getUUID(),west[0],scene.id(),false);
+                ticking[0]=true;knock.run();
+            })
+            .thenWaitUntil(()->h.assertTrue(inScene.getAsBoolean(),"the reader comes into the story by its entry"))
+            // Sent back without failing: the door still leads there.
+            .thenExecute(()->h.assertTrue(LabyrinthDoors.sendBack(p,1,1,1,q->{}),"the story sends them back"))
+            .thenWaitUntil(()->h.assertTrue(inJunction.getAsBoolean(),"they are back in the hall they came from"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);
+                h.assertTrue(deal!=null&&deal.place().equals(scene.id())&&!VignetteGate.dormant(f.data(),p.getUUID(),west[0])&&f.data().returnDepth(p.getUUID())==0,"a story that sent them back without failing them is still behind its door: "+deal);
+                knock.run();
+            })
+            .thenWaitUntil(()->h.assertTrue(inScene.getAsBoolean(),"and the door takes them back in"))
+            // Failed, and sent back.
+            .thenExecute(()->{VignetteGate.failed(p);h.assertTrue(VignetteGate.failedVisit(f.data(),p.getUUID())&&LabyrinthDoors.sendBack(p,1,1,1,q->{}),"the story fails them and throws them out");})
+            .thenWaitUntil(()->h.assertTrue(inJunction.getAsBoolean(),"they are back in the hall they came from"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);var to=deal==null?null:LabyrinthPlace.byId(deal.place());
+                h.assertTrue(HALLS.contains(to)&&!VignetteGate.dormant(f.data(),p.getUUID(),west[0])&&!VignetteGate.failedVisit(f.data(),p.getUUID()),"the story that threw them out is gone from the door: it is dealt an ordinary hall ("+deal+")");
+                var remembered=f.data().node(p.getUUID(),f.data().nodeKey(p.getUUID(),LabyrinthPlace.JUNCTION));
+                h.assertTrue(remembered!=null&&remembered.get(west[0].id)!=null&&remembered.get(west[0].id).place().equals(to.id()),"the hall remembers the door so: "+remembered);
+                f.data().deal(p.getUUID(),west[0],scene.id(),false);knock.run();
+            })
+            .thenWaitUntil(()->h.assertTrue(inScene.getAsBoolean(),"dealt again, the door takes them back in"))
+            // Failed, and going on by the story's own way on.
+            .thenExecute(()->{VignetteGate.failed(p);at(p,f.level(scene),onward[0].lower.relative(onward[0].facing));click(p,onward[0].lower);})
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&HALLS.contains(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the way on leads into an ordinary hall (at "+LabyrinthPlaces.placeAt(f.origin,p.blockPosition())+")"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);var to=deal==null?null:LabyrinthPlace.byId(deal.place());
+                h.assertTrue(HALLS.contains(to)&&!VignetteGate.dormant(f.data(),p.getUUID(),west[0])&&!VignetteGate.failedVisit(f.data(),p.getUUID()),"the story they went on from, failed, is gone from the door behind them: "+deal);
+                var back=f.data().peekReturn(p.getUUID());
+                h.assertTrue(f.data().returnDepth(p.getUUID())==1&&back!=null&&back.pos().distanceTo(Vec3.atBottomCenterOf(west[0].lower))<.01,"their way back still ends at that door");
+                var remembered=f.data().node(p.getUUID(),f.data().nodeKeyBelow(p.getUUID(),LabyrinthPlace.JUNCTION));
+                h.assertTrue(remembered!=null&&remembered.get(west[0].id)!=null&&remembered.get(west[0].id).place().equals(to.id()),"and the hall it stands in, one crossing down, remembers it so: "+remembered);
+                h.assertTrue(p.isAlive()&&p.getHealth()==20,"the reader is untouched");
+            })
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.599: the same, by a story's own hand and nothing of the test's. The boarded house's family touch a reader; the room puts
+     * them at its door as it always did (UncannyStories.caught); they walk out; and the door they came by opens onto an ordinary
+     * hall. The room is still theirs to be dealt again.
+     */
+    @GameTest(template="empty",batch="put_out_family599",timeoutTicks=4000)
+    public static void theBoardedHouseThatTouchesAReaderIsGoneFromTheDoorTheyCameBy(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var p=player(h,f,"put_out_family");var scene=LabyrinthPlace.PAINTED_INTERIOR;var story=WitnessAccount.Story.of(scene.id());
+        var junction=f.base(LabyrinthPlace.JUNCTION);f.chunks.hold(f.in,new AABB(junction).inflate(8,4,16));for(var hall:HALLS)hold(f,hall);hold(f,scene);
+        boolean[] ticking={false};LabyrinthData.Door[] west={null},entry={null};
+        h.onEachTick(()->{if(ticking[0])tick(p);});
+        java.util.function.BooleanSupplier inScene=()->!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==scene;
+        java.util.function.BooleanSupplier inJunction=()->!LabyrinthDoors.isBusy(p)&&LabyrinthPlaces.placeAt(f.origin,p.blockPosition())==LabyrinthPlace.JUNCTION;
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the junction, the ordinary halls and the boarded house are resident"))
+            .thenExecute(()->{
+                LabyrinthBuilder.buildJunction(f.in,junction);LabyrinthBuilder.registerDoors(f.data(),LabyrinthPlace.JUNCTION,junction);f.built.add(LabyrinthPlace.JUNCTION);
+                for(var hall:HALLS)buildHall(f,hall);
+                f.build(scene);
+                west[0]=f.data().door(LabyrinthPlace.JUNCTION.id()+"/west");entry[0]=f.data().door(scene.entryDoorId());
+                f.data().deal(p.getUUID(),west[0],scene.id(),false);
+                ticking[0]=true;at(p,f.in,west[0].lower.relative(west[0].facing));click(p,west[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(inScene.getAsBoolean(),"the reader comes into the boarded house by its entry"))
+            .thenWaitUntil(()->h.assertTrue(UncannyStories.actor(p,f.own(p,scene),"CastP0")!=null&&f.own(p,scene).getInt("UncannyAge")>0,"its family is standing, and its clock has begun"))
+            .thenExecute(()->{
+                h.assertTrue(!VignetteGate.failedVisit(f.data(),p.getUUID())&&!f.own(p,scene).getBoolean("UncannyFailed"),"nothing has failed yet");
+                var touch=UncannyStories.actor(p,f.own(p,scene),"CastP0").position();
+                p.teleportTo(p.serverLevel(),touch.x,touch.y,touch.z,180,0);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
+            })
+            .thenWaitUntil(()->h.assertTrue(f.own(p,scene).getBoolean("UncannyFailed")&&f.own(p,scene).getString("Failure").equals("touched_by_the_family"),"the family's touch ends the visit, by the room's own clock"))
+            .thenExecute(()->{
+                h.assertTrue(VignetteGate.failedVisit(f.data(),p.getUUID()),"and the room has marked the visit failed");
+                h.assertTrue(inScene.getAsBoolean()&&p.position().distanceTo(Vec3.atBottomCenterOf(f.base(scene).offset(0,0,-3)))<.01,"it has put them at its door, as it always did");
+                var deal=f.data().deal(p.getUUID(),west[0]);h.assertTrue(deal!=null&&deal.place().equals(scene.id()),"the door is the room's until they are out of it: "+deal);
+                at(p,f.level(scene),entry[0].lower.relative(entry[0].facing.getOpposite(),2));click(p,entry[0].lower);
+            })
+            .thenIdle(2).thenExecute(()->at(p,f.level(scene),entry[0].lower.relative(entry[0].facing,2)))
+            .thenWaitUntil(()->h.assertTrue(inJunction.getAsBoolean(),"they walk out to the hall they came from"))
+            .thenExecute(()->{
+                var deal=f.data().deal(p.getUUID(),west[0]);var to=deal==null?null:LabyrinthPlace.byId(deal.place());
+                h.assertTrue(HALLS.contains(to)&&!VignetteGate.dormant(f.data(),p.getUUID(),west[0]),"the boarded house is gone from the door: it is dealt an ordinary hall, and is not quiet ("+deal+")");
+                h.assertTrue(!VignetteGate.failedVisit(f.data(),p.getUUID())&&!LabyrinthDealer.finishedFor(f.data(),p.getUUID(),scene)&&!WitnessAccount.has(f.data(),p.getUUID(),story),"the room is unfinished, and theirs to be dealt again");
+                at(p,f.in,west[0].lower.relative(west[0].facing));click(p,west[0].lower);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LabyrinthDoors.isBusy(p)&&HALLS.contains(LabyrinthPlaces.placeAt(f.origin,p.blockPosition())),"the door opens onto an ordinary hall (at "+LabyrinthPlaces.placeAt(f.origin,p.blockPosition())+")"))
+            .thenSucceed();
     }
 
     @GameTest(template="empty",batch="onward_saved144",timeoutTicks=2400)

@@ -292,6 +292,7 @@ public final class DeerRoad {
     static void caught(DeerRoadScene s,ServerPlayer p,int life){
         var o=own(p);if(o.getBoolean("Caught")||o.getBoolean("Completed"))return;
         o.putBoolean("Caught",true);o.putInt("DeerCaughtLife",life);save(p,o);s.party.remove(p.getUUID());
+        VignetteGate.failed(p); // 0.4.599
         p.stopRiding();say(p,"Her hand closes on the back of your neck.");
         HousePackets.send(p,new HouseFadePayload(2,30,20));
         LabyrinthDoors.sendBack(p,2,30,20);

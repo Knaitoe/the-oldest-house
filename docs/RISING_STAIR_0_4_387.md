@@ -1,5 +1,7 @@
 # The rising stair (0.4.387)
 
+> **Superseded in part by 0.4.599** ([TWO_NOTES_0_4_599.md](TWO_NOTES_0_4_599.md)). The owner found the room impossible to pass. It was three rows taller than the slot it is carved in, so its head lay in the room over it. It is now twenty-four rows high, with thirty-eight treads climbing nineteen blocks, a little under one and a half times round; the pockets are at the fourth and the eleventh block up; the water waits three seconds after a reader is first on the treads; and the undertow is applied on the reader's own client. Where the two disagree, the later notes hold.
+
 The third of the new trial rooms from [HALLS_TRIALS_AND_TIME_DESIGN.md](HALLS_TRIALS_AND_TIME_DESIGN.md) (tier 2, trial 6): "A flooded stairwell whose water rises one step every three seconds. Climb faster than it, and dive for the two air pockets if you fall behind." It takes the listening room's place in the build order (see the soft floor's notes).
 
 ## The room

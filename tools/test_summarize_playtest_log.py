@@ -5,7 +5,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from summarize_playtest_log import load, summarize
+from summarize_playtest_log import load, report, summarize
 
 
 def event(minute, name, **fields):
@@ -138,6 +138,26 @@ class JourneyMeasures(unittest.TestCase):
         p = summarize(events)
         self.assertEqual(p["reader"]["resolutions"], 1)
         self.assertEqual(p["peer"]["resolutions"], 0)
+
+    def test_a_story_that_put_its_reader_out_is_counted_by_place(self):
+        # 0.4.599: a reader thrown back to the hall leaves no story_leave, so this is the only record of it.
+        events = [event(0, "session_start", inLabyrinth=True),
+                  event(5, "story_put_out", place="painted_interior", depth=7, inLabyrinth=True),
+                  event(6, "story_leave", place="painted_interior", resolved=False, inLabyrinth=True),
+                  event(9, "story_put_out", place="painted_interior", depth=9, inLabyrinth=True),
+                  event(12, "story_put_out", place="usher", depth=11, inLabyrinth=True),
+                  event(20, "session_end", inLabyrinth=True)]
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            report(summarize(events))
+        text = out.getvalue()
+        self.assertIn("stories that failed the reader and went from their door: 3", text)
+        self.assertIn("put out of painted_interior x2", text)
+        self.assertIn("put out of usher x1", text)
+        quiet = io.StringIO()
+        with contextlib.redirect_stdout(quiet):
+            report(summarize([event(0, "session_start", inLabyrinth=True), event(20, "session_end", inLabyrinth=True)]))
+        self.assertNotIn("went from their door", quiet.getvalue())
 
     def test_loader_handles_truncated_last_line_without_losing_evidence(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -162,6 +162,8 @@ public final class UncannyStories {
     }
     static void caught(ServerPlayer p,BlockPos b,LabyrinthPlace place,CompoundTag own,String outcome){
         if(failed(own)||own.getBoolean("Completed"))return;own.putBoolean("UncannyFailed",true);own.putString("Failure",outcome);own.putBoolean("Ready",false);
+        // 0.4.599: the room has put them out; it is gone from the door they came by (VignetteGate.failed).
+        VignetteGate.failed(p);
         HousePackets.send(p,new HouseFadePayload(10,8,16));var safe=Vec3.atBottomCenterOf(b.offset(0,0,-3));
         p.teleportTo(p.serverLevel(),safe.x,safe.y,safe.z,0,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
         // 0.4.191: answering her, the reader leaves in her black frost.

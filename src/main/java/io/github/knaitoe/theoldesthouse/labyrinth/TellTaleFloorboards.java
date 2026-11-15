@@ -253,6 +253,7 @@ public final class TellTaleFloorboards {
             for (ServerPlayer player : inside) {
                 play(player, LabyrinthRegistry.FLOORBOARD_HEARTBEAT.get(), heart, 1.7F, 1.18F);
                 ContestTrades.unsettle(player);
+                VignetteGate.failed(player); // 0.4.599
                 LabyrinthDoors.sendBack(player, 2, 24, 30);
             }
             TheOldestHouse.LOGGER.info("The heartbeat under the floorboards reached its peak.");

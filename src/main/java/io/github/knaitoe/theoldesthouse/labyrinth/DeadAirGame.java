@@ -232,6 +232,7 @@ public final class DeadAirGame {
     }
     /** Its touch: the reader is put out, to come back and do the visit again. */
     static void caught(ServerLevel l,BlockPos b,CompoundTag t,ServerPlayer p){
+        VignetteGate.failed(p); // 0.4.599
         var o=own(p);o.putInt("Caught206",o.getInt("Caught206")+1);save(p,o);
         sound(l,p.getEyePosition(),DeadAirRegistry.FEEDBACK.get(),1.4F,.6F);HousePackets.send(p,new HouseFadePayload(2,20,30));HousePackets.send(p,new DeadAirPayload(0,0));
         cue(p,"Burlap against your face, and the smell of the marsh, and then the hallway is a long way behind you.");
