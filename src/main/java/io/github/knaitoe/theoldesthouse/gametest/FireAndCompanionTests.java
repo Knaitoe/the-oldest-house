@@ -13,6 +13,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.*;
 @GameTestHolder(TheOldestHouse.MOD_ID)
@@ -51,6 +52,138 @@ public final class FireAndCompanionTests {
                 dog.discard();remove(owner);h.succeed();
             }
         });
+    }
+    @AfterBatch(batch="stair_light") public static void cleanLights(ServerLevel level){StaircaseFallingLight.clear();}
+    /** 0.4.594: a light let fall over a rail is the well's; one on a tread is a dropped thing; it lands where there is something to land on, and lies there. */
+    @GameTest(template="empty",batch="stair_light",timeoutTicks=420)
+    public static void aLightLetFallIsTakenByTheWell(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"stair_light_one");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
+        BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+230000,0,230000);var base=FinaleArchitecture.base(origin);
+        // A place inside the well, clear of everything: nothing is built at this origin.
+        var hand=new Vec3(base.getX()+10.5,FinaleArchitecture.TOP-40,base.getZ()+10.5);var below=new Vec3(hand.x,hand.y-7,hand.z);
+        var floor=BlockPos.containing(hand.x,hand.y-30,hand.z);var wall=BlockPos.containing(hand.x+2,hand.y-7,hand.z);
+        // A tread to one side, two blocks below the hand: what lands there is a dropped thing.
+        var tread=BlockPos.containing(hand.x-4,hand.y-3,hand.z);
+        var held=new NativeTestChunks();
+        Runnable clean=()->{
+            held.close();
+            for(int y=-40;y<=0;y++)level.setBlock(wall.above(y),Blocks.AIR.defaultBlockState(),3);
+            level.setBlock(floor,Blocks.AIR.defaultBlockState(),3);level.setBlock(tread,Blocks.AIR.defaultBlockState(),3);
+            for(var e:level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(floor).inflate(8,40,8)))e.discard();
+            StaircaseFallingLight.clear();remove(p);};
+        try{
+            level.getChunkAt(floor);level.getChunkAt(wall);p.teleportTo(level,hand.x,hand.y,hand.z,0,0);
+            h.assertTrue(StaircaseFallingLight.isLight(new ItemStack(Items.TORCH))&&StaircaseFallingLight.isLight(new ItemStack(Items.SOUL_LANTERN))
+                    &&!StaircaseFallingLight.isLight(new ItemStack(Items.STICK))&&!StaircaseFallingLight.isLight(new ItemStack(Items.CANDLE))
+                    &&!StaircaseFallingLight.isLight(new ItemStack(Items.FLINT_AND_STEEL)),"a light is a thing that burns: a torch or a lantern, not a stick, an unlit candle or a striker");
+            h.assertTrue(StaircaseFallingLight.tint(new ItemStack(Items.SOUL_TORCH))==StaircaseFallingLight.SOUL
+                    &&StaircaseFallingLight.tint(new ItemStack(Items.TORCH))==StaircaseFallingLight.WARM,"a soul fire keeps its own colour as it falls");
+            var stick=new net.minecraft.world.entity.item.ItemEntity(level,hand.x,hand.y,hand.z,new ItemStack(Items.STICK));
+            h.assertTrue(!StaircaseFallingLight.track(p,stick,origin)&&StaircaseFallingLight.onTheirWay()==0,"a stick let fall is only a stick");
+            var torch=new net.minecraft.world.entity.item.ItemEntity(level,hand.x,hand.y,hand.z,new ItemStack(Items.TORCH));torch.setDeltaMovement(.02,-.2,0);
+            h.assertTrue(StaircaseFallingLight.track(p,torch,origin)&&StaircaseFallingLight.onTheirWay()==1,"a torch let go in the well is watched");
+            torch.setPos(hand.x,hand.y-3,hand.z);
+            h.assertTrue(!StaircaseFallingLight.given(torch,hand.y,origin),"three blocks below the hand it is not yet the well's");
+            torch.setPos(below.x,below.y,below.z);torch.setOnGround(true);
+            h.assertTrue(!StaircaseFallingLight.given(torch,hand.y,origin),"a torch lying on a tread is not the well's");
+            torch.setOnGround(false);
+            h.assertTrue(StaircaseFallingLight.given(torch,hand.y,origin),"seven blocks below the hand and still falling, the well has it");
+            torch.setPos(base.getX()+60.5,below.y,below.z);
+            h.assertTrue(!StaircaseFallingLight.given(torch,hand.y,origin),"outside the well's walls nothing is taken");
+            torch.setPos(below.x,below.y,below.z);
+            // Something to land on, twenty-three blocks further down.
+            level.setBlock(floor,Blocks.STONE.defaultBlockState(),3);
+            var fall=StaircaseFallingLight.let(level,torch,origin);
+            h.assertTrue(torch.isRemoved(),"the torch is out of the world while it falls");
+            h.assertTrue(fall.hit()&&Math.abs(fall.end().y-(floor.getY()+1))<.1&&BlockPos.containing(fall.end()).below().equals(floor),"it comes down on the stone that is really there: "+fall.end());
+            // A client stepping the same start and speed arrives where the server found the landing.
+            var motion=new StaircaseFallingLight.Motion(fall.start(),fall.speed());for(int t=1;t<fall.ticks();t++)motion.step();
+            h.assertTrue(motion.y>fall.end().y&&motion.y-fall.end().y<=StaircaseFallingLight.TERMINAL+.1&&Math.hypot(motion.x-fall.end().x,motion.z-fall.end().z)<.5,
+                    "a client stepping the same fall is over the landing a tick before it: "+motion.y+" above "+fall.end().y);
+            h.assertTrue(StaircaseFallingLight.audience(level,origin).contains(p),"the reader who let it fall is told of it");
+            // With nothing below, it is followed a very long way down: here, to the floor of the world, far out of anyone's hearing.
+            level.setBlock(floor,Blocks.AIR.defaultBlockState(),3);
+            var lost=StaircaseFallingLight.fall(level,below,new Vec3(0,-.2,0),StaircaseFallingLight.WARM);
+            h.assertTrue(lost.end().y<hand.y-1000&&lost.ticks()>500&&lost.ticks()<StaircaseFallingLight.LONGEST,"with nothing under it the light goes on down: "+lost.end()+" after "+lost.ticks()+" ticks");
+            // A wall it would drift into does not stop it in mid-air: it is followed straight down, as a client will draw it.
+            for(int y=-40;y<=0;y++)level.setBlock(wall.above(y),Blocks.STONE.defaultBlockState(),3);
+            level.setBlock(floor,Blocks.STONE.defaultBlockState(),3);
+            var walled=StaircaseFallingLight.fall(level,below,new Vec3(.5,-.2,0),StaircaseFallingLight.WARM);
+            h.assertTrue(walled.hit()&&walled.speed().x==0&&BlockPos.containing(walled.end()).below().equals(floor),"a light that would strike a wall falls straight down beside it: "+walled.end()+" at "+walled.speed());
+            for(int y=-40;y<=0;y++)level.setBlock(wall.above(y),Blocks.AIR.defaultBlockState(),3);
+            // The watch itself, with real things falling: lanterns let go over the drop, and torches that come down on a tread.
+            // Their chunks are held, and tick their entities, before anything is let go: an item in a chunk that is not ticking never falls.
+            level.setBlock(tread,Blocks.STONE.defaultBlockState(),3);
+            var box=new AABB(floor).inflate(8,40,8);held.hold(level,box);
+            var lantern=new net.minecraft.world.entity.item.ItemEntity(level,hand.x,hand.y,hand.z,new ItemStack(Items.LANTERN,3));lantern.setDeltaMovement(0,0,0);lantern.setPickUpDelay(32767);
+            var dropped=new net.minecraft.world.entity.item.ItemEntity(level,tread.getX()+.5,hand.y,tread.getZ()+.5,new ItemStack(Items.TORCH,2));dropped.setDeltaMovement(0,0,0);dropped.setPickUpDelay(32767);
+            // Polled until every fall is over; on the wait's last look the fixture is cleared before it fails.
+            int[] looks={0};boolean[] letGo={false};
+            SceneReady.when(h,()->{
+                String missing;
+                try{
+                    if(!letGo[0]){
+                        missing=SceneReady.notTicking(level,box);
+                        if(missing==null){
+                            level.addFreshEntity(lantern);level.addFreshEntity(dropped);letGo[0]=true;
+                            missing=StaircaseFallingLight.track(p,lantern,origin)&&StaircaseFallingLight.track(p,dropped,origin)?"the lights have only now been let go":"both should be watched as they are let go";
+                        }
+                    }else{
+                        var lying=level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new AABB(floor).inflate(3,2,3));
+                        int torches=lying.stream().filter(e->e.getItem().is(Items.TORCH)).mapToInt(e->e.getItem().getCount()).sum();
+                        int lanterns=lying.stream().filter(e->e!=lantern&&e.getItem().is(Items.LANTERN)).mapToInt(e->e.getItem().getCount()).sum();
+                        missing=torches!=1?"the torch let fall should lie where it came down, not be lost: "+lying
+                                :!lantern.isRemoved()?"the lanterns let go over the drop should be the well's; still a dropped thing at "+lantern.position()+", watched "+StaircaseFallingLight.onTheirWay()
+                                :lanterns!=3?"all three lanterns should lie at the bottom of the drop once their fall is over: "+lying
+                                :dropped.isRemoved()||!dropped.onGround()||dropped.getItem().getCount()!=2||!BlockPos.containing(dropped.position()).below().equals(tread)
+                                        ?"what came down on a tread should still be the dropped thing it was, lying there: "+dropped+" removed "+dropped.isRemoved()+" on ground "+dropped.onGround():null;
+                    }
+                }catch(RuntimeException e){clean.run();throw new GameTestAssertException("the falling-light case broke: "+e);}
+                if(missing!=null&&++looks[0]>150)clean.run();
+                return missing;
+            },2,300,()->{clean.run();h.succeed();});
+        }catch(RuntimeException|Error e){clean.run();throw e;}
+    }
+    /** 0.4.594: a reader at a rail in the well who looks down leans out over it, and a light let go then falls from the hand held out there. */
+    @GameTest(template="empty",batch="stair_light",timeoutTicks=100)
+    public static void aReaderLeansOverARailToLetALightFall(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"stair_light_lean");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
+        BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+240000,0,240000);var base=FinaleArchitecture.base(origin);
+        // A tread, with a rail on a stone string to its west and the drop beyond: a flight's inner edge, as it is built.
+        var tread=new BlockPos(base.getX()+10,FinaleArchitecture.TOP-60,base.getZ()+10);BlockPos string=tread.west(),rail=string.above(),ledge=rail.west().below();
+        var bars=io.github.knaitoe.theoldesthouse.labyrinth.StairWell.BALUSTRADE.get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.NORTH,true).setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.SOUTH,true);
+        double y=tread.getY()+1,z=tread.getZ()+.5,atRail=tread.getX()+.1,back=tread.getX()+.5;float west=90,east=-90,eye=1.62F;
+        try{
+            level.getChunkAt(tread);level.setBlock(tread,Blocks.STONE.defaultBlockState(),3);level.setBlock(string,Blocks.STONE.defaultBlockState(),3);level.setBlock(rail,bars,3);
+            var over=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(atRail,y,z),eye,west,50);
+            h.assertTrue(over!=null&&Math.abs(over.x+1.3)<.001&&over.z==0&&Math.abs(over.y+.25)<.001,"at the rail, looking down, the eye goes out past the rail's far face and a little lower: "+over);
+            h.assertTrue(atRail+over.x<rail.getX()&&y+eye+over.y>rail.getY()+1,"leaning, the eye is beyond the string's face and above the rail's top");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(atRail,y,z),eye,west,10)==null,"looking out level, a reader stands as they are");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(back,y,z),eye,west,50)==null,"a step back from the rail is not at it");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(atRail,y,z),eye,east,50)==null,"with no rail the way they face there is nothing to lean over");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin.offset(4000,0,4000),new Vec3(atRail,y,z),eye,west,50)==null,"a rail that is not in the well is only a rail");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(atRail,y,z),1.0,west,50)==null,"an eye that would not clear the rail's top does not go through it");
+            level.setBlock(ledge,Blocks.STONE.defaultBlockState(),3);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(atRail,y,z),eye,west,50)==null,"where there is floor beyond the rail there is no drop to lean out over");
+            level.setBlock(ledge,Blocks.AIR.defaultBlockState(),3);
+            // Let go while leaning, a light falls from the hand; a stick does not, and neither does a light let go looking out level.
+            p.teleportTo(level,atRail,y,z,west,50);
+            var torch=new net.minecraft.world.entity.item.ItemEntity(level,p.getX(),p.getEyeY()-.3,p.getZ(),new ItemStack(Items.TORCH));torch.setDeltaMovement(-.2,.1,0);
+            h.assertTrue(StaircaseFallingLight.held(p,torch,origin),"a light let go while leaning leaves the hand held out over the rail");
+            h.assertTrue(torch.getX()+.125<rail.getX()&&torch.getY()>rail.getY()+1&&Math.abs(torch.getDeltaMovement().x)<=.03&&torch.getDeltaMovement().y<0,
+                    "it starts clear of the string's face, above the rail, and falls: "+torch.position()+" at "+torch.getDeltaMovement());
+            var stick=new net.minecraft.world.entity.item.ItemEntity(level,p.getX(),p.getEyeY()-.3,p.getZ(),new ItemStack(Items.STICK));
+            h.assertTrue(!StaircaseFallingLight.held(p,stick,origin)&&stick.getX()==p.getX(),"anything else let go at a rail stays in the reader's reach");
+            p.teleportTo(level,atRail,y,z,west,0);
+            var level2=new net.minecraft.world.entity.item.ItemEntity(level,p.getX(),p.getEyeY()-.3,p.getZ(),new ItemStack(Items.TORCH));
+            h.assertTrue(!StaircaseFallingLight.held(p,level2,origin)&&level2.getX()==p.getX(),"looking out level, a light is thrown as anything is");
+            h.succeed();
+        }finally{
+            // Nothing here is watched or on its way: the well's lists are left alone, for the case beside this one in the batch.
+            for(var at:List.of(tread,string,rail,ledge))level.setBlock(at,Blocks.AIR.defaultBlockState(),3);
+            remove(p);
+        }
     }
     @GameTest(template="empty",batch="stair_fire",timeoutTicks=160)
     public static void fiveNativeFiresConsumeBookAndUnlockOnlyTheirReader(GameTestHelper h){

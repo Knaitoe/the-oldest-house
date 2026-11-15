@@ -1133,6 +1133,8 @@ jobs:
           test -s build/font-smoke/staircase-dark-passed.txt
           test -s build/font-smoke/native-staircase-dark.png
           test -s build/font-smoke/well-dark-passed.txt
+          test -s build/font-smoke/falling-light-passed.txt
+          test -s build/font-smoke/native-falling-light.png
           test -s build/font-smoke/native-covered-well-dark.png
           test -s build/font-smoke/well-design-passed.txt
           for view in lid-open lid-quarter lid-three-quarter lid-closed stone-initials fade-start fade-middle fade-dark lid-from-below; do test -s build/font-smoke/native-well-$view.png; done

@@ -6,6 +6,7 @@
   "client": [
     "BackseatCameraMixin",
     "GoatmanBedCameraMixin",
+    "StairLeanCameraMixin",
     "GoatmanBedWakeMixin",
     "HouseFontMixin",
     "BookLiteratureMixin",
