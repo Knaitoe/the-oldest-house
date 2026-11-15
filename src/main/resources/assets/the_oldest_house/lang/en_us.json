@@ -1943,5 +1943,7 @@
   "subtitles.the_oldest_house.ward.tube": "A carrier arrives",
   "item.the_oldest_house.pell_ball": "Tennis Ball",
   "item.the_oldest_house.lodging_key": "Long Key",
-  "subtitles.the_oldest_house.pell.ball": "A ball bounces"
+  "subtitles.the_oldest_house.pell.ball": "A ball bounces",
+  "advancements.the_oldest_house.account.ones_already_inside.title": "The ones already inside",
+  "advancements.the_oldest_house.account.ones_already_inside.description": "I stayed in a lodging house where one man had been made out of another, and both of them were still in it."
 }

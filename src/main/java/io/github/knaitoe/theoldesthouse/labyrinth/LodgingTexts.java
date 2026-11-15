@@ -338,10 +338,24 @@ public final class LodgingTexts {
      * house, and later slices write the rest from the reader's own record.
      */
     public static ItemStack account(String name,CompoundTag own){
+        // 0.4.618: in the order it happened, each line only from what this reader did, saw or heard (docs/ONES_INSIDE_ACCOUNTS_0_4_618.md).
         var p=new ArrayList<String>();
         p.add("There was a lodging house with its shutters screwed shut, and a card of terms in the hall.");
+        // 0.4.617: came in late.
+        if(own.getInt(LodgingParty.LATE)==LodgingParty.HALL)p.add("You came in late, by the hall, and Dan told you what was going on.");
+        else if(own.getInt(LodgingParty.LATE)==LodgingParty.SCULLERY)p.add("You came in late, by the scullery door, while it was already happening.");
         if(own.getBoolean("WentUp"))p.add("Upstairs every room had a number, and every outside wall had a doorway in it that went nowhere.");
+        // 0.4.618: the rooms, Daniel, the cut, the two accounts, the key, Vera's offer and the cellar.
+        if(own.getBoolean(LodgingDoubles.SAW))p.add(own.getBoolean(LodgingDoubles.SAW_EYES)?"In the bed in your room something slept with your face, and its eyes opened.":"In the bed in your room something slept with your face.");
+        if(own.getBoolean(LodgingPeople.DANIEL_MET))p.add("At the back of the house a man stood strapped in one of those doorways. He had Dan's face.");
+        if(own.getBoolean(LodgingInjury.SAW_DAN_CUT)&&own.getBoolean(LodgingInjury.SAW_DANIEL_CUT))p.add("When Dan was cut, the same cut opened on Daniel.");
+        if(own.getBoolean(LodgingPeople.DAN_TOLD)&&own.getBoolean(LodgingPeople.DANIEL_TOLD))p.add("Each of them told you the life was his.");
+        if(own.getBoolean(LodgingPeople.GAVE_WEAPON))p.add("You put something heavy in Daniel's hand.");
+        if(own.getBoolean(LodgingKey.HEARD_CONFESSION))p.add("Rae told you she had known all along that he was alive.");
+        if(own.getBoolean(LodgingKey.USED_KEY))p.add("You turned the key in his straps yourself.");
+        if(own.getBoolean(LodgingVera.OFFERED))p.add(own.getBoolean(LodgingVera.TRUTH)?"Vera asked for help keeping one of them quiet while she mended the other, and when you pressed her she said the other would not come through it.":"Vera asked for help keeping one of them quiet while she mended the other.");
         if(own.getBoolean("WentDown"))p.add("Under the house the whole of it stood on posts, and the posts stood on a beam, and the beam was held by one wheel.");
+        if(own.getBoolean(LodgingCellar.KNOWS_THIRD))p.add("Down there you learned that all of it could be let go at once.");
         // 0.4.612: the passages, and what Vera asked of the reader.
         if(own.getBoolean(LodgingTaken.TAKEN))p.add("Behind the paper there were passages a body wide, and whoever was left in them could still knock.");
         if(own.getBoolean(LodgingTaken.STEADIED))p.add("There was a body made from yours, and its hands went where you put them.");
@@ -357,17 +371,7 @@ public final class LodgingTexts {
         if(own.getBoolean(LodgingComplete.HELD)&&!own.getBoolean(LodgingComplete.LET_GO))p.add("Your hands were on his shoulders while it happened.");
         else if(own.getBoolean(LodgingComplete.HELD))p.add("Your hands were on his shoulders, and then they were not.");
         if(own.getBoolean(LodgingComplete.HEARD_UNDER))p.add("Dan said Rae's name, and another voice went on under it.");
-        // 0.4.617: came in late.
-        if(own.getInt(LodgingParty.LATE)==LodgingParty.HALL)p.add("You came in late, by the hall, and Dan told you what was going on.");
-        else if(own.getInt(LodgingParty.LATE)==LodgingParty.SCULLERY)p.add("You came in late, by the scullery door, while it was already happening.");
-        // 0.4.616: E4.
-        if(own.getBoolean(LodgingNeither.STRUCK))p.add("You struck one of them knowing what it did to the other.");
-        if(own.getBoolean(LodgingNeither.SAW_DIE))p.add(LodgingNeither.oneRoom(own)?"Dan and Daniel died of the same blows, in the one room.":"Dan and Daniel died of the same blows, in two rooms.");
-        if(own.getBoolean(LodgingNeither.STOPPED_HER))p.add("You stopped Vera before she had finished laying for the next ones.");
-        else if(own.getBoolean(LodgingNeither.SAW_PLACES))p.add("Vera laid two places for whoever came next, and Rae knocked a chair over between them.");
-        if(own.getBoolean(LodgingNeither.TOLD))p.add("You told Rae what Vera had done.");
-        if(own.getBoolean(LodgingNeither.BROKE))p.add("You went down afterwards and let the house go under her.");
-        else if(own.getBoolean(LodgingNeither.SAW_DIE)&&!own.getBoolean(LodgingNeither.TOLD)&&!own.getBoolean(LodgingNeither.STOPPED_HER))p.add("You left the house to Vera.");
+        if(own.getBoolean(LodgingComplete.SAW))p.add("Afterwards he kept a hand over his own mouth, and Rae kept trying to take it away.");
         // 0.4.615: E3.
         boolean wheel=own.getBoolean(LodgingSever.RATCHET),jamb=own.getBoolean(LodgingSever.CATCH);
         if(wheel&&jamb)p.add("You worked the wheel in the cellar and the catch in the frame, both, and every original in the house walked out.");
@@ -376,6 +380,26 @@ public final class LodgingTexts {
         else if(own.getBoolean(LodgingSever.SAW))p.add("The house let go of all of them at once.");
         if(own.getBoolean(LodgingSever.STRUCK))p.add("Something that had been somebody tried to get back into Daniel, and you struck it off.");
         if(own.getBoolean(LodgingSever.SAT_WITH))p.add("Dan and Daniel sat on the bench in the hall, and neither could finish helping the other.");
+        // 0.4.616: E4.
+        if(own.getBoolean(LodgingNeither.STRUCK))p.add("You struck one of them knowing what it did to the other.");
+        if(own.getBoolean(LodgingNeither.SAW_DIE))p.add(LodgingNeither.oneRoom(own)?"Dan and Daniel died of the same blows, in the one room.":"Dan and Daniel died of the same blows, in two rooms.");
+        if(own.getBoolean(LodgingNeither.STOPPED_HER))p.add("You stopped Vera before she had finished laying for the next ones.");
+        else if(own.getBoolean(LodgingNeither.SAW_PLACES))p.add("Vera laid two places for whoever came next, and Rae knocked a chair over between them.");
+        if(own.getBoolean(LodgingNeither.TOLD))p.add("You told Rae what Vera had done.");
+        if(own.getBoolean(LodgingNeither.BROKE))p.add("You went down afterwards and let the house go under her.");
+        else if(own.getBoolean(LodgingNeither.SAW_DIE)&&!own.getBoolean(LodgingNeither.TOLD)&&!own.getBoolean(LodgingNeither.STOPPED_HER))p.add("You left the house to Vera.");
+        p.add("The terms were still on the hall table when you went out.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.ONES_INSIDE),name,pages(String.join("\n\n",p)));
     }
+    /** 0.4.618: the line the Witness account keeps, by the end the house came to (LodgingEnd.OUTCOMES). Every line here is new. */
+    public static String witness(String outcome){
+        return switch(outcome){
+            case "returned_daniel"->"In a lodging house one man had been made out of another. The made one went back into the doorway he came from, and the other came out and asked the name of an old dog.";
+            case "completed_dan"->"In a lodging house one man had been made out of another. The first was held in a doorway until there was no room for him, and the made one kept a hand over his mouth.";
+            case "severed_the_house"->"In a lodging house one man had been made out of another. The house let go of both, and they sat in sight of the front door and could not help each other.";
+            case "neither_daniel"->"In a lodging house one man had been made out of another. They died of the same blows, and two places were laid for whoever came next.";
+            default->"In a lodging house one man had been made out of another, and both of them were still in it.";
+        };
+    }
+
 }

@@ -99,7 +99,8 @@ public final class SceneInstances {
     }
     /** 0.4.554: whether copy {@code k} has room for this reader: a place not held, and for the Shallows a recollection to join or a carry place free. */
     private static boolean fits(MinecraftServer s,LabyrinthPlace place,int k,UUID reader,int most){
-        return held(s,place,k,reader)<most&&(place!=LabyrinthPlace.SHALLOWS||Shallows.room(s,k,reader));
+        // 0.4.618: a lodging house that has come to its end takes nobody new; they are given another house.
+        return held(s,place,k,reader)<most&&(place!=LabyrinthPlace.SHALLOWS||Shallows.room(s,k,reader))&&(place!=LabyrinthPlace.ONES_INSIDE||!LodgingEnd.closed(s,k));
     }
     private static final TicketType<ChunkPos> TICKET=TicketType.create("scene_copy",Comparator.comparingLong(ChunkPos::toLong));
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE|Block.UPDATE_SUPPRESS_DROPS;
