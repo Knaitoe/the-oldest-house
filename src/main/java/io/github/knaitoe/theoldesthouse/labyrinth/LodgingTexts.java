@@ -178,6 +178,19 @@ public final class LodgingTexts {
         VERA_CALLS="One of you. Up here. Not Rae.",
         R_WHEN_YOU_CALL="When you call.",
         VERA_SENT_YES="Good. You'll hear me.",VERA_SENT_NO="Then I'll ask the next one up the stair.",VERA_NOT_YOU="Not you. Go back down.";
+    // 0.4.613: E1. Every line here is new.
+    public static final String R_GO_BACK="You could go back through. He'd walk out.",R_TAKE_HIM="Then we'll take you.",R_STOP_DAN="It isn't coming. Stop.",
+        DAN_REFUSES="No. I've only just got here.",DAN_FORCED="Don't. Don't, I can walk.",DAN_LET_GO="Nobody's holding me. Nobody's holding me now.",
+        YOU_HOLD_DAN="You take his arm above the elbow. He pulls against it, and comes.",
+        DAN_PANICS="Where? Where's it coming from?",DAN_STOPS="Then why did she say it?",
+        DAN_SINKS="Dan steps into the frame and turns round in it. The plaster behind him gives, slowly, like a held breath, and takes him back.",
+        DANIEL_DOG="Rae. What was the old dog called? The one that slept under the stairs.",
+        RAE_DOG="He was called Pilot. He slept on the bottom step and you had to climb over him.",
+        DANIEL_HEARS="Pilot.",DANIEL_HEARS_CUE="Daniel says it again under his breath, as somebody does to keep a thing.";
+    /** Dan agreeing: what he asks, and that he goes. */
+    public static final String[] DAN_AGREES={"Does he get his room back?","All right. Show me where I stand."};
+    /** Vera, calling down the stair, using his panic. */
+    public static final String[] VERA_PANIC={"Dan. It's coming back through the walls.","Go to his room. The frame's the one place it won't put a hand on you."};
     /** Rae, Dan, Daniel: as it takes hold of them; coming out of the wall. */
     public static final String[] TAKEN_CRY={"Dan! Dan!","Get it off me!","Not back in there. Not back in there."},
         OUT_OF_WALL={"I couldn't see my hands in there.","It just let go of me.","I know these walls. I know every inch of them."};
@@ -274,6 +287,12 @@ public final class LodgingTexts {
         if(own.getBoolean(LodgingTaken.TAKEN))p.add("Behind the paper there were passages a body wide, and whoever was left in them could still knock.");
         if(own.getBoolean(LodgingTaken.STEADIED))p.add("There was a body made from yours, and its hands went where you put them.");
         else if(own.getBoolean(LodgingTaken.AGREED))p.add("Vera called down the stair for a pair of hands, and yours were promised.");
+        // 0.4.613: E1.
+        if(own.getBoolean(LodgingReturn.SAW))p.add(switch(own.getInt("ReturnWay0613")){
+            case LodgingReturn.FORCE->"Dan went back through the frame because he was walked to it, and Daniel came out of it.";
+            case LodgingReturn.PANIC->"Dan went back through the frame because Vera told him it was the one safe place in the house, and Daniel came out of it.";
+            default->"Dan went back through the frame because he said he would, and Daniel came out of it.";});
+        if(own.getBoolean(LodgingReturn.HEARD_DOG))p.add("The old dog was called Pilot.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.ONES_INSIDE),name,pages(String.join("\n\n",p)));
     }
 }

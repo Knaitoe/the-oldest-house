@@ -87,6 +87,7 @@ public final class LodgingKey {
         var h=LodgingStory.house(s,b);
         // 0.4.611: while the two men are put in one room, the meeting has them.
         // 0.4.612: somebody left in the wall, or Vera at her activity (LodgingTaken).
+        var ret=LodgingReturn.spot(s,b,who);if(ret!=null)return ret;
         var taken=LodgingTaken.spot(s,b,who);if(taken!=null)return taken;
         var meeting=LodgingMeeting.spot(s,b,who);if(meeting!=null)return meeting;
         if(who==LodgingPeople.DANIEL&&h.getBoolean(FREE))return DANIEL_PARLOR;
