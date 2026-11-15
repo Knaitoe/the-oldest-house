@@ -22,7 +22,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * same corner, facing the same way, with their stride and the companions following them. So each turn climbed rises three, and
  * the climb takes about half as long as the descent. The way down is never shortened.
  *
- * The top two turns, where the leaves and the hearths are, are always walked. Nothing is carried while anyone else could see it:
+ * The top two turns are always walked (the leaves and the hearths stood there until 0.4.595). Nothing is carried while anyone else could see it:
  * readers climbing together (within a few blocks of each other) are carried together, and nobody else, spectators included, may
  * be near either landing. A landing whose floor has worn through is passed over until the next.
  */

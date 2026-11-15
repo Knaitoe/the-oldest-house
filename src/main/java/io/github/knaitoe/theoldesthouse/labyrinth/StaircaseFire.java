@@ -20,11 +20,27 @@ import net.neoforged.bus.api.*;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-/** Five actual fires each take one leaf of the explorer's own story. The unlit descent remains impassable per explorer. */
+/**
+ * Five actual fires each take one leaf of the explorer's own story. The unlit descent remains impassable per explorer.
+ *
+ * <p>0.4.595 (docs/STAIR_NIGHTS_0_4_595.md): the five fires are the nights of the descent. They stood on the first five landings,
+ * all within eighty blocks of the door. Each now stands at a camp, and the camps are spread down the whole stair ({@link #NIGHTS}).
+ * A reader goes no further than the camp whose fire is still cold for them. A reader who has not taken their House of Leaves
+ * from the shelf goes no further than the first landing, so nobody learns at the first camp that the book is far above them.
+ */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class StaircaseFire {
     public static final int REQUIRED=5;
-    private static final String DRESS="staircase_fire_0433";
+    /** The corner landings the five camps stand on, counted down from the door (the first landing is 0). */
+    public static final int[] NIGHTS={9,25,40,56,71};
+    /** How far a reader sees on the stair, in blocks: the book's light. It is the same at every depth. */
+    public static final float SIGHT=12;
+    /** Sent as the sight where the stair's dark does not apply: off the stair ({@link #off}). */
+    public static final float CLEAR=32;
+    private static final String DRESS="staircase_nights_0595";
+    /** The stair's corner landings and the five camps among them, for one origin. */
+    private record Plan(BlockPos origin,List<BlockPos> corners,int[] cornerSteps,List<BlockPos> camps,int[] campSteps){}
+    private static volatile Plan plan;
     public static final String LEAVES="StaircaseLeaves";
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private StaircaseFire(){}
@@ -47,23 +63,43 @@ public final class StaircaseFire {
         }
         return level.getBlockEntity(to) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity;
     }
-    public static List<BlockPos> landings(BlockPos origin){
+    private static Plan plan(BlockPos origin){
+        var known=plan;if(known!=null&&known.origin.equals(origin))return known;
         var route=FinaleArchitecture.staircaseRoute(origin);var b=FinaleArchitecture.base(origin);
-        return route.stream().filter(p->Math.abs(p.getX()-b.getX())==FinaleArchitecture.STAIR_RADIUS
-                &&Math.abs(p.getZ()-b.getZ())==FinaleArchitecture.STAIR_RADIUS).limit(REQUIRED).toList();
+        var corners=new ArrayList<BlockPos>();var steps=new ArrayList<Integer>();
+        for(int i=0;i<route.size();i++){var p=route.get(i);
+            if(Math.abs(p.getX()-b.getX())==FinaleArchitecture.STAIR_RADIUS&&Math.abs(p.getZ()-b.getZ())==FinaleArchitecture.STAIR_RADIUS){corners.add(p);steps.add(i);}}
+        var camps=new ArrayList<BlockPos>();int[] campSteps=new int[REQUIRED];
+        for(int k=0;k<REQUIRED;k++){camps.add(corners.get(NIGHTS[k]));campSteps[k]=steps.get(NIGHTS[k]);}
+        known=new Plan(origin.immutable(),List.copyOf(corners),steps.stream().mapToInt(Integer::intValue).toArray(),List.copyOf(camps),campSteps);
+        plan=known;return known;
     }
+    public static void clearCache(){plan=null;}
+    /** Every corner landing of the stair above the cell, from the door down. */
+    public static List<BlockPos> corners(BlockPos origin){return plan(origin).corners;}
+    /** The five camps' landings, from the first night to the last. */
+    public static List<BlockPos> landings(BlockPos origin){return plan(origin).camps;}
+    /** The first landing below the door. */
+    public static BlockPos threshold(BlockPos origin){return plan(origin).corners.getFirst();}
     public static List<BlockPos> braziers(BlockPos origin){
         var b=FinaleArchitecture.base(origin);
         return landings(origin).stream().map(p->p.offset(Integer.signum(p.getX()-b.getX())*3,0,Integer.signum(p.getZ()-b.getZ())*3)).toList();
     }
     public static int flames(CompoundTag record){return Math.max(0,Math.min(REQUIRED,record.getInt("StairFires")));}
     public static boolean open(CompoundTag record){return flames(record)==REQUIRED;}
+    /** Where the dark stops a reader who carries their story: twelve steps past the camp whose fire is still cold for them. */
     public static BlockPos edge(BlockPos origin,CompoundTag record){
         var route=FinaleArchitecture.staircaseRoute(origin);
         if(open(record))return route.getLast();
-        BlockPos landing=landings(origin).get(flames(record));
-        return route.get(Math.min(route.size()-1,route.indexOf(landing)+12));
+        return route.get(Math.min(route.size()-1,plan(origin).campSteps[flames(record)]+12));
     }
+    /** Where the dark stops this reader: with no House of Leaves of their own yet, twelve steps past the first landing. */
+    public static BlockPos reach(BlockPos origin,CompoundTag record,boolean bound){
+        if(bound||flames(record)>0)return edge(origin,record);
+        var route=FinaleArchitecture.staircaseRoute(origin);return route.get(Math.min(route.size()-1,plan(origin).cornerSteps[0]+12));
+    }
+    /** Whether this reader has taken their House of Leaves from the shelf (or lit a fire before there was one to take). */
+    public static boolean bound(ServerPlayer player,CompoundTag record){return flames(record)>0||StaircaseStory.exists(StaircaseStory.record(player));}
     public static ItemStack book(UUID reader,int leaves){
         ItemStack book=HouseWriting.book("House of Leaves","An unsigned hand",HouseWriting.WritingStyle.WILL,
                 List.of(leaves+" leaves remain.\n\nHold this book in your off hand. Use flint and steel on the cold hearths, one after another.\n\nEach fire takes a leaf.",
@@ -113,7 +149,7 @@ public final class StaircaseFire {
         if(event.getPos().equals(shelf(origin))){
             event.setCanceled(true);event.setCancellationResult(InteractionResult.SUCCESS);
             player.displayClientMessage(Component.literal(switch(StaircaseStory.shelf(player)){
-                case ISSUED->"Your House of Leaves. Its five leaves are loose on the stairs below, one on each flight.";
+                case ISSUED->"Your House of Leaves. Its five leaves are loose on the stairs below, one above each camp.";
                 case REBOUND->"The shelf binds your story again, as far as you had found it.";
                 case CARRIED->"Your House of Leaves is already with you. Its leaves are on the stairs below.";
                 case NEARBY->"Your original House of Leaves is still lying here. Pick it up.";
@@ -153,7 +189,7 @@ public final class StaircaseFire {
                     :"Bring your own House of Leaves. It can stay in your pack."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_own_book",at);return false;
         }
         if(!StaircaseStory.ready(player,index)){
-            player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This flight's leaf is somewhere in the dark above."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_missing_leaf",at);return false;
+            player.displayClientMessage(Component.literal("Your House of Leaves has no unburned leaf. This camp's leaf lies on a landing not far above."),true);io.github.knaitoe.theoldesthouse.house.PlaytestLog.refused(player,"hearth_missing_leaf",at);return false;
         }
         var embers=BurnEmbers.excerpt(StaircaseStory.record(player),index,at);
         if(!StaircaseStory.burn(player,fuel,index))return false;
@@ -164,7 +200,7 @@ public final class StaircaseFire {
         FinaleProgress.save(player.server,player.getUUID(),record);
         HousePackets.send(player,embers);
         player.serverLevel().playSound(null,at,SoundEvents.FIRECHARGE_USE,SoundSource.BLOCKS,.65F,.85F);
-        player.displayClientMessage(Component.literal(index+1==REQUIRED?"The dark gives way. The whole staircase is there.":"A leaf burns. The next flight comes out of the dark."),true);
+        player.displayClientMessage(Component.literal(index+1==REQUIRED?"The last leaf burns. The dark keeps its distance.":"A leaf burns. The next flight comes out of the dark."),true);
         return true;
     }
     /** A lighter (Tom's included): in a hand the reader has, or the first one in their pack. */
@@ -186,20 +222,38 @@ public final class StaircaseFire {
             record.remove("OperatorCellVisit");
         }
         if(player.isCreative())return false;
-        int fires=flames(record);BlockPos edge=edge(origin,record);
+        int fires=flames(record);boolean bound=bound(player,record);BlockPos edge=reach(origin,record,bound);
         boolean blocked=!open(record)&&player.getY()<edge.getY()-.75;
         if(blocked){
-            BlockPos safe=record.contains("StairLastSafe")?BlockPos.of(record.getLong("StairLastSafe")):landings(origin).get(fires);
+            BlockPos safe=record.contains("StairLastSafe")?BlockPos.of(record.getLong("StairLastSafe")):bound?landings(origin).get(fires):threshold(origin);
+            // A place remembered below where this reader may now stand (the book was lost and the record with it) is no safe place.
+            if(safe.getY()<edge.getY()-.75)safe=bound?landings(origin).get(fires):threshold(origin);
             HouseInternalTeleport.shift(player,Vec3.atBottomCenterOf(safe),player.getYRot());player.setDeltaMovement(Vec3.ZERO);
-            if(player.tickCount%20==0)player.displayClientMessage(Component.literal("The stairs vanish into the dark. Bind this flight's leaf, then feed the fire."),true);
+            if(player.tickCount%20==0)player.displayClientMessage(Component.literal(bound?"The stairs vanish into the dark. Bind this camp's leaf, then feed the fire."
+                    :"The stairs vanish into the dark. Your House of Leaves is on the camp shelf above."),true);
         }else if(!open(record)&&player.tickCount%5==0&&player.onGround()&&player.getY()>edge.getY()+1)
             record.putLong("StairLastSafe",player.blockPosition().asLong());
         StaircaseLeaves.gather(player,origin,fires);StaircaseLeaves.cue(player,origin,fires);
+        // The first camp is a long way down. A reader who starts for it with their book and no flame is told once, while Tom is still near.
+        if(bound&&!open(record)&&!record.getBoolean("StairFlameTold")&&player.tickCount%20==0){
+            double below=threshold(origin).getY()-player.getY();
+            if(below>2&&below<14&&lighter(player,BodyLoss.oneArmed(player)).isEmpty()){
+                record.putBoolean("StairFlameTold",true);
+                player.displayClientMessage(Component.literal("You carry no flame. The fires below will need one; Tom has a lighter."),true);
+            }
+        }
         if(player.tickCount%10==0){
-            float sight=open(record)?32:Math.max(1.2F,Math.min(12,(float)(player.getY()-edge.getY())+2));
+            // The dark closes in at the camp whose fire is cold; otherwise the book lights twelve blocks, at every depth.
+            float sight=off(origin,player.position())?CLEAR:open(record)?SIGHT:Math.max(1.2F,Math.min(SIGHT,(float)(player.getY()-edge.getY())+2));
             HousePackets.send(player,new StaircaseLightPayload(true,fires,sight));
             if(!open(record)&&player.getY()<edge.getY()+4)player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DARKNESS,30,0,false,false));
         }
         return blocked;
+    }
+    /** Off the stair: the chamber at its foot, south of the well, and the side mazes beyond the well's east and west walls. Their dark is their own. */
+    public static boolean off(BlockPos origin,Vec3 at){
+        var b=FinaleArchitecture.base(origin);
+        if(Math.abs(at.x-b.getX())>FinaleArchitecture.SHAFT_RADIUS+1)return true;
+        return at.y<FinaleArchitecture.ARENA+14&&at.z>=b.getZ()+30;
     }
 }

@@ -224,21 +224,49 @@ public final class StaircaseAccessTests {
     });}
 
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
-    public static void oneLeafLiesOnALevelTreadOfEachFlightBeyondThePreviousFiresReach(GameTestHelper h){run(h,515000,f->{
+    public static void oneLeafLiesOnALandingInTheLastTurnAboveEachCamp(GameTestHelper h){run(h,515000,f->{
+        // 0.4.595: the five fires are the nights of the descent. The camps are spread down the whole stair, and each camp's leaf
+        // lies on a landing no more than three above it, where every reader walks.
         var route=FinaleArchitecture.staircaseRoute(f.origin);var leaves=StaircaseLeaves.positions(f.origin);var fires=StaircaseFire.braziers(f.origin);
+        var corners=StaircaseFire.corners(f.origin);var camps=StaircaseFire.landings(f.origin);
         h.assertTrue(leaves.size()==StaircaseFire.REQUIRED&&new HashSet<>(leaves).size()==leaves.size(),"five distinct leaves, one per hearth");
-        for(int k=0;k<leaves.size();k++){
-            var leaf=leaves.get(k);int step=-1;
-            for(int i=0;i+1<route.size();i++)if(route.get(i).getY()==leaf.getY()&&route.get(i).distManhattan(leaf)==3){step=i;break;}
-            h.assertTrue(step>=0&&route.get(step+1).getY()==route.get(step).getY(),"leaf "+k+" lies three blocks aside on a level, full tread");
-            h.assertTrue(!fires.contains(leaf)&&!StaircaseFire.landings(f.origin).contains(leaf),"leaf "+k+" lies on the flight, not at a hearth");
+        h.assertTrue(camps.size()==StaircaseFire.REQUIRED&&fires.size()==StaircaseFire.REQUIRED,"five camps, a hearth at each");
+        h.assertTrue(corners.getFirst().equals(StaircaseFire.threshold(f.origin))&&corners.getFirst().getY()>FinaleArchitecture.TOP-12,"the first landing is the one just below the door");
+        var plan=new HashMap<BlockPos,BlockState>();for(var p:FinaleArchitecture.plan(f.origin))plan.put(p.pos(),p.block());
+        for(int k=0;k<StaircaseFire.REQUIRED;k++){
+            var camp=camps.get(k);int depth=FinaleArchitecture.TOP-camp.getY();
+            h.assertTrue(camp.equals(corners.get(StaircaseFire.NIGHTS[k])),"camp "+k+" stands on its own landing");
+            h.assertTrue(k==0?depth>120:camp.getY()<camps.get(k-1).getY()-200,"the camps are a long way apart: camp "+k+" is "+depth+" blocks down");
+            h.assertTrue(camp.getY()>FinaleArchitecture.ARENA,"camp "+k+" is above the cell");
+            var hearth=fires.get(k);int sx=Integer.signum(camp.getX()-f.base.getX()),sz=Integer.signum(camp.getZ()-f.base.getZ());
+            h.assertTrue(plan.get(hearth)!=null&&plan.get(hearth).is(Blocks.CAMPFIRE)&&!plan.get(hearth).getValue(CampfireBlock.LIT),"camp "+k+" is built with its hearth cold");
+            h.assertTrue(plan.get(hearth.below()).is(Blocks.POLISHED_BASALT),"the hearth stands on a hearthstone");
+            for(int w=6;w<=7;w++)for(var bed:List.of(camp.offset(sx*w,0,sz*3),camp.offset(sx*3,0,sz*w))){
+                h.assertTrue(plan.get(bed)!=null&&plan.get(bed).is(net.minecraft.tags.BlockTags.WOOL_CARPETS),"a bedroll lies out from camp "+k+"'s fire at "+bed);
+                h.assertTrue(plan.get(bed.below())!=null&&!plan.get(bed.below()).isAir(),"the bedroll lies on the landing's own floor");
+                h.assertTrue(!route.contains(bed)&&bed.distManhattan(camp)>=6,"the bedroll is clear of the walk from one flight to the next");}
+            var leaf=leaves.get(k);var landing=corners.get(StaircaseLeaves.LANDINGS[k]);
+            h.assertTrue(leaf.getY()==landing.getY()&&Math.abs(leaf.getX()-landing.getX())<=4&&Math.abs(leaf.getZ()-landing.getZ())<=4&&!leaf.equals(landing),
+                    "leaf "+k+" lies on its landing, where the flights meet: "+leaf+" on "+landing);
+            h.assertTrue(plan.get(leaf.below())!=null&&!plan.get(leaf.below()).isAir()&&(plan.get(leaf)==null||plan.get(leaf).isAir()),"leaf "+k+" has floor under it and nothing in its place");
+            int above=StaircaseFire.NIGHTS[k]-StaircaseLeaves.LANDINGS[k];
+            h.assertTrue(above>=1&&above<=3,"leaf "+k+" lies within the last turn above its camp: "+above+" landings up");
+            h.assertTrue(StaircaseLeaves.LANDINGS[k]%3!=1,"no loose sheet of the household's lies on leaf "+k+"'s landing");
+            h.assertTrue(!fires.contains(leaf)&&!camps.contains(landing),"leaf "+k+" lies above the camp, not at its hearth");
             var lit=new CompoundTag();lit.putInt("StairFires",k);
             h.assertTrue(leaf.getY()>=StaircaseFire.edge(f.origin,lit).getY()-.75,"leaf "+k+" is reachable once "+k+" fires burn");
             if(k>0){var before=new CompoundTag();before.putInt("StairFires",k-1);
                 h.assertTrue(leaf.getY()<StaircaseFire.edge(f.origin,before).getY()-.75,"leaf "+k+" lies beyond the reach of the fire before it");}
-            int landing=route.indexOf(StaircaseFire.landings(f.origin).get(k));
-            h.assertTrue(step<landing,"leaf "+k+" lies above its own hearth's landing");
+            h.assertTrue(leaf.getY()<StaircaseFire.reach(f.origin,new CompoundTag(),false).getY()-.75,"a reader who has not taken their book from the shelf reaches no leaf: "+k);
+            h.assertTrue(camp.getY()<StaircaseFire.reach(f.origin,new CompoundTag(),false).getY()-.75,"nor any camp: "+k);
         }
+        h.assertTrue(StaircaseFire.reach(f.origin,new CompoundTag(),true).equals(StaircaseFire.edge(f.origin,new CompoundTag())),"with their book, the dark stops them past the first camp");
+        // The dark is the book's twelve blocks at every depth; only the chamber at the foot of the stair and the side mazes are out of it.
+        var foot=Vec3.atBottomCenterOf(f.base.offset(0,FinaleArchitecture.ARENA,40));
+        h.assertTrue(StaircaseFire.off(f.origin,foot)&&StaircaseFire.off(f.origin,Vec3.atBottomCenterOf(f.base.offset(FinaleArchitecture.SHAFT_RADIUS+6,FinaleArchitecture.TOP-400,0))),
+                "the chamber and the side mazes keep their own dark");
+        for(var camp:camps)h.assertTrue(!StaircaseFire.off(f.origin,Vec3.atBottomCenterOf(camp)),"every camp is on the stair");
+        h.assertTrue(!StaircaseFire.off(f.origin,Vec3.atBottomCenterOf(route.getLast()))&&StaircaseFire.SIGHT==12,"the stair's dark holds to its last tread");
     });}
 
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)

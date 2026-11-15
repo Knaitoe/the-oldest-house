@@ -24,7 +24,7 @@ public final class OutsideSkyProof extends Screen {
     private static int fallDrawn,fallSeen;private static float fallNear,fallFar;private static final java.util.List<double[]> fallAt=new java.util.ArrayList<>();
     private void fallingLight(){
         var origin=new net.minecraft.core.BlockPos(0,70,0);var b=io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture.base(origin);
-        var first=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseFire.landings(origin).get(0);
+        var first=io.github.knaitoe.theoldesthouse.labyrinth.StaircaseFire.threshold(origin);
         int sx=Integer.signum(first.getX()-b.getX()),sz=Integer.signum(first.getZ()-b.getZ());
         // The eye is out over a rail; the light was thrown from beside it, toward the well's middle.
         var eye=new Vec3(first.getX()+.5-sx*5.4,first.getY()+1.62,first.getZ()+.5-sz*5.4);

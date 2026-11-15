@@ -207,13 +207,19 @@ public final class MultiplayerStoryTests {
         h.assertTrue(StaircaseStory.leafState(p,1)==StaircaseStory.Take.EARLIER&&!find(p,f,1),"a later flight's leaf waits for the earlier one");
         var book=held(p);h.assertTrue(StaircaseStory.leafState(p,0)==StaircaseStory.Take.NOT_CARRIED&&!find(p,f,0),"a leaf does not come loose without the binding to hold it");
         p.setItemInHand(InteractionHand.OFF_HAND,book);
-        h.assertTrue(find(p,f,0)&&StaircaseStory.leafState(p,0)==StaircaseStory.Take.TAKEN&&!find(p,f,0),"each reader binds a flight's leaf once");
+        h.assertTrue(find(p,f,0)&&StaircaseStory.leafState(p,0)==StaircaseStory.Take.TAKEN,"the reader binds the first leaf");
+        // 0.4.595: a leaf settles into the book of a reader who passes it, so its sheet still opens to them until its fire has taken it.
+        int bound=pages(p.getOffhandItem()).size();
+        h.assertTrue(find(p,f,0)&&StaircaseStory.found(StaircaseStory.record(p))==1&&pages(p.getOffhandItem()).size()==bound&&StaircaseStory.leafState(p,0)==StaircaseStory.Take.TAKEN,
+                "each reader binds a leaf once: reading its sheet again binds nothing");
         var leaf=StaircaseLeaves.positions(f.origin).get(1);var record=FinaleProgress.player(p.server,p.getUUID());
         p.teleportTo(f.level,leaf.getX()+.5,leaf.getY(),leaf.getZ()+.5,0,0);
         h.assertTrue(StaircaseFire.tick(p,f.origin,record),"the next flight's leaf lies beyond the reach of the unlit dark");
         h.assertTrue(burn(p,f,0),"the bound first leaf lights the first hearth");
         record=FinaleProgress.player(p.server,p.getUUID());p.teleportTo(f.level,leaf.getX()+.5,leaf.getY(),leaf.getZ()+.5,0,0);
-        h.assertTrue(!StaircaseFire.tick(p,f.origin,record)&&StaircaseStory.found(StaircaseStory.record(p))==2&&!find(p,f,1),"the lit hearth lets the actual nearby next leaf bind automatically, exactly once");
+        h.assertTrue(!StaircaseFire.tick(p,f.origin,record)&&StaircaseStory.found(StaircaseStory.record(p))==2,"the lit hearth lets the actual nearby next leaf bind automatically");
+        h.assertTrue(find(p,f,1)&&StaircaseStory.found(StaircaseStory.record(p))==2,"exactly once: its sheet opens and binds nothing more");
+        h.assertTrue(!find(p,f,0)&&StaircaseStory.leafState(p,0)==StaircaseStory.Take.TAKEN,"a leaf its fire has taken no longer opens");
     }); }
 
     @GameTest(template="empty",batch="multiplayer_story_b",timeoutTicks=2400)
