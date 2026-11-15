@@ -1493,6 +1493,89 @@ public final class LodgingHouseTests {
             })
             .thenSucceed();
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.615: E3, sever the house
+    private static String sev(ServerLevel l,BlockPos b){return LodgingStory.house(l.getServer(),b).getCompound(LodgingSever.STATE).toString();}
+    private static String ahead(ServerLevel l,net.minecraft.world.entity.Entity e){var sb=new StringBuilder();var c=e.blockPosition();for(int dz=-1;dz<=1;dz++)for(int dx=-1;dx<=1;dx++)for(int y=0;y<=2;y++){var q=c.offset(dx,y,dz);var st=l.getBlockState(q);if(!st.getCollisionShape(l,q).isEmpty())sb.append(dx).append(",").append(y).append(",").append(dz).append("=").append(st.getBlock().getDescriptionId()).append(" ");}return sb.toString();}
+    private static final BlockPos CATCH_SIDE=LodgingSite.DANIEL_FRAME.east();
+    @GameTest(template="empty",batch="lodging_sever",timeoutTicks=6000)
+    public static void twoReadersSeverTheHouseAndTheTwoMenSitOnTheBench(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_sev_a",P);var q=f.player("lodging_sev_b",P);var r=f.player("lodging_sev_c",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                // Daniel strapped in his frame, Dan in the hall. Two readers know the third way; the third does not.
+                at(l,b,LodgingStory.AFTER,who);disturbed(l,b,LodgingMeeting.FRAME,false);
+                place(who[LodgingPeople.DAN],b,1.5,-4.5,0);
+                mark(p,LodgingCellar.KNOWS_THIRD);mark(q,LodgingCellar.KNOWS_THIRD);
+                f.at(p,P,.5,LodgingSite.CELLAR,-26.5);f.at(q,P,-6.5,0,-27.0);f.at(r,P,-.5,LodgingSite.CELLAR,-26.5);
+                LodgingStory.hold(b,false);
+                // A reader who has not seen the dead post finds only a wheel.
+                LodgingHouse.click(r,b,LodgingSite.RATCHET,own(r));
+                h.assertTrue(LodgingSever.ratchet(s,b)==0&&!own(r).getBoolean(LodgingSever.RATCHET),"nothing happens for a reader who does not know: "+sev(l,b));
+            })
+            .thenWaitUntil(()->{
+                // The two take turns, one at each: every lift after the first counts twice.
+                LodgingHouse.click(p,b,LodgingSite.RATCHET,own(p));LodgingHouse.click(q,b,CATCH_SIDE,own(q));
+                h.assertTrue(LodgingSever.severed(s,b),"waiting for both to come free: "+sev(l,b));
+            })
+            .thenExecute(()->{
+                h.assertTrue(own(p).getBoolean(LodgingSever.RATCHET)&&own(q).getBoolean(LodgingSever.CATCH),"each worked their own");
+                h.assertTrue(own(p).getBoolean(LodgingSever.SAW)&&own(r).getBoolean(LodgingSever.SAW),"every reader in the house felt it");
+                h.assertTrue(LodgingKey.free(s,b),"Daniel's straps open");
+                h.assertTrue(who[LodgingPeople.FAILED_DRESS].gesture()==LodgingSever.SAT,"the one at the hatch sits down");
+                // Nobody can put Dan back now.
+                mark(q,LodgingVera.TRUTH);LodgingPeople.talk(q,who[LodgingPeople.DAN],own(q));
+                h.assertFalse(Talk.replies(q).contains(LodgingTexts.R_GO_BACK),"E1 is not offered: "+Talk.replies(q));Talk.close(q);
+                f.at(p,P,.5,0,-3.5);f.at(r,P,-.5,0,-3.5);
+            })
+            .thenWaitUntil(()->{
+                var shirt=who[LodgingPeople.FAILED_SHIRT];
+                if(shirt.gesture()!=LodgingPeople.GRAB){h.assertTrue(false,"waiting for it to come for Daniel: "+sev(l,b)+", it at "+rel(b,shirt)+" ahead "+ahead(l,shirt)+", Daniel at "+rel(b,who[LodgingPeople.DANIEL]));}
+            })
+            .thenExecute(()->{
+                var shirt=who[LodgingPeople.FAILED_SHIRT];f.at(q,P,1.5,0,-1.5);
+                LodgingPeople.struck(q,shirt);h.assertTrue(shirt.gesture()==LodgingPeople.GRAB,"one blow is not enough");
+                LodgingPeople.struck(q,shirt);h.assertTrue(shirt.gesture()==LodgingSever.SAT&&own(q).getBoolean(LodgingSever.STRUCK),"two, and it sits down");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingSever.phase(s,b)==LodgingSever.DONE,"waiting for the two men on the bench: "+sev(l,b)+", Dan at "+rel(b,who[LodgingPeople.DAN])+", Daniel at "+rel(b,who[LodgingPeople.DANIEL])))
+            .thenExecute(()->{
+                h.assertTrue(ActorSeat.of(who[LodgingPeople.DAN])!=null&&ActorSeat.of(who[LodgingPeople.DANIEL])!=null,"both sat on the bench");
+                h.assertTrue(who[LodgingPeople.DAN].gesture()==LodgingPeople.HURT&&who[LodgingPeople.DANIEL].gesture()==LodgingSever.RISE,"his hand held together; the other leaning to stand");
+                h.assertTrue(own(p).getBoolean(LodgingSever.SAT_WITH),"the reader in the hall saw them there");
+                has(h,p,"Daniel: "+LodgingTexts.DANIEL_SITS);
+                h.assertTrue(LodgingTexts.account("x",own(q)).toString().length()>0,"the account is written");
+            })
+            .thenSucceed();
+    }
+    @GameTest(template="empty",batch="lodging_sever_alone",timeoutTicks=7000)
+    public static void aReaderAloneSeversItSlowlyAndTheBodyGivesUp(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_alone_a",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);disturbed(l,b,LodgingMeeting.FRAME,false);
+                mark(p,LodgingCellar.KNOWS_THIRD);f.at(p,P,.5,LodgingSite.CELLAR,-26.5);
+                LodgingStory.hold(b,false);
+                LodgingHouse.click(p,b,LodgingSite.RATCHET,own(p));
+                h.assertTrue(LodgingSever.ratchet(s,b)==1,"alone, a tooth at a time: "+sev(l,b));
+                LodgingHouse.click(p,b,LodgingSite.RATCHET,own(p));
+                h.assertTrue(LodgingSever.ratchet(s,b)==1,"and not faster than a hand can: "+sev(l,b));
+            })
+            .thenWaitUntil(()->{LodgingHouse.click(p,b,LodgingSite.RATCHET,own(p));h.assertTrue(LodgingSever.ratchet(s,b)>=LodgingSever.STEPS,"waiting for the pawl to come clear: "+sev(l,b));})
+            .thenExecute(()->{h.assertFalse(LodgingSever.severed(s,b),"one is not enough");f.at(p,P,-6.5,0,-27.0);})
+            .thenWaitUntil(()->{LodgingHouse.click(p,b,CATCH_SIDE,own(p));h.assertTrue(LodgingSever.severed(s,b),"waiting for the catch: "+sev(l,b));})
+            .thenExecute(()->f.at(p,P,.5,0,-3.5))
+            .thenWaitUntil(()->h.assertTrue(LodgingSever.phase(s,b)==LodgingSever.DONE,"waiting for it to give up and the two to sit: "+sev(l,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenExecute(()->h.assertTrue(who[LodgingPeople.FAILED_SHIRT].gesture()==LodgingSever.SAT&&!own(p).getBoolean(LodgingSever.STRUCK),"nobody struck it; it sat down by itself"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_sever") public static void severDone(ServerLevel l){done();}
+    @AfterBatch(batch="lodging_sever_alone") public static void severAloneDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete") public static void completeDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete_held") public static void completeHeldDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_return") public static void returnDone(ServerLevel l){done();}

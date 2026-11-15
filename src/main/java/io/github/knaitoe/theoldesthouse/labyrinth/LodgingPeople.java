@@ -86,7 +86,7 @@ public final class LodgingPeople {
         return skin(phase)+((marks&LodgingInjury.CUT)!=0?"_cut":"_prick");
     }
     /** Somebody tied sitting at the foot of the post: on the floor, for the seat a body is drawn in (ActorSeat). */
-    public static boolean onFloor(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==FIRST+FAILED_POST&&(a.gesture()==TIED||loose(a.gesture()));}
+    public static boolean onFloor(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&(a.phase()==FIRST+FAILED_POST&&(a.gesture()==TIED||loose(a.gesture()))||failed(a.phase()-FIRST)&&a.gesture()==LodgingSever.SAT);}
 
     /** Where each is, from the house's base, which way they face (degrees; 0 is south, toward the front door), and what they are doing. */
     public record Spot(double x,double y,double z,float look,int gesture){}
@@ -176,7 +176,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);LodgingComplete.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);LodgingComplete.tick(l,b,here);LodgingSever.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
@@ -221,6 +221,8 @@ public final class LodgingPeople {
     public static void struck(ServerPlayer p,LiteraryActor a){
         if(!is(a))return;
         if(who(a)==FAILED_SHIRT&&LodgingInjury.struck(p,a))return;
+        // 0.4.615: or the one that goes for Daniel after the house is severed (LodgingSever).
+        if(who(a)==FAILED_SHIRT&&LodgingSever.struck(p,a))return;
         // 0.4.612: or the one that comes through again after the first attempt (LodgingTaken).
         if(who(a)==FAILED_SHIRT&&LodgingTaken.struck(p,a))return;
         if(failed(who(a)))LodgingHouse.cue(p,LodgingTexts.failed(who(a)));

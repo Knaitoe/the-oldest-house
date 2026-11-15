@@ -136,7 +136,7 @@ public final class LodgingReturn {
     }
     /** Vera, set against and with nobody's hands promised her, uses what the walls did to him. */
     private static boolean panic(ServerLevel l,BlockPos b,CompoundTag h,CompoundTag in,@Nullable LiteraryActor dan,int clock){
-        if(dan==null||in.getBoolean("PanicStopped")||!ready(l.getServer(),b)||LodgingComplete.begun(l.getServer(),b))return false;
+        if(dan==null||in.getBoolean("PanicStopped")||!ready(l.getServer(),b)||LodgingComplete.begun(l.getServer(),b)||LodgingSever.severed(l.getServer(),b))return false;
         var v=LodgingTaken.vera(h);var t=LodgingTaken.state(h);
         if(v.getInt("Phase")!=LodgingTaken.V_CALLED||v.getInt("Agreed")>0||!t.getBoolean("DanWalled")||clock-v.getInt("At")<PANIC_AFTER)return false;
         var vera=LodgingPeople.find(l,b,LodgingPeople.VERA);
@@ -195,7 +195,7 @@ public final class LodgingReturn {
         var s=p.server;var in=state(LodgingStory.house(s,b));int ph=in.getInt("Phase");
         var replies=new ArrayList<Talk.Reply>();
         if(ph==GOING&&in.getInt("Way")==PANIC)replies.add(Talk.reply(LodgingTexts.R_STOP_DAN,LodgingReturn::stop));
-        else if(ph==NONE&&ready(s,b)&&knows(own)&&!LodgingComplete.begun(s,b)){
+        else if(ph==NONE&&ready(s,b)&&knows(own)&&!LodgingComplete.begun(s,b)&&!LodgingSever.severed(s,b)){
             if(!in.getBoolean("Refused"))replies.add(Talk.reply(LodgingTexts.R_GO_BACK,LodgingReturn::putIt));
             else if(!holding(in,p))replies.add(Talk.reply(LodgingTexts.R_TAKE_HIM,LodgingReturn::take));
         }else if(ph==GOING&&in.getInt("Way")==FORCE&&knows(own)&&!holding(in,p))replies.add(Talk.reply(LodgingTexts.R_TAKE_HIM,LodgingReturn::take));

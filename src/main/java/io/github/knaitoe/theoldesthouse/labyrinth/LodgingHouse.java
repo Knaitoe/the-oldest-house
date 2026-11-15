@@ -70,13 +70,18 @@ public final class LodgingHouse {
                 // 0.4.605: the straps of Daniel's frame, felt from inside his room.
                 // 0.4.608: the key put to them opens them; open, they hang.
                 boolean danielsFrame=kind==LodgingBlock.Kind.FRAME_SIDE&&(st.getValue(LodgingBlock.STAGE)&4)!=0||kind==LodgingBlock.Kind.FRAME_BACK&&(st.getValue(LodgingBlock.STAGE)&3)==2;
-                if(danielsFrame&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))){if(!LodgingKey.straps(p,b))LodgingDaniel.straps(p);return true;}
+                if(danielsFrame&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))){
+                    // 0.4.615: the catch in the jamb, for a reader who knows the third way and has no key in hand (LodgingSever).
+                    boolean key=LodgingKey.is(p.getMainHandItem(),b)||LodgingKey.is(p.getOffhandItem(),b);
+                    if(kind==LodgingBlock.Kind.FRAME_SIDE&&!key&&LodgingSever.catch_(p,b))return true;
+                    if(!LodgingKey.straps(p,b))LodgingDaniel.straps(p);return true;}
                 cue(p,(st.getValue(LodgingBlock.STAGE)&(kind==LodgingBlock.Kind.FRAME_BACK?2:kind==LodgingBlock.Kind.FRAME_SIDE?4:0))!=0
                 ||kind==LodgingBlock.Kind.FRAME_HEAD&&st.getValue(LodgingBlock.STAGE)>=3?LodgingTexts.DANIELS_FRAME:LodgingTexts.FRAME);return true;}
             case WINDOW->{cue(p,LodgingTexts.SHUTTERS);return true;}
             case HALL_STAND->{cue(p,LodgingTexts.GLASS);return true;}
             case FIREPLACE->{cue(p,LodgingTexts.GRATE);return true;}
-            case RATCHET->{cue(p,LodgingTexts.RATCHET);return true;}
+            // 0.4.615: a reader who knows the third way lifts its pawl (LodgingSever).
+            case RATCHET->{if(!LodgingSever.ratchet(p,b))cue(p,LodgingTexts.RATCHET);return true;}
             case SHOE,POST->{
                 // 0.4.610: the dead post's wedge kicks out, and back in (LodgingCellar).
                 if(rel.getX()==LodgingSite.DEAD_POST.getX()&&rel.getZ()==LodgingSite.DEAD_POST.getZ()){LodgingCellar.shoe(p,b);return true;}
