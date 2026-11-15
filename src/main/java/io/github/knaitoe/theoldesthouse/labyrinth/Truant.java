@@ -243,6 +243,20 @@ public final class Truant {
         a.moveTo(before.x+step.x,before.y+step.y,before.z+step.z,a.getYRot(),0);
         a.walkAnimation.update((float)step.horizontalDistance()*4,.4F);
     }
+    /**
+     * 0.4.600 (the cast checks, run on him as the claimant): as {@link #walk}, but a step that would put his body into a block is
+     * not taken: he goes along whichever way is clear, or stays. Leaning out to a reader who stood past the corner, he walked into
+     * the corner.
+     */
+    static void walkClear(LiteraryActor a,Vec3 to,double speed){
+        var d=to.subtract(a.position());double len=d.length();if(len<1e-3)return;
+        var step=len<=speed?d:d.scale(speed/len);var box=a.getBoundingBox();
+        for(var s:new Vec3[]{step,new Vec3(step.x,0,0),new Vec3(0,0,step.z)}){
+            if(s.lengthSqr()<1e-8||!a.level().noCollision(a,box.move(s)))continue;
+            var before=a.position();a.moveTo(before.x+s.x,before.y+s.y,before.z+s.z,a.getYRot(),0);
+            a.walkAnimation.update((float)s.horizontalDistance()*4,.4F);return;
+        }
+    }
     static @Nullable ServerPlayer nearest(LiteraryActor a,List<ServerPlayer> readers){ServerPlayer best=null;double d=Double.MAX_VALUE;for(var p:readers){double dd=p.distanceToSqr(a);if(dd<d){d=dd;best=p;}}return best;}
 
     // ------------------------------------------------------------------ meetings
@@ -410,7 +424,8 @@ public final class Truant {
             case 4->{
                 var t=target(readers);gesture(a,PEEK);
                 if(t!=null){face(a,t.getEyePosition());var d=t.position().subtract(base.add(TruantPlaces.PEEK_SPOT));d=new Vec3(d.x,0,d.z);
-                    if(d.lengthSqr()>1e-3)walk(a,base.add(TruantPlaces.PEEK_SPOT).add(d.normalize().scale(Math.min(1.1,Math.max(0,d.length()-1.4)))),.04);}
+                    // 0.4.600: he leans out along the passage, never into the corner he stands behind (walkClear).
+                    if(d.lengthSqr()>1e-3)walkClear(a,base.add(TruantPlaces.PEEK_SPOT).add(d.normalize().scale(Math.min(1.1,Math.max(0,d.length()-1.4)))),.04);}
                 if(++sc.lean==30)say(a,TruantTexts.LEAN);
                 if(sc.lean>=70){sc.lamp=1;gesture(a,PEEK);}
             }
@@ -943,6 +958,8 @@ public final class Truant {
     public static @Nullable LiteraryActor body(ServerLevel l){var s=state(l.getServer());return s.hasUUID("Body")&&l.getEntity(s.getUUID("Body")) instanceof LiteraryActor a&&a.isAlive()?a:null;}
     /** What is going on in his place, for tests' messages. */
     public static String debug(MinecraftServer server){var sc=scene;return state(server).toString()+(sc==null?" scene=none":" scene="+sc.place.id()+" turn="+sc.turn+" target="+sc.target+" holding="+sc.holding+" crossing="+sc.crossing+" lamp="+sc.lamp+" looked="+sc.looked+" aside="+sc.aside+" struggles="+sc.struggles+" cover="+sc.cover+" shove="+sc.shove+"/"+sc.shoveTicks+" leg="+sc.leg+" turned="+sc.turned+" favour="+sc.favour);}
+    /** 0.4.600: whether a reader is in one of his places: he is with them there, or on his way (he is one man; KitchenVisitors). */
+    public static boolean withSomeone(){return !OCCUPIED.isEmpty();}
     /** 0.4.282: makes his next chosen meeting this turn (the multiplayer gate still applies); null to choose as in play. */
     public static void force(@Nullable Turn turn){FORCED=turn;}
     /** What he is at the present meeting, or null. */
