@@ -79,6 +79,9 @@ public final class StaircaseFire {
     public static List<BlockPos> corners(BlockPos origin){return plan(origin).corners;}
     /** The five camps' landings, from the first night to the last. */
     public static List<BlockPos> landings(BlockPos origin){return plan(origin).camps;}
+    /** How far along the stair's route each corner landing lies, and each camp: the index of its step. */
+    public static int[] cornerSteps(BlockPos origin){return plan(origin).cornerSteps.clone();}
+    public static int[] campSteps(BlockPos origin){return plan(origin).campSteps.clone();}
     /** The first landing below the door. */
     public static BlockPos threshold(BlockPos origin){return plan(origin).corners.getFirst();}
     public static List<BlockPos> braziers(BlockPos origin){

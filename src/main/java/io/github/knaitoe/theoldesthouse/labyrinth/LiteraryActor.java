@@ -54,12 +54,17 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     private static final EntityDataAccessor<Integer> MARKS=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.INT);
     /** 0.4.567: who has hold of this person, so both their hands can be drawn (the Pell house: a reader's hold on Callum's wrist). */
     private static final EntityDataAccessor<Optional<UUID>> HOLDER=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.OPTIONAL_UUID);
+    /**
+     * 0.4.596: 1 for one of the stair's people (StairCompany), 2 for one as a reader meets it on the way down: never lit, drawn as a
+     * dim figure (client.StairShapes). It is sent, so the reader's own game also knows the body is not to be bumped into.
+     */
+    private static final EntityDataAccessor<Byte> STAIR=SynchedEntityData.defineId(LiteraryActor.class,EntityDataSerializers.BYTE);
     private String scene="";private boolean small;
     private final CarcassHunt carcassHunt=new CarcassHunt();
     private final KillerNavigation privateHunt=new KillerNavigation();
     public LiteraryActor(EntityType<? extends LiteraryActor> type,Level l){super(type,l);setPersistenceRequired();setNoAi(true);setCanPickUpLoot(false);}
     public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,40).add(Attributes.MOVEMENT_SPEED,.24).add(Attributes.SCALE,1);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);b.define(SPEAKER,"");b.define(TORN,0);b.define(MARKS,0);b.define(HOLDER,Optional.empty());}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){super.defineSynchedData(b);b.define(ROLE,0);b.define(PHASE,0);b.define(GESTURE,0);b.define(SPEECH,0);b.define(OWNER,Optional.empty());b.define(FADE,0);b.define(SPEAKER,"");b.define(TORN,0);b.define(MARKS,0);b.define(HOLDER,Optional.empty());b.define(STAIR,(byte)0);}
     public int speaking(){return entityData.get(SPEECH);}
     /** Sets them talking for about as long as the line takes to say. */
     public void silent(){entityData.set(SPEECH,0);}
@@ -68,6 +73,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     public int marks(){return entityData.get(MARKS);}public void marks(int value){entityData.set(MARKS,value);}
     public Optional<UUID> holder(){return entityData.get(HOLDER);}public void holder(@javax.annotation.Nullable UUID who){entityData.set(HOLDER,Optional.ofNullable(who));}
     public int fade(){return entityData.get(FADE);}public void fade(int value){entityData.set(FADE,Math.max(0,Math.min(100,value)));}
+    public boolean shape(){return entityData.get(STAIR)==2;}public void shape(boolean value){if(company())entityData.set(STAIR,(byte)(value?2:1));}
     /**
      * 0.4.262: up to 15. It was held to 5, so Borrasca's led and reaching gestures (6 and 7, since 0.4.235) and the men's hands on her
      * arm (8 and 9) all arrived as 5, a stoop that also stopped the walking legs. 0.4.282: up to 31. 0.4.570: up to 63, for the Pell
@@ -106,6 +112,13 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(key==ROLE||key==PHASE||key==GESTURE)refreshDimensions();}
     public void appearance(int role,int phase){boolean changed=role()!=role||phase()!=phase;entityData.set(ROLE,role);entityData.set(PHASE,phase);boolean now=role==BROTHER||role==FAMILY_CHILD||role==GHOST_MERRY||role==SILHOUETTE&&phase==4||role==BORRASCA_KIMBER&&phase!=BorrascaStory.GROWN||BorrascaStory.townChild(role,phase)||role==STRANGER&&(phase==MovieNightCast.JAMIE_PHASE||CostumeNight.child(phase)||ClosingHall.child(phase));double size=dareKid(role)?.82:role==UNCANNY_GIANT||role==ROAD_WOMAN?2.5:role==WHISTLER?1.12:role==GHOST_MARJORIE?.86:role==BORRASCA_KIMBER&&phase!=BorrascaStory.GROWN?.54:now?.58:role==STRANGER&&WinterLake.boy(phase)?.8:role==STRANGER&&phase==BikeNightSpecters.GOBLIN?.42:role==STRANGER&&BikeNightGus.cast(phase)?.54:role==STRANGER&&BikeNightBullies.cast(phase)?BikeNightBullies.size(phase):role==STRANGER&&CalderPeople.cast(phase)?CalderPeople.size(phase):role==STRANGER&&PellPeople.cast(phase)?PellPeople.size(phase):role==STRANGER&&Drawing.child(phase)||Corner.child(phase)?.68:1;if(now!=small||getAttribute(Attributes.SCALE).getBaseValue()!=size){small=now;getAttribute(Attributes.SCALE).setBaseValue(size);changed=true;}if(role==UNCANNY_FALSE_WAITRESS){noPhysics=phase<2;setNoGravity(phase<2);}if(changed)refreshDimensions();}
     public void bind(LabyrinthPlace p,UUID owner){scene=p.id();entityData.set(OWNER,Optional.ofNullable(owner));}
+    /**
+     * 0.4.596: one of a reader's own stories' people, set down on the great staircase (StairCompany). Theirs alone to see; no story's
+     * scene runs them there, nothing is saved of them, and a hand or a blow does nothing to them.
+     */
+    public void company(UUID owner){scene=StairCompany.SCENE;entityData.set(OWNER,Optional.of(owner));entityData.set(STAIR,(byte)1);}
+    public boolean company(){return entityData.get(STAIR)!=0;}
+    @Override public boolean shouldBeSaved(){return !company()&&super.shouldBeSaved();}
     @Override public void startSeenByPlayer(ServerPlayer p){
         super.startSeenByPlayer(p);
         // Native pairing caches its spawn position before the unseen appearance can move this
@@ -152,7 +165,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * 1595, the Harrigan dialogue case): Harrigan dead in his chair, or in his casket, is a dead man to the story though his body lives;
      * he followed the reader's head when clicked.
      */
-    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&role()!=SP_RESIDENT&&!(role()==HARRIGAN&&phase()!=HarriganVignette.ALIVE_PHASE);}
+    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&!company()&&role()!=SP_RESIDENT&&!(role()==HARRIGAN&&phase()!=HarriganVignette.ALIVE_PHASE);}
     /** A reader has just spoken to this person: what they say back is said to that reader. */
     private void spokenTo(ServerPlayer reader){
         if(reader.isSpectator()||!addresses())return;
@@ -266,7 +279,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         if(!level().isClientSide&&entityData.get(SPEECH)>0)entityData.set(SPEECH,entityData.get(SPEECH)-1);
         if(!level().isClientSide&&spokenFor>0&&--spokenFor==0)setCustomNameVisible(false);
         var before=position();boolean active=!privateKiller||privateHunt.prepare(this);if(!level().isClientSide)BorrascaStory.actorTick(this);super.tick();
-        if(!level().isClientSide){DomesticGlimpses.actorTick(this);GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);TunnelStride.tick(this);HouseReadShelter.tick(this);if(lakePartner(role()))LakeHouseTess.tick(this);}
+        if(!level().isClientSide){DomesticGlimpses.actorTick(this);GhostsMotion.tick(this);LiteraryMotion.tick(this);DinerWalk.tick(this);if(!company())TunnelStride.tick(this);HouseReadShelter.tick(this);if(lakePartner(role())&&!company())LakeHouseTess.tick(this);}
         if(lakePartner(role()))setAirSupply(getMaxAirSupply());
         if(privateKiller){if(active)privateHunt.tick(this,before);}
         else if(!level().isClientSide&&role()==KILLER&&(scene.equals(LabyrinthPlace.CAMP_BLOOD.id())||scene.equals(LabyrinthPlace.ELK_CARCASSES.id())))carcassHunt.tick(this);
@@ -310,9 +323,9 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     /** 0.4.272: the tunnel woman before she comes out: nothing to aim at, strike or be pushed by (UncannyStories.GIANT_HOME). */
     public boolean waitingUnseen(){return role()==UNCANNY_GIANT&&phase()==0||roadDead(role(),phase());}
     @Override public boolean isAttackable(){return !waitingUnseen()&&super.isAttackable();}
-    @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT&&role()!=ROAD_WOMAN&&!pellStandIn())super.pushEntities();}
-    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)spokenTo(s);if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)KitchenVisitors.interact(s,this,p.getItemInHand(hand));return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&SpeakUp.cast(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)SpeakUp.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
-    @Override public boolean hurt(DamageSource source,float amount){if(role()==ROAD_WOMAN){if(source.getEntity() instanceof ServerPlayer p)DeerRoad.struck(p,this,amount);return false;}if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(source.getEntity() instanceof ServerPlayer p)KitchenVisitors.struck(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){
+    @Override protected void pushEntities(){if(!waitingUnseen()&&role()!=SP_RESIDENT&&role()!=ROAD_WOMAN&&!pellStandIn()&&!company())super.pushEntities();}
+    @Override protected InteractionResult mobInteract(Player p,InteractionHand hand){if(company())return InteractionResult.PASS;if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)spokenTo(s);if(HouseReadShelter.role(role())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HouseReadShelter.take(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)KitchenVisitors.interact(s,this,p.getItemInHand(hand));return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&Truant.phase(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)Truant.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==STRANGER&&SpeakUp.cast(phase())){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)SpeakUp.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()==HARRIGAN||role()==HARRIGAN_MOURNER){if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)HarriganVignette.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}if(role()>=GHOST_MARJORIE&&role()<=GHOST_DRAWER&&p.getItemInHand(hand).getItem() instanceof CamcorderItem){if(p instanceof ServerPlayer s)CamcorderItem.toggle(s,p.getItemInHand(hand));p.startUsingItem(hand);return InteractionResult.CONSUME;}if(p instanceof ServerPlayer s&&hand==InteractionHand.MAIN_HAND)LiteraryVignettes.talk(s,this);return InteractionResult.sidedSuccess(level().isClientSide);}
+    @Override public boolean hurt(DamageSource source,float amount){if(company())return false;if(role()==ROAD_WOMAN){if(source.getEntity() instanceof ServerPlayer p)DeerRoad.struck(p,this,amount);return false;}if(role()==SP_RESIDENT||role()==STRANGER&&SecondPerson.cast(phase())){if(source.getEntity() instanceof ServerPlayer p)SecondPerson.touched(p,this);return false;}if(role()==STRANGER&&KitchenVisitors.visitor(phase())){if(source.getEntity() instanceof ServerPlayer p)KitchenVisitors.struck(p,this);return false;}if(role()==STRANGER&&Truant.phase(phase())){if(source.getEntity() instanceof ServerPlayer p)Truant.struck(p,this);return false;}if(source.getEntity() instanceof ServerPlayer p){
         if(role()==BORRASCA_SHERIFF){
             var fight=BorrascaStory.sheriffFight(p,this);
             if(fight!=null){
@@ -373,8 +386,8 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         try{super.updateInvisibilityStatus();}finally{fromEffects=false;}
         if(sceneHidden&&!isInvisible())super.setInvisible(true);
     }
-    @Override public boolean isPushable(){return role()==UNCANNY_FALSE_WAITRESS&&phase()>=2;}
-    @Override public boolean canBeCollidedWith(){if(role()==UNCANNY_FALSE_WAITRESS)return phase()>=2;return super.canBeCollidedWith();}
+    @Override public boolean isPushable(){return !company()&&role()==UNCANNY_FALSE_WAITRESS&&phase()>=2;}
+    @Override public boolean canBeCollidedWith(){if(company())return false;if(role()==UNCANNY_FALSE_WAITRESS)return phase()>=2;return super.canBeCollidedWith();}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);if(spokenFor>0)t.putInt("Said0398",spokenFor);t.putInt("Role",role());t.putInt("Phase",phase());t.putInt("Gesture0491",gesture());t.putString("Scene",scene);if(fade()>0)t.putInt("Fade0228",fade());if(torn()>0)t.putInt("Torn0439",torn());if(marks()!=0)t.putInt("Marks0535",marks());if(sceneHidden)t.putBoolean("SceneHidden",true);owner().ifPresent(id->t.putUUID("Reader",id));}
     @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);spokenFor=t.getInt("Said0398");scene=t.getString("Scene");entityData.set(OWNER,t.hasUUID("Reader")?Optional.of(t.getUUID("Reader")):Optional.empty());appearance(t.getInt("Role"),t.getInt("Phase"));gesture(t.getInt("Gesture0491"));fade(t.getInt("Fade0228"));torn(t.getInt("Torn0439"));marks(t.getInt("Marks0535"));sceneHidden=t.getBoolean("SceneHidden");}
 }
