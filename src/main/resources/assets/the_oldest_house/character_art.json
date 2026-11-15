@@ -2326,5 +2326,37 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 206
+  },
+  {
+    "name": "literary_lodging_dan_cut",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 201
+  },
+  {
+    "name": "literary_lodging_dan_prick",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 201
+  },
+  {
+    "name": "literary_lodging_daniel_cut",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 203
+  },
+  {
+    "name": "literary_lodging_daniel_prick",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 203
   }
 ]

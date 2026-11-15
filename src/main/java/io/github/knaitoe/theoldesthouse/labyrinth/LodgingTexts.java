@@ -65,6 +65,16 @@ public final class LodgingTexts {
         HATCH_LOOK="Through the hatch: a bare room, a cot, a chair turned to the back wall, and a man held standing in a doorcase there.",
         THROUGH_DOOR="Close to the door, low. Somebody on the other side stops moving.",
         STRAPS="Each strap goes through an iron loop and is buckled, and each buckle is locked. There is a keyhole in each.";
+    // 0.4.606: N4. DANIEL_CUT, DAN_CUT and VERA_PIN are the script's; the rest are new here.
+    public static final String DANIEL_CUT="What did you do? What did they do to him?",DAN_CUT="It's nothing. It's a cut.",
+        VERA_PIN="Watch his hand. Not this one. His.",
+        JIB_PULLED="At the end of the back passage the papered door shifts in its frame, stops, and shifts again.",
+        GLASS_BREAKS="The glass in the hall stand breaks. Dan's hand comes away from it cut across the back.",
+        DANIEL_HAND_OPENS="The back of his hand opens across the knuckles, where nothing has touched it.",
+        GRIPPED="A hand closes on your arm and does not let go. It walks you back the way it came.",
+        GRIP_BROKEN="Its hand comes off you.",
+        TAKEN="In the dark behind the paper it lets go of you, and goes on without you.",
+        STRUCK_FAILED="It stops where it is put, and comes on again.";
     public static final String VERA_WORKS="Vera folds a cloth into a square and sets it on the others.";
     public static final String MAN_IN_FRAME="The man in the frame";
     public static final String[] DANIEL_LISTEN={"You're not her. You're staying here? Listen to me.","There's a key for these. She keeps it, or the woman with her does.",

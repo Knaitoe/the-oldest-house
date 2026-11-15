@@ -81,6 +81,9 @@ class Look:
     stripe: str = ''
     rips: bool = False
     shoes: str = ''
+    # 0.4.606 (docs/ONES_INSIDE_INJURY_0_4_606.md): a wound on the back of the right hand: 'cut' (the hall stand's glass) or 'prick'
+    # (Vera's pin).
+    wound: str = ''
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -308,6 +311,11 @@ LOOKS = {
     'literary_lodging_failed_post': Look('#cfc5b2','#6b635a','receding','#5d5b54','#4b4943','suit','#8f8a7a',eyes='#77756a',age=1,mark='lodging_failed_tied'),
     'literary_lodging_failed_dress': Look('#d3c9b8','#857868','bun','#8a7f78','#8a7f78','dress','#b3aa9a',eyes='#7b7a70',mark='lodging_failed',sleeve=10),
     'literary_lodging_failed_shirt': Look('#c8bfae','#3f3933','close','#9a9588','#63615a','ragged','#aaa594',eyes='#737268',mark='lodging_failed',sleeve=6),
+    # 0.4.606: Dan and Daniel after the glass, and after the pin: the same, with the wound on the back of the right hand.
+    'literary_lodging_dan_cut': Look('#d2a686','#5e4a38','part','#4e5864','#3c3a36','coat','#b9ad92',eyes='#56626c',age=1,level_eyes=True,wound='cut'),
+    'literary_lodging_dan_prick': Look('#d2a686','#5e4a38','part','#4e5864','#3c3a36','coat','#b9ad92',eyes='#56626c',age=1,level_eyes=True,wound='prick'),
+    'literary_lodging_daniel_cut': Look('#d9c4b2','#5e4a38','long','#a39f94','#55524b','ragged','#8a867a',eyes='#56626c',age=1,beard='full',mark='lodging_daniel',sleeve=6,level_eyes=True,wound='cut'),
+    'literary_lodging_daniel_prick': Look('#d9c4b2','#5e4a38','long','#a39f94','#55524b','ragged','#8a867a',eyes='#56626c',age=1,beard='full',mark='lodging_daniel',sleeve=6,level_eyes=True,wound='prick'),
     # The Kept (0.4.410): the four the machine keeps, thin and worn through, in what is left of their clothes.
     'literary_kept_silas': Look('#bfa894','#9a968c','receding','#5a5a52','#3a3a36','ragged','#7a7868',eyes='#5a5c58',age=2,beard='full',mark='despair'),
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
@@ -1597,6 +1605,17 @@ def paint(look):
                            'left':(((5,h-1),(6,h-1)),((4,h-1),))}[side]
                 for x,y in edge:d.point((x,y),fill=rim)
                 for x,y in core:d.point((x,y),fill=rgb(TRUANT_INK))
+            if look.wound and ai==0 and side in ('front','right','back'):
+                # 0.4.606: across the back of the right hand, a cut from the glass: a line opened along the knuckles, darker where it is
+                # deepest, and two drops run down toward the fingers; or the pin's prick, one bead of blood and the start of a run.
+                d=ImageDraw.Draw(art);top=h-4*S;blood='#8a2020';deep='#561212';run='#a83a32'
+                def px(x,y,c):d.rectangle((x*S,top+y*S,x*S+S-1,top+y*S+S-1),fill=c)
+                if look.wound=='cut':
+                    cells={'front':((0,1),(1,1),(2,2),(3,2)),'right':((0,2),(1,2),(2,1)),'back':((1,1),(2,1))}[side]
+                    for i,(x,y) in enumerate(cells):
+                        if x*S<w:px(x,y,deep if i in (1,2) else blood)
+                    if side=='front':px(1,2,run);px(2,3,run)
+                elif side=='front':px(1,2,blood);d.rectangle((S,top+3*S,S+S-1,top+3*S+S//2-1),fill=run)
             if look.mark=='borrasca_worker' and side not in ('top','bottom'):
                 d=ImageDraw.Draw(art);d.rectangle((0,h-4,w-1,h-1),fill='#a48f64');d.line((0,h-4,w-1,h-4),fill='#786b51')
             if look.mark=='borrasca_kyle' and side not in ('top','bottom'):

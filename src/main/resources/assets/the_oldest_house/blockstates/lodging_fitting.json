@@ -1927,7 +1927,7 @@
       "model": "the_oldest_house:block/lodging/hall_stand_1"
     },
     "facing=north,kind=hall_stand,stage=2": {
-      "model": "the_oldest_house:block/lodging/hall_stand_0"
+      "model": "the_oldest_house:block/lodging/hall_stand_2"
     },
     "facing=north,kind=hall_stand,stage=3": {
       "model": "the_oldest_house:block/lodging/hall_stand_0"
@@ -1953,7 +1953,7 @@
       "y": 90
     },
     "facing=east,kind=hall_stand,stage=2": {
-      "model": "the_oldest_house:block/lodging/hall_stand_0",
+      "model": "the_oldest_house:block/lodging/hall_stand_2",
       "y": 90
     },
     "facing=east,kind=hall_stand,stage=3": {
@@ -1985,7 +1985,7 @@
       "y": 180
     },
     "facing=south,kind=hall_stand,stage=2": {
-      "model": "the_oldest_house:block/lodging/hall_stand_0",
+      "model": "the_oldest_house:block/lodging/hall_stand_2",
       "y": 180
     },
     "facing=south,kind=hall_stand,stage=3": {
@@ -2017,7 +2017,7 @@
       "y": 270
     },
     "facing=west,kind=hall_stand,stage=2": {
-      "model": "the_oldest_house:block/lodging/hall_stand_0",
+      "model": "the_oldest_house:block/lodging/hall_stand_2",
       "y": 270
     },
     "facing=west,kind=hall_stand,stage=3": {

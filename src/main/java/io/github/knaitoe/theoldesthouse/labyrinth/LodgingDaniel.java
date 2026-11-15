@@ -87,6 +87,8 @@ public final class LodgingDaniel {
         if(!LodgingSite.inHall(r)&&!LodgingSite.inBackPassage(r)&&!LodgingSite.inParlor(r))return;
         var s=state(b);long now=l.getGameTime();if(now<s.quietUntil)return;
         var daniel=LodgingPeople.find(l,b,LodgingPeople.DANIEL);if(daniel==null)return;
+        // 0.4.606: he hears Dan whoever is about, but strains and shouts only with a reader near enough to hear it (the cast checks).
+        if(LodgingHouse.readers(l,b).stream().noneMatch(p->p.distanceToSqr(daniel)<=HEARD*HEARD))return;
         s.hammerUntil=now+HAMMER;s.quietUntil=now+AGAIN;s.blows=0;
         daniel.gesture(LodgingPeople.STRAIN);
         daniel.say(LodgingPeople.name(LodgingPeople.DANIEL,new net.minecraft.nbt.CompoundTag()),LodgingTexts.DANIEL_SHOUTS);daniel.speaks(LodgingTexts.DANIEL_SHOUTS);

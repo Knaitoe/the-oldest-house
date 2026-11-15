@@ -179,4 +179,7 @@ def entries():
     # hundred and six.
     for phase,name in enumerate(('rae','dan','vera','daniel','failed_post','failed_dress','failed_shirt'),200):
         rows.append({'name':'literary_lodging_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # And (0.4.606) Dan and Daniel with the glass's cut and the pin's prick on their hands, on their own phases; their marks pick the sheet.
+    for name,phase in (('dan_cut',201),('dan_prick',201),('daniel_cut',203),('daniel_prick',203)):
+        rows.append({'name':'literary_lodging_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

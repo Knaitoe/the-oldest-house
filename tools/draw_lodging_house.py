@@ -405,15 +405,16 @@ def casing():
 
 def recess(daniel, upper):
     """Inside a frame: plaster set back a hand's depth. Daniel's is worn smooth where his back and shoulders have been against it,
-    and the straps hang either side at the height of his wrists."""
+    and the straps are either side on the low half, at his hanging wrists."""
     im = new('#d2c2a8' if not daniel else '#c3b39a', 54981 + daniel * 2 + upper, 3)
     if daniel:
         if upper:
             fill(im, 4, 8, 12, 16, '#d7c9b0')
-            for x in (1, 13):
-                fill(im, x, 4, x + 2, 9, '#5b3b25'); dot(im, x, 6, '#8f8a7d'); dot(im, x + 1, 6, '#8f8a7d')
         else:
             fill(im, 4, 0, 12, 7, '#d7c9b0')
+            # 0.4.607: the straps at his hanging wrists (model y 11 to 15, rows 1 to 5), where his hands are when his arms are down.
+            for x in (1, 13):
+                fill(im, x, 1, x + 2, 6, '#5b3b25'); dot(im, x, 3, '#8f8a7d'); dot(im, x + 1, 3, '#8f8a7d')
     else:
         fill(im, 0, 0, 16, 1, '#bba98d')
     return im
@@ -568,6 +569,19 @@ def textures():
     for t in range(12):
         dot(mirror, 2 + t, 13 - t, '#c4c9ca'); dot(mirror, 3 + t, 13 - t, '#b5babb')
     out[T + 'mirror.png'] = mirror
+    # 0.4.606 (N4): the hall stand's glass after Dan is thrown against it: a star of cracks from low on the left where his hand went in,
+    # a piece gone out of it showing the backing board, and the long cracks running to the frame.
+    broken = new('#9aa0a2', 55149, 2)
+    for t in range(12):
+        dot(broken, 2 + t, 13 - t, '#c4c9ca'); dot(broken, 3 + t, 13 - t, '#b5babb')
+    fill(broken, 3, 8, 6, 11, '#3a2a20'); dot(broken, 6, 9, '#3a2a20'); dot(broken, 4, 7, '#3a2a20')
+    for x, y in ((7, 8), (8, 7), (9, 6), (10, 5), (11, 4), (12, 3), (7, 10), (8, 11), (9, 12), (10, 13), (6, 7), (6, 6), (6, 5), (5, 4), (5, 3),
+                 (2, 9), (1, 10), (7, 9), (8, 9), (9, 9), (10, 10), (11, 10), (12, 11), (13, 11), (4, 12), (4, 13), (3, 14)):
+        dot(broken, x, y, '#5f6466')
+    for x, y in ((8, 6), (10, 4), (9, 11), (11, 9), (5, 2)):
+        dot(broken, x, y, '#d6dadb')
+    dot(broken, 5, 11, '#7a2020'); dot(broken, 6, 11, '#5a1616')
+    out[T + 'mirror_broken.png'] = broken
     out[T + 'table_wood.png'] = new('#5e3f28', 55151, 3); out[T + 'stand_wood.png'] = new('#4b3222', 55153, 3); out[T + 'bench_wood.png'] = new('#5a3c27', 55155, 3)
     card = new('#e6dcc3', 55157, 2)
     for y in (1, 2):
@@ -746,8 +760,8 @@ def frame_models():
             back = f'recess_daniel_{"high" if upper else "low"}' if daniel else f'recess_{"high" if upper else "low"}'
             els = [box((0, 0, 10), (16, 16, 16), {'north': 'back', 'south': 'lath', 'up': 'back', 'down': 'back', 'east': 'back', 'west': 'back'}, cull=('south',)),
                    box((0, 0, -1), (1, 16, 10), 'casing'), box((15, 0, -1), (16, 16, 10), 'casing')]
-            if daniel and upper:
-                els += [box((1, 4, 9), (3, 9, 10), 'strap'), box((13, 4, 9), (15, 9, 10), 'strap'), box((1, 6, 8.5), (3, 7, 9), 'iron'), box((13, 6, 8.5), (15, 7, 9), 'iron')]
+            if daniel and not upper:
+                els += [box((1, 10, 9), (3, 15, 10), 'strap'), box((13, 10, 9), (15, 15, 10), 'strap'), box((1, 12, 8.5), (3, 13, 9), 'iron'), box((13, 12, 8.5), (15, 13, 9), 'iron')]
             out[f'frame_back_{upper | daniel * 2}'] = model(els, {'back': back, 'lath': 'lath', 'casing': 'casing', 'strap': 'strap', 'iron': 'iron'}, particle=back)
         for k in range(3):
             pap = f'paper_{p}'
@@ -804,6 +818,9 @@ def fitting_models():
     m['hall_stand_0'] = model([box((1, 0, 8), (15, 4, 16), 'wood'), box((1, 4, 13), (3, 16, 15), 'wood'), box((13, 4, 13), (15, 16, 15), 'wood'), box((1, 10, 10), (15, 12, 16), 'wood')], {'wood': 'stand_wood'})
     m['hall_stand_1'] = model([box((1, 0, 13), (3, 16, 15), 'wood'), box((13, 0, 13), (15, 16, 15), 'wood'), box((3, 1, 14), (13, 13, 15), 'mirror'), box((1, 13, 13), (15, 15, 15), 'wood'),
                                box((2, 14, 11), (3, 15, 13), 'brass'), box((13, 14, 11), (14, 15, 13), 'brass')], {'wood': 'stand_wood', 'mirror': 'mirror', 'brass': 'brass'})
+    # 0.4.606: the upper half again, its glass broken (stage 2).
+    m['hall_stand_2'] = model([box((1, 0, 13), (3, 16, 15), 'wood'), box((13, 0, 13), (15, 16, 15), 'wood'), box((3, 1, 14), (13, 13, 15), 'mirror'), box((1, 13, 13), (15, 15, 15), 'wood'),
+                               box((2, 14, 11), (3, 15, 13), 'brass'), box((13, 14, 11), (14, 15, 13), 'brass')], {'wood': 'stand_wood', 'mirror': 'mirror_broken', 'brass': 'brass'})
     for stage, arm in ((0, (0, 2)), (1, (14, 16))):
         m[f'bench_{stage}'] = model([box((0, 6, 5), (16, 8, 16), 'wood'), box((0, 8, 13), (16, 16, 15), 'wood'), box((arm[0], 8, 5), (arm[1], 12, 13), 'wood'),
                                      box((1, 0, 6), (2.5, 6, 7.5), 'wood'), box((13.5, 0, 6), (15, 6, 7.5), 'wood'), box((1, 0, 13), (2.5, 6, 14.5), 'wood'), box((13.5, 0, 13), (15, 6, 14.5), 'wood')],
@@ -856,7 +873,7 @@ def stair_models(name, top):
 KINDS = ['door', 'bolt_door', 'service', 'jib', 'cupboard', 'frame_side', 'frame_back', 'frame_head', 'window', 'rail', 'banister', 'ladder', 'lamp',
          'fireplace', 'coat_rail', 'hall_table', 'hall_stand', 'bench', 'number', 'tally', 'sill', 'post', 'shoe', 'ratchet']
 STAGES = {'door': 4, 'service': 4, 'jib': 4, 'cupboard': 4, 'frame_back': 4, 'bolt_door': 8, 'frame_side': 8, 'tally': 8, 'frame_head': 6, 'number': 6,
-          'lamp': 3, 'window': 2, 'rail': 2, 'banister': 2, 'fireplace': 2, 'hall_stand': 2, 'bench': 2, 'ratchet': 2, 'shoe': 2, 'post': 2}
+          'lamp': 3, 'window': 2, 'rail': 2, 'banister': 2, 'fireplace': 2, 'hall_stand': 3, 'bench': 2, 'ratchet': 2, 'shoe': 2, 'post': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 8
 MATERIALS = ['brick', 'brick_damp', 'flags', 'roof', 'lath', 'panel', 'paper_hall', 'paper_hall_low', 'paper_parlor', 'paper_parlor_low', 'paper_room',

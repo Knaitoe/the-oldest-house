@@ -68,6 +68,16 @@ public final class LodgingPeople {
      * up behind it to the post, a palm flat on a hatch, fingers round a door's frame.
      */
     public static final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8,STRAIN=9;
+    /**
+     * 0.4.606 (N4, LodgingInjury): a failed body battering a door with both fists, walking with its arms out, walking somebody back by
+     * the arm; Dan holding his cut hand to him; Vera with the pin raised to Dan's hand.
+     */
+    public static final int BATTER=10,REACH=11,DRAG=12,HURT=13,PIN=14;
+    /** 0.4.606: the sheet a man's marks put him in: Dan's and Daniel's hands cut by the glass, or pricked by the pin. */
+    public static @Nullable String dressed(int phase,int marks){
+        int who=phase-FIRST;if(who!=DAN&&who!=DANIEL||marks==0)return null;
+        return skin(phase)+((marks&LodgingInjury.CUT)!=0?"_cut":"_prick");
+    }
     /** Somebody tied sitting at the foot of the post: on the floor, for the seat a body is drawn in (ActorSeat). */
     public static boolean onFloor(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==FIRST+FAILED_POST&&a.gesture()==TIED;}
 
@@ -160,14 +170,16 @@ public final class LodgingPeople {
             if(who==VERA&&stage==LodgingStory.ADDRESS&&LodgingStory.house(l.getServer(),b).getBoolean("DanUp")){var dan=find(l,b,DAN);if(dan!=null)rest=yawTo(a,dan.position());}
             // Dan puts his hand back in his pocket.
             if(who==DAN&&a.gesture()==SHOW&&now>=h.showUntil)a.gesture(POCKET);
-            if(failed(who)){turnHead(a,rest,rest);continue;}
+            if(failed(who)){if(!(who==FAILED_SHIRT&&LodgingInjury.moving(l.getServer(),b)))turnHead(a,rest,rest);continue;}
             ServerPlayer near=null;double best=NEAR*NEAR;
             for(var p:here){if(p.isSpectator()||!p.isAlive())continue;double d=a.distanceToSqr(p);if(d<best&&a.hasLineOfSight(p)){best=d;near=p;}}
             turnHead(a,rest,near==null?rest:yawTo(a,near.getEyePosition()));
         }
     }
     /** Arrived where the chapter has them: turned the way the place faces, doing what they do there. */
-    static void settle(LiteraryActor a,Spot to){if(a.gesture()!=to.gesture()&&!(to.gesture()==POCKET&&a.gesture()==SHOW))a.gesture(to.gesture());}
+    static void settle(LiteraryActor a,Spot to){if(a.gesture()!=to.gesture()&&!(to.gesture()==POCKET&&a.gesture()==SHOW)&&a.gesture()!=PIN)a.gesture(to.gesture());}
+    /** 0.4.606: Dan holds his hand out until then (for the pin). */
+    static void showHand(BlockPos b,long until){household(b).showUntil=until;}
     static float yawTo(Entity a,Vec3 at){var d=at.subtract(a.position());return (float)(Mth.atan2(d.z,d.x)*Mth.RAD_TO_DEG)-90;}
     /** The body kept to this yaw, and the head toward the other, no more than HEAD_TURN off the body, a little at a time. */
     private static void turnHead(LiteraryActor a,float body,float head){
@@ -188,6 +200,12 @@ public final class LodgingPeople {
         h.said.put(key,now);a.say(name,line);a.speaks(line);
         // 0.4.605: Dan's voice, where it carries, brings Daniel against the frame.
         if(who(a)==DAN)LodgingDaniel.danSpoke(p.serverLevel(),b,a);
+    }
+    /** 0.4.606: a blow on one of them. The failed body in the back passage, loose, takes it (LodgingInjury); the rest, nothing yet. */
+    public static void struck(ServerPlayer p,LiteraryActor a){
+        if(!is(a))return;
+        if(who(a)==FAILED_SHIRT&&LodgingInjury.struck(p,a))return;
+        if(failed(who(a)))LodgingHouse.cue(p,LodgingTexts.failed(who(a)));
     }
     /** A hand on one of them: the four speak in the panel; a failed body goes on with what it is doing. */
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
