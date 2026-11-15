@@ -22,6 +22,8 @@ public final class Playtest0130Tests {
     @GameTest(template="empty",batch="review131_plate",timeoutTicks=600)
     public static void theOriginalPlacedMealSurvivesPickupLeftClickPlacementReloadAndOneActualCakeStyleBite(GameTestHelper h){run(h,(f,p)->{
         var scene=LabyrinthPlace.SECOND_WAITRESS;var l=f.level(scene);var b=f.base(scene);var own=f.own(p,scene);
+        // The fixture's reader arrived before the diner's entity sections were resident, when nobody can be made. Now they are: the waitress and this reader's own figure stand (run 1630 crashed here on a waitress who had never been made).
+        UncannyStories.arrive(p,scene,own);h.assertTrue(UncannyDiner.waitress(p,b)!=null&&UncannyStories.actor(p,own,"CastFake")!=null,"the diner's waitress and the reader's own figure stand once the diner is resident");
         own.putBoolean("DinerFlow130",true);own.putBoolean("DinerHosted127",true);own.putBoolean("DinerRealReturned130",true);own.putBoolean("SecondPlaced131",true);own.putInt("SecondManifestAge131",550);own.putInt("DinerHostedAt127",0);own.putInt("UncannyAge",600);LiteraryVignettes.save(f.data(),p.getUUID(),scene,own);
         UncannyDiner.waitress(p,b).moveTo(b.getX()-7.5,b.getY(),b.getZ()-8.5);var fake=UncannyStories.actor(p,own,"CastFake");fake.moveTo(b.getX()+3.5,b.getY(),b.getZ()-18.5);own=step(f,p);
         var at=BlockPos.of(own.getLong("PlatePos131"));var plate=DinerPlate.at(l,at);h.assertTrue(own.getBoolean("MealServed")&&plate!=null,"the waitress places the actual finite meal on a real supporting table");
