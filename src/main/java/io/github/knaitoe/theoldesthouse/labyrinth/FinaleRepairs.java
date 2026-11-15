@@ -38,8 +38,10 @@ public final class FinaleRepairs {
         for(int x=-7;x<=-1;x++)for(int z=22;z<=26;z++){
             plan.put(b.offset(x,top-1,z),Blocks.DARK_OAK_PLANKS.defaultBlockState());
             if(z==26&&x>=-hall)continue;
+            // 0.4.593: the walkway's bars are one rail, each joined to the next (they stood as separate posts).
             for(int y=top;y<=top+3;y++)plan.put(b.offset(x,y,z),y==top&&(z==22||z==26)
-                    ?Blocks.IRON_BARS.defaultBlockState():Blocks.AIR.defaultBlockState());
+                    ?Blocks.IRON_BARS.defaultBlockState().setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST,true)
+                        .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.WEST,true):Blocks.AIR.defaultBlockState());
         }
         supportPlan(plan,b);
     }

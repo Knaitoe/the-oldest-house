@@ -222,10 +222,13 @@ public final class ExplorationPassTests {
                 if(started[0]<0){
                     for(int y=3;y<=8;y++)for(int z=-2;z<=2;z++){var wall=base.offset(34,at.getY()+y,z);walls.add(wall);touched.add(wall);touched.add(wall.east());l.setBlock(wall,Blocks.DEEPSLATE_TILES.defaultBlockState(),2);}
                     for(int x=22;x<=35;x++)for(int z=-3;z<=3;z++){var floor=base.offset(x,at.getY()-2,z);touched.add(floor);l.setBlock(floor,Blocks.STONE.defaultBlockState(),2);}
+                    // 0.4.593: a pilaster stands in front of the nearest wall column. Its wall keeps its stone.
+                    for(int y=3;y<=8;y++){var pilaster=base.offset(33,at.getY()+y,0);touched.add(pilaster);l.setBlock(pilaster,StairWell.pier(at.getY()),2);}
                     for(var p:List.of(a,b,observer)){p.teleportTo(l,at.getX()+.5,at.getY()+(p==b?1:0),at.getZ()+.5,0,0);p.connection.resetPosition();}
                     h.assertTrue(StaircaseDebris.fallForPlayers(l,origin,List.of(a,b,observer))==1,"two living neighbors across the clock boundary share one block; observers add none");
                     var falling=l.getEntitiesOfClass(net.minecraft.world.entity.item.FallingBlockEntity.class,new AABB(at).inflate(20),e->e.getTags().contains(StaircaseDebris.TAG));h.assertTrue(falling.size()==1,"one authoritative native falling entity is visible to both readers");piece[0]=falling.getFirst();initialY[0]=piece[0].getY();
-                    var broken=walls.stream().filter(cell->l.getBlockState(cell).isAir()).toList();h.assertTrue(broken.size()==1&&l.getBlockState(broken.getFirst().east()).isCollisionShapeFullBlock(l,broken.getFirst().east()),"one real wall cell breaks and a solid backing retains the enclosure");started[0]=l.getGameTime();return;
+                    var broken=walls.stream().filter(cell->l.getBlockState(cell).isAir()).toList();h.assertTrue(broken.size()==1&&l.getBlockState(broken.getFirst().east()).isCollisionShapeFullBlock(l,broken.getFirst().east()),"one real wall cell breaks and a solid backing retains the enclosure");
+                    h.assertTrue(broken.getFirst().getZ()!=base.getZ(),"the stone behind a pilaster stays: the fragment comes from the open wall beside it, at "+broken.getFirst());started[0]=l.getGameTime();return;
                 }
                 if(l.getGameTime()-started[0]>=6&&!motion[0]){h.assertTrue(!piece[0].isRemoved()&&piece[0].getY()<initialY[0]&&piece[0].getDeltaMovement().y<0,"the native block actually falls clear of the wall face");motion[0]=true;}
                 if(l.getGameTime()-started[0]>=40){
