@@ -67,7 +67,7 @@ public final class LodgingPeople {
      * and held out to be looked at; Vera's hands at work on the table; Daniel's wrists up at the frame's straps; a failed body's arms
      * up behind it to the post, a palm flat on a hatch, fingers round a door's frame.
      */
-    public static final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8;
+    public static final int WAIT=1,POCKET=2,SHOW=3,WORK=4,HELD=5,TIED=6,HATCH=7,FRAME=8,STRAIN=9;
     /** Somebody tied sitting at the foot of the post: on the floor, for the seat a body is drawn in (ActorSeat). */
     public static boolean onFloor(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==FIRST+FAILED_POST&&a.gesture()==TIED;}
 
@@ -104,7 +104,7 @@ public final class LodgingPeople {
     /** The seven at one house: who they are by body, and until when Dan holds his hand out. */
     static final class Household {final UUID[] ids=new UUID[COUNT];long lastTick=-1,showUntil=-1;final Map<String,Long> said=new HashMap<>();}
     private static final Map<BlockPos,Household> HOUSES=new HashMap<>();
-    public static void clearAll(){HOUSES.clear();LodgingDoubles.clearAll();LodgingStory.clearAll();}
+    public static void clearAll(){HOUSES.clear();LodgingDoubles.clearAll();LodgingStory.clearAll();LodgingDaniel.clearAll();}
     static Household household(BlockPos b){return HOUSES.computeIfAbsent(b.immutable(),k->new Household());}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()+LodgingSite.WEST,b.getY()+LodgingSite.CELLAR_SLAB,b.getZ()+LodgingSite.BACK,b.getX()+LodgingSite.EAST+1,b.getY()+LodgingSite.ROOF+1,b.getZ()+LodgingSite.FRONT+1);}
@@ -138,7 +138,7 @@ public final class LodgingPeople {
     /** None of the seven is at the house: for a house built again from nothing, and for tests. */
     public static void reset(ServerLevel l,BlockPos b){
         for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LodgingPeople::is))old.discard();
-        HOUSES.remove(b);LodgingDoubles.reset(l,b);LodgingStory.reset(l.getServer(),b);
+        HOUSES.remove(b);LodgingDoubles.reset(l,b);LodgingStory.reset(l.getServer(),b);LodgingDaniel.reset(b);
     }
 
     /** Every game tick, each house with a reader in it: heads turned on the scene's own quarter-second tick would turn in steps. */
@@ -150,7 +150,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingStory.spot(stage,who);float rest=spot.look();
@@ -186,6 +186,8 @@ public final class LodgingPeople {
         var h=household(b);long now=p.serverLevel().getGameTime();String key=who(a)+"|"+line;Long last=h.said.get(key);
         if(last!=null&&now-last<QUIET)return;
         h.said.put(key,now);a.say(name,line);a.speaks(line);
+        // 0.4.605: Dan's voice, where it carries, brings Daniel against the frame.
+        if(who(a)==DAN)LodgingDaniel.danSpoke(p.serverLevel(),b,a);
     }
     /** A hand on one of them: the four speak in the panel; a failed body goes on with what it is doing. */
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
@@ -193,6 +195,8 @@ public final class LodgingPeople {
         int who=who(a);
         if(failed(who)){LodgingHouse.cue(p,LodgingTexts.failed(who));return;}
         if(a.saying()&&Talk.key(p).equals(TALK+who))return;
+        // 0.4.605: Daniel is spoken to from his room, through the open hatch, or crouched at his door; not through a shut door.
+        if(who==DANIEL&&!LodgingDaniel.reach(p,b))return;
         switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,b,a,own);default->daniel(p,a,own);}
     }
 
@@ -222,8 +226,15 @@ public final class LodgingPeople {
         replies.add(Talk.reply(LodgingTexts.R_NOT,r->raeAnswered(r,NOT_MINE)));
         Talk.ask(p,replies);
     }
+    /** 0.4.605: a reader at the hatch or the door speaks to one of them they cannot put a hand on. */
+    public static void speakTo(ServerPlayer p,int who){
+        var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;var a=find(p.serverLevel(),b,who);if(a==null)return;
+        if(a.saying()&&Talk.key(p).equals(TALK+who))return;
+        talk(p,a,LodgingHouse.own(p));
+    }
     private static @Nullable LiteraryActor near(ServerPlayer p,int who){
         var b=LiteraryVignettes.base(p,PLACE);if(b==null)return null;var a=find(p.serverLevel(),b,who);
+        if(a!=null&&who==DANIEL)return LodgingDaniel.reach(p,b)?a:null;
         return a!=null&&a.distanceToSqr(p)<=LiteraryActor.ADDRESS_RANGE*LiteraryActor.ADDRESS_RANGE?a:null;
     }
     private static void askedWrong(ServerPlayer p){
