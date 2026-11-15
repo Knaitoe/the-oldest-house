@@ -65,7 +65,9 @@ ART = {
         'bright': dict(brows=(UP, UP), eyes='crescent', mouth='grin', speech='up'),
         'content': dict(brows=(N, N), eyes='half', mouth='soft_smile', speech='up'),
         'unsure': dict(brows=(W1, W1), eyes='open', mouth='short', speech='flat'),
-        'sleep': dict(brows=(N, N), eyes='open', mouth='slack', speech='flat'),
+        # 0.4.603: the owner, of Tilly asleep: "any way to shift painted faces with the opened mouths?" Her mouth was 'slack', a little
+        # open, a dark gap in the middle of a sleeping face. Shut, as June's is.
+        'sleep': dict(brows=(N, N), eyes='open', mouth='neutral', speech='flat'),
     },
     'callum': {
         'drawn': dict(brows=(W1, W1), eyes='half', extras=['shadow'], mouth='grimace', speech='down'),
