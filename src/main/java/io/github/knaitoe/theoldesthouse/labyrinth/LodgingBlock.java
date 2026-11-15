@@ -27,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * door at the back passage's end, flush with the wall while it is shut.</li>
  * <li>FRAME_SIDE, FRAME_BACK, FRAME_HEAD: a frame, a doorcase set into an outside wall with nothing behind it. The side: bit 0 the
  * upper cell, bit 1 on the opening's east as drawn (else its west), bit 2 Daniel's. The back, the opening a body can stand in,
- * plastered a hand's depth back: bit 0 upper, bit 1 Daniel's. The head: 0 west, 1 middle, 2 east as drawn; 3 to 5 Daniel's.</li>
+ * plastered a hand's depth back: bit 0 upper, bit 1 Daniel's, bit 2 (0.4.608) his straps unlocked and hanging. The head: 0 west, 1 middle, 2 east as drawn; 3 to 5 Daniel's.</li>
  * <li>WINDOW: a window shuttered from inside, its shutters screwed shut. Stage 1 the upper cell.</li>
  * <li>RAIL: the gallery's railing round the stairwell, along its cell's north edge as drawn; stage 1 a corner, north and west.</li>
  * <li>BANISTER: the stair's handrail, along its cell's west edge, rising north; stage 1 the newel post at the stair's foot.</li>
@@ -50,7 +50,7 @@ public final class LodgingBlock extends HorizontalDirectionalBlock {
         /** A door of two cells whose stage's bit 0 is open and bit 1 the upper cell. */
         public boolean leaf(){return this==DOOR||this==BOLT_DOOR||this==SERVICE||this==JIB||this==CUPBOARD;}
         /** How many stages it draws; the rest draw stage 0. */
-        public int stages(){return switch(this){case DOOR,SERVICE,JIB,CUPBOARD,FRAME_BACK->4;case BOLT_DOOR,FRAME_SIDE,TALLY->8;case FRAME_HEAD,NUMBER->6;case LAMP,HALL_STAND->3;
+        public int stages(){return switch(this){case DOOR,SERVICE,JIB,CUPBOARD->4;case BOLT_DOOR,FRAME_SIDE,FRAME_BACK,TALLY->8;case FRAME_HEAD,NUMBER->6;case LAMP,HALL_STAND->3;
             case WINDOW,RAIL,BANISTER,FIREPLACE,BENCH,RATCHET,SHOE,POST->2;default->1;};}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);

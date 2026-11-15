@@ -122,7 +122,8 @@ public final class LodgingStory {
                 }
             }
             case RAE_UP->{if(walk(l,b,h,LodgingPeople.RAE,true,spot(FETCHING,LodgingPeople.RAE)))stage=next(h,FETCHING,clock);}
-            case FETCHING->{if(clock-h.getInt("StageAt")>=FETCH){LodgingPeople.find(l,b,LodgingPeople.RAE);stage=next(h,COMING_DOWN,clock);}}
+            // 0.4.608: out of sight in the workroom, she takes the key off its hook.
+            case FETCHING->{if(clock-h.getInt("StageAt")>=FETCH){LodgingKey.taken(l,b,h);stage=next(h,COMING_DOWN,clock);}}
             case COMING_DOWN->{
                 boolean vera=walk(l,b,h,LodgingPeople.VERA,false,spot(COMING_DOWN,LodgingPeople.VERA));
                 // Rae a few paces behind her.
@@ -157,7 +158,8 @@ public final class LodgingStory {
                 if(vera&&dan&&rae){LodgingInjury.begin(h,clock);stage=next(h,INJURY,clock);}
             }
             case INJURY->{if(LodgingInjury.tick(l,b,h,here,clock))stage=next(h,AFTER,clock);}
-            case AFTER->{LodgingInjury.tick(l,b,h,here,clock);if(LodgingInjury.pinDue(h,clock))stage=next(h,PIN,clock);}
+            // 0.4.608: nobody brings Dan down to an empty frame.
+            case AFTER->{LodgingInjury.tick(l,b,h,here,clock);if(LodgingInjury.pinDue(h,clock)&&!h.getBoolean(LodgingKey.FREE))stage=next(h,PIN,clock);}
             case PIN->{
                 // Vera down and through the back passage; Dan after her once she is in the hall.
                 boolean vera=walkVia(l,b,h,LodgingPeople.VERA,VERA_TO_FRAME,VERA_FRAME,LodgingSite.DANIEL_DOOR,7);
@@ -182,6 +184,11 @@ public final class LodgingStory {
         for(var p:here){if(p.isSpectator())continue;counted++;if(LodgingHouse.own(p).getInt(LodgingPeople.RAE_ANSWER)==LodgingPeople.UNDECIDED)return false;}
         return counted>0;
     }
+    /** 0.4.608: one of them says this aloud, if a reader is near enough to hear it (the cast checks); otherwise they say nothing. */
+    static void speak(ServerLevel l,BlockPos b,LiteraryActor a,String name,String line){
+        if(LodgingHouse.readers(l,b).stream().noneMatch(p->!p.isSpectator()&&p.distanceToSqr(a)<=LodgingDaniel.HEARD*LodgingDaniel.HEARD))return;
+        a.say(name,line);a.speaks(line);
+    }
     /** One of them a step along their way; true once there. Each leg is walked in turn; the workroom door opened on the way through. */
     private static boolean walk(ServerLevel l,BlockPos b,CompoundTag h,int who,boolean up,LodgingPeople.Spot to){
         var legs=new ArrayList<Vec3>();if(up){for(var v:UP)legs.add(v);}else{for(int i=UP.length-1;i>=0;i--)legs.add(UP[i]);}
@@ -191,9 +198,11 @@ public final class LodgingStory {
      * 0.4.606: one of them a step along these legs and then to their spot; the door crossed on the given leg opened as they reach it
      * (its bolt drawn first, if it is Daniel's) and shut behind them, unless it is Daniel's, which is left standing open.
      */
-    private static boolean walkVia(ServerLevel l,BlockPos b,CompoundTag h,int who,List<Vec3> legs,LodgingPeople.Spot to,BlockPos door,int doorLeg){
+    private static boolean walkVia(ServerLevel l,BlockPos b,CompoundTag h,int who,List<Vec3> legs,LodgingPeople.Spot to,BlockPos door,int doorLeg){return walkVia(l,b,h,"Leg"+who,who,legs,to,door,doorLeg);}
+    /** As above, counting the legs under this key (0.4.608: the key's errands, kept apart from the chapter's walks). A door leg of -1 crosses no door. */
+    static boolean walkVia(ServerLevel l,BlockPos b,CompoundTag h,String legKey,int who,List<Vec3> legs,LodgingPeople.Spot to,BlockPos door,int doorLeg){
         var a=LodgingPeople.find(l,b,who);if(a==null)return false;
-        String legKey="Leg"+who;int leg=h.getInt(legKey);var route=new ArrayList<>(legs);route.add(new Vec3(to.x(),to.y(),to.z()));
+        int leg=h.getInt(legKey);var route=new ArrayList<>(legs);route.add(new Vec3(to.x(),to.y(),to.z()));
         if(leg>=route.size()){LodgingPeople.settle(a,to);return true;}
         var target=route.get(leg).add(b.getX(),b.getY(),b.getZ());
         // The door stands open while anybody is on the legs either side of it.

@@ -44,6 +44,9 @@ public final class LodgingRegistry {
     /** The main stair, its treads under a runner, and the back stair down to the cellar, bare. */
     public static final DeferredBlock<StairBlock> STAIR=BLOCKS.registerBlock("lodging_stair",p->new StairBlock(Blocks.OAK_PLANKS.defaultBlockState(),p),fixed(Blocks.OAK_STAIRS));
     public static final DeferredBlock<StairBlock> CELLAR_STAIR=BLOCKS.registerBlock("lodging_cellar_stair",p->new StairBlock(Blocks.SPRUCE_PLANKS.defaultBlockState(),p),fixed(Blocks.SPRUCE_STAIRS));
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    /** 0.4.608: the release key for Daniel's straps (LodgingKey), drawn by tools/draw_lodging_key.py. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<net.minecraft.world.item.Item> KEY=ITEMS.register("lodging_key",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     private LodgingRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }

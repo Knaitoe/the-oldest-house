@@ -403,6 +403,14 @@ def casing():
     return im
 
 
+def recess_open():
+    """0.4.608: Daniel's low recess with the straps undone: the worn plaster, and paler bands where they lay across it for years."""
+    im = recess(1, 0)
+    for x in (1, 13):
+        fill(im, x, 1, x + 2, 6, '#ddd0b8'); dot(im, x, 1, '#b8a88e'); dot(im, x + 1, 5, '#b8a88e')
+    return im
+
+
 def recess(daniel, upper):
     """Inside a frame: plaster set back a hand's depth. Daniel's is worn smooth where his back and shoulders have been against it,
     and the straps are either side on the low half, at his hanging wrists."""
@@ -541,6 +549,7 @@ def textures():
         out[T + f'cupboard_{s}.png'] = cupboard(u); out[T + f'shutter_{s}.png'] = shutter(u)
         out[T + f'recess_{s}.png'] = recess(0, u); out[T + f'recess_daniel_{s}.png'] = recess(1, u)
         out[T + f'wheel_{s}.png'] = wheel(u)
+    out[T + 'recess_daniel_open.png'] = recess_open()
     out[T + 'door_edge.png'] = new('#3d2a20', 55121, 2); out[T + 'casing.png'] = casing()
     out[T + 'rail.png'] = new('#4a3020', 55123, 3); out[T + 'ladder.png'] = boards('#9b7d57', '#7a6142', 55125, along_x=False)
     out[T + 'bulb.png'] = new('#fff6d8', 55127, 2); out[T + 'bulb_dim.png'] = new('#c9b48a', 55129, 2); out[T + 'flex.png'] = new('#2a2522', 55131, 1)
@@ -760,9 +769,19 @@ def frame_models():
             back = f'recess_daniel_{"high" if upper else "low"}' if daniel else f'recess_{"high" if upper else "low"}'
             els = [box((0, 0, 10), (16, 16, 16), {'north': 'back', 'south': 'lath', 'up': 'back', 'down': 'back', 'east': 'back', 'west': 'back'}, cull=('south',)),
                    box((0, 0, -1), (1, 16, 10), 'casing'), box((15, 0, -1), (16, 16, 10), 'casing')]
+            tex = {'back': back, 'lath': 'lath', 'casing': 'casing', 'strap': 'strap', 'iron': 'iron'}
+            shut = els + ([box((1, 10, 9), (3, 15, 10), 'strap'), box((13, 10, 9), (15, 15, 10), 'strap'), box((1, 12, 8.5), (3, 13, 9), 'iron'), box((13, 12, 8.5), (15, 13, 9), 'iron')]
+                          if daniel and not upper else [])
+            out[f'frame_back_{upper | daniel * 2}'] = model(shut, tex, particle=back)
+            # 0.4.608: unlocked, each strap hangs straight down from its iron loop, its buckle at the bottom, off the worn plaster.
             if daniel and not upper:
-                els += [box((1, 10, 9), (3, 15, 10), 'strap'), box((13, 10, 9), (15, 15, 10), 'strap'), box((1, 12, 8.5), (3, 13, 9), 'iron'), box((13, 12, 8.5), (15, 13, 9), 'iron')]
-            out[f'frame_back_{upper | daniel * 2}'] = model(els, {'back': back, 'lath': 'lath', 'casing': 'casing', 'strap': 'strap', 'iron': 'iron'}, particle=back)
+                hang = els + [box((1, 12, 8.5), (3, 13, 9), 'iron'), box((13, 12, 8.5), (15, 13, 9), 'iron'),
+                                             box((1.5, 5, 9), (2.5, 12, 9.5), 'strap'), box((13.5, 5, 9), (14.5, 12, 9.5), 'strap'),
+                                             box((1, 4, 8.8), (3, 5.5, 9.6), 'iron'), box((13, 4, 8.8), (15, 5.5, 9.6), 'iron')]
+                tex_open = dict(tex, back='recess_daniel_open')
+                out[f'frame_back_{4 | upper | daniel * 2}'] = model(hang, tex_open, particle='recess_daniel_open')
+            else:
+                out[f'frame_back_{4 | upper | daniel * 2}'] = model(shut, tex, particle=back)
         for k in range(3):
             pap = f'paper_{p}'
             if k == 1:
@@ -872,7 +891,7 @@ def stair_models(name, top):
 
 KINDS = ['door', 'bolt_door', 'service', 'jib', 'cupboard', 'frame_side', 'frame_back', 'frame_head', 'window', 'rail', 'banister', 'ladder', 'lamp',
          'fireplace', 'coat_rail', 'hall_table', 'hall_stand', 'bench', 'number', 'tally', 'sill', 'post', 'shoe', 'ratchet']
-STAGES = {'door': 4, 'service': 4, 'jib': 4, 'cupboard': 4, 'frame_back': 4, 'bolt_door': 8, 'frame_side': 8, 'tally': 8, 'frame_head': 6, 'number': 6,
+STAGES = {'door': 4, 'service': 4, 'jib': 4, 'cupboard': 4, 'frame_back': 8, 'bolt_door': 8, 'frame_side': 8, 'tally': 8, 'frame_head': 6, 'number': 6,
           'lamp': 3, 'window': 2, 'rail': 2, 'banister': 2, 'fireplace': 2, 'hall_stand': 3, 'bench': 2, 'ratchet': 2, 'shoe': 2, 'post': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 8

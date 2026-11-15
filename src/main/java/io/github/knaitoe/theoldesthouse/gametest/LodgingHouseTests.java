@@ -788,4 +788,126 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_accounts") public static void accountsDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.608: N7, the key
+    private static void keyAt(ServerLevel l,BlockPos b,String where,long seenAt){
+        var s=l.getServer();var h=LodgingStory.house(s,b);h.putString(LodgingKey.WHERE,where);if(seenAt>=0)h.putLong(LodgingKey.SEEN_AT,seenAt);LodgingStory.save(s,b,h);
+    }
+    private static BlockPos strap(GameTestHelper h,ServerLevel l,BlockPos b){
+        BlockPos strap=null;
+        for(int dx=-1;dx<=1;dx+=2){var c=LodgingSite.DANIEL_FRAME.offset(dx,0,0);var st=l.getBlockState(b.offset(c));
+            if(LodgingBlock.is(st,LodgingBlock.Kind.FRAME_SIDE)&&(st.getValue(LodgingBlock.STAGE)&4)!=0)strap=c;}
+        h.assertTrue(strap!=null,"his frame has its straps");return strap;
+    }
+    private static int frameStage(ServerLevel l,BlockPos b){return l.getBlockState(b.offset(LodgingSite.DANIEL_FRAME)).getValue(LodgingBlock.STAGE);}
+    @GameTest(template="empty",batch="lodging_key",timeoutTicks=4000)
+    public static void raeTakesTheKeyIsSeenWithItAndAReaderLetsDanielOut(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_key_a",P);var q=f.player("lodging_key_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                h.assertTrue(LodgingKey.where(s,b).equals(LodgingKey.HOOK),"the key starts on its hook");
+                f.at(p,P,1.5,0,-6.5);f.at(q,P,2.5,0,-6.5);
+                at(l,b,LodgingStory.FETCHING,who);
+            })
+            // Rae, out of sight in the workroom, takes it.
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.stage(s,b)>=LodgingStory.COMING_DOWN,"waiting for Rae to come down: stage "+LodgingStory.stage(s,b)))
+            .thenExecute(()->{
+                h.assertTrue(LodgingKey.where(s,b).equals(LodgingKey.RAE),"Rae has the key once she has been to the workroom: "+LodgingKey.where(s,b));
+                var hook=l.getBlockState(b.offset(LodgingSite.KEY_HOOK));
+                h.assertTrue(LodgingThing.is(hook,LodgingThing.Kind.KEY_HOOK)&&hook.getValue(LodgingThing.STAGE)==1,"its hook is empty");
+                LodgingStory.hold(b,true);at(l,b,LodgingStory.AFTER,who);
+                // Both readers in the hall behind her, turned away from her up the stair.
+                look(p,p.getEyePosition().add(0,0,-6));look(q,q.getEyePosition().add(0,0,-6));
+            })
+            // Unwatched in Act II, in her place, she takes it out and looks at it.
+            .thenWaitUntil(()->h.assertTrue(LodgingKey.is(who[LodgingPeople.RAE].getMainHandItem(),b),"waiting for Rae to look at the key in her hand"))
+            .thenExecute(()->{h.assertTrue(who[LodgingPeople.RAE].gesture()==LodgingPeople.KEY,"she holds it low to look at it");look(p,who[LodgingPeople.RAE].position().add(0,1.2,0));})
+            .thenWaitUntil(()->h.assertTrue(own(p).getBoolean(LodgingKey.SAW_KEY),"the reader who looks sees it"))
+            .thenExecute(()->{
+                var rae=who[LodgingPeople.RAE];var dan=who[LodgingPeople.DAN];
+                h.assertTrue(rae.getMainHandItem().isEmpty()&&LodgingStory.house(s,b).contains(LodgingKey.SEEN_AT),"seen, she puts it away");
+                h.assertFalse(own(q).getBoolean(LodgingKey.SAW_KEY),"the reader looking away did not see it");
+                // Asked about it, she confesses, and gives it to the reader who asks for it.
+                LodgingPeople.talk(p,rae,own(p));
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_KEY),"\"You have the key.\" is offered to the reader who saw it");
+                for(var line:LodgingTexts.RAE_CONFESSION)has(h,p,"Rae: "+line);
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_GIVE_ME),"the reader can ask for it");
+                h.assertTrue(p.getInventory().items.stream().anyMatch(i->LodgingKey.is(i,b))&&p.getUUID().equals(LodgingKey.holder(s,b)),"the key is in the reader's hands");
+                Talk.close(p);
+                // Told, Dan says it to her, and she answers him.
+                LodgingPeople.talk(p,dan,own(p));
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_RAE_KNEW),"a reader who heard her can tell Dan");
+                has(h,p,"Dan: "+LodgingTexts.DAN_SHE_KNEW);has(h,p,"Dan: "+LodgingTexts.DAN_YOU_KNEW);has(h,p,"Rae: "+LodgingTexts.RAE_SO_YOU_CAME);
+                Talk.close(p);
+                // In his room with it in hand: the straps open.
+                f.at(p,P,-7.5,0,-24.5);
+                for(int i=0;i<9;i++)if(LodgingKey.is(p.getInventory().items.get(i),b))p.getInventory().selected=i;
+                h.assertTrue(LodgingKey.is(p.getMainHandItem(),b),"the reader holds the key");
+                h.assertTrue(LodgingHouse.click(p,b,strap(h,l,b),own(p)),"the straps answer");
+                h.assertTrue((frameStage(l,b)&4)!=0,"the frame shows them hanging open");
+                h.assertTrue(LodgingKey.free(s,b)&&LodgingKey.where(s,b).equals(LodgingKey.USED),"he is free; the key is spent");
+                h.assertTrue(p.getInventory().items.stream().noneMatch(i->LodgingKey.is(i,b))&&!LodgingKey.is(p.getMainHandItem(),b),"and gone from the reader");
+            })
+            // He walks out through his door and the back passage to the parlor; Rae stands in its door.
+            .thenWaitUntil(()->{var d=who[LodgingPeople.DANIEL];h.assertTrue(LodgingStory.house(s,b).getBoolean(LodgingKey.IN),"waiting for Daniel to reach the parlor: at "+rel(b,d)+", leg "+LodgingStory.house(s,b).getInt("KeyLeg"+LodgingPeople.DANIEL));})
+            .thenExecute(()->h.assertTrue(LodgingSite.inParlor(rel(b,who[LodgingPeople.DANIEL])),"Daniel is in the parlor: "+rel(b,who[LodgingPeople.DANIEL])))
+            .thenWaitUntil(()->h.assertTrue(who[LodgingPeople.RAE].position().distanceTo(LodgingPeople.world(b,LodgingKey.RAE_DOORWAY))<.3,"waiting for Rae to stand in the parlor's door: at "+rel(b,who[LodgingPeople.RAE])))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_key") public static void keyDone(ServerLevel l){done();}
+    @GameTest(template="empty",batch="lodging_key_hidden",timeoutTicks=3000)
+    public static void seenAndNotAskedRaeHidesTheKeyInTheCupboard(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_hide_a",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{f.at(p,P,-1.5,0,-3.5);at(l,b,LodgingStory.AFTER,who);keyAt(l,b,LodgingKey.RAE,l.getGameTime()-LodgingKey.HIDE_AFTER);})
+            .thenWaitUntil(()->h.assertTrue(LodgingKey.where(s,b).equals(LodgingKey.CUPBOARD),"waiting for Rae to put it in the cupboard: at "+rel(b,who[LodgingPeople.RAE])+", task "+LodgingStory.house(s,b).getInt(LodgingKey.TASK)))
+            .thenExecute(()->h.assertFalse(LodgingSite.open(l,b,LodgingSite.CUPBOARD),"she shuts the cupboard"))
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.house(s,b).getInt(LodgingKey.TASK)==LodgingKey.NONE,"waiting for her to go back to Dan: at "+rel(b,who[LodgingPeople.RAE])))
+            .thenExecute(()->{
+                h.assertTrue(who[LodgingPeople.RAE].position().distanceTo(LodgingPeople.world(b,LodgingPeople.SPOTS[LodgingPeople.RAE]))<.3,"back in her place");
+                f.at(p,P,.5,0,-9.6);LodgingHouse.click(p,b,LodgingSite.CUPBOARD,own(p));
+                h.assertTrue(own(p).getBoolean(LodgingKey.FOUND_KEY)&&p.getUUID().equals(LodgingKey.holder(s,b))&&p.getInventory().items.stream().anyMatch(i->LodgingKey.is(i,b)),"the reader who opens it finds the key");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_key_hidden") public static void hiddenDone(ServerLevel l){done();}
+    @GameTest(template="empty",batch="lodging_key_rae",timeoutTicks=3000)
+    public static void raeGivesDanielTheKeyHerself(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_rae_a",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                f.at(p,P,1.5,0,-5.5);at(l,b,LodgingStory.AFTER,who);keyAt(l,b,LodgingKey.RAE,-1);
+                var o=own(p);o.putBoolean(LodgingPeople.RAE_ASKED,true);LiteraryVignettes.save(LabyrinthData.get(s),p.getUUID(),P,o);
+                LodgingPeople.talk(p,who[LodgingPeople.RAE],own(p));
+                h.assertFalse(Talk.choose(p,LodgingTexts.R_KEY),"a reader who did not see the key cannot say so");
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_WAY_UP),"a reader who heard her ask in the hall can say she knew the way up");
+                has(h,p,"Rae: "+LodgingTexts.RAE_CONFESSION[2]);
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_YOURSELF),"and ask her to give it to him herself");
+                Talk.close(p);
+                // The reader follows her into his room, near enough to hear.
+                f.at(p,P,-8.5,0,-21.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingKey.free(s,b),"waiting for Rae to unlock him: at "+rel(b,who[LodgingPeople.RAE])+", task "+LodgingStory.house(s,b).getInt(LodgingKey.TASK)))
+            .thenExecute(()->{
+                var hh=LodgingStory.house(s,b);
+                h.assertTrue(hh.getBoolean(LodgingKey.BY_RAE)&&hh.getBoolean(LodgingKey.SAID_DONT),"she unlocked him, after he told her not to be sorry");
+                h.assertTrue((frameStage(l,b)&4)!=0,"the straps hang open");
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingStory.house(s,b).getBoolean(LodgingKey.IN),"waiting for Daniel to reach the parlor: at "+rel(b,who[LodgingPeople.DANIEL])))
+            .thenExecute(()->{
+                h.assertTrue(who[LodgingPeople.RAE].position().distanceTo(LodgingPeople.world(b,LodgingKey.RAE_AT_FRAME))<.3,"she stays by the frame; nobody stands in the parlor's door");
+                h.assertFalse(LodgingStory.house(s,b).getInt(LodgingKey.TASK)==LodgingKey.DOORWAY,"no doorway");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_key_rae") public static void raeKeyDone(ServerLevel l){done();}
 }
