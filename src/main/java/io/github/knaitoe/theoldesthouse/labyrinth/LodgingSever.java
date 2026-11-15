@@ -52,7 +52,7 @@ public final class LodgingSever {
     public static int catch_(MinecraftServer s,BlockPos b){return state(LodgingStory.house(s,b)).getInt("Catch");}
     /** Neither of the other two ends under way or done, and the house settled. */
     static boolean open(MinecraftServer s,BlockPos b){
-        return LodgingReturn.ready(s,b)&&LodgingReturn.phase(s,b)==LodgingReturn.NONE&&!LodgingComplete.begun(s,b)&&!severed(s,b);
+        return LodgingReturn.ready(s,b)&&LodgingReturn.phase(s,b)==LodgingReturn.NONE&&!LodgingComplete.begun(s,b)&&!severed(s,b)&&!LodgingNeither.dead(s,b);
     }
     private static void go(CompoundTag in,int phase,int clock){in.putInt("Phase",phase);in.putInt("At",clock);}
 
@@ -73,7 +73,9 @@ public final class LodgingSever {
         var own=LodgingHouse.own(p);if(!own.getBoolean(LodgingCellar.KNOWS_THIRD))return false;
         var s=p.server;var h=LodgingStory.house(s,b);var in=state(h);
         if(in.getInt(mine)>=STEPS){LodgingHouse.cue(p,done);return true;}
-        if(!open(s,b))return false;
+        // 0.4.616: after the two are dead it can still be done, under Vera (LodgingNeither).
+        boolean after=LodgingNeither.dead(s,b)&&LodgingNeither.phase(s,b)!=LodgingNeither.BROKEN;
+        if(!open(s,b)&&!after)return false;
         int clock=h.getInt("Clock");if(clock-own.getInt("SeverTry0615")<GAP&&own.contains("SeverTry0615"))return true;
         own.putInt("SeverTry0615",clock);
         // Somebody else at the other one just now: both go quicker.
@@ -85,7 +87,7 @@ public final class LodgingSever {
         l.playSound(null,at,mine.equals("Ratchet")?SoundEvents.CHAIN_PLACE:SoundEvents.IRON_TRAPDOOR_CLOSE,SoundSource.BLOCKS,partner?.5F:1.4F,mine.equals("Ratchet")?.6F+.05F*now:1.4F);
         l.sendParticles(ParticleTypes.WHITE_ASH,at.getX()+.5,at.getY()+1,at.getZ()+.5,6,.3,.3,.3,0);
         LodgingHouse.cue(p,now>=STEPS?done:was==0?first:again);
-        if(now>=STEPS&&in.getInt(other)>=STEPS)sever(l,b,h,in,clock);
+        if(now>=STEPS&&in.getInt(other)>=STEPS){if(after){go(in,DONE,clock);for(var r:LodgingHouse.readers(l,b)){if(r.isSpectator())continue;LodgingHouse.cue(r,LodgingTexts.SEVERED);var o=LodgingHouse.own(r);o.putBoolean(SAW,true);LodgingHouse.save(r,o);}LodgingNeither.broken(l,b,h,clock);}else sever(l,b,h,in,clock);}
         LodgingStory.save(s,b,h);p.swing(net.minecraft.world.InteractionHand.MAIN_HAND,true);
         return true;
     }

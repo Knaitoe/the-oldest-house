@@ -39,7 +39,7 @@ public final class LodgingThing extends HorizontalDirectionalBlock {
         CARD_HOLDER,SINK,RANGE,DRESSER,SCULLERY_TABLE,SHELF,PAIL,ROPE,CRATE,COAL;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
         /** How many stages it draws; the rest draw stage 0. */
-        public int stages(){return switch(this){case BED,SCULLERY_TABLE->4;case COT,SETTEE,LONG_TABLE,SIDEBOARD,WORK_TABLE,KEY_HOOK,CARD_INDEX,WARDROBE,CARD_HOLDER,RANGE,DRESSER->2;default->1;};}
+        public int stages(){return switch(this){case BED,SCULLERY_TABLE,LONG_TABLE->4;case CHAIR->2;case COT,SETTEE,SIDEBOARD,WORK_TABLE,KEY_HOOK,CARD_INDEX,WARDROBE,CARD_HOLDER,RANGE,DRESSER->2;default->1;};}
         /** Flat on a wall or the floor: nothing a body bumps into. */
         public boolean flat(){return this==KEY_HOOK||this==CARD_HOLDER||this==SHELF||this==ROPE;}
     }

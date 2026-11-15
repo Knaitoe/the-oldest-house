@@ -176,12 +176,14 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);LodgingComplete.tick(l,b,here);LodgingSever.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);LodgingComplete.tick(l,b,here);LodgingSever.tick(l,b,here);LodgingNeither.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
             // Somebody on their way somewhere turns where they walk; heads turn to readers only for those standing in their place.
             if(!failed(who)&&a.position().distanceToSqr(world(b,spot))>.36)continue;
+            // 0.4.616: the dead turn to nobody.
+            if(LodgingNeither.still(l.getServer(),b,who))continue;
             // Vera's last line in the hall is to Dan.
             if(who==VERA&&stage==LodgingStory.ADDRESS&&LodgingStory.house(l.getServer(),b).getBoolean("DanUp")){var dan=find(l,b,DAN);if(dan!=null)rest=yawTo(a,dan.position());}
             // Dan puts his hand back in his pocket.
@@ -220,6 +222,8 @@ public final class LodgingPeople {
     /** 0.4.606: a blow on one of them. The failed body in the back passage, loose, takes it (LodgingInjury); the rest, nothing yet. */
     public static void struck(ServerPlayer p,LiteraryActor a){
         if(!is(a))return;
+        // 0.4.616: a blow on Dan or Daniel from somebody who knows, or on Vera laying the table (LodgingNeither).
+        if(LodgingNeither.struck(p,a,who(a)))return;
         if(who(a)==FAILED_SHIRT&&LodgingInjury.struck(p,a))return;
         // 0.4.615: or the one that goes for Daniel after the house is severed (LodgingSever).
         if(who(a)==FAILED_SHIRT&&LodgingSever.struck(p,a))return;
@@ -240,6 +244,8 @@ public final class LodgingPeople {
         // 0.4.611 (N10, N11): the two men in one room, Rae asked; or one of them acting.
         // 0.4.612 (N12): Vera with a reader's body at the frame, or having called one up (LodgingTaken).
         if(LodgingTaken.talk(p,b,a,who,own))return;
+        // 0.4.616 (E4): Rae, after, told what Vera did (LodgingNeither).
+        if(LodgingNeither.talk(p,b,a,who,own))return;
         // 0.4.613 (E1): Dan put to going back through the frame, or taken there (LodgingReturn).
         if(LodgingReturn.talk(p,b,a,who,own))return;
         // 0.4.614 (E2): Daniel taken by the shoulders, or let go (LodgingComplete).

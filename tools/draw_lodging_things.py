@@ -411,11 +411,17 @@ def washstand():
     return m(els, 'marble')
 
 
-def chair():
-    els = legs(((3, 3), (12, 3), (3, 12), (12, 12)), 9, 'wood_mid') + [
-        box((3, 9, 3), (13, 10, 13), 'wood_mid'), box((3, 10, 12), (4, 19, 13), 'wood_mid'), box((12, 10, 12), (13, 19, 13), 'wood_mid'),
-        box((4, 17, 12), (12, 19, 13), 'wood_mid'), box((4, 13, 12.25), (12, 14, 12.75), 'wood_mid')]
-    return m(els, 'wood_mid')
+CHAIR = [((3, 0, 3), (4, 9, 4)), ((12, 0, 3), (13, 9, 4)), ((3, 0, 12), (4, 9, 13)), ((12, 0, 12), (13, 9, 13)),
+         ((3, 9, 3), (13, 10, 13)), ((3, 10, 12), (4, 19, 13)), ((12, 10, 12), (13, 19, 13)), ((4, 17, 12), (12, 19, 13)),
+         ((4, 13, 12.25), (12, 14, 12.75))]
+
+
+def chair(stage=0):
+    if stage == 1:
+        # 0.4.616: knocked over onto its back: each box turned about the back legs' feet, so the seat stands on edge, the back lies
+        # along the floor behind it and the legs stick out level (y' = 13 - z, z' = 13 + y).
+        return m([box((x0, 13 - z1, 13 + y0), (x1, 13 - z0, 13 + y1), 'wood_mid') for (x0, y0, z0), (x1, y1, z1) in CHAIR], 'wood_mid')
+    return m([box(a, b, 'wood_mid') for a, b in CHAIR], 'wood_mid')
 
 
 def armchair():
@@ -441,11 +447,16 @@ def side_table():
 
 
 def long_table(stage):
+    end, laid = stage & 1, stage >> 1 & 1
     els = [box((0, 12, 0), (16, 14, 16), {'up': 'wood_dark', 'down': 'wood_dark', 'north': 'wood_dark', 'south': 'wood_dark', 'east': 'wood_dark',
                                           'west': 'wood_dark'})]
     els.append(box((0.5, 9, 0), (1.5, 12, 16), 'wood_dark'))
-    if stage == 1:
+    if end:
         els += [box((0, 9, 0.5), (16, 12, 1.5), 'wood_dark'), box((1, 0, 1), (3, 12, 3), 'wood_dark')]
+    if laid:
+        # 0.4.616: a place laid on the chair's side: plate, knife and fork either side, a glass at the top right.
+        els += [box((2.5, 14, 5.5), (7.5, 14.5, 10.5), 'plate'), box((4, 14, 3.6), (7, 14.25, 4.4), 'tin'), box((4, 14, 11.6), (7, 14.25, 12.4), 'tin'),
+                box((8.3, 14, 11.3), (9.7, 16.2, 12.7), 'jar')]
     return m(els, 'wood_dark')
 
 
@@ -578,12 +589,12 @@ def coal_model():
 
 KINDS = ['bed', 'cot', 'washstand', 'chair', 'armchair', 'settee', 'side_table', 'long_table', 'sideboard', 'work_table', 'key_hook', 'card_index',
          'wardrobe', 'dressing_table', 'card_holder', 'sink', 'range', 'dresser', 'scullery_table', 'shelf', 'pail', 'rope', 'crate', 'coal']
-DRAW = {'bed': bed, 'cot': cot, 'washstand': lambda s: washstand(), 'chair': lambda s: chair(), 'armchair': lambda s: armchair(), 'settee': settee,
+DRAW = {'bed': bed, 'cot': cot, 'washstand': lambda s: washstand(), 'chair': chair, 'armchair': lambda s: armchair(), 'settee': settee,
         'side_table': lambda s: side_table(), 'long_table': long_table, 'sideboard': sideboard, 'work_table': work_table, 'key_hook': key_hook,
         'card_index': card_index, 'wardrobe': wardrobe_model, 'dressing_table': lambda s: dressing_table(), 'card_holder': card_holder,
         'sink': lambda s: sink(), 'range': range_model, 'dresser': dresser, 'scullery_table': scullery_table, 'shelf': lambda s: shelf(),
         'pail': lambda s: pail(), 'rope': lambda s: rope_model(), 'crate': lambda s: crate_model(), 'coal': lambda s: coal_model()}
-STAGES = {'bed': 4, 'scullery_table': 4, 'cot': 2, 'settee': 2, 'long_table': 2, 'sideboard': 2, 'work_table': 2, 'key_hook': 2, 'card_index': 2,
+STAGES = {'bed': 4, 'scullery_table': 4, 'chair': 2, 'cot': 2, 'settee': 2, 'long_table': 4, 'sideboard': 2, 'work_table': 2, 'key_hook': 2, 'card_index': 2,
           'wardrobe': 2, 'card_holder': 2, 'range': 2, 'dresser': 2}
 MAX_STAGE = 4
 NAME = 'Lodging House Furniture'

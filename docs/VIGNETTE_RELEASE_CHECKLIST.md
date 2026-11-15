@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 15 candidate 0.4.616 (docs/ONES_INSIDE_NEITHER_0_4_616.md): an ending reached by violence. Does a blow from somebody who does not know do nothing, and can the rest of the party still act after it?
+
 November 15 candidate 0.4.615 (docs/ONES_INSIDE_SEVER_0_4_615.md): an ending that two readers do faster than one. Can one reader still finish it, and does the faster way need the second reader to really be doing the other half?
 
 November 15 candidate 0.4.614 (docs/ONES_INSIDE_COMPLETE_0_4_614.md): an ending that needs readers to keep doing something. Does it stop when they stop, and is the stopping final? Does anyone who did not choose to take part get drawn into it?
