@@ -178,6 +178,10 @@ public final class LodgingTexts {
         VERA_CALLS="One of you. Up here. Not Rae.",
         R_WHEN_YOU_CALL="When you call.",
         VERA_SENT_YES="Good. You'll hear me.",VERA_SENT_NO="Then I'll ask the next one up the stair.",VERA_NOT_YOU="Not you. Go back down.";
+    // 0.4.617: party changes. Every line here is new.
+    public static final String[] DAN_LATE={"You've come in the middle of it. There's a man strapped in a room at the back, and he has my face.",
+        "Rae has been asking everyone for something. Let her ask you."};
+    public static final String IN_BY_SCULLERY="The scullery door is off the latch. You come in that way, among the pails, and the house is already loud.";
     // 0.4.616: E4. Every line here is new.
     public static final String BLOW_FIRST="He folds over the blow. Somewhere else in the house, at the same moment, somebody cries out.",
         BLOW_SAME="Both of them fold over the one blow, as if it had landed twice.",
@@ -353,6 +357,9 @@ public final class LodgingTexts {
         if(own.getBoolean(LodgingComplete.HELD)&&!own.getBoolean(LodgingComplete.LET_GO))p.add("Your hands were on his shoulders while it happened.");
         else if(own.getBoolean(LodgingComplete.HELD))p.add("Your hands were on his shoulders, and then they were not.");
         if(own.getBoolean(LodgingComplete.HEARD_UNDER))p.add("Dan said Rae's name, and another voice went on under it.");
+        // 0.4.617: came in late.
+        if(own.getInt(LodgingParty.LATE)==LodgingParty.HALL)p.add("You came in late, by the hall, and Dan told you what was going on.");
+        else if(own.getInt(LodgingParty.LATE)==LodgingParty.SCULLERY)p.add("You came in late, by the scullery door, while it was already happening.");
         // 0.4.616: E4.
         if(own.getBoolean(LodgingNeither.STRUCK))p.add("You struck one of them knowing what it did to the other.");
         if(own.getBoolean(LodgingNeither.SAW_DIE))p.add(LodgingNeither.oneRoom(own)?"Dan and Daniel died of the same blows, in the one room.":"Dan and Daniel died of the same blows, in two rooms.");

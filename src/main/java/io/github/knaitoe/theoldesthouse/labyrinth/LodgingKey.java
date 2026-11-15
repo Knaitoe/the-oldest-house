@@ -256,6 +256,8 @@ public final class LodgingKey {
     public static void cupboard(ServerPlayer p,BlockPos b){
         var s=p.server;if(!CUPBOARD.equals(where(s,b))||!LodgingSite.open(p.serverLevel(),b,LodgingSite.CUPBOARD))return;
         put(s,b,p.getUUID().toString());var own=LodgingHouse.own(p);own.putBoolean(FOUND_KEY,true);LodgingHouse.save(p,own);
+        // 0.4.617: if it is lost from now on, it goes back to the cupboard (LodgingParty).
+        var hh=LodgingStory.house(s,b);LodgingParty.lives(hh,CUPBOARD);LodgingStory.save(s,b,hh);
         if(!p.getInventory().add(stack(b)))p.drop(stack(b),false);
         LodgingHouse.cue(p,LodgingTexts.KEY_FOUND);
     }
@@ -297,7 +299,7 @@ public final class LodgingKey {
             case TO_VERA->{LodgingPeople.says(p,rae,"Rae",LodgingTexts.RAE_TO_VERA);task(h,UP_TO_VERA);}
             case GIVE_ME->{
                 LodgingPeople.says(p,rae,"Rae",LodgingTexts.RAE_GIVES);LodgingHouse.cue(p,LodgingTexts.KEY_GIVEN);
-                h.putString(WHERE,p.getUUID().toString());if(!p.getInventory().add(stack(b)))p.drop(stack(b),false);
+                h.putString(WHERE,p.getUUID().toString());LodgingParty.lives(h,RAE);if(!p.getInventory().add(stack(b)))p.drop(stack(b),false);
             }
             default->{LodgingPeople.says(p,rae,"Rae",LodgingTexts.RAE_ALL_RIGHT);task(h,TO_DANIEL);}
         }

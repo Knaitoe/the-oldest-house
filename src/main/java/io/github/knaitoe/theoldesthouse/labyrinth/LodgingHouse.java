@@ -30,7 +30,7 @@ public final class LodgingHouse {
 
     /** Not until the story can be finished: it is being built in slices. */
     public static boolean dealable(LabyrinthData d,UUID reader){return false;}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);LodgingParty.arrive(p,b,own);}
     /** Everybody reading in this house. */
     static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new java.util.ArrayList<ServerPlayer>();

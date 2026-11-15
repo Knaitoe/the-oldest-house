@@ -176,7 +176,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);LodgingComplete.tick(l,b,here);LodgingSever.tick(l,b,here);LodgingNeither.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);LodgingReturn.tick(l,b,here);LodgingComplete.tick(l,b,here);LodgingSever.tick(l,b,here);LodgingNeither.tick(l,b,here);LodgingParty.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();

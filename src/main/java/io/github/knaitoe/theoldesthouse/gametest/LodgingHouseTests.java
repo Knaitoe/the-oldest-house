@@ -1668,6 +1668,75 @@ public final class LodgingHouseTests {
     }
     @AfterBatch(batch="lodging_neither") public static void neitherDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_neither_stop") public static void neitherStopDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.617: party changes
+    private static String where(ServerLevel l,BlockPos b){return LodgingStory.house(l.getServer(),b).getString(LodgingKey.WHERE);}
+    @GameTest(template="empty",batch="lodging_party",timeoutTicks=3000)
+    public static void theKeyGoesBackWhereItLivesWhenItsHolderIsGone(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_party_a",P);var q=f.player("lodging_party_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);
+                f.at(p,P,.5,0,-3.5);f.at(q,P,-.5,0,-3.5);
+                // Rae gave it to the first reader.
+                var house=LodgingStory.house(s,b);house.putString(LodgingKey.WHERE,p.getUUID().toString());LodgingParty.lives(house,LodgingKey.RAE);LodgingStory.save(s,b,house);
+                p.getInventory().add(LodgingKey.stack(b));
+                LodgingStory.hold(b,false);
+            })
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(p.getUUID().toString().equals(where(l,b))&&LodgingParty.carries(p,b),"kept while its holder is in the house with it: "+where(l,b));
+                // The holder walks out of the house with it.
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+60.5,0,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingKey.RAE.equals(where(l,b))&&!LodgingParty.carries(p,b),"waiting for it to go back to Rae's coat: "+where(l,b)))
+            .thenExecute(()->{
+                // Found in the cupboard by the second, who drops it on the hall floor.
+                var house=LodgingStory.house(s,b);house.putString(LodgingKey.WHERE,q.getUUID().toString());LodgingParty.lives(house,LodgingKey.CUPBOARD);LodgingStory.save(s,b,house);
+                q.drop(LodgingKey.stack(b),false);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingKey.CUPBOARD.equals(where(l,b))&&l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,LodgingPeople.area(b),e->LodgingKey.is(e.getItem(),b)).isEmpty(),
+                "waiting for it to go back to the cupboard, and none left on the floor: "+where(l,b)))
+            .thenExecute(()->{
+                // A reader who logged off with it comes back carrying it: it is no longer theirs.
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,0,0);p.getInventory().add(LodgingKey.stack(b));
+            })
+            .thenWaitUntil(()->h.assertTrue(!LodgingParty.carries(p,b)&&LodgingKey.CUPBOARD.equals(where(l,b)),"waiting for the stale key to be taken: "+where(l,b)))
+            .thenSucceed();
+    }
+    @GameTest(template="empty",batch="lodging_party_late",timeoutTicks=3000)
+    public static void aLateReaderComesInByTheHallOrByTheScullery(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_late_a",P);var q=f.player("lodging_late_b",P);var r=f.player("lodging_late_c",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);var house=LodgingStory.house(s,b);house.remove(LodgingParty.READERS);LodgingStory.save(s,b,house);
+                f.at(p,P,.5,0,-3.5);f.at(q,P,.5,0,-2.5);
+                var a=own(p);a.remove(LodgingParty.ARRIVED);LodgingHouse.arrive(p,b,a);
+                h.assertTrue(a.getInt(LodgingParty.LATE)==0,"the first reader is not late");
+                var c=own(q);c.remove(LodgingParty.ARRIVED);LodgingHouse.arrive(q,b,c);
+                h.assertTrue(c.getInt(LodgingParty.LATE)==LodgingParty.HALL,"the second, after Rae has begun, comes in at the hall");
+                has(h,q,"Dan: "+LodgingTexts.DAN_LATE[0]);has(h,q,"Dan: "+LodgingTexts.DAN_LATE[1]);
+                // Once the first attempt is under way, a third comes in by the scullery door.
+                house=LodgingStory.house(s,b);house.putInt(LodgingMeeting.STAGE,LodgingMeeting.ATTEMPTING);LodgingStory.save(s,b,house);
+                f.at(r,P,.5,0,-2.5);var e=own(r);e.remove(LodgingParty.ARRIVED);LodgingHouse.arrive(r,b,e);
+                h.assertTrue(e.getInt(LodgingParty.LATE)==LodgingParty.SCULLERY,"in by the scullery door");
+                var at=r.position().subtract(b.getX(),b.getY(),b.getZ());
+                h.assertTrue(Math.abs(at.x-12.5)<.6&&Math.abs(at.z+23.5)<.6,"standing inside it: "+at);
+                h.assertTrue(LodgingParty.readers(s,b).size()==3,"three have come in");
+                // Coming in again is not arriving late again.
+                LodgingHouse.arrive(q,b,c);h.assertTrue(LodgingParty.readers(s,b).size()==3,"nobody counted twice");
+                house=LodgingStory.house(s,b);house.putInt(LodgingMeeting.STAGE,0);LodgingStory.save(s,b,house);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_party") public static void partyDone(ServerLevel l){done();}
+    @AfterBatch(batch="lodging_party_late") public static void partyLateDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete") public static void completeDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete_held") public static void completeHeldDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_return") public static void returnDone(ServerLevel l){done();}
