@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 15 candidate 0.4.612 (docs/ONES_INSIDE_TAKEN_0_4_612.md): questions for a scene where one reader can be taken out of it. Does a reader taken away still have things to do that matter to the others (a knock, a hatch, a latch)? Is anything done to a reader's body only by that reader's own reply, never by another reader or a majority?
+
 November 15 candidate 0.4.611 (docs/ONES_INSIDE_MEETING_0_4_611.md): questions for a scene several readers talk into. Is each thing said aloud said once for everybody, and each promise kept only by the one who made it? Does an action chosen from what was said begin visibly and give anybody near a way to stop it? Does a scheduled event elsewhere (the pin) wait while the scene holds its people?
 
 November 15 candidate 0.4.608 (docs/ONES_INSIDE_KEY_0_4_608.md): questions for an object that moves between people. Does the house keep exactly one place for it, and does every hand that moves it check that it is still there? Is a sighting each reader's own, and only while they are looking? Does an NPC who walks keep to the middle of each cell, clear of the walls? Is a freed character spoken to wherever they now stand, and are the replies about freeing them gone?

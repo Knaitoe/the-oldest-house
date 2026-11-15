@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor;
 import io.github.knaitoe.theoldesthouse.labyrinth.LodgingDoubles;
 import io.github.knaitoe.theoldesthouse.labyrinth.LodgingSite;
+import io.github.knaitoe.theoldesthouse.labyrinth.LodgingTaken;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -50,8 +51,30 @@ public final class LodgingRenderers {
     public static final class Model extends PlayerModel<LiteraryActor> {
         public Model(net.minecraft.client.model.geom.ModelPart part,boolean slim){super(part,slim);}
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){
+            if(standing(a)){stand(a.gesture(),walk,Math.min(amount,.45F),age,Mth.clamp(yaw,-20,20));return;}
             super.setupAnim(a,0,0,age,a.gesture()==LodgingDoubles.AWAKE?yaw:0,0);
             lie(a.gesture()==LodgingDoubles.AWAKE,age);
+        }
+        /**
+         * 0.4.612: up out of the bed (labyrinth.LodgingTaken). It stands as a body stands that has been put on its feet: the arms hang
+         * straight from the shoulders and do not swing with the walk, the head a little forward and down. Led, its right wrist is in
+         * Vera's hand, the arm drawn forward and out to her; the steps are short and even. At the frame, once its original has put them
+         * there, both hands are forward and level at the height of a held body's shoulders, and they do not move.
+         */
+        public void stand(int gesture,float walk,float amount,float age,float yaw){
+            for(var part:new net.minecraft.client.model.geom.ModelPart[]{head,hat,body,jacket,leftArm,rightArm,leftSleeve,rightSleeve,leftLeg,rightLeg,leftPants,rightPants}){part.resetPose();part.visible=true;}
+            riding=false;crouching=false;
+            head.yRot=yaw*Mth.DEG_TO_RAD;head.xRot=.22F;
+            // Short, even steps when led; still otherwise.
+            if(gesture==LodgingTaken.LED){float swing=Mth.cos(walk*.6662F)*.85F*amount;rightLeg.xRot=swing;leftLeg.xRot=-swing;}
+            leftArm.zRot=-.03F;rightArm.zRot=.03F;
+            if(gesture==LodgingTaken.LED){rightArm.xRot=-.68F;rightArm.yRot=0;rightArm.zRot=.06F;}
+            if(gesture==LodgingTaken.STEADY){
+                leftArm.xRot=rightArm.xRot=-1.42F;leftArm.yRot=-.05F;rightArm.yRot=.05F;leftArm.zRot=rightArm.zRot=0;
+                // Held there; only the breath moves them, a little.
+                float breath=Mth.sin(age*.08F)*.015F;leftArm.xRot+=breath;rightArm.xRot+=breath;
+            }
+            hat.copyFrom(head);jacket.copyFrom(body);leftSleeve.copyFrom(leftArm);rightSleeve.copyFrom(rightArm);leftPants.copyFrom(leftLeg);rightPants.copyFrom(rightLeg);
         }
         /** The pose under the blanket, from the native pose it was given (and the head's turn, awake). */
         public void lie(boolean awake,float age){
@@ -83,12 +106,12 @@ public final class LodgingRenderers {
         @Override public void render(LiteraryActor a,float yaw,float partial,PoseStack p,MultiBufferSource out,int light){
             var s=skin(a);model=s.model()==PlayerSkin.Model.SLIM?slim:wide;
             super.render(a,yaw,partial,p,out,light);
-            blanket(headward(a).getOpposite(),a.tickCount+partial,a.gesture()==LodgingDoubles.AWAKE,p,out,light);
+            if(!standing(a))blanket(headward(a).getOpposite(),a.tickCount+partial,a.gesture()==LodgingDoubles.AWAKE,p,out,light);
         }
         @Override public ResourceLocation getTextureLocation(LiteraryActor a){return skin(a).texture();}
         @Override protected void scale(LiteraryActor a,PoseStack p,float partial){p.scale(SIZE,SIZE,SIZE);}
         /** Laid along its bed: feet toward the foot, head on the pillow, face up (as LiteraryRenderers.lie, measured for this body). */
-        @Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){layDown(headward(a),p);}
+        @Override protected void setupRotations(LiteraryActor a,PoseStack p,float age,float yaw,float partial,float scale){if(standing(a))super.setupRotations(a,p,age,yaw,partial,scale);else layDown(headward(a),p);}
         @Override protected boolean shouldShowName(LiteraryActor a){return false;}
     }
     /** From the middle of the head cell's floor to the body laid along the bed with its head this way (before the model's flip). */
@@ -99,6 +122,8 @@ public final class LodgingRenderers {
             p.mulPose(Axis.ZP.rotationDegrees(90F));p.mulPose(Axis.YP.rotationDegrees(270F));
     }
     /** Which way the head lies: toward the head of its bed, the opposite of the way the bed runs from head to foot. */
+    /** 0.4.612: up out of the bed on its feet (labyrinth.LodgingTaken). */
+    static boolean standing(LiteraryActor a){return a.gesture()>=LodgingTaken.STAND;}
     static Direction headward(LiteraryActor a){return LodgingSite.bedFacing(Math.max(0,Math.min(5,a.phase()))).getOpposite();}
 
     // ------------------------------------------------------------------------------------------------ the blanket over it
@@ -153,7 +178,7 @@ public final class LodgingRenderers {
     public static final class Lids extends RenderLayer<LiteraryActor,Model> {
         Lids(DoubleRenderer parent){super(parent);}
         @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
-            if(a.gesture()==LodgingDoubles.AWAKE)return;
+            if(a.gesture()!=LodgingDoubles.ASLEEP)return;
             shut(getParentModel(),DoubleRenderer.skin(a).texture(),age,a.getId(),p,out,light);
         }
         /** The lids over a model's eyes, drawn in its head's own frame. */
@@ -190,7 +215,7 @@ public final class LodgingRenderers {
         Hair(DoubleRenderer parent){super(parent);}
         @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
             var me=Minecraft.getInstance().player;if(me==null||a.owner().isEmpty()||!a.owner().get().equals(me.getUUID()))return;
-            int style=HouseReadLookClient.style(HouseReadLookClient.look(),a.gesture()!=LodgingDoubles.AWAKE);
+            int style=HouseReadLookClient.style(HouseReadLookClient.look(),a.gesture()==LodgingDoubles.ASLEEP);
             if(style>=0)HouseReadHair.draw(getParentModel(),style,HouseReadHair.colour(me),p,out,light);
         }
     }

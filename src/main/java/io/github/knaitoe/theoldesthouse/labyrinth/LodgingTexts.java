@@ -151,6 +151,40 @@ public final class LodgingTexts {
         THIRD_WAY="It is coming apart where the post held it together. Every post down here holds up a room, and the ratchet holds every post. Lift the pawl and slip the catch of a frame with somebody in it, and all of it lets go at once: whoever was taken walks out, and whoever was made to stand in their place comes apart like this. Dan with them.",
         R_CELLAR="I've been in the cellar.",
         VERA_CELLAR="Then you've seen what happens when it isn't held. All of them would do that. Dan would do that. Don't touch the wheel.";
+    // 0.4.612: N12. Every line here is new.
+    public static final String TAKEN_COMES="At the back of the house the jib door bangs open, and something comes through it slowly, the way it came before.",
+        TAKEN_AWAKE="It lets go of you in the passage behind the paper and walks off along it. The lath is thin here. On the far side of it is the house.",
+        LATCH_DROPS="The jib door swings to, and on the far side of it a latch drops into its keeper.",
+        LATCH_INSIDE="The latch is on the other side. There is a gap at the jamb a finger would go through, crouched.",
+        LATCH_TRY="You work a finger through the gap and push the latch up. It drops back.",
+        LATCH_WORKED="The latch comes up and stays up. The door gives.",
+        LATCH_FROM_HOUSE="You lift the latch and the jib door opens onto the dark behind it.",
+        KNOCK="You knock on the lath. The whole wall carries it.",
+        HEARD_KNOCK="Knocking, from inside the wall.",
+        DREW_OFF="Through the lath you hear it stop, and turn, and come back toward the knocking.",
+        DREW_OFF_SEEN="It lets the room be, and turns, and goes back toward the knocking in the wall.",
+        HATCH_SEE="You slide the hatch back. Through it is the room, from the height of a hand.",
+        HATCH_SEEN="The hatch slides back from inside the wall. Somebody is looking through it.",
+        RAE_WALL="Somebody's in the wall.",DAN_WALL="Hello? Who's in there?",
+        WORKED_IT="Got it. Got it.",
+        VERA_FETCH="I'll want a pair of hands that won't shake.",
+        DOUBLE_LED="Vera brings it down by the wrist, a step behind her. It walks the way a body walks that has only been shown how.",
+        DOUBLE_YOURS="It is yours. It stands at the frame with its hands at its sides, where Vera left it.",
+        VERA_ASK_ORIGINAL="It knows how to stand. It doesn't know how to hold. Put its hands where you'd put yours, and they'll stay there.",
+        R_STEADY="Show me where.",R_NOT_MINE="Not with my hands.",
+        STEADIED="You lift its hands onto the frame. They are your hands. They stay where you put them.",
+        VERA_HOLD_IT="There. Like that. It won't let go until I say.",VERA_THEN="Then it stands there until somebody will.",
+        VERA_NOT_YOURS="Vera does not look round. She is waiting for the one it belongs to.",
+        VERA_CALLS="One of you. Up here. Not Rae.",
+        R_WHEN_YOU_CALL="When you call.",
+        VERA_SENT_YES="Good. You'll hear me.",VERA_SENT_NO="Then I'll ask the next one up the stair.",VERA_NOT_YOU="Not you. Go back down.";
+    /** Rae, Dan, Daniel: as it takes hold of them; coming out of the wall. */
+    public static final String[] TAKEN_CRY={"Dan! Dan!","Get it off me!","Not back in there. Not back in there."},
+        OUT_OF_WALL={"I couldn't see my hands in there.","It just let go of me.","I know these walls. I know every inch of them."};
+    /** Vera, to a reader against her who comes up when she calls. */
+    public static final String[] VERA_SENT_ASK={"What's in your bed I won't touch if you won't have it touched. So it'll be you.","When I call, come down to the frame and hold him by the shoulders. He'll fight it."};
+    /** What is seen as it takes one of the four. */
+    public static String takenSeen(String name){return "It has "+name+" by the arm, and walks backwards out of the room with "+name+" dragged after it.";}
     /** What a failed body is doing when a hand is put on it. */
     public static String failed(int who){return switch(who){
         case LodgingPeople.FAILED_POST->"Tied to the post by the wrists. Its fingers go on doing up a button that is not there.";
@@ -236,6 +270,10 @@ public final class LodgingTexts {
         p.add("There was a lodging house with its shutters screwed shut, and a card of terms in the hall.");
         if(own.getBoolean("WentUp"))p.add("Upstairs every room had a number, and every outside wall had a doorway in it that went nowhere.");
         if(own.getBoolean("WentDown"))p.add("Under the house the whole of it stood on posts, and the posts stood on a beam, and the beam was held by one wheel.");
+        // 0.4.612: the passages, and what Vera asked of the reader.
+        if(own.getBoolean(LodgingTaken.TAKEN))p.add("Behind the paper there were passages a body wide, and whoever was left in them could still knock.");
+        if(own.getBoolean(LodgingTaken.STEADIED))p.add("There was a body made from yours, and its hands went where you put them.");
+        else if(own.getBoolean(LodgingTaken.AGREED))p.add("Vera called down the stair for a pair of hands, and yours were promised.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.ONES_INSIDE),name,pages(String.join("\n\n",p)));
     }
 }

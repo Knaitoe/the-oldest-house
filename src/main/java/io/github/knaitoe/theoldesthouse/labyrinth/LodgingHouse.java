@@ -45,16 +45,19 @@ public final class LodgingHouse {
         if(!own.getBoolean("WentUp")&&LodgingSite.upstairs(r)){own.putBoolean("WentUp",true);save(p,own);}
         if(!own.getBoolean("WentDown")&&LodgingSite.inCellar(r)){own.putBoolean("WentDown",true);save(p,own);}
     }
-    public static void clearAll(){LodgingPeople.clearAll();}
+    public static void clearAll(){LodgingPeople.clearAll();LodgingTaken.clearAll();}
 
     /** A hand on something of the house's. True if it was the house's to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(st.is(LodgingRegistry.WALL.get())){
             var part=st.getValue(LodgingWall.PART);
-            if(part!=LodgingWall.Part.HATCH&&part!=LodgingWall.Part.HATCH_OPEN)return false;
+            // 0.4.612: from inside the wall, a hand on the lath knocks (LodgingTaken).
+            if(part!=LodgingWall.Part.HATCH&&part!=LodgingWall.Part.HATCH_OPEN)return LodgingTaken.knock(p,b,rel);
             if(LodgingDaniel.hatch(p,b,rel))return true;
-            hatch(l,b.offset(rel),part==LodgingWall.Part.HATCH);return true;
+            hatch(l,b.offset(rel),part==LodgingWall.Part.HATCH);
+            if(part==LodgingWall.Part.HATCH)LodgingTaken.hatchFromWall(p,b,rel);
+            return true;
         }
         // 0.4.550: what is in the rooms says what it is. A chair, an armchair or the settee seats an empty hand before this (HouseSitting).
         if(LodgingThing.is(st)){cue(p,LodgingTexts.thing(st,rel));return true;}
@@ -83,6 +86,8 @@ public final class LodgingHouse {
         }
         var door=LodgingSite.doorAt(l,b,rel);if(door==null)return true;
         if(door.equals(LodgingSite.DANIEL_DOOR)&&LodgingDaniel.door(p,b))return true;
+        // 0.4.612: the jib door's latch, down on the house's side after a taking (LodgingTaken).
+        if(door.equals(LodgingSite.JIB)&&LodgingTaken.jib(p,b))return true;
         var lower=l.getBlockState(b.offset(door));
         if(LodgingBlock.bolted(lower)){
             LodgingSite.leaf(l,b,door,LodgingBlock.Kind.BOLT_DOOR,lower.getValue(LodgingBlock.FACING),false,0);

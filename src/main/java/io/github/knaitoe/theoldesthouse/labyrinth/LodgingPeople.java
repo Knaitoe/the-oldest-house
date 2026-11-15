@@ -172,7 +172,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);LodgingTaken.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
@@ -182,7 +182,7 @@ public final class LodgingPeople {
             if(who==VERA&&stage==LodgingStory.ADDRESS&&LodgingStory.house(l.getServer(),b).getBoolean("DanUp")){var dan=find(l,b,DAN);if(dan!=null)rest=yawTo(a,dan.position());}
             // Dan puts his hand back in his pocket.
             if(who==DAN&&a.gesture()==SHOW&&now>=h.showUntil)a.gesture(POCKET);
-            if(failed(who)){if(!(who==FAILED_SHIRT&&LodgingInjury.moving(l.getServer(),b)))turnHead(a,rest,rest);continue;}
+            if(failed(who)){if(!(who==FAILED_SHIRT&&(LodgingInjury.moving(l.getServer(),b)||LodgingTaken.moving(l.getServer(),b))))turnHead(a,rest,rest);continue;}
             ServerPlayer near=null;double best=NEAR*NEAR;
             for(var p:here){if(p.isSpectator()||!p.isAlive())continue;double d=a.distanceToSqr(p);if(d<best&&a.hasLineOfSight(p)){best=d;near=p;}}
             turnHead(a,rest,near==null?rest:yawTo(a,near.getEyePosition()));
@@ -217,6 +217,8 @@ public final class LodgingPeople {
     public static void struck(ServerPlayer p,LiteraryActor a){
         if(!is(a))return;
         if(who(a)==FAILED_SHIRT&&LodgingInjury.struck(p,a))return;
+        // 0.4.612: or the one that comes through again after the first attempt (LodgingTaken).
+        if(who(a)==FAILED_SHIRT&&LodgingTaken.struck(p,a))return;
         if(failed(who(a)))LodgingHouse.cue(p,LodgingTexts.failed(who(a)));
     }
     /** A hand on one of them: the four speak in the panel; a failed body goes on with what it is doing. */
@@ -230,6 +232,8 @@ public final class LodgingPeople {
         // 0.4.608: the key put to him, in his room, opens the straps.
         if(who==DANIEL&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!LodgingKey.free(p.server,b)&&LodgingKey.straps(p,b))return;
         // 0.4.611 (N10, N11): the two men in one room, Rae asked; or one of them acting.
+        // 0.4.612 (N12): Vera with a reader's body at the frame, or having called one up (LodgingTaken).
+        if(LodgingTaken.talk(p,b,a,who,own))return;
         if(LodgingMeeting.talk(p,b,a,who,own))return;
         switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,b,a,own);default->daniel(p,a,own);}
     }
