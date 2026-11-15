@@ -350,6 +350,8 @@ public final class LodgingPeople {
     private static void vera(ServerPlayer p,BlockPos b,LiteraryActor vera,CompoundTag own){
         // 0.4.604: once the rooms are given out, a reader with a room can ask her about what is in its bed (N2's replies "to Vera").
         int stage=LodgingStory.stage(p.server,b);
+        // 0.4.609 (N8): in Act II, her offer, until the reader has answered it.
+        if(actTwo(p,b)&&LodgingVera.talk(p,b,vera,own))return;
         if(stage>=LodgingStory.ADDRESS&&LodgingStory.room(p.server,b,p.getUUID())>=0&&LodgingDoubles.ask(p))return;
         if(stage>=LodgingStory.COMING_DOWN&&stage<LodgingStory.SETTLED){LodgingHouse.cue(p,LodgingTexts.VERA_BUSY);return;}
         if(own.getBoolean(VERA_MET)){LodgingHouse.cue(p,LodgingTexts.VERA_WORKS);return;}

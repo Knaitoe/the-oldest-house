@@ -166,6 +166,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.606, the injury.** The incident is the house's: one failed body, one glass, one cut, for everybody in it. It goes for the nearest reader downstairs, whoever that is; any reader's blows count toward keeping it off, and a grip is broken by two blows from anybody else or three from the one held. What each reader saw (Dan's cut, Daniel's, the pin) and did (struck it, kept it off, was held, was taken) is their own record. Nothing it does hurts a reader.
 - **0.4.607, the two accounts.** Each account is each reader's own, once, in their own panel; what replies a reader has follows what that reader has heard and seen. The weapon is one reader's item, given from that reader's hand; Daniel holding it, and Dan having asked to be shown, are the house's, for everybody in it.
 - **0.4.608, the key.** Where the key is, Rae's errand, Daniel's freedom and his walk are the house's, for everybody in it. Seeing Rae with it, hearing her confession, finding it and using it are each reader's own record; her turns check that the key is still hers before they act, so two readers asking at once cannot both send it somewhere. Custody when a holder leaves is slice 17's.
+- **0.4.609, Vera's offer.** The offer, the cost and each answer are each reader's own, in their own panel; one reader's agreement binds nobody else. Vera holding the key is the house's.
 ## Decided (any of it can move)
 
 - The hotel stays one building, made for any number of guests (0.4.563).

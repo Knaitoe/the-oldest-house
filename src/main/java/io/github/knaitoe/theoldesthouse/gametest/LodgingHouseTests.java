@@ -910,4 +910,48 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_key_rae") public static void raeKeyDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.609: N8, Vera's offer
+    @GameTest(template="empty",batch="lodging_vera",timeoutTicks=3000)
+    public static void veraOffersToMendDanAndTheCostIsKnownBeforeAnybodyHelps(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_vera_a",P);var q=f.player("lodging_vera_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);var vera=who[LodgingPeople.VERA];
+                var v=rel(b,vera);f.at(p,P,v.x+1.2,v.y,v.z);f.at(q,P,v.x-1.2,v.y,v.z);
+                // Her offer; nobody can back her yet.
+                LodgingPeople.talk(p,vera,own(p));
+                for(var line:LodgingTexts.VERA_OFFER)has(h,p,"Vera: "+line);
+                h.assertFalse(Talk.replies(p).contains(LodgingTexts.R_HELP_VERA),"nobody helps before the cost is known: "+Talk.replies(p));
+                h.assertFalse(Talk.replies(p).contains(LodgingTexts.R_IT_CUT_HIM),"a reader who has not seen the rule cannot put it to her");
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_OTHER_ONE),"anybody can ask after the other one");
+                for(var line:LodgingTexts.VERA_TRUTH)has(h,p,"Vera: "+line);
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_HELP_VERA),"told the cost, the reader can back her");
+                has(h,p,"Vera: "+LodgingTexts.VERA_GOOD);
+                h.assertTrue(own(p).getInt(LodgingVera.ANSWER)==LodgingVera.HELP,"the reader's answer is kept");
+                Talk.close(p);
+                // A second reader who saw the pin challenges her with it, and refuses.
+                var o=own(q);o.putBoolean(LodgingInjury.SAW_PIN,true);LiteraryVignettes.save(LabyrinthData.get(s),q.getUUID(),P,o);
+                LodgingPeople.talk(q,vera,own(q));
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_IT_CUT_HIM),"a reader who saw the pin can put it to her");
+                has(h,q,"Vera: "+LodgingTexts.VERA_TRUTH[0]);
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_REFUSE_VERA),"and refuse");
+                h.assertTrue(own(q).getInt(LodgingVera.ANSWER)==LodgingVera.REFUSE&&own(p).getInt(LodgingVera.ANSWER)==LodgingVera.HELP,"each reader's answer is their own");
+                Talk.close(q);
+                // Rae, asked by the second reader, takes the key up to Vera, who keeps it in her hand.
+                keyAt(l,b,LodgingKey.RAE,-1);var oq=own(q);oq.putBoolean(LodgingPeople.RAE_ASKED,true);LiteraryVignettes.save(LabyrinthData.get(s),q.getUUID(),P,oq);
+                var r=rel(b,who[LodgingPeople.RAE]);f.at(q,P,r.x+1.2,r.y,r.z);
+                LodgingPeople.talk(q,who[LodgingPeople.RAE],own(q));
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_WAY_UP),"asked how she knew the way");
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_TO_VERA),"told to keep it and take it to Vera");
+                Talk.close(q);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingKey.VERA.equals(LodgingKey.where(s,b)),"waiting for Rae to reach Vera: at "+rel(b,who[LodgingPeople.RAE])))
+            .thenExecute(()->h.assertTrue(LodgingKey.is(who[LodgingPeople.VERA].getMainHandItem(),b),"Vera holds the key"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_vera") public static void veraDone(ServerLevel l){done();}
 }

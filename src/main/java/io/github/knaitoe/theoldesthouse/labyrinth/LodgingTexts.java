@@ -116,6 +116,16 @@ public final class LodgingTexts {
         KEY_FOUND="On the floor of the cupboard, pushed to the back: a key, long and plain.",
         RAE_NOT_YET="Daniel. Please. Not yet. Not with him there.",
         R_RAE_KNEW="Rae knew he was alive.",DAN_SHE_KNEW="She knew?",DAN_YOU_KNEW="You knew.",RAE_SO_YOU_CAME="I did it so you'd come.";
+    // 0.4.609: N8. VERA_OFFER and VERA_TRUTH are the script's; the reply labels and every other line are new here.
+    public static final String[] VERA_OFFER={"I can mend him. I need help keeping the other one quiet while I do it.",
+        "It's a matter of making the arrangement stable. It has been loose for years."};
+    public static final String[] VERA_TRUTH={"The other one won't come through it. No.",
+        "He has been cared for. Dan has a life to go back to. Surely you can see what would be wasted.",
+        "Or you can send Dan back through the frame. The other walks out. It's possible. It's a waste."};
+    public static final String VERA_WAITS="Vera waits for an answer.",VERA_HAS_KEY="She has the key from the workroom hook in her hand.",
+        R_OTHER_ONE="And the other one?",R_IT_CUT_HIM="It cut him too.",R_HE_TOLD_ME="Daniel told me what you did to him.",
+        R_HELP_VERA="I'll help you.",R_SEND_BACK="Send Dan back.",R_REFUSE_VERA="No.",
+        VERA_GOOD="Good. When I call for him, bring him to me.",VERA_WASTE="Then you do it. I won't.",VERA_KEEP_OUT="Then keep out of my way.";
     /** What a failed body is doing when a hand is put on it. */
     public static String failed(int who){return switch(who){
         case LodgingPeople.FAILED_POST->"Tied to the post by the wrists. Its fingers go on doing up a button that is not there.";
