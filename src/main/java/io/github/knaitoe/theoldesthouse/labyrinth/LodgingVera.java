@@ -24,6 +24,8 @@ public final class LodgingVera {
     public static final String OFFERED="VeraOffered0609",TRUTH="VeraTruth0609",ANSWER="VeraAnswer0609";
     /** A reader's answer: none yet, help her, send Dan back, no. */
     public static final int NONE=0,HELP=1,SEND_BACK=2,REFUSE=3;
+    /** 0.4.610, each reader's own: put the cellar to her. */
+    public static final String CELLAR="VeraCellar0610";
 
     /** A hand on Vera in Act II. True if it was answered here. */
     static boolean talk(ServerPlayer p,BlockPos b,LiteraryActor vera,CompoundTag own){
@@ -49,6 +51,8 @@ public final class LodgingVera {
             replies.add(Talk.reply(LodgingTexts.R_SEND_BACK,r->answered(r,SEND_BACK)));
             replies.add(Talk.reply(LodgingTexts.R_REFUSE_VERA,r->answered(r,REFUSE)));
         }
+        // 0.4.610: a reader who saw the dead post's body come apart can put it to her.
+        if(own.getBoolean(LodgingCellar.KNOWS_THIRD)&&!own.getBoolean(CELLAR))replies.add(Talk.reply(LodgingTexts.R_CELLAR,LodgingVera::cellar));
         replies.add(Talk.act(LodgingTexts.R_NOTHING,Talk::close));
         Talk.ask(p,replies);
     }
@@ -56,6 +60,12 @@ public final class LodgingVera {
         var vera=LodgingPeople.near(p,LodgingPeople.VERA);if(vera==null){Talk.close(p);return;}
         var own=LodgingHouse.own(p);own.putBoolean(TRUTH,true);LodgingHouse.save(p,own);
         for(var line:LodgingTexts.VERA_TRUTH)LodgingPeople.says(p,vera,"Vera",line);
+        asks(p);
+    }
+    private static void cellar(ServerPlayer p){
+        var vera=LodgingPeople.near(p,LodgingPeople.VERA);if(vera==null){Talk.close(p);return;}
+        var own=LodgingHouse.own(p);own.putBoolean(CELLAR,true);LodgingHouse.save(p,own);
+        LodgingPeople.says(p,vera,"Vera",LodgingTexts.VERA_CELLAR);
         asks(p);
     }
     private static void answered(ServerPlayer p,int answer){

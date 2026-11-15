@@ -74,7 +74,10 @@ public final class LodgingHouse {
             case HALL_STAND->{cue(p,LodgingTexts.GLASS);return true;}
             case FIREPLACE->{cue(p,LodgingTexts.GRATE);return true;}
             case RATCHET->{cue(p,LodgingTexts.RATCHET);return true;}
-            case SHOE,POST->{cue(p,rel.getX()==LodgingSite.DEAD_POST.getX()&&rel.getZ()==LodgingSite.DEAD_POST.getZ()?LodgingTexts.DEAD_POST:LodgingTexts.POST);return true;}
+            case SHOE,POST->{
+                // 0.4.610: the dead post's wedge kicks out, and back in (LodgingCellar).
+                if(rel.getX()==LodgingSite.DEAD_POST.getX()&&rel.getZ()==LodgingSite.DEAD_POST.getZ()){LodgingCellar.shoe(p,b);return true;}
+                cue(p,LodgingTexts.POST);return true;}
             case NUMBER,TALLY,SILL,COAT_RAIL,LAMP,RAIL,BANISTER,LADDER->{return kind==LodgingBlock.Kind.TALLY?say(p,LodgingTexts.TALLY):true;}
             default->{}
         }

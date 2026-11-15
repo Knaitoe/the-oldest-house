@@ -126,6 +126,15 @@ public final class LodgingTexts {
         R_OTHER_ONE="And the other one?",R_IT_CUT_HIM="It cut him too.",R_HE_TOLD_ME="Daniel told me what you did to him.",
         R_HELP_VERA="I'll help you.",R_SEND_BACK="Send Dan back.",R_REFUSE_VERA="No.",
         VERA_GOOD="Good. When I call for him, bring him to me.",VERA_WASTE="Then you do it. I won't.",VERA_KEEP_OUT="Then keep out of my way.";
+    // 0.4.610: N9. PUT_IT_BACK is the script's; every other line here is new.
+    public static final String WEDGE_DRIVEN="The wedge is loose enough that a kick would knock it out.",
+        WEDGE_OUT="The wedge skids out across the flags. The post shifts in its shoe, and the body tied to it lets out a breath.",
+        WEDGE_LIES="The wedge lies on the flags by the shoe. It would go back in with a kick.",
+        WEDGE_BACK="The wedge goes back in under the heel. The post settles. The body tied to it is still.",
+        AT_THE_POST="The failed body",PUT_IT_BACK="Put it back. Put it back.",
+        THIRD_WAY="It is coming apart where the post held it together. Every post down here holds up a room, and the ratchet holds every post. Lift the pawl and slip the catch of a frame with somebody in it, and all of it lets go at once: whoever was taken walks out, and whoever was made to stand in their place comes apart like this. Dan with them.",
+        R_CELLAR="I've been in the cellar.",
+        VERA_CELLAR="Then you've seen what happens when it isn't held. All of them would do that. Dan would do that. Don't touch the wheel.";
     /** What a failed body is doing when a hand is put on it. */
     public static String failed(int who){return switch(who){
         case LodgingPeople.FAILED_POST->"Tied to the post by the wrists. Its fingers go on doing up a button that is not there.";

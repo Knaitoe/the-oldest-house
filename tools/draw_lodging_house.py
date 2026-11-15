@@ -857,6 +857,10 @@ def fitting_models():
                          box((2, 13, 2), (14, 16, 14), post_t, cull=('up',)), box((13, 8, 6), (15, 15, 10), 'wedge')], {'end': 'timber_end', 'side': 'timber', 'iron': 'iron', 'wedge': 'wedge'})
     m['shoe_1'] = model([box((1, 0, 1), (15, 5, 15), 'iron', cull=('down',)), box((2, 5, 2), (14, 16, 14), post_t, cull=('up',)), box((14, 0, 6), (16, 7, 10), 'wedge')],
                         {'end': 'timber_end', 'side': 'timber', 'iron': 'iron', 'wedge': 'wedge'})
+    # 0.4.610 (N9): the dead post's wedge knocked out of its shoe: the shoe and post alone, the wedge lying on the flags where it fell.
+    m['shoe_2'] = model([box((1, 0, 1), (15, 5, 15), 'iron', cull=('down',)), box((2, 5, 2), (14, 16, 14), post_t, cull=('up',)), box((4, 0, 12), (9, 2, 16), 'wedge')],
+                        {'end': 'timber_end', 'side': 'timber', 'iron': 'iron', 'wedge': 'wedge'})
+    m['shoe_3'] = m['shoe_1']
     m['ratchet_0'] = model([box((0, 0, 3), (16, 3, 13), 'iron', cull=('down',)), box((1, 3, 6), (3, 16, 10), 'iron'), box((13, 3, 6), (15, 16, 10), 'iron'),
                             box((0, 0, 7), (16, 16, 9), {'north': 'wheel', 'south': 'wheel'}), box((10, 12, 5), (14, 14, 7), 'iron'), box((12, 3, 3.5), (14, 16, 5), 'iron')],
                            {'iron': 'iron', 'wheel': 'wheel_low'}, cutout=True)
@@ -892,7 +896,7 @@ def stair_models(name, top):
 KINDS = ['door', 'bolt_door', 'service', 'jib', 'cupboard', 'frame_side', 'frame_back', 'frame_head', 'window', 'rail', 'banister', 'ladder', 'lamp',
          'fireplace', 'coat_rail', 'hall_table', 'hall_stand', 'bench', 'number', 'tally', 'sill', 'post', 'shoe', 'ratchet']
 STAGES = {'door': 4, 'service': 4, 'jib': 4, 'cupboard': 4, 'frame_back': 8, 'bolt_door': 8, 'frame_side': 8, 'tally': 8, 'frame_head': 6, 'number': 6,
-          'lamp': 3, 'window': 2, 'rail': 2, 'banister': 2, 'fireplace': 2, 'hall_stand': 3, 'bench': 2, 'ratchet': 2, 'shoe': 2, 'post': 2}
+          'lamp': 3, 'window': 2, 'rail': 2, 'banister': 2, 'fireplace': 2, 'hall_stand': 3, 'bench': 2, 'ratchet': 2, 'shoe': 4, 'post': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 8
 MATERIALS = ['brick', 'brick_damp', 'flags', 'roof', 'lath', 'panel', 'paper_hall', 'paper_hall_low', 'paper_parlor', 'paper_parlor_low', 'paper_room',

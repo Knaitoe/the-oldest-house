@@ -264,6 +264,20 @@ public final class LiteraryRenderers {
                     rightArm.xRot=.06F+.34F*jerk;rightArm.yRot=0;rightArm.zRot=.03F+.06F*jerk;leftArm.xRot=.06F+.34F*jerk;leftArm.yRot=0;leftArm.zRot=-.03F-.06F*jerk;
                     body.xRot+=.07F*jerk;head.xRot-=.28F+.06F*jerk;rightLeg.xRot=.42F*jerk;leftLeg.xRot=-.05F*jerk;}
                 case TIED->{rightArm.xRot=-3.3F;rightArm.yRot=0;rightArm.zRot=-.14F;leftArm.xRot=-3.3F;leftArm.yRot=0;leftArm.zRot=.14F;head.xRot+=.4F;}
+                // 0.4.610 (LodgingCellar): the dead post's body with the wedge out, coming loose at the joins in four stages, awake, trembling.
+                // The parts drift from their sockets (a gap opens at shoulder and neck) as well as turning; arms' x set from their rest,
+                // never added to, so nothing walks off across frames.
+                case 16,17,18,19->{int k=gesture-15;float tr=net.minecraft.util.Mth.sin(age*1.7F)*.025F,tr2=net.minecraft.util.Mth.sin(age*2.3F+1F)*.02F;
+                    float rx=rightArm.getInitialPose().x,lx=leftArm.getInitialPose().x;
+                    // the left wrist stays roped to the post until the third stage, then the arm slides off it sideways, down the post
+                    leftArm.xRot=-3.3F+tr;leftArm.yRot=0;leftArm.zRot=.14F;leftArm.x=lx;
+                    // the right wrist slips the rope first, then the whole arm drops away from the shoulder
+                    if(k==1){rightArm.xRot=-2.85F+tr2;rightArm.yRot=0;rightArm.zRot=-.32F;rightArm.x=rx;}
+                    else{rightArm.xRot=-.4F+tr2;rightArm.yRot=.1F;rightArm.zRot=.12F;rightArm.y+=k>=4?2F:1.2F;rightArm.x=rx-(k>=4?1.2F:.6F);}
+                    head.xRot+=.4F+tr2;
+                    if(k>=2){head.y+=k==2?.8F:k==3?1.6F:2.4F;head.zRot=k==2?.35F:k==3?.55F:.75F;}
+                    if(k>=3){leftArm.xRot=(k>=4?-2.45F:-2.8F)+tr;leftArm.zRot=k>=4?1.25F:.85F;leftArm.y+=k>=4?2F:1F;leftArm.x=lx+(k>=4?1.2F:.6F);rightLeg.yRot=.55F;rightLeg.zRot=.12F;}
+                    if(k>=4){body.zRot=.1F;leftLeg.yRot=-.3F;}}
                 case HATCH->{rightArm.xRot=-1.75F;rightArm.yRot=0;rightArm.zRot=0;head.zRot=.2F;}
                 case FRAME->{leftArm.xRot=-1.4F;leftArm.yRot=.55F;leftArm.zRot=0;head.xRot+=net.minecraft.util.Mth.sin(age*.25F)*.05F;}
                 // 0.4.606 (N4): a failed body at a door, both fists coming down on it in turn, the shoulders behind each, the head down;
@@ -297,6 +311,10 @@ public final class LiteraryRenderers {
             rightLeg.getAllParts().forEach(ModelPart::resetPose);leftArm.getAllParts().forEach(ModelPart::resetPose);rightArm.getAllParts().forEach(ModelPart::resetPose);
             dress(LiteraryActor.STRANGER,phase);ownLeftArm(true);
             if(swing>0){rightLeg.xRot=.62F*swing;leftLeg.xRot=-.62F*swing;rightArm.xRot=-.45F*swing;leftArm.xRot=.45F*swing;}
+            // 0.4.610: the dead post's body sits on the floor in play (ActorSeat 1), so it is drawn seated here as the renderer seats it.
+            if(phase==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.FIRST+io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.FAILED_POST
+                &&(gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.TIED||io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.loose(gesture))){
+                for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=11;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;}
             lodging(gesture,age,false);
         }
         /** Down from the hips: the head, torso and arms together, the feet where they are. */
