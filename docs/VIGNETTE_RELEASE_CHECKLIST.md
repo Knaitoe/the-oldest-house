@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 15 candidate 0.4.614 (docs/ONES_INSIDE_COMPLETE_0_4_614.md): an ending that needs readers to keep doing something. Does it stop when they stop, and is the stopping final? Does anyone who did not choose to take part get drawn into it?
+
 November 15 candidate 0.4.613 (docs/ONES_INSIDE_RETURN_0_4_613.md): questions for an ending several readers can bring about together. Does each way to it ask something different of the party (talk, hands, or being used)? Can one reader always stop or slow what the others start, and does the account say which way it went?
 
 November 15 candidate 0.4.612 (docs/ONES_INSIDE_TAKEN_0_4_612.md): questions for a scene where one reader can be taken out of it. Does a reader taken away still have things to do that matter to the others (a knock, a hatch, a latch)? Is anything done to a reader's body only by that reader's own reply, never by another reader or a majority?

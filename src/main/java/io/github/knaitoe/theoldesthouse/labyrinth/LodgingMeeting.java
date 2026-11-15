@@ -55,11 +55,11 @@ public final class LodgingMeeting {
     /** From the parlor back out to the stair foot (its door on leg 1). */
     private static final List<Vec3> OUT_OF_PARLOR=List.of(new Vec3(-5.6,0,-8.5),new Vec3(-2.6,0,-8.5),new Vec3(0,0,-8.5),new Vec3(0,0,-5));
     /** From the hall to Daniel's room (his door on leg 3). */
-    private static final List<Vec3> TO_FRAME=List.of(new Vec3(0,0,-5),new Vec3(0,0,-14),new Vec3(-7.5,0,-14),new Vec3(-7.5,0,-18.5),new Vec3(-5.6,0,-20),new Vec3(-5.6,0,-24));
+    static final List<Vec3> TO_FRAME=List.of(new Vec3(0,0,-5),new Vec3(0,0,-14),new Vec3(-7.5,0,-14),new Vec3(-7.5,0,-18.5),new Vec3(-5.6,0,-20),new Vec3(-5.6,0,-24));
     /** From Daniel's room back to the stair foot (his door on leg 2). */
     private static final List<Vec3> FROM_FRAME=List.of(new Vec3(-5.6,0,-24),new Vec3(-5.6,0,-20),new Vec3(-7.5,0,-18.5),new Vec3(-7.5,0,-14),new Vec3(0,0,-14),new Vec3(0,0,-5));
     /** Vera down from between the rooms upstairs (the workroom door on leg 1), then to Daniel's room. */
-    private static final List<Vec3> VERA_DOWN=List.of(new Vec3(.5,5,-19.5),new Vec3(.5,5,-15),new Vec3(3.5,5,-12.5),new Vec3(3.5,0,-5.5),new Vec3(0,0,-5),new Vec3(0,0,-14));
+    static final List<Vec3> VERA_DOWN=List.of(new Vec3(.5,5,-19.5),new Vec3(.5,5,-15),new Vec3(3.5,5,-12.5),new Vec3(3.5,0,-5.5),new Vec3(0,0,-5),new Vec3(0,0,-14));
 
     static CompoundTag house(ServerLevel l,BlockPos b){return LodgingStory.house(l.getServer(),b);}
     public static int stage(ServerLevel l,BlockPos b){return house(l,b).getInt(STAGE);}
