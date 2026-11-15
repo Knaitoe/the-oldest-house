@@ -28,8 +28,8 @@ public final class LodgingHouse {
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
 
-    /** Not until the story can be finished: it is being built in slices. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /** 0.4.618: dealt to anybody who has not read their own account of it. */
+    public static boolean dealable(LabyrinthData d,UUID reader){return !LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);LodgingParty.arrive(p,b,own);}
     /** Everybody reading in this house. */
     static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){

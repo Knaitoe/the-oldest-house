@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 15 candidate 0.4.618 (docs/ONES_INSIDE_ACCOUNTS_0_4_618.md): a shared ending with personal accounts. Does every reader who was part of it get their own account, and only them? Does each account leave out what that reader never did or saw? Is a finished copy closed to readers who would arrive in its aftermath?
+
 November 15 candidate 0.4.617 (docs/ONES_INSIDE_PARTY_0_4_617.md): a single shared object. When its holder leaves, logs off, dies or drops it, does it go back somewhere another reader can get it, and does a returning reader come back without a second copy? Does a reader who arrives late get enough to take part, without anything invented for them?
 
 November 15 candidate 0.4.616 (docs/ONES_INSIDE_NEITHER_0_4_616.md): an ending reached by violence. Does a blow from somebody who does not know do nothing, and can the rest of the party still act after it?

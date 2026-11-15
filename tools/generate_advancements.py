@@ -114,6 +114,7 @@ STORY_ICONS = {
     'last_orders': 'minecraft:paper',
     'bike_night': NS + ':treat_sack',
     'pell_house': NS + ':pell_cane_tip',
+    'ones_already_inside': NS + ':lodging_key',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

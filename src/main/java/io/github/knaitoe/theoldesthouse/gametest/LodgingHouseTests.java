@@ -174,7 +174,8 @@ public final class LodgingHouseTests {
             var paper=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);String text=String.join(" ",paper.pages().stream().map(pg->pg.raw().getString()).toList());
             h.assertTrue(text.contains("TERMS")&&text.contains("sleeper in your room")&&paper.author().equals("V."),"the terms of the house, signed V.");
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the terms say nothing of what the guest is: "+word);
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"a place still being built is never dealt");
+            // 0.4.618: it can be finished, so the House deals it to a reader who has not read their account of it.
+            h.assertTrue(LodgingHouse.dealable(f.data(),p.getUUID()),"dealt to a reader who has not had it");
         }).thenSucceed();
     }
     @AfterBatch(batch="lodging_built") public static void builtDone(ServerLevel l){done();}
@@ -1737,6 +1738,47 @@ public final class LodgingHouseTests {
     }
     @AfterBatch(batch="lodging_party") public static void partyDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_party_late") public static void partyLateDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.618: the accounts and the Witness
+    @GameTest(template="empty",batch="lodging_end",timeoutTicks=3000)
+    public static void everyReaderInTheHouseBeforeItsEndHasAnAccountAndAnEndedHouseTakesNobody(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_end_a",P);var q=f.player("lodging_end_b",P);var r=f.player("lodging_end_c",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);var data=LabyrinthData.get(s);
+                h.assertTrue(LodgingHouse.dealable(data,p.getUUID()),"dealt to a reader who has not had it");
+                // Two readers come in; the house comes to E3's end; a third arrives after it.
+                var house=LodgingStory.house(s,b);house.remove(LodgingParty.READERS);house.remove(LodgingEnd.ENDED);house.remove(LodgingEnd.PARTY);LodgingStory.save(s,b,house);
+                f.at(p,P,.5,0,-3.5);f.at(q,P,-.5,0,-3.5);
+                for(var x:new ServerPlayer[]{p,q,r}){var o=own(x);o.remove(LodgingParty.ARRIVED);o.remove("Ready");o.remove("Completed");LiteraryVignettes.save(data,x.getUUID(),P,o);}
+                var a=own(p);LodgingHouse.arrive(p,b,a);LiteraryVignettes.save(data,p.getUUID(),P,a);
+                var c=own(q);c.putBoolean(LodgingSever.RATCHET,true);c.putBoolean(LodgingSever.SAT_WITH,true);LodgingHouse.arrive(q,b,c);LiteraryVignettes.save(data,q.getUUID(),P,c);
+                h.assertTrue(LodgingEnd.ended(s,b)==0&&!own(p).getBoolean("Ready"),"no account before an end");
+                house=LodgingStory.house(s,b);var st=house.getCompound(LodgingSever.STATE);st.putInt("Phase",LodgingSever.DONE);house.put(LodgingSever.STATE,st);LodgingStory.save(s,b,house);
+                LodgingStory.hold(b,false);
+            })
+            .thenWaitUntil(()->h.assertTrue(own(p).getBoolean("Ready")&&own(q).getBoolean("Ready"),"waiting for both readers' accounts: "+LodgingEnd.ended(s,b)))
+            .thenExecute(()->{
+                h.assertTrue(LodgingEnd.ended(s,b)==LodgingEnd.SEVERED&&own(p).getString("Outcome").equals("severed_the_house"),"the end and its outcome: "+own(p).getString("Outcome"));
+                var book=bookText(LodgingTexts.account("q",own(q)));
+                h.assertTrue(book.contains("You worked the wheel in the cellar loose")&&book.contains("neither could finish helping the other")&&!book.contains("Daniel came out of it"),"the account is the reader's own: "+book);
+                h.assertTrue(book.indexOf("lodging house")<book.indexOf("wheel")&&book.endsWith("when you went out."),"in order, ending at the door");
+                // One who comes in afterwards is not of the party: no account, and the ended house is closed to new readers.
+                f.at(r,P,.5,0,-2.5);var e=own(r);LodgingHouse.arrive(r,b,e);LiteraryVignettes.save(LabyrinthData.get(s),r.getUUID(),P,e);
+            })
+            .thenIdle(40)
+            .thenExecute(()->{
+                h.assertTrue(!own(r).getBoolean("Ready"),"a reader who came after the end has no account");
+                h.assertTrue(LodgingEnd.closed(s,SceneInstances.copyAt(s,P,b)),"an ended house takes nobody new");
+                h.assertTrue(LodgingTexts.witness("severed_the_house").contains("let go of both")&&!LodgingTexts.witness("returned_daniel").equals(LodgingTexts.witness("neither_daniel")),"a Witness line for each end");
+                var house=LodgingStory.house(s,b);house.remove(LodgingSever.STATE);house.remove(LodgingEnd.ENDED);house.remove(LodgingEnd.PARTY);LodgingStory.save(s,b,house);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_end") public static void endDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete") public static void completeDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete_held") public static void completeHeldDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_return") public static void returnDone(ServerLevel l){done();}
