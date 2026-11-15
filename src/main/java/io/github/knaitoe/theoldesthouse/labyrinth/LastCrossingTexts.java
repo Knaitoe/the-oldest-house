@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 public final class LastCrossingTexts {
     private LastCrossingTexts(){}
     public static final String SLATE_TITLE="The work slate";
-    public static final String HINT="Sign the roll on the porch. Work the station with the others before dark.";
+    public static final String HINT="Sign the roll on the porch. Work the station before dark.";
     private static List<Component> pages(HouseWriting.WritingStyle style,String text){var out=new ArrayList<Component>();for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(style,p));return out;}
 
     /** The work slate copied as it is chalked: who worked where on the days before, and the roll for the night of the last crossing. */
@@ -92,6 +92,11 @@ public final class LastCrossingTexts {
     public static final String LINE_THANKS="Good. That would've gone with the first rise.";
     public static final String REHEARSE="Let's try it. One of you down on the wheel, one up here on the pin. Two knocks, and the pin goes in.";
     public static final String REHEARSED="That's it. Same again in the dark.";
+    /** 0.4.598: what Vera says to a reader who is the whole roll, and what they are told when she drops the pin in practice. */
+    public static final String REHEARSE_ALONE="Let's try it. You go down on the wheel and hold it shut. I'll drop the pin from up here.";
+    public static final String REHEARSED_ALONE="Above you the pin drops into its socket. The wheel stops fighting.";
+    public static final String JOBS_ONE="On your own, take it by turns: read the gauge first, then go below.";
+    public static final String DAY2_ONE="On your own, the parking catch will hold the drum while you walk down to read the marks.";
     public static final String ROUTE="Now walk it once, all of it, before the light goes. Office, pump room, the intake below it, the cable house, the ramp.";
     public static final String DUSK="That's the light going. Get to your places.";
     public static final String DUSK_CALL="It's on %s! Turn it!";
@@ -139,6 +144,25 @@ public final class LastCrossingTexts {
     public static final String PULLED="That's her taken up. Drop the catch in. She'll lie on that till morning.";
     public static final String PULL_FAILED="She's thrown the rollers. Leave it. We'll reset them from the landing in the light.";
     public static final String NIGHT_ANSWER2="Hold the winch through the pull. Watch the grate behind the brake. Keep the plate by one way in. It'll get light.";
+    // 0.4.598: for a short-handed crew (fewer than four names on the roll), Vera is the other pair of hands.
+    public static final String PULL_SHORT="If something binds, go to it. I'll take the brake.";
+    public static final String BRAKE_VERA="I've got the brake. Go!";
+    public static final String BRAKE_BACK="You take the brake back from Vera.";
+    public static final String PIN_SHORT="Short as you are, I'll take the pin tonight. You take the wheel.";
+    public static final String NIGHT_SHORT2="If you have to leave the brake, I'll take it.";
+    public static final String NIGHT_SHORT3="I'm on the pin. Hold the wheel till you hear me.";
+    public static final String GATE_HOLD_SHORT="You throw your weight on the gate. The feed hammers behind it. The bar is in its bracket, in reach of your hand.";
+    public static final String BAR_IN_REACH="The bar is in its bracket, in reach of your hand.";
+    public static final String BAR_KNOCKED="You keep your shoulder to the gate and knock the bar out of its bracket. It drops across with a clang.";
+    /** 0.4.598: the Witness line of a reader who was the whole roll; a crew's is the story's own. */
+    public static final String WITNESS_ALONE="I worked three days and three nights at a flood station on my own, for a keeper who called the roll every morning: my name, and one name more at the end of it. On the last night the river came up to the ramp, and we tried to get across.";
+    public static String witness(CompoundTag own,String text){return own.getInt("CrewSize")==1?WITNESS_ALONE:text;}
+    /** What Vera says at night, asked what to do; a short-handed crew is told what she will take herself. */
+    public static String nightAnswer(int day,boolean few){
+        if(day>=3)return NIGHT_ANSWER3+(few?" "+NIGHT_SHORT3:"");
+        if(day>=2)return NIGHT_ANSWER2+(few?" "+NIGHT_SHORT2:"");
+        return NIGHT_ANSWER;
+    }
     public static final String DAWN_TWO="That's the light. Who's here? Come in where I can see you.";
     /** What only the one who turns hears and knows. */
     public static final String TURN_START="The light goes, and the second breath comes up under yours and takes it.";
@@ -308,8 +332,10 @@ public final class LastCrossingTexts {
     public static ItemStack account(String name,CompoundTag t){
         var text=new StringBuilder();
         text.append("A farm road ran down into floodwater, and a power line went up a levee to a flood station by a river, where the last ferry sat at its ramp and a lamp burned on the far bank. ");
+        // 0.4.598: a reader who was the whole roll says so.
+        boolean alone=t.getInt("CrewSize")==1;
         if(t.getBoolean("Partway")&&!t.getBoolean("Signed"))text.append("I came in after the roll had been called. ");
-        else{text.append("The keeper, Vera, had us sign a roll on the porch and called every name aloud. ");
+        else{text.append(alone?"The keeper, Vera, had me sign a roll on the porch and called my name aloud. ":"The keeper, Vera, had us sign a roll on the porch and called every name aloud. ");
             if(t.getBoolean("HeardEllis"))text.append("Then she called one more, Ellis, and waited, and nobody answered. ");}
         String j=job(t.getString("Job"));if(!j.isEmpty())text.append(j).append(' ');
         if(t.getBoolean("PlateClean"))text.append("When I laid my palm on the handprint plate it left a breath of fog on the near side and nothing on the far. ");
@@ -318,7 +344,7 @@ public final class LastCrossingTexts {
             if(t.getBoolean("FoughtFree"))text.append("I beat it off myself. ");else if(t.getBoolean("PulledUp"))text.append("Somebody reached down through the landing's rail and pulled me up over it. ");else if(t.getBoolean("Freed"))text.append("Somebody beat it off me. ");
             text.append("After that there was a second breath under my own. ");
             if(t.getBoolean("Told"))text.append("I told Vera. ");
-            if(t.getBoolean("Exposed"))text.append("I laid my palm on the plate and let the others see a second print come up on the far side. ");}
+            if(t.getBoolean("Exposed"))text.append(alone?"I laid my palm on the plate and let Vera see a second print come up on the far side. ":"I laid my palm on the plate and let the others see a second print come up on the far side. ");}
         else if(t.getBoolean("SawClaw"))text.append("On the first night I saw a hand come up through the intake grate and take hold of one of us. ");
         if(t.getBoolean("SawUndertow"))text.append("Things came up out of the water at night and over the spillway's banks. ");
         // Day Two and Night Two.
@@ -328,7 +354,8 @@ public final class LastCrossingTexts {
             text.append(where.isEmpty()?"At the second dusk I turned where I stood. ":"At the second dusk I turned where I stood, "+where+". ");
             text.append("I could breathe the water, and my hands were claws, and everything I said came out broken. ");}
         else if(t.getBoolean("SawTurn"))text.append("At the second dusk I watched someone I knew turn, and knew whose face it was. ");
-        if(t.getBoolean("HeldPull")||t.getBoolean("Pulled"))text.append("I held the winch brake off through the pull. ");
+        if(t.getBoolean("VeraBrake"))text.append("I took the winch brake off for the pull, and Vera took it from me when I had to leave it. ");
+        else if(t.getBoolean("HeldPull")||t.getBoolean("Pulled"))text.append("I held the winch brake off through the pull. ");
         if(t.getBoolean("PullFailed"))text.append("The pull failed, and the drum ran back and threw the rollers. ");
         if(t.getBoolean("SecondSlot"))text.append("On the second night one of the things held me long enough, and I carried it too after that. ");
         // Day Three.
@@ -338,10 +365,11 @@ public final class LastCrossingTexts {
         if(t.getBoolean("SawSource"))text.append("Through thick glass under the ramp I saw something at the bottom of the water, wrapped in weed, that moved when I breathed. ");
         if(t.getBoolean("OfferedBreath"))text.append("Under my own breath the other one offered me the master wheel at high water. ");
         // Night Three.
-        if(t.getBoolean("HeldWheelToPin"))text.append("On the last night I held the sluice wheel at the bottom of the flooded pit until the pin dropped home. ");
+        if(t.getBoolean("HeldWheelToPin"))text.append(t.getBoolean("VeraPinned")?"On the last night I held the sluice wheel at the bottom of the flooded pit until Vera dropped the pin home from the deck. ":"On the last night I held the sluice wheel at the bottom of the flooded pit until the pin dropped home. ");
         if(t.getBoolean("SeatedLaunchPin"))text.append("I dropped the launch pin from the deck. ");
         if(t.getBoolean("PulledRelease"))text.append("I pulled the launch rope and let her go. ");
-        if(t.getBoolean("HeldGateToBar"))text.append("I held the feed gate in the gallery while "+(t.getString("BarredWith").isEmpty()?"someone":names(t.getString("BarredWith")))+" dropped the bar across it. ");
+        if(t.getBoolean("BarredAlone"))text.append("I held the feed gate in the gallery with my shoulder and knocked the bar down across it myself. ");
+        else if(t.getBoolean("HeldGateToBar"))text.append("I held the feed gate in the gallery while "+(t.getString("BarredWith").isEmpty()?"someone":names(t.getString("BarredWith")))+" dropped the bar across it. ");
         else if(t.getBoolean("BarredGate"))text.append("I dropped the bar across the feed gate while "+(t.getString("BarredWith").isEmpty()?"someone":names(t.getString("BarredWith")))+" held it. ");
         if(t.getBoolean("ClosedCutoff"))text.append("I wound the upstream cutoff shut. ");
         if(t.getBoolean("DestroyedSource"))text.append("When the things were off it, I struck the source until it was dead. ");
@@ -371,7 +399,7 @@ public final class LastCrossingTexts {
         else if(ending.equals("gallery")){
             text.append("The water went still. ");
             text.append(t.getBoolean("RangMuster")?"I rang the station bell for the muster. ":"The station bell rang for the muster. ");
-            text.append(t.getBoolean("OutOfGallery")?"Vera marked me down as one of the ones who came out of the gallery with her. ":"Vera marked down who came out of the gallery with her. ");}
+            text.append(t.getBoolean("OutOfGallery")?alone?"Vera marked me down as out of the gallery. ":"Vera marked me down as one of the ones who came out of the gallery with her. ":"Vera marked down who came out of the gallery with her. ");}
         else if(ending.equals("source")){
             text.append("Nobody clean was left to stop it, and the night ran out. The ferry came in at the far landing anyway, by itself. Someone aboard called the roll in Vera's order, and every name got an answer from the far end of the boat");
             text.append(t.getBoolean("HeardEllisFar")?", Ellis's too. ":". ");

@@ -86,6 +86,14 @@ public final class LastCrossing {
         DIP_EVERY=600,DIP_FOR=40,WHEEL_HOLD=100,KNOCK_GAP=40,PIN_RESET=100,CURRENT=60,EMPTY_RESET=200;
     /** A crew is four to six readers; the sheet takes six names. */
     public static final int MIN_CREW=4,MAX_CREW=6;
+    /** 0.4.598 (docs/ON_YOUR_OWN_0_4_598.md): fewer than four names on the roll is a short-handed crew, a reader on their own among
+     * them. Vera is its other pair of hands where a night's job takes two at once (the winch brake, the launch pin), the feed gate's
+     * bar drops for the one holding the gate, the things from the water come as few as the crew, and on the last night a carrier who
+     * has not sided with the source still counts for the crew. A crew of four to six is as it was. */
+    static boolean shortHanded(Run r){return r.crew.size()<MIN_CREW;}
+    public static boolean shortHanded(BlockPos b){var r=run(b);return r!=null&&shortHanded(r);}
+    /** As many of the things from the water at once as there are names on the roll: no fewer than three for a crew, one for one. */
+    static int things(Run r){return Math.max(shortHanded(r)?1:3,Math.min(MAX_CREW,r.crew.size()));}
     /** Vera's skin, on the stranger phase after the Tall Grass driver's. */
     public static final int VERA=116;
     public static boolean cast(int phase){return phase==VERA;}
@@ -102,7 +110,7 @@ public final class LastCrossing {
          * held and by whom, primed and when. */
         boolean bleedOpen;UUID intakeBy;int needle=-1,turned;long turnedAt=-1;UUID turnedBy;UUID brakeBy;int brakeHeld;boolean primed;long primedAt=-1;int called;
         /** The cable house and the landing. */
-        boolean rollerSeated,jamReported,lineIn,lineReturned,lineStaged;UUID wheelBy;long wheelUntil;boolean pinSeated;long pinAt=-1,twoKnocksB=-1;boolean rehearsed,rehearsePrompted;long rehearseAt=-1;
+        boolean rollerSeated,jamReported,lineIn,lineReturned,lineStaged;UUID wheelBy;long wheelUntil;boolean pinSeated;long pinAt=-1,twoKnocksB=-1;boolean rehearsed,rehearsePrompted;long rehearseAt=-1;int rehearseHeld;
         /** The speaking pipes' knocks: per mouth, the last knock and the run of knocks. */
         final Map<String,long[]> knocks=new HashMap<>();
         /** The plate: where it stands (relative), or who carries it; the fog on it until when, and what showed. */
@@ -137,7 +145,7 @@ public final class LastCrossing {
     public static int needle(BlockPos b){var r=run(b);return r==null?-1:r.needle;}
     public static List<String> crew(BlockPos b){var r=run(b);return r==null?List.of():List.copyOf(r.crew.values());}
     public static boolean flag(BlockPos b,String name){var r=run(b);if(r==null)return false;return switch(name){case "bleed"->r.bleedOpen;case "primed"->r.primed;case "roller"->r.rollerSeated;case "reported"->r.jamReported;
-        case "line"->r.lineIn;case "returned"->r.lineReturned;case "staged"->r.lineStaged;case "pin"->r.pinSeated;case "rehearsed"->r.rehearsed;case "route"->r.routeCalled;case "dusk"->r.dusk;case "kettle"->r.kettle;
+        case "line"->r.lineIn;case "returned"->r.lineReturned;case "staged"->r.lineStaged;case "pin"->r.pinSeated;case "rehearsed"->r.rehearsed;case "rehearseCalled"->r.rehearseAt>=0;case "route"->r.routeCalled;case "dusk"->r.dusk;case "kettle"->r.kettle;
         case "lamp"->r.lampHome;case "wrench"->r.wrenchHome;case "plate"->r.plateBy!=null;
         case "surged"->r.night.surged;case "grip"->r.night.gripped!=null;case "freed"->r.night.freed;case "flooded"->r.night.lowerFlooded;case "isolated"->r.night.isolated;
         case "barred"->r.night.barred;case "rose"->r.night.rose;case "held"->r.night.held;case "loose"->r.night.loose;case "fouled"->r.night.fouled;case "dawn"->r.night.dawn;
@@ -149,6 +157,7 @@ public final class LastCrossing {
         case "barStaged"->r.dayThree.barStaged;case "pathCleared"->r.dayThree.pathCleared;case "galleryReady"->r.dayThree.galleryReady;case "briefed3"->r.dayThree.briefed;
         case "risen"->r.night3.risen;case "pinned3"->r.night3.pinned;case "floating"->r.night3.floating;case "released"->r.night3.released;case "arrived"->r.night3.arrived;
         case "gateBarred"->r.night3.barred;case "cutoff"->r.night3.cutoff;case "drained"->r.night3.drained;case "destroyed"->r.night3.destroyed;case "mustered"->r.night3.mustered;
+        case "veraBrake"->r.night2.veraBrake;case "veraPinned"->r.night3.veraPinned;
         case "broken"->r.night3.broken;case "spareSettled"->r.night3.spareSettled;case "masterOpen"->r.night3.masterOpen;case "bargained"->r.night3.bargained;case "denied"->r.night3.denied;case "ended"->r.night3.ended;default->false;};}
     /** For tests: the night's clock, how many of the things are up, and who carries the first slot. */
     public static int night(BlockPos b){var r=run(b);return r==null?-1:r.night.tick;}
@@ -256,7 +265,8 @@ public final class LastCrossing {
         "RangMuster","OutOfGallery","HeardMuster","OpenedMaster","SawMasterOpened","LetGoMaster","HeardHammer","SawApproachFlood","SidedWithSource","OtherBreath",
         "ShutDownstream","BargainDenied","DeniedBy","DeniedBargain","DrainedLanding","SawLandingRise","Ending","BroughtAcross","UnansweredFar","HeardUnanswered","HeardAnsweredFor",
         "HeardEllisFar","HeardEllisLate","AnsweredFar","BackAtMorning","NightThree","DiedNightThree",
-        "GotPiece","PieceLetters","GotSpare","NominatedFor","NamedForSpare","GivenSpareByVera","SpareWentTo","GaveSpare","GaveSpareTo","SpareFrom","Outcome");
+        "GotPiece","PieceLetters","GotSpare","NominatedFor","NamedForSpare","GivenSpareByVera","SpareWentTo","GaveSpare","GaveSpareTo","SpareFrom","Outcome",
+        "VeraBrake","VeraPinned","BarredAlone");
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var l=p.serverLevel();var r=RUNS.computeIfAbsent(b.asLong(),k->new Run(b,l.getGameTime()));
         if(own.getLong("CrossingRun")!=r.id){for(var key:RUN_KEYS)own.remove(key);own.putLong("CrossingRun",r.id);}
@@ -268,12 +278,12 @@ public final class LastCrossing {
         cue(p,"A farm road, running north and down into floodwater. Beside it a power line on poles goes up a levee toward a station by a river.");
         HousePackets.send(p,payload(r));
     }
-    /** 0.4.357: dealt once each, after the yard's ordinary crossings, and only to a reader with a crew around them: four to six readers in
-     * the House standing together. */
+    /** 0.4.357: dealt once each, after the yard's ordinary crossings. 0.4.598: to a reader on their own as to a crew standing together
+     * (it was dealt only to four to six); whoever comes in with them signs the same roll, and fewer than four are short-handed. */
     public static boolean dealable(LabyrinthData d,UUID p){
         if(LiteraryVignettes.personal(d,p,PLACE).getBoolean("Completed"))return false;
         var seen=d.visited(p);boolean yard=false;for(var y:YardCrossings.ORDINARY)if(seen.contains(y.id())){yard=true;break;}
-        return yard&&crewAround(p)>=MIN_CREW;
+        return yard;
     }
     /** How many readers stand together with this one (themselves included): in the same level, within twenty-four blocks, not watching. */
     public static int crewAround(UUID id){
@@ -399,11 +409,17 @@ public final class LastCrossing {
     static void day(ServerLevel l,Run r,List<ServerPlayer> here){
         r.day++;
         // The rehearsal: once the wheel and the pin have both been tried, Vera goes down to the ramp to have them practise.
+        // 0.4.598: with one name on the roll she goes on to the pin and takes it herself, as she will on the last night.
+        boolean one=r.crew.size()==1;
         if(!r.rehearsePrompted&&!r.rehearsed&&r.demo>=5&&anyone(l,r,"CheckedWheel")&&anyone(l,r,"CheckedPin")){r.rehearsePrompted=true;r.rehearseAt=-1;
-            route(r,new Vec3(13.5,0,-35.5),new Vec3(26.5,0,-35.5),new Vec3(26.5,0,-50.5),LastCrossingSite.VERA_RAMP);}
-        if(r.rehearsePrompted&&r.rehearseAt<0&&!walking(r)){r.rehearseAt=r.tick;speak(l,r,LastCrossingTexts.REHEARSE);}
-        if(r.rehearseAt>=0&&(r.rehearsed||r.tick-r.rehearseAt>1200)&&!walking(r)&&r.route.size()>0&&r.route.get(r.route.size()-1).equals(LastCrossingSite.VERA_RAMP)){
-            route(r,new Vec3(26.5,0,-50.5),new Vec3(26.5,0,-35.5),new Vec3(13.5,0,-35.5),LastCrossingSite.VERA_PORCH);}
+            if(one)route(r,new Vec3(13.5,0,-35.5),new Vec3(26.5,0,-35.5),new Vec3(26.5,0,-50.5),LastCrossingSite.VERA_RAMP,LastCrossingSite.VERA_PIN);
+            else route(r,new Vec3(13.5,0,-35.5),new Vec3(26.5,0,-35.5),new Vec3(26.5,0,-50.5),LastCrossingSite.VERA_RAMP);}
+        if(r.rehearsePrompted&&r.rehearseAt<0&&!walking(r)){r.rehearseAt=r.tick;speak(l,r,one?LastCrossingTexts.REHEARSE_ALONE:LastCrossingTexts.REHEARSE);}
+        if(one&&r.rehearseAt>=0&&!r.rehearsed&&!r.pinSeated&&!walking(r)){
+            if(r.wheelBy!=null){if(++r.rehearseHeld>=LastCrossingNightThree.VERA_PIN)veraRehearses(l,r);}else r.rehearseHeld=0;}
+        if(r.rehearseAt>=0&&(r.rehearsed||r.tick-r.rehearseAt>1200)&&!walking(r)&&r.route.size()>0){var last=r.route.get(r.route.size()-1);
+            if(last.equals(LastCrossingSite.VERA_PIN))route(r,LastCrossingSite.VERA_RAMP,new Vec3(26.5,0,-50.5),new Vec3(26.5,0,-35.5),new Vec3(13.5,0,-35.5),LastCrossingSite.VERA_PORCH);
+            else if(last.equals(LastCrossingSite.VERA_RAMP))route(r,new Vec3(26.5,0,-50.5),new Vec3(26.5,0,-35.5),new Vec3(13.5,0,-35.5),LastCrossingSite.VERA_PORCH);}
         // Round the route once before dark: when the day's work is done, or two thirds of the way to dusk.
         if(!r.routeCalled&&(r.primed&&r.rollerSeated&&r.jamReported&&r.lineReturned||r.day>=DAY_TICKS*2/3)){r.routeCalled=true;speak(l,r,LastCrossingTexts.ROUTE,64);}
         if(r.day>=DAY_TICKS)dusk(l,r,here);
@@ -789,6 +805,17 @@ public final class LastCrossing {
         if(two&&key.equals("b_down"))r.twoKnocksB=r.tick;
         for(var q:readers(l,r.base)){if(q.position().distanceToSqr(at)>5*5)continue;cue(q,two?"Two knocks in the pipe.":"A knock in the pipe.");if(two)mark(q,"HeardKnocks");}
     }
+    /** 0.4.598: Vera drops the pin in practice for a reader on their own, who is holding the wheel shut below. Nothing happens unless
+     * she is standing at it. */
+    static void veraRehearses(ServerLevel l,Run r){
+        var b=r.base;var pos=b.offset(LastCrossingSite.PIN);var a=actor(l,r.vera);
+        if(a==null||a.position().distanceToSqr(Vec3.atCenterOf(pos))>LastCrossingNightThree.VERA_REACH*LastCrossingNightThree.VERA_REACH)return;
+        r.pinSeated=true;r.pinAt=r.tick;r.rehearsed=true;r.rehearseHeld=0;
+        l.setBlock(pos,LastCrossingSite.fit(Kind.PIN,Direction.SOUTH,1),Block.UPDATE_CLIENTS);l.setBlock(b.offset(LastCrossingSite.WHEEL),LastCrossingSite.fit(Kind.WHEEL,Direction.SOUTH,2),Block.UPDATE_CLIENTS);
+        sound(l,pos,SoundEvents.IRON_TRAPDOOR_CLOSE,1F,.7F);
+        var below=player(l,r.wheelBy);if(below!=null){mark(below,"Rehearsed");cue(below,LastCrossingTexts.REHEARSED_ALONE);}
+        speak(l,r,LastCrossingTexts.REHEARSED);
+    }
     /** The locking pin: it seats only while someone below holds the wheel shut; seated at the second knock, it's the signal they practised. */
     static boolean pin(ServerPlayer p,Run r,BlockPos pos){
         var l=p.serverLevel();
@@ -816,13 +843,13 @@ public final class LastCrossing {
         if(r.phase>=DUSK){
             begin(p,"Vera");Talk.line(p,"Vera",r.phase==DUSK?"What is it?":r.phase==END?"You're across.":"You made it to the light, then.");
             var replies=new ArrayList<Talk.Reply>();
-            if(r.phase==DUSK)replies.add(Talk.reply("What do we do?",q->{Talk.line(q,"Vera",r.dayNo>=3?LastCrossingTexts.NIGHT_ANSWER3:r.dayNo>=2?LastCrossingTexts.NIGHT_ANSWER2:LastCrossingTexts.NIGHT_ANSWER);Talk.end(q);}));
+            if(r.phase==DUSK)replies.add(Talk.reply("What do we do?",q->{Talk.line(q,"Vera",LastCrossingTexts.nightAnswer(r.dayNo,shortHanded(r)));Talk.end(q);}));
             if(own(p).getBoolean("Infected")&&!own(p).getBoolean("Told"))replies.add(Talk.reply("It got a claw in me.",q->{LastCrossingNight.told(q);Talk.line(q,"Vera",LastCrossingTexts.TOLD_ANSWER);Talk.end(q);}));
             replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);return;}
         if(r.dayNo>=3){
             begin(p,"Vera");Talk.line(p,"Vera","What is it?");
             var replies=new ArrayList<Talk.Reply>();
-            replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.DAY3_JOBS);Talk.end(q);}));
+            replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.DAY3_JOBS+(shortHanded(r)?" "+LastCrossingTexts.PIN_SHORT:""));Talk.end(q);}));
             if(own(p).getBoolean("AskedEllis"))replies.add(Talk.reply(LastCrossingTexts.CROSS_ASK,q->{mark(q,"AskedCross");cue(q,"Vera puts the clipboard down.");Talk.line(q,"Vera",LastCrossingTexts.CROSS_ANSWER);Talk.end(q);}));
             if(own(p).getBoolean("Infected")&&!own(p).getBoolean("Told"))replies.add(Talk.reply("It got a claw in me.",q->{LastCrossingNight.told(q);Talk.line(q,"Vera",LastCrossingTexts.TOLD_ANSWER);Talk.end(q);}));
             if(own(p).getBoolean("Turned"))replies.add(Talk.reply(LastCrossingTexts.LAST_NIGHT_ASK,q->{explained(q);Talk.line(q,"Vera",LastCrossingTexts.LAST_NIGHT_ANSWER);Talk.end(q);}));
@@ -830,13 +857,13 @@ public final class LastCrossing {
         if(r.dayNo>=2){
             begin(p,"Vera");Talk.line(p,"Vera","What is it?");
             var replies=new ArrayList<Talk.Reply>();
-            replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.DAY2_JOBS);Talk.end(q);}));
+            replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.DAY2_JOBS+(r.crew.size()==1?" "+LastCrossingTexts.DAY2_ONE:""));Talk.end(q);}));
             replies.add(Talk.reply(LastCrossingTexts.ADMIT_ASK,q->{mark(q,"VeraAdmitted");mark(q,"AskedEllis");Talk.line(q,"Vera",LastCrossingTexts.VERA_ADMITS);Talk.end(q);}));
             if(own(p).getBoolean("Infected")&&!own(p).getBoolean("Told"))replies.add(Talk.reply("It got a claw in me.",q->{LastCrossingNight.told(q);Talk.line(q,"Vera",LastCrossingTexts.TOLD_ANSWER);Talk.end(q);}));
             replies.add(Talk.act("Leave her be.",Talk::close));Talk.ask(p,replies);return;}
         begin(p,"Vera");Talk.line(p,"Vera","What is it?");
         var replies=new ArrayList<Talk.Reply>();
-        replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.JOBS+(r.crew.size()>=5?" "+LastCrossingTexts.JOBS_FIVE:"")+(r.crew.size()>=6?" "+LastCrossingTexts.JOBS_SIX:""));Talk.end(q);}));
+        replies.add(Talk.reply("What needs doing?",q->{Talk.line(q,"Vera",LastCrossingTexts.JOBS+(r.crew.size()==1?" "+LastCrossingTexts.JOBS_ONE:"")+(r.crew.size()>=5?" "+LastCrossingTexts.JOBS_FIVE:"")+(r.crew.size()>=6?" "+LastCrossingTexts.JOBS_SIX:""));Talk.end(q);}));
         replies.add(Talk.reply("Who's Ellis?",q->{mark(q,"AskedEllis");Talk.line(q,"Vera",LastCrossingTexts.ELLIS_ANSWER);Talk.end(q);}));
         replies.add(Talk.reply("Should someone go and look for him?",q->{mark(q,"AskedEllis");Talk.line(q,"Vera",LastCrossingTexts.LOOK_ANSWER);Talk.end(q);}));
         if(carries(p,"line")&&!r.lineReturned)replies.add(Talk.act("Hand her the line.",LastCrossing::returnLine));
@@ -929,7 +956,7 @@ public final class LastCrossing {
         var door=b.offset(LastCrossingSite.OFFICE_DOOR);var ds=l.getBlockState(door);if(ds.getBlock() instanceof DoorBlock)for(int y=0;y<=1;y++){var at=door.above(y);var s=l.getBlockState(at);if(s.getBlock() instanceof DoorBlock)l.setBlock(at,s.setValue(DoorBlock.OPEN,true),Block.UPDATE_CLIENTS);}
         r.vera=null;r.phase=GATHERING;r.crew.clear();r.answered.clear();r.calling=-1;r.callTicks=0;r.calledTwice=false;r.firstSigned=-1;r.answerAt=-1;r.day=0;
         r.bleedOpen=false;r.intakeBy=null;r.needle=-1;r.turned=0;r.turnedAt=-1;r.turnedBy=null;r.brakeBy=null;r.brakeHeld=0;r.primed=false;r.primedAt=-1;r.called=0;
-        r.rollerSeated=false;r.jamReported=false;r.lineIn=false;r.lineReturned=false;r.lineStaged=false;r.wheelBy=null;r.pinSeated=false;r.pinAt=-1;r.twoKnocksB=-1;r.rehearsed=false;r.rehearsePrompted=false;r.rehearseAt=-1;
+        r.rollerSeated=false;r.jamReported=false;r.lineIn=false;r.lineReturned=false;r.lineStaged=false;r.wheelBy=null;r.pinSeated=false;r.pinAt=-1;r.twoKnocksB=-1;r.rehearsed=false;r.rehearsePrompted=false;r.rehearseAt=-1;r.rehearseHeld=0;
         r.knocks.clear();r.plateAt=LastCrossingSite.PLATE_HOME;r.plateBy=null;r.fogUntil=-1;r.lampHome=true;r.wrenchHome=true;r.wrenchDisplay=null;r.tapAt=-1;
         r.routeCalled=false;r.dusk=false;r.demo=0;r.kettle=false;r.route.clear();r.leg=0;r.legTicks=0;r.greeted.clear();r.current.clear();
         LastCrossingNight.reset(l,r);LastCrossingNightTwo.reset(l,r);LastCrossingDay.reset(l,r);LastCrossingDayThree.reset(l,r);LastCrossingNightThree.reset(l,r);r.dead.clear();

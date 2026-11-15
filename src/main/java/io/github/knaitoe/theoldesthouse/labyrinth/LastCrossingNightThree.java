@@ -57,6 +57,8 @@ public final class LastCrossingNightThree {
      * crossing; the chamber's drain; how long a turned reader holds the master open for the bargain; how long the muster waits for the bell;
      * how long each ending's last beat runs; how long Vera waits for an answer on the far bank; the least time between blows on the source. */
     public static final int NIGHT3_TICKS=6000,RISE_AT=300,SILL_CLEAR=200,TRANSIT=200,DRAIN=100,BARGAIN_HOLD=400,MUSTER_WAIT=400,BEAT=200,FAR_ANSWER=80,BLOW=10;
+    /** 0.4.598: how long a short-handed crew's hand holds the wheel shut before Vera drops the pin, and how near the pin she has to be. */
+    public static final int VERA_PIN=60;static final double VERA_REACH=4;
     /** Blows that kill the source once nothing is covering it. */
     public static final int SOURCE_HITS=6;
     /** Ticks a clean reader who drops out still counts as standing, for the source's check (the design's short grace window). */
@@ -76,6 +78,8 @@ public final class LastCrossingNightThree {
         boolean begun,risen;
         /** The launch: the pin seated and when, the ferry off her sill, released and when and by whom, who went aboard, arrived. */
         boolean pinned,floating,released,arrived;long pinnedAt=-1,releasedAt=-1;@Nullable UUID releasedBy,pinnedBy;final LinkedHashSet<UUID> aboard=new LinkedHashSet<>();
+        /** 0.4.598: how long the wheel has been held shut tonight, and the pin dropped by Vera for a short-handed crew. */
+        int wheelHeld;boolean veraPinned;
         /** The gallery: who holds the gate, barred, the cutoff shut, the drain and done, the defenders, blows on the source, dead and when,
          * who was down there for the fight, mustered. */
         @Nullable UUID gateBy;boolean barred,cutoff,drained,destroyed,mustered;int drain,hits;long hitAt=-1,destroyedAt=-1;
@@ -154,7 +158,14 @@ public final class LastCrossingNightThree {
     static void launch(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
         // The wheel at night is held as long as its holder stays on it.
         if(r.wheelBy!=null&&!r.pinSeated){var p=LastCrossing.player(l,r.wheelBy);
-            if(p!=null&&here.contains(p)&&p.isAlive()&&p.position().distanceToSqr(Vec3.atCenterOf(r.base.offset(LastCrossingSite.WHEEL)))<2.5*2.5){r.wheelUntil=r.tick+5;if(r.tick%20==0)LastCrossing.mark(p,"HeldWheel");}}
+            if(p!=null&&here.contains(p)&&p.isAlive()&&p.position().distanceToSqr(Vec3.atCenterOf(r.base.offset(LastCrossingSite.WHEEL)))<2.5*2.5){r.wheelUntil=r.tick+5;if(r.tick%20==0)LastCrossing.mark(p,"HeldWheel");
+                // 0.4.598: a short-handed crew has nobody for the pin. Vera comes over to it from the ramp, and with the wheel held
+                // shut below and the pin up in its sleeve she drops it herself.
+                if(LastCrossing.shortHanded(r)&&r.dayThree.pinStaged){var a=LastCrossing.actor(l,r.vera);var pin=Vec3.atCenterOf(r.base.offset(LastCrossingSite.PIN));
+                    if(n.wheelHeld++==0&&a!=null)LastCrossing.route(r,LastCrossingSite.VERA_PIN);
+                    if(a!=null&&n.wheelHeld>=VERA_PIN&&a.position().distanceToSqr(pin)<VERA_REACH*VERA_REACH)veraPins(l,r,n,p);}}
+            else n.wheelHeld=0;}
+        else if(r.wheelBy==null)n.wheelHeld=0;
         if(!n.pinned&&r.pinSeated){n.pinned=true;n.pinnedAt=r.tick;LastCrossing.speak(l,r,LastCrossingTexts.PINNED3,48);
             var below=LastCrossing.player(l,r.wheelBy);if(below!=null){LastCrossing.mark(below,"HeldWheelToPin");if(LastCrossingNightTwo.turned(r,below))LastCrossing.cue(below,LastCrossingTexts.WHEEL_EASED);}}
         if(n.pinned&&!n.floating&&r.tick-n.pinnedAt>=SILL_CLEAR){n.floating=true;LastCrossing.speak(l,r,LastCrossingTexts.OFF_SILL,64);
@@ -163,6 +174,14 @@ public final class LastCrossingNightThree {
             for(var it=n.aboard.iterator();it.hasNext();){var p=LastCrossing.player(l,it.next());if(p==null||!here.contains(p)||!LastCrossingSite.onFerry(LastCrossing.rel(p.position(),r.base))){if(p!=null)LastCrossing.mark(p,"WentOverSide");it.remove();}}
             if(r.tick%10==0){var at=LastCrossing.world(r.base,new Vec3(33.5,-.8,-76.5));l.sendParticles(ParticleTypes.SPLASH,at.x,at.y,at.z,10,2.5,.1,.5,.1);}
             if(r.tick-n.releasedAt>=TRANSIT)arrive(l,r,n,here);}
+    }
+    /** 0.4.598: Vera drops the launch pin for a short-handed crew, as one of them would have from the deck. */
+    static void veraPins(ServerLevel l,Run r,Night n,ServerPlayer below){
+        var b=r.base;r.pinSeated=true;r.pinAt=r.tick;n.veraPinned=true;
+        l.setBlock(b.offset(LastCrossingSite.PIN),LastCrossingSite.fit(Kind.PIN,Direction.SOUTH,1),Block.UPDATE_CLIENTS);
+        l.setBlock(b.offset(LastCrossingSite.WHEEL),LastCrossingSite.fit(Kind.WHEEL,Direction.SOUTH,2),Block.UPDATE_CLIENTS);
+        LastCrossing.sound(l,b.offset(LastCrossingSite.PIN),SoundEvents.IRON_TRAPDOOR_CLOSE,1F,.7F);
+        LastCrossing.mark(below,"VeraPinned");
     }
     /** The launch rope pulled: let go, once she's off the sill, with whoever is aboard. */
     static boolean release(ServerPlayer p){
@@ -224,8 +243,18 @@ public final class LastCrossingNightThree {
         if(n.gateBy==null){
             if(stage==0&&bar)return false;
             n.gateBy=p.getUUID();LastCrossing.mark(p,"HeldFeedGate");LastCrossing.job(p,"source");LastCrossing.sound(l,at,SoundEvents.IRON_DOOR_CLOSE,1F,.5F);
-            LastCrossing.cue(p,LastCrossingNightTwo.turned(r,p)?LastCrossingTexts.GATE_HOLD_TURNED:LastCrossingTexts.GATE_HOLD3);return true;}
-        if(p.getUUID().equals(n.gateBy)){LastCrossing.cue(p,"You're holding it. Somebody has to drop the bar.");return true;}
+            // 0.4.598: a short-handed crew's hand on the gate has the staged bar in reach.
+            boolean reach=LastCrossing.shortHanded(r)&&stage==1;
+            LastCrossing.cue(p,LastCrossingNightTwo.turned(r,p)?LastCrossingTexts.GATE_HOLD_TURNED+(reach?" "+LastCrossingTexts.BAR_IN_REACH:""):reach?LastCrossingTexts.GATE_HOLD_SHORT:LastCrossingTexts.GATE_HOLD3);return true;}
+        if(p.getUUID().equals(n.gateBy)){
+            // 0.4.598: with nobody else to drop it, the one holding the gate knocks the bar down out of its bracket, or drops the one
+            // they carried down.
+            if(LastCrossing.shortHanded(r)&&(stage==1||bar)){
+                if(bar)LastCrossing.drop(p,"lockbar");
+                n.barred=true;n.gateBy=null;
+                l.setBlock(at,LastCrossingSite.fit(Kind.FEED_GATE,Direction.WEST,2),Block.UPDATE_CLIENTS);LastCrossing.sound(l,at,SoundEvents.ANVIL_PLACE,.8F,.6F);
+                LastCrossing.mark(p,"BarredGate");LastCrossing.mark(p,"HeldGateToBar");LastCrossing.mark(p,"BarredAlone");LastCrossing.cue(p,LastCrossingTexts.BAR_KNOCKED);return true;}
+            LastCrossing.cue(p,"You're holding it. Somebody has to drop the bar.");return true;}
         if(stage!=1&&!bar){LastCrossing.cue(p,LastCrossingTexts.NO_BAR);return true;}
         if(bar)LastCrossing.drop(p,"lockbar");
         n.barred=true;var holder=LastCrossing.player(l,n.gateBy);n.gateBy=null;
@@ -361,12 +390,15 @@ public final class LastCrossingNightThree {
 
     // ------------------------------------------------------------------------------------------------ the source takes it
     /** Whether anyone clean of the crew is still standing at the station (or already across). A clean reader who has just dropped out
-     * still counts for a little while. */
+     * still counts for a little while. 0.4.598: in a short-handed crew a carrier still counts who has not sided with the source and has
+     * not gone across with it: there may be nobody else to stop it, and they still can. */
     static boolean cleanAlive(ServerLevel l,Run r){
-        var readers=LastCrossing.readers(l,r.base);
+        var readers=LastCrossing.readers(l,r.base);boolean few=LastCrossing.shortHanded(r);
         for(var id:r.crew.keySet()){if(r.dead.contains(id))continue;var p=LastCrossing.player(l,id);
             if(p==null){var seen=r.night3.lastClean.get(id);if(seen!=null&&r.tick-seen<GRACE)return true;continue;}
-            if(!p.isAlive()||p.isSpectator()||!readers.contains(p))continue;if(!LastCrossing.own(p).getBoolean("Infected"))return true;}
+            if(!p.isAlive()||p.isSpectator()||!readers.contains(p))continue;var own=LastCrossing.own(p);
+            if(!own.getBoolean("Infected"))return true;
+            if(few&&!own.getBoolean("SidedWithSource")&&!own.getBoolean("CrossedOver"))return true;}
         return false;
     }
     static void source(ServerLevel l,Run r,Night n,List<ServerPlayer> here){
@@ -470,15 +502,20 @@ public final class LastCrossingNightThree {
     static String outcome(Night n){return n.ending==FERRY?"ferry":n.ending==GALLERY?"gallery":"source";}
     /** Morning: everyone on the roll resolved, the dead and the absent included; a reader who isn't online gets theirs when they are back. */
     static void resolveAll(ServerLevel l,Run r,Night n){
-        String outcome=outcome(n);var d=LabyrinthData.get(l.getServer());
+        String outcome=outcome(n);var d=LabyrinthData.get(l.getServer());int crew=r.crew.size();
         for(var id:r.crew.keySet()){var p=LastCrossing.player(l,id);
-            if(p!=null){resolve(p,outcome);continue;}
+            if(p!=null){resolve(p,outcome,crew);continue;}
             var own=LiteraryVignettes.personal(d,id,LastCrossing.PLACE);if(own.getBoolean("Completed"))continue;
-            own.putString("OwedEnding",outcome);if(own.getString("Ending").isEmpty())own.putString("Ending",outcome);LiteraryVignettes.save(d,id,LastCrossing.PLACE,own);}
+            own.putString("OwedEnding",outcome);own.putInt("CrewSize",crew);if(own.getString("Ending").isEmpty())own.putString("Ending",outcome);LiteraryVignettes.save(d,id,LastCrossing.PLACE,own);}
     }
-    /** One reader's crossing, finished: the Witness source, and their own account from their own record. */
-    static void resolve(ServerPlayer p,String outcome){
+    /** One reader's crossing, finished: the Witness source, and their own account from their own record. `crew` is how many names
+     * were on the roll (0.4.598: a reader who was the whole roll says so in the account and the Witness line); none is given for a
+     * reader coming back to an ending they are owed, whose record already has it. It is kept out of the run's keys, so the line a
+     * reader's Witness account gives is of the crossing they finished. */
+    static void resolve(ServerPlayer p,String outcome){resolve(p,outcome,0);}
+    static void resolve(ServerPlayer p,String outcome,int crew){
         var own=LastCrossing.own(p);if(own.getBoolean("Completed"))return;
+        if(crew>0)own.putInt("CrewSize",crew);
         if(own.getString("Ending").isEmpty())own.putString("Ending",outcome);
         own.putString("Outcome",own.getString("Ending"));own.putBoolean("Ready",true);own.putBoolean("Completed",true);own.putBoolean("Taken_Ending",true);own.putInt("Beat",own.getInt("Visit"));own.remove("OwedEnding");
         LastCrossing.save(p,own);

@@ -102,7 +102,7 @@ public final class LastCrossingDayThree {
         offers(l,r,here);
         launch(l,r,here);
         gallery(l,r,here);
-        if(!d.briefed&&r.day>=LastCrossing.DAY_TICKS*5/6){d.briefed=true;LastCrossing.speak(l,r,LastCrossingTexts.DAY3_BRIEF,64);
+        if(!d.briefed&&r.day>=LastCrossing.DAY_TICKS*5/6){d.briefed=true;LastCrossing.speak(l,r,LastCrossingTexts.DAY3_BRIEF+(LastCrossing.shortHanded(r)?" "+LastCrossingTexts.PIN_SHORT:""),64);
             for(var p:here)if(r.crew.containsKey(p.getUUID()))LastCrossing.mark(p,"HeardBrief");}
         // The third dusk: Night Three (LastCrossingNightThree, 0.4.356).
         if(r.day>=LastCrossing.DAY_TICKS)LastCrossingNightThree.begin(l,r,here);

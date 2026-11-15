@@ -104,6 +104,8 @@ public final class LastCrossingSite {
      * far landing, where those aboard step off and where everyone is brought at the end, and where Vera calls the last roll; the cells of
      * the ramp's approach the master's water comes up over. */
     public static final Vec3 LANDING_RISE=new Vec3(31.5,0,-59.5),VERA_FERRY=new Vec3(33.5,0,-67.5),FAR_VERA=new Vec3(33.5,0,-95.5);
+    /** 0.4.598: where Vera stands to take the winch brake, and to drop the launch pin, for a short-handed crew. */
+    public static final Vec3 VERA_BRAKE=new Vec3(48.5,0,-56.5),VERA_PIN=new Vec3(28.5,0,-60.5);
     public static final List<Vec3> FAR_LANDING=List.of(new Vec3(31.5,0,-94.5),new Vec3(33.5,0,-94.5),new Vec3(35.5,0,-94.5),new Vec3(31.5,0,-95.8),new Vec3(35.5,0,-95.8),new Vec3(32.5,0,-95.0),new Vec3(34.5,0,-95.0));
     public static final List<BlockPos> APPROACH=List.of(new BlockPos(28,0,-59),new BlockPos(28,0,-60),new BlockPos(28,0,-61));
     /** The far bank: the landing, the lamp, the cable's anchor and the shelter whose door is the way on. */

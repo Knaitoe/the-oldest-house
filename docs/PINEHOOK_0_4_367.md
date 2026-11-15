@@ -133,7 +133,7 @@ It ends: *"Nobody went back to Pinehook after that."*
 
 ## Dealing
 
-Dealt to a reader who hasn't finished it, standing with at least one other: the proposal's 2–6. A reader alone can still finish a weekend they are in.
+Dealt to a reader who hasn't finished it, standing with at least one other: the proposal's 2–6. A reader alone can still finish a weekend they are in. (0.4.598: dealt to a reader on their own as well; `docs/ON_YOUR_OWN_0_4_598.md`.)
 
 ## Multiplayer
 
