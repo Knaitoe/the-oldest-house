@@ -85,6 +85,8 @@ public final class LodgingKey {
     /** Where one of the four stands now, the key's turns over the chapter's (LodgingStory.spot). */
     public static LodgingPeople.Spot spot(MinecraftServer s,BlockPos b,int stage,int who){
         var h=LodgingStory.house(s,b);
+        // 0.4.611: while the two men are put in one room, the meeting has them.
+        var meeting=LodgingMeeting.spot(s,b,who);if(meeting!=null)return meeting;
         if(who==LodgingPeople.DANIEL&&h.getBoolean(FREE))return DANIEL_PARLOR;
         if(who==LodgingPeople.RAE)switch(h.getInt(TASK)){
             case HIDE_GO,HIDE_AT->{return RAE_CUPBOARD;}

@@ -78,6 +78,8 @@ public final class LodgingPeople {
     /** 0.4.610 (LodgingCellar): the dead post's body coming loose at the joins, four stages, LOOSE to LOOSE+3. */
     public static final int LOOSE=16;
     public static boolean loose(int gesture){return gesture>=LOOSE&&gesture<LOOSE+4;}
+    /** 0.4.611 (LodgingMeeting, N11): a weapon raised over somebody; both hands taking hold of somebody; both hands up, palms out. */
+    public static final int RAISE=20,GRAB=21,PALMS=22;
     /** 0.4.606: the sheet a man's marks put him in: Dan's and Daniel's hands cut by the glass, or pricked by the pin. */
     public static @Nullable String dressed(int phase,int marks){
         int who=phase-FIRST;if(who!=DAN&&who!=DANIEL||marks==0)return null;
@@ -170,7 +172,7 @@ public final class LodgingPeople {
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=household(b);long now=l.getGameTime();if(h.lastTick==now)return;h.lastTick=now;
         // 0.4.604: the chapter goes on (Rae goes up, Vera comes down, the rooms), and the bodies in the beds.
-        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
+        LodgingStory.tick(l,b,here);LodgingDoubles.tick(l,b,here);LodgingDaniel.tick(l,b);LodgingKey.tick(l,b,here);LodgingCellar.tick(l,b,here);LodgingMeeting.tick(l,b,here);int stage=LodgingStory.stage(l.getServer(),b);
         for(int who=0;who<COUNT;who++){
             var a=find(l,b,who);if(a==null)continue;
             var spot=LodgingKey.spot(l.getServer(),b,stage,who);float rest=spot.look();
@@ -227,6 +229,8 @@ public final class LodgingPeople {
         if(who==DANIEL&&!LodgingKey.free(p.server,b)&&!LodgingDaniel.reach(p,b))return;
         // 0.4.608: the key put to him, in his room, opens the straps.
         if(who==DANIEL&&LodgingSite.inDaniels(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!LodgingKey.free(p.server,b)&&LodgingKey.straps(p,b))return;
+        // 0.4.611 (N10, N11): the two men in one room, Rae asked; or one of them acting.
+        if(LodgingMeeting.talk(p,b,a,who,own))return;
         switch(who){case RAE->rae(p,l,b,a,own);case DAN->dan(p,a,own);case VERA->vera(p,b,a,own);default->daniel(p,a,own);}
     }
 
@@ -309,7 +313,7 @@ public final class LodgingPeople {
             if(promisedDan(own))says(p,dan,"Dan",LodgingTexts.DAN_STAND);
             danAsks(p);return;
         }
-        if(own.getBoolean(DAN_MET)&&own.getBoolean(DAN_SLEEP)&&own.getBoolean(ASKED_PLACE)&&!canTellDan(p,own)&&(b==null||!LodgingKey.canTellDan(p,b,own))){LodgingHouse.cue(p,LodgingTexts.DAN_SITS);return;}
+        if(own.getBoolean(DAN_MET)&&own.getBoolean(DAN_SLEEP)&&own.getBoolean(ASKED_PLACE)&&!canTellDan(p,own)&&(b==null||!LodgingKey.canTellDan(p,b,own)&&!LodgingMeeting.canBring(p,b))){LodgingHouse.cue(p,LodgingTexts.DAN_SITS);return;}
         Talk.begin(p,TALK+DAN,"Dan");
         if(!own.getBoolean(DAN_MET)){own.putBoolean(DAN_MET,true);LodgingHouse.save(p,own);says(p,dan,"Dan",LodgingTexts.DAN_FINE[0]);says(p,dan,"Dan",LodgingTexts.DAN_FINE[1]);}
         else LodgingHouse.cue(p,LodgingTexts.DAN_LOOKS_UP);
@@ -322,6 +326,8 @@ public final class LodgingPeople {
         if(canTellDan(p,own))replies.add(Talk.reply(LodgingTexts.R_STILL,LodgingPeople::toldDanDrained));
         var b=LiteraryVignettes.base(p,PLACE);
         if(b!=null&&LodgingKey.canTellDan(p,b,own))replies.add(Talk.reply(LodgingTexts.R_RAE_KNEW,LodgingKey::toldDan));
+        // 0.4.611: Dan asked to be shown; a reader can take him to the frame.
+        if(b!=null&&LodgingMeeting.canBring(p,b))replies.add(Talk.reply(LodgingTexts.R_COME_SEE,LodgingMeeting::bring));
         if(replies.isEmpty()){Talk.end(p);return;}
         replies.add(Talk.act(LodgingTexts.R_LEAVE_DAN,Talk::close));
         Talk.ask(p,replies);

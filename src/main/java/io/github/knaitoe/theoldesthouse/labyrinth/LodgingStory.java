@@ -159,7 +159,7 @@ public final class LodgingStory {
             }
             case INJURY->{if(LodgingInjury.tick(l,b,h,here,clock))stage=next(h,AFTER,clock);}
             // 0.4.608: nobody brings Dan down to an empty frame.
-            case AFTER->{LodgingInjury.tick(l,b,h,here,clock);if(LodgingInjury.pinDue(h,clock)&&!h.getBoolean(LodgingKey.FREE))stage=next(h,PIN,clock);}
+            case AFTER->{LodgingInjury.tick(l,b,h,here,clock);if(LodgingInjury.pinDue(h,clock)&&!h.getBoolean(LodgingKey.FREE)&&h.getInt(LodgingMeeting.STAGE)==LodgingMeeting.NONE)stage=next(h,PIN,clock);}
             case PIN->{
                 // Vera down and through the back passage; Dan after her once she is in the hall.
                 boolean vera=walkVia(l,b,h,LodgingPeople.VERA,VERA_TO_FRAME,VERA_FRAME,LodgingSite.DANIEL_DOOR,7);
