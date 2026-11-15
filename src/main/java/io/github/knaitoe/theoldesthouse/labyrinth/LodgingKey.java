@@ -187,7 +187,9 @@ public final class LodgingKey {
             case HIDE_BACK->{if(LodgingStory.walkVia(l,b,h,leg,LodgingPeople.RAE,FROM_CUPBOARD,LodgingPeople.SPOTS[LodgingPeople.RAE],LodgingSite.WORK_DOOR,-1))task(h,NONE);return true;}
             case UP_TO_VERA->{
                 if(h.contains(TASK_AT))return false;
-                if(LodgingStory.walkVia(l,b,h,leg,LodgingPeople.RAE,UP,RAE_BY_VERA,LodgingSite.WORK_DOOR,-1)){h.putLong(TASK_AT,now);h.putString(WHERE,VERA);}
+                if(LodgingStory.walkVia(l,b,h,leg,LodgingPeople.RAE,UP,RAE_BY_VERA,LodgingSite.WORK_DOOR,-1)){h.putLong(TASK_AT,now);h.putString(WHERE,VERA);
+                    // 0.4.609: she gives it to Vera, who keeps it in her hand.
+                    var vera=LodgingPeople.find(l,b,LodgingPeople.VERA);if(vera!=null){vera.setItemSlot(EquipmentSlot.MAINHAND,stack(b));vera.setDropChance(EquipmentSlot.MAINHAND,0);}}
                 return true;
             }
             case TO_DANIEL->{

@@ -1060,6 +1060,8 @@ public final class LiteraryRenderers {
         CleanerKit(CastRenderer parent,EntityRendererProvider.Context c){super(parent,c.getItemInHandRenderer());hands=c.getItemInHandRenderer();}
         /** 0.4.532: on the telephone, the receiver in June's bent hand is drawn at her ear (CastModel.receiver), as it is, at its own size. */
         @Override protected void renderArmWithItem(net.minecraft.world.entity.LivingEntity e,net.minecraft.world.item.ItemStack s,net.minecraft.world.item.ItemDisplayContext ctx,net.minecraft.world.entity.HumanoidArm arm,PoseStack p,MultiBufferSource out,int light){
+            // 0.4.609: Vera's hands are on the pin while she pricks a hand; what she holds (the key Rae brought her) is in her pocket for it.
+            if(e instanceof LiteraryActor a&&io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.is(a)&&a.gesture()==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.PIN)return;
             // 0.4.607: Daniel, strapped, holds what he is given down against the frame, along his leg, not out at the room.
             if(e instanceof LiteraryActor a&&io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.is(a)&&strapped(a.gesture())&&!s.isEmpty()){
                 p.pushPose();getParentModel().translateToHand(arm,p);heldDown(p,arm==net.minecraft.world.entity.HumanoidArm.LEFT);hands.renderItem(e,s,ctx,arm==net.minecraft.world.entity.HumanoidArm.LEFT,p,out,light);p.popPose();return;}
