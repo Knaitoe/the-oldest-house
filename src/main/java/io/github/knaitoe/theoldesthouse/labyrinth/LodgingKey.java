@@ -86,6 +86,8 @@ public final class LodgingKey {
     public static LodgingPeople.Spot spot(MinecraftServer s,BlockPos b,int stage,int who){
         var h=LodgingStory.house(s,b);
         // 0.4.611: while the two men are put in one room, the meeting has them.
+        // 0.4.612: somebody left in the wall, or Vera at her activity (LodgingTaken).
+        var taken=LodgingTaken.spot(s,b,who);if(taken!=null)return taken;
         var meeting=LodgingMeeting.spot(s,b,who);if(meeting!=null)return meeting;
         if(who==LodgingPeople.DANIEL&&h.getBoolean(FREE))return DANIEL_PARLOR;
         if(who==LodgingPeople.RAE)switch(h.getInt(TASK)){

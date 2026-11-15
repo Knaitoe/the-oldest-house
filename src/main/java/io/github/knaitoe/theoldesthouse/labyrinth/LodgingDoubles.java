@@ -77,6 +77,8 @@ public final class LodgingDoubles {
         var vera=LodgingPeople.find(l,b,LodgingPeople.VERA);
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,LodgingPeople.area(b),LodgingDoubles::is)){
             if(!a.isAlive()||a.owner().isEmpty())continue;var owner=a.owner().get();
+            // 0.4.612: up out of the bed, Vera has it (LodgingTaken).
+            if(LodgingTaken.up(a))continue;
             hold(a,b);
             if(a.gesture()==ASLEEP){
                 ServerPlayer reader=null;for(var p:here)if(p.getUUID().equals(owner))reader=p;

@@ -1136,4 +1136,159 @@ public final class LodgingHouseTests {
     @AfterBatch(batch="lodging_meeting") public static void meetingDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_meeting_frame") public static void meetingFrameDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_meeting_vera") public static void meetingVeraDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.612: N12, taken; Vera's activity
+    /** The meeting over in this room, the first intrusion long done, and the second about to come through. */
+    private static void disturbed(ServerLevel l,BlockPos b,int where,boolean coming){
+        var s=l.getServer();var h=LodgingStory.house(s,b);int clock=h.getInt("Clock");
+        h.putInt(LodgingMeeting.STAGE,LodgingMeeting.DONE);h.putInt(LodgingMeeting.WHERE,where);h.putInt(LodgingMeeting.ATTEMPT,LodgingMeeting.DAN_MINUTE);h.putBoolean(LodgingMeeting.LANDED,true);
+        var in=LodgingInjury.state(s,b);in.putInt("Phase",LodgingInjury.OVER);in.putBoolean("Shut",true);
+        var t=new CompoundTag();t.putInt("Phase",coming?LodgingTaken.WAITING:LodgingTaken.OVER);t.putInt("At",clock-LodgingTaken.AFTER);t.putInt("Where",where);
+        if(!coming)t.putBoolean("Shut",true);
+        h.put(LodgingTaken.STATE,t);LodgingStory.save(s,b,h);
+    }
+    private static void answer(ServerPlayer p,int answer){var o=own(p);o.putInt(LodgingVera.ANSWER,answer);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),P,o);}
+    private static void place(LiteraryActor a,BlockPos b,double x,double z,float yaw){a.moveTo(b.getX()+x,b.getY(),b.getZ()+z,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);}
+    @GameTest(template="empty",batch="lodging_taken",timeoutTicks=7000)
+    public static void aReaderTakenIntoTheWallKnocksItAwayAndWorksTheLatch(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_taken_a",P);var q=f.player("lodging_taken_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                // The two men have been put together in the parlor; Rae and Dan back toward the windows, one reader just inside the door.
+                danielInParlor(l,b,who);disturbed(l,b,LodgingMeeting.PARLOR,true);
+                place(who[LodgingPeople.DAN],b,-10.5,-4.5,0);place(who[LodgingPeople.RAE],b,-11.5,-3.0,0);
+                f.at(p,P,-5.8,0,-10.0);f.at(q,P,-12.5,0,-2.5);
+                LodgingStory.hold(b,false);
+            })
+            .thenWaitUntil(()->h.assertTrue(p.getUUID().equals(LodgingTaken.held(s,b)),"waiting for it to take the reader by the door: "+LodgingTaken.phase(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])+" "+LodgingStory.house(s,b).getCompound(LodgingTaken.STATE)))
+            .thenIdle(20)
+            .thenExecute(()->{
+                h.assertTrue(who[LodgingPeople.FAILED_SHIRT].gesture()==LodgingPeople.DRAG,"it walks the reader out by the arm");
+                h.assertTrue(LodgingSite.open(l,b,LodgingSite.PARLOR_DOOR),"the parlor door stands open while they go through it");
+            })
+            .thenWaitUntil(()->h.assertTrue(own(p).getBoolean(LodgingTaken.TAKEN),"waiting for it to leave the reader in the wall: "+LodgingTaken.phase(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])+", reader at "+rel(b,p)))
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.inPassages(rel(b,p)),"the reader is in the passage behind the paper: "+rel(b,p));
+                
+                // A second: somebody is still in the parlor.
+                h.assertTrue(LodgingTaken.phase(s,b)==LodgingTaken.COMING,"it goes back for another: "+LodgingTaken.phase(s,b));
+                // The reader goes along the passage to the parlor's wall.
+                f.at(p,P,-14.5,0,-8.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.phase(s,b)==LodgingTaken.LOOSE,"waiting for it to be in the parlor again: "+LodgingTaken.phase(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenExecute(()->{
+                // A hand on the lath: it lets the room be.
+                h.assertTrue(LodgingHouse.click(p,b,new BlockPos(LodgingSite.ROOM_W,1,-8),own(p)),"a hand on the lath from inside the wall is a knock");
+                
+                h.assertTrue(own(p).getBoolean(LodgingTaken.KNOCKED)&&own(p).getBoolean(LodgingTaken.DREW_OFF),"the reader's own record");
+                h.assertTrue(LodgingTaken.phase(s,b)==LodgingTaken.BACK,"it turns back toward the knocking");
+                h.assertTrue(own(q).getBoolean(LodgingTaken.HEARD_KNOCK),"the reader in the parlor heard it");
+                
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.latched(s,b),"waiting for the jib door to swing to and latch: "+LodgingTaken.phase(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenExecute(()->{
+                h.assertFalse(LodgingSite.open(l,b,LodgingSite.JIB),"the jib door is shut");
+                h.assertTrue(LodgingStory.house(s,b).getCompound(LodgingTaken.STATE).getInt("Takes")==1,"it took one: the knock drew it off before a second");
+                f.at(p,P,-14.5,0,-12.5);
+                LodgingHouse.click(p,b,LodgingSite.JIB,own(p));
+                h.assertTrue(LodgingTaken.latched(s,b),"standing, a hand on it does not lift the latch");
+                p.setShiftKeyDown(true);
+                for(int i=0;i<LodgingTaken.LATCH_TRIES-1;i++){LodgingHouse.click(p,b,LodgingSite.JIB,own(p));h.assertTrue(LodgingTaken.latched(s,b),"one try at a time: "+i);}
+                LodgingHouse.click(p,b,LodgingSite.JIB,own(p));p.setShiftKeyDown(false);
+                h.assertFalse(LodgingTaken.latched(s,b),"crouched, a finger through the gap works it up");
+                h.assertTrue(LodgingSite.open(l,b,LodgingSite.JIB)&&own(p).getBoolean(LodgingTaken.WORKED_LATCH),"the door gives, and it is the reader's own doing");
+            })
+            .thenSucceed();
+    }
+    @GameTest(template="empty",batch="lodging_taken_dan",timeoutTicks=8000)
+    public static void danIsTakenFromTheFrameLetOutAndVeraCallsForAReaderAgainstHer(GameTestHelper h){
+        var f=house(h);var q=f.player("lodging_tdan_a",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                // Dan was brought to the frame; Daniel is still held in it; Rae is out in the hall. The reader is against Vera.
+                at(l,b,LodgingStory.AFTER,who);disturbed(l,b,LodgingMeeting.FRAME,true);
+                var w=LodgingPeople.world(b,LodgingMeeting.DAN_FRAME);who[LodgingPeople.DAN].moveTo(w.x,w.y,w.z,LodgingMeeting.DAN_FRAME.look(),0);
+                place(who[LodgingPeople.RAE],b,1.5,-3.5,0);
+                answer(q,LodgingVera.SEND_BACK);f.at(q,P,2.5,0,-13.5);
+                LodgingStory.hold(b,false);
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.heldActor(s,b)==LodgingPeople.DAN,"waiting for it to take Dan: "+LodgingTaken.phase(s,b)+", it at "+rel(b,who[LodgingPeople.FAILED_SHIRT])))
+            .thenExecute(()->h.assertTrue(who[LodgingPeople.DAN].gesture()==LodgingPeople.STRAIN,"Dan pulls against it"))
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.latched(s,b),"waiting for it to leave Dan in the wall and latch the door: "+LodgingTaken.phase(s,b)+", Dan at "+rel(b,who[LodgingPeople.DAN])))
+            .thenExecute(()->{
+                h.assertTrue(LodgingTaken.inWall(s,b,LodgingPeople.DAN)&&LodgingSite.inPassages(rel(b,who[LodgingPeople.DAN])),"Dan is in the passage: "+rel(b,who[LodgingPeople.DAN]));
+                h.assertTrue(LodgingStory.house(s,b).getCompound(LodgingTaken.STATE).getInt("Takes")==1,"nobody else in that room it can take: Vera is never, Daniel is held");
+                // From the house's side, a hand lifts it.
+                LodgingHouse.click(q,b,LodgingSite.JIB,own(q));
+                h.assertFalse(LodgingTaken.latched(s,b),"lifted from the house's side at once");
+                h.assertTrue(own(q).getBoolean(LodgingTaken.LIFTED_LATCH),"by this reader");
+                f.at(q,P,2.5,0,-5.5);
+            })
+            .thenWaitUntil(()->h.assertTrue(!LodgingTaken.inWall(s,b,LodgingPeople.DAN)&&LodgingSite.inDaniels(rel(b,who[LodgingPeople.DAN]))&&LodgingStory.house(s,b).getCompound(LodgingTaken.STATE).getCompound("Going").isEmpty(),
+                "waiting for Dan to come back out to the frame: Dan at "+rel(b,who[LodgingPeople.DAN])+" "+LodgingStory.house(s,b).getCompound(LodgingTaken.STATE)))
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.veraPhase(s,b)==LodgingTaken.V_CALLED,"waiting for Vera to go up and call: "+LodgingTaken.veraPhase(s,b)+", Vera at "+rel(b,who[LodgingPeople.VERA])+" "+LodgingStory.house(s,b).getCompound(LodgingTaken.VERA_STATE)))
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.inWorkroom(rel(b,who[LodgingPeople.VERA])),"she is in the workroom: "+rel(b,who[LodgingPeople.VERA]));
+                has(h,q,"Vera: "+LodgingTexts.VERA_CALLS);
+                f.at(q,P,-9.5,LodgingSite.UPPER,-22.5);
+                LodgingPeople.talk(q,who[LodgingPeople.VERA],own(q));
+                for(var line:LodgingTexts.VERA_SENT_ASK)has(h,q,"Vera: "+line);
+                h.assertTrue(Talk.choose(q,LodgingTexts.R_WHEN_YOU_CALL),"the reader who came up can promise: "+Talk.replies(q));
+                has(h,q,"Vera: "+LodgingTexts.VERA_SENT_YES);
+                h.assertTrue(own(q).getBoolean(LodgingTaken.AGREED),"the reader's own promise");
+                h.assertTrue(LodgingDoubles.sleeper(l,b,0)==null||LodgingDoubles.sleeper(l,b,0).gesture()<LodgingTaken.STAND,"nobody's body was raised");
+            })
+            .thenSucceed();
+    }
+    @GameTest(template="empty",batch="lodging_taken_double",timeoutTicks=8000)
+    public static void veraBringsAReadersBodyDownAndOnlyItsOriginalCanPutItsHandsThere(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_double_a",P);var q=f.player("lodging_double_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];final LiteraryActor[] mine={null};
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                // The first reader has room 2 (west, the gallery's far end) and is for Vera; the second said nothing to her.
+                at(l,b,LodgingStory.AFTER,who);disturbed(l,b,LodgingMeeting.FRAME,false);
+                var hs=LodgingStory.house(s,b);var rooms=hs.getCompound("Rooms");rooms.putInt(p.getUUID().toString(),2);hs.put("Rooms",rooms);LodgingStory.save(s,b,hs);
+                answer(p,LodgingVera.HELP);
+                f.at(p,P,-9.5,0,-21.5);f.at(q,P,-7.5,0,-22.5);
+            })
+            .thenWaitUntil(()->{mine[0]=LodgingDoubles.sleeper(l,b,2);h.assertTrue(mine[0]!=null,"waiting for the reader's body to be made in its bed");})
+            .thenExecute(()->LodgingStory.hold(b,false))
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.veraPhase(s,b)>=LodgingTaken.V_RAISE,"waiting for Vera to reach the bed: "+LodgingTaken.veraPhase(s,b)+", Vera at "+rel(b,who[LodgingPeople.VERA])+" "+LodgingStory.house(s,b).getCompound(LodgingTaken.VERA_STATE)))
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.veraPhase(s,b)>=LodgingTaken.V_DOWN,"waiting for it to be raised"))
+            .thenExecute(()->h.assertTrue(mine[0].gesture()>=LodgingTaken.STAND,"it is up out of the bed: gesture "+mine[0].gesture()))
+            .thenIdle(60)
+            .thenExecute(()->{
+                h.assertTrue(mine[0].gesture()==LodgingTaken.LED,"led by the wrist: gesture "+mine[0].gesture());
+                h.assertTrue(mine[0].distanceTo(who[LodgingPeople.VERA])<3.5,"a step or two behind her: "+mine[0].distanceTo(who[LodgingPeople.VERA]));
+            })
+            .thenWaitUntil(()->h.assertTrue(LodgingTaken.veraPhase(s,b)==LodgingTaken.V_ASK,"waiting for them at the frame: "+LodgingTaken.veraPhase(s,b)+", Vera at "+rel(b,who[LodgingPeople.VERA])+", it at "+rel(b,mine[0])))
+            .thenIdle(10)
+            .thenExecute(()->{
+                h.assertTrue(LodgingSite.inDaniels(rel(b,mine[0]))&&mine[0].gesture()==LodgingTaken.STAND,"it stands at the frame, its hands at its sides: "+rel(b,mine[0])+" gesture "+mine[0].gesture());
+                h.assertTrue(own(p).getBoolean(LodgingTaken.SAW_DOUBLE_LED)&&own(q).getBoolean(LodgingTaken.SAW_DOUBLE_LED),"both readers in the room saw it brought in");
+                
+                // The other reader cannot answer for it.
+                LodgingPeople.talk(q,who[LodgingPeople.VERA],own(q));h.assertTrue(Talk.lines(q).isEmpty(),"Vera says nothing to it: "+Talk.lines(q));
+                h.assertTrue(Talk.replies(q).isEmpty()||!Talk.replies(q).contains(LodgingTexts.R_STEADY),"nobody but its original is asked: "+Talk.replies(q));
+                Talk.close(q);
+                LodgingPeople.talk(p,who[LodgingPeople.VERA],own(p));
+                has(h,p,"Vera: "+LodgingTexts.VERA_ASK_ORIGINAL);
+                h.assertTrue(Talk.choose(p,LodgingTexts.R_STEADY),"its original can: "+Talk.replies(p));
+                has(h,p,"Vera: "+LodgingTexts.VERA_HOLD_IT);
+                h.assertTrue(mine[0].gesture()==LodgingTaken.STEADY&&own(p).getBoolean(LodgingTaken.STEADIED),"its hands where its original put them");
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_taken") public static void takenDone(ServerLevel l){done();}
+    @AfterBatch(batch="lodging_taken_dan") public static void takenDanDone(ServerLevel l){done();}
+    @AfterBatch(batch="lodging_taken_double") public static void takenDoubleDone(ServerLevel l){done();}
 }
