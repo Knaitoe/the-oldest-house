@@ -68,12 +68,14 @@ public final class StaircaseAscent {
         if(!climbedTurn)return 0;
         int lift=TURN*LIFT_TURNS;
         if(y+lift>FinaleArchitecture.TOP-TURN*WALKED_TURNS)return 0;
+        // 0.4.596: on the way home every camp is walked through, for the people standing at its fire.
+        if(StairCompany.holds(p,origin,y,lift))return 0;
         var party=party(p,origin);if(party.isEmpty())return 0;
         for(var q:party){var to=q.blockPosition().above(lift);var l=q.serverLevel();
             if(!l.isLoaded(to)||!l.getBlockState(to).getCollisionShape(l,to).isEmpty()||!l.getBlockState(to.above()).getCollisionShape(l,to.above()).isEmpty()
                     ||l.getBlockState(to.below()).getCollisionShape(l,to.below()).isEmpty())return 0;}
         for(var q:party){
-            HouseInternalTeleport.translate(q,0,lift,0);
+            HouseInternalTeleport.translate(q,0,lift,0);StairCompany.lifted(q,origin,lift);
             var theirs=q.getPersistentData().getCompound(STATE);for(int i=0;i<4;i++)if(theirs.contains("Y"+i))theirs.putInt("Y"+i,theirs.getInt("Y"+i)+lift);
             theirs.putInt("Y"+c,q.blockPosition().getY());q.getPersistentData().put(STATE,theirs);
             // The House of Leaves remembers that the way up was shorter than the way down.

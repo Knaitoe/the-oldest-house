@@ -135,6 +135,7 @@ public final class FinaleController {
         BlockPos b=FinaleArchitecture.base(origin);long now=player.serverLevel().getGameTime();
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN){
             if(StaircaseFire.tick(player,origin,record)){FinaleProgress.save(player.server,player.getUUID(),record);return true;}
+            StairCompany.down(player,origin,record);
         }
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN)StaircaseMazes.tick(player,b,record);
         if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.UNSEEN){
@@ -147,7 +148,7 @@ public final class FinaleController {
                 record.putBoolean("Warned",true);words(player,b.offset(0,FinaleArchitecture.ARENA+2,35),"Use the bars to open the cell. The stairs still lead back. The cell does not.");
             }
         }else if(phase==FinaleProgress.Phase.HOMEWARD){
-            WitnessEnding.returnWeapon(player,record);
+            WitnessEnding.returnWeapon(player,record);StairCompany.home(player,origin);
             if(player.getY()>FinaleArchitecture.TOP-2&&player.getZ()>b.getZ()+15){WitnessEnding.finish(player,origin,record);return true;}
         }else if(phase==FinaleProgress.Phase.FIGHT||phase==FinaleProgress.Phase.COLLAPSE||phase==FinaleProgress.Phase.RELEASE){
             // Commands and outside teleports cannot turn the commitment into a free exit.

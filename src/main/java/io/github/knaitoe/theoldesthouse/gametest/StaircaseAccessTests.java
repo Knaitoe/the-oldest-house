@@ -66,7 +66,8 @@ public final class StaircaseAccessTests {
         void reload(){var loaded=LabyrinthData.FACTORY.deserializer().apply(data().save(new CompoundTag(),level.registryAccess()),level.registryAccess());level.getServer().overworld().getDataStorage().set("the_oldest_house_labyrinth",loaded);}
         @Override public void close(){
             for(var p:players){HouseTransitionEvents.cancelPending(p,"fixture closed");LabyrinthDoors.onPlayerLoggedOut(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));NativeTestPlayers.remove(p);}players.clear();
-            var remove=new ArrayList<Entity>();for(var e:level.getAllEntities())if(FinaleArchitecture.contains(origin,e.blockPosition())&&(e instanceof NovelActor||e instanceof FinaleWitness))remove.add(e);
+            StairCompany.clearAll(level);
+            var remove=new ArrayList<Entity>();for(var e:level.getAllEntities())if(FinaleArchitecture.contains(origin,e.blockPosition())&&(e instanceof NovelActor||e instanceof FinaleWitness||e instanceof LiteraryActor a&&a.company()))remove.add(e);
             for(var e:remove)e.discard();
             for(var entry:touched.entrySet())for(var at:entry.getValue())entry.getKey().setBlock(at,Blocks.AIR.defaultBlockState(),F);
             chunks.close();if(started){var storage=level.getServer().overworld().getDataStorage();storage.set("the_oldest_house",oldHouse);storage.set("the_oldest_house_labyrinth",oldData);started=false;}
@@ -98,29 +99,47 @@ public final class StaircaseAccessTests {
             var server=f.level.getServer();var p=f.player(h,"climber");var peer=f.player(h,"beside");var watcher=f.player(h,"watcher");
             for(var q:List.of(p,peer))FinaleProgress.phase(server,q.getUUID(),FinaleProgress.Phase.HOMEWARD);
             h.assertTrue(landings.get(1).getY()-landings.get(0).getY()==StaircaseAscent.TURN,"the spiral's corner landings are one turn of seventy blocks apart");
-            var at=landings.get(2);
             java.util.function.BiConsumer<ServerPlayer,BlockPos> stand=(q,to)->{q.teleportTo(f.level,to.getX()+.5,to.getY(),to.getZ()+.5,0,0);q.setOnGround(true);};
+            // 0.4.596: this corner's landings, counted up from the lowest, are the stair's 72nd, 68th, 64th and so on from the door.
+            // The fourth night's camp is on the 56th (the fifth of these) and the third's on the 40th (the ninth).
+            var camps=StaircaseFire.landings(f.origin);
+            h.assertTrue(landings.get(4).equals(camps.get(3))&&landings.get(8).equals(camps.get(2)),"the camps this climb passes are where the case takes them to be: "+camps);
             // Going down never carries anyone.
             stand.accept(p,landings.get(4));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(3));
             h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(3)),"a turn walked down is walked");
             // A whole turn climbed, from the corner to the same corner a turn up, carries the reader up two more.
-            stand.accept(p,at);StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(3));
-            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(5)),"a turn climbed rises three, to the same landing: at "+p.blockPosition()+", expected "+landings.get(5));
+            p.getPersistentData().remove("StairAscent199");
+            stand.accept(p,landings.get(0));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(1));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(3)),"a turn climbed rises three, to the same landing: at "+p.blockPosition()+", expected "+landings.get(3));
             h.assertTrue(FinaleProgress.player(server,p.getUUID()).getInt("AscentLifts")==1,"the climb remembers it was carried");
-            // Climbing on from there counts from the landing they were carried to.
-            stand.accept(p,landings.get(6));h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(8)),"the next turn climbed carries again");
+            // 0.4.596: on the way home nobody is carried from a camp's landing or past one. The camp a turn above is walked up to,
+            // and walked out of; the turn after it carries again, counted from the camp.
+            stand.accept(p,landings.get(4));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(4)),"a reader who climbs a turn onto a camp's landing stands at the camp");
+            stand.accept(p,landings.get(5));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(7)),"the turn climbed out of a camp carries again");
+            stand.accept(p,landings.get(8));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(8)),"and the next camp is walked up to in its turn");
+            p.getPersistentData().remove("StairAscent199");
+            stand.accept(p,landings.get(2));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(3));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(3)),"a climb that would carry a reader past a camp is walked");
+            // A reader still on their way down, who has turned back, is carried as before: the camps are theirs to pass.
+            FinaleProgress.phase(server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);p.getPersistentData().remove("StairAscent199");
+            stand.accept(p,landings.get(2));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(3));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(5)),"the camps hold only a reader on their way home");
+            FinaleProgress.phase(server,p.getUUID(),FinaleProgress.Phase.HOMEWARD);
             // Two readers climbing side by side are carried together.
             p.getPersistentData().remove("StairAscent199");
-            stand.accept(p,landings.get(2));stand.accept(peer,landings.get(2).east());StaircaseAscent.step(p,f.origin);StaircaseAscent.step(peer,f.origin);
-            stand.accept(p,landings.get(3));stand.accept(peer,landings.get(3).east());
-            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(5))&&peer.blockPosition().equals(landings.get(5).east()),"a party climbing together is carried together");
+            stand.accept(p,landings.get(0));stand.accept(peer,landings.get(0).east());StaircaseAscent.step(p,f.origin);StaircaseAscent.step(peer,f.origin);
+            stand.accept(p,landings.get(1));stand.accept(peer,landings.get(1).east());
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==2*StaircaseAscent.TURN&&p.blockPosition().equals(landings.get(3))&&peer.blockPosition().equals(landings.get(3).east()),"a party climbing together is carried together");
             // Anyone else who could see, a spectator included, keeps the reader walking.
             p.getPersistentData().remove("StairAscent199");watcher.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
-            stand.accept(peer,landings.get(0));stand.accept(p,landings.get(2));StaircaseAscent.step(p,f.origin);
-            stand.accept(watcher,landings.get(3).north(3));stand.accept(p,landings.get(3));
-            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(3)),"a watched climb is walked");
+            stand.accept(peer,landings.get(10));stand.accept(p,landings.get(0));StaircaseAscent.step(p,f.origin);
+            stand.accept(watcher,landings.get(1).north(3));stand.accept(p,landings.get(1));
+            h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(1)),"a watched climb is walked");
             stand.accept(watcher,landings.get(0).below(40));
-            // The top turns, where the leaves and the hearths are, are always walked.
+            // The top turns are always walked.
             p.getPersistentData().remove("StairAscent199");int top=landings.size()-1;
             stand.accept(p,landings.get(top-2));StaircaseAscent.step(p,f.origin);stand.accept(p,landings.get(top-1));
             h.assertTrue(StaircaseAscent.step(p,f.origin)==0&&p.blockPosition().equals(landings.get(top-1)),"the last turns below the top are walked");
@@ -318,5 +337,229 @@ public final class StaircaseAccessTests {
         String key=f.origin.asLong()+":"+place.id();var done=f.data().state(SceneCraft.STATE);done.putBoolean(key,true);f.data().setState(SceneCraft.STATE,done);
     }
 
-
+    // ------------------------------------------------------------------------------------------------ 0.4.596: the reader's own stories' people
+    private static AABB well(Fixture f){return new AABB(f.base.getX()-34,FinaleArchitecture.TOP,f.base.getZ()-34,f.base.getX()+35,FinaleArchitecture.TOP+1,f.base.getZ()+35);}
+    private static void stand(Fixture f,ServerPlayer p,Vec3 at,Vec3 toward){
+        var d=toward.subtract(at.add(0,p.getEyeHeight(),0));
+        float yaw=(float)(Math.toDegrees(Math.atan2(d.z,d.x))-90),pitch=(float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z)));
+        p.teleportTo(f.level,at.x,at.y,at.z,yaw,pitch);p.setOnGround(true);
+    }
+    private static void hear(Fixture f,ServerPlayer p,WitnessAccount.Story... stories){for(var s:stories)WitnessAccount.resolve(f.data(),p.getUUID(),s,"heard");}
+    /** The people on the stair come from one list, and every story is somewhere on it. */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void everyStoryIsAccountedForOnTheStair(GameTestHelper h){
+        var names=new HashSet<String>();var withFigure=EnumSet.noneOf(WitnessAccount.Story.class);
+        for(var f:StairCompany.FIGURES){
+            h.assertTrue(names.add(f.name())&&f.stories().length>0,"each figure has a name of its own and a story it is from: "+f.name());
+            withFigure.addAll(List.of(f.stories()));
+        }
+        for(var story:WitnessAccount.Story.values()){
+            int places=(withFigure.contains(story)?1:0)+(StairCompany.NOT_YET.contains(story)?1:0)+(StairCompany.NOBODY.contains(story)?1:0)+(StairCompany.LEFT_OUT.contains(story)?1:0);
+            h.assertTrue(places==1,"each story has a figure, or one still to be given a body, or nobody, or is left out, and only one of the four: "+story+" is in "+places);
+        }
+        h.assertTrue(StairCompany.camp(0,7)==0&&StairCompany.camp(6,7)==4&&StairCompany.camp(0,1)==0&&StairCompany.camp(3,0)==0,"the first of a reader's stories stands by the door and the most recent deepest");
+        int last=0;int[] filled=new int[StaircaseFire.REQUIRED];
+        for(int i=0;i<StairCompany.FIGURES.size();i++){int c=StairCompany.camp(i,StairCompany.FIGURES.size());h.assertTrue(c>=last&&c<StaircaseFire.REQUIRED,"the camps are filled in the order the stories ended");last=c;filled[c]++;}
+        var spots=new HashSet<Long>();
+        for(var s:StairCompany.SPOTS){
+            h.assertTrue(spots.add(BlockPos.asLong(s[0],0,s[1]))&&s[0]>=0&&s[1]>=0&&s[0]<=9&&s[1]<=9&&s[0]+s[1]>0,"each place round a fire is its own, on the landing's floor, off the corner the walk turns on: "+s[0]+", "+s[1]);
+            h.assertTrue(!(s[0]==3&&s[1]==3)&&!(s[1]==3&&(s[0]==6||s[0]==7))&&!(s[0]==3&&(s[1]==6||s[1]==7)),"nobody stands in the fire or on a bedroll: "+s[0]+", "+s[1]);
+        }
+        for(int n:filled)h.assertTrue(n<=StairCompany.SPOTS.length,"there is a place at each fire for everyone who could stand there: "+n);
+        h.succeed();
+    }
+    /** On the way down a reader's people stand ahead in the dark, one at a time, and are gone when reached. */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void aReadersPeopleStandAheadInTheDarkAndAreGoneWhenReached(GameTestHelper h){
+        run(h,596000,f->f.chunks.hold(f.level,well(f)),f->{
+            var server=f.level.getServer();var p=f.player(h,"descender");var peer=f.player(h,"another");
+            FinaleProgress.phase(server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);var record=FinaleProgress.player(server,p.getUUID());
+            var route=FinaleArchitecture.staircaseRoute(f.origin);int[] corners=StaircaseFire.cornerSteps(f.origin),camps=StaircaseFire.campSteps(f.origin);
+            java.util.function.IntConsumer at=step->{var c=route.get(step);stand(f,p,Vec3.atBottomCenterOf(c),Vec3.atBottomCenterOf(route.get(step+6)).add(0,1.6,0));p.tickCount=100;};
+            h.assertTrue(StairCompany.stepAt(f.origin,Vec3.atBottomCenterOf(route.get(700)))==700&&StairCompany.stepAt(f.origin,Vec3.atBottomCenterOf(route.get(0)).add(0,40,0))==0,"a place on the stair is found by its height");
+            // Nobody stands for a reader who has heard no story to the end.
+            at.accept(corners[2]+6);StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.people(p).isEmpty()&&StairCompany.shape(p)==null&&StairCompany.sightings(f.origin,0).isEmpty(),"a reader with no story heard has nobody on the stair");
+            // Five stories heard: three have someone to stand for them, in the order they ended.
+            hear(f,p,WitnessAccount.Story.PLAIN,WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.MASQUE,WitnessAccount.Story.CLAP,WitnessAccount.Story.PELL_HOUSE);
+            hear(f,peer,WitnessAccount.Story.USHER);
+            var people=StairCompany.people(p);
+            h.assertTrue(people.size()==3&&people.get(0).name().equals("the boy, crouched")&&people.get(1).name().equals("the red figure")&&people.get(2).name().equals("June"),"a reader's people are those of the stories they heard, in order: "+people.stream().map(StairCompany.Figure::name).toList());
+            var sightings=StairCompany.sightings(f.origin,people.size());
+            h.assertTrue(sightings.size()==3,"each of three people stands once on the way down: "+sightings.size());
+            for(int i=0;i<sightings.size();i++){
+                int step=sightings.get(i)[0],camp=StairCompany.camp(sightings.get(i)[1],people.size());int flight=0;while(corners[flight+1]<=step)flight++;
+                h.assertTrue(step==(corners[flight]+corners[flight+1])/2&&step<camps[camp]-StairCompany.CLEAR&&(camp==0?step>corners[1]:step>camps[camp-1]+StairCompany.CLEAR),"each stands in the middle of a flight, on the stretch above the camp they will stand at, clear of the camps: step "+step+", camp "+camp);
+                h.assertTrue(i==0||step>sightings.get(i-1)[0],"and they are met in the order the stories ended");
+            }
+            h.assertTrue(StairCompany.sightings(f.origin,48).size()<=StairCompany.MOST*StaircaseFire.REQUIRED&&StairCompany.sightings(f.origin,48).size()>=20,"a reader with every story heard meets a few on each stretch, not all of them");
+            // Coming down toward the first, it is set down ahead, beyond what the book lights.
+            int first=sightings.get(0)[0];
+            at.accept(first-StairCompany.AHEAD_FAR-4);StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.shape(p)==null,"it is not there while the reader is a long way above");
+            at.accept(first-StairCompany.AHEAD_NEAR+1);StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.shape(p)==null,"nor is it set down in front of a reader who is already near enough to make it out");
+            at.accept(first-22);StairCompany.down(p,f.origin,record);var boy=StairCompany.shape(p);
+            h.assertTrue(boy!=null&&boy.role()==LiteraryActor.SILHOUETTE&&boy.phase()==4&&boy.company()&&boy.shape(),"the first of their people stands ahead on the stair, as a shape");
+            double off=p.getEyePosition().distanceTo(boy.position().add(0,1,0));
+            h.assertTrue(boy.position().distanceTo(Vec3.atBottomCenterOf(route.get(first)))<.01&&off>=StairCompany.SHOWN_FROM&&StairCompany.shown(off,0)==0,"in the middle of the walk, too far off for anything of it to be made out yet: "+off);
+            h.assertTrue(StairCompany.shown(StairCompany.SHOWN_FULL,0)==1&&StairCompany.shown(8,0)==1&&StairCompany.shown(16.5,0)>0&&StairCompany.shown(16.5,0)<1
+                    &&Math.abs(StairCompany.shown(10,50)-.5F)<1e-6&&StairCompany.shown(4,100)==0,"it comes out of the dark as the reader comes down, and goes as it is reached");
+            h.assertTrue(boy.owner().filter(p.getUUID()::equals).isPresent()&&boy.broadcastToPlayer(p)&&!boy.broadcastToPlayer(peer)&&!boy.shouldBeSaved(),"it is that reader's alone to see, and nothing is saved of it");
+            var toReader=p.position().subtract(boy.position());float facing=(float)(Math.toDegrees(Math.atan2(toReader.z,toReader.x))-90);
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(boy.getYRot()-facing))<1,"it stands facing the reader coming down");
+            h.assertTrue(!boy.hurt(p.damageSources().playerAttack(p),8)&&boy.isAlive()&&!boy.isPushable()&&!boy.addresses(),"a blow does nothing to it, and it is nobody to push or talk to");
+            // Another reader's people are their own.
+            FinaleProgress.phase(server,peer.getUUID(),FinaleProgress.Phase.STAIRCASE);
+            h.assertTrue(StairCompany.shape(peer)==null&&StairCompany.people(peer).size()==1,"another reader has their own");
+            // It stands as it is until the reader is nearly on it.
+            at.accept(first-10);for(int i=0;i<10;i++)StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.shape(p)==boy&&boy.fade()==0&&boy.position().distanceTo(Vec3.atBottomCenterOf(route.get(first)))<.01,"it does not move or thin while the reader comes on");
+            StairCompany.sweep(server);
+            h.assertTrue(StairCompany.shape(p)==boy&&!boy.isRemoved(),"the stair's look for readers who have left leaves the shape of one who is on it");
+            at.accept(first-4);StairCompany.down(p,f.origin,record);
+            h.assertTrue(boy.fade()==StairCompany.FADE&&!boy.isRemoved(),"reached, it begins to go");
+            for(int i=0;i<100/StairCompany.FADE+1;i++)StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.shape(p)==null&&boy.isRemoved()&&StairCompany.shown(record,people.get(0))&&StairCompany.shown(FinaleProgress.player(server,p.getUUID()),people.get(0)),"and is gone, and that is remembered");
+            at.accept(first-22);StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.shape(p)==null,"it does not stand there a second time");
+            // The next of them further down. A reader who turns back leaves it, and finds it there again.
+            int second=sightings.get(1)[0];
+            at.accept(second-22);StairCompany.down(p,f.origin,record);var red=StairCompany.shape(p);
+            h.assertTrue(red!=null&&red.role()==LiteraryActor.RED_FIGURE,"the next of their people stands on the stretch below");
+            at.accept(second-80);StairCompany.down(p,f.origin,record);
+            h.assertTrue(StairCompany.shape(p)==null&&red.isRemoved()&&!StairCompany.shown(record,people.get(1)),"a reader who climbs away from it leaves nobody standing, and has not met it");
+            at.accept(second-22);StairCompany.down(p,f.origin,record);var again=StairCompany.shape(p);
+            h.assertTrue(again!=null&&again.role()==LiteraryActor.RED_FIGURE,"coming back down, it is there again");
+            // A reader who leaves the stair leaves nobody on it.
+            p.teleportTo(f.level,f.source.getX()+.5,f.source.getY(),f.source.getZ()+2.5,0,0);StairCompany.sweep(server);
+            h.assertTrue(StairCompany.shape(p)==null&&again.isRemoved(),"a reader who has left the stair leaves nobody standing on it");
+        });
+    }
+    /** On the climb home a reader's people stand at the fires they lit, and come after them only while unseen. */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void aReadersPeopleStandAtTheirFiresAndComeAfterThemUnseen(GameTestHelper h){
+        run(h,597000,f->f.chunks.hold(f.level,well(f)),f->{
+            var server=f.level.getServer();var p=f.player(h,"homeward");var peer=f.player(h,"beside");
+            hear(f,p,WitnessAccount.Story.PLAIN,WitnessAccount.Story.MASQUE,WitnessAccount.Story.USHER,WitnessAccount.Story.BLY_ROUTE,WitnessAccount.Story.HOLY_RABBIT,
+                    WitnessAccount.Story.CONFESSION,WitnessAccount.Story.COSTUME_NIGHT,WitnessAccount.Story.MOVIE_NIGHT,WitnessAccount.Story.CAMP_BLOOD,WitnessAccount.Story.ELK_CARCASSES,WitnessAccount.Story.PELL_HOUSE);
+            FinaleProgress.phase(server,p.getUUID(),FinaleProgress.Phase.HOMEWARD);
+            var route=FinaleArchitecture.staircaseRoute(f.origin);var camps=StaircaseFire.landings(f.origin);int[] steps=StaircaseFire.campSteps(f.origin);
+            var people=StairCompany.people(p);
+            h.assertTrue(people.size()==10&&people.get(8).name().equals("the man with the blade")&&people.get(9).name().equals("June"),"two stories that share a figure have it once: "+people.stream().map(StairCompany.Figure::name).toList());
+            java.util.function.Function<Integer,Vec3> on=step->Vec3.atBottomCenterOf(route.get(step));
+            // At the foot of the stair, looking up it: the people of the deepest camp are at its fire, and no others yet.
+            int foot=route.size()-1;stand(f,p,on.apply(foot),on.apply(foot-8).add(0,1.6,0));StairCompany.home(p,f.origin);
+            var there=StairCompany.bodies(p);var fire=StaircaseFire.braziers(f.origin).get(4).getBottomCenter();
+            h.assertTrue(there.size()==2&&there.get(0).role()==LiteraryActor.KILLER&&there.get(1).phase()==PellPeople.FIRST+PellPeople.JUNE,"the two most recent of ten stand at the deepest camp: "+there.size());
+            var stood=new ArrayList<Vec3>();
+            for(var a:there){
+                var toFire=fire.subtract(a.position());float facing=(float)(Math.toDegrees(Math.atan2(toFire.z,toFire.x))-90);
+                h.assertTrue(a.position().distanceTo(fire)<4&&a.position().distanceTo(fire)>1.5&&Math.abs(a.getY()-camps.get(4).getY())<.01&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-facing))<1,"each stands by the fire on the camp's landing, turned to it: "+a.position());
+                h.assertTrue(a.company()&&!a.shape()&&a.broadcastToPlayer(p)&&!a.broadcastToPlayer(peer)&&!a.shouldBeSaved(),"and is that reader's alone, and drawn as it is in its story");
+                stood.add(a.position());
+            }
+            // Walked up to and stood among, they do not stir.
+            stand(f,p,Vec3.atBottomCenterOf(camps.get(4)),fire.add(0,1,0));for(int i=0;i<20;i++)StairCompany.home(p,f.origin);
+            h.assertTrue(StairCompany.following(p)==0&&there.get(0).position().equals(stood.get(0))&&there.get(1).position().equals(stood.get(1)),"they stand as they are while the reader is at their fire");
+            StairCompany.sweep(server);
+            h.assertTrue(StairCompany.bodies(p).size()==2&&!there.get(0).isRemoved()&&!there.get(1).isRemoved(),"the stair's look for readers who have left leaves the people of one who is on it");
+            // Past the camp and looking on up the stair, they come after: on the stair behind the reader, turned to them.
+            int r=steps[4]-20;stand(f,p,on.apply(r),on.apply(r-8).add(0,1.6,0));for(int i=0;i<20;i++)StairCompany.home(p,f.origin);
+            h.assertTrue(StairCompany.following(p)==2&&StairCompany.looks(p)==0,"once the reader has climbed past, the camp's people are coming after them");
+            for(var a:there){
+                int behind=StairCompany.stepAt(f.origin,a.position())-r;var toReader=p.position().subtract(a.position());float facing=(float)(Math.toDegrees(Math.atan2(toReader.z,toReader.x))-90);
+                h.assertTrue(behind==StairCompany.GAP&&a.getY()<p.getY()&&Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-facing))<1,"each stands on the stair below the reader, as far behind as the first look allows, turned to them: "+behind+" steps");
+            }
+            h.assertTrue(there.get(0).position().distanceTo(there.get(1).position())>2,"abreast, not one inside another");
+            // Looked back at, they are standing still, however long the look.
+            var before=List.of(there.get(0).position(),there.get(1).position());
+            stand(f,p,on.apply(r),there.get(1).position().add(0,1,0));for(int i=0;i<40;i++)StairCompany.home(p,f.origin);
+            h.assertTrue(StairCompany.looks(p)==1&&there.get(0).position().equals(before.get(0))&&there.get(1).position().equals(before.get(1)),"a reader who looks back sees them standing still, and one long look is one look: "+StairCompany.looks(p));
+            // Climbing on with eyes on them, they stay where they were seen.
+            stand(f,p,on.apply(r-12),there.get(1).position().add(0,1,0));for(int i=0;i<20;i++)StairCompany.home(p,f.origin);
+            h.assertTrue(there.get(0).position().equals(before.get(0))&&there.get(1).position().equals(before.get(1)),"watched, they do not follow");
+            // Eyes forward again: they come on, and a step nearer than before.
+            stand(f,p,on.apply(r-12),on.apply(r-20).add(0,1.6,0));for(int i=0;i<30;i++)StairCompany.home(p,f.origin);
+            for(var a:there)h.assertTrue(StairCompany.stepAt(f.origin,a.position())-(r-12)==StairCompany.GAP-1,"each look back brings them a step nearer: "+(StairCompany.stepAt(f.origin,a.position())-(r-12)));
+            // They never come down again: a reader who walks back down past them finds them where they stood.
+            var up=List.of(there.get(0).position(),there.get(1).position());
+            stand(f,p,on.apply(r+30),on.apply(r+38).add(0,1.6,0));for(int i=0;i<20;i++)StairCompany.home(p,f.origin);
+            h.assertTrue(there.get(0).position().equals(up.get(0))&&there.get(1).position().equals(up.get(1)),"they do not go back down the stair after a reader");
+            // The shorter climb carries them as it carries the reader, and no further than the stair goes.
+            stand(f,p,on.apply(r-12),on.apply(r-20).add(0,1.6,0));for(int i=0;i<30;i++)StairCompany.home(p,f.origin);
+            var low=List.of(there.get(0).position(),there.get(1).position());int lift=2*StaircaseAscent.TURN;
+            StairCompany.lifted(p,f.origin,lift);
+            h.assertTrue(there.get(0).position().equals(low.get(0).add(0,lift,0))&&there.get(1).position().equals(low.get(1).add(0,lift,0)),"carried up with the reader, each stands where it stood on the turn above");
+            p.teleportTo(f.level,p.getX(),p.getY()+lift,p.getZ(),p.getYRot(),p.getXRot());for(int i=0;i<10;i++)StairCompany.home(p,f.origin);
+            for(var a:there)h.assertTrue(StairCompany.stepAt(f.origin,a.position())-StairCompany.stepAt(f.origin,p.position())==StairCompany.GAP-1&&a.position().y-low.get(there.indexOf(a)).y==lift,"and is as far behind them as it was");
+            // Each camp's own people wait at it until the reader comes near.
+            h.assertTrue(StairCompany.bodies(p).size()==2,"the camps above have nobody standing yet");
+            stand(f,p,Vec3.atBottomCenterOf(camps.get(3)).add(0,-60,0),Vec3.atBottomCenterOf(camps.get(3)));StairCompany.home(p,f.origin);
+            h.assertTrue(StairCompany.bodies(p).size()==4,"coming up under the next camp, its people are at its fire: "+StairCompany.bodies(p).size());
+            // However many come after a reader, and wherever on the stair, no two of them stand in one place.
+            for(var figure:StairCompany.FIGURES)hear(f,peer,figure.stories());
+            FinaleProgress.phase(server,peer.getUUID(),FinaleProgress.Phase.HOMEWARD);
+            h.assertTrue(StairCompany.people(peer).size()==StairCompany.FIGURES.size(),"a reader who has heard every story has everyone");
+            // The reader climbs on: those whose place in the column is still below their own fire wait at it, and fall in as it passes.
+            for(int past:new int[]{12,20,34,60}){
+                int at=steps[0]-past;stand(f,peer,on.apply(at),on.apply(at-8).add(0,1.6,0));for(int i=0;i<160;i++)StairCompany.home(peer,f.origin);
+                var crowd=StairCompany.bodies(peer);
+                h.assertTrue(crowd.size()==StairCompany.FIGURES.size()&&StairCompany.following(peer)==crowd.size(),past+" steps past the first camp, everyone has come after them: "+crowd.size()+" standing, "+StairCompany.following(peer)+" following");
+                for(int i=0;i<crowd.size();i++){
+                    var one=crowd.get(i);int behind=StairCompany.stepAt(f.origin,one.position())-at;
+                    h.assertTrue(behind>=StairCompany.LEAST&&behind<=StairCompany.GAP+StairCompany.ROW*(crowd.size()/3)+StairCompany.TRIES+2&&one.getY()<=peer.getY(),"each of them is on the stair behind the reader, and not far behind: "+behind+" steps, "+past+" past the camp, at "+one.position()+" (the reader at "+peer.position()+")");
+                    for(int j=i+1;j<crowd.size();j++){
+                        var other=crowd.get(j);double dx=one.getX()-other.getX(),dz=one.getZ()-other.getZ();
+                        h.assertTrue(Math.abs(one.getY()-other.getY())>=3||dx*dx+dz*dz>=StairCompany.APART*StairCompany.APART-1e-6,"no two stand in one place, "+past+" steps past the camp's corner: "+one.position()+" and "+other.position());
+                    }
+                }
+            }
+            h.assertTrue(StairCompany.bodies(peer).stream().allMatch(a->StairCompany.stepAt(f.origin,a.position())<steps[0]),"sixty steps on, none of them is still at the fire");
+            // The camps hold the shorter climb for a reader going home, and nobody else.
+            int y=camps.get(3).getY();
+            h.assertTrue(StairCompany.holds(p,f.origin,y,lift)&&StairCompany.holds(p,f.origin,y-lift,lift)&&!StairCompany.holds(p,f.origin,y+1,lift)&&!StairCompany.holds(p,f.origin,y-lift-1,lift),"a camp's own landing and the two turns below it are walked");
+            FinaleProgress.phase(server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);
+            h.assertTrue(!StairCompany.holds(p,f.origin,y,lift),"a reader not on their way home is not held");
+            // Their walk home over, nobody is left on the stair.
+            StairCompany.sweep(server);
+            h.assertTrue(StairCompany.bodies(p).isEmpty()&&there.get(0).isRemoved()&&there.get(1).isRemoved(),"a reader whose walk home has ended leaves nobody standing");
+        });
+    }
+    /** Every figure on the list can be set down, and stays as it was set down while the server runs: nothing of its story moves it. */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void everyFigureKeepsItsPlaceWhileTheServerRuns(GameTestHelper h){
+        var f=new Fixture(h,598000);ACTIVE.add(f);int y=FinaleArchitecture.TOP-30;
+        f.chunks.hold(f.level,new AABB(f.base.getX()-16,y-2,f.base.getZ()-16,f.base.getX()+17,y+6,f.base.getZ()+17));
+        var bodies=new ArrayList<LiteraryActor>();var places=new ArrayList<Vec3>();int[] waited={-1};
+        h.onEachTick(()->{
+            if(f.finished||!f.chunks.ready())return;boolean last=false;
+            try{
+                if(waited[0]<0){
+                    var p=f.player(h,"keeper");
+                    for(int i=0;i<StairCompany.FIGURES.size();i++){
+                        var at=new Vec3(f.base.getX()-10.5+i%8*3,y,f.base.getZ()-7.5+i/8*3);var figure=StairCompany.FIGURES.get(i);
+                        var a=StairCompany.spawn(f.level,p,figure,at,i*37%360-180);
+                        h.assertTrue(a!=null&&a.role()==figure.role()&&a.phase()==figure.phase()&&a.gesture()==figure.gesture(),"each figure on the list can be set down as its row says: "+figure.name());
+                        h.assertTrue(ItemStack.matches(a.getMainHandItem(),figure.held())&&a.getBbHeight()>.3,"holding what its row gives it, with a body to stand in: "+figure.name());
+                        h.assertTrue(figure.scale()==0||a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SCALE)==figure.scale(),"and the size its row gives it: "+figure.name());
+                        bodies.add(a);places.add(at);
+                    }
+                    waited[0]=0;return;
+                }
+                if(++waited[0]<40)return;
+                last=true;
+                for(int i=0;i<bodies.size();i++){
+                    var a=bodies.get(i);var figure=StairCompany.FIGURES.get(i);
+                    h.assertTrue(a.isAlive()&&!a.isRemoved()&&a.position().distanceTo(places.get(i))<.001,"forty ticks on, each stands where it was set down: "+figure.name()+" at "+a.position()+", set at "+places.get(i));
+                    h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-(i*37%360-180)))<1&&a.role()==figure.role()&&a.phase()==figure.phase()&&a.gesture()==figure.gesture()&&a.fade()==0,
+                            "turned as it was turned and dressed as it was dressed, whatever its story does with it elsewhere: "+figure.name()+" (phase "+a.phase()+", gesture "+a.gesture()+", fade "+a.fade()+", yaw "+a.getYRot()+")");
+                    h.assertTrue(a.company()&&!a.shouldBeSaved()&&a.getDeltaMovement().lengthSqr()<1e-6,"still one of the stair's people, with nothing saved of it, and not on its way anywhere: "+figure.name());
+                    h.assertTrue(figure.scale()==0||a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SCALE)==figure.scale(),"and still the size its row gives it: "+figure.name());
+                }
+            }catch(RuntimeException|Error e){last=true;throw e;}
+            finally{if(last){f.finished=true;for(var a:bodies)a.discard();f.close();ACTIVE.remove(f);}}
+            h.succeed();
+        });
+    }
 }
