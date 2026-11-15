@@ -281,6 +281,12 @@ public final class LiteraryRenderers {
                     leftArm.xRot=.05F;leftArm.yRot=0;leftArm.zRot=-.04F;head.xRot+=.12F;}
                 // Rae with both hands up at his wrist, drawing it down, leaning in to him.
                 case 24->{rightArm.xRot=-1.3F;rightArm.yRot=-.3F;rightArm.zRot=0;leftArm.xRot=-1.2F;leftArm.yRot=.34F;leftArm.zRot=0;body.xRot+=.06F;head.xRot-=.06F;}
+                // 0.4.615 (LodgingSever, E3): Daniel on the bench, hands on his knees, leaning forward now and then to stand and sitting back;
+                case 25->{float lean=Math.max(0,net.minecraft.util.Mth.sin(age*.06F));lean=lean*lean;
+                    rightArm.xRot=-.42F-.12F*lean;rightArm.yRot=-.1F;rightArm.zRot=0;leftArm.xRot=-.42F-.12F*lean;leftArm.yRot=.1F;leftArm.zRot=0;
+                    body.xRot+=.38F*lean;head.xRot-=.15F*lean;if(!speaking)head.xRot+=.15F;}
+                // a failed body sat on the boards, its hands in its lap, its head down.
+                case 26->{rightArm.xRot=-.4F;rightArm.yRot=-.35F;rightArm.zRot=0;leftArm.xRot=-.4F;leftArm.yRot=.35F;leftArm.zRot=0;head.xRot+=.6F;body.xRot+=.12F;}
                 // 0.4.610 (LodgingCellar): the dead post's body with the wedge out, coming loose at the joins in four stages, awake, trembling.
                 // The parts drift from their sockets (a gap opens at shoulder and neck) as well as turning; arms' x set from their rest,
                 // never added to, so nothing walks off across frames.
@@ -330,7 +336,7 @@ public final class LiteraryRenderers {
             if(swing>0){rightLeg.xRot=.62F*swing;leftLeg.xRot=-.62F*swing;rightArm.xRot=-.45F*swing;leftArm.xRot=.45F*swing;}
             // 0.4.610: the dead post's body sits on the floor in play (ActorSeat 1), so it is drawn seated here as the renderer seats it.
             if(phase==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.FIRST+io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.FAILED_POST
-                &&(gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.TIED||io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.loose(gesture))){
+                &&(gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.TIED||io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.loose(gesture))||gesture==25||gesture==26){
                 for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y+=11;leftLeg.xRot=rightLeg.xRot=-1.45F;leftLeg.yRot=.1F;rightLeg.yRot=-.1F;leftArm.xRot=rightArm.xRot=-.35F;}
             lodging(gesture,age,false);
         }

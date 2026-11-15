@@ -178,6 +178,19 @@ public final class LodgingTexts {
         VERA_CALLS="One of you. Up here. Not Rae.",
         R_WHEN_YOU_CALL="When you call.",
         VERA_SENT_YES="Good. You'll hear me.",VERA_SENT_NO="Then I'll ask the next one up the stair.",VERA_NOT_YOU="Not you. Go back down.";
+    // 0.4.615: E3. Every line here is new.
+    public static final String RATCHET_LIFT="You find the lever and lift the pawl a tooth. The wheel turns back against your hand, and the sill groans the length of the back wall.",
+        RATCHET_AGAIN="Another tooth.",RATCHET_DONE="The pawl hangs clear of the wheel. There is nothing more to lift.",
+        CATCH_LIFT="Low in the jamb there is an iron catch, set flush in the plaster. You work it back a little.",
+        CATCH_AGAIN="It gives a little more.",CATCH_DONE="The catch is out of the plaster. The frame is only wood now.",
+        SEVERED="Under the whole house something lets go, all at once and quietly, and every floor settles a finger's width.",
+        BEG_FRAME="Put it back. I'll stand in it. I'll stand in anything.",
+        VERA_SEVERED="You've let the house go. There's no keeping anybody now.",
+        DANIEL_SITS="I keep thinking I'm leaning on something.",
+        DANIEL_HANDS="Get it off. Get its hands off me.",
+        SHIRT_AT_HIM="It has its hands flat on Daniel, as if it could press itself back into him.",
+        SHIRT_SITS="It lets go and sits down on the boards with its hands in its lap.",
+        ON_THE_BENCH="The two men sit on the bench in sight of the front door. One keeps leaning forward to stand, and sitting back. The other holds the shape of a hand together under his sleeve.";
     // 0.4.614: E2. Every line here is new but Dan's "Rae." and Vera's "It settles. It's temporary.", which are the plan's.
     public static final String R_HOLD_DANIEL="Take his shoulders.",R_LET_DANIEL_GO="Let go of him.",
         YOUR_CALL="It is your hands she is calling for.",
@@ -321,6 +334,14 @@ public final class LodgingTexts {
         if(own.getBoolean(LodgingComplete.HELD)&&!own.getBoolean(LodgingComplete.LET_GO))p.add("Your hands were on his shoulders while it happened.");
         else if(own.getBoolean(LodgingComplete.HELD))p.add("Your hands were on his shoulders, and then they were not.");
         if(own.getBoolean(LodgingComplete.HEARD_UNDER))p.add("Dan said Rae's name, and another voice went on under it.");
+        // 0.4.615: E3.
+        boolean wheel=own.getBoolean(LodgingSever.RATCHET),jamb=own.getBoolean(LodgingSever.CATCH);
+        if(wheel&&jamb)p.add("You worked the wheel in the cellar and the catch in the frame, both, and every original in the house walked out.");
+        else if(wheel)p.add("You worked the wheel in the cellar loose, and somebody else the catch in the frame.");
+        else if(jamb)p.add("You worked the catch out of the frame, and somebody else the wheel in the cellar.");
+        else if(own.getBoolean(LodgingSever.SAW))p.add("The house let go of all of them at once.");
+        if(own.getBoolean(LodgingSever.STRUCK))p.add("Something that had been somebody tried to get back into Daniel, and you struck it off.");
+        if(own.getBoolean(LodgingSever.SAT_WITH))p.add("Dan and Daniel sat on the bench in the hall, and neither could finish helping the other.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.ONES_INSIDE),name,pages(String.join("\n\n",p)));
     }
 }
