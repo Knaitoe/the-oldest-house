@@ -95,16 +95,75 @@ public final class ArchitectureTests {
             // 0.4.376: the well wears its own stone, a darker band in each third of the descent, and its pilasters fluted piers.
             var bands=new java.util.LinkedHashSet<Block>();
             for(int y:new int[]{FinaleArchitecture.TOP-10,FinaleArchitecture.TOP-600,FinaleArchitecture.ARENA-300}){
-                var wall=l.getBlockState(base.offset(-FinaleArchitecture.SHAFT_RADIUS,y,5));var pier=l.getBlockState(base.offset(-FinaleArchitecture.SHAFT_RADIUS,y,0));
+                var wall=l.getBlockState(base.offset(-FinaleArchitecture.SHAFT_RADIUS,y,5));var pier=l.getBlockState(base.offset(-FinaleArchitecture.SHAFT_RADIUS,y,6));
+                // 0.4.593: the piers stand six either side of each wall's middle, and a block proud of it, as pilasters.
+                h.assertTrue(l.getBlockState(base.offset(-FinaleArchitecture.FACE,y,6)).is(io.github.knaitoe.theoldesthouse.labyrinth.StairWell.pier(y).getBlock())&&l.getBlockState(base.offset(-FinaleArchitecture.FACE,y,5)).isAir()
+                        &&l.getBlockState(base.offset(-FinaleArchitecture.FACE,y,0)).isAir(),"a pilaster stands proud of the wall at "+y+", and none at the wall's middle");
                 h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isWall(wall)&&io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isWall(pier)&&wall.getBlock()!=pier.getBlock(),"the well's own stone and pier at "+y+": "+wall+" / "+pier);
                 h.assertTrue(wall.is(io.github.knaitoe.theoldesthouse.labyrinth.StairWell.stone(y).getBlock()),"in the band for its depth at "+y+": "+wall);bands.add(wall.getBlock());}
             h.assertTrue(bands.size()==3,"three bands of stone down the well: "+bands);
             for(var at:FinaleArchitecture.continuationRoute(origin))treadKinds.add(l.getBlockState(at.below()).getBlock());
             h.assertTrue(checked>=19&&treadKinds.containsAll(List.of(Blocks.TUFF_BRICK_STAIRS,Blocks.DEEPSLATE_BRICK_STAIRS,Blocks.POLISHED_BLACKSTONE_BRICK_STAIRS)),"the lower continuation uses distinct authored native stair materials");
+            carried(h,l,origin);
             exportStair(l,origin,"great_staircase",FinaleArchitecture.TOP-144,FinaleArchitecture.TOP+15);
             exportStair(l,origin,"great_staircase_middle",FinaleArchitecture.TOP-640,FinaleArchitecture.TOP-544);
             exportStair(l,origin,"great_staircase_lower",FinaleArchitecture.ARENA-768,FinaleArchitecture.ARENA-672);h.succeed();
         }finally{server.getPlayerList().remove(resident);server.overworld().getDataStorage().set("the_oldest_house",oldHouse);server.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);FinaleArchitecture.clearAll();}
+    }
+    /**
+     * 0.4.593 (docs/GREAT_STAIRCASE_0_4_593.md): the stair rests on the well. Measured on the built shaft over the first three
+     * hundred blocks of the descent: every landing reaches both walls, its rails stand only toward the well with nine clear
+     * blocks between the newels of each flight, every flight is tied to the wall where it passes a pilaster and runs on strings
+     * of the well's stone, and the head of the stair is closed.
+     */
+    private static void carried(GameTestHelper h,net.minecraft.server.level.ServerLevel l,BlockPos origin){
+        BlockPos base=FinaleArchitecture.base(origin);int r=FinaleArchitecture.STAIR_RADIUS,face=FinaleArchitecture.FACE,top=FinaleArchitecture.TOP;
+        var route=FinaleArchitecture.staircaseRoute(origin);int landings=0,ties=0,strings=0;
+        // The staircase's sparse wear breaks a rail away with the tread beside it, and a rail's pier is no exception.
+        var worn=new HashSet<BlockPos>();for(var mark:StaircaseWear.marks(origin))worn.addAll(mark.cells());
+        java.util.function.Predicate<BlockPos> sturdy=at->l.getBlockState(at).isFaceSturdy(l,at,Direction.UP);
+        java.util.function.Predicate<BlockPos> stone=at->io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isWall(l.getBlockState(at));
+        java.util.function.Predicate<BlockPos> rail=at->io.github.knaitoe.theoldesthouse.labyrinth.StairWell.isRail(l.getBlockState(at));
+        java.util.function.Predicate<BlockPos> clear=at->l.noCollision(null,new AABB(at.getX()+.2,at.getY()+.01,at.getZ()+.2,at.getX()+.8,at.getY()+1.8,at.getZ()+.8));
+        // At the wall's face: the pilaster, or the course of stone that crosses it every forty-eight blocks.
+        java.util.function.Predicate<BlockPos> faced=at->stone.test(at)||l.getBlockState(at).is(HouseBlocks.STAIRCASE_STONE.get());
+        for(int i=0;i+1<route.size()&&route.get(i).getY()>top-300;i++){
+            var at=route.get(i);var next=route.get(i+1);int x=at.getX()-base.getX(),z=at.getZ()-base.getZ(),y=at.getY();
+            if(Math.abs(x)==r&&Math.abs(z)==r){int sx=Integer.signum(x),sz=Integer.signum(z);landings++;
+                for(int w=r-6;w<=face;w++)h.assertTrue(sturdy.test(base.offset(sx*face,y-1,sz*w))&&sturdy.test(base.offset(sx*w,y-1,sz*face))&&sturdy.test(base.offset(sx*(r+7),y-1,sz*w))&&sturdy.test(base.offset(sx*w,y-1,sz*(r+7))),
+                        "a landing reaches the faces of both walls, with no gap along them: "+at+" / "+w);
+                h.assertTrue(stone.test(base.offset(sx*face,y-3,sz*r))&&stone.test(base.offset(sx*face,y-4,sz*r))&&stone.test(base.offset(sx*r,y-4,sz*face)),"corbelled courses carry the landing's margin along each wall: "+at);
+                for(int w=r-5;w<=r+6;w++)h.assertTrue(!rail.test(base.offset(sx*(r+6),y,sz*w))&&!rail.test(base.offset(sx*w,y,sz*(r+6))),"a landing has no rail toward its walls: "+at+" / "+w);
+                h.assertTrue(rail.test(base.offset(sx*(r-6),y,sz*(r-6))),"the rail turns the landing's inner corner: "+at);
+                for(int up=0;up<2;up++)for(int w:new int[]{-5,5})h.assertTrue(stone.test(base.offset(sx*(r-6),y+up,sz*(r+w)))&&stone.test(base.offset(sx*(r+w),y+up,sz*(r-6))),"a newel stands either side of each flight: "+at+" / "+w);
+                for(int w=-4;w<=4;w++)h.assertTrue(clear.test(base.offset(sx*(r-6),y,sz*(r+w)))&&clear.test(base.offset(sx*(r+w),y,sz*(r-6))),"nine clear blocks between the newels: "+at+" / "+w);
+                for(int w=r+6;w<face;w++)h.assertTrue(rail.test(base.offset(sx*(r-6),y,sz*w))&&rail.test(base.offset(sx*w,y,sz*(r-6))),"a rail runs from each outer newel to the wall: "+at+" / "+w);
+                h.assertTrue(faced.test(base.offset(sx*(r-6),y,sz*face))&&faced.test(base.offset(sx*face,y,sz*(r-6))),"and ends at a pilaster: "+at);
+                continue;
+            }
+            boolean alongX=next.getX()!=at.getX();int along=alongX?x:z,out=Integer.signum(alongX?z:x);
+            if(Math.abs(along)>r-7)continue;
+            for(int side:new int[]{-5,5}){var string=alongX?base.offset(x,y-1,z+side):base.offset(x+side,y-1,z);
+                // The entry hall stands on the first treads' south string.
+                if(y>=top-1&&Math.abs(string.getX()-base.getX())<=FinaleArchitecture.HALL_HALF_WIDTH&&string.getZ()-base.getZ()>=r+2)continue;
+                h.assertTrue(stone.test(string),"a flight runs on strings of the well's stone: "+at+" / "+side);strings++;}
+            if(FinaleArchitecture.pierAt(along)){ties++;
+                for(int side:new int[]{-5,5}){var pier=alongX?base.offset(x,y,z+side):base.offset(x+side,y,z);
+                    h.assertTrue(worn.contains(pier)||stone.test(pier),"a pier stands in each rail where the flight passes a pilaster: "+at+" / "+side);}
+                for(int w=FinaleArchitecture.GAP_FROM;w<face;w++){var tie=alongX?base.offset(x,y-1,out*w):base.offset(out*w,y-1,z);
+                    h.assertTrue(stone.test(tie)&&stone.test(tie.above())&&l.getBlockState(tie.above(2)).isAir(),"a tie crosses from the flight to the wall, as high as the rail: "+at+" / "+w);}
+                h.assertTrue(faced.test(alongX?base.offset(x,y,out*face):base.offset(out*face,y,z)),"and meets a pilaster: "+at);
+            }
+        }
+        h.assertTrue(landings>=16&&ties>=30&&strings>=1000,"the first three hundred blocks hold their landings, ties and strings: "+landings+" / "+ties+" / "+strings);
+        // The head of the stair: closed at its west end, clear from the door to its north rail, and no rail inside the entry hall.
+        for(int up=0;up<2;up++)h.assertTrue(stone.test(base.offset(-1,top+up,r-5))&&stone.test(base.offset(-1,top+up,r-2)),"posts close the head of the stair");
+        for(int z=r-4;z<r-2;z++)h.assertTrue(rail.test(base.offset(-1,top,z)),"a rail closes the head of the stair at "+z);
+        for(int z=r-4;z<=r+1;z++)h.assertTrue(clear.test(base.offset(0,top,z)),"the first row is clear from the door to its north rail at "+z);
+        h.assertTrue(rail.test(base.offset(0,top,r-5))&&!rail.test(base.offset(0,top,r+5))&&!rail.test(base.offset(1,top,r+5)),"the stair's north rail starts at the corner post, and no rail stands in the entry hall");
+        var bar=l.getBlockState(base.offset(-4,top,r-2));h.assertTrue(bar.is(Blocks.IRON_BARS)&&bar.getValue(IronBarsBlock.EAST)&&bar.getValue(IronBarsBlock.WEST),"the walkway's bars are joined into one rail: "+bar);
+        // The cap: a rib from each pilaster, open coffers between.
+        h.assertTrue(stone.test(base.offset(6,top+14,0))&&stone.test(base.offset(0,top+14,-18))&&l.getBlockState(base.offset(0,top+14,0)).isAir()&&stone.test(base.offset(31,top+14,0))&&l.getBlockState(base.offset(31,top+13,0)).isAir(),"the cap is ribbed and corbelled");
     }
     private static void exportStair(net.minecraft.server.level.ServerLevel l,BlockPos origin,String name,int low,int high)throws Exception{
         BlockPos b=FinaleArchitecture.base(origin);JsonObject file=new JsonObject();file.addProperty("name",name);JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();

@@ -67,6 +67,9 @@ public final class StaircaseDebris {
             if(!loaded(level,at)||!loaded(level,back)||level.getBlockEntity(at)!=null||level.getBlockEntity(back)!=null)continue;
             var state=level.getBlockState(at);var behind=level.getBlockState(back);
             if(!masonry(state)||!behind.isAir()&&!behind.isCollisionShapeFullBlock(level,back)||carries(level,at,back))continue;
+            // 0.4.593: a fragment leaves the wall into the open well. Where a pilaster or a course stands in front of the stone it
+            // has nowhere to fall, and the wall behind them keeps it.
+            if(at.getY()==back.getY()&&!level.getBlockState(at.offset(at.getX()-back.getX(),0,at.getZ()-back.getZ())).isAir())continue;
             // Removing the inner face never opens the black shell to the world.
             if(behind.isAir()&&!level.setBlock(back,state,FLAGS))continue;
             FallingBlockEntity debris=FallingBlockEntity.fall(level,at,state);

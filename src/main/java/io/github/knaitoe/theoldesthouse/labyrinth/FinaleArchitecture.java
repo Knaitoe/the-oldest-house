@@ -166,38 +166,31 @@ public final class FinaleArchitecture {
         // Tall black walls give scale without filling the entire shaft with blocks. 0.4.376: the well's own stone, darker in each
         // third of the descent, with a fluted pier every twelve blocks (docs/TEXTURE_PASS_STAIRCASE_0_4_376.md).
         for(int y=LOOP_BOTTOM-1;y<=TOP+14;y++) for(int i=-SHAFT_RADIUS;i<=SHAFT_RADIUS;i++) {
-            BlockState pier=Math.floorMod(i,12)==0?StairWell.pier(y):StairWell.stone(y);
+            BlockState pier=pierAt(i)?StairWell.pier(y):StairWell.stone(y);
             put(blocks,b,i,y,-SHAFT_RADIUS,pier);put(blocks,b,i,y,SHAFT_RADIUS,pier);put(blocks,b,-SHAFT_RADIUS,y,i,pier);put(blocks,b,SHAFT_RADIUS,y,i,pier);
         }
         // Both caps are real architecture; looking or falling down cannot reveal the ordinary world.
         for(int x=-SHAFT_RADIUS;x<=SHAFT_RADIUS;x++)for(int z=-SHAFT_RADIUS;z<=SHAFT_RADIUS;z++){
             put(blocks,b,x,TOP+15,z,StairWell.stone(TOP));put(blocks,b,x,LOOP_BOTTOM-1,z,StairWell.stone(LOOP_BOTTOM));
         }
+        vault(blocks,b);pilasters(blocks,b);
         for(int y=LOOP_BOTTOM+16;y<TOP;y+=48)for(int i=-SHAFT_RADIUS+1;i<SHAFT_RADIUS;i++){
             put(blocks,b,i,y,-SHAFT_RADIUS+1,stone);put(blocks,b,i,y,SHAFT_RADIUS-1,stone);
             put(blocks,b,-SHAFT_RADIUS+1,y,i,stone);put(blocks,b,SHAFT_RADIUS-1,y,i,stone);
+            // 0.4.593: under the course each pilaster widens into a capital, a block to either side.
+            if(pierAt(i-1)||pierAt(i+1)){var capital=StairWell.pier(y-1);
+                put(blocks,b,i,y-1,-SHAFT_RADIUS+1,capital);put(blocks,b,i,y-1,SHAFT_RADIUS-1,capital);
+                put(blocks,b,-SHAFT_RADIUS+1,y-1,i,capital);put(blocks,b,SHAFT_RADIUS-1,y-1,i,capital);}
         }
         for(int y=LOOP_BOTTOM+18;y<TOP;y+=96)for(int[] at:new int[][]{{-33,0},{33,0},{0,-33},{0,33}}){
             put(blocks,b,at[0],y-1,at[1],stone);put(blocks,b,at[0],y,at[1],Blocks.SOUL_LANTERN.defaultBlockState());
         }
         var steps=allSteps(manor);List<BlockPos> descent=staircaseRoute(manor);
         // Full turn platforms are laid first. Flat approach/departure runs share their floor height.
+        var hearths=new HashSet<>(StaircaseFire.braziers(manor));int landings=0;
         for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
-            var at=step.feet;var floor=landingMaterial(at.getY());for(int dx=-6;dx<=6;dx++)for(int dz=-6;dz<=6;dz++){
-                blocks.put(at.offset(dx,-1,dz),Math.abs(dx)==6||Math.abs(dz)==6?Blocks.POLISHED_BASALT.defaultBlockState():floor);blocks.put(at.offset(dx,-2,dz),floor);
-            }
-            Direction entry=step.direction.getClockWise().getOpposite(),exit=step.direction;
-            for(Direction side:Direction.Plane.HORIZONTAL)for(int width=-6;width<=6;width++){
-                if((side==entry||side==exit)&&Math.abs(width)<=5)continue;
-                var railAt=at.offset(side.getStepX()*6+(side.getAxis()==Direction.Axis.Z?width:0),0,side.getStepZ()*6+(side.getAxis()==Direction.Axis.X?width:0));
-                blocks.put(railAt,rail(side.getClockWise()));
-            }
-            int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
-            // Bracketed outer corners join the landings to the shaft rather than floating in it.
-            for(int i=0;i<4;i++)for(int width=-1;width<=1;width++){
-                blocks.put(at.offset(sx*(7+i),-2-i,sz*6+width),floor);
-                blocks.put(at.offset(sx*6+width,-2-i,sz*(7+i)),floor);
-            }
+            var at=step.feet;int sx=Integer.signum(at.getX()-b.getX()),sz=Integer.signum(at.getZ()-b.getZ());
+            landing(blocks,at,sx,sz,hearths.contains(at.offset(sx*3,0,sz*3))||landings%31==9);landings++;
         }
         for(int i=0;i<steps.size();i++){
             var step=steps.get(i);BlockPos at=step.feet;Direction direction=step.direction;
@@ -205,14 +198,22 @@ public final class FinaleArchitecture {
             boolean drops=i+1<steps.size()&&steps.get(i+1).feet.getY()<at.getY();
             BlockState floor=landingMaterial(at.getY());
             BlockState tread=drops?stairMaterial(at.getY()).defaultBlockState().setValue(StairBlock.FACING,direction.getOpposite()):floor;
+            int turnDistance=Math.floorMod(step.index-STAIR_RADIUS,STAIR_RADIUS*2);
+            boolean flight=turnDistance>6&&turnDistance<STAIR_RADIUS*2-6;
             for(int width=-STAIR_HALF_WIDTH-1;width<=STAIR_HALF_WIDTH+1;width++){
                 int sx=x+(direction.getAxis()==Direction.Axis.Z?width:0),sz=z+(direction.getAxis()==Direction.Axis.X?width:0);
-                put(blocks,b,sx,y,sz,tread);put(blocks,b,sx,y-1,sz,floor);
+                // 0.4.593: a flight's two outermost columns are its strings, in the well's own stone. The rails stand on them.
+                boolean string=flight&&Math.abs(width)==STAIR_HALF_WIDTH+1;
+                put(blocks,b,sx,y,sz,string?StairWell.stone(at.getY()):tread);put(blocks,b,sx,y-1,sz,string?StairWell.stone(at.getY()):floor);
             }
-            int turnDistance=Math.floorMod(step.index-STAIR_RADIUS,STAIR_RADIUS*2);
-            if(turnDistance>6&&turnDistance<STAIR_RADIUS*2-6)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
-                put(blocks,b,x+side.getStepX()*5,y+1,z+side.getStepZ()*5,rail(direction));
+            if(flight)for(Direction side:List.of(direction.getClockWise(),direction.getCounterClockWise())){
+                int rx=x+side.getStepX()*5,rz=z+side.getStepZ()*5;
+                // The entry hall stands on the head of the stair: no rail is laid inside it.
+                if(y+1>=TOP-1&&Math.abs(rx)<=HALL_HALF_WIDTH&&rz>=STAIR_RADIUS+2)continue;
+                // 0.4.593: where the flight passes a pilaster a pier stands in each rail, so the rails run in bays as the walls do.
+                put(blocks,b,rx,y+1,rz,pierAt(direction.getAxis()==Direction.Axis.X?x:z)?StairWell.pier(at.getY()):rail(direction));
             }
+            if(flight)tie(blocks,b,x,y,z,direction,at.getY());
         }
         // Sparse loose pages stand on solid corner landings; abandoned camps occur only every 31st turn.
         int turn=0;for(var step:steps)if(Math.abs(step.feet.getX()-b.getX())==STAIR_RADIUS&&Math.abs(step.feet.getZ()-b.getZ())==STAIR_RADIUS){
@@ -224,6 +225,7 @@ public final class FinaleArchitecture {
             turn++;
         }
         for(var placement:entrancePlan(manor))blocks.put(placement.pos(),placement.block());
+        head(blocks,b);
         // The last stair ends in an actual corridor to the preparation chamber.
         BlockPos last=descent.get(descent.size()-1);int lx=last.getX()-b.getX(),lz=last.getZ()-b.getZ();
         boxFloor(blocks,b,Math.min(lx,0)-1,Math.max(lx,0)+1,lz-1,lz+1,ARENA-1,stone);
@@ -273,6 +275,77 @@ public final class FinaleArchitecture {
             if(level.players().stream().anyMatch(p->p.getBoundingBox().intersects(new net.minecraft.world.phys.AABB(at))))continue;
             level.setBlock(at,dark,FLAGS);
         }
+    }
+    // ------------------------------------------------------------------------------------------------ 0.4.593
+    // The stair is carried by the well (docs/GREAT_STAIRCASE_0_4_593.md). Nothing here changes a height, a tread or the route.
+    /** Where a pier stands along a wall: every twelve blocks, six either side of the wall's middle, so none stands in a doorway. */
+    public static boolean pierAt(int along){return Math.abs(along)<=30&&Math.floorMod(along+6,12)==0;}
+    /** The blocks from the stair's outer edge to the wall's face: a flight's ties and a landing's margin lie in them. */
+    public static final int GAP_FROM=STAIR_RADIUS+STAIR_HALF_WIDTH+2,FACE=SHAFT_RADIUS-1;
+    /** Each pier stands a block proud of its wall for the well's whole height, as a pilaster. */
+    private static void pilasters(Map<BlockPos,BlockState> plan,BlockPos b){
+        for(int y=LOOP_BOTTOM;y<=TOP+14;y++){var pier=StairWell.pier(y);
+            for(int i=-30;i<=30;i+=12){
+                put(plan,b,i,y,-FACE,pier);put(plan,b,-FACE,y,i,pier);put(plan,b,FACE,y,i,pier);
+                // The preparation chamber's anteroom lies against the south wall's face at the cell's level.
+                if(Math.abs(i)>17||y<ARENA-1||y>ARENA+13)put(plan,b,i,y,FACE,pier);
+            }
+        }
+    }
+    /** The cap springs from the walls in three corbelled courses, and a rib crosses it from each pilaster to the one facing it. */
+    private static void vault(Map<BlockPos,BlockState> plan,BlockPos b){
+        var stone=StairWell.stone(TOP);var rib=StairWell.pier(TOP);
+        for(int course=1;course<=3;course++)for(int x=-FACE;x<=FACE;x++)for(int z=-FACE;z<=FACE;z++)
+            if(Math.max(Math.abs(x),Math.abs(z))>FACE-(4-course))put(plan,b,x,TOP+15-course,z,stone);
+        for(int i=-30;i<=30;i+=12)for(int w=-30;w<=30;w++){put(plan,b,i,TOP+14,w,rib);put(plan,b,w,TOP+14,i,rib);}
+    }
+    /**
+     * A corner landing, whole. It fills its corner of the well from six blocks inside the turn to the faces of the two walls, so it
+     * rests on them: two corbelled courses run under its margin along each wall. Its rails stand only where it meets the well:
+     * a newel either side of each flight (nine clear blocks between them), the rail turning the inner corner between the two
+     * nearest, and a rail from each outer newel to the pilaster at the wall. u runs out toward one wall and v toward the other,
+     * from the turn's own step.
+     */
+    private static void landing(Map<BlockPos,BlockState> plan,BlockPos at,int sx,int sz,boolean hearth){
+        var floor=landingMaterial(at.getY());var basalt=Blocks.POLISHED_BASALT.defaultBlockState();
+        var stone=StairWell.stone(at.getY());var post=StairWell.pier(at.getY());int edge=FACE-STAIR_RADIUS;
+        for(int u=-6;u<=edge;u++)for(int v=-6;v<=edge;v++){
+            boolean frame=Math.abs(u)==6&&v<=6||Math.abs(v)==6&&u<=6,margin=u>6||v>6;
+            plan.put(at.offset(sx*u,-1,sz*v),frame?basalt:floor);plan.put(at.offset(sx*u,-2,sz*v),margin?stone:floor);
+            if(margin&&Math.max(u,v)>=edge-1)plan.put(at.offset(sx*u,-3,sz*v),stone);
+            if(margin&&Math.max(u,v)>=edge)plan.put(at.offset(sx*u,-4,sz*v),stone);
+        }
+        // A hearthstone under a fire: the five hearths, and the cold camps further down.
+        if(hearth)for(int u=2;u<=4;u++)for(int v=2;v<=4;v++)plan.put(at.offset(sx*u,-1,sz*v),basalt);
+        for(int h=0;h<2;h++)for(int w:new int[]{-5,5}){plan.put(at.offset(sx*-6,h,sz*w),post);plan.put(at.offset(sx*w,h,sz*-6),post);}
+        plan.put(at.offset(sx*-6,0,sz*-6),StairWell.BALUSTRADE.get().defaultBlockState()
+                .setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(sx>0?Direction.EAST:Direction.WEST),true).setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(sz>0?Direction.SOUTH:Direction.NORTH),true));
+        for(int w=6;w<edge;w++){plan.put(at.offset(sx*-6,0,sz*w),rail(Direction.SOUTH));plan.put(at.offset(sx*w,0,sz*-6),rail(Direction.EAST));}
+    }
+    /**
+     * Where a flight passes a pilaster a stone tie crosses from its string to the wall: as high as the rail (behind the rail's
+     * pier), down through the string, on a stepped corbel. x, y and z are the step's own tread; feet is the height its stone is
+     * banded by.
+     */
+    private static void tie(Map<BlockPos,BlockState> plan,BlockPos b,int x,int y,int z,Direction direction,int feet){
+        boolean alongX=direction.getAxis()==Direction.Axis.X;if(!pierAt(alongX?x:z))return;
+        int out=Integer.signum(alongX?z:x);var stone=StairWell.stone(feet);
+        for(int r=GAP_FROM;r<FACE;r++){int tx=alongX?x:out*r,tz=alongX?out*r:z;
+            put(plan,b,tx,y+1,tz,stone);put(plan,b,tx,y,tz,stone);put(plan,b,tx,y-1,tz,stone);
+            if(r>GAP_FROM)put(plan,b,tx,y-2,tz,stone);
+            if(r>GAP_FROM+1)put(plan,b,tx,y-3,tz,stone);
+        }
+    }
+    /**
+     * The head of the stair. Its first row ended in open air north of the camp's walkway. A strip of stone a block wide now
+     * closes that end: a post where the walkway's rail stops, a post at the corner the stair's own north rail starts from,
+     * and a rail between them. The first row itself stays clear from the door to its north rail.
+     */
+    private static void head(Map<BlockPos,BlockState> plan,BlockPos b){
+        var post=StairWell.pier(TOP);var stone=StairWell.stone(TOP);int north=STAIR_RADIUS-STAIR_HALF_WIDTH-1,walk=STAIR_RADIUS-2;
+        for(int z=north;z<walk;z++){put(plan,b,-1,TOP-1,z,stone);put(plan,b,-1,TOP-2,z,stone);}
+        for(int h=0;h<2;h++){put(plan,b,-1,TOP+h,north,post);put(plan,b,-1,TOP+h,walk,post);}
+        for(int z=north+1;z<walk;z++)put(plan,b,-1,TOP,z,rail(Direction.SOUTH));
     }
     private static int depthBand(int y){return Math.floorMod((TOP-y)/128,4);}
     private static BlockState landingMaterial(int y){return switch(depthBand(y)){
