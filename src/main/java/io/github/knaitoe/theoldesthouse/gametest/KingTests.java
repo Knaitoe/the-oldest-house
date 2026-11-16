@@ -238,6 +238,12 @@ public final class KingTests {
         .thenExecute(()->{
             var dum=KingBrothers.find(l,b,KingBrothers.DUM);var dee=KingBrothers.find(l,b,KingBrothers.DEE);
             h.assertTrue(dum.distanceTo(dee)<1.5,"arm in arm, side by side: "+dum.distanceTo(dee));
+            // 0.4.654: their gestures are their own (running is 4, standing alone 5): never the plain reach nor the crawl, and they stand
+            // a whole body high in every one of them.
+            for(var brother:new LiteraryActor[]{dum,dee}){int was=brother.gesture();
+                for(int g=KingBrothers.LINKED;g<=KingBrothers.ALONE;g++){brother.gesture(g);
+                    h.assertTrue(!brother.crawling()&&!brother.reaching()&&brother.getBbHeight()>1.5F,"a brother's gesture "+g+" is his own: crawling "+brother.crawling()+", reaching "+brother.reaching()+", "+brother.getBbHeight()+" high");}
+                brother.gesture(was);}
             KingBrothers.talk(p,dum,f.own(p,P));KingBrothers.sortOfThing(p);KingBrothers.name(p);
             h.assertTrue(f.own(p,P).getBoolean(KingSleep.HEARD)&&KingBrothers.battle(b)==KingBrothers.ARMED,"once they have said his name, the reader has heard them and there is to be a battle");
             h.assertFalse(f.own(q,P).getBoolean(KingSleep.HEARD),"what one reader hears is their own");
@@ -554,6 +560,12 @@ public final class KingTests {
         .thenExecute(()->{
             var k=KingForest.find(l,b);
             h.assertTrue(!KingForest.filled(k)&&!KingForest.fallen(k),"nobody looking: a drawing, on his horse");
+            // 0.4.654: his gesture is three bits of his own; filled in and riding (5) was taken for the crawl and drew him on all fours,
+            // a third of him shorter. None of the eight is the crawl or the plain reach, and he keeps his height in all of them.
+            int was=k.gesture();
+            for(int g=0;g<8;g++){k.gesture(g);
+                h.assertTrue(!k.crawling()&&!k.reaching()&&k.getBbHeight()>1.5F,"the Knight's gesture "+g+" is his own: crawling "+k.crawling()+", reaching "+k.reaching()+", "+k.getBbHeight()+" high");}
+            k.gesture(was);
             // Looked at, he fills in and looks back; on the peg that makes a line a sort of thing, which the peg does not count here.
             look.accept(p,k);tick.run();
         })

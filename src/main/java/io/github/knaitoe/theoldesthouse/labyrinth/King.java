@@ -26,6 +26,12 @@ public final class King {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.SLEEPING_KING;
     /** The King, on stranger phase 217 (literary_king). */
     public static final int PHASE=217;
+    /**
+     * 0.4.654: the King's country's people (the King, the two brothers, the Queen, the guard, the Caterpillar, the court, the Knight and
+     * the feast's guests), every one of whom has gestures of its own, so none of them is ever taken for the crawl or the plain reach
+     * (LiteraryActor.ownGestures).
+     */
+    public static boolean cast(int phase){return phase>=PHASE&&phase<=KingFeast.HEARTS_QUEEN;}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     /**
      * 0.4.643: dealt among the understanding stories from depth twelve (the owner's decision 11 of 15 November), once the quiet rooms

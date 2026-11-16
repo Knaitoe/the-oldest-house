@@ -43,8 +43,15 @@ public final class HouseHumanRenderers {
         @Override public ResourceLocation getTextureLocation(HouseHuman actor){return HOLLOWAY;}
         @Override protected boolean shouldShowName(HouseHuman actor){return false;}
     }
-    /** Mr. Harrigan's art as a scene actor: 1 alive in his chair, 2 dead in it, 3 in his casket, 4 to 6 his mourners. */
-    public static int variant(LiteraryActor actor){return actor.role()==LiteraryActor.HARRIGAN?1+Math.max(0,Math.min(2,actor.phase())):actor.role()==LiteraryActor.HARRIGAN_MOURNER?4+Math.max(0,Math.min(2,actor.phase())):0;}
+    /**
+     * Mr. Harrigan's art as a scene actor: 1 alive in his chair, 2 dead in it, 3 in his casket, 4 to 6 his mourners, and 7 dead and on
+     * his feet (0.4.654, the great staircase, labyrinth.StairCompany).
+     */
+    public static final int STANDING=7;
+    public static int variant(LiteraryActor actor){
+        if(actor.role()==LiteraryActor.HARRIGAN)return actor.phase()==io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette.STANDING_PHASE?STANDING:1+Math.max(0,Math.min(2,actor.phase()));
+        return actor.role()==LiteraryActor.HARRIGAN_MOURNER?4+Math.max(0,Math.min(2,actor.phase())):0;
+    }
     public static final class HarriganModel extends PlayerModel<LiteraryActor> {
         public final ModelPart leftElbow,rightElbow,leftKnee,rightKnee;
         private final ModelPart leftCuff,rightCuff,leftShin,rightShin;
@@ -75,6 +82,12 @@ public final class HouseHumanRenderers {
             for(var part:new ModelPart[]{head,hat,body,leftArm,rightArm,leftLeg,rightLeg,jacket,leftSleeve,rightSleeve,leftPants,rightPants})part.getAllParts().forEach(ModelPart::resetPose);
             young=false;crouching=false;riding=false;
             if(role==3)resting(this);
+            else if(role==STANDING){
+                // Dead, and standing as nobody saw him stand: the arms hanging, the forearms a little forward, the head down and
+                // fallen a little to one side as it fell in his chair.
+                head.xRot=.28F;head.zRot=.1F;leftArm.xRot=rightArm.xRot=.03F;leftArm.zRot=-.05F;rightArm.zRot=.05F;
+                leftElbow.xRot=rightElbow.xRot=-.12F;HumanoidMotion.connect(this);
+            }
             else if(role<3){leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftKnee.xRot=rightKnee.xRot=(float)Math.PI/2;leftKnee.yScale=rightKnee.yScale=4F/3;leftArm.xRot=rightArm.xRot=role==2?-.43F:-.698F;leftElbow.xRot=rightElbow.xRot=.5F;if(role==2){head.xRot=.314F;head.zRot=.14F;body.xRot=.14F;}HumanoidMotion.connect(this);}
             else {
                 if(role==4){

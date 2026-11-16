@@ -26,8 +26,11 @@ public final class KingBrothers {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.SLEEPING_KING;
     /** Their stranger phases (literary_king_dum, literary_king_dee). */
     public static final int DUM=218,DEE=219;
-    /** Arm in arm (0), pointing the way (1), dressing for battle (2), fighting (3), running (4). */
-    public static final int LINKED=0,POINTING=1,DRESSING=2,FIGHTING=3,RUNNING=4;
+    /**
+     * Arm in arm (0), pointing the way (1), dressing for battle (2), fighting (3), running (4); and one of them on his own, pointing
+     * the way with nobody's shoulders under his other arm (5: the great staircase, StairCompany, 0.4.654).
+     */
+    public static final int LINKED=0,POINTING=1,DRESSING=2,FIGHTING=3,RUNNING=4,ALONE=5;
     /** The battle: not yet spoken of, waiting for them to be dressed, dressing, fought, the crow, gone; or settled by the rattle. */
     public static final int NONE=0,ARMED=1,DRESS=2,FIGHT=3,CROW=4,GONE=5,SETTLED=6;
     /** How long after they have spoken before they start to dress, how long they dress for, and how long they fight. */
