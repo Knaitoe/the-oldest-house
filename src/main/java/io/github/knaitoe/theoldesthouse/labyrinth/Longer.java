@@ -39,7 +39,7 @@ public final class Longer {
             case RADIO->{
                 if(stage==2){cue(p,LongerTexts.BENCH_RADIO);return true;}
                 boolean on=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,on?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.4F,.8F);
-                cue(p,on?LongerTexts.FLAT_RADIO_ON:LongerTexts.FLAT_RADIO_OFF);}
+                LongerRadio.switched(l,b);cue(p,on?LongerTexts.FLAT_RADIO_ON:LongerTexts.FLAT_RADIO_OFF);}
             case TOASTER->{if(LongerKettle.toaster(p,b,at,st,own))return true;boolean down=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,down?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.5F,down?.7F:1.6F);cue(p,down?LongerTexts.TOASTER_DOWN:LongerTexts.TOASTER_UP);}
             case WINDOW->cue(p,LongerSite.inFlat(p.position().subtract(b.getX(),b.getY(),b.getZ()))?LongerTexts.FLAT_WINDOW:LongerTexts.WINDOW);
             case WORKBENCH,TRAYS->cue(p,LongerTexts.TRAYS);
