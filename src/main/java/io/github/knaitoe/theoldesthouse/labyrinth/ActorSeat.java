@@ -37,6 +37,8 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         if(LodgingPeople.onFloor(a))return new ActorSeat(1,null);
         // 0.4.550: the lodging house's chairs, armchairs and settee.
         if(LodgingThing.seat(state))return new ActorSeat(LodgingThing.seatHeight(state),state.getValue(LodgingThing.FACING));
+        // 0.4.622: Rowan's mended chair at the bench, and the flat's seats.
+        if(LongerBlock.seat(state))return new ActorSeat(state.getValue(LongerBlock.KIND).seatHeight(),state.getValue(LongerBlock.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.
         if(UsherBlock.is(state,UsherBlock.Kind.CHAIR))return new ActorSeat(9,state.getValue(UsherBlock.FACING));
         // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.

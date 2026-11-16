@@ -151,4 +151,109 @@ public final class LongerTests {
             done();h.succeed();
         });
     }
+
+    /** Rowan at this reader's copy, once made. */
+    private static LiteraryActor rowan(GameTestHelper h,ServerPlayer p){var b=LiteraryVignettes.base(p,P);return b==null?null:LongerRowan.find(h.getLevel().getServer().getLevel(NovelRooms.dimension(P)),b);}
+    private static void settleRead(ServerPlayer p,String value){HouseRead.signal(p,HouseRead.Trait.DRAWN_TO,value,false);HouseRead.signal(p,HouseRead.Trait.DRAWN_TO,value,true);}
+
+    /**
+     * 0.4.622: Rowan in the shop. A reader the House has settled as drawn to men meets Rowan as the man; the cast is kept in their own
+     * record and does not change when the read does. Rowan is made once, sat in the mended chair facing the bench, hands at the radio,
+     * holding their own body and gestures; humming carries to a reader still in the House's corridor. A hand on Rowan opens the panel
+     * with where they have got to, the first time and after, and their name over it; nothing goes to chat.
+     */
+    @GameTest(template="empty",batch="longer_rowan",timeoutTicks=1200)
+    public static void rowanSitsAtTheBenchHummingAndKeepsTheCastTheyWereMetIn(GameTestHelper h){
+        var f=shop(h);var p=NativeTestPlayers.survival(h,"longer_rowan_reader");f.players.add(p);settleRead(p,"MEN");f.arrive(p,P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made in the shop"))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.phase()==LongerRowan.FIRST+LongerRowan.MAN&&f.own(p,P).getInt(LongerRowan.CAST)==LongerRowan.FIRST+LongerRowan.MAN,"a reader drawn to men meets Rowan as the man, and keeps it: "+a.phase());
+            h.assertTrue(a.blockPosition().equals(b.offset(LongerSite.CHAIR))&&a.gesture()==LongerRowan.WORK&&a.holdsBody()&&a.ownGestures(),"in the mended chair, at work: "+a.blockPosition().subtract(b));
+            var seat=ActorSeat.of(a);h.assertTrue(seat!=null&&seat.facing()==Direction.WEST&&seat.seatHeight()==LongerBlock.Kind.CHAIR.seatHeight(),"sat, facing the bench");
+            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,LongerRowan.area(b),LongerRowan::is).size()==1,"one Rowan, and only one");
+            // The read changes: the Rowan they met does not.
+            settleRead(p,"WOMEN");f.arrive(p,P);
+            h.assertTrue(f.own(p,P).getInt(LongerRowan.CAST)==LongerRowan.FIRST+LongerRowan.MAN,"the cast is fixed at the first meeting");
+            NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);
+        }).thenIdle(340).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,LongerRowan.area(b),LongerRowan::is).size()==1,"arriving again makes nobody twice");
+            NativeTestPlayers.flush(p);boolean hum=false,tune=false;
+            for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s){hum|=s.getSound().value()==LongerRegistry.HUM.get();tune|=s.getSound().value()==LongerRegistry.TUNING.get();}
+            h.assertTrue(hum&&tune,"from the corridor a reader hears somebody humming and a radio being tuned: hum "+hum+", tuning "+tune);
+            // A hand on Rowan: where they have got to, in the panel, over their head; nothing in chat.
+            var a=rowan(h,p);f.at(p,P,-3.5,0,-11.5);told(p);
+            LiteraryVignettes.talk(p,a);
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_BENCH_FIRST),"the first time: "+Talk.lines(p));
+            h.assertTrue(f.own(p,P).getBoolean(LongerRowan.MET),"the reader has met Rowan");
+            Talk.close(p);
+        }).thenIdle(60).thenExecute(()->{
+            var a=rowan(h,p);LiteraryVignettes.talk(p,a);
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_BENCH),"after: "+Talk.lines(p));
+            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.ROWAN_BENCH)||t.contains(LongerTexts.ROWAN_BENCH_FIRST)),"nothing Rowan says goes to chat");
+            Talk.close(p);done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.622: Rowan's errand, walked on their own feet: out of the chair, along the aisle to the shelf of waiting sets (a hand up at a
+     * tag), on to the counter (leaning on it, looking at the door), and back to the chair. Every way is clear of everything in the shop;
+     * no step is longer than a walking pace; they face the way they walk. A hand on them at the shelf gets the shelf's line and keeps
+     * them there a while.
+     */
+    @GameTest(template="empty",batch="longer_rowan_walk",timeoutTicks=2400)
+    public static void rowanWalksTheirErrandOnTheirOwnFeetAndComesBackToTheChair(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_rowan_walker",P);var l=f.level(P);
+        var last=new net.minecraft.world.phys.Vec3[1];var worst=new double[1];var stops=new java.util.ArrayList<Integer>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            // Every way is clear for a body, but for the chair they stand up out of.
+            var legs=new java.util.ArrayList<net.minecraft.world.phys.Vec3>();legs.add(LongerRowan.BENCH.at(b));
+            for(var v:LongerRowan.TO_SHELF)legs.add(v.add(b.getX(),b.getY(),b.getZ()));legs.add(LongerRowan.SHELF_SPOT.at(b));
+            for(var v:LongerRowan.TO_COUNTER)legs.add(v.add(b.getX(),b.getY(),b.getZ()));legs.add(LongerRowan.COUNTER_SPOT.at(b));
+            for(var v:LongerRowan.TO_BENCH)legs.add(v.add(b.getX(),b.getY(),b.getZ()));legs.add(LongerRowan.BENCH.at(b));
+            var chair=b.offset(LongerSite.CHAIR);
+            for(int i=0;i+1<legs.size();i++){var from=legs.get(i);var to=legs.get(i+1);int n=(int)Math.ceil(from.distanceTo(to)/.1);
+                for(int k=0;k<=n;k++){var at=from.lerp(to,k/(double)Math.max(1,n));if(Math.hypot(at.x-chair.getX()-.5,at.z-chair.getZ()-.5)<.75)continue;
+                    var body=new AABB(at.x-.3,at.y+.01,at.z-.3,at.x+.3,at.y+1.8,at.z+.3);h.assertTrue(l.noCollision(body),"Rowan's way is clear at "+at.subtract(b.getX(),b.getY(),b.getZ()));}}
+            last[0]=rowan(h,p).position();LongerRowan.sendOnErrand(b);
+        })
+        .thenWaitUntil(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);var at=a.position();if(last[0]==null)last[0]=at;worst[0]=Math.max(worst[0],at.distanceTo(last[0]));last[0]=at;
+            if(LongerRowan.holding(b)>0&&(stops.isEmpty()||stops.get(stops.size()-1)!=LongerRowan.leg(b)))stops.add(LongerRowan.leg(b));
+            h.assertTrue(stops.contains(0),"at the shelf yet: "+at.subtract(b.getX(),b.getY(),b.getZ()));
+        }).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerRowan.SHELF_SPOT.at(b))<.05&&a.gesture()==LongerRowan.SHELF,"at the shelf, a hand up at a tag: "+a.gesture());
+            h.assertTrue(ActorSeat.of(a)==null,"standing, out of the chair");
+            f.at(p,P,3.5,0,-12.5);LiteraryVignettes.talk(p,a);
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_SHELF),"what they say at the shelf: "+Talk.lines(p));
+            Talk.close(p);
+        }).thenIdle(160).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(LongerRowan.leg(b)==0&&rowan(h,p).position().distanceTo(LongerRowan.SHELF_SPOT.at(b))<.05,"spoken to, they stay at the shelf a while longer");
+            last[0]=rowan(h,p).position();
+        })
+        .thenWaitUntil(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);var at=a.position();if(last[0]==null)last[0]=at;worst[0]=Math.max(worst[0],at.distanceTo(last[0]));last[0]=at;
+            if(LongerRowan.holding(b)>0&&(stops.isEmpty()||stops.get(stops.size()-1)!=LongerRowan.leg(b)))stops.add(LongerRowan.leg(b));
+            // Walking, they face the way they go (within their turning).
+            h.assertTrue(stops.contains(1),"at the counter yet: "+at.subtract(b.getX(),b.getY(),b.getZ()));
+        }).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerRowan.COUNTER_SPOT.at(b))<.05&&a.gesture()==LongerRowan.COUNTER,"behind the counter, leaning on it");
+        })
+        .thenWaitUntil(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);var at=a.position();if(last[0]==null)last[0]=at;worst[0]=Math.max(worst[0],at.distanceTo(last[0]));last[0]=at;
+            h.assertTrue(LongerRowan.leg(b)<0,"back in the chair yet: "+at.subtract(b.getX(),b.getY(),b.getZ()));
+        }).thenIdle(20).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.blockPosition().equals(b.offset(LongerSite.CHAIR))&&a.gesture()==LongerRowan.WORK&&ActorSeat.of(a)!=null,"back in the chair at work");
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-LongerRowan.BENCH.look()))<1,"turned back to the bench: "+a.getYRot());
+            h.assertTrue(worst[0]<=LongerRowan.PACE+.01,"no step longer than a walking pace: "+worst[0]);
+            done();h.succeed();
+        });
+    }
 }

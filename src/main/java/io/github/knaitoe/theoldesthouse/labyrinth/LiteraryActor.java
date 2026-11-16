@@ -89,7 +89,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * as low; the bar's whistle is four, which is also the plain reach. A body whose scene keeps its own gestures takes neither of the
      * shared poses. A scene that gives its cast a gesture table of its own belongs in this list.
      */
-    public boolean ownGestures(){int phase=phase();return role()==STRANGER&&(LastOrders.cast(phase)||Kept.cast(phase)||Pinehook.cast(phase)||Truant.phase(phase)||Drawing.cast(phase)||Corner.cast(phase)||BikeNightGus.cast(phase)||BikeNightBullies.cast(phase)||CalderPeople.cast(phase)||BikeNightSpecters.cast(phase)||PellPeople.cast(phase)||LodgingPeople.cast(phase));}
+    public boolean ownGestures(){int phase=phase();return role()==STRANGER&&(LastOrders.cast(phase)||Kept.cast(phase)||Pinehook.cast(phase)||Truant.phase(phase)||Drawing.cast(phase)||Corner.cast(phase)||BikeNightGus.cast(phase)||BikeNightBullies.cast(phase)||CalderPeople.cast(phase)||BikeNightSpecters.cast(phase)||PellPeople.cast(phase)||LodgingPeople.cast(phase)||LongerRowan.cast(phase));}
     /** On all fours (Costume Night's crawl, 0.4.103), and as low as that. */
     public boolean crawling(){return gesture()==CostumeNight.CRAWL&&!ownGestures();}
     /** Both arms out in front (the plain reach). */
@@ -308,7 +308,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * (only Callum turns his, and the server turns it); a still mob's body is otherwise brought round to its head after half a
      * second, on the client as well as the server.
      */
-    public boolean holdsBody(){return role()==STRANGER&&(PellPeople.cast(phase())||LodgingPeople.cast(phase()));}
+    public boolean holdsBody(){return role()==STRANGER&&(PellPeople.cast(phase())||LodgingPeople.cast(phase())||LongerRowan.cast(phase()));}
     @Override protected net.minecraft.world.entity.ai.control.BodyRotationControl createBodyControl(){
         return new net.minecraft.world.entity.ai.control.BodyRotationControl(this){
             @Override public void clientTick(){if(holdsBody()||ActorSeat.of(LiteraryActor.this)!=null){yBodyRot=getYRot();return;}super.clientTick();}

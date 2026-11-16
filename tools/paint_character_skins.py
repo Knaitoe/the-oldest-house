@@ -306,6 +306,10 @@ LOOKS = {
     # Daniel: the same man, kept in one room for years. The same hair gone long and the same eyes; a beard; the skin of somebody
     # who has not been out; a shirt washed grey.
     'literary_lodging_daniel': Look('#d9c4b2','#5e4a38','long','#a39f94','#55524b','ragged','#8a867a',eyes='#56626c',age=1,beard='full',mark='lodging_daniel',sleeve=6,level_eyes=True),
+    # 0.4.622, A Little Longer (docs/A_LITTLE_LONGER_PLAN.md): Rowan, who repairs radios, in the two casts the House may choose
+    # between. The same work: a shirt with its sleeves turned back, a canvas bib apron with a pencil and a screwdriver in its pocket.
+    'literary_longer_rowan_woman': Look('#c8936e','#3e2c22','ponytail','#6b786a','#3a3c40','shirt','#7a5a3e',eyes='#4a3e30',mark='longer_rowan',sleeve=6,shoes='#3a3028'),
+    'literary_longer_rowan_man': Look('#b48868','#2e241e','short','#5d6b7a','#3a3c40','shirt','#7a5a3e',eyes='#3e3a30',beard='shadow',mark='longer_rowan',sleeve=6,shoes='#3a3028'),
     # The failed bodies, in what they were wearing when their arrangements went wrong: what is left of a suit, a faded dress,
     # a nightshirt. Their faces are no longer kept up.
     'literary_lodging_failed_post': Look('#cfc5b2','#6b635a','receding','#5d5b54','#4b4943','suit','#8f8a7a',eyes='#77756a',age=1,mark='lodging_failed_tied'),
@@ -1071,6 +1075,10 @@ def cloth_face(size,look,side='front'):
             d.line((2,0,w//2,h-4,w-3,0),fill='#58402f',width=2)
         if look.mark=='cottage_apron':
             d.line((1,h-7,w-2,h-7),fill=a);d.line((w//2,h-7,w//2-2,h-2),fill=a)
+        if look.mark=='longer_rowan':
+            # 0.4.622: the apron's straps crossed between the shoulder blades, and its strings tied in a bow at the small of the back
+            st=shade(a,-12);d.line((2,0,w-3,h-9),fill=st,width=2);d.line((w-3,0,2,h-9),fill=st,width=2)
+            d.line((0,h-9,w-1,h-9),fill=st);m=w//2;d.line((m,h-9,m-3,h-6),fill=st);d.line((m,h-9,m+3,h-6),fill=st)
         if look.mark.startswith('diner_'):
             d.line((0,h-7,w-1,h-7),fill=a,width=2)
             d.line((w//2,h-7,w//2-3,h-4,w//2-1,h-3),fill=shade(a,-18))
@@ -1183,6 +1191,24 @@ def cloth_face(size,look,side='front'):
         d.line((mid-4,3,mid+3,3),fill='#ede2ca')
         d.line((mid-3,8,mid+2,8),fill=shade(a,-17))
         d.point((mid,2),fill='#a98c58')
+    if look.mark=='longer_rowan':
+        # 0.4.622 (A Little Longer): a repairer's canvas bib apron over the work shirt, its straps up over the shoulders; a pocket
+        # across the chest with a pencil and a small screwdriver standing in it; the strings round the waist; a scorch from the iron.
+        ap=a;x0,x1=max(1,w//5),w-1-max(1,w//5);top=max(4,h//4)
+        # the bib, and the body of it below the strings, nearly the shirt's width
+        d.rectangle((x0,top,x1,h-1),fill=ap)
+        d.line((x0,top,x1,top),fill=shade(ap,14));d.line((x0,top,x0,h-1),fill=shade(ap,-10));d.line((x1,top,x1,h-1),fill=shade(ap,-10))
+        # the straps up over the shoulders from the bib's top corners
+        d.line((x0,top,x0-1,0),fill=shade(ap,-12),width=2);d.line((x1,top,x1+1,0),fill=shade(ap,-12),width=2)
+        # the chest pocket, a pencil and a screwdriver standing in it
+        px0,px1,py=x0+2,x1-2,top+3
+        d.rectangle((px0,py,px1,py+4),fill=shade(ap,-6),outline=shade(ap,-26))
+        d.line((px0+2,py-3,px0+2,py),fill='#c9a24a');d.point((px0+2,py-4),fill='#3a3430')
+        d.line((px1-2,py-2,px1-2,py),fill='#8a3e32');d.point((px1-2,py-3),fill='#9aa0a4')
+        # the strings round the waist, and a scorch from the iron low on one side
+        d.line((0,h-9,x0,h-9),fill=shade(ap,-12));d.line((x1,h-9,w-1,h-9),fill=shade(ap,-12))
+        d.line((x0+1,h-9,x1-1,h-9),fill=shade(ap,-18))
+        d.point((x1-3,h-5),fill=shade(ap,-40));d.point((x1-2,h-5),fill=shade(ap,-24));d.point((x1-3,h-4),fill=shade(ap,-24))
     if look.mark=='cottage_braces':
         for x in range(2,w-1,4):d.line((x,1,x,h-3),fill=shade(c,-17))
         for x in (2,w-4):d.rectangle((x,0,x+1,h-3),fill='#58402f')

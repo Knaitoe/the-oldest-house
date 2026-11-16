@@ -9,8 +9,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 
 /**
  * 0.4.621, A Little Longer (docs/A_LITTLE_LONGER_PLAN.md): the work order (the first paper), and what each of the shop's and the
- * flat's things says to a hand. Nothing here is Rowan's speech; that comes with Rowan. Every line is new in this release and is
- * flagged to the owner in docs/A_LITTLE_LONGER_0_4_621.md.
+ * flat's things says to a hand. From 0.4.622, what Rowan says before their conversation begins. Every line is flagged to the
+ * owner in docs/A_LITTLE_LONGER_0_4_621.md or docs/A_LITTLE_LONGER_0_4_622.md.
  */
 public final class LongerTexts {
     private LongerTexts(){}
@@ -43,6 +43,16 @@ public final class LongerTexts {
         TANK="A water tank on its stand, rain drumming on its lid.",
         AWNING="Corrugated sheet on a frame, rain running off its front edge in a line.",
         ORDER="A work order on the spike.";
+    /**
+     * 0.4.622 (docs/A_LITTLE_LONGER_0_4_622.md): Rowan's name over what they say, and what they say to a hand on them before the
+     * evening's conversation begins (the next slice): at the bench, the first time and after; at the shelf; at the counter; walking.
+     */
+    public static final String ROWAN="Rowan",
+        ROWAN_BENCH_FIRST="Sorry. One minute. I nearly have it.",
+        ROWAN_BENCH="Nearly. Really, this time.",
+        ROWAN_SHELF="I had a valve this size. I know I had one.",
+        ROWAN_COUNTER="Nobody has come in all night. I still look.",
+        ROWAN_WALKING="Hold on. I'm only going to look at something.";
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: the unfinished work order on the spike over the bench, in Rowan's pencil. */
     public static ItemStack source(){
