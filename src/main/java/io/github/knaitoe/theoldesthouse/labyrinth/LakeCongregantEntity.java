@@ -38,6 +38,8 @@ public final class LakeCongregantEntity extends PathfinderMob {
     public void lying(boolean value){entityData.set(LYING,value);}
     public void pose(boolean preacher, boolean seated) { entityData.set(PREACHER, preacher); entityData.set(SEATED, seated); }
     public float seating(float partial){return net.minecraft.util.Mth.lerp(partial,previousSeat,seat);}
+    /** 0.4.655: seated or standing at once, as the pose says, for a body that is never ticked (the preacher's figure on the great staircase). */
+    public void settle(){seat=previousSeat=seated()?1:0;}
     public int preservedEra(){return entityData.get(ERA);}
     public void preservedEra(int era){entityData.set(ERA,Math.max(0,Math.min(4,era)));}
     public boolean memoryBoy(){return preservedEra()==4;}

@@ -51,6 +51,11 @@ public final class Shallows {
     private static final String OWNER="ShallowsOwner", ACTOR="ShallowsActor";
     /** The recollected girl's phases. */
     public static final int LYING=0, CARRIED=1, FLYING=2, BROKEN=3, RISING=4, SCURRY=5, GONE=6;
+    /**
+     * 0.4.655: the girl standing, as she was before the lake. Never used at the shallows: it is her figure on the great staircase
+     * (StairStandIn). Her body draws any phase past the last of these as the girl on her feet (LakeWitchModel.memoryPose).
+     */
+    public static final int STOOD=7;
     /** The carrier's hold on her feet. */
     public static final int HOLD=1, SWINGING=2, RELEASED=3;
     /** Reactions shown with a line, or alone, by the reader's client. */

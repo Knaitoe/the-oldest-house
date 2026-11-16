@@ -42,6 +42,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  *
  * <p>0.4.654 (docs/STAIR_STAND_INS_0_4_654.md): five more stories have someone, and a figure can be dressed for each reader as their
  * own story ended or was given to them.
+ *
+ * <p>0.4.655 (docs/STAIR_STAND_INS_0_4_655.md): eight more, whose bodies are their own stories' creatures. Each stands on the stair
+ * as one of the cast's bodies in the stand-in's role ({@link StairStandIn}), at the creature's own size, and is drawn as the creature.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class StairCompany {
@@ -59,6 +62,8 @@ public final class StairCompany {
         public boolean from(Story story){for(var s:stories)if(s==story)return true;return false;}
         /** 0.4.654: the dress this figure stands in for one reader: its row's, or the one their own story left them with. */
         public int phaseFor(ServerPlayer p){return dressed==null?phase:dressed.applyAsInt(p);}
+        /** 0.4.655: how tall its body stands before one is set down: a person at its size, or its own story's creature. */
+        public double height(){return role==LiteraryActor.STAND_IN?StairStandIn.size(phase).height():1.8*(scale>0?scale:1);}
     }
     private static Figure figure(String name,int role,int phase,Story... stories){return new Figure(name,role,phase,0,0,ItemStack.EMPTY,null,stories);}
     private static Figure posed(String name,int role,int phase,int gesture,ItemStack held,Story... stories){return new Figure(name,role,phase,gesture,0,held,null,stories);}
@@ -123,7 +128,16 @@ public final class StairCompany {
             chosen("Rowan",S,LongerRowan.FIRST+LongerRowan.WOMAN,StairCompany::rowan,Story.LITTLE_LONGER),
             posed("one of the brothers, pointing",S,KingBrothers.DUM,KingBrothers.ALONE,ItemStack.EMPTY,Story.SLEEPING_KING),
             figure("the swimmer, out of the water",S,LastSwimmer.STOOD,Story.LAST_SWIMMER),
-            figure("Mr. Harrigan, on his feet",LiteraryActor.HARRIGAN,HarriganVignette.STANDING_PHASE,Story.HARRIGAN));
+            figure("Mr. Harrigan, on his feet",LiteraryActor.HARRIGAN,HarriganVignette.STANDING_PHASE,Story.HARRIGAN),
+            // 0.4.655: eight of the stories' own creatures, each drawn by its own story's renderer in the place of the body that stands for it.
+            figure("the girl from the wardrobe",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.GIRL,0),Story.CLAP),
+            figure("Stacey Graves, as she hunts",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.STACEY,0),Story.DROWNED_TOWN),
+            figure("the preacher",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.PREACHER,0),Story.PRESERVED_CAVE),
+            figure("the girl as she was before the lake",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.BEFORE_THE_LAKE,0),Story.SHALLOWS),
+            chosen("the cousin who was one too many, eyes lit",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.COUSIN,StairStandIn.COUSIN_FACES[0]),StairCompany::cousin,Story.GOATMAN),
+            figure("the mother from the table",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.MOTHER,0),Story.SEANCE),
+            figure("the bartender",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.BARTENDER,0),Story.HOTEL),
+            figure("the elk, standing and looking",LiteraryActor.STAND_IN,StairStandIn.phase(StairStandIn.ELK,0),Story.ELK_LOT,Story.ELK_FAN));
     /**
      * The ones already inside: of the two men, the one the house put back into the wall. Dan, where he went back into the frame he
      * came out of and Daniel walked out; otherwise Daniel, held in a doorway until there was no room for him, or the first of the
@@ -136,13 +150,21 @@ public final class StairCompany {
     /** A little longer: the Rowan this reader was given (a copy of their record is asked, so nothing is kept by asking). */
     static int rowan(ServerPlayer p){return LongerRowan.castFor(p,LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LongerRowan.PLACE));}
     /**
-     * Stories on the owner's list whose figure is not one of the cast's bodies (the lake's people, the elk, the cousin, the hotel's
-     * and the table's, the girl from the wardrobe, the ones drawn as blocks or in a mirror). Nobody stands on the stair for these
-     * yet. (0.4.654 gave five others someone: Mr. Harrigan and the swimmer on their feet, the lodging house's two men, Rowan, and
-     * one of the King's brothers.)
+     * The Goatman: the face the one too many wore in the night this reader counted right (kept at dawn from 0.4.655); for a reader
+     * with no face kept, one of the faces the cousins are dealt, the same one each time for that reader. Nothing is written by asking.
      */
-    public static final Set<Story> NOT_YET=EnumSet.of(Story.CLAP,Story.DROWNED_TOWN,Story.PRESERVED_CAVE,Story.SHALLOWS,Story.GOATMAN,
-            Story.SEANCE,Story.HOTEL,Story.ELK_LOT,Story.ELK_FAN,Story.BACKSEAT,Story.DARE_IN_THE_DARK,Story.WORK_PRINT,Story.LEFT_RIGHT,Story.DEAD_AIR);
+    static int cousin(ServerPlayer p){
+        var own=GoatmanVignette.personal(LabyrinthData.get(p.server),p.getUUID());
+        int face=own.contains(GoatmanVignette.EXTRA_FACE)?own.getInt(GoatmanVignette.EXTRA_FACE)
+                :StairStandIn.COUSIN_FACES[Math.floorMod(p.getUUID().hashCode(),StairStandIn.COUSIN_FACES.length)];
+        return StairStandIn.phase(StairStandIn.COUSIN,face);
+    }
+    /**
+     * Stories on the owner's list whose figure is drawn as blocks or in a mirror, and not as a body (the one from the back seat, the
+     * woman from the mirror, the figure in sacking, Marjorie from the salt, the Skin-Taker). Nobody stands on the stair for these
+     * yet. (0.4.654 gave five others someone, in the cast's own bodies; 0.4.655 eight more, in their own stories' creatures.)
+     */
+    public static final Set<Story> NOT_YET=EnumSet.of(Story.BACKSEAT,Story.DARE_IN_THE_DARK,Story.WORK_PRINT,Story.LEFT_RIGHT,Story.DEAD_AIR);
     /** The Mother of Strays is not to be changed, so she is not made to stand here. */
     public static final Set<Story> LEFT_OUT=EnumSet.of(Story.MOTHER);
     /** Stories in which nobody is seen. */
@@ -370,7 +392,7 @@ public final class StairCompany {
             var m=c.members.get(i);if(!m.following)continue;var a=bodies[i];
             if(a!=null&&sees(p,a.position(),a.getBbHeight())){seenNow=true;continue;}
             double want=r+gap+ROW*(m.slot/3),side=(m.slot%3-1)*ACROSS,step=m.step;
-            double height=a!=null?a.getBbHeight():1.8*(m.figure.scale()>0?m.figure.scale():1);
+            double height=a!=null?a.getBbHeight():m.figure.height();
             if(step>want)step=step-want>LEFT_BEHIND?want+LEFT_BEHIND:Math.max(want,step-SPEED);
             // Where it stands is as near as it comes for now: it never goes back down the stair.
             else if(a!=null)continue;

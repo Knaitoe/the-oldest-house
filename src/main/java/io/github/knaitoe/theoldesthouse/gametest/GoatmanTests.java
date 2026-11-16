@@ -1165,6 +1165,8 @@ public final class GoatmanTests {
             var data=LabyrinthData.get(f.server);var r=f.run();
             h.assertTrue(r.getInt("Phase")==GoatmanVignette.DAWN&&r.getBoolean("Right"),"morning comes on a night done right");
             h.assertTrue(WitnessAccount.has(data,a.getUUID(),WitnessAccount.Story.GOATMAN)&&WitnessAccount.has(data,b.getUUID(),WitnessAccount.Story.GOATMAN),"both children who sat out the whole night resolve their own story");
+            for(var p:List.of(a,b)){var own=GoatmanVignette.personal(data,p.getUUID());
+                h.assertTrue(own.contains(GoatmanVignette.EXTRA_FACE)&&own.getInt(GoatmanVignette.EXTRA_FACE)==r.getInt("Skin"+wrong),"0.4.655: each child who counted right keeps the face the one too many wore, for its figure on the great staircase");}
             for(var p:List.of(a,b)){var held=p.getInventory().items.stream().filter(s->s.getItem() instanceof TallyCounterItem).toList();
                 h.assertTrue(held.size()==1&&TallyCounterItem.carries(p),p.getGameProfile().getName()+" takes home one counter, theirs alone");}
             h.assertTrue(!GoatmanHaunt.haunted(data,b.getUUID())&&f.children().stream().anyMatch(c->c.getTags().contains("TrailerWalk")&&c.viewer().filter(b.getUUID()::equals).isPresent()),"b's old haunting ends, and what followed them home walks out with them for the last time");
