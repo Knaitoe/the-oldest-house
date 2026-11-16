@@ -65,6 +65,7 @@ final class OnwardPlacements {
         r.put(LAST_ORDERS,LastOrdersSite.ONWARD.getX(),0,LastOrdersSite.ONWARD.getZ(),EAST,OnwardRegistry.PANEL); // 0.4.416: the street door in the west wall by the front
         r.put(PELL_HOUSE,PellSite.ONWARD.getX(),0,PellSite.ONWARD.getZ(),NORTH,OnwardRegistry.SERVICE); // 0.4.518: a service door in the substation's wall, west of the door the reader came by
         r.put(LITTLE_LONGER,LongerSite.ONWARD.getX(),0,LongerSite.ONWARD.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.621: a second door in the House's corridor
+        r.put(SLEEPING_KING,KingSite.ONWARD.getX(),0,KingSite.ONWARD.getZ(),WEST,()->Blocks.DARK_OAK_DOOR); // 0.4.641: a door in the drawing-room's east wall
         r.put(ONES_INSIDE,LodgingSite.ONWARD.getX(),0,LodgingSite.ONWARD.getZ(),SOUTH,OnwardRegistry.SERVICE); // 0.4.549: the scullery's back door
         r.put(BIKE_NIGHT,BikeNightSite.ONWARD.getX(),0,BikeNightSite.ONWARD.getZ(),NORTH,OnwardRegistry.SERVICE); // 0.4.464: a service door in the park's back wall, until the far gate is built
         r.put(BLACK_CITY,CitySite.ONWARD.getX(),0,CitySite.ONWARD.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.409: the mess hut's door, facing the camp

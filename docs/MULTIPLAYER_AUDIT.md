@@ -179,6 +179,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.635, Second Person: E3.** Frightened out is read from that reader's own record; the night they leave is staged in that reader's copy only.
 - **0.4.636, Second Person: E4.** Known gently is read from that reader's own record; the cups, the talk and the question are staged in that reader's copy only, and the answer is that reader's word.
 - **0.4.637, Second Person: aftermath.** Whether a visit is the aftermath is read from that reader's own record; the flat is that reader's own copy, so the aftermath is staged for them alone, and the dust is sent to them only.
+- **0.4.641, A sort of thing: the place.** Not dealt yet. The King is one body per copy of the place (found before he is made, so never twice); the glass moves only the reader who touches it. Whether the country is shared or a copy each is part 3's decision.
 - **0.4.640, Second Person: who comes for supper.** The guest comes from that reader's own snapshot, in their own copy of the flat.
 - **0.4.639, Second Person: why they are here.** Read from that reader's own snapshot; the chair is on their own copy's landing only.
 - **0.4.638, Second Person: the other homes.** The voices come from that reader's own snapshot of home; each reader's flat is their own copy, so one reader's caller is never heard in another's.

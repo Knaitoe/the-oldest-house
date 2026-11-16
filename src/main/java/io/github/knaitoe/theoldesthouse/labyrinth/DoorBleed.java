@@ -120,6 +120,7 @@ public enum DoorBleed {
     BIKE_NIGHT(new Spec().drawn(1).light(0xFF9A2E,Rhythm.CANDLE).glow(.7F).sound("bleed.bike_night")),
     PELL_HOUSE(new Spec().drawn(1).light(0xFFE8B0,Rhythm.STEADY).glow(.5F).sound("bleed.pell_house")),
     LITTLE_LONGER(new Spec().light(0xFFE2B0,Rhythm.STEADY).air(Air.STEAM).sound("bleed.little_longer")),
+    SLEEPING_KING(new Spec().light(0xFFD9A0,Rhythm.STEADY).sound("bleed.sleeping_king")),
     ONES_INSIDE(new Spec().drawn(1).light(0xFFD27A,Rhythm.CANDLE).glow(.5F).sound("bleed.ones_inside"));
 
     /** What lies on the hall's floor at the door. */

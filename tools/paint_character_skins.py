@@ -183,6 +183,10 @@ LOOKS = {
     'literary_flat_dev': Look('#b07a56','#1e1814','part','#5a4a6a','#2c2e36','shirt','#e2dcd0',eyes='#3a3029',beard='stubble'),
     'literary_flat_hannah': Look('#e0b294','#6a4430','ponytail','#7a5a48','#33343c','knit','#d8ccb4',eyes='#4a5a62'),
     'literary_flat_marcus': Look('#c99a78','#3a2c22','messy','#5c6650','#3a3e44','hoodie','#a8ad9e',eyes='#4e4636'),
+    # 0.4.641 (docs/SLEEPING_KING_0_4_641.md): the King of the ruled country, asleep under his tree: an old man in a long robe with
+    # a worn gilt hem, slippers, a full beard gone white, and a tall night-cap pulled down to his brows (its tip and tassel are the
+    # renderer's; the hat layer carries the cap's band and crown).
+    'literary_king': Look('#e2b89c','#d8d4cc','receding','#9a2a26','#7e221f','coat','#c9a84a',eyes='#5a5246',age=2,beard='full',mark='king_nightcap',sleeve=11),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
@@ -1531,6 +1535,23 @@ def paint(look):
             for x,y in ((2,3),(5,1),(7,4),(10,2),(12,6),(4,8),(9,9),(13,11),(3,12),(8,13),(11,14),(6,15)):d.point((x,y),fill='#d6e2e8')
             for x,y in ((5,2),(10,3),(9,10)):d.point((x,y),fill='#f2f8fa')
             put(head[side],art)
+    if look.mark=='king_nightcap':
+        # 0.4.641: a soft wool night-cap on the hat layer, pulled down to the brows and over the ears; a turned-up band round its edge,
+        # its folds lying back from the crown toward the nape, where the tall part leaves it.
+        cap='#a8302b';band='#c23d36'
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='bottom':put(box,art);continue
+            if side=='top':
+                art=panel((16,16),cap,'cloth');d=ImageDraw.Draw(art)
+                for x in (3,7,11):d.line((x,2,x+1,15),fill=shade(cap,-18))
+                d.rectangle((5,11,10,15),fill=shade(cap,-28))
+            else:
+                low={'front':5,'back':12,'left':9,'right':9}[side]
+                d.rectangle((0,0,15,low),fill=rgb(cap))
+                for x in (2,6,10,14):d.line((x,0,x-1,low-3),fill=shade(cap,-16))
+                d.rectangle((0,low-2,15,low),fill=rgb(band));d.line((0,low-2,15,low-2),fill=shade(band,16));d.line((0,low,15,low),fill=shade(band,-30))
+            put(box,art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.
         for side,box in net(32,0,8,8,8).items():

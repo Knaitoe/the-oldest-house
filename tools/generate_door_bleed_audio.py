@@ -106,6 +106,7 @@ ROWS = {
     'pell_house': 'A hairbrush, slowly, behind a door',
     'ones_inside': 'Something moves inside a wall, behind a door',
     'little_longer': 'A radio turns between stations behind a door',
+    'sleeping_king': 'Someone breathes in their sleep behind a door',
 }
 
 
@@ -681,6 +682,7 @@ MAKERS = {
     'pell_house': own(('pell/brush', .2, 1, 2000), ('pell/brush', 1.9, .85, 2000, 0, 1.4)),
     'ones_inside': own(('literary/scratch', .3, 1, 1300), ('hall/settle', 2.2, .5, 800, 0, 1.0), length=3.3),
     'little_longer': own(('longer/tuning', 0, 1, 2400, .4, 3.0), ('longer/tune', 2.4, .5, 1600, 3.0, .9), length=3.3),
+    'sleeping_king': own(('king/breath_in', 0, 1, 1300, .4, 1.6), ('king/breath_out', 1.7, .9, 1000, .2, 1.6), length=3.4),
 }
 
 
