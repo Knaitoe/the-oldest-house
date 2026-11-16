@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.633 (docs/SECOND_PERSON_0_4_633.md): a fourth season in a private year. Is everything in the spring the reader's own record, does a year that skips it still reach the last morning, and is the decision still never the reader's?
+
 November 16 candidate 0.4.632 (docs/A_LITTLE_LONGER_0_4_632.md): personhood in a romance. Does only a settled read change a line, and every other state read exactly as written? Does the read stay out of who leads and of the reader's history?
 
 November 16 candidate 0.4.631 (docs/A_LITTLE_LONGER_0_4_631.md): leaving and resuming. Does a shorter evening invent nothing it did not play? Is a reader who comes back met, once, by the same person in the same body? Does a restart undo nothing before or after the ending?

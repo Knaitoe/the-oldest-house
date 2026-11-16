@@ -61,8 +61,11 @@ public final class SecondPerson {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.SECOND_PERSON;
     /** The cast on stranger phases: Iris Dunne across the landing, and Sam from work. */
     public static final int IRIS=75,SAM=76;
-    public static boolean cast(int phase){return phase==IRIS||phase==SAM;}
-    public static final int SUMMER=0,AUTUMN=1,WINTER=2,MORNING=3;
+    /** 0.4.633: the letting agent, in spring. */
+    public static final int AGENT=77;
+    public static boolean cast(int phase){return phase==IRIS||phase==SAM||phase==AGENT;}
+    /** 0.4.633: spring comes between the winter and the last morning; its number is new, so it sits after MORNING (compared only by equality). */
+    public static final int SUMMER=0,AUTUMN=1,WINTER=2,MORNING=3,SPRING=4;
     public static final int ARRIVE=0,UNPACK=1,GLASS_HUNG=2,BATH=3,NIGHT=4,SUMMER_DONE=5;
     public static final int IRIS_VISIT=0,ROUTINE=1,EVENING=2,PHOTO=3,CALL=4,STAY=5,AUTUMN_DONE=6;
     public static final int W_FUNERAL=0,W_MORNING=1,W_DAY=2,W_EVENING=3,W_NIGHT=4,WINTER_DONE=5;
@@ -82,7 +85,9 @@ public final class SecondPerson {
     /** One flat in memory: its people and the counters between beats. Every fact lives in the reader's record. */
     static final class Flat {
         final BlockPos base;int empty;boolean cleared;
-        @Nullable UUID resident,iris,sam;
+        @Nullable UUID resident,iris,sam,agent;
+        /** 0.4.633: how long a reader has stood close to the agent. */
+        int agentNear;
         int ring=-1,doorway,armchair,window,shut,near,knockBack=-1,unseen,wordWipe=-1,flash,seenRun,seenAway,still;@Nullable Vec3 stillAt;
         boolean bedDoor,drift;long sent=Long.MIN_VALUE;
         /** 0.4.565: when they last stopped for a reader in a doorway and said nothing to them. */
@@ -122,6 +127,7 @@ public final class SecondPerson {
         if(s==SUMMER)return switch(st){case ARRIVE,UNPACK->8200;case GLASS_HUNG->10800;case BATH->13200;case NIGHT->18000;default->23400;};
         if(s==AUTUMN)return switch(st){case IRIS_VISIT->11400;case ROUTINE->12100;case EVENING->13600;case PHOTO->14200;case CALL->15000;case STAY->16000;default->17500;};
         if(s==WINTER)return switch(st){case W_FUNERAL->sub(own)>=2?18000:12700;case W_MORNING->23500;case W_DAY->4500;case W_EVENING->13400;case W_NIGHT->18500;default->2000;};
+        if(s==SPRING)return switch(st){case SecondPersonSpring.S_AGENT->2600;case SecondPersonSpring.S_DECIDE->6000;case SecondPersonSpring.S_POST->8200;default->11400;};
         return 900;
     }
 
@@ -156,6 +162,7 @@ public final class SecondPerson {
     @Nullable public static LiteraryActor resident(ServerLevel l,BlockPos b){var f=flat(b);return f==null?null:actor(l,f.resident);}
     @Nullable public static LiteraryActor iris(ServerLevel l,BlockPos b){var f=flat(b);return f==null?null:actor(l,f.iris);}
     @Nullable public static LiteraryActor sam(ServerLevel l,BlockPos b){var f=flat(b);return f==null?null:actor(l,f.sam);}
+    @Nullable public static LiteraryActor agent(ServerLevel l,BlockPos b){var f=flat(b);return f==null?null:actor(l,f.agent);}
     @Nullable static LiteraryActor spawn(ServerLevel l,BlockPos b,UUID reader,int role,int phase,Vec3 r){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(PLACE,reader);a.appearance(role,phase);a.moveTo(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z,90,0);a.addTag(TAG);
@@ -249,6 +256,7 @@ public final class SecondPerson {
             case W_NIGHT->{return sub>=2&&sub<100?station(own,(sub-2)/2):bed();}
             default->{return seat(ARMCHAIR,WEST);}
         }
+        if(s==SPRING)return SecondPersonSpring.residentMark(own);
         // The last morning.
         boolean stays=own.getString("Decision").equals("stay");
         if(st==LATCH)return stays?seat(RESIDENT_CHAIR,EAST):beside("hall_bag").pose(G_BAG);
@@ -408,6 +416,7 @@ public final class SecondPerson {
         props(l,f,own,resident);
         var iris=stage(l,f,p,f.iris,irisMark(own),at(5.5,UP,-30.5),LiteraryActor.STRANGER,IRIS,id->f.iris=id);
         var sam=stage(l,f,p,f.sam,samMark(own),at(5.5,UP,-24.5),LiteraryActor.STRANGER,SAM,id->f.sam=id);
+        var agent=stage(l,f,p,f.agent,SecondPersonSpring.agentMark(own),SecondPersonSpring.STAIR_TOP,LiteraryActor.STRANGER,AGENT,id->f.agent=id);
         cold(l,f,p,own,resident,iris,sam);
         words(l,f,p,own,resident);
         glassGlimpse(l,f,p,own,resident);
@@ -415,7 +424,7 @@ public final class SecondPerson {
         ringing(l,f,p,own,resident);
         cupboard(l,f,p,own,r);
         int s=seasonOf(own);
-        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else morning(l,f,p,own,r,resident);
+        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING)SecondPersonSpring.spring(l,f,p,own,resident,agent);else morning(l,f,p,own,r,resident);
     }
 
     static void summer(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,Vec3 r,@Nullable LiteraryActor a){
@@ -853,7 +862,8 @@ public final class SecondPerson {
         if(f.unseen<60)return;
         int s=seasonOf(own),st=step(own);
         boolean done=s==SUMMER&&st==SUMMER_DONE||s==AUTUMN&&st==AUTUMN_DONE&&(!own.getBoolean("IrisKnocked")||own.getBoolean("IrisTold"))
-            ||s==WINTER&&st==WINTER_DONE&&f.ring<0&&(own.getBoolean("Went")||!own.getString("Call3").isEmpty());
+            ||s==WINTER&&st==WINTER_DONE&&f.ring<0&&(own.getBoolean("Went")||!own.getString("Call3").isEmpty())
+            ||s==SPRING&&st==SecondPersonSpring.SPRING_DONE;
         if(!done){if(f.unseen==60)cue(p,"It is warm in here, and the tank ticks. Not yet.");return;}
         turn(l,f,p,own);f.unseen=0;
     }
@@ -870,14 +880,18 @@ public final class SecondPerson {
             String coat=state(own,"coat");own.putBoolean("BorrowedCoat",!(coat.equals("homed")||coat.equals("home")||coat.equals("placed")));
             for(var th:THINGS)if(state(own,th).equals("hidden")&&thing(own,th).getString("Where").equals("under the bed")){state(own,th,"homed");home(l,b,own,th);SecondPersonStory.add(own,"Returned",th);}
             cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,2)));SecondPersonStory.turned(own,"You let the autumn go by in the cupboard.");}
-        else{own.putInt("Season",MORNING);go(own,LATCH);season(l,b,3);lamp(l,b,false);
-            // While the reader was in the cupboard, the House carried on in their name.
+        else if(s==WINTER){own.putInt("Season",SPRING);go(own,SecondPersonSpring.S_AGENT);season(l,b,4);lamp(l,b,false);
+            // While the reader was in the cupboard, the House carried on in their name; then the tenancy came up (0.4.633).
             SecondPersonStory.housePages(own);
-            own.putString("Decision",SecondPersonStory.stays(own)?"stay":"go");open(l,b,FLAT_DOOR,true);
             cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,3)));SecondPersonStory.turned(own,"You let the rest of the winter go by in the cupboard.");}
+        else{own.putInt("Season",MORNING);go(own,LATCH);season(l,b,3);lamp(l,b,false);SecondPersonSpring.application(l,b,false);
+            SecondPersonStory.housePages(own);
+            // What they decided in the spring stands; a year that skipped the deciding is read the same way, off the record.
+            if(own.getString("Decision").isEmpty())own.putString("Decision",SecondPersonStory.stays(own)?"stay":"go");open(l,b,FLAT_DOOR,true);
+            cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,4)));SecondPersonStory.turned(own,"You let the rest of the spring go by in the cupboard.");}
         f.once.clear();f.ring=-1;own.remove("Ringing");own.remove("Walking");own.remove("SeenOpen");
-        for(var id:new UUID[]{f.resident,f.iris,f.sam}){var a=actor(l,id);if(a!=null){if(a.isSleeping())a.stopSleeping();a.discard();}}
-        f.resident=null;f.iris=null;f.sam=null;
+        for(var id:new UUID[]{f.resident,f.iris,f.sam,f.agent}){var a=actor(l,id);if(a!=null){if(a.isSleeping())a.stopSleeping();a.discard();}}
+        f.resident=null;f.iris=null;f.sam=null;f.agent=null;f.agentNear=0;
     }
 
     // ------------------------------------------------------------------------------------------------ the phone
@@ -936,6 +950,7 @@ public final class SecondPerson {
             if(own.getBoolean("SeenOpen")){own.putString("SeenHow","touch");save(p,own);return;}
             if(own.getBoolean("Walking")){if(own.getString("BroughtBy").isEmpty())own.putString("BroughtBy","hand");save(p,own);return;}
             say(f,a,a.isSleeping()?"Mm.":own.contains("Seen")?"...Is that you?":"...Who's there?");SecondPersonStory.add(own,"Touched","them");}
+        else if(a.phase()==AGENT)SecondPersonSpring.touched(p,f,a,own);
         else if(a.phase()==IRIS){say(f,a,"Hello, you.");own.putBoolean("IrisMet",true);}
         else if(a.phase()==SAM){say(f,a,"Did you feel that?");if(seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("ColdBySam",true);}
         p.serverLevel().sendParticles(p,ParticleTypes.SNOWFLAKE,true,a.getX(),a.getY()+1.2,a.getZ(),6,.25,.4,.25,0);
@@ -973,6 +988,8 @@ public final class SecondPerson {
         else if(own.getString("Seen").equals("still")&&own.getString("SeenAnswer").isEmpty()&&(word.equals("YES")||word.equals("NO"))&&own.getInt("Clock")-own.getInt("AskedClock")<400){
             own.putString("SeenAnswer",word);own.putBoolean("WordSeen_"+surface,true);own.putInt("Wipe_"+surface,own.getInt("Clock")+200);
             say(f,res,word.equals("YES")?"...Yes.":"Then who are you?");SecondPersonStory.turned(own,"They asked if you were them. You wrote "+word+".");}
+        // 0.4.633: the word that answers "Is this you?" in the spring is read at once, and kept.
+        else if(SecondPersonSpring.asking(own)){SecondPersonSpring.answered(f,res,own,word);own.putBoolean("WordSeen_"+surface,true);own.putInt("Wipe_"+surface,own.getInt("Clock")+200);}
         var display=EntityType.TEXT_DISPLAY.create(l);
         if(display!=null){var tag=new CompoundTag();display.saveWithoutId(tag);tag.putString("text",Component.Serializer.toJson(Component.literal(word),p.registryAccess()));tag.putString("billboard","fixed");tag.putInt("background",0);tag.putInt("text_opacity",120);
             display.load(tag);boolean mirror=surface.equals("mirror");
@@ -1040,6 +1057,7 @@ public final class SecondPerson {
         if(seasonOf(own)==WINTER&&step(own)==W_MORNING&&sub(own)<=1&&thing.equals("routine")&&(how.equals("home")||how.equals("placed")&&at!=null&&inBathroom(Vec3.atCenterOf(at))))own.putBoolean("LaidToday",true);
         sound(p,SoundEvents.ITEM_FRAME_ADD_ITEM,b,at==null?homeAt(thing):at,.7F,1);
         if(seasonOf(own)==MORNING&&thing.equals("routine")&&own.getString("LastAct").isEmpty()&&!how.equals("bed")&&!how.equals("cupboard"))own.putString("LastAct","routine");
+        SecondPersonSpring.laid(own,thing,how,at);
     }
     static String where(BlockPos at){var v=Vec3.atCenterOf(at);return inKitchen(v)?"in the kitchen, where you put it":inSitting(v)?"in the sitting room, where you put it":inBedroom(v)?"in the bedroom, where you put it":inBathroom(v)?"in the bathroom, where you put it":"in the hall, where you put it";}
 
@@ -1099,6 +1117,8 @@ public final class SecondPerson {
             if(seasonOf(own)==SUMMER&&step(own)==NIGHT&&sub(own)==1)own.putBoolean("TapRan",true);habit(own,"tap");return true;}
         // The phone.
         if(rel.equals(PHONE)){if(own.getInt("Ringing")>0){lift(p,b,own);return true;}if(phoneOff(l,b)){phone(l,b,false);sound(p,PhoneSounds.PICKUP.get(),b,PHONE,.6F,.8F);cue(p,"You put the receiver back.");return true;}cue(p,"The line purrs.");return true;}
+        // 0.4.633: the form on the mat.
+        if(rel.equals(SecondPersonSpring.APPLICATION_AT)&&SecondPersonBlock.is(s,SecondPersonBlock.Kind.APPLICATION))return SecondPersonSpring.click(p,b,own);
         // Glass that holds a word.
         if(mirrorAt(rel)||streetPane(rel))return write(p,b,rel,own);
         // The tablecloth.

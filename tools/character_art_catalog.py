@@ -111,8 +111,9 @@ def entries():
     # Johnny Truant (0.4.264): his tired face on stranger phase seventy-three, the leer round the corner on seventy-four.
     rows.append({'name':'literary_truant','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':73})
     rows.append({'name':'literary_truant_leer','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':74})
-    # Second Person (0.4.274): Iris Dunne on stranger phase seventy-five, Sam on seventy-six (the resident wears the reader's own House body).
-    for name,phase in (('iris',75),('sam',76)):
+    # Second Person (0.4.274): Iris Dunne on stranger phase seventy-five, Sam on seventy-six (the resident wears the reader's own House body);
+    # 0.4.633, the letting agent on seventy-seven.
+    for name,phase in (('iris',75),('sam',76),('agent',77)):
         rows.append({'name':'literary_flat_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # Speak Up (0.4.327): Joan, Pat, Dell and Ruth on stranger phases ninety to ninety-three.
     for name,phase in (('joan',90),('pat',91),('dell',92),('ruth',93)):
