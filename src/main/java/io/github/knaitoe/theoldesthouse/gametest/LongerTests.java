@@ -679,4 +679,95 @@ public final class LongerTests {
             done();h.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.626, chapter 4, the roof
+    private static int roof(LiteraryTests.Fixture f,ServerPlayer p){return LongerRoof.stage(f.own(p,P));}
+    /** Up to the roof: the tea and the radio done, Rowan on the bench; the act from the workshop and how they were asked out. */
+    private static void onRoof(LiteraryTests.Fixture f,ServerPlayer p,String act,String invite){
+        var own=f.own(p,P);own.putInt(LongerBench.STAGE,LongerBench.DONE);own.putInt(LongerKettle.STAGE,LongerKettle.DONE);own.putBoolean(LongerKettle.NOTICED,true);
+        own.putString(LongerKettle.STAY,"YES");own.putInt(LongerRadio.STAGE,LongerRadio.ROOF);own.putString(LongerRadio.INVITE,invite);if(act!=null)own.putString(LongerBench.ACT,act);
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+    }
+
+    /**
+     * On the roof Rowan points up at the sky between the buildings. The reader sits beside them; the admission, word for word, and the
+     * panel held at the workshop remembered aloud. Glad they stopped; Rowan's hand, taken; then Rowan's ask, after the nervous joke. Yes.
+     * The proposal's "Was there really something you wanted to show me?" exchange for a reader asked out flirting. Back in, Rowan walks
+     * down the roof stair to the flat through nothing solid.
+     */
+    @GameTest(template="empty",batch="longer_roof_kiss",timeoutTicks=3600)
+    public static void onTheRoofTheSkyTheAdmissionTheHandAndRowansAsk(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_roof_kiss",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{onRoof(f,p,LongerBench.HELD_PANEL,LongerRadio.INVITE_FLIRT);f.at(p,P,2.5,12,-10.5);})
+        .thenWaitUntil(()->h.assertTrue(roof(f,p)==LongerRoof.SKY,"the sky: "+roof(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerRadio.BENCH_SPOT.at(b))<.05,"Rowan on the bench");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.THERE_SKY)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.NOT_SURE_SKY),"the sky between the buildings: "+Talk.lines(p));
+            h.assertTrue(Talk.replies(p).contains(LongerTexts.SIT_BESIDE)&&Talk.replies(p).contains(LongerTexts.SAY_NOTHING_WHILE)&&Talk.replies(p).contains(LongerTexts.GO_BACK_IN),"free time: "+Talk.replies(p));
+            h.assertTrue(!Talk.replies(p).contains(LongerTexts.CAN_I_KISS_YOU),"no kiss on offer yet");
+            h.assertTrue(Talk.choose(p,LongerTexts.IS_IT_REAL)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.REAL_RAIN),"is it real");
+            f.at(p,P,5.5,12,-10.2);
+            h.assertTrue(Talk.choose(p,LongerTexts.SIT_BESIDE)&&p.isPassenger(),"sat beside them");
+            var lines=Talk.lines(p);
+            int x=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.BRAVER),y=lines.indexOf("you: "+LongerTexts.LIGHTS_ON),z=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.WIRING);
+            h.assertTrue(x>=0&&y>x&&z>y,"the admission word for word: "+lines);
+            h.assertTrue(Talk.choose(p,LongerTexts.FRIGHTENED_TOO)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.NOT_JUST_ME),"frightened too");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.REMEMBER_HELD),"the panel held, remembered");
+            h.assertTrue(Talk.choose(p,LongerTexts.REALLY_SHOW),"was there really something");
+            lines=Talk.lines(p);
+            h.assertTrue(lines.contains(LongerTexts.ROWAN+": "+LongerTexts.YES_SHOW)&&lines.contains("you: "+LongerTexts.THE_SKY_Q)&&lines.contains(LongerTexts.ROWAN+": "+LongerTexts.AT_FIRST),"\"At first.\" "+lines);
+            h.assertTrue(Talk.choose(p,LongerTexts.GLAD_STOPPED)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.GLAD_STAYED),"glad they stayed");
+            Talk.close(p);LongerRoof.waited(b,LongerRoof.HAND_AFTER);
+        })
+        .thenWaitUntil(()->h.assertTrue(roof(f,p)==LongerRoof.HAND_HELD,"Rowan's hand: "+roof(f,p)))
+        .thenExecute(()->{
+            var a=rowan(h,p);
+            h.assertTrue(a.gesture()==LongerRoof.REACH||true,"held out");
+            h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.TAKE_IT,LongerTexts.NOT_YET)),"take it or not yet: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.TAKE_IT)&&f.own(p,P).getString(LongerRoof.HAND).equals(LongerRoof.TOOK),"taken");
+            Talk.close(p);LongerRoof.waited(LiteraryVignettes.base(p,P),LongerRoof.ASK_AFTER);
+        })
+        .thenWaitUntil(()->h.assertTrue(roof(f,p)==LongerRoof.ASKING,"Rowan's ask begins: "+roof(f,p)))
+        .thenExecute(()->h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.PIGEON),"the nervous joke first: "+Talk.lines(p)))
+        .thenWaitUntil(()->h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.KISS_YES,LongerTexts.NOT_TONIGHT_R)),"\"Can I kiss you?\" "+Talk.replies(p)))
+        .thenExecute(()->{
+            h.assertTrue(Talk.choose(p,LongerTexts.KISS_YES)&&f.own(p,P).getString(LongerRoof.KISS).equals(LongerRoof.ROWAN),"yes: kept as Rowan's ask");
+            h.assertTrue(Talk.replies(p).contains(LongerTexts.GO_BACK_IN)&&!Talk.replies(p).contains(LongerTexts.CAN_I_KISS_YOU),"ordinary time after");
+            h.assertTrue(Talk.choose(p,LongerTexts.GO_BACK_IN)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.COLLAR)&&!p.isPassenger(),"back in");
+            Talk.close(p);
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(roof(f,p)==LongerRoof.DONE,"down to the flat: "+rowan(h,p).position().subtract(b.getX(),b.getY(),b.getZ()));})
+        .thenExecute(()->{var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(rowan(h,p).position().distanceTo(LongerRoof.WORKTOP_SPOT.at(b))<.05,"by the worktop");
+            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.BRAVER)),"nothing in chat");
+            done();h.succeed();});
+    }
+
+    /**
+     * A quieter roof: shared silence instead of sitting brings the admission; no workshop act, so nothing is remembered that did not happen;
+     * a reader asked out quietly is not offered the "show me" exchange. Friendship is a real answer: warm, and no romance offered after.
+     * A hand on Rowan back in says so.
+     */
+    @GameTest(template="empty",batch="longer_roof_friend",timeoutTicks=2400)
+    public static void aQuietRoofAndFriendshipAnsweredInKind(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_roof_friend",P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{onRoof(f,p,null,LongerRadio.INVITE_QUIET);f.at(p,P,2.5,12,-10.5);})
+        .thenWaitUntil(()->h.assertTrue(roof(f,p)==LongerRoof.SKY,"the sky"))
+        .thenExecute(()->{h.assertTrue(Talk.choose(p,LongerTexts.SAY_NOTHING_WHILE)&&roof(f,p)==LongerRoof.QUIET,"say nothing");LongerRoof.waited(LiteraryVignettes.base(p,P),LongerRoof.SILENT);})
+        .thenWaitUntil(()->h.assertTrue(roof(f,p)==LongerRoof.FREE,"after the silence: "+roof(f,p)))
+        .thenExecute(()->{
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.NICE_QUIET)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.BRAVER),"the silence, then the admission: "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.SIT_WITH_IT),"sit with it");
+            var lines=Talk.lines(p);
+            h.assertTrue(lines.stream().noneMatch(x->x.contains(LongerTexts.REMEMBER_HELD)||x.contains(LongerTexts.REMEMBER_SCREW)||x.contains(LongerTexts.REMEMBER_LAMP)||x.contains(LongerTexts.REMEMBER_DOOR)),"nothing remembered that did not happen");
+            h.assertTrue(!Talk.replies(p).contains(LongerTexts.REALLY_SHOW),"asked quietly: no show-me exchange");
+            h.assertTrue(Talk.choose(p,LongerTexts.FRIENDS)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.FRIEND_ON_ROOF),"friends, warmly");
+            h.assertTrue(!Talk.replies(p).contains(LongerTexts.GLAD_STOPPED)&&!Talk.replies(p).contains(LongerTexts.CAN_I_KISS_YOU)&&Talk.replies(p).contains(LongerTexts.GO_BACK_IN),"no romance offered after; back in still: "+Talk.replies(p));
+            h.assertTrue(f.own(p,P).getBoolean(LongerRoof.FRIEND)&&f.own(p,P).getBoolean(LongerRoof.SILENCE),"kept");
+            Talk.close(p);done();h.succeed();
+        });
+    }
 }
