@@ -98,7 +98,7 @@ public final class KingTests {
             for(int x=-7;x<=7;x+=14)for(int z:new int[]{-4,-6,-21,-23})h.assertTrue(fitting(l,b,new BlockPos(x,1,z),KingBlock.Kind.WINDOW)&&KingBlock.stage(l.getBlockState(b.offset(x,2,z)))==1,"a tall window, both halves, at "+x+","+z);
             // The country: light and dark squares, the brooks and their bridges, the hedges.
             int third=KingSite.rankNear(3)-4,seventh=KingSite.rankNear(7)-4;
-            h.assertTrue(is(l,b,-17,-1,third,KingSite.light(3,1)?"turf_light":"turf_dark")&&is(l,b,-1,-1,third,"path")&&is(l,b,16,-1,third,KingSite.light(3,3)?"turf_light":"turf_dark"),"the third rank filled: its squares and the road");
+            h.assertTrue(is(l,b,-17,-1,third,KingSite.light(3,1)?"turf_light":"turf_dark")&&is(l,b,-1,-1,third,"path")&&is(l,b,16,-1,third-8,KingSite.light(3,3)?"turf_light":"turf_dark"),"the third rank filled: its squares and the road (the third file's beyond the carriage)");
             h.assertTrue(is(l,b,-17,-1,seventh,KingSite.light(7,1)?"turf_light_ruled":"turf_dark_ruled")&&(is(l,b,40,-1,third,"turf_light_ruled")||is(l,b,40,-1,third,"turf_dark_ruled")),"the seventh rank ruled, and the country beyond the strip");
             int ruled=0,filled=0;for(int x=-25;x<=24;x++)for(int z=KingSite.rankFar(2);z<=KingSite.rankNear(2);z++){var s=l.getBlockState(b.offset(x,-1,z));if(KingRegistry.ruled(s))ruled++;else if(KingRegistry.material(s))filled++;}
             h.assertTrue(ruled>80&&filled>80,"the second rank is the band: some of it ruled, some filled ("+ruled+" ruled, "+filled+" filled)");
@@ -173,7 +173,10 @@ public final class KingTests {
             h.assertTrue(l.getBlockState(ruledHedge).getCollisionShape(l,ruledHedge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"a line goes through a hedge");
             h.assertTrue(l.getBlockState(verge).getCollisionShape(l,verge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"and through the verge");
             // Looked at by a reader who is a thing, the line is a sort of thing.
-            q.teleportTo(l,b.getX()-15.5,b.getY(),b.getZ()+KingSite.rankNear(3)-4.5,180,0);
+            // Both in the middle file, clear of the Queen's hill (0.4.644), which would stand between them in the first.
+            p.teleportTo(l,b.getX()-4.5,b.getY(),b.getZ()+ruledZ+.5,0,0);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.LINE,"still a line in the middle file, got "+own.getInt("KingState"));
+            q.teleportTo(l,b.getX()-4.5,b.getY(),b.getZ()+KingSite.rankNear(3)-4.5,180,0);
             KingBreath.reader(q,b,theirs);
             h.assertTrue(theirs.getInt("KingState")>=KingBreath.SORT,"the watcher stands on filled land");
             q.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,p.getBoundingBox().getCenter());
@@ -303,6 +306,75 @@ public final class KingTests {
             h.assertTrue(f.own(p,P).getBoolean("Ready")&&"left_him_his_sleep".equals(f.own(p,P).getString(KingSleep.ENDING)),"one who met him and heard the brothers leaves him his sleep");
             h.assertTrue(KingSite.inRoom(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!KingSleep.waking(b),"and comes to in the drawing-room while he sleeps on");
             h.assertFalse(King.dealable(f.data(),UUID.randomUUID()),"the House deals the country only from depth twelve");
+            KingBreath.leave(p);done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.644, the hill and the glass table. The Queen takes the hand of the first reader to come up to her and runs on the spot with
+     * them, rooted and a thing, then lets go and walks to the far side of the field, where she looks back at the peg; standing on it,
+     * the reader is looked at and counted. Only a thing lifts the bottle and the cake, one of each to a reader; the bottle makes them a
+     * step less and the cake a step more, too much of a thing and rooted on a thing; leaving the country takes both away.
+     */
+    @GameTest(template="empty",batch="king_hill",timeoutTicks=1600)
+    public static void theQueenThePegAndTheGlassTable(GameTestHelper h){
+        var f=place(h);var p=f.player("king_pawn",P);var q=f.player("king_pencil",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var queen=b.offset(KingSite.QUEEN);
+        h.startSequence().thenExecute(()->{q.teleportTo(l,b.getX()+60.5,b.getY(),b.getZ()-4.5,0,0);p.teleportTo(l,queen.getX()+.5,b.getY(),queen.getZ()+2.5,180,0);})
+        .thenWaitUntil(()->h.assertTrue(KingQueen.find(l,b)!=null&&KingQueen.state(b)==KingQueen.RUNNING,"she takes the hand of the reader who comes up to her: "+KingQueen.state(b)))
+        .thenExecute(()->{
+            h.assertTrue(KingQueen.holding(p,b),"she has hold of that reader");
+            var own=f.own(p,P);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")>=KingBreath.THING&&p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue()<1e-6,"held, they are a thing and get nowhere: "+own.getInt("KingState"));
+        })
+        .thenWaitUntil(()->h.assertTrue(KingQueen.state(b)==KingQueen.LOOKING&&f.own(p,P).getBoolean("KingQueenRan"),"she lets go and walks to the far side, and the reader has run with her: "+KingQueen.state(b)))
+        .thenExecute(()->{
+            var peg=b.offset(KingSite.peg(2));p.teleportTo(l,peg.getX()+.5,b.getY(),peg.getZ()+.5,0,0);
+            h.assertTrue(KingQueen.onPeg(p,b,2),"standing on the peg");
+        })
+        .thenWaitUntil(()->h.assertTrue((f.own(p,P).getInt(KingSleep.COUNTED)&1<<2)!=0,"looked at from the far side, they are counted on the square"))
+        .thenExecute(()->{
+            // The glass table: a line's hand goes through; a thing lifts the bottle and the cake, once.
+            KingBreath.STATES.put(q.getUUID(),KingBreath.LINE);f.click(q,P,KingSite.GLASS_TABLE);
+            h.assertFalse(q.getInventory().items.stream().anyMatch(KingDraughtItem::is),"a line lifts nothing from the table");
+            KingBreath.STATES.put(p.getUUID(),KingBreath.THING);f.click(p,P,KingSite.GLASS_TABLE);f.click(p,P,KingSite.GLASS_TABLE);
+            long n=p.getInventory().items.stream().filter(KingDraughtItem::is).count();
+            h.assertTrue(n==2,"a thing takes a bottle and a cake, and only once: "+n);
+            // Drinking and eating, on filled land far from him.
+            p.teleportTo(l,b.getX()-16.5,b.getY(),b.getZ()+KingSite.rankNear(4)-4.5,0,0);
+            var own=f.own(p,P);KingBreath.set(l,b,KingBreath.IN+10);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.THING,"on filled land, a thing: "+own.getInt("KingState"));
+            KingBreath.swallow(p,false,l.getGameTime()+KingDraughtItem.LASTS);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.SORT,"a swallow from the bottle, a step less: "+own.getInt("KingState"));
+            KingBreath.swallow(p,true,l.getGameTime()+KingDraughtItem.LASTS);KingBreath.reader(p,b,own);
+            var speed=p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+            h.assertTrue(own.getInt("KingState")==KingBreath.TOO_MUCH&&speed.getValue()<1e-6,"a bite of the cake on a thing, too much of one and rooted: "+own.getInt("KingState"));
+            KingBreath.leave(p);KingBreath.leave(q);
+            h.assertFalse(p.getInventory().items.stream().anyMatch(KingDraughtItem::is),"leaving the country takes the bottle and the cake");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.644, the railway. A reader who sits down in the carriage is looked at by the Guard through three glasses; under his glass a
+     * thing keeps its seat (getting up puts them back in it); after the third the train takes the brook at a jump and puts them on the
+     * road at the near edge of the fourth square.
+     */
+    @GameTest(template="empty",batch="king_train",timeoutTicks=1600)
+    public static void theGuardAndTheTrain(GameTestHelper h){
+        var f=place(h);var p=f.player("king_passenger",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var seat=b.offset(KingSite.SEATS[0]);
+        h.startSequence().thenExecute(()->p.teleportTo(l,seat.getX()+1.5,b.getY(),seat.getZ()+.5,90,0))
+        .thenWaitUntil(()->h.assertTrue(KingGuard.find(l,b)!=null,"the Guard is in the carriage"))
+        .thenExecute(()->{h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,seat),"a carriage seat is sat in");})
+        .thenWaitUntil(()->h.assertTrue(p.getUUID().equals(KingGuard.rider(b))&&KingGuard.holding(p,b),"he looks at the one who sat down"))
+        .thenExecute(()->p.stopRiding())
+        .thenWaitUntil(()->h.assertTrue(p.isPassenger()||!p.getUUID().equals(KingGuard.rider(b)),"under his glass, they are back in the seat"))
+        .thenExecute(()->h.assertTrue(p.isPassenger(),"under his glass, a thing keeps its seat"))
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("KingRode"),"the ride runs its course"))
+        .thenExecute(()->{
+            var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(r.distanceTo(KingSite.RIDE_OUT)<1.5&&!p.isPassenger(),"put down on the road beyond the brook: "+r);
             KingBreath.leave(p);done();h.succeed();
         });
     }

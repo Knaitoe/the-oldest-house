@@ -1536,6 +1536,22 @@
     "phase": 219
   },
   {
+    "name": "literary_king_queen",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 220
+  },
+  {
+    "name": "literary_king_guard",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 221
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

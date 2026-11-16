@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.643** finishes A sort of thing's middle (part 3): two brothers in the wood who say what a reader is in his dream and what his whole name is, a rattle to lift before their battle over it, his sleep drawing the filled land in toward him with every second stir, and three ways out, each reader's own: say his whole name beside him and come to in the drawing-room when he wakes, walk off the board as a line and leave him his sleep, or wake him too soon and go out with the country. The House now deals it from twelve doors deep, and it is a Witness source of the understanding kind (91 sources, 69 required). `docs/SLEEPING_KING_0_4_643.md`.
+Development candidate **0.4.644** fills in A sort of thing's fourth part: a Queen at the foot of a hill who runs a reader on the spot and then counts them from a peg, a glass table whose bottle makes a reader less of a thing and whose cake makes them more, and a railway carriage in a field where a guard's three looks hold a reader in their seat until the train jumps the brook. No Witness change (91 sources, 69 required). `docs/SLEEPING_KING_0_4_644.md`.
+
+Previous: 0.4.643 finished A sort of thing's middle (the brothers, his sleep and the ways out). `docs/SLEEPING_KING_0_4_643.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

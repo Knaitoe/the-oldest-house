@@ -349,6 +349,74 @@ def turned():
     return im
 
 
+def peg():
+    # 0.4.644: the Queen's peg, a pale whittled stake with a band of paint near its head, the paint chipped where it was driven in.
+    im = new(base='#d6c09a', seed=6821, spread=3)
+    for x in (4, 11):
+        fill(im, x, 0, x + 1, 16, '#b89c70')
+    fill(im, 0, 3, 16, 5, '#a8302b')
+    for x in (2, 9, 14):
+        dot(im, x, 4, '#d6c09a')
+    return im
+
+
+def tabletop():
+    # The little glass table: a clear top with a pale edge and the light lying along it.
+    im = new(base='#d4e4ea', seed=6831, spread=2)
+    frame(im, 0, 0, 16, 16, '#eef6f8')
+    for i in range(3, 13):
+        dot(im, i, 16 - i, '#f6fbfc')
+    return im
+
+
+def bottle():
+    # A small stoppered bottle of thin glass, a paper label round its middle, the stopper cork.
+    im = new(base='#8eb8a8', seed=6841, spread=3)
+    fill(im, 0, 0, 16, 3, '#b08a5a')
+    fill(im, 0, 7, 16, 12, '#ece4cc'); fill(im, 0, 7, 16, 8, '#c8bea4')
+    for x in (3, 5, 6, 9, 11, 12):
+        dot(im, x, 9, '#3a342e')
+    for x in (2, 7):
+        fill(im, x, 3, x + 1, 7, '#c4e0d4')
+    return im
+
+
+def cake():
+    # A very small cake: a sponge with a darker crust, currants pressed into its top.
+    im = new(base='#d9a96a', seed=6851, spread=3)
+    fill(im, 0, 0, 16, 2, '#a8743e'); fill(im, 0, 14, 16, 16, '#a8743e')
+    for x, y in ((3, 5), (8, 4), (12, 7), (5, 10), (10, 11), (13, 3)):
+        dot(im, x, y, '#3e2420'); dot(im, x + 1, y, '#5a3428')
+    return im
+
+
+def leather():
+    # 0.4.644: the carriage's seats, buttoned leather gone shiny where people have sat.
+    im = new(base='#5a3a2e', seed=6861, spread=3)
+    for x in range(2, 16, 4):
+        for y in range(2, 16, 4):
+            dot(im, x, y, '#3a241c'); dot(im, x + 1, y + 1, '#6e4a3a')
+    return im
+
+
+def wheel():
+    # A carriage wheel seen side on: an iron tyre, wooden felloes and spokes, a hub.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** .5
+            if 6.6 <= d <= 8:
+                dot(im, x, y, '#3a3a3e')
+            elif 5.4 <= d < 6.6:
+                dot(im, x, y, '#6a4a2e')
+            elif d < 1.8:
+                dot(im, x, y, '#4a4a4e')
+    for i in range(-5, 6):
+        dot(im, 7 + (i > 0), 7 + i, '#7a5636'); dot(im, 7 + i, 7 + (i > 0), '#7a5636')
+        dot(im, 7 + i, 7 + i, '#7a5636'); dot(im, 7 + i, 8 - i, '#7a5636')
+    return im
+
+
 def ivory():
     return new(base='#e6dcc4', seed=6761, spread=3)
 
@@ -406,9 +474,37 @@ def pane():
 def textures():
     out = {f'block/king_{k}.png': v for k, v in materials().items()}
     t = {'marble': marble(), 'gilt': gilt(), 'glass': glass(), 'grate': grate(), 'fire': fire(), 'rug': rug(), 'ivory': ivory(),
-         'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned()}
+         'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned(),
+         'peg': peg(), 'tabletop': tabletop(), 'bottle': bottle(), 'cake': cake(), 'leather': leather(), 'wheel': wheel()}
     out.update({f'block/king/{k}.png': v for k, v in t.items()})
+    # 0.4.644: the bottle and the cake in the hand.
+    out.update({'item/king/bottle.png': bottle_item(), 'item/king/cake.png': cake_item()})
     return out
+
+
+def bottle_item():
+    # The bottle as it is held: its outline in thin glass, the cork, the label with its two words too small to read.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 7, 1, 9, 3, '#b08a5a'); fill(im, 7, 3, 9, 5, '#a8ccbe')
+    fill(im, 5, 5, 11, 15, '#8eb8a8'); fill(im, 6, 15, 10, 16, '#6e9888')
+    fill(im, 5, 8, 11, 12, '#ece4cc')
+    for x in (6, 7, 9):
+        dot(im, x, 9, '#3a342e')
+    for x in (6, 8, 9):
+        dot(im, x, 11, '#3a342e')
+    fill(im, 6, 5, 7, 8, '#c4e0d4'); dot(im, 4, 7, '#6e9888'); dot(im, 11, 7, '#6e9888')
+    return im
+
+
+def cake_item():
+    # The cake on the hand: a little round sponge, its crust, currants on its top, a crumb off it.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 3, 7, 13, 13, '#d9a96a'); fill(im, 4, 6, 12, 7, '#e4b87a'); fill(im, 3, 12, 13, 13, '#a8743e')
+    fill(im, 2, 8, 3, 12, '#c0905a'); fill(im, 13, 8, 14, 12, '#c0905a')
+    for x, y in ((5, 8), (8, 7), (10, 9), (6, 10)):
+        dot(im, x, y, '#3e2420')
+    dot(im, 14, 14, '#d9a96a')
+    return im
 
 
 # ------------------------------------------------------------------------------------------------ models
@@ -499,6 +595,21 @@ def fitting_models():
                            element([8, 1.75, 6.75], [13.5, 3.25, 8.25], {'all': 't'}, rot=rot),
                            element([13.5, 1.25, 6.25], [15, 3.75, 8.75], {'all': 't'}, rot=rot)],
                           {'b': 'rattle', 't': 'turned'}, 'rattle')
+    # 0.4.644: the Queen's peg driven into the turf, its head a little proud of the grass.
+    m['peg_0'] = model([element([7, 0, 7], [9, 6, 9], {'all': 'k'}), element([6.5, 6, 6.5], [9.5, 7, 9.5], {'all': 'k'})], {'k': 'peg'}, 'peg')
+    # The glass table on its three thin gilt legs, the bottle standing on it and the cake beside it.
+    m['glass_table_0'] = model([element([2, 11, 2], [14, 12, 14], {'all': 'g'}),
+                                element([7.5, 0, 3], [8.5, 11, 4], {'all': 'r'}), element([3, 0, 11.5], [4, 11, 12.5], {'all': 'r'}),
+                                element([12, 0, 11.5], [13, 11, 12.5], {'all': 'r'}),
+                                element([4, 12, 5], [7, 18, 8], {'all': 'b'}), element([5, 18, 6], [6, 20, 7], {'all': 'b'}),
+                                element([9, 12, 8], [12, 14, 11], {'all': 'c'})],
+                               {'g': 'tabletop', 'r': 'gilt', 'b': 'bottle', 'c': 'cake'}, 'tabletop', render='minecraft:translucent')
+    # A carriage seat: a deep leather bench with a high buttoned back against the compartment wall.
+    m['seat_0'] = model([element([0, 0, 2], [16, 7, 14], {'all': 'l'}), element([0, 7, 12], [16, 22, 16], {'all': 'l'}),
+                         element([0, 0, 14], [16, 7, 16], {'all': 'w'})], {'l': 'leather', 'w': 'mahogany'}, 'leather')
+    # A carriage wheel, upright under the body, its hub standing out from it.
+    m['wheel_0'] = model([element([0, 0, 7], [16, 16, 9], {'north': 'h', 'south': 'h'}), element([6.5, 6.5, 5], [9.5, 9.5, 11], {'all': 'i'})],
+                         {'h': 'wheel', 'i': 'ivory'}, 'wheel')
     for stage in range(2):
         rail = [element([0, 0, 6], [16, 2, 10], {'all': 's'})] if stage == 0 else [element([0, 14, 6], [16, 16, 10], {'all': 's'})]
         els = rail + [element([0, 0, 6.5], [2, 16, 9.5], {'all': 's'}), element([14, 0, 6.5], [16, 16, 9.5], {'all': 's'}),
@@ -508,7 +619,7 @@ def fitting_models():
     return m
 
 
-KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle']
+KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle', 'peg', 'glass_table', 'seat', 'wheel']
 STAGES = {'mantel': 3, 'glass': 6, 'window': 2, 'problem': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 6
@@ -517,6 +628,7 @@ NAMES = {'king_fitting': 'Drawing-Room Things', 'king_turf_light': 'Light Square
          'king_bough': 'Bough', 'king_wallpaper': 'Trellis Paper', 'king_panel': 'Dado Panel', 'king_floorboards': 'Drawing-Room Floor',
          'king_ceiling': 'Drawing-Room Ceiling', 'king_chimney': 'Chimney Stone', 'king_hearth': 'Hearth',
          'king_verge': "Brook's Edge"}
+ITEM_NAMES = {'king_bottle': 'A Little Bottle', 'king_cake': 'A Very Small Cake'}
 for k in list(COUNTRY):
     NAMES[f'king_{k}_ruled'] = NAMES[f'king_{k}'] + ', Ruled'
 
@@ -548,6 +660,9 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/king_fitting.json'] = {'variants': variants}
+    # 0.4.644: the bottle and the cake, held.
+    for item in ('bottle', 'cake'):
+        out[f'models/item/king_{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/king/{item}'}}
     # 0.4.642: the brook's verge is never drawn (KingVergeBlock); its model only names what breaking it would scatter.
     out['models/block/king_verge.json'] = {'textures': {'particle': NS + 'block/king_brook'}}
     out['blockstates/king_verge.json'] = {'variants': {'': {'model': NS + 'block/king_verge'}}}
@@ -592,7 +707,7 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
-    for key, name in {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}.items():
+    for key, name in {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEM_NAMES.items()}}.items():
         if check:
             assert lang.get(key) == name, key
         else:

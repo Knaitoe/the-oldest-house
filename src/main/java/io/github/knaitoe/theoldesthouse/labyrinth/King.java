@@ -35,7 +35,7 @@ public final class King {
     public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);}
 
     /**
      * 0.4.643: a hand on the King. A line's hand goes into him; before the brothers have said his name he is only an old man asleep;
@@ -113,6 +113,17 @@ public final class King {
                 l.setBlock(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
                 s.rattleTaken=true;s.rattleBy=p.getUUID();own.putBoolean("KingRattle",true);cue(p,KingTexts.RATTLE_TAKEN);
             }
+            // 0.4.644: the peg says what it is; standing on it is what counts (KingSleep.reader).
+            case PEG->cue(p,KingTexts.PEG);
+            // The glass table: only a thing can lift the bottle and the cake, and each reader takes their own.
+            case GLASS_TABLE->{
+                if(KingBreath.of(p)<KingBreath.THING){cue(p,KingTexts.TABLE_THROUGH);return true;}
+                if(own.getBoolean("KingTookDraughts")){cue(p,KingTexts.TABLE_TAKEN);return true;}
+                p.getInventory().placeItemBackInInventory(KingDraughtItem.own(false));p.getInventory().placeItemBackInInventory(KingDraughtItem.own(true));
+                own.putBoolean("KingTookDraughts",true);cue(p,KingTexts.TABLE_TAKE);
+            }
+            case SEAT->io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,at);
+            case WHEEL->cue(p,KingTexts.WHEEL);
         }
         return true;
     }

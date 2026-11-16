@@ -191,6 +191,9 @@ LOOKS = {
     # old-fashioned skeleton suits buttoned to the trousers, with wide white collars, one embroidered DUM and the other DEE.
     'literary_king_dum': Look('#e8c0a2','#7a5636','close','#c99a3a','#5a4632','coat','#f2ece0',eyes='#4a3e30',age=1,mark='king_brother_dum',sleeve=11),
     'literary_king_dee': Look('#e8c0a2','#7a5636','close','#c99a3a','#5a4632','coat','#f2ece0',eyes='#4a3e30',age=1,mark='king_brother_dee',sleeve=11),
+    # 0.4.644: the Queen on the hill, a chess queen in a long gown with a crown; and the Guard on the train, in uniform under a paper cap.
+    'literary_king_queen': Look('#e6bea4','#3a2a24','long','#a8302b','#7e221f','dress','#d8b04a',eyes='#3e3630',age=1,mark='king_queen',sleeve=11),
+    'literary_king_guard': Look('#d8a888','#6a6058','close','#3a3e4a','#2e323c','uniform','#c9a84a',eyes='#4a4a44',age=2,beard='moustache',mark='king_guard',sleeve=11),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
@@ -1555,6 +1558,32 @@ def paint(look):
                 d.rectangle((0,0,15,low),fill=rgb(cap))
                 for x in (2,6,10,14):d.line((x,0,x-1,low-3),fill=shade(cap,-16))
                 d.rectangle((0,low-2,15,low),fill=rgb(band));d.line((0,low-2,15,low-2),fill=shade(band,16));d.line((0,low,15,low),fill=shade(band,-30))
+            put(box,art)
+    if look.mark=='king_queen':
+        # 0.4.644: the Queen's crown on the hat layer: a gilt band round the head at the brow, five points standing up from it, a stone
+        # in the front point; the top open over her hair.
+        gold='#d8b04a';stone='#7e1e1a'
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side not in ('top','bottom'):
+                # Points standing up from the band: a spike every few pixels, two pixels wide at the band and one at the tip.
+                for x in (1,6,11):
+                    d.rectangle((x,1,x+2,2),fill=rgb(gold));d.point((x+1,0),fill=shade(gold,26))
+                d.rectangle((0,3,15,5),fill=rgb(gold));d.line((0,3,15,3),fill=shade(gold,24));d.line((0,5,15,5),fill=shade(gold,-38))
+                if side=='front':d.rectangle((7,3,8,4),fill=rgb(stone));d.point((7,3),fill=shade(stone,44))
+            put(box,art)
+    if look.mark=='king_guard':
+        # 0.4.644: the Guard's peaked cap of folded white paper on the hat layer, its folds showing, a black peak at the front; brass
+        # buttons and a ticket punch on a cord on the coat front.
+        paper='#eee8da'
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':
+                art=panel((16,16),paper,'cloth');d=ImageDraw.Draw(art);d.line((0,8,15,8),fill=shade(paper,-30));d.line((8,0,8,15),fill=shade(paper,-20))
+            elif side=='front':
+                d.rectangle((0,0,15,3),fill=rgb(paper));d.line((0,1,15,1),fill=shade(paper,-24));d.rectangle((1,4,14,5),fill='#1e1e22')
+            elif side!='bottom':
+                d.rectangle((0,0,15,3),fill=rgb(paper));d.line((0,3,15,3),fill=shade(paper,-34))
             put(box,art)
     if look.mark=='movie_cap':
         # A flat cloth cap on the hat layer; its brim shades the front edge only.
