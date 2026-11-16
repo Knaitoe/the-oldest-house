@@ -165,7 +165,10 @@ def face(tex, frm, to, side):
         uv = [x0, z0, x1, z1]
     else:
         uv = [x0, 16 - z1, x1, 16 - z0]
-    uv = [min(16, max(0, v)) for v in uv]
+    # A span off the picture (a piece standing above the block, or out past its edge) slides back onto it whole and keeps its size
+    # (flicker._onto). Until 0.4.656 each end was clamped alone, which squeezed the sides of everything on the workbench and
+    # flattened two faces of the vise's jaw to nothing.
+    (uv[0], uv[2]), (uv[1], uv[3]) = flicker._onto(uv[0], uv[2]), flicker._onto(uv[1], uv[3])
     return {'texture': '#' + tex, 'uv': [round(v, 3) for v in uv]}
 
 

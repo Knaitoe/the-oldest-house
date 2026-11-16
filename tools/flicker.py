@@ -894,9 +894,11 @@ def doubled(parts, pixels, cover=COVER):
     return found
 
 
-# A face less than this across, either way, is a sliver (the edge of a mark laid flat on a floor, a pane's edge in its frame, a
-# copy the cure laid): whether it draws anything or not, nobody sees it.
-SLIVER = 1.0
+# A face less than this across, either way, is a sliver: the edge of a label or a scrape laid on a surface a twenty-fifth to a
+# hundredth of a pixel thick, or a copy the cure laid. Whether it draws anything or not, nobody sees it. Until 0.4.656 it was a whole
+# pixel, so the half-pixel sides of a card, a rope, a note or a frayed end were never looked at, and ten models had sides that drew
+# nothing (the Last Crossing's frayed coil among them, which the owner saw).
+SLIVER = 0.05
 
 
 def _span(e, k):

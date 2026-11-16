@@ -510,7 +510,7 @@ def woman():
 
 
 # ---------------------------------------------------------------------------------------------------- models
-def element(lo, hi, textures, rotation=None, uv=None):
+def element(lo, hi, textures, rotation=None, uv=None, turn=None):
     faces = {}
     for face in ('north', 'south', 'east', 'west', 'up', 'down'):
         name = textures.get(face, textures.get('all'))
@@ -519,6 +519,8 @@ def element(lo, hi, textures, rotation=None, uv=None):
         faces[face] = {'texture': '#' + name}
         if uv and face in uv:
             faces[face]['uv'] = uv[face]
+        if turn and face in turn:
+            faces[face]['rotation'] = turn[face]
     e = {'from': lo, 'to': hi, 'faces': faces}
     if rotation:
         e['rotation'] = rotation
@@ -576,7 +578,10 @@ def fitting_models():
     m['bathmat_0'] = model([element([1, 0, 1], [15, .5, 15], {'all': 'm'})], {'m': 'bathmat'}, 'bathmat')
     m['towels_0'] = model([element([3, 3, 12], [13, 14, 16], {'all': 's', 'north': 'towels'})], {'s': 'steel', 'towels': 'towels'}, 'steel')
     m['bin_0'] = model([element([4, 0, 4], [12, 11, 12], {'all': 's', 'up': 'bin_top'})], {'s': 'steel', 'bin_top': 'bin_top'}, 'steel')
-    m['note_0'] = model([element([5, 0, 5], [11, .5, 11], {'all': 'n'}, uv={'up': [5, 5, 11, 11], 'down': [5, 5, 11, 11]})], {'n': 'note'}, 'note')
+    # The note's edges show its own edge rows and columns; left to the game they fell on the clear margin and drew nothing (0.4.656).
+    m['note_0'] = model([element([5, 0, 5], [11, .5, 11], {'all': 'n'},
+                                 uv={'up': [5, 5, 11, 11], 'down': [5, 5, 11, 11], 'north': [5, 5, 11, 5.5], 'south': [5, 10.5, 11, 11],
+                                     'east': [10.5, 5, 11, 11], 'west': [5, 5, 5.5, 11]}, turn={'east': 90, 'west': 90})], {'n': 'note'}, 'note')
     return m
 
 

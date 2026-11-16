@@ -26,6 +26,11 @@ BOY_REVIEW=ROOT/'art/inventory/caged_boy_04585.json'
 TRUANT_REVIEW=ROOT/'art/inventory/truant_ink_04591.json'
 TRUANT_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_truant'+phase+'.png' for phase in ('','_leer')}
 BOY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/caged_child.png'
+ELK_REVIEW=ROOT/'art/inventory/elk_eyes_04656.json'
+ELK_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_elk'+sheet+'.png' for sheet in ('','_wounded','_carcass','_carcass_skinned')}
+GIRL_REVIEW=ROOT/'art/inventory/clap_girl_04656.json'
+GIRL_PATH='src/main/resources/assets/the_oldest_house/textures/entity/clap_ghost_girl.png'
+GIRL_MODEL=ROOT/'art/clap_ghost_girl.model.json'
 # The slim player model's two layers: head and hat, body and jacket, each arm and its sleeve (three pixels wide), each leg and its trouser.
 BOY_NETS=((0,0,8,8,8),(32,0,8,8,8),(16,16,8,12,4),(16,32,8,12,4),(40,16,3,12,4),(40,32,3,12,4),(32,48,3,12,4),(48,48,3,12,4),(0,16,4,12,4),(0,32,4,12,4),(16,48,4,12,4),(0,48,4,12,4))
 MERRY_HAIR_NETS=((80,0,3,7,3),(96,0,2,3,2),(110,0,4,2,3))
@@ -83,7 +88,17 @@ def reviewed_repaints(review):
     row=boy[BOY_PATH];prior=current[BOY_PATH]
     assert row['previous_sha256']==prior['sha256'] and row['previous_alpha_sha256']==prior['alpha_sha256'],'Previous review of the boy changed'
     assert row['size']==prior['size'],'The boy\'s atlas size changed'
-    return {**current,**boy}
+    current={**current,**boy}
+    # 0.4.656: the elk's eyes, painted mirror-symmetric so that the glow drawn over them when its eyes shine lies on both (the owner:
+    # "its glowing eyes are on the front of its head while it still has its normal black eyes on the side"). Its four sheets
+    # supersede only their own previous approved paintings, with their size and opacity kept.
+    elk={r['path']:r for r in json.loads(ELK_REVIEW.read_text())['repainted']}
+    assert set(elk)==ELK_PATHS
+    for path,row in elk.items():
+        prior=current[path]
+        assert row['previous_sha256']==prior['sha256'] and row['previous_alpha_sha256']==prior['alpha_sha256'],('Previous review of the elk changed',path)
+        assert row['size']==prior['size'] and row['alpha_sha256']==prior['alpha_sha256'],('The elk\'s opacity changed with its eyes',path)
+    return {**current,**elk}
 
 
 def main():
@@ -107,11 +122,31 @@ def main():
     # 0.4.241: Devil's Rock's generated prop crops, redrawn as pixel art at the owner's request (tools/draw_devils_rock_props.py).
     props={r['path']:r for r in json.loads(PROP_REVIEW.read_text())['repainted']}
     assert len(props)==4 and all('/review_' in path for path in props)
+    # 0.4.656, the owner: "Can you improve the texture for the ghost girl from hide and clap?" (tools/draw_clap_girl.py).
+    girl={r['path']:r for r in json.loads(GIRL_REVIEW.read_text())['repainted']}
+    assert set(girl)=={GIRL_PATH}
     for path,digest in review['unchanged_png_sha256'].items():
         if path in props:
             row=props[path];assert row['review_04100_sha256']==digest,('Historical prop review changed',path)
             raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('Devil\'s Rock prop changed since its redrawing',path)
             assert list(Image.open(BytesIO(raw)).size)==row['size'],path
+            continue
+        if path in girl:
+            row=girl[path];assert row['review_04100_sha256']==digest,('Historical review of the girl changed',path)
+            raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('The girl from the wardrobe changed since her repaint',path)
+            im=Image.open(BytesIO(raw)).convert('RGBA');assert list(im.size)==row['size'],path
+            alpha=im.getchannel('A');assert hashlib.sha256(alpha.tobytes()).hexdigest()==row['alpha_sha256'],path
+            # On the cast's grid: every pixel painted on her is a 2x2 square of the sheet.
+            half=im.resize((im.width//2,im.height//2),Image.Resampling.NEAREST)
+            assert half.resize(im.size,Image.Resampling.NEAREST).tobytes()==im.tobytes(),('Off-grid art',path)
+            # Her opacity is her model's nets, each filled to its corners, and nothing else; without her neck's, the old sheet's.
+            nets=Image.new('L',im.size,0);neck=None
+            for part in json.loads(GIRL_MODEL.read_text())['parts']:
+                for cube in part['cubes']:
+                    (u,v),(w,h,d)=cube['uv'],cube['size'];box=(u*4,v*4,(u+2*(w+d))*4,(v+d+h)*4);nets.paste(255,box)
+                    if cube['name']=='neck':neck=box
+            assert alpha.tobytes()==nets.tobytes(),('The girl is painted outside her model, or a face of her is not painted',path)
+            alpha.paste(0,neck);assert hashlib.sha256(alpha.tobytes()).hexdigest()==row['previous_alpha_sha256'],('Her opacity changed beyond her neck',path)
             continue
         if path in portraits:
             row=portraits[path];assert row['review_04100_sha256']==digest,('Historical portrait review changed',path)

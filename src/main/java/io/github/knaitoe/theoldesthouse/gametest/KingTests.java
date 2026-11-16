@@ -306,23 +306,34 @@ public final class KingTests {
     /**
      * 0.4.643, leaving him his sleep. A reader who has been beside him, heard the brothers and (0.4.648) been in check, and then walks
      * off the board as a line with the crown off, leaves him asleep: they come to in the drawing-room with the account ready. Anybody else off the board is only put back.
+     *
+     * <p>0.4.656: every step here goes through the server's own routing. The reader is put just past a side hedge, or walks through one
+     * as a line, and the scene's own quarter-second tick finds them off the board; nothing calls the King's rule directly. Until 0.4.656
+     * the scene ended at the side hedges, so a reader past one was in no scene and nothing caught them: they were never put back and
+     * never left him his sleep. This case put the reader past the hedge and called the rule itself, so it never saw that.
      */
-    @GameTest(template="empty",batch="king_walk",timeoutTicks=800)
+    @GameTest(template="empty",batch="king_walk",timeoutTicks=1200)
     public static void walkingOffLeavesHimHisSleep(GameTestHelper h){
         var f=place(h);var p=f.player("king_leaver",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
-        h.startSequence().thenIdle(5).thenExecute(()->{
-            var own=f.own(p,P);
-            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
-            KingBreath.reader(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
-            h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!f.own(p,P).getBoolean("Ready"),"a reader who has not met him is only put back");
-            own=f.own(p,P);own.putBoolean(KingSleep.MET,true);own.putBoolean(KingSleep.HEARD,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
-            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
-            KingBreath.reader(p,b,f.own(p,P));
-            h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!f.own(p,P).getBoolean("Ready"),"0.4.648: one who met him and heard the brothers but was never in check is only put back");
-            own=f.own(p,P);own.putBoolean(KingSleep.CHECKED,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
-            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
-            KingBreath.reader(p,b,f.own(p,P));
-            h.assertTrue(f.own(p,P).getBoolean("Ready")&&"left_him_his_sleep".equals(f.own(p,P).getString(KingSleep.ENDING)),"one who met him and heard the brothers leaves him his sleep");
+        java.util.function.BooleanSupplier onBoard=()->KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ()));
+        // Just past the east or west hedge, on the row the brothers' story is told from: off the board, and in nobody's square.
+        java.util.function.IntConsumer past=side->{p.teleportTo(l,b.getX()+(side>0?KingSite.COUNTRY+1.5:-KingSite.COUNTRY-.5),b.getY(),b.getZ()-40.5,side>0?270:90,0);p.setDeltaMovement(Vec3.ZERO);
+            h.assertFalse(onBoard.getAsBoolean(),"past the "+(side>0?"east":"west")+" hedge a reader is off the board");
+            h.assertTrue(LiteraryVignettes.current(p)==P,"and still in the King's scene past the "+(side>0?"east":"west")+" hedge, for his rule to find them");};
+        h.startSequence().thenIdle(5)
+        .thenExecute(()->{h.assertTrue(LiteraryVignettes.current(p)==P,"the reader is in the King's scene");past.accept(1);})
+        .thenWaitUntil(()->h.assertTrue(onBoard.getAsBoolean()&&!f.own(p,P).getBoolean("Ready"),"a reader who has not met him is only put back"))
+        .thenExecute(()->{var own=f.own(p,P);own.putBoolean(KingSleep.MET,true);own.putBoolean(KingSleep.HEARD,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);past.accept(-1);})
+        .thenWaitUntil(()->h.assertTrue(onBoard.getAsBoolean()&&!f.own(p,P).getBoolean("Ready"),"0.4.648: one who met him and heard the brothers but was never in check is only put back"))
+        .thenExecute(()->{var own=f.own(p,P);own.putBoolean(KingSleep.CHECKED,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            // Walked, not put there: from the last square before the east hedge, three squares from him.
+            p.teleportTo(l,b.getX()+KingSite.COUNTRY-1.5,b.getY(),b.getZ()-40.5,270,0);p.setDeltaMovement(Vec3.ZERO);})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("KingState")==KingBreath.LINE,"walking away from him, three squares off, the reader is a line: "+f.own(p,P).getInt("KingState")))
+        .thenWaitUntil(()->{
+            if(!f.own(p,P).getBoolean("Ready")&&onBoard.getAsBoolean())p.move(net.minecraft.world.entity.MoverType.SELF,new Vec3(.3,0,0));
+            h.assertTrue(f.own(p,P).getBoolean("Ready"),"one who met him, heard the brothers and was in check walks through the side hedge as a line and leaves him his sleep: x "+String.format("%.2f",p.getX()-b.getX()));})
+        .thenExecute(()->{
+            h.assertTrue("left_him_his_sleep".equals(f.own(p,P).getString(KingSleep.ENDING)),"the ending is leaving him his sleep: "+f.own(p,P).getString(KingSleep.ENDING));
             h.assertTrue(KingSite.inRoom(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!KingSleep.waking(b),"and comes to in the drawing-room while he sleeps on");
             h.assertFalse(King.dealable(f.data(),UUID.randomUUID()),"the House deals the country only from depth twelve");
             KingBreath.leave(p);done();h.succeed();

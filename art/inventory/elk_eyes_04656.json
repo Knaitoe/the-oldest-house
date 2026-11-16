@@ -1,0 +1,49 @@
+{
+  "note": "0.4.656: the owner saw the elk's glowing eyes on the front of its head while its painted eyes were on its sides. The glow is now drawn over the painted eyes (LiteraryRenderers.ElkEyes), and the eyes are painted mirror-symmetric, each two pixels back from the front of the head and two and a half down, so one pair of mirrored boxes lies on both (the right eye sat half a pixel nearer the front). The four sheets painted by elk_skin change only at the right eye; their size and opacity are kept. These paintings supersede only their own 0.4.100 sheets.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk.png",
+      "previous_sha256": "9af2107ecb61d9d300d7629ce219d3382bede0f962fdb19cb53c08f8605c76e6",
+      "previous_alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "sha256": "f40dd96e3463eb1245f0bc5983616a8c1896e72f2c207971bb28f5a909e05832",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_wounded.png",
+      "previous_sha256": "d49b5611fa24b8f4f8166289226516d100cb103b7c57848aec8932efa3985878",
+      "previous_alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "sha256": "9acfb582f1a522fae5f188fd2e5ff7f48f8514ee88a52fa864f6df0c5e04ad80",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass.png",
+      "previous_sha256": "d49b5611fa24b8f4f8166289226516d100cb103b7c57848aec8932efa3985878",
+      "previous_alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "sha256": "9acfb582f1a522fae5f188fd2e5ff7f48f8514ee88a52fa864f6df0c5e04ad80",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    },
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_elk_carcass_skinned.png",
+      "previous_sha256": "0019001ee336bd4fde5d899fa52266f4231320dc5724607f558e790e04094aa1",
+      "previous_alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260",
+      "sha256": "4b5afa08ff959002b0ed4f39d47b9345016491ea4284ecdf5768b56a6e197f9a",
+      "size": [
+        512,
+        256
+      ],
+      "alpha_sha256": "b5a41c3758763bbec72769fab4a2533bf2db0b6312d93d25a695f9e4b9e02260"
+    }
+  ]
+}

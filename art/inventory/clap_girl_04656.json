@@ -1,0 +1,16 @@
+{
+  "note": "0.4.656, the owner: \"Can you improve the texture for the ghost girl from hide and clap?\" The girl from the wardrobe, painted by her own tool (tools/draw_clap_girl.py) at the cast's pixel grid. Her sheet supersedes only its own 0.4.100 hash. Its opacity changes by exactly one net: her model gains a neck, its last piece, so no other piece moves on the sheet.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/entity/clap_ghost_girl.png",
+      "review_04100_sha256": "93084c0eb99a351b50f9d601ddc7488941785af62b7130cc9911c56225ae322e",
+      "previous_alpha_sha256": "148cec3554459f2a2e22c88821f1efa7170a7d4f4f9ca4ec7107e37cda8475ad",
+      "sha256": "86e013aba30619356b43f3d11e833a2df2ad28f9c6f5d792b331ec381dbe2d61",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_sha256": "50f0ae8b8e76245e0d4922dca05ee323f156da8e618028858b58754c2e320678"
+    }
+  ]
+}

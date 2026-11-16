@@ -1417,7 +1417,13 @@ public final class LiteraryRenderers {
     public static final class ElkEyes extends net.minecraft.client.renderer.entity.layers.RenderLayer<LiteraryElk,ElkModel>{
         private final ModelPart eyes;
         ElkEyes(ElkRenderer parent,EntityRendererProvider.Context c){super(parent);eyes=c.bakeLayer(ELK_EYES).getChild("eyes");}
-        public static LayerDefinition layer(){var mesh=new MeshDefinition();mesh.getRoot().addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(0,0).addBox(-3.5F,-1.7F,-8.06F,1.2F,.8F,.12F).addBox(2.3F,-1.7F,-8.06F,1.2F,.8F,.12F),PartPose.ZERO);return LayerDefinition.create(mesh,128,64);}
+        /**
+         * 0.4.656 (the owner: "its glowing eyes are on the front of its head while it still has its normal black eyes on the side"):
+         * the glow lies over the eyes painted on each side of the head, a pixel and a half square and two pixels back from its front
+         * (tools/paint_character_skins.py, elk_skin), standing a tenth of a pixel off the side so it is drawn over them. Until then it
+         * was a pair of slits on the front of the head, where an elk has no eyes.
+         */
+        public static LayerDefinition layer(){var mesh=new MeshDefinition();mesh.getRoot().addOrReplaceChild("eyes",CubeListBuilder.create().texOffs(0,0).addBox(-4.1F,-1F,-6F,.2F,1.5F,1.5F).addBox(3.9F,-1F,-6F,.2F,1.5F,1.5F),PartPose.ZERO);return LayerDefinition.create(mesh,128,64);}
         public static void draw(ElkModel model,ModelPart eyes,PoseStack p,MultiBufferSource out){p.pushPose();model.root.getChild("head").translateAndRotate(p);eyes.render(p,out.getBuffer(RenderType.eyes(texture("herd_eyes"))),LightTexture.FULL_BRIGHT,net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);p.popPose();}
         @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryElk a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.owner().isPresent()&&!a.isInvisible())draw(getParentModel(),eyes,p,out);}
     }

@@ -50,6 +50,8 @@ public final class OutdoorBounds {
             // 0.4.492: Bike night's room goes far under its ground, for the Hollow. Off the edge of the town somebody is put back
             // as soon as they were when its room was a slot high, not after a fall of fifty blocks.
             case BIKE_NIGHT -> new Area(r.minX() - 2, r.maxX() + 2, r.minZ() - 2, vestibule, -9);
+            // 0.4.656: past the King's side hedges his own rule acts first (KingSite.OFF_BOARD), and only beyond that is anybody put back here.
+            case SLEEPING_KING -> new Area(r.minX() - KingSite.OFF_BOARD - 2, r.maxX() + KingSite.OFF_BOARD + 2, r.minZ() - 2, vestibule, r.minY() - 4);
             default -> new Area(r.minX() - 2, r.maxX() + 2, r.minZ() - 2, vestibule, r.minY() - 4);
         };
     }
