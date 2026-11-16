@@ -18,7 +18,8 @@ in place of json.dumps, and every model it draws is settled on the way out.
 
     python3 tools/flicker.py            every model in the pack: which have faces that flicker, and how much of them
     python3 tools/flicker.py --check    the same, and fails if any has; and if any see-through face is laid over itself
-    python3 tools/flicker.py --cure     settles every model in the pack where it lies (a tool that writes with dumps() agrees with it)
+    python3 tools/flicker.py --cure     settles every model in the pack where it lies (a tool that writes with dumps() agrees with it),
+                                        each face's mapping first kept on its own picture (fitted, 0.4.650)
     python3 tools/flicker.py NAME ...   only these models (block/bike_night/wasp), with every pair
 """
 import copy
@@ -721,10 +722,135 @@ def _lies(e, k):
             'south': (x0, 16 - y1, x1, 16 - y0), 'west': (z0, 16 - y1, z1, 16 - y0), 'east': (16 - z1, 16 - y1, 16 - z0, 16 - y0)}[k]
 
 
+def _onto(a, b):
+    """One span of a face's mapping (0 to 16 on its picture), kept on the picture. The game draws whatever lies at a face's mapping in
+    its sheet of pictures, without stopping at the picture's edge, so a uv named off the picture shows whatever picture lies beside
+    its own in the sheet, which changes as the sheet is laid out. A face that names no uv takes one from where its piece lies, which
+    is off the picture when the piece reaches past its block (a chair's back, a post, a candle); the mod's ModelUvRangeMixin (0.4.240)
+    moves that one back when the game reads the model, the least way onto the picture or, past sixteen, squeezing the whole picture
+    onto it. Here the span is slid by the whole pictures that keep the most of it on the picture, as if the picture went on
+    repeating (a span wholly off it comes on whole); what still lies across an edge is then moved the least way onto it, as the
+    mixin moves it. One longer than the picture (only a uv named so long: _cut has already cut every longer piece a face with no
+    uv runs along) is fitted to it. (0.4.650; the King's tool's own rule.)"""
+    lo, hi = min(a, b), max(a, b)
+    if lo >= -1e-6 and hi <= 16 + 1e-6:
+        return a, b
+    if hi - lo > 16:
+        return (0, 16) if a < b else (16, 0)
+    slides = [-16 * k for k in range(math.floor(lo / 16) - 1, math.floor(hi / 16) + 2)]
+    slide = max(slides, key=lambda s: (round(min(hi + s, 16) - max(lo + s, 0), 6), -abs(s)))
+    lo, hi = lo + slide, hi + slide
+    nudge = -lo if lo < 0 else 16 - hi if hi > 16 else 0
+    return a + slide + nudge, b + slide + nudge
+
+
+# Which of a piece's faces a model axis runs across, by the face's own two ways (u, v) as the game maps a face that names no uv.
+_ACROSS = {0: (('down', 0), ('up', 0), ('north', 0), ('south', 0)), 1: (('north', 1), ('south', 1), ('west', 1), ('east', 1)),
+           2: (('down', 1), ('up', 1), ('west', 0), ('east', 0))}
+_CAPS = {0: ('west', 'east'), 1: ('down', 'up'), 2: ('north', 'south')}
+
+
+# The order in which the game bakes a face's four corners (its FaceInfo), each corner by the end of the piece it lies at on x, y
+# and z (0 the "from" end, 1 the "to" end). A face's uv is laid on these corners as BlockFaceUV does: the corner's index, turned by
+# the face's rotation, takes u from the uv's first or third number and v from its second or fourth.
+_VERTS = {'down': ((0, 0, 1), (0, 0, 0), (1, 0, 0), (1, 0, 1)), 'up': ((0, 1, 0), (0, 1, 1), (1, 1, 1), (1, 1, 0)),
+          'north': ((1, 1, 0), (1, 0, 0), (0, 0, 0), (0, 1, 0)), 'south': ((0, 1, 1), (0, 0, 1), (1, 0, 1), (1, 1, 1)),
+          'west': ((0, 1, 0), (0, 0, 0), (0, 0, 1), (0, 1, 1)), 'east': ((1, 1, 1), (1, 0, 1), (1, 0, 0), (1, 1, 0))}
+
+
+def _uv_at(uv, turn, k):
+    s = (k + turn // 90) % 4
+    return uv[0] if s in (0, 1) else uv[2], uv[1] if s in (0, 3) else uv[3]
+
+
+def _part(k, f, axis, t0, t1):
+    """The uv a face names, for the part of its piece that runs from t0 to t1 of the way along axis (0 at the piece's "from" end):
+    the same picture, cut where the piece is cut, so that the parts side by side show it once, as the whole face did."""
+    uv, turn, verts = f['uv'], f.get('rotation', 0), _VERTS[k]
+    corners = [_uv_at(uv, turn, i) for i in range(4)]
+    laid = []
+    for i, v in enumerate(verts):
+        j = next(j for j, w in enumerate(verts) if w[axis] != v[axis] and all(w[a] == v[a] for a in range(3) if a != axis))
+        near, far = (corners[i], corners[j]) if v[axis] == 0 else (corners[j], corners[i])
+        t = t0 if v[axis] == 0 else t1
+        laid.append((near[0] + (far[0] - near[0]) * t, near[1] + (far[1] - near[1]) * t))
+    out = [0.0] * 4
+    for i in range(4):
+        s = (i + turn // 90) % 4
+        if s == 0:
+            out[0], out[1] = laid[i]
+        elif s == 2:
+            out[2], out[3] = laid[i]
+    return [_number(c) for c in out]
+
+
+def _cut(e):
+    """A piece longer than its picture along some way, where a face that names no uv runs along it: cut where the picture would
+    begin again (every sixteen, as the block's own grid), so that each part maps its picture one to one and the picture carries
+    on across the cut as if it repeated. The parts keep the piece's turn, light and every face but the ones the cut makes inside
+    it; a face that names its own uv names its share of it on each part, so the parts show its picture once. A piece needing no
+    cut gives [e]."""
+    pieces = [e]
+    for axis in range(3):
+        lo, hi = sorted((e['from'][axis], e['to'][axis]))
+        if hi - lo <= 16 + 1e-6 or not any(k in e.get('faces', {}) and 'uv' not in e['faces'][k] for k, _ in _ACROSS[axis]):
+            continue
+        cuts = [c for c in range(int(math.floor(lo / 16)) * 16 + 16, int(math.ceil(hi / 16)) * 16, 16) if lo + 1e-6 < c < hi - 1e-6]
+        out = []
+        for p in pieces:
+            bounds = [lo] + cuts + [hi]
+            for i in range(len(bounds) - 1):
+                q = copy.deepcopy(p)
+                q['from'][axis], q['to'][axis] = _number(bounds[i]), _number(bounds[i + 1])
+                # A face that names its own uv keeps its picture whole across the parts: each part names its share of it.
+                for k, _ in _ACROSS[axis]:
+                    f = q['faces'].get(k)
+                    if f is not None and 'uv' in f:
+                        f['uv'] = _part(k, f, axis, (bounds[i] - lo) / (hi - lo), (bounds[i + 1] - lo) / (hi - lo))
+                low, high = _CAPS[axis]
+                if i > 0:
+                    q['faces'].pop(low, None)
+                if i < len(bounds) - 2:
+                    q['faces'].pop(high, None)
+                if q['faces']:
+                    out.append(q)
+        pieces = out
+    return pieces
+
+
+def fitted(parts):
+    """A model's pieces with every face's mapping on its own picture: a piece longer than its picture is cut where the picture would
+    begin again (_cut); then a face that names no uv is given one where the uv the game would give it (from where its piece lies)
+    leaves the picture, and a uv named off the picture is brought onto it (_onto). Copies the cure laid are left as they are, to be
+    laid afresh. Gives back the same list when nothing needs it."""
+    out, changed = [], False
+    for e in parts:
+        if e.get('__comment') == LAID:
+            out.append(e); continue
+        pieces = _cut(e)
+        if len(pieces) > 1:
+            changed = True
+        for piece in pieces:
+            fixed = None
+            for k, f in piece.get('faces', {}).items():
+                uv = f.get('uv') or _lies(piece, k)
+                (u0, u1), (v0, v1) = _onto(uv[0], uv[2]), _onto(uv[1], uv[3])
+                if (u0, v0, u1, v1) == tuple(uv):
+                    continue
+                if fixed is None:
+                    fixed = dict(piece); fixed['faces'] = dict(piece['faces'])
+                face = dict(f); face['uv'] = [_number(c) for c in (u0, v0, u1, v1)]
+                fixed['faces'][k] = face
+            if fixed is not None:
+                changed = True
+            out.append(fixed if fixed is not None else piece)
+    return out if changed else parts
+
+
 def settled(value):
-    """A model as written, its pieces settled; anything else as it is."""
+    """A model as written, its faces kept on their pictures and its pieces settled; anything else as it is."""
     if isinstance(value, dict) and isinstance(value.get('elements'), list) and value['elements']:
-        parts = settle(value['elements'])
+        parts = settle(fitted(value['elements']))
         if parts is not value['elements']:
             value = dict(value); value['elements'] = parts
     return value
@@ -866,7 +992,7 @@ def cure(assets=ASSETS):
         text = file.read_text(); model = json.loads(text)
         if not model.get('elements'):
             continue
-        parts = settle(model['elements'])
+        parts = settle(fitted(model['elements']))
         if parts is model['elements']:
             continue
         how = next(((kind, tail) for kind in WRITTEN for tail in ('\n', '') if json.dumps(model, **kind) + tail == text), None)
@@ -896,6 +1022,16 @@ def main(argv):
         print(f'Settled {len(changed)} models.' + (f' Could not tell how {len(strange)} were written: {", ".join(strange[:8])}' if strange else ''))
         return 0
     found, twice_drawn = scan()
+    # 0.4.650: a face mapped off its picture shows whatever lies beside it in the game's sheet, or (one that names no uv) is shifted
+    # or squeezed back onto it by ModelUvRangeMixin; fitted (_cut, _onto) maps it one pixel to one pixel on its own picture.
+    off = [name for name, model in pack().items() if model.get('elements') and fitted(model['elements']) is not model['elements']]
+    for name in off:
+        print(f'a face is mapped off its own picture (or a piece is longer than its picture): {name}')
+    if off:
+        print(f'{len(off)} models have faces mapped off their pictures. A tool that writes its models with flicker.dumps keeps them on; '
+              f'python3 tools/flicker.py --cure keeps the pack on as it lies.')
+        if '--check' in argv:
+            return 1
     for name in sorted(found, key=lambda n: -sum(g[4] for g in found[n])):
         print(f'{sum(g[4] for g in found[name]):9.2f} square pixels in {len(found[name]):3d} pairs of faces flicker: {name}')
     for name in sorted(twice_drawn):

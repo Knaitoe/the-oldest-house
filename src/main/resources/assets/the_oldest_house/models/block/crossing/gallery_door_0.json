@@ -15,7 +15,7 @@
       ],
       "to": [
         16,
-        32,
+        16,
         16
       ],
       "faces": {
@@ -31,10 +31,60 @@
         "west": {
           "texture": "#r"
         },
-        "up": {
-          "texture": "#r"
-        },
         "down": {
+          "texture": "#r"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        16,
+        13
+      ],
+      "to": [
+        16,
+        32,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#r",
+          "uv": [
+            0,
+            0,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#r",
+          "uv": [
+            13,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
           "texture": "#r"
         }
       }
@@ -52,16 +102,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ]
         },
         "south": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12,
+            0,
+            14,
+            5
+          ]
         },
         "east": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            3,
+            0,
+            4,
+            5
+          ]
         },
         "west": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12,
+            0,
+            13,
+            5
+          ]
         },
         "up": {
           "texture": "#i"
@@ -84,16 +158,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
         },
         "south": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
         },
         "east": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            3,
+            0,
+            3.5,
+            2
+          ]
         },
         "west": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12.5,
+            0,
+            13,
+            2
+          ]
         },
         "up": {
           "texture": "#i"

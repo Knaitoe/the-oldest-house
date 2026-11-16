@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.649** finishes A sort of thing with its ninth part, afterwards: the King's country comes back as an aftermath room, all ruled and silent with his night-cap on a bough if he woke, or filled to its edges and breathing if he was left asleep; the crown is the keepsake, only drawn outside his country and filling in while somebody is looking at its wearer; the Witness line follows the reader's own ending, and their own book has a leaf for the ruled country. No Witness count change (91 sources, 69 required). `docs/SLEEPING_KING_0_4_649.md`.
+Development candidate **0.4.650** puts every model face on its own picture. A face that named its texture square off the texture showed a strip of whatever texture lay beside it in the game's sheet (the plain's note stand, a television aerial), and a piece longer than its texture had the whole texture squeezed onto it, its pixels drawn taller than wide. Such pieces are now cut where their texture would begin again, each part mapped one pixel to one pixel, and `tools/flicker.py --check` keeps the pack that way. No gameplay, Witness, layout or protocol change. `docs/MODEL_FACES_0_4_650.md`.
 
-Previous: 0.4.648 added the eighth part (the feast, the crown and check). `docs/SLEEPING_KING_0_4_648.md`.
+Previous: 0.4.649 finished A sort of thing with its ninth part, afterwards. `docs/SLEEPING_KING_0_4_649.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

@@ -58,16 +58,40 @@
           "texture": "#i"
         },
         "east": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            0,
+            0,
+            1,
+            7
+          ]
         },
         "west": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            15,
+            0,
+            16,
+            7
+          ]
         },
         "up": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            7,
+            15,
+            9,
+            16
+          ]
         },
         "down": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            7,
+            0,
+            9,
+            1
+          ]
         }
       }
     },
@@ -90,16 +114,40 @@
           "texture": "#i"
         },
         "east": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            0,
+            13,
+            1.5,
+            15
+          ]
         },
         "west": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            14.5,
+            13,
+            16,
+            15
+          ]
         },
         "up": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12,
+            14.5,
+            15,
+            16
+          ]
         },
         "down": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12,
+            0,
+            15,
+            1.5
+          ]
         }
       }
     },
@@ -122,16 +170,40 @@
           "texture": "#i"
         },
         "east": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            0,
+            2,
+            1.5,
+            4
+          ]
         },
         "west": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            14.5,
+            2,
+            16,
+            4
+          ]
         },
         "up": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12,
+            14.5,
+            15,
+            16
+          ]
         },
         "down": {
-          "texture": "#i"
+          "texture": "#i",
+          "uv": [
+            12,
+            0,
+            15,
+            1.5
+          ]
         }
       }
     }
