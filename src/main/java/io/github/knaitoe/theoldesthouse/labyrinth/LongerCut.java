@@ -151,7 +151,9 @@ public final class LongerCut {
         LongerSite.set(l,b,6,LongerSite.UP,Z,air);LongerSite.set(l,b,6,LongerSite.UP+1,Z,air);
         // The hook stays empty; the radio stays off.
         LongerSite.set(l,b,LongerSite.HOOK,LongerSite.fit(LongerBlock.Kind.HOOK,Direction.WEST,1));
-        var r=b.offset(LongerSite.FLAT_RADIO);var s=l.getBlockState(r);if(LongerBlock.is(s,LongerBlock.Kind.RADIO))l.setBlock(r,s.setValue(LongerBlock.STAGE,0),3);
+        var r=b.offset(LongerSite.FLAT_RADIO);var s=l.getBlockState(r);if(LongerBlock.is(s,LongerBlock.Kind.RADIO)&&!LongerAfter.is(b))l.setBlock(r,s.setValue(LongerBlock.STAGE,0),3);
+        // 0.4.630: the room afterward begins (LongerAfter).
+        LongerAfter.begin(l,b);
     }
 
     /** A hand where Rowan was: nothing answers. */

@@ -115,6 +115,7 @@ STORY_ICONS = {
     'bike_night': NS + ':treat_sack',
     'pell_house': NS + ':pell_cane_tip',
     'ones_already_inside': NS + ':lodging_key',
+    'a_little_longer': NS + ':longer_tea',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

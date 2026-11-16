@@ -88,7 +88,8 @@ public final class LongerRadio {
     /** The tune, while the flat's radio is on: every thirteen seconds, the turned-down take while Rowan talks or once agreed quieter. */
     static void tune(ServerLevel l,BlockPos b,@Nullable LiteraryActor a){
         var w=work(b);long now=l.getGameTime();
-        if(!radioOn(l,b)){w.nextLoop=-1;return;}
+        // 0.4.630: after the cut the radio only ever finds the space between stations (LongerAfter).
+        if(!radioOn(l,b)||LongerAfter.is(b)){w.nextLoop=-1;return;}
         if(w.nextLoop>now)return;
         var r=Vec3.atCenterOf(b.offset(LongerSite.FLAT_RADIO));
         boolean quiet=w.low||a!=null&&a.saying();

@@ -177,6 +177,13 @@ public final class LongerTexts {
     public static final String UNPLUG="Rowan goes to pull the toaster's plug out before you go.",RADIO_STOPS="The radio stops in the middle of the phrase.",
         EDGE="By the toaster the wall has an edge it did not have, and it goes back further than any wall is thick.",WAIT_R="Wait.",
         WALL_AGAIN="Where the wall was there is a shallow space with bare brick at the back of it.";
+    /** 0.4.630, chapter 7, the room afterward (LongerAfter). Cues and the reader's choices; flagged in docs/A_LITTLE_LONGER_0_4_630.md. */
+    public static final String RADIO_BACK="The kitchen radio comes on by itself, between stations.",HISS_OFF="The hiss stops.",
+        HISS_ON="The radio warms up and finds only the space between stations.",BRICK="Brick, cold, a hand's depth behind where the wall was.",
+        CHAIR_LEFT="The chair is pulled out the way Rowan left it.",TAKE_GOOD="Take the good cup",TAKE_ROWANS="Take Rowan's cup",LEAVE_CUPS="Leave them",
+        TOOK_GOOD="You take the good cup. The tea in it has gone cold.",TOOK_ROWANS="You take Rowan's cup, the one with the crack.",
+        LEFT_CUPS="You leave the cups where they are.",SCRAP_DOWN="You put the list down on the table, the writing up.",
+        CUP_GOOD="The good cup",CUP_ROWANS="Rowan's cup";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),
@@ -196,9 +203,73 @@ public final class LongerTexts {
             "Valves tested, all good. Back panel off. One screw short; it went somewhere.\n\nIt finds something late at night and then loses it again. Not interference. Not the aerial.",
             "Shop closed until further notice.\n\nR."));
     }
-    /** The account. Nothing asks for it until the evening can end; it says only what anybody could see of the place. */
+    /** The account, read at the table in the room afterward (0.4.630): what happened, in order, from what this reader did and heard;
+     * nothing invented, no feeling named, and a last sentence that follows what the reader did in the room afterward. */
     public static ItemStack account(String name,CompoundTag own){
-        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LITTLE_LONGER),name,pages(
-            "There was a radio repair shop with a flat over it, and rain on every window, and a street outside that nobody walked along."));
+        var out=new ArrayList<String>();
+        String act=switch(own.getString(LongerBench.ACT)){case LongerBench.HELD_PANEL->" I held the back panel for them.";case LongerBench.RETURNED_SCREW->" I found the screw that had gone under the bench.";
+            case LongerBench.MOVED_LAMP->" I moved the lamp so they could see.";case LongerBench.WAITED_AT_DOOR->" I waited at the door before I went in.";default->"";};
+        out.add("There was a radio repair shop with a flat over it, and rain on every window. Rowan was at the bench, trying to make a table radio hold a station."+act);
+        var kettle=new StringBuilder("Upstairs Rowan put the kettle on and made toast.");
+        switch(own.getString(LongerKettle.TOAST)){
+            case LongerKettle.RESCUED->kettle.append(" I got it out before it burnt.");
+            case LongerKettle.TEASED->kettle.append(" It burnt. I said so, and Rowan had the burnt slice.");
+            case LongerKettle.OFFERED->kettle.append(" It burnt. I gave Rowan the good slice.");
+            case LongerKettle.BRAVE->kettle.append(" It burnt. I had the burnt slice.");
+            default->{}
+        }
+        if(own.getBoolean(LongerKettle.CUP))kettle.append(" Rowan gave me the cup without the crack.");
+        out.add(kettle.toString());
+        String radio=switch(own.getString(LongerRadio.MOOD)){case LongerRadio.ENJOYED->"The kitchen radio played a tune, and I said to leave it on.";
+            case LongerRadio.TURN_DOWN->"The kitchen radio played a tune, and I asked for it to be turned down.";
+            case LongerRadio.WORRIED->"The kitchen radio played a tune, and I said something might hear it.";default->"";};
+        if(!radio.isEmpty()){radio+=switch(own.getString(LongerRadio.REPAIR)){case LongerRadio.SAME->" Afterwards I said I had wanted it on too.";
+            case LongerRadio.DANGER->" Afterwards I said the doors were still real.";case LongerRadio.QUIETER->" Afterwards we kept it on, quieter.";default->"";};out.add(radio);}
+        if(own.getInt(LongerRoof.STAGE)>0){
+            var roof=new StringBuilder("We went up to the roof. Rowan showed me the sky between two buildings.");
+            if(own.getBoolean(LongerRoof.SAT))roof.append(" I sat beside them.");
+            if(own.getBoolean(LongerRoof.SILENCE))roof.append(" We said nothing for a while.");
+            if(own.getBoolean(LongerRoof.FRIEND))roof.append(" I said I would like us to be friends.");
+            else{
+                if(own.getBoolean(LongerRoof.GLAD))roof.append(" I said I was glad I had stopped.");
+                if(own.getBoolean(LongerRoof.CLOSER))roof.append(" I sat closer.");
+                if(LongerRoof.TOOK.equals(own.getString(LongerRoof.HAND)))roof.append(" Rowan held out a hand and I took it.");
+                else if(LongerRoof.DECLINED.equals(own.getString(LongerRoof.HAND)))roof.append(" Rowan held out a hand and I said not yet.");
+                String kiss=own.getString(LongerRoof.KISS);
+                if(LongerRoof.READER.equals(kiss))roof.append(" I asked if I could kiss them, and they said yes.");
+                else if(LongerRoof.ROWAN.equals(kiss))roof.append(" Rowan asked if they could kiss me, and I said yes.");
+                else if(LongerRoof.NOT_TONIGHT.equals(kiss))roof.append(" Rowan asked if they could kiss me, and I said not tonight.");
+            }
+            out.add(roof.toString());
+        }
+        switch(own.getString(LongerReturn.ORDINARY)){
+            case LongerReturn.CUPS->out.add("Back inside, Rowan washed the cups and I dried.");
+            case LongerReturn.TOAST->out.add("Back inside, we argued about how bad the toast had been.");
+            case LongerReturn.SAT->out.add("Back inside, we sat down for a while.");
+            default->{}
+        }
+        String food=own.getString(LongerTomorrow.LIST);
+        if(!food.isEmpty()){
+            var list=new StringBuilder("We made a list for breakfast. I put down "+food.toLowerCase(java.util.Locale.ROOT)+". Rowan put \""+LongerTomorrow.rowanAdds(food)+"\" under it.");
+            list.append(switch(own.getString(LongerTomorrow.CHOICE)){case LongerTomorrow.TOGETHER->" I said we should go together.";
+                case LongerTomorrow.MATTERS->" I said tomorrow mattered.";case LongerTomorrow.JOKE->" I said Rowan was carrying the bread.";
+                case LongerTomorrow.COMPANIONS->" I said we were friends on the road.";default->"";});
+            out.add(list.toString());
+        }
+        out.add("Rowan went to unplug the toaster. The radio stopped halfway through the tune. The wall by the toaster went back further than walls do, and Rowan went with it, the toaster and the end of the worktop too. Rowan said wait.");
+        String after=own.getBoolean(LongerAfter.RADIO_OFF)?"I turned the radio off. ":"";
+        String cup=own.getString(LongerAfter.CUP);
+        if(!cup.isEmpty())after+=food.isEmpty()?"I brought one of the cups back.":"We had made a list for breakfast. I brought one of the cups back.";
+        else if(LongerAfter.LEFT.equals(own.getString(LongerAfter.SCRAP)))after+="We had made a list for breakfast. I left it on the table.";
+        else if(!food.isEmpty())after+="We had made a list for breakfast. I have it.";
+        else after+="The kettle was still warm when I went.";
+        out.add(after);
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LITTLE_LONGER),name,pages(out.toArray(String[]::new)));
+    }
+    /** The Witness line: the evening, the list if there was one, and the wall. */
+    public static String witness(CompoundTag own){
+        String with=own.getBoolean(LongerRoof.FRIEND)?"a friend":"someone";
+        String list=own.getString(LongerTomorrow.LIST).isEmpty()?"":" We had made a list for breakfast.";
+        return "I spent an evening in a radio shop with "+with+" who was fixing a set that kept losing its station."+list+" Then the wall by the toaster went back, and they went with it.";
     }
 }

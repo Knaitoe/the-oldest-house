@@ -148,7 +148,7 @@ public final class LongerTests {
             var paper=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);String text=String.join(" ",paper.pages().stream().map(pg->pg.raw().getString()).toList());
             h.assertTrue(text.contains("WORK ORDER")&&text.contains("One screw short")&&paper.author().equals("R."),"the work order, in Rowan's pencil");
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the order says nothing of what anybody is: "+word);
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            h.assertTrue(Longer.dealable(f.data(),p.getUUID()),"0.4.630: the House deals it until the reader has read their account of it");
             done();h.succeed();
         });
     }
@@ -969,6 +969,68 @@ public final class LongerTests {
             var b=LiteraryVignettes.base(p,P);
             h.assertTrue(cut(f,p)==LongerCut.DONE&&rowan(h,p)==null,"finished as it would have: "+cut(f,p));
             h.assertTrue(l.getBlockState(b.offset(LongerCut.MOUTH+1,LongerSite.UP,LongerCut.Z)).is(LongerRegistry.material("brick"))&&!l.getBlockState(b.offset(LongerCut.MOUTH,LongerSite.UP,LongerCut.Z)).is(net.minecraft.world.level.block.Blocks.BARRIER),"the room as after, no barrier left");
+            Talk.close(p);done();h.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.630, the room afterward
+    private static String text(net.minecraft.world.item.ItemStack book){var c=book.get(DataComponents.WRITTEN_BOOK_CONTENT);return c==null?"":String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList()).replace('\n',' ');}
+
+    /**
+     * The room afterward: nobody in it, nothing hurrying the reader. The kitchen radio comes back on by itself between stations and can be
+     * switched off; the reader takes Rowan's cup and puts the breakfast list down on the table instead of opening the account there. Ten
+     * seconds in, the account is ready; it tells what happened in order, from this reader's own evening, and ends on the cup. Read, it
+     * resolves the story once, of the memory kind, and the House stops dealing the shop to this reader.
+     */
+    @GameTest(template="empty",batch="longer_after",timeoutTicks=3000)
+    public static void theRoomAfterwardTheCupTheListAndTheAccount(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_after",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{chose(f,p);f.at(p,P,3.5,6,-14.5);})
+        .thenIdle(5).thenExecute(()->LongerCut.waited(LiteraryVignettes.base(p,P),LongerCut.AFTER))
+        .thenWaitUntil(()->h.assertTrue(cut(f,p)==LongerCut.DONE,"the cut is over: "+cut(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(LongerAfter.is(b),"the room afterward has begun");
+            h.assertFalse(f.own(p,P).getBoolean("Ready"),"the account is not ready the moment the wall closes");
+        })
+        .thenIdle(LongerAfter.RADIO_BACK+10)
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(l.getBlockState(b.offset(LongerSite.FLAT_RADIO)).getValue(LongerBlock.STAGE)==1,"the radio comes back on by itself, between stations");
+            f.click(p,P,LongerSite.FLAT_RADIO);
+            h.assertTrue(l.getBlockState(b.offset(LongerSite.FLAT_RADIO)).getValue(LongerBlock.STAGE)==0&&f.own(p,P).getBoolean(LongerAfter.RADIO_OFF),"switched off, and remembered");
+            f.click(p,P,LongerSite.CUPS);
+            h.assertTrue(Talk.replies(p).contains(LongerTexts.TAKE_ROWANS)&&Talk.replies(p).contains(LongerTexts.LEAVE_CUPS),"which cup, or neither: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.TAKE_ROWANS),"Rowan's cup");
+            h.assertTrue(LongerAfter.ROWANS.equals(f.own(p,P).getString(LongerAfter.CUP)),"the cup taken is kept");
+            boolean carries=false;for(var s:p.getInventory().items)if(LongerAfter.isCup(s))carries=true;
+            h.assertTrue(carries,"the reader carries Rowan's cup");
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,LongerTomorrow.scrap(p.getGameProfile().getName(),"Bread"));
+            f.click(p,P,LongerSite.TABLE);
+            h.assertTrue(LongerAfter.LEFT.equals(f.own(p,P).getString(LongerAfter.SCRAP))&&p.getMainHandItem().isEmpty(),"the list put down on the table, not the account opened");
+            h.assertFalse(p.containerMenu instanceof LiteraryVignettes.Pages,"no account opened in its place");
+        })
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready"),"the account is ready after a while in the room"))
+        .thenExecute(()->{
+            var own=f.own(p,P);var account=text(LongerTexts.account("x",own));
+            h.assertTrue(account.contains("Rowan held out a hand and I took it."),"the hand, as it happened: "+account);
+            h.assertTrue(account.contains("I put down bread")&&account.contains(LongerTexts.ADD_TEA),"the list in both hands: "+account);
+            h.assertTrue(account.contains("I said we should go together."),"the present choice: "+account);
+            h.assertTrue(account.contains("Rowan said wait."),"the cut, the same for everyone: "+account);
+            h.assertTrue(account.endsWith("I turned the radio off. We had made a list for breakfast. I brought one of the cups back."),"it ends on the cup: "+account);
+            h.assertFalse(account.contains("kiss"),"nothing invented: "+account);
+            var copy=own.copy();copy.remove(LongerAfter.CUP);copy.remove(LongerAfter.RADIO_OFF);
+            h.assertTrue(text(LongerTexts.account("x",copy)).endsWith("We had made a list for breakfast. I left it on the table."),"a different ending for a different act");
+            copy.remove(LongerAfter.SCRAP);
+            h.assertTrue(text(LongerTexts.account("x",copy)).endsWith("We had made a list for breakfast. I have it."),"and another for keeping the list");
+            h.assertTrue(LongerTexts.witness(own).contains("We had made a list for breakfast."),"the Witness line has the list");
+            h.assertTrue(WitnessAccount.Story.of("a_little_longer")==WitnessAccount.Story.LITTLE_LONGER&&WitnessAccount.Story.LITTLE_LONGER.kind.equals("memory"),"a memory source");
+            h.assertTrue(Longer.dealable(LabyrinthData.get(h.getLevel().getServer()),p.getUUID()),"dealt until read");
+            own.putBoolean("Read_Source",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            f.read(p,P,LongerSite.ENDING);
+            h.assertTrue(f.own(p,P).getBoolean("Completed"),"reading it resolves the story");
+            h.assertFalse(Longer.dealable(LabyrinthData.get(h.getLevel().getServer()),p.getUUID()),"not dealt again to this reader");
             Talk.close(p);done();h.succeed();
         });
     }
