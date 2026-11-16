@@ -506,4 +506,26 @@ public final class SecondPersonTests {
         h.succeed();
     }
     @AfterBatch(batch="second_homes") public static void homesDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.639: why they are here. A tentative read of an older reader puts only the chair on the landing; a settled one also has them say
+     * why it is there, and the account keeps it. Each age has its own line; no read leaves the summer as it was.
+     */
+    @GameTest(template="empty",batch="second_age",timeoutTicks=3000)
+    public static void whyTheyAreHere(GameTestHelper h){
+        var f=fixture(h);var p=f.player("flat_age",P);var b=f.base(P);var l=f.level(P);
+        resident(h,f,p)
+            .thenExecute(()->{var own=own(f,p);h.assertTrue(own.contains("Snap")&&own.getInt("Step")==SecondPerson.ARRIVE,"arrived, the read taken: "+own);var snap=own.getCompound("Snap");snap.putString("Age","ANALOG");snap.putBoolean("AgeSettled",true);own.put("Snap",snap);save(f,p,own);
+                for(var age:List.of("DIGITAL","TRANSITIONAL","ANALOG")){var o=new CompoundTag();var sn=new CompoundTag();sn.putString("Age",age);sn.putBoolean("AgeSettled",true);o.put("Snap",sn);
+                    h.assertFalse(SecondPersonStory.ageLine(o).isEmpty()||SecondPersonStory.ageAccount(o).isEmpty(),"a line and an account sentence for "+age);
+                    sn.putBoolean("AgeSettled",false);h.assertTrue(SecondPersonStory.ageAccount(o).isEmpty(),"a tentative "+age+" changes no words");}
+                var none=new CompoundTag();none.put("Snap",new CompoundTag());h.assertTrue(SecondPersonStory.age(none).isEmpty()&&SecondPersonStory.ageLine(none).isEmpty(),"no read, the summer as it was");
+                f.source(p,P);at(f,p,-2.5,UP,-17.5);})
+            .thenWaitUntil(()->h.assertTrue(step(f,p)==SecondPerson.UNPACK&&own(f,p).getInt("Sub")>=1,"somebody comes up the stairs with the last box: "+own(f,p)))
+            .thenExecute(()->{var chair=l.getBlockState(b.offset(SecondPersonSite.LANDING_CHAIR));
+                h.assertTrue(chair.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get())&&chair.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND)==io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,"the chair that would not go through the door, on the landing: "+chair);
+                h.assertTrue(account(f,p).contains("The chair stayed on the landing"),"the account keeps it: "+account(f,p));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="second_age") public static void ageDone(ServerLevel l){close();}
 }

@@ -146,6 +146,8 @@ public final class SecondPerson {
         var kitchen=seen.getCompound("kitchen");
         if(kitchen.getBoolean("Hung")){var dr=new CompoundTag();for(var key:List.of("Face","Hands","Hair","Clothes"))dr.putInt(key,kitchen.contains(key)?kitchen.getInt(key):-1);dr.putInt("Body",kitchen.getInt("Body"));dr.putInt("Mood",kitchen.getInt("Mood"));t.put("Drawing",dr);}
         t.putString("Home",HouseRead.value(d,id,HouseRead.Trait.HOME,true));
+        // 0.4.639: why they have come to live here (AGE). A tentative read changes only the objects; a settled one the scene too.
+        t.putString("Age",HouseRead.value(d,id,HouseRead.Trait.AGE,false));t.putBoolean("AgeSettled",!HouseRead.value(d,id,HouseRead.Trait.AGE,true).isEmpty());
         t.putBoolean("Unseen",HouseRead.value(d,id,HouseRead.Trait.SELF,false).equals("UNSEEN"));
         // 0.4.369: the quiet rooms this reader went through, in the order the House showed them; the winter sleepwalk replays them.
         var walk=new net.minecraft.nbt.ListTag();for(var room:HouseReadSites.CHAIN)if(!seen.getCompound(room.key()).isEmpty())walk.add(net.minecraft.nbt.StringTag.valueOf(room.key()));t.put("Walk",walk);
@@ -444,8 +446,9 @@ public final class SecondPerson {
             }
             case UNPACK->{
                 var mark=residentMark(own);
-                if(sub==0){if(arrived(a,b,mark)){box(l,b,LAST_BOX,0);sound(p,SoundEvents.WOOL_PLACE,b,LAST_BOX,1,.8F);say(f,a,"Right.");next(own,1);}}
-                else if(sub==1){if(dt==70)say(f,a,"Right. That's everything.");if(dt>=170)next(own,2);}
+                if(sub==0){if(arrived(a,b,mark)){box(l,b,LAST_BOX,0);sound(p,SoundEvents.WOOL_PLACE,b,LAST_BOX,1,.8F);say(f,a,"Right.");next(own,1);}
+                    if(dt==1&&SecondPersonStory.age(own).equals("ANALOG"))SecondPersonSite.set(l,b,SecondPersonSite.LANDING_CHAIR,io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.state(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.GREEN_ARMCHAIR,Direction.WEST));}
+                else if(sub==1){if(dt==70)say(f,a,"Right. That's everything.");if(dt==120&&SecondPersonStory.ageSettled(own))say(f,a,SecondPersonStory.ageLine(own));if(dt>=170)next(own,2);}
                 else{int i=(sub-2)/2;
                     if(i>=THINGS.size()){go(own,GLASS_HUNG);for(var at:List.of(PHOTO_BOX,COAT_BOX,DRAWING_BOX,LAST_BOX))box(l,b,at,3);return;}
                     String th=THINGS.get(i);boolean toBox=(sub-2)%2==0;

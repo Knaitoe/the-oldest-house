@@ -22,6 +22,21 @@ public final class SecondPersonStory {
     static boolean haven(CompoundTag own){return own.getCompound("Snap").getString("Home").equals("HAVEN");}
     /** 0.4.638: the home the House read, when it read one: HAVEN, DANGER or RUNAWAY; otherwise empty, and the caller is an old friend. */
     public static String home(CompoundTag own){String h=own.getCompound("Snap").getString("Home");return h.equals("HAVEN")||h.equals("DANGER")||h.equals("RUNAWAY")?h:"";}
+    /** 0.4.639: why the House read they have come to live alone here (AGE): DIGITAL, TRANSITIONAL, ANALOG, or nothing. */
+    public static String age(CompoundTag own){String a=own.getCompound("Snap").getString("Age");return a.equals("DIGITAL")||a.equals("TRANSITIONAL")||a.equals("ANALOG")?a:"";}
+    public static boolean ageSettled(CompoundTag own){return !age(own).isEmpty()&&own.getCompound("Snap").getBoolean("AgeSettled");}
+    /** What they say about it, sitting on the last box, when the read is settled. */
+    public static String ageLine(CompoundTag own){return switch(age(own)){
+        case "DIGITAL"->"Every kitchen box labelled from home. KETTLE. MUGS. FIRST NIGHT.";
+        case "TRANSITIONAL"->"\"KITCHEN, not the good knives.\" Right. Half of everything.";
+        case "ANALOG"->"The chair'll have to stay on the landing. It won't go through.";
+        default->"";};}
+    /** And what the account says of it, when settled. */
+    public static String ageAccount(CompoundTag own){return !ageSettled(own)?"":switch(age(own)){
+        case "DIGITAL"->" It was their first flat. Every kitchen box had been labelled at home.";
+        case "TRANSITIONAL"->" Half of a shared life had come up the stairs, in boxes labelled in someone else's hand.";
+        case "ANALOG"->" A long life somewhere else had come down to what would go through the door. The chair stayed on the landing.";
+        default->"";};}
     static String routine(CompoundTag own){int r=own.getCompound("Snap").getInt("Routine");return r<0?"washcloth":HouseReadMoments.ROUTINES[Math.floorMod(r,HouseReadMoments.ROUTINES.length)];}
     static String thing(CompoundTag own,String thing){return switch(thing){case "photo"->"the photograph from home";case "drawing"->"the drawing";case "coat"->"the coat";case "ticket"->"the train ticket";case "sleeve"->"Iris's sleeve";default->"the "+routine(own);};}
 
@@ -298,6 +313,7 @@ public final class SecondPersonStory {
                 case "moved"->"The first thing they found was "+what+", somewhere they would not have put it. They left it there.";
                 default->"The first thing they missed was "+what+". \"It was here,\" they said. \"It was in this box.\" It did not turn up for a long time.";});}
         else b.append("You moved nothing that first afternoon. They unpacked the way people do, one box and then the next, and said \"Right\" to nobody.");
+        b.append(ageAccount(own));
         b.append("\n\n");
         // The routine and where it lived.
         String routine=routine(own);

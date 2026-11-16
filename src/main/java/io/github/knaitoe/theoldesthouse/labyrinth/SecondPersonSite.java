@@ -38,6 +38,8 @@ public final class SecondPersonSite {
     public static final BlockPos STOP=new BlockPos(8,0,-9),BENCH=new BlockPos(10,0,-10),BENCH_BOOK=new BlockPos(10,0,-10);
     // ------------------------------------------------------------------------------------------------ the landing
     public static final BlockPos FLAT_DOOR=new BlockPos(3,UP,-27),IRIS_DOOR=new BlockPos(5,UP,-31),LANDING=new BlockPos(5,UP,-27);
+    /** 0.4.639: where the chair that will not go through the door stays, against the landing's east wall, clear of the stair and both doors. */
+    public static final BlockPos LANDING_CHAIR=new BlockPos(7,UP,-24);
     // ------------------------------------------------------------------------------------------------ the sitting room
     public static final BlockPos TV=new BlockPos(-7,UP,-17),ARMCHAIR=new BlockPos(-4,UP,-17),SOFA_A=new BlockPos(-5,UP,-19),SOFA_B=new BlockPos(-4,UP,-19);
     public static final BlockPos PHONE_TABLE=new BlockPos(-7,UP,-19),PHONE=new BlockPos(-7,UP+1,-19),LAMP_TABLE=new BlockPos(-3,UP,-19),LAMP=new BlockPos(-3,UP+1,-19);
@@ -194,7 +196,7 @@ public final class SecondPersonSite {
         set(l,b,HOOK,read(HouseReadPropBlock.Part.EMPTY_HANGER,Direction.WEST));picture(l,b,drawing,false);set(l,b,GLASS,Blocks.AIR.defaultBlockState());
         set(l,b,BOOK,fit(SecondPersonBlock.Kind.BOOK,Direction.NORTH,0));set(l,b,PHOTO_HOME,Blocks.AIR.defaultBlockState());set(l,b,ROUTINE_HOME,Blocks.AIR.defaultBlockState());
         phone(l,b,false);lamp(l,b,false);mirror(l,b,false);set(l,b,CLOTH,Blocks.AIR.defaultBlockState());set(l,b,ROTA,Blocks.AIR.defaultBlockState());set(l,b,RADIO,Blocks.AIR.defaultBlockState());
-        set(l,b,BENCH_BOOK,Blocks.SPRUCE_SLAB.defaultBlockState());set(l,b,TIN_AT,Blocks.AIR.defaultBlockState());set(l,b,TICKET_HOME,Blocks.AIR.defaultBlockState());set(l,b,ARM,Blocks.AIR.defaultBlockState());season(l,b,0);
+        set(l,b,BENCH_BOOK,Blocks.SPRUCE_SLAB.defaultBlockState());set(l,b,TIN_AT,Blocks.AIR.defaultBlockState());set(l,b,TICKET_HOME,Blocks.AIR.defaultBlockState());set(l,b,ARM,Blocks.AIR.defaultBlockState());set(l,b,LANDING_CHAIR,Blocks.AIR.defaultBlockState());season(l,b,0);
     }
     /** The street through the window: in leaf (0), autumn with leaves down (1), winter, bare, with snow lying (2), the last morning, bare (3);
      *  0.4.633, spring, the tree in blossom (4). */
