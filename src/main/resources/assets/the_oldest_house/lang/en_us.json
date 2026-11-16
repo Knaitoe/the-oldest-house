@@ -2008,5 +2008,9 @@
   "subtitles.the_oldest_house.king.breath_out": "The King breathes out",
   "subtitles.the_oldest_house.king.soft_step": "Soft footsteps",
   "subtitles.the_oldest_house.bleed.sleeping_king": "Someone breathes in their sleep behind a door",
-  "block.the_oldest_house.king_verge": "Brook's Edge"
+  "block.the_oldest_house.king_verge": "Brook's Edge",
+  "subtitles.the_oldest_house.king.stir": "The King stirs in his sleep",
+  "subtitles.the_oldest_house.king.crow": "Great wings pass over",
+  "advancements.the_oldest_house.account.a_sort_of_thing.title": "A sort of thing",
+  "advancements.the_oldest_house.account.a_sort_of_thing.description": "I crossed a country drawn in squares to an old man asleep under a tree, and two brothers told me what I was in his dream."
 }

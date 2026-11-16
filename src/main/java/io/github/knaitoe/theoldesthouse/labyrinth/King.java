@@ -27,11 +27,34 @@ public final class King {
     /** The King, on stranger phase 217 (literary_king). */
     public static final int PHASE=217;
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until part 3. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /**
+     * 0.4.643: dealt among the understanding stories from depth twelve (the owner's decision 11 of 15 November), once the quiet rooms
+     * are done as every story is, and never again after a reader's own ending.
+     */
+    public static final int DEPTH=12;
+    public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));}
+
+    /**
+     * 0.4.643: a hand on the King. A line's hand goes into him; before the brothers have said his name he is only an old man asleep;
+     * after, beside him, the reader may say the whole of it, which wakes him (KingSleep), or let him sleep.
+     */
+    public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
+        if(!is(a))return;var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;
+        if(KingBreath.of(p)<=KingBreath.LINE){cue(p,KingTexts.THROUGH_HIM);return;}
+        if(KingSleep.waking(b)){cue(p,KingTexts.EYES_OPEN);return;}
+        if(!own.getBoolean(KingSleep.HEARD)||!KingBreath.beside(p.position().subtract(b.getX(),b.getY(),b.getZ()))){cue(p,KingTexts.KING);return;}
+        Talk.begin(p,"king_name",KingTexts.THE_KING);
+        Talk.line(p,"",KingTexts.ASLEEP_HERE);
+        Talk.ask(p,Talk.reply(KingTexts.SAY_HIS_NAME,King::sayName),Talk.act(KingTexts.LET_HIM_SLEEP,Talk::close));
+    }
+    public static void sayName(ServerPlayer p){
+        var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;
+        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),PLACE);own.putBoolean("KingNamed",true);LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
+        Talk.close(p);KingSleep.wake(p.serverLevel(),b,p,false);
+    }
 
     /** The King under his tree, if his body is there. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b){
@@ -51,8 +74,10 @@ public final class King {
         lie(a,at);
     }
     /** Asleep in a heap at the foot of the tree, his head toward the trunk. */
-    static void lie(LiteraryActor a,BlockPos at){
-        a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,180,0);a.setYBodyRot(180);a.setYHeadRot(180);
+    static void lie(LiteraryActor a,BlockPos at){lie(a,at,180);}
+    /** 0.4.643: turned a little one way or the other, as he has turned over in his sleep (KingSleep). */
+    static void lie(LiteraryActor a,BlockPos at,float yaw){
+        a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
         a.setSleepingPos(at);a.setPose(Pose.SLEEPING);a.gesture(0);a.setDeltaMovement(Vec3.ZERO);
     }
 
@@ -81,6 +106,13 @@ public final class King {
             case PROBLEM->{if(!behind)return false;cue(p,KingTexts.PROBLEM);}
             case ARMCHAIR->cue(p,KingTexts.ARMCHAIR);
             case WINDOW->cue(p,KingTexts.WINDOW);
+            // 0.4.643: the rattle on his square, lifted only by a thing; a sort of thing's or a line's hand goes through it.
+            case RATTLE->{
+                if(KingBreath.of(p)<KingBreath.THING){cue(p,KingTexts.RATTLE_THROUGH);return true;}
+                var s=KingSleep.get(b);if(s.rattleTaken)return true;
+                l.setBlock(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                s.rattleTaken=true;s.rattleBy=p.getUUID();own.putBoolean("KingRattle",true);cue(p,KingTexts.RATTLE_TAKEN);
+            }
         }
         return true;
     }

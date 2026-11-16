@@ -117,7 +117,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.ONES_INSIDE&&!LodgingHouse.dealable(d,p))return false;
         // 0.4.621: A Little Longer is not dealt until its evening can be played.
         if(place==LabyrinthPlace.LITTLE_LONGER&&!Longer.dealable(d,p))return false;
-        // 0.4.641: A sort of thing is not dealt until part 3.
+        // 0.4.643: A sort of thing is dealt from depth twelve.
         if(place==LabyrinthPlace.SLEEPING_KING&&!King.dealable(d,p))return false;
         // 0.4.218: the street is dealt only to a reader who has a companion following them.
         if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;
@@ -372,6 +372,8 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.PELL_HOUSE){if(PellPeople.is(actor))PellPeople.talk(p,actor,own);}
         else if(place==LabyrinthPlace.ONES_INSIDE){if(LodgingPeople.is(actor))LodgingPeople.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LITTLE_LONGER){if(LongerRowan.is(actor))LongerRowan.talk(p,actor,own);}
+        // 0.4.643: the King, and the two brothers in his wood.
+        else if(place==LabyrinthPlace.SLEEPING_KING){if(King.is(actor))King.talk(p,actor,own);else if(KingBrothers.is(actor))KingBrothers.talk(p,actor,own);}
         else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else if(CalderPeople.is(actor))CalderPeople.talk(p,actor);else if(!BikeNightSpecters.is(actor))BikeNightGus.talk(p,actor);}
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);

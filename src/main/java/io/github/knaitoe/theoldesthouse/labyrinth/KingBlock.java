@@ -15,12 +15,13 @@ import net.minecraft.world.phys.shapes.*;
  * as drawn and turn with {@link #FACING}; a thing against a wall has its back to it.
  * <p>
  * Stages: the chimney-piece's left jamb (0), the fire between (1), the right jamb (2); the looking-glass over it, three across and two
- * high (0-2 the lower row, 3-5 the upper); the tall window's lower (0) and upper (1) halves.
+ * high (0-2 the lower row, 3-5 the upper); the tall window's lower (0) and upper (1) halves. 0.4.643: the brothers' rattle (RATTLE)
+ * lies on the King's square.
  */
 public final class KingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<KingBlock> CODEC=simpleCodec(KingBlock::new);
     public enum Kind implements StringRepresentable {
-        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW;
+        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -47,10 +48,11 @@ public final class KingBlock extends HorizontalDirectionalBlock {
             case PROBLEM->Block.box(3,0,3,13,1,13);
             case ARMCHAIR->Shapes.or(Block.box(1,0,1,15,7,15),box(f,1,7,11,15,20,15));
             case WINDOW->box(f,0,0,6,16,16,10);
+            case RATTLE->Block.box(1,0,4,15,5,12);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM->Shapes.empty();default->getShape(s,l,p,c);};
+        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE->Shapes.empty();default->getShape(s,l,p,c);};
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}

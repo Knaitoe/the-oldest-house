@@ -16,6 +16,9 @@ ROWS = {
     'breath_in': ('The King breathes in', 64),
     'breath_out': ('The King breathes out', 64),
     'soft_step': ('Soft footsteps', 6),
+    # 0.4.643: he stirs; and the crow whose shadow ends the brothers' battle.
+    'stir': ('The King stirs in his sleep', 48),
+    'crow': ('Great wings pass over', 96),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -86,7 +89,36 @@ def soft_step():
     return (pad + grass) * np.minimum(1, t / .004)
 
 
-MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step}
+def stir():
+    # A sleeper disturbed: a snort caught in the nose, then a low grumble that is almost a word, and the breath let go.
+    n = seconds(2.2)
+    t = times(n)
+    snort = band(rng.standard_normal(n), 150, 900) * np.exp(-((t - .12) / .07) ** 2) * 1.4
+    f = 95 + 25 * np.sin(2 * np.pi * 1.7 * t)
+    voice = np.sin(2 * np.pi * np.cumsum(f) / RATE) + .4 * np.sin(4 * np.pi * np.cumsum(f) / RATE)
+    voice *= band(rng.standard_normal(n), 60, 400) * .6 + .5
+    grumble = voice * np.clip((t - .35) / .2, 0, 1) * np.clip((1.5 - t) / .5, 0, 1) * .45
+    sigh = band(rng.standard_normal(n), 200, 1800) * np.clip((t - 1.3) / .2, 0, 1) * np.clip((2.2 - t) / .7, 0, 1) * .3
+    return snort + grumble + sigh
+
+
+def crow():
+    # Wings far too big for any bird beating low overhead, a dozen strokes passing from one side to the other, and one harsh cry.
+    n = seconds(4.0)
+    t = times(n)
+    air = band(rng.standard_normal(n), 40, 420)
+    beat = np.zeros(n)
+    for k in range(12):
+        at = .25 + k * .3
+        beat += np.exp(-((t - at) / .06) ** 2)
+    wings = air * beat * np.sin(np.pi * np.clip(t / 3.9, 0, 1)) * 1.3
+    cry_f = 520 - 140 * np.clip((t - 1.6) / .5, 0, 1)
+    cry = np.sign(np.sin(2 * np.pi * np.cumsum(cry_f) / RATE)) * band(rng.standard_normal(n), 600, 2600)
+    cry *= np.exp(-((t - 1.85) / .22) ** 2) * .5
+    return wings + cry
+
+
+MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow}
 
 
 def main():

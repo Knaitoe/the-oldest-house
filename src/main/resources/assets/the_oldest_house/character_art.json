@@ -1520,6 +1520,22 @@
     "phase": 217
   },
   {
+    "name": "literary_king_dum",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 218
+  },
+  {
+    "name": "literary_king_dee",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 219
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

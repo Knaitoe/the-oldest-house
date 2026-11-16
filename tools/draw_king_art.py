@@ -326,6 +326,29 @@ def rug():
     return im
 
 
+def rattle():
+    # 0.4.643: the brothers' rattle, a nursery rattle grown large: its head painted in white and red bands, worn to the wood where it
+    # has been knocked about, a ring of brass bells round its middle.
+    im = new(base='#ece4d2', seed=6781, spread=3)
+    for y in (2, 3, 12, 13):
+        fill(im, 0, y, 16, y + 1, '#b0322a')
+    fill(im, 0, 7, 16, 9, '#c9a84a')
+    for x in range(1, 16, 3):
+        dot(im, x, 7, '#e8cc6a'); dot(im, x, 8, '#7a6230')
+    for x, y in ((3, 5), (11, 4), (6, 11), (13, 10)):
+        dot(im, x, y, '#b89a6a')
+    return im
+
+
+def turned():
+    # Its handle: pale turned wood with a ring cut into it every few pixels, polished dark where it has been held.
+    im = new(base='#c8995a', seed=6782, spread=3)
+    for x in (3, 8, 13):
+        fill(im, x, 0, x + 1, 16, '#a2753e')
+    fill(im, 5, 0, 11, 16, '#b0844a')
+    return im
+
+
 def ivory():
     return new(base='#e6dcc4', seed=6761, spread=3)
 
@@ -383,7 +406,7 @@ def pane():
 def textures():
     out = {f'block/king_{k}.png': v for k, v in materials().items()}
     t = {'marble': marble(), 'gilt': gilt(), 'glass': glass(), 'grate': grate(), 'fire': fire(), 'rug': rug(), 'ivory': ivory(),
-         'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane()}
+         'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned()}
     out.update({f'block/king/{k}.png': v for k, v in t.items()})
     return out
 
@@ -469,6 +492,13 @@ def fitting_models():
                              element([0, 12, 11], [3, 19, 15], {'all': 'v'}), element([13, 12, 11], [16, 19, 15], {'all': 'v'})]
                             + [element([x, 0, z], [x + 2, 3, z + 2], {'all': 'h'}) for x in (2, 12) for z in (2, 12)],
                             {'v': 'velvet', 'h': 'mahogany'}, 'velvet')
+    # 0.4.643: the rattle lying on its side in the grass: the banded head, a short neck, and the handle with a knob at its end, the
+    # whole turned a little off square as if dropped.
+    rot = {'origin': [8, 0, 8], 'axis': 'y', 'angle': 22.5}
+    m['rattle_0'] = model([element([2, 0, 5], [7, 5, 10], {'all': 'b'}, rot=rot), element([7, 1.5, 6.5], [8, 3.5, 8.5], {'all': 't'}, rot=rot),
+                           element([8, 1.75, 6.75], [13.5, 3.25, 8.25], {'all': 't'}, rot=rot),
+                           element([13.5, 1.25, 6.25], [15, 3.75, 8.75], {'all': 't'}, rot=rot)],
+                          {'b': 'rattle', 't': 'turned'}, 'rattle')
     for stage in range(2):
         rail = [element([0, 0, 6], [16, 2, 10], {'all': 's'})] if stage == 0 else [element([0, 14, 6], [16, 16, 10], {'all': 's'})]
         els = rail + [element([0, 0, 6.5], [2, 16, 9.5], {'all': 's'}), element([14, 0, 6.5], [16, 16, 9.5], {'all': 's'}),
@@ -478,7 +508,7 @@ def fitting_models():
     return m
 
 
-KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window']
+KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle']
 STAGES = {'mantel': 3, 'glass': 6, 'window': 2, 'problem': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 6

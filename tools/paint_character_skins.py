@@ -187,6 +187,10 @@ LOOKS = {
     # a worn gilt hem, slippers, a full beard gone white, and a tall night-cap pulled down to his brows (its tip and tassel are the
     # renderer's; the hat layer carries the cap's band and crown).
     'literary_king': Look('#e2b89c','#d8d4cc','receding','#9a2a26','#7e221f','coat','#c9a84a',eyes='#5a5246',age=2,beard='full',mark='king_nightcap',sleeve=11),
+    # 0.4.643 (docs/SLEEPING_KING_0_4_643.md): the two brothers in the wood, grown men alike as two buttons: round, red-cheeked, in
+    # old-fashioned skeleton suits buttoned to the trousers, with wide white collars, one embroidered DUM and the other DEE.
+    'literary_king_dum': Look('#e8c0a2','#7a5636','close','#c99a3a','#5a4632','coat','#f2ece0',eyes='#4a3e30',age=1,mark='king_brother_dum',sleeve=11),
+    'literary_king_dee': Look('#e8c0a2','#7a5636','close','#c99a3a','#5a4632','coat','#f2ece0',eyes='#4a3e30',age=1,mark='king_brother_dee',sleeve=11),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
@@ -1793,6 +1797,23 @@ def paint(look):
         # Insets serve named geometry (coat, gown, collar, cuffs, cap), never a portrait.
         fill_net(net(64,28,9,17,5),look.cloth)
         for side,box in net(64,28,9,17,5).items():put(box,cloth_face((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),look,side))
+        if look.mark in ('king_brother_dum','king_brother_dee'):
+            # 0.4.643: the wide white collar turned down over the coat's shoulders, its owner's name worked across it in red; a row
+            # of brass buttons down the front where the jacket buttons on to the trousers.
+            d=ImageDraw.Draw(im);coat=net(64,28,9,17,5);b=coat['front'];x0,y0=round(b[0]*S),round(b[1]*S);w=round((b[2]-b[0])*S)
+            d.rectangle((x0,y0,x0+w-1,y0+7),fill='#f2ece0');d.line((x0,y0+7,x0+w-1,y0+7),fill='#cfc6b4')
+            d.polygon([(x0+w//2-2,y0+8),(x0+w//2+1,y0+8),(x0+w//2-1,y0+10)],fill='#e2dacb')
+            glyph={'D':('XX.','X.X','X.X','X.X','XX.'),'U':('X.X','X.X','X.X','X.X','XXX'),'M':('X...X','XX.XX','X.X.X','X...X','X...X'),'E':('XXX','X..','XX.','X..','XXX')}
+            word='DUM' if look.mark.endswith('dum') else 'DEE'
+            span=sum(len(glyph[ch][0]) for ch in word)+len(word)-1;x=x0+(w-span)//2
+            for ch in word:
+                for r,row in enumerate(glyph[ch]):
+                    for c,on in enumerate(row):
+                        if on=='X':d.point((x+c,y0+1+r),fill='#a8322c')
+                x+=len(glyph[ch][0])+1
+            for side in ('left','right','back'):
+                sb=coat[side];d.rectangle((round(sb[0]*S),round(sb[1]*S),round(sb[2]*S)-1,round(sb[1]*S)+5),fill='#f2ece0')
+            for y in range(13,30,5):d.rectangle((x0+w//2-1,y0+y,x0+w//2,y0+y+1),fill='#d8b04a')
         if look.mark=='pell_june_robe':
             # 0.4.533: June's towelling robe as the coat: to the knee, a darker band at its hem, its belt through its loops at the
             # waist; worn open, the front falling apart from the neck, wider at the top, the belt's two ends hanging either side.

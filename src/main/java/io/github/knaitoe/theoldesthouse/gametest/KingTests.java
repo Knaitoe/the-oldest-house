@@ -6,6 +6,7 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -208,6 +209,101 @@ public final class KingTests {
             h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ())),"a reader who is nowhere is put back in the country");
             KingBreath.leave(p);KingBreath.leave(q);
             done();h.succeed();
+        });
+    }
+
+    private static void beside(ServerPlayer p,ServerLevel l,BlockPos b){var k=b.offset(KingSite.KING);p.teleportTo(l,k.getX()-2.5,b.getY(),k.getZ()+.5,0,0);p.setDeltaMovement(Vec3.ZERO);}
+
+    /**
+     * 0.4.643, the brothers, the rattle and his name. The brothers say what a reader is in his dream and what his name is, and that
+     * readies their battle; his stirs draw the country in, a depth to every two; a line's hand goes through the rattle and a thing
+     * lifts it, which settles the battle; a reader who has heard the brothers says his whole name beside him, the breathing stops,
+     * the country goes to lines, and the reader comes to in the drawing-room with the account ready on the armchair.
+     */
+    @GameTest(template="empty",batch="king_name",timeoutTicks=1600)
+    public static void theBrothersTheRattleAndHisName(GameTestHelper h){
+        var f=place(h);var p=f.player("king_namer",P);var q=f.player("king_line",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var brothers=b.offset(KingSite.DUM);
+        h.startSequence().thenExecute(()->{p.teleportTo(l,brothers.getX()-2.5,b.getY(),brothers.getZ()+.5,90,0);q.teleportTo(l,brothers.getX()-3.5,b.getY(),brothers.getZ()+2.5,90,0);King.ensure(l,b);})
+        .thenWaitUntil(()->h.assertTrue(KingBrothers.find(l,b,KingBrothers.DUM)!=null&&KingBrothers.find(l,b,KingBrothers.DEE)!=null&&King.find(l,b)!=null,"both brothers stand in the wood, and the King lies under his tree: "+l.getEntitiesOfClass(LiteraryActor.class,new AABB(brothers).inflate(60)).stream().map(a->a.phase()+"@"+a.blockPosition().subtract(b)).toList()+" king "+King.find(l,b)))
+        .thenExecute(()->{
+            var dum=KingBrothers.find(l,b,KingBrothers.DUM);var dee=KingBrothers.find(l,b,KingBrothers.DEE);
+            h.assertTrue(dum.distanceTo(dee)<1.5,"arm in arm, side by side: "+dum.distanceTo(dee));
+            KingBrothers.talk(p,dum,f.own(p,P));KingBrothers.sortOfThing(p);KingBrothers.name(p);
+            h.assertTrue(f.own(p,P).getBoolean(KingSleep.HEARD)&&KingBrothers.battle(b)==KingBrothers.ARMED,"once they have said his name, the reader has heard them and there is to be a battle");
+            h.assertFalse(f.own(q,P).getBoolean(KingSleep.HEARD),"what one reader hears is their own");
+            // His stirs: two to each depth, the country drawn in at once.
+            int before=KingSleep.stirs(b);
+            KingSleep.stir(l,b,p,f.own(p,P),2-before%2);
+            h.assertTrue(KingSleep.level(b)>=KingSleep.LIGHTLY&&KingBreath.shownLevel(b)==KingSleep.level(b),"two stirs and he sleeps more lightly; the land shows it at once ("+KingSleep.stirs(b)+" stirs, level "+KingSleep.level(b)+")");
+            // The rattle: a line's hand goes through it, a thing lifts it.
+            beside(q,l,b);KingBreath.STATES.put(q.getUUID(),KingBreath.LINE);
+            f.click(q,P,KingSite.RATTLE);KingBreath.STATES.put(q.getUUID(),KingBreath.LINE);
+            h.assertTrue(KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE)&&!KingBrothers.rattleTaken(b),"a line's hand goes through the rattle");
+            KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
+            f.click(p,P,KingSite.RATTLE);
+            h.assertTrue(!KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE)&&KingBrothers.rattleTaken(b)&&f.own(p,P).getBoolean("KingRattle"),"a thing lifts it");
+        }).thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)==KingBrothers.SETTLED,"with the rattle gone there is nothing to fight about"))
+        .thenExecute(()->{
+            beside(p,l,b);KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
+            King.sayName(p);
+            h.assertTrue(KingSleep.waking(b)&&f.own(p,P).getBoolean("KingNamed"),"his whole name, said beside him, and the breathing stops");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready"),"the waking runs its course"))
+        .thenExecute(()->{
+            h.assertTrue("said_his_whole_name".equals(f.own(p,P).getString(KingSleep.ENDING)),"the reader who said it said his whole name: "+f.own(p,P).getString(KingSleep.ENDING));
+            h.assertTrue(KingSite.inRoom(p.position().subtract(b.getX(),b.getY(),b.getZ())),"and comes to in the drawing-room: "+p.position());
+            h.assertTrue(KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE)&&KingSleep.level(b)==KingSleep.DEEP,"a fresh dream: the rattle back, and him deep asleep");
+            f.source(p,P);f.read(p,P,LiteraryRooms.ending(P));
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.SLEEPING_KING),"reading the account on the armchair resolves the story");
+            KingBreath.leave(p);KingBreath.leave(q);done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.643, the battle and waking him too soon. Left alone, the brothers dress and fight beside him, which stirs him twice and is
+     * remembered by the reader who saw it; a great shadow goes over and they run. Six stirs in all wake him too soon: the country
+     * goes out, and a reader still in it is sent back through the door with nothing.
+     */
+    @GameTest(template="empty",batch="king_battle",timeoutTicks=1600)
+    public static void theBattleStirsHimAndSixStirsWakeHimTooSoon(GameTestHelper h){
+        var f=place(h);var p=f.player("king_battler",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var brothers=b.offset(KingSite.DUM);
+        h.startSequence().thenExecute(()->{p.teleportTo(l,brothers.getX()-2.5,b.getY(),brothers.getZ()+.5,90,0);King.ensure(l,b);})
+        .thenWaitUntil(()->h.assertTrue(KingBrothers.find(l,b,KingBrothers.DUM)!=null&&King.find(l,b)!=null,"the brothers and the King are there"))
+        .thenExecute(()->{KingBrothers.name(p);KingBrothers.soon(b,l.getGameTime());})
+        .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)>=KingBrothers.FIGHT,"they dress, then fight: "+KingBrothers.battle(b)))
+        .thenExecute(()->h.assertTrue(KingSleep.stirs(b)>=2&&f.own(p,P).getBoolean("KingSawBattle"),"a battle beside him stirs him twice, and the reader saw it: "+KingSleep.stirs(b)))
+        .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)==KingBrothers.GONE&&KingBrothers.find(l,b,KingBrothers.DUM)==null,"then the shadow, and they run"))
+        .thenExecute(()->{
+            beside(p,l,b);KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
+            KingSleep.stir(l,b,p,f.own(p,P),KingSleep.WAKE_AT);
+            h.assertTrue(KingSleep.waking(b),"six stirs wake him");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("KingWokeTooSoon"),"he woke too soon, and the country went out"))
+        .thenExecute(()->{
+            h.assertFalse(f.own(p,P).getBoolean("Ready"),"nothing is ready for a reader who woke him too soon");
+            KingBreath.leave(p);done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.643, leaving him his sleep. A reader who has been beside him and heard the brothers, and then walks off the board as a line,
+     * leaves him asleep: they come to in the drawing-room with the account ready. Anybody else off the board is only put back.
+     */
+    @GameTest(template="empty",batch="king_walk",timeoutTicks=800)
+    public static void walkingOffLeavesHimHisSleep(GameTestHelper h){
+        var f=place(h);var p=f.player("king_leaver",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            var own=f.own(p,P);
+            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
+            KingBreath.reader(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!f.own(p,P).getBoolean("Ready"),"a reader who has not met him is only put back");
+            own=f.own(p,P);own.putBoolean(KingSleep.MET,true);own.putBoolean(KingSleep.HEARD,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
+            KingBreath.reader(p,b,f.own(p,P));
+            h.assertTrue(f.own(p,P).getBoolean("Ready")&&"left_him_his_sleep".equals(f.own(p,P).getString(KingSleep.ENDING)),"one who met him and heard the brothers leaves him his sleep");
+            h.assertTrue(KingSite.inRoom(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!KingSleep.waking(b),"and comes to in the drawing-room while he sleeps on");
+            h.assertFalse(King.dealable(f.data(),UUID.randomUUID()),"the House deals the country only from depth twelve");
+            KingBreath.leave(p);done();h.succeed();
         });
     }
 }

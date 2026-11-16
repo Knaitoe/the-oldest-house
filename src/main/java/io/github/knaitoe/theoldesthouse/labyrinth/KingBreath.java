@@ -59,28 +59,37 @@ public final class KingBreath {
     public static int of(Entity e){return e instanceof Player?STATES.getOrDefault(e.getUUID(),THING):THING;}
 
     /** The breath, per country: how far through it, the last server tick it was counted on, and the shift the land now shows (-1 unknown). */
-    private static final class Clock{int ticks;int last=-1;int shown=-1;}
+    private static final class Clock{int ticks;int last=-1;int shown=-1;int shownLevel=-1;}
     private static final Map<Long,Clock> CLOCKS=new HashMap<>();
     static Clock clock(BlockPos b){return CLOCKS.computeIfAbsent(b.asLong(),k->new Clock());}
     /** Where in the breath the country is (0 to CYCLE-1); the in-breath is the first half. */
     public static int phase(BlockPos b){return clock(b).ticks%CYCLE;}
     public static boolean in(BlockPos b){return phase(b)<IN;}
+    /** 0.4.643: which breath this is, counting from the first. */
+    public static int cycle(BlockPos b){return clock(b).ticks/CYCLE;}
     /** For tests: set the breath. */
     public static void set(ServerLevel l,BlockPos b,int phase){var c=clock(b);c.ticks=phase;show(l,b,phase<IN?1:0);}
+    /** 0.4.643: the land shows his sleep's depth at once (KingSleep, when it changes and when it is put back). */
+    static void redraw(ServerLevel l,BlockPos b){var c=clock(b);show(l,b,c.shown<0?0:c.shown);}
 
     /** Every quarter second for each reader in the country (LiteraryVignettes). */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         var l=p.serverLevel();var c=clock(b);int now=l.getServer().getTickCount();
         if(c.last!=now){
-            int before=c.ticks%CYCLE;c.ticks+=c.last<0?0:Math.min(20,Math.max(0,now-c.last));c.last=now;int after=c.ticks%CYCLE;
+            // 0.4.643: when he wakes the breathing stops in the middle of a breath (KingSleep), and the clock with it.
+            boolean stopped=KingSleep.waking(b);
+            int before=c.ticks%CYCLE;if(!stopped)c.ticks+=c.last<0?0:Math.min(20,Math.max(0,now-c.last));c.last=now;int after=c.ticks%CYCLE;
             boolean breathedIn=before>=IN&&after<IN||c.shown<0,breathedOut=before<IN&&after>=IN;
-            if(breathedIn||breathedOut)breathe(l,b,after<IN);
+            if(!stopped&&(breathedIn||breathedOut))breathe(l,b,after<IN);
             show(l,b,after<IN?1:0);
+            KingSleep.tick(l,b);
         }
         int state=sum(p,b,own);
-        if(state==NOWHERE){back(p,b,own);state=SORT;}
+        // 0.4.643: off the board, a reader who has been to him and heard the brothers leaves him his sleep; anybody else is put back.
+        if(state==NOWHERE){if(KingSleep.walkedOff(p,b,own))return;back(p,b,own);state=SORT;}
         STATES.put(p.getUUID(),state);own.putInt("KingState",state);
         root(p,state==TOO_MUCH);
+        KingSleep.reader(p,b,own,state);
         tell(l,b);
     }
     /** A reader leaves the country: their whole self again. */
@@ -106,7 +115,7 @@ public final class KingBreath {
         if(st.isAir())land=own.contains("KingLand")?own.getInt("KingLand"):THING;
         else if(!KingRegistry.isCountry(st))land=THING;
         else if(KingRegistry.ruled(st))land=LINE;
-        else{var rel=under.subtract(b);land=KingSite.ruledness(rel.getX(),rel.getZ(),clock(b).shown<0?0:clock(b).shown)>0?SORT:THING;}
+        else{var rel=under.subtract(b);var c=clock(b);land=KingSite.ruledness(rel.getX(),rel.getZ(),c.shown<0?0:c.shown,Math.max(0,c.shownLevel))>0?SORT:THING;}
         own.putInt("KingLand",land);
         return land;
     }
@@ -166,14 +175,17 @@ public final class KingBreath {
     }
     /** The land shows the shift it should: each block whose drawing differs between the two goes over to the right twin. */
     static void show(ServerLevel l,BlockPos b,int shift){
-        var c=clock(b);if(c.shown==shift)return;
-        for(long cell:KingSite.breathing()){
+        var c=clock(b);int level=KingSleep.level(b);if(c.shown==shift&&c.shownLevel==level)return;
+        // 0.4.643: a change in how deep he sleeps redraws every column that any depth draws differently; a breath only its own band.
+        for(long cell:c.shownLevel!=level?KingSite.changing():KingSite.breathing(level)){
             int x=BlockPos.getX(cell),z=BlockPos.getZ(cell);var column=b.offset(x,0,z);if(!l.isLoaded(column))continue;
-            boolean ruled=KingSite.ruled(x,z,shift);
+            boolean ruled=KingSite.ruled(x,z,shift,level);
             for(int y=-3;y<=8;y++){var at=column.atY(b.getY()+y);var st=l.getBlockState(at);var twin=KingRegistry.twin(st,ruled);if(twin!=null&&twin!=st)l.setBlock(at,twin,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);}
         }
-        c.shown=shift;
+        c.shown=shift;c.shownLevel=level;
     }
     /** For tests: the shift the land shows (-1 before the first breath). */
     public static int shown(BlockPos b){return clock(b).shown;}
+    /** For tests: the depth of sleep the land shows (-1 before the first breath). */
+    public static int shownLevel(BlockPos b){return clock(b).shownLevel;}
 }
