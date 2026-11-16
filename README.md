@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.636** gives Second Person its fourth ending: be known gently, and at the end of the spring the resident sets out two cups on the kitchen table, talks to you across it, and asks if you will be here when they wake up. They will get older here. You won't. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_636.md.
+
 Development candidate **0.4.635** gives Second Person its third ending: frighten the resident far more than you are kind, and at the next cupboard the season does not go by. In the night they sit up dressed, take one bag and go. They've gone. The flat is yours. Nobody can see you. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_635.md.
 
 Development candidate **0.4.634** gives Second Person its second ending: sign the form on the mat and the flat is yours for the last day of the year. Sam knocks and talks to you as if you lived there, the phone rings for you, and at dark, in the black street window, the one who lived there stands behind you and asks if somebody is in their flat. The door is on the latch. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_634.md.

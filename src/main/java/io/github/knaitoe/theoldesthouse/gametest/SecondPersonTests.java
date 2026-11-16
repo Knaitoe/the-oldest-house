@@ -213,15 +213,18 @@ public final class SecondPersonTests {
             .thenExecute(()->cupboard(f,p))
             .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.SPRING,"the winter goes by in the cupboard, into the spring"))
             .thenExecute(()->springOver(f,p))
-            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.MORNING,"the rest of the winter goes by in the cupboard"))
+            // 0.4.636: a year this gentle, met in the glass, ends not on the last morning but on the last evening, with two cups.
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPersonCups.TWO_CUPS,"the rest of the spring goes by in the cupboard, into the last evening"))
             .thenExecute(()->{var own=own(f,p);var house=SecondPersonStory.list(own,"HousePages");
                 h.assertTrue(house.size()==2&&house.get(0).contains("end of their bed while they slept")&&house.get(1).contains("kettle"),"the House carried on in the reader's name, as gently as they had: "+house);
                 h.assertTrue(own.getString("Decision").equals("stay"),"they have decided to stay");
                 h.assertTrue(SecondPersonStory.latest(own).contains("The pages you did not turn")&&!SecondPersonStory.list(own,"Pages").contains(house.get(0)),"the House's pages kept apart from the reader's own");
-                street(f,p);})
+                at(f,p,-4.5,UP,-21.5);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")==2&&own(f,p).getInt("T")-own(f,p).getInt("SubT")>45,"two cups, and one question"))
+            .thenExecute(()->{h.assertTrue(click(f,p,new BlockPos(-3,UP+1,-12),Direction.SOUTH)&&Talk.waiting(p,"sp_word"),"breath on the street window");say(h,p,"STAY");Talk.close(p);})
             .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Ready"),"the book on the bench"))
             .thenExecute(()->{String text=account(f,p);
-                for(var want:List.of("What lodger?","a borrowed coat","There you are","until it was done","All right. All right.","drew at the kitchen table without a light on","brought them back with the lamp","They went.","That's my face","You wrote YES","These are not your pages","put the kettle on","decided to stay"))
+                for(var want:List.of("What lodger?","a borrowed coat","There you are","until it was done","All right. All right.","drew at the kitchen table without a light on","brought them back with the lamp","They went.","That's my face","You wrote YES","These are not your pages","put the kettle on","They said, \"You can stay.\""))
                     h.assertTrue(text.contains(want),"the account says \""+want+"\": "+text);
                 f.read(p,P,LiteraryRooms.ending(P));})
             .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Completed"),"the account read"))
@@ -404,4 +407,37 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_gone") public static void goneDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.636, E4: two cups. A year kept gently, and the reader met once in the glass: at the end of the spring the cupboard opens onto
+     * the last evening. Two cups on the kitchen table; they talk across it, ask one thing, and the answer is a word on the glass. They say
+     * "You can stay." or "You can come.", drink their cup, and the account ends "They will get older here. You won't."
+     */
+    @GameTest(template="empty",batch="second_cups",timeoutTicks=7000)
+    public static void twoCups(GameTestHelper h){
+        var f=fixture(h);var p=f.player("flat_cups",P);var b=f.base(P);var l=f.level(P);
+        resident(h,f,p)
+            .thenExecute(()->{f.source(p,P);street(f,p);
+                autumnOver(f,p,List.of("porch"),own->{thing(own,"coat","homed",null);own.putBoolean("SamStayed",true);});})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.WINTER,"into the winter"))
+            .thenExecute(()->{var own=own(f,p);
+                var put=new ListTag();for(var th:List.of("photo","drawing","coat","routine"))put.add(StringTag.valueOf(th));own.put("PutAway",put);
+                own.putBoolean("RoutineSet",true);own.putString("Night","shut");own.putString("Evening","helped");own.putString("Seen","still");own.putString("Decision","stay");
+                h.assertTrue(SecondPersonCups.known(own),"a year kept gently, and met once in the glass");
+                own.putInt("Season",SecondPerson.SPRING);save(f,p,own);SecondPersonSite.season(l,b,4);springOver(f,p);})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPersonCups.TWO_CUPS,"the cupboard opens onto the last evening, not the last morning"))
+            .thenWaitUntil(()->h.assertTrue(SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonCups.CUPS_AT)),SecondPersonBlock.Kind.CUPS),"two cups on the kitchen table"))
+            .thenExecute(()->at(f,p,-4.5,UP,-21.5))
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")==2&&own(f,p).getInt("T")-own(f,p).getInt("SubT")>45,"they talked, and asked one thing"))
+            .thenExecute(()->{h.assertTrue(click(f,p,new BlockPos(-3,UP+1,-12),Direction.SOUTH)&&Talk.waiting(p,"sp_word"),"breath on the street window");say(h,p,"YES");
+                h.assertTrue(own(f,p).getString("CupsAnswer").equals("YES"),"the answer read at once: "+own(f,p));Talk.close(p);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Ready")&&own(f,p).getString("Outcome").equals("two_cups"),"the last evening done; the book on the bench"))
+            .thenExecute(()->{h.assertTrue(SecondPersonBlock.stage(l.getBlockState(b.offset(SecondPersonCups.CUPS_AT)))==1,"their cup drunk, the reader's still full");
+                String text=account(f,p);
+                for(var want:List.of("they set out two cups","You wrote YES on the glass","They said, \"You can stay.\"","They will get older here. You won't."))
+                    h.assertTrue(text.contains(want),"the account says \""+want+"\": "+text);
+                h.assertFalse(text.contains("On the last morning"),"no last morning: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="second_cups") public static void cupsDone(ServerLevel l){close();}
 }

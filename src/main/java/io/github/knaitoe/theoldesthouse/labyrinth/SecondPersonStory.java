@@ -134,6 +134,7 @@ public final class SecondPersonStory {
             default->{b.append("The last of the spring.\n\n");
                 can=List.of("The airing cupboard is warm. Go in and shut the door.");}
         }}
+        else if(season==SecondPersonCups.TWO_CUPS){b.append(SecondPersonCups.page(own));can=List.of();}
         else if(season==SecondPersonGone.GONE){b.append(SecondPersonGone.page(own));
             can=SecondPerson.sub(own)>=5?List.of("Go out by the front door and down to the street."):List.of("Wait.");}
         else{b.append(whileAway(own,4)).append("\n\nIt is morning. The front door has been left on the latch.\n\n");
@@ -280,6 +281,8 @@ public final class SecondPersonStory {
         if(!gone||reached==SecondPerson.SPRING)SecondPersonSpring.account(b,own);
         // 0.4.635, E3: frightened out, the night they left takes the last morning's place.
         if(gone){SecondPersonGone.account(b,own);return b.toString();}
+        // 0.4.636, E4: known gently, the last evening and the two cups take the last morning's place.
+        if(SecondPersonCups.cups(own)){SecondPersonCups.account(b,own);return b.toString();}
         // 0.4.634, E2: signed, the last day was the reader's, and it takes the last morning's place.
         if(SecondPersonSigned.signed(own)){SecondPersonSigned.account(b,own);return b.toString();}
         // The last morning.

@@ -538,6 +538,27 @@ def form_signed():
     return im
 
 
+def mug():
+    # 0.4.636, E4: the side of an ordinary glazed mug at the game's own pixel size: the cups sample its top-left 4 by 5. A pale rim,
+    # cream glaze, one blue band, and darker where the glaze pooled at the foot. The rest of the sheet repeats the pattern for the handles.
+    im = new(base='#e6dfcf', seed=2822, spread=1)
+    for x in range(16):
+        dot(im, x, 0, '#f2ecdf')
+        dot(im, x, 2, '#46669a')
+        dot(im, x, 4, '#c8bea8')
+    dot(im, 1, 1, '#f4efe4')
+    return im
+
+
+def mug_top(full):
+    # From above, 4 by 4: the rim all round and, inside it, tea to near the top with a glint, or the bare inside and a ring of stain.
+    im = new(base='#e2dbca', seed=2823 + full, spread=1)
+    if full:
+        dot(im, 1, 1, '#8a5634'); dot(im, 2, 1, '#6e4226'); dot(im, 1, 2, '#6e4226'); dot(im, 2, 2, '#5e381e')
+    else:
+        dot(im, 1, 1, '#a88a66'); dot(im, 2, 1, '#cfc6b2'); dot(im, 1, 2, '#cfc6b2'); dot(im, 2, 2, '#b89a76')
+    return im
+
 def form_back():
     # Turned face down: the blank back, and the boxes faintly through the paper.
     im = new(base='#e6e2d6', seed=2820, spread=2)
@@ -576,7 +597,7 @@ def textures():
         'pole': new(base='#6a6a6c', seed=2802, spread=2), 'rota': rota(), 'cloth': cloth(0), 'cloth_rumpled': cloth(1), 'plate': plate(),
         'bakelite': bakelite(), 'dial': dial(), 'cream': new(base='#e8e2d0', seed=2803, spread=2), 'frame': new(base='#3a2c22', seed=2804, spread=2),
         'tin_lid': tin_lid(), 'tin_side': tin_side(), 'tin_in': tin_in(), 'wool': wool(), 'needle': needle(), 'envelope': envelope(),
-        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_signed': form_signed(), 'form_back': form_back(), 'hardboard': hardboard(),
+        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_signed': form_signed(), 'mug': mug(), 'mug_full': mug_top(1), 'mug_empty': mug_top(0), 'form_back': form_back(), 'hardboard': hardboard(),
     }
     out.update({f'block/second/{k}.png': v for k, v in t.items()})
     return out
@@ -682,11 +703,23 @@ def fitting_models():
                                {'f': 'form', 'b': 'form_back'}, 'form_back')
     m['application_2'] = model([element([3, 0, 2], [13, 0.25, 14], {'up': 'f', 'down': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14], 'down': [3, 2, 13, 14]}, rot=sheet_rot)],
                                {'f': 'form_signed', 'b': 'form_back'}, 'form_signed')
+
+    # 0.4.636, E4: two cups on the kitchen table, one at each chair, handles turned out; stage 1, theirs drunk, the reader's still full.
+    def cup(x0, z0, handle_south, top):
+        x1, z1 = x0 + 4, z0 + 4
+        hz = (z1, z1 + 1.5) if handle_south else (z0 - 1.5, z0)
+        outer = (z1 + 1, z1 + 1.5) if handle_south else (z0 - 1.5, z0 - 1)
+        return [element([x0, 0, z0], [x1, 5, z1], {'north': 'm', 'south': 'm', 'east': 'm', 'west': 'm', 'down': 'm', 'up': top}, uv={'up': [0, 0, 4, 4], 'north': [0, 0, 4, 5], 'south': [0, 0, 4, 5], 'east': [0, 0, 4, 5], 'west': [0, 0, 4, 5]}),
+                element([x0 + 1.5, 3.5, hz[0]], [x0 + 2.5, 4, hz[1]], {'all': 'm'}),
+                element([x0 + 1.5, 1, hz[0]], [x0 + 2.5, 1.5, hz[1]], {'all': 'm'}),
+                element([x0 + 1.5, 1.5, outer[0]], [x0 + 2.5, 3.5, outer[1]], {'all': 'm'})]
+    for stage, theirs in ((0, 'f'), (1, 'e')):
+        m[f'cups_{stage}'] = model(cup(2, 6, True, theirs) + cup(10, 6, False, 'f'), {'m': 'mug', 'f': 'mug_full', 'e': 'mug_empty'}, 'mug')
     return m
 
 
-KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve', 'application']
-STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 3}
+KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve', 'application', 'cups']
+STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 3, 'cups': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 DISPLAY = {
