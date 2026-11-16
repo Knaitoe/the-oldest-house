@@ -339,6 +339,12 @@ def item_breaker():
     im = new(); fill(im, 3, 3, 13, 13, '#2a2a26'); frame_rect(im, 3, 3, 13, 13, '#00e5ff'); fill(im, 7, 4, 9, 11, '#c8c8c0'); return im
 
 
+def stalk(tall):
+    """The sides of a short stalk drawn with the mast's picture: its rail, the one solid column of the lattice (0.4.651; from where
+    they lie they fell on the open middle of the lattice and drew nothing)."""
+    return {k: [0, 16 - tall, 1, 16] for k in ('north', 'south', 'east', 'west')}
+
+
 def element(lo, hi, textures, rotation=None, uv=None):
     faces = {}
     for face in ('north', 'south', 'east', 'west', 'up', 'down'):
@@ -400,11 +406,11 @@ def fitting_models():
             els = [element([4, 0, 4], [12, 8, 12], {'all': 'a', 'north': 'h'}), element([3, 8, 3], [13, 9, 13], {'all': 'k'}), element([5, 9, 5], [11, 16, 11], {'all': 'k'})]
         m[f'skin_{s}'] = model(els, {'a': t, 'h': ('skin_head_frozen' if frozen else 'skin_head'), 'k': 'cape'}, t)
     for s in range(2):
-        m[f'dish_{s}'] = model([element([7, 0, 7], [9, 6, 9], {'all': 'p'}), element([1, 4, 7], [15, 14, 9], {'north': 'd', 'south': 'p', 'up': 'p', 'down': 'p', 'east': 'p', 'west': 'p'}, {'angle': 45, 'axis': 'y', 'origin': [8, 8, 8]} if s else None)],
+        m[f'dish_{s}'] = model([element([7, 0, 7], [9, 6, 9], {'all': 'p'}, uv=stalk(6)), element([1, 4, 7], [15, 14, 9], {'north': 'd', 'south': 'p', 'up': 'p', 'down': 'p', 'east': 'p', 'west': 'p'}, {'angle': 45, 'axis': 'y', 'origin': [8, 8, 8]} if s else None)],
                                {'p': 'mast', 'd': 'dish'}, 'dish')
     m['mast_0'] = model([element([4, 0, 4], [12, 16, 12], {'north': 'm', 'south': 'm', 'east': 'm', 'west': 'm'})], {'m': 'mast'}, 'mast')
     for s in range(6):
-        m[f'bulb_{s}'] = model([element([5, 4, 5], [11, 12, 11], {'all': 'b'}), element([7, 0, 7], [9, 4, 9], {'all': 'p'})], {'b': f'bulb_{s}', 'p': 'mast'}, f'bulb_{s}')
+        m[f'bulb_{s}'] = model([element([5, 4, 5], [11, 12, 11], {'all': 'b'}), element([7, 0, 7], [9, 4, 9], {'all': 'p'}, uv=stalk(4))], {'b': f'bulb_{s}', 'p': 'mast'}, f'bulb_{s}')
     m['teleprompter_0'] = model([element([2, 0, 2], [14, 16, 14], {'all': 'b', 'north': 'f'})], {'b': 'zenith', 'f': 'teleprompter'}, 'teleprompter')
     m['highchair_0'] = model([element([3, 0, 3], [4, 9, 4], {'all': 'r'}), element([12, 0, 3], [13, 9, 4], {'all': 'r'}), element([3, 0, 12], [4, 9, 13], {'all': 'r'}), element([12, 0, 12], [13, 9, 13], {'all': 'r'}),
                              element([3, 9, 3], [13, 10, 13], {'all': 'r'}), element([3, 10, 12], [13, 16, 13], {'all': 'r'}), element([2, 11, 2], [14, 12, 5], {'all': 'r'})], {'r': 'highchair'}, 'highchair')

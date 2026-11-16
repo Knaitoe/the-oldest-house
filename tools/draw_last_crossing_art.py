@@ -862,7 +862,7 @@ def fitting_models():
                                 element([7.5, 11.5, 8.5], [8.5, 14, 9.5], {'all': 'i'})], {'i': 'iron', 'g': 'glass_lit'}, 'glass_lit')
     # The line snapped at the first rise: a short coil left on the cleat and its frayed end.
     m['coil_3'] = model([element([4, 0, 4], [12, 2, 12], {'all': 'm'}), element([1, 0, 7], [15, 1.5, 9], {'all': 'i'}), element([7, 0, 0], [9, 1, 5], {'all': 'm'}),
-                         element([6, 0, -1], [10, .5, 1], {'all': 'x'})], {'m': 'manila', 'i': 'iron', 'x': 'frayed'}, 'manila')
+                         element([6, 0, -1], [10, .5, 1], {'all': 'x', 'down': None})], {'m': 'manila', 'i': 'iron', 'x': 'frayed'}, 'manila')
     # The cable house's door bar: leaning on the wall by the door, and dropped across the doorway in its iron brackets.
     m['bar_0'] = model([element([5, 0, 13], [11, 28, 16], {'all': 't'})], {'t': 'timber'}, 'timber')
     m['bar_1'] = model([element([0, 5, 6], [16, 9, 10], {'all': 't'}), element([0, 14, 6], [16, 18, 10], {'all': 't'}),
@@ -937,9 +937,12 @@ def fitting_models():
         m[f'cutoff_{stage}'] = model([element([6, 6, 12], [10, 10, 16], {'all': 'i'}), element([7, 10, 14], [9, 16, 16], {'all': 'p'}),
                                       element([1, 1, 11], [15, 15, 12], {'north': 'w', 'south': 'w', 'east': 'i', 'west': 'i', 'up': 'i', 'down': 'i'}, rot=rot)],
                                      {'i': 'iron', 'p': 'pipe', 'w': 'wheel_black'}, 'iron')
-    # The source on the floor of its chamber, wrapped in weed; destroyed, torn open and sunk flat.
-    mass = [element([2, 0, 2], [14, 9, 14], {'all': 's'}), element([4, 8, 3], [12, 14, 11], {'all': 's'}), element([1, 0, 6], [3, 7, 12], {'all': 'g'}),
-            element([13, 0, 3], [15, 10, 8], {'all': 'g'}), element([5, 13, 9], [9, 16, 13], {'all': 'g'})]
+    # The source on the floor of its chamber, wrapped in weed; destroyed, torn open and sunk flat. The weed standing on the floor has
+    # no underside (it sat on the floor, and took a clear part of the picture), and the low tuft's top shows the stalks' ends where
+    # it took the clear gap between them (0.4.651); the frayed end of the snapped line likewise has no underside.
+    mass = [element([2, 0, 2], [14, 9, 14], {'all': 's'}), element([4, 8, 3], [12, 14, 11], {'all': 's'}),
+            element([1, 0, 6], [3, 7, 12], {'all': 'g', 'down': None}, {'up': [3, 6, 5, 12]}),
+            element([13, 0, 3], [15, 10, 8], {'all': 'g', 'down': None}), element([5, 13, 9], [9, 16, 13], {'all': 'g'})]
     m['source_0'] = model(mass, {'s': 'source', 'g': 'weed'}, 'source')
     m['source_1'] = model(mass, {'s': 'source', 'g': 'weed'}, 'source')
     m['source_2'] = model([element([1, 0, 1], [15, 3, 15], {'all': 's'}), element([3, 3, 4], [8, 5, 9], {'all': 'g'}), element([10, 3, 8], [13, 4, 13], {'all': 'k'})],

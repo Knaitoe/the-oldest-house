@@ -533,8 +533,16 @@ def front_cube(front, side):
     return model([element([0, 0, 0], [16, 16, 16], {'all': 'side', 'north': 'front'})], {'front': front, 'side': side}, side)
 
 
-def plate(texture, x0=1, y0=1, x1=15, y1=15, depth=1):
-    return model([element([x0, y0, 16 - depth], [x1, y1, 16], {'all': 'tex', 'north': 'tex'}, uv={'north': [x0, 16 - y1, x1, 16 - y0]})], {'tex': texture}, texture)
+def plate(texture, x0=1, y0=1, x1=15, y1=15, depth=1, edges='plain'):
+    """A picture on the wall as a plate `depth` thick. Its edges (0.4.651): 'plain' takes them from where they lie, as before;
+    'rows' gives its top and bottom the picture's own top and bottom rows (the plaque, whose picture is clear above and below it);
+    'none' leaves them off (the clock, round in a square plate: its square edges fell on the clear corners and drew nothing)."""
+    uv = {'north': [x0, 16 - y1, x1, 16 - y0]}
+    if edges == 'rows':
+        uv['up'] = [x0, 16 - y1, x1, 16 - y1 + depth]
+        uv['down'] = [x0, 16 - y0 - depth, x1, 16 - y0]
+    faces = {'north': 'tex', 'south': 'tex'} if edges == 'none' else {'all': 'tex', 'north': 'tex'}
+    return model([element([x0, y0, 16 - depth], [x1, y1, 16], faces, uv=uv)], {'tex': texture}, texture)
 
 
 def fitting_models():
@@ -555,8 +563,8 @@ def fitting_models():
         m[f'sheet_{stage}'] = model([element([1, 0, 1], [15, 2, 15], {'all': 's'}), element([3, 2, 2], [12, 4, 11], {'all': 's'}, {'angle': 22.5, 'axis': 'y', 'origin': [8, 2, 8]}),
                                      element([8, 2, 7], [14, 3.5, 14], {'all': 's'})], {'s': f'sheet_{stage}'}, f'sheet_{stage}')
     m['poster_0'] = plate('poster', 2, 0, 14, 16)
-    m['clock_0'] = plate('clock', 1, 1, 15, 15)
-    m['plaque_0'] = plate('plaque', 0, 4, 16, 12)
+    m['clock_0'] = plate('clock', 1, 1, 15, 15, edges='none')
+    m['plaque_0'] = plate('plaque', 0, 4, 16, 12, edges='rows')
     m['window_0'] = plate('window', 0, 0, 16, 16)
     m['fountain_0'] = model([element([3, 10, 7], [13, 13, 16], {'all': 's'}), element([5, 6, 11], [11, 10, 16], {'all': 's'}), element([7, 13, 9], [8, 14, 10], {'all': 's'})], {'s': 'steel'}, 'steel')
     m['hall_light_0'] = model([element([2, 15, 2], [14, 16, 14], {'all': 'l'})], {'l': 'hall_light'}, 'hall_light')

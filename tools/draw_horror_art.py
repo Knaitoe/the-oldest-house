@@ -456,7 +456,11 @@ def fitting_models():
     m['recorder'] = model([element([4, 0, 5], [12, 2.5, 11], {'up': 'r', 'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'down': 'r'})], {'r': 'recorder'}, 'recorder')
     # Your own light: the words on the wall (their back to it, like the list), and the stub on the floor.
     m['scratch'] = model([element([1, 3, 15.9], [15, 13, 16], {'north': 's'}, uv={'north': [1, 3, 15, 13]})], {'s': 'scratch'}, 'scratch', 'translucent')
-    m['stub'] = model([element([2, 0, 2], [14, .1, 14], {'up': 'u'}), element([7.25, 0, 7.25], [8.75, 3, 8.75], {'all': 'u'})], {'u': 'stub'}, 'stub', 'translucent')
+    # The burnt stick's sides show the stick, charred at the top (0.4.651; they took the clear rows below the smear).
+    stick = [7.25, 6, 8.75, 9]
+    m['stub'] = model([element([2, 0, 2], [14, .1, 14], {'up': 'u'}), element([7.25, 0, 7.25], [8.75, 3, 8.75], {'all': 'u'},
+                                                                                  {k: stick for k in ('north', 'south', 'east', 'west')})],
+                      {'u': 'stub'}, 'stub', 'translucent')
     m['hoof'] = model([element([3, 0, 2], [13, .05, 14], {'up': 'o'})], {'o': 'hoof'}, 'hoof', 'translucent')
     return m
 

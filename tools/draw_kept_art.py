@@ -452,7 +452,10 @@ def fitting_models():
                           element([3, 9, 12], [4, 19, 13], {'all': 'w'}), element([12, 9, 12], [13, 19, 13], {'all': 'w'}),
                           element([4, 15, 12.25], [12, 18, 12.75], {'all': 'w'})], {'w': 'wood'}, 'wood')
     m['crate_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 's', 'up': 't'})], {'s': 'crate_side', 't': 'crate_top'}, 'crate_side', False)
-    m['chandelier_0'] = model([element([7.5, 12, 7.5], [8.5, 16, 8.5], {'all': 'c'}), element([3, 11, 3], [13, 12, 13], {'all': 'c'}),
+    # The cable it hangs by shows the middle of one of the picture's two strands (0.4.651; from where it lies it fell between them).
+    hang = {k: [2, 0, 3, 4] for k in ('north', 'south', 'east', 'west')}
+    hang.update({'up': [2, 0, 3, 1], 'down': [2, 0, 3, 1]})
+    m['chandelier_0'] = model([element([7.5, 12, 7.5], [8.5, 16, 8.5], {'all': 'c'}, uv=hang), element([3, 11, 3], [13, 12, 13], {'all': 'c'}),
                                element([3.5, 7, 3.5], [5.5, 11, 5.5], {'all': 'b'}), element([10.5, 7, 3.5], [12.5, 11, 5.5], {'all': 'b'}),
                                element([3.5, 7, 10.5], [5.5, 11, 12.5], {'all': 'b'}), element([10.5, 7, 10.5], [12.5, 11, 12.5], {'all': 'b'}),
                                element([7, 6, 7], [9, 11, 9], {'all': 'b'})], {'c': 'cable', 'b': 'bulb'}, 'bulb')

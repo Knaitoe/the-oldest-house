@@ -365,6 +365,39 @@ def element(lo, hi, textures, rotation=None, uv=None):
     return e
 
 
+def along(lo, hi, axis):
+    """A length of the cord lying along x or z: its picture is one upright strand (columns 7 and 8), so every face that runs the
+    cord's length shows the strand turned to lie along it, as wide as the face is across, and every end shows the strand's own cut
+    (0.4.651; from where they lay the long faces fell beside the strand and drew nothing, or showed two pixels of it in the
+    middle)."""
+    size = [h - l for l, h in zip(lo, hi)]
+    span = size[axis]
+    dims = {'north': (0, 1), 'south': (0, 1), 'east': (2, 1), 'west': (2, 1), 'up': (0, 2), 'down': (0, 2)}
+    e = element(lo, hi, {'all': 'c'})
+    for k, f in e['faces'].items():
+        u, v = dims[k]
+        if axis not in (u, v):
+            f['uv'] = [7, 7, 7 + size[u], 7 + size[v]]
+        elif u == axis:
+            f['uv'] = [7, 0, 7 + size[v], span]
+            f['rotation'] = 90
+        else:
+            f['uv'] = [7, 0, 7 + size[u], span]
+    return e
+
+
+def bolt_piece(lo, hi):
+    """The bolt standing out of the rock: its head on the front, and its sides and top drawn from the same grey square of the
+    picture (0.4.651; they fell on the picture's clear border)."""
+    e = element(lo, hi, {'all': 'b'})
+    deep = hi[2] - lo[2]
+    for k in ('east', 'west'):
+        e['faces'][k]['uv'] = [6, 6, 6 + deep, 10]
+    for k in ('up', 'down'):
+        e['faces'][k]['uv'] = [6, 6, 10, 6 + deep]
+    return e
+
+
 def model(elements, textures, particle, render='cutout'):
     return {'ambientocclusion': False, 'render_type': 'minecraft:' + render, 'textures': {**{k: P + v for k, v in textures.items()}, 'particle': P + particle}, 'elements': elements}
 
@@ -386,8 +419,8 @@ def fitting_models():
             els.append(element([6, 2, -8], [10, 4, -6], {'all': 'h'}))
         m[f'fissure_{s}'] = model(els, {'l': 'limestone_dark', 'f': f'fissure_{min(s, 1)}', 'h': 'hand'}, 'fissure_0')
     for s in range(2):
-        m[f'anchor_{s}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'l'}), element([6, 6, -3], [10, 10, 0], {'all': 'b'})] +
-                                 ([element([7, 7.5, -4], [9, 8.5, -1], {'all': 'c'})] if s else []), {'l': 'limestone_dark', 'b': 'bolt_1' if s else 'bolt_0', 'c': 'cord'}, 'limestone_dark')
+        m[f'anchor_{s}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'l'}), bolt_piece([6, 6, -3], [10, 10, 0])] +
+                                 ([along([7, 7.5, -4], [9, 8.5, -1], 2)] if s else []), {'l': 'limestone_dark', 'b': 'bolt_1' if s else 'bolt_0', 'c': 'cord'}, 'limestone_dark')
     m['crate_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'c'})], {'c': 'crate'}, 'crate', 'solid')
     # 0.4.220: Brad himself is a painted actor; this is the kit box he sits on, a rope coiled on its lid.
     m['brad_0'] = model([element([2, 0, 3], [14, 8, 13], {'all': 'k'}), element([2, 3, 2.5], [14, 4, 13.5], {'all': 'r'}),
@@ -395,8 +428,8 @@ def fitting_models():
     for s in range(3):
         m[f'brad_head_{s}'] = model([element([4.5, 0, 5], [11.5, 7, 11], {'all': 'f', 'north': 'f'}), element([4, 6, 4.5], [12, 9, 11.5], {'all': 'y'}),
                                      element([7, 6.5, 3.5], [9, 8.5, 4.5], {'all': 'p'})], {'f': 'face', 'y': 'hardhat', 'p': f'lamp_{s}'}, 'face')
-    m['belay_0'] = model([element([6, 0, 6], [10, 13, 10], {'all': 'w'}), element([5, 9, 5], [11, 11, 11], {'all': 'r'}), element([7.5, 10, 0], [8.5, 11, 6], {'all': 'c'})], {'w': 'post', 'r': 'rope', 'c': 'cord'}, 'post')
-    m['belay_1'] = model([element([6, 0, 6], [10, 13, 10], {'all': 'w'}), element([5, 9, 5], [11, 11, 11], {'all': 'r'}), element([7.5, 0, 4.5], [8.5, 10, 5.5], {'all': 'c'})], {'w': 'post', 'r': 'rope', 'c': 'cord'}, 'post')
+    m['belay_0'] = model([element([6, 0, 6], [10, 13, 10], {'all': 'w'}), element([5, 9, 5], [11, 11, 11], {'all': 'r'}), along([7.5, 10, 0], [8.5, 11, 6], 2)], {'w': 'post', 'r': 'rope', 'c': 'cord'}, 'post')
+    m['belay_1'] = model([element([6, 0, 6], [10, 13, 10], {'all': 'w'}), element([5, 9, 5], [11, 11, 11], {'all': 'r'}), element([7.5, 0, 4.5], [8.5, 10, 5.5], {'all': 'c'}, uv={k: [7.5, 6, 8.5, 16] for k in ('north', 'south', 'east', 'west')})], {'w': 'post', 'r': 'rope', 'c': 'cord'}, 'post')
     m['note_0'] = model([element([4, 3, 15], [12, 13, 16], {'all': 'n'})], {'n': 'note'}, 'note')
     m['hole_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'l', 'north': 'h', 'south': 'h'})], {'l': 'limestone_dark', 'h': 'hole'}, 'hole', 'solid')
     for s in range(8):
@@ -405,8 +438,8 @@ def fitting_models():
     m['groove_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'c', 'up': 'g'})], {'c': 'clay', 'g': 'groove'}, 'groove', 'solid')
     for s in range(2):
         m[f'helmet_{s}'] = model([element([4, 0, 4], [12, 5, 12], {'all': 'h'}), element([3, 0, 3], [13, 1, 13], {'all': 'h'})], {'h': 'helmet_1' if s else 'helmet_0'}, 'helmet_0')
-    m['line_0'] = model([element([7, 0, 0], [9, 1, 16], {'all': 'c'})], {'c': 'cord'}, 'cord')
-    m['cut_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'l', 'north': 'f'}), element([7, 2, -6], [9, 3, 0], {'all': 'c'}), element([6, 2, -7], [10, 3, -6], {'all': 'c'})],
+    m['line_0'] = model([along([7, 0, 0], [9, 1, 16], 2)], {'c': 'cord'}, 'cord')
+    m['cut_0'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'l', 'north': 'f'}), along([7, 2, -6], [9, 3, 0], 2), along([6, 2, -7], [10, 3, -6], 0)],
                        {'l': 'limestone_dark', 'f': 'fissure_0', 'c': 'cord'}, 'fissure_0')
     m['canister_0'] = model([element([4, 0, 4], [12, 10, 12], {'all': 'c'})], {'c': 'canister'}, 'canister')
     m['tins_0'] = model([element([2, 0, 3], [7, 6, 13], {'all': 't'}), element([8, 0, 3], [14, 5, 13], {'all': 't'})], {'t': 'tins'}, 'tins')

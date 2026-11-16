@@ -518,6 +518,18 @@ def item_paddle():
     return im
 
 
+def block_paddle():
+    """The paddle lying in the boat (the item's picture as a whole), and in its top corner, which the boat never shows, the blade as
+    the paddle standing on the wall shows it: four wide, six high, its edge darker (0.4.651; the standing blade took the picture's
+    clear top and showed one line of the lying blade, so it all but drew nothing)."""
+    im = item_paddle()
+    fill(im, 0, 0, 4, 6, '#b88a54'); frame(im, 0, 0, 4, 6, '#7a5a34')
+    return im
+
+
+BLADE = {'north': [0, 0, 4, 6], 'south': [0, 0, 4, 6], 'east': [0, 0, 1, 6], 'west': [3, 0, 4, 6], 'up': [0, 0, 4, 1], 'down': [0, 5, 4, 6]}
+
+
 def item_key():
     im = clear()
     frame(im, 3, 4, 8, 9, '#b0a070'); fill(im, 8, 6, 14, 7, '#b0a070'); dot(im, 12, 8, '#b0a070'); dot(im, 13, 8, '#b0a070')
@@ -559,7 +571,7 @@ def textures():
     t.update({f'flood_{n}': flood(n == 1) for n in range(2)})
     t.update({'safe_2': safe_empty(), 'timber': timber(), 'gate': gate(), 'rope': rope()})
     t.update({f'rack_{n}': rack(n) for n in range(4)})
-    t.update({'paddle': item_paddle(), 'oars_top': item_oars()})
+    t.update({'paddle': block_paddle(), 'oars_top': item_oars()})
     out = {f'block/pinehook/{k}.png': v for k, v in t.items()}
     out.update({f'item/{k}.png': f() for k, (f, _) in ITEMS.items()})
     return out
@@ -613,7 +625,7 @@ def fitting_models():
         m[f'release_{n}'] = model(cleat + ([element([0, 9, 7.5], [8, 9.5, 8.5], {'up': 'r', 'down': 'r', 'north': 'r', 'south': 'r'})] if n == 0 else []), {'t': 'timber', 'r': 'rope'}, 'timber')
     for n in range(4):
         m[f'rack_{n}'] = model([element([0, 2, 13], [16, 14, 16], front('f', 'o'))], {'f': f'rack_{n}', 'o': 'oak'}, 'oak')
-    m['paddle_0'] = model([element([7, 0, 12], [9, 10, 14], {'all': 't'}), element([6, 10, 12.5], [10, 16, 13.5], {'all': 'p'})], {'t': 'timber', 'p': 'paddle'}, 'timber')
+    m['paddle_0'] = model([element([7, 0, 12], [9, 10, 14], {'all': 't'}), element([6, 10, 12.5], [10, 16, 13.5], {'all': 'p'}, BLADE)], {'t': 'timber', 'p': 'paddle'}, 'timber')
     for n in range(4):
         m[f'junction_{n}'] = model([element([3, 2, 12], [13, 14, 16], front('f', 's'))], {'f': f'junction_{n}', 's': 'steel'}, 'steel')
     for n in range(2):

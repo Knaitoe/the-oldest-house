@@ -315,21 +315,55 @@ def guitar():
     return img
 
 
-def books():
-    img = canvas()
+BOOK_COVERS = [(92, 30, 30), (34, 54, 40), (60, 44, 30), (38, 40, 64), (80, 70, 50)]
+# The bottom two rows of the books' picture, below where any book lies: the edge of a book's pages, and each cover's own colour for
+# its spine (0.4.651).
+PAGES_ROW, SPINES_ROW = 14, 15
+
+
+def book_lie():
+    """The seven books on the floor, in the order they were dropped: each as (x, z, width, depth, its cover, how many books it
+    lies on), the one picture and the model both drawn from it."""
     rng = random.Random(1818)
-    covers = [(92, 30, 30), (34, 54, 40), (60, 44, 30), (38, 40, 64), (80, 70, 50)]
+    out = []
     for i in range(7):
         x, y = rng.randrange(12), rng.randrange(12)
         w, h = rng.randint(3, 5), rng.randint(3, 4)
-        c = covers[i % len(covers)]
+        under = [b[5] for b in out if b[0] < x + w and x < b[0] + b[2] and b[1] < y + h and y < b[1] + b[3]]
+        out.append((x, y, w, h, i % len(BOOK_COVERS), max(under) + 1 if under else 0))
+    return out
+
+
+def books():
+    img = canvas()
+    for i, (x, y, w, h, c, _) in enumerate(book_lie()):
         for yy in range(y, y + h):
             for xx in range(x, x + w):
-                px(img, xx, yy, mul(c, .9 + .1 * ((xx + yy) % 2)))
+                px(img, xx, yy, mul(BOOK_COVERS[c], .9 + .1 * ((xx + yy) % 2)))
         if i % 3 == 0:
             for yy in range(y + 1, y + h - 1):
                 px(img, x + w // 2, yy, (220, 210, 186))
+    for x in range(16):
+        px(img, x, PAGES_ROW, (226, 216, 190) if x % 3 else (204, 194, 168))
+    for c, cover in enumerate(BOOK_COVERS):
+        px(img, c, SPINES_ROW, mul(cover, .8))
     return img
+
+
+def book_elements():
+    """Each book a block of its own, a pixel thick, lying on those it was dropped on: its cover on top where the picture has it,
+    its spine down one long side in the cover's colour and its pages round the other three (0.4.651; the books were one flat
+    slab whose sides fell on the empty rows of the picture and drew nothing)."""
+    out = []
+    for i, (x, z, w, d, c, on) in enumerate(book_lie()):
+        pages = lambda n: [0, PAGES_ROW, n, PAGES_ROW + 1]
+        spine = [c, SPINES_ROW, c + 1, SPINES_ROW + 1]
+        e = element([x, on, z], [x + w, on + 1, z + d], '#b', only=('up', 'north', 'south', 'east', 'west'))
+        for k, n in (('north', w), ('south', w), ('east', d), ('west', d)):
+            e['faces'][k]['uv'] = pages(n)
+        e['faces']['west' if i % 2 else 'east']['uv'] = spine
+        out.append(e)
+    return out
 
 
 def iron():
@@ -475,6 +509,20 @@ def model(textures, elements):
     return {'parent': 'minecraft:block/block', 'render_type': 'minecraft:cutout', 'textures': textures, 'elements': elements}
 
 
+def shield_plate():
+    """The armorial's shield, hung on the wall facing north: its front and back the whole shield (rows 1 to 13 of its picture),
+    its sides the outermost column of the shield on that side, its top the shield's top row and its foot the point."""
+    e = element([2, 2, 15], [14, 15, 16], '#s')
+    f = e['faces']
+    f['north']['uv'] = [2, 1, 14, 14]
+    f['south']['uv'] = [2, 1, 14, 14]
+    f['east']['uv'] = [2, 1, 3, 14]
+    f['west']['uv'] = [13, 1, 14, 14]
+    f['up']['uv'] = [2, 1, 14, 2]
+    f['down']['uv'] = [2, 13, 14, 14]
+    return e
+
+
 def placed(frm, to, tex, uvs):
     """A box some of which lies outside its own block, where the game cannot work a face's pixels out from where it is:
     each face is given its piece of the picture, the same size as the face, so nothing is stretched."""
@@ -525,13 +573,18 @@ MODEL_DEFS = {
         element([3, 0, 8], [4, 16, 9], '#w'), element([12, 0, 8], [13, 16, 9], '#w'), element([7, 0, 10], [9, 14, 11], '#w'),
         element([2, 3, 7], [14, 15, 8], '#p', only=('north',)), element([2, 3, 8], [14, 15, 8.5], '#w', only=('south', 'east', 'west', 'up', 'down'))]),
     'usher_guitar': model({'g': t('guitar'), 'particle': t('guitar')}, [element([5, 0, 7], [11, 14, 9], '#g')]),
-    'usher_books': model({'b': t('books'), 'particle': t('books')}, [element([1, 0, 1], [15, 1, 15], '#b', only=('up', 'north', 'south', 'east', 'west'))]),
+    'usher_books': model({'b': t('books'), 'particle': t('books')}, book_elements()),
     'usher_candelabra': model({'i': t('iron'), 'w': t('wax'), 'f': t('flame'), 'particle': t('iron')}, [
         element([6, 0, 6], [10, 1, 10], '#i'), element([7.5, 1, 7.5], [8.5, 11, 8.5], '#i'), element([3, 10, 7.5], [13, 11, 8.5], '#i'),
         element([3, 11, 7], [5, 14, 9], '#w'), element([7, 11, 7], [9, 15, 9], '#w'), element([11, 11, 7], [13, 14, 9], '#w'),
-        element([3.5, 14, 8], [4.5, 16, 8], '#f', only=('north', 'south')), element([7.5, 15, 8], [8.5, 16, 8], '#f', only=('north', 'south')),
-        element([11.5, 14, 8], [12.5, 16, 8], '#f', only=('north', 'south'))]),
-    'usher_armorial': model({'s': t('shield'), 'particle': t('shield')}, [element([2, 2, 15], [14, 14, 16], '#s')]),
+        # Each flame a column through the middle of the flame's picture, the pale tip over the amber (0.4.651; from where they
+        # lie they fell to one side of it and drew nothing).
+        element([3.5, 14, 8], [4.5, 16, 8], '#f', uv=[7, 7, 8, 9], only=('north', 'south')),
+        element([7.5, 15, 8], [8.5, 16, 8], '#f', uv=[7, 7, 8, 8], only=('north', 'south')),
+        element([11.5, 14, 8], [12.5, 16, 8], '#f', uv=[7, 7, 8, 9], only=('north', 'south'))]),
+    # The plate as tall as the shield is painted (its top row was off it), and each edge drawn with the shield's own edge where
+    # the shield reaches it: straight down the sides, the point at the foot (0.4.651; its edges fell outside the shield).
+    'usher_armorial': model({'s': t('shield'), 'particle': t('shield')}, [shield_plate()]),
     'usher_chair': model({'w': t('chair'), 'u': t('upholstery'), 'particle': t('upholstery')}, [
         element([2, 0, 2], [4, 7, 4], '#w'), element([12, 0, 2], [14, 7, 4], '#w'), element([2, 0, 12], [4, 7, 4 + 10], '#w'),
         element([12, 0, 12], [14, 7, 14], '#w'), element([2, 7, 2], [14, 9, 14], '#u'), element([2, 9, 12], [14, 16, 14], '#u')]),

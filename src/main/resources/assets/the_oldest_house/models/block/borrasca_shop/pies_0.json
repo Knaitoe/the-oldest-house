@@ -4,7 +4,6 @@
   "textures": {
     "c": "the_oldest_house:block/borrasca_shop/crust",
     "p": "the_oldest_house:block/borrasca_shop/pie",
-    "q": "the_oldest_house:block/borrasca_shop/pie",
     "particle": "the_oldest_house:block/borrasca_shop/crust"
   },
   "elements": [
@@ -97,7 +96,7 @@
           "texture": "#c"
         },
         "up": {
-          "texture": "#q"
+          "texture": "#p"
         },
         "down": {
           "texture": "#c"

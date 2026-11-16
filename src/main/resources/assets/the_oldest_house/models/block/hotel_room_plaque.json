@@ -51,24 +51,6 @@
             16
           ],
           "texture": "#plaque"
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            16,
-            2
-          ],
-          "texture": "#plaque"
-        },
-        "down": {
-          "uv": [
-            0,
-            14,
-            16,
-            16
-          ],
-          "texture": "#plaque"
         }
       }
     }

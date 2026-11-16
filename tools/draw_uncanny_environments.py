@@ -173,7 +173,7 @@ def furniture():
     out['shelf']=[p((0,1,4),(16,2,16),'steel'),p((0,8,4),(16,9,16),'steel'),p((0,15,4),(16,16,16),'steel'),p((0,2,14),(1,15,16),'steel'),p((15,2,14),(16,15,16),'steel'),p((2,9,6),(7,14,14),'enamel'),p((9,2,7),(14,7,14),'dark_wood')]
     out['fluorescent']=[p((0,14,3),(16,16,13),'steel'),p((1,11,4),(15,14,12),'lamp'),p((0,11,3),(1,14,13),'steel'),p((15,11,3),(16,14,13),'steel')]
     out['flush_light']=[p((0,1,0),(16,16,16),'workshop_wall'),p((0,0,3),(1,1,13),'steel'),p((15,0,3),(16,1,13),'steel'),p((1,0,3),(15,1,4),'steel'),p((1,0,12),(15,1,13),'steel'),p((1,.01,4),(15,.25,12),'lamp')]
-    out['window_frame']=[p((0,0,13),(16,2,16),'steel'),p((0,14,13),(16,16,16),'steel'),p((0,2,13),(2,14,16),'steel'),p((14,2,13),(16,14,16),'steel'),p((7,2,14),(8,14,15),'steel'),p((2,2,15),(14,14,16),'glass')]
+    out['window_frame']=[p((0,0,13),(16,2,16),'steel'),p((0,14,13),(16,16,16),'steel'),p((0,2,13),(2,14,16),'steel'),p((14,2,13),(16,14,16),'steel'),p((7,2,14),(8,14,15),'steel'),p((2,2,15),(14,14,16),'glass',east=None,west=None,up=None,down=None)]
     for part in ('left','center','right'):
         out['sign_'+part]=[p((0,0,13),(16,16,16),'steel'),p((0,0,12),(16,16,13),'sign_'+part)]
     out['exterior_lamp']=[p((5,0,13),(11,14,16),'steel'),p((7,10,6),(9,12,14),'steel'),p((4,7,3),(12,11,10),'steel'),p((5,5,4),(11,7,9),'lamp')]
@@ -275,7 +275,9 @@ def models():
                         uvs={'north':[0,16-h,w,16],'south':[0,16-h,w,16],
                              'east':[0,16-h,d,16],'west':[0,16-h,d,16],
                              'up':[0,0,w,d],'down':[0,0,w,d]}
-                    faces={face:{'texture':'#'+part['faces'].get(face,part['material']),'uv':uvs[face]} for face in uvs}
+                    # A face named None is left off: the glass's edges lie against its steel frame, and the glass picture is
+                    # clear there, so they drew nothing (0.4.651).
+                    faces={face:{'texture':'#'+part['faces'].get(face,part['material']),'uv':uvs[face]} for face in uvs if part['faces'].get(face,part['material']) is not None}
                     if name.startswith('sign_'):
                         for face in ('north','south'):faces[face]['uv']=[0,0,16,16]
                     elements.append({'from':[x0,low,z0],'to':[x1,high,z1],'faces':faces})

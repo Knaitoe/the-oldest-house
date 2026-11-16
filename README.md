@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.650** puts every model face on its own picture. A face that named its texture square off the texture showed a strip of whatever texture lay beside it in the game's sheet (the plain's note stand, a television aerial), and a piece longer than its texture had the whole texture squeezed onto it, its pixels drawn taller than wide. Such pieces are now cut where their texture would begin again, each part mapped one pixel to one pixel, and `tools/flicker.py --check` keeps the pack that way. No gameplay, Witness, layout or protocol change. `docs/MODEL_FACES_0_4_650.md`.
+Development candidate **0.4.651** mends the model faces that drew nothing. A face whose texture square held only clear pixels showed nothing at all: the Stanley's dinner candles had no bodies under their flames, a chandelier hung by no cable, bulbs and dishes stood on no posts, jars had no glass, a cut pie had no top and a mailbox flag was missing. Each now shows the part of its picture it is meant to, or is left off where it shows nothing (the clear edges of a round clock, of glass held in a frame); `tools/flicker.py --check` fails on any such face. No gameplay, Witness, layout or protocol change. `docs/MODEL_FACES_0_4_651.md`.
 
-Previous: 0.4.649 finished A sort of thing with its ninth part, afterwards. `docs/SLEEPING_KING_0_4_649.md`.
+Previous: 0.4.650 put every model face on its own picture. `docs/MODEL_FACES_0_4_650.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

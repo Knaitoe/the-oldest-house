@@ -25,10 +25,22 @@
           "texture": "#l"
         },
         "east": {
-          "texture": "#l"
+          "texture": "#l",
+          "uv": [
+            4,
+            4,
+            8,
+            11
+          ]
         },
         "west": {
-          "texture": "#l"
+          "texture": "#l",
+          "uv": [
+            4,
+            4,
+            8,
+            11
+          ]
         },
         "up": {
           "texture": "#l"

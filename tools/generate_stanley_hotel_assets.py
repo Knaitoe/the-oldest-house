@@ -637,7 +637,11 @@ def models():
     m('back_bar', [box((0, 0, 6), (16, 16, 16), 'w', overrides={'north': 'b'})], {'w': 'walnut16', 'b': 'back_bar'}, 'back_bar')
     m('table', [box((0, 0, 0), (16, 16, 16), 'c', overrides={'down': 'w'})], {'c': 'cloth', 'w': 'walnut16'}, 'cloth')
     for s in range(3):
-        m(f'table_set_{s}', [box((0, 0, 0), (16, 16, 16), 'c', overrides={'up': 't', 'down': 'w'}), box((7, 16, 7), (9, 19, 9), 'k'),
+        # The candle takes the game's own candle picture as the game's candle does: its sides from the strip down the picture's
+        # left edge, its top from the square above (0.4.651; from where it lies it fell on the picture's empty middle).
+        m(f'table_set_{s}', [box((0, 0, 0), (16, 16, 16), 'c', overrides={'up': 't', 'down': 'w'}),
+                             box((7, 16, 7), (9, 19, 9), 'k', uv={**{d: (0, 8, 2, 11) for d in ('north', 'south', 'east', 'west')},
+                                                                 'up': (0, 6, 2, 8), 'down': (0, 14, 2, 16)}),
                              box((7.5, 19, 7.5), (8.5, 20, 8.5), 'f', glow=True, shade=False)],
           {'c': 'cloth', 't': f'setting_{s}', 'w': 'walnut16', 'k': 'minecraft:block/white_candle', 'f': 'minecraft:block/fire_0'}, 'cloth')
     m('easel', [box((3, 0, 8), (4, 16, 9), 'w'), box((12, 0, 8), (13, 16, 9), 'w'), box((7.5, 0, 10), (8.5, 14, 11), 'w'),
@@ -645,7 +649,9 @@ def models():
     m('chandelier', [box((7.5, 10, 7.5), (8.5, 16, 8.5), 'b'), box((3, 8, 3), (13, 10, 13), 'b', overrides={'down': 'k', 'up': 'k'}),
                      *[box((x, 3, z), (x + 2, 8, z + 2), 'k', glow=True, shade=False) for x, z in ((3, 7), (11, 7), (7, 3), (7, 11))],
                      box((6, 2, 6), (10, 8, 10), 'k', glow=True, shade=False)], {'b': 'brass16', 'k': 'crystal'}, 'crystal')
-    m('sconce', [box((7, 5, 15), (9, 11, 16), 'b'), box((7.5, 7, 13), (8.5, 8, 15), 'b'), box((5.5, 8, 10.5), (10.5, 13, 15.5), 's', glow=True, shade=False)],
+    # The sconce as it was mounted by hand (backplate, arm, cup and shade standing clear of the wall); the tool now writes it so.
+    m('sconce', [box((5.5, 4, 15), (10.5, 13, 16), 'b'), box((7, 5, 9), (9, 7, 15.5), 'b'), box((7, 6, 8), (9, 10, 10), 'b'),
+                 box((4, 9, 6), (12, 15, 13), 's', glow=True, shade=False)],
       {'b': 'brass16', 's': 'shade'}, 'shade')
     m('card', [box((4, 0, 5), (12, .5, 11), 'c')], {'c': 'card'}, 'card')
     m('book', [box((3, 0, 4), (13, 1, 12), 'b', overrides={'up': 'l'}), box((3.5, 1, 4.5), (12.5, 1.5, 11.5), 'p', overrides={'up': 'l'})],
