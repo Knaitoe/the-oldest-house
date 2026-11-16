@@ -6428,5 +6428,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.bleed.little_longer"
+  },
+  "king.breath_in": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/breath_in",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.breath_in"
+  },
+  "king.breath_out": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/breath_out",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.breath_out"
+  },
+  "king.soft_step": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/soft_step",
+        "attenuation_distance": 6
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.soft_step"
+  },
+  "bleed.sleeping_king": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/sleeping_king",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.sleeping_king"
   }
 }

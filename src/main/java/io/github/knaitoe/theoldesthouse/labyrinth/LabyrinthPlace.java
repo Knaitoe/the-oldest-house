@@ -712,7 +712,10 @@ public enum LabyrinthPlace {
     /** 0.4.621, A Little Longer (Longer, docs/A_LITTLE_LONGER_PLAN.md): Rowan's radio repair shop, the flat above it, the roof landing and
      * a short stretch of the House's corridor (LongerSite), at night, in the rain. Seven chapters, each a visit. This slice, the place.
      * Not dealt until its evening can be played. */
-    LITTLE_LONGER("a_little_longer",Kind.MULTI_VISIT,241,new BoundingBox(-16,-2,-30,16,30,0),literaryEntry());
+    LITTLE_LONGER("a_little_longer",Kind.MULTI_VISIT,241,new BoundingBox(-16,-2,-30,16,30,0),literaryEntry()),
+    /** 0.4.641, A sort of thing (King, docs/SLEEPING_KING_PLAN.md): a drawing-room, the same room behind its glass, and a country laid
+     * out in squares where an old man sleeps under a tree (KingSite). One long visit. This part, the place. Not dealt until part 3. */
+    SLEEPING_KING("a_sort_of_thing",Kind.ONE_SHOT,242,new BoundingBox(-64,-4,-185,64,32,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

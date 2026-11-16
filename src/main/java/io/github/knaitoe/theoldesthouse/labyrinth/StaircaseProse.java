@@ -251,6 +251,7 @@ public final class StaircaseProse {
     static { PLACES.put("bike_night","Calder Falls"); }
     static { PLACES.put("pell_house","Wren Close"); }
     static { PLACES.put("ones_already_inside","the lodging house"); }
+    static { PLACES.put("a_sort_of_thing","the ruled country"); }
     static { PLACES.put("a_little_longer","the radio shop"); }
     static { PLACES.put("household","the landing where the household camped"); }
     static {

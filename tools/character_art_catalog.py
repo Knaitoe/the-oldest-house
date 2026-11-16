@@ -63,7 +63,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_','literary_king'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -116,6 +116,8 @@ def entries():
     # 0.4.640: Dev, Hannah and Marcus, the other guests, on two hundred and fourteen to sixteen.
     for name,phase in (('iris',75),('sam',76),('agent',77),('dev',214),('hannah',215),('marcus',216)):
         rows.append({'name':'literary_flat_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # 0.4.641: the King of the ruled country, asleep, on stranger phase two hundred and seventeen.
+    rows.append({'name':'literary_king','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':217})
     # Speak Up (0.4.327): Joan, Pat, Dell and Ruth on stranger phases ninety to ninety-three.
     for name,phase in (('joan',90),('pat',91),('dell',92),('ruth',93)):
         rows.append({'name':'literary_supper_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
