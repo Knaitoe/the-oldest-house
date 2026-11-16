@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Mth;
 
 /**
  * 0.4.642, A sort of thing, the second part (docs/SLEEPING_KING_0_4_642.md): his breath, and how much of a thing each reader is.
@@ -126,18 +127,28 @@ public final class KingBreath {
         if(!KingSite.inside(r)||r.y<-2.5)return NOWHERE;
         int land=land(p,b,own);
         int state=land;
-        // Notice, one step up and no further than a thing: another reader's look, a look from one of the dream's people, or this
-        // square's peg having counted them (0.4.644).
-        if(state<THING&&(noticed(p,b)||lookedAtByTheDream(p,b)||counted(own,KingSite.rank((int)Math.floor(r.z)))))state++;
-        // 0.4.646: named by the court and not yet out, they are a thing while it attends to them; a swallow still takes them a step under.
-        if(KingCourt.holding(p,b,own))state=Math.max(state,THING);
-        // 0.4.644: what they have swallowed, one step either way, for its twenty seconds; cake past a thing only on a thing.
-        var swallowed=SWALLOWED.get(p.getUUID());
-        if(swallowed!=null){if(p.level().getGameTime()>=swallowed.until)SWALLOWED.remove(p.getUUID());else state=swallowed.more?Math.min(TOO_MUCH,state+1):Math.max(NOWHERE,state-1);}
+        boolean crowned=KingCrownItem.crowned(p);
+        if(leaving(p,b,own)){
+            // 0.4.648: walking away from him with the crown off, they thin with every square, whatever the land or anybody's look.
+            state=away(r);
+        }else{
+            // Notice, one step up and no further than a thing: another reader's look, a look from one of the dream's people, or this
+            // square's peg having counted them (0.4.644).
+            if(state<THING&&(noticed(p,b)||lookedAtByTheDream(p,b)||counted(own,KingSite.rank((int)Math.floor(r.z)))))state++;
+            // 0.4.646: named by the court and not yet out, they are a thing while it attends to them; a swallow still takes them a step under.
+            if(KingCourt.holding(p,b,own))state=Math.max(state,THING);
+            // 0.4.644: what they have swallowed, one step either way, for its twenty seconds; cake past a thing only on a thing.
+            var swallowed=SWALLOWED.get(p.getUUID());
+            if(swallowed!=null){if(p.level().getGameTime()>=swallowed.until)SWALLOWED.remove(p.getUUID());else state=swallowed.more?Math.min(TOO_MUCH,state+1):Math.max(NOWHERE,state-1);}
+            // 0.4.648: the crown is notice: a crowned reader is never less than a sort of thing anywhere in the country.
+            if(crowned)state=Math.max(state,SORT);
+        }
         // Held by the Queen's hand or under the Guard's glass, they are a thing.
         if(KingQueen.holding(p,b)||KingGuard.holding(p,b))state=Math.max(state,THING);
         if(state==NOWHERE)return NOWHERE;
         if(beside(r)&&in(b))state=Math.min(TOO_MUCH,state+1);
+        // 0.4.648: crowned beside him, too much of a thing on every breath, in or out. That is check.
+        if(crowned&&beside(r)&&!KingSleep.waking(b))state=TOO_MUCH;
         // The last square that counted them: where they last stood as a thing on the ground.
         if(state>=THING&&p.onGround()){own.putDouble("KingBackX",r.x);own.putDouble("KingBackY",r.y);own.putDouble("KingBackZ",r.z);}
         return state;
@@ -155,6 +166,23 @@ public final class KingBreath {
         return land;
     }
     public static boolean beside(Vec3 r){var k=Vec3.atBottomCenterOf(KingSite.KING);return r.distanceTo(k)<BESIDE;}
+    /** 0.4.648: in check once and the crown off again since, and the dream not over for them: walking away from him. */
+    public static boolean leaving(ServerPlayer p,BlockPos b,CompoundTag own){return own.getBoolean(KingSleep.CHECKED)&&!KingCrownItem.crowned(p)&&!own.getBoolean("Ready")&&!KingSleep.waking(b);}
+    /**
+     * 0.4.648: how much of a thing a reader leaving him is, by how many squares they are from his: his own square and the next a thing,
+     * two away a sort of thing, three or more a line. The land beyond the files counts in squares too, so the way off the board at either
+     * side thins the same.
+     */
+    public static int away(Vec3 r){
+        int n=squaresFromHim(r);
+        return n<=1?THING:n==2?SORT:LINE;
+    }
+    /** Chess squares between a point and his square, rank by rank and file by file (a king's move each). */
+    public static int squaresFromHim(Vec3 r){
+        int row=Mth.floor((KingSite.NEAR+1-r.z)/KingSite.PITCH),col=Mth.floor((r.x-KingSite.WEST)/17.0);
+        int kRow=Mth.floor((KingSite.NEAR+1-KingSite.KING.getZ()-.5)/KingSite.PITCH),kCol=Mth.floor((KingSite.KING.getX()+.5-KingSite.WEST)/17.0);
+        return Math.max(Math.abs(row-kRow),Math.abs(col-kCol));
+    }
     /** Being looked at by another reader in the country who is at least a sort of thing, with nothing between them. */
     static boolean noticed(ServerPlayer p,BlockPos b){
         var l=p.serverLevel();
@@ -170,7 +198,7 @@ public final class KingBreath {
      * only while he is filled in and on his horse (KingForest).
      */
     public static boolean lookedAtByTheDream(ServerPlayer p,BlockPos b){
-        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a)||KingCaterpillar.is(a)||KingCourt.is(a)||KingForest.is(a)&&KingForest.filled(a)&&!KingForest.fallen(a))){
+        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a)||KingCaterpillar.is(a)||KingCourt.is(a)||KingForest.is(a)&&KingForest.filled(a)&&!KingForest.fallen(a)||KingFeast.filled(a))){
             if(!a.isAlive())continue;
             var eye=a.getEyePosition();var to=p.getBoundingBox().getCenter().subtract(eye);double d=to.length();if(d<1e-3)return true;
             var view=Vec3.directionFromRotation(a.getXRot(),a.getYHeadRot());

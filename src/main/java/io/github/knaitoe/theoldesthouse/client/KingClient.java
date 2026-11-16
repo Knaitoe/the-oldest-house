@@ -48,6 +48,8 @@ public final class KingClient {
     /** The pencil: a soft dark grey, nearly opaque. */
     private static final int INK_R=58,INK_G=54,INK_B=50,INK_A=230;
     private static boolean outlining;
+    /** 0.4.648: the feast's guests are drawn in pencil the same way, and their names are not written in pencil either. */
+    static void outlining(boolean on){outlining=on;}
 
     public static void accept(KingStatePayload p){
         var level=Minecraft.getInstance().level;if(level==null)return;long until=level.getGameTime()+LAPSE;

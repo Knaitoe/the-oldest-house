@@ -35,7 +35,7 @@ public final class King {
     public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);KingCaterpillar.ensure(p.serverLevel(),b);KingCourt.ensure(p.serverLevel(),b,KingSleep.get(b));KingForest.ensure(p.serverLevel(),b,KingSleep.get(b));}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingFeast.ensure(p.serverLevel(),b,KingSleep.get(b));KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);KingCaterpillar.ensure(p.serverLevel(),b);KingCourt.ensure(p.serverLevel(),b,KingSleep.get(b));KingForest.ensure(p.serverLevel(),b,KingSleep.get(b));}
 
     /**
      * 0.4.643: a hand on the King. A line's hand goes into him; before the brothers have said his name he is only an old man asleep;
@@ -46,6 +46,8 @@ public final class King {
         if(KingBreath.of(p)<=KingBreath.LINE){cue(p,KingTexts.THROUGH_HIM);return;}
         if(KingSleep.waking(b)){cue(p,KingTexts.EYES_OPEN);return;}
         if(!own.getBoolean(KingSleep.HEARD)||!KingBreath.beside(p.position().subtract(b.getX(),b.getY(),b.getZ()))){cue(p,KingTexts.KING);return;}
+        // 0.4.648: the last move is a queen's. A pawn beside him has none.
+        if(!KingCrownItem.crowned(p)){cue(p,KingTexts.PAWN_NO_MOVE);return;}
         Talk.begin(p,"king_name",KingTexts.THE_KING);
         Talk.line(p,"",KingTexts.ASLEEP_HERE);
         Talk.ask(p,Talk.reply(KingTexts.SAY_HIS_NAME,King::sayName),Talk.act(KingTexts.LET_HIM_SLEEP,Talk::close));
@@ -126,6 +128,8 @@ public final class King {
             }
             case SEAT->io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,at);
             case WHEEL->cue(p,KingTexts.WHEEL);
+            // 0.4.648: the feast, drawn or introduced.
+            case FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR->KingFeast.click(p,st.getValue(KingBlock.KIND),KingBlock.filled(st));
             // 0.4.645: the mushroom. The side a reader stands on is the side they break from: the west side more, the east side
             // less. A piece fills the bottle or the cake again (or gives one, if they have none of that side's).
             case STALK->cue(p,KingTexts.STALK);

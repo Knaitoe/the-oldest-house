@@ -21,9 +21,11 @@ public class KingHedgeBlock extends Block {
     public KingHedgeBlock(Properties p){super(p);}
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     static int state(CollisionContext c){return c instanceof EntityCollisionContext e&&e.getEntity() instanceof Player p?KingBreath.of(p):KingBreath.THING;}
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return state(c)>=KingBreath.THING?Shapes.block():Shapes.empty();}
+    /** 0.4.648: whether the body meeting it is a reader in their own crown: a queen, whom no hedge or brook stops. */
+    static boolean queen(CollisionContext c){return c instanceof EntityCollisionContext e&&e.getEntity() instanceof Player p&&KingCrownItem.crowned(p);}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return state(c)>=KingBreath.THING&&!queen(c)?Shapes.block():Shapes.empty();}
     @Override protected void entityInside(BlockState s,Level l,BlockPos p,Entity e){
-        if(e instanceof Player r&&KingBreath.of(r)==KingBreath.SORT)e.makeStuckInBlock(s,new Vec3(.35,.9,.35));
+        if(e instanceof Player r&&KingBreath.of(r)==KingBreath.SORT&&!KingCrownItem.crowned(r))e.makeStuckInBlock(s,new Vec3(.35,.9,.35));
     }
     @Override protected boolean isPathfindable(BlockState s,PathComputationType t){return false;}
 }

@@ -25,9 +25,9 @@ public class KingVergeBlock extends Block {
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.INVISIBLE;}
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Shapes.empty();}
-    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return KingHedgeBlock.state(c)>=KingBreath.THING&&c instanceof EntityCollisionContext e&&e.getEntity() instanceof Player?WALL:Shapes.empty();}
+    @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return KingHedgeBlock.state(c)>=KingBreath.THING&&!KingHedgeBlock.queen(c)&&c instanceof EntityCollisionContext e&&e.getEntity() instanceof Player?WALL:Shapes.empty();}
     @Override protected void entityInside(BlockState s,Level l,BlockPos p,Entity e){
-        if(e instanceof Player r&&KingBreath.of(r)==KingBreath.SORT)e.makeStuckInBlock(s,new Vec3(.5,.9,.5));
+        if(e instanceof Player r&&KingBreath.of(r)==KingBreath.SORT&&!KingCrownItem.crowned(r))e.makeStuckInBlock(s,new Vec3(.5,.9,.5));
     }
     @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){return true;}
     @Override protected boolean isPathfindable(BlockState s,PathComputationType t){return false;}

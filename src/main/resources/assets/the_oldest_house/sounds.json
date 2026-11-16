@@ -6527,5 +6527,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.king.knight_song"
+  },
+  "king.introduced": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/introduced",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.introduced"
+  },
+  "king.crowned": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/crowned",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.crowned"
   }
 }

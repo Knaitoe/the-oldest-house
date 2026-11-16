@@ -107,7 +107,19 @@ public final class KingSite {
     /** Whether a place is on the turn's path (the two rows of it, from the road to its end among the trees). */
     public static boolean onTurn(int x,int z){return (z==TURN_Z||z==TURN_Z-1)&&x>=1&&x<=(int)TURN_END.x+1;}
 
-    public static BlockPos peg(int rank){return new BlockPos(2,0,rankNear(rank)-1);}
+    public static BlockPos peg(int rank){return rank==RANKS?FEAST_HEAD:new BlockPos(2,0,rankNear(rank)-1);}
+    /**
+     * 0.4.648: the feast on the eighth square. A long table on the road down the middle file, two blocks wide from FEAST_NEAR to FEAST_FAR,
+     * with three high-backed chairs down each side and one at its foot; the dishes on the table (FEAST_DISHES, with their kinds); and its
+     * head, beyond the far end, where the square's peg stands.
+     */
+    public static final int FEAST_NEAR=-160,FEAST_FAR=-166;
+    public static final BlockPos FEAST_HEAD=new BlockPos(0,0,-167),FEAST_FOOT=new BlockPos(-1,0,-159);
+    /** The side chairs, west then east, near to far, and the foot chair. */
+    public static final BlockPos[] FEAST_CHAIRS={new BlockPos(-2,0,-161),new BlockPos(-2,0,-163),new BlockPos(-2,0,-165),new BlockPos(1,0,-161),new BlockPos(1,0,-163),new BlockPos(1,0,-165),FEAST_FOOT};
+    public static final BlockPos[] FEAST_DISHES={new BlockPos(-1,0,-161),new BlockPos(-1,0,-163),new BlockPos(-1,0,-165),new BlockPos(0,0,-162)};
+    public static final KingBlock.Kind[] DISH_KINDS={KingBlock.Kind.CANDLES,KingBlock.Kind.PUDDING,KingBlock.Kind.CANDLES,KingBlock.Kind.MUTTON};
+    public static boolean onFeast(int x,int z){return (x==-1||x==0)&&z<=FEAST_NEAR&&z>=FEAST_FAR;}
     /** The hill's height over a column, 0 off it. */
     public static int hill(int x,int z){double d=Math.hypot(x-HILL.getX(),z-HILL.getZ());return d>=HILL_RADIUS?0:(int)Math.round(HILL_HEIGHT*(1-d/HILL_RADIUS)+.25);}
     public static boolean inCarriage(net.minecraft.world.phys.Vec3 r){return r.x>=CAR_WEST&&r.x<CAR_EAST+1&&r.z>=CAR_NORTH&&r.z<CAR_SOUTH+1&&r.y>=-.5&&r.y<4;}
@@ -152,6 +164,8 @@ public final class KingSite {
      */
     public static double ruledness(int x,int z,int shift,int level){
         double r;
+        // 0.4.648: settled by the last song, the country is filled to its edges, the one time it is.
+        if(level==KingSleep.FULL)return 0;
         if(level>=3)r=1;
         else if(level==2){double edge=8.5-shift;r=z>rankNear(4)||z<rankFar(4)?1:x>=edge?0:Mth.clamp((edge-x)/34,0,1);}
         else r=shift==0?ruledness(z,level):z>rankFar(4)?ruledness(z-shift,level):ruledness(z+shift,level);
@@ -164,13 +178,13 @@ public final class KingSite {
         // Within the band the land goes over in clumps of four blocks, not one block at a time.
         if(r<=0)return false;if(r>=1)return true;return hash(x>>1,z>>1)<r;
     }
-    private static final long[][] BREATHING=new long[4][];
+    private static final long[][] BREATHING=new long[5][];
     private static long[] changing;
     /** Every column (x, z, as BlockPos longs at y 0) whose drawing changes between the out-breath and the in-breath. */
     public static long[] breathing(){return breathing(0);}
     /** 0.4.643: the same at a depth of his sleep. */
     public static synchronized long[] breathing(int level){
-        level=Mth.clamp(level,0,3);
+        level=Mth.clamp(level,0,KingSleep.FULL);
         if(BREATHING[level]==null){
             var cells=new java.util.ArrayList<Long>();
             for(int x=-COUNTRY;x<=COUNTRY;x++)for(int z=rankFar(RANKS)-8;z<=0;z++)if(ruled(x,z,0,level)!=ruled(x,z,1,level))cells.add(BlockPos.asLong(x,0,z));
@@ -184,7 +198,7 @@ public final class KingSite {
             var cells=new java.util.ArrayList<Long>();
             for(int x=-COUNTRY;x<=COUNTRY;x++)for(int z=rankFar(RANKS)-8;z<=0;z++){
                 boolean first=ruled(x,z,0,0),differs=false;
-                for(int level=0;level<=3&&!differs;level++)for(int shift=0;shift<=1;shift++)if(ruled(x,z,shift,level)!=first){differs=true;break;}
+                for(int level=0;level<=KingSleep.FULL&&!differs;level++)for(int shift=0;shift<=1;shift++)if(ruled(x,z,shift,level)!=first){differs=true;break;}
                 if(differs)cells.add(BlockPos.asLong(x,0,z));
             }
             changing=cells.stream().mapToLong(Long::longValue).toArray();
@@ -230,6 +244,16 @@ public final class KingSite {
         // 0.4.644: a peg on every square from the second, and the glass table by the road on the hill's square.
         for(int r=2;r<=RANKS;r++)set(l,b,peg(r),KingBlock.of(KingBlock.Kind.PEG,Direction.NORTH));
         set(l,b,GLASS_TABLE,KingBlock.of(KingBlock.Kind.GLASS_TABLE,Direction.WEST));
+        feast(l,b,false);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.648: the feast on the eighth rank
+    /** The feast laid, every piece drawn ({@code filled} false) or filled; a fresh dream lays it drawn again (KingFeast.reset). */
+    public static void feast(ServerLevel l,BlockPos b,boolean filled){
+        int stage=filled?1:0;
+        for(int z=FEAST_NEAR;z>=FEAST_FAR;z--)for(int x=-1;x<=0;x++)set(l,b,x,0,z,KingBlock.of(KingBlock.Kind.FEAST_TABLE,x<0?Direction.WEST:Direction.EAST,stage));
+        for(int i=0;i<FEAST_DISHES.length;i++){var at=FEAST_DISHES[i];set(l,b,at,KingBlock.of(DISH_KINDS[i],at.getX()<0?Direction.WEST:Direction.EAST,stage));}
+        for(var at:FEAST_CHAIRS)set(l,b,at,KingBlock.of(KingBlock.Kind.FEAST_CHAIR,at.equals(FEAST_FOOT)?Direction.NORTH:at.getX()<0?Direction.EAST:Direction.WEST,stage));
     }
 
     /** 0.4.644: the hill, turf over soil, raised in the same drawing as the land round it, so it breathes with it. */

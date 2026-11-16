@@ -290,8 +290,8 @@ public final class KingTests {
     }
 
     /**
-     * 0.4.643, leaving him his sleep. A reader who has been beside him and heard the brothers, and then walks off the board as a line,
-     * leaves him asleep: they come to in the drawing-room with the account ready. Anybody else off the board is only put back.
+     * 0.4.643, leaving him his sleep. A reader who has been beside him, heard the brothers and (0.4.648) been in check, and then walks
+     * off the board as a line with the crown off, leaves him asleep: they come to in the drawing-room with the account ready. Anybody else off the board is only put back.
      */
     @GameTest(template="empty",batch="king_walk",timeoutTicks=800)
     public static void walkingOffLeavesHimHisSleep(GameTestHelper h){
@@ -302,6 +302,10 @@ public final class KingTests {
             KingBreath.reader(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
             h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!f.own(p,P).getBoolean("Ready"),"a reader who has not met him is only put back");
             own=f.own(p,P);own.putBoolean(KingSleep.MET,true);own.putBoolean(KingSleep.HEARD,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
+            KingBreath.reader(p,b,f.own(p,P));
+            h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!f.own(p,P).getBoolean("Ready"),"0.4.648: one who met him and heard the brothers but was never in check is only put back");
+            own=f.own(p,P);own.putBoolean(KingSleep.CHECKED,true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
             p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
             KingBreath.reader(p,b,f.own(p,P));
             h.assertTrue(f.own(p,P).getBoolean("Ready")&&"left_him_his_sleep".equals(f.own(p,P).getString(KingSleep.ENDING)),"one who met him and heard the brothers leaves him his sleep");
@@ -601,6 +605,106 @@ public final class KingTests {
             tick.run();var own=mine.apply(q);
             h.assertTrue(own.getInt(KingForest.TURN)==KingForest.WENT_ON,"the second reader went on: "+own.getInt(KingForest.TURN));
             h.assertTrue(pages(KingTexts.account("q",own)).contains("a drawing before he got there"),"the account says he was a drawing before the turn");
+            for(var who:new ServerPlayer[]{p,q})KingBreath.leave(who);done();h.succeed();
+        });
+    }
+    /**
+     * 0.4.648, the feast and the crown. On the eighth square the feast is laid as a drawing and its guests are pencilled in their chairs.
+     * A guest looked at for a second is introduced: they fill in, and look back. A look at the table fills the table in. Counted on the
+     * peg at its head while a guest looks at them, a reader is crowned: the crown is real, on their head and their own, and what they
+     * wore there goes into their pack. Crowned, they are never less than a sort of thing, the eight lines are told once, no hedge stops
+     * them, and beside him they are in check: from the second in-breath each one stirs him. The crown off, the Knight's song sung beside
+     * him settles him all the way, and walking off the board leaves him his sleep. A reader still in check when the stirs wake him stood
+     * there until he woke.
+     */
+    @GameTest(template="empty",batch="king_feast",timeoutTicks=3000)
+    public static void theFeastTheCrownAndCheck(GameTestHelper h){
+        var f=place(h);var p=f.player("king_feast_queen",P);var q=f.player("king_feast_stander",P);
+        var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var owns=new java.util.HashMap<java.util.UUID,net.minecraft.nbt.CompoundTag>();
+        java.util.function.Function<ServerPlayer,net.minecraft.nbt.CompoundTag> mine=w->owns.computeIfAbsent(w.getUUID(),u->f.own(w,P));
+        java.util.function.BiConsumer<ServerPlayer,double[]> at=(who,xz)->{who.teleportTo(l,b.getX()+xz[0],b.getY(),b.getZ()+xz[1],180,0);who.setDeltaMovement(Vec3.ZERO);who.setOnGround(true);};
+        Runnable tick=()->{for(var who:new ServerPlayer[]{p,q})KingBreath.reader(who,b,mine.apply(who));};
+        java.util.function.BiConsumer<ServerPlayer,Vec3> look=(who,v)->who.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,v);
+        var guestChair=KingSite.FEAST_CHAIRS[2];var tableCell=new BlockPos(0,0,KingSite.FEAST_NEAR);
+        java.util.function.IntFunction<Integer> stage=i->{var st=l.getBlockState(b.offset(i<0?tableCell:KingSite.FEAST_CHAIRS[i]));return KingBlock.feast(st)?st.getValue(KingBlock.STAGE):-1;};
+        var helmet=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.LEATHER_HELMET);
+        h.startSequence().thenExecute(()->{
+            at.accept(q,new double[]{-30.5,-60.5});at.accept(p,new double[]{-4.5,guestChair.getZ()+.5});
+            p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,helmet.copy());
+        })
+        .thenWaitUntil(()->{tick.run();var g=KingFeast.find(l,b,KingFeast.HEARTS_KING);
+            h.assertTrue(g!=null&&!KingFeast.filled(g)&&stage.apply(2)==0&&stage.apply(-1)==0,"the feast is laid as a drawing, the King of Hearts pencilled in his chair");})
+        // A second's look introduces him: he fills in, and his chair with him.
+        .thenWaitUntil(()->{var g=KingFeast.find(l,b,KingFeast.HEARTS_KING);look.accept(p,g.getBoundingBox().getCenter());tick.run();
+            h.assertTrue((KingFeast.introduced(b)&1<<2)!=0,"looked at a second, he is introduced: "+KingFeast.introduced(b));})
+        .thenWaitUntil(()->{tick.run();var g=KingFeast.find(l,b,KingFeast.HEARTS_KING);
+            h.assertTrue(KingFeast.filled(g)&&stage.apply(2)==1,"he fills in in his chair: fade "+g.fade()+", chair "+stage.apply(2));})
+        .thenExecute(()->{
+            var own=mine.apply(p);
+            h.assertTrue(own.getBoolean(KingFeast.SAT_DOWN)&&own.getInt(KingFeast.INTRODUCED)==1,"the reader introduced him: "+own.getInt(KingFeast.INTRODUCED));
+            // The table, from beside its foot.
+            at.accept(p,new double[]{.5,KingSite.FEAST_NEAR+1.7});
+        })
+        .thenWaitUntil(()->{look.accept(p,Vec3.atLowerCornerOf(b.offset(tableCell)).add(.5,.88,.3));tick.run();
+            h.assertTrue((KingFeast.introduced(b)&1<<KingFeast.TABLE)!=0,"a look at the table introduces it: "+p.pick(24,1,false).getLocation().subtract(Vec3.atLowerCornerOf(b)));})
+        .thenWaitUntil(()->{tick.run();h.assertTrue(stage.apply(-1)==1,"the table fills in");})
+        // On the peg at the head of the table, with the King of Hearts looking at them: counted, and crowned.
+        .thenExecute(()->{var peg=KingSite.peg(KingSite.RANKS);at.accept(p,new double[]{peg.getX()+.5,peg.getZ()+.5});})
+        .thenWaitUntil(()->{tick.run();h.assertTrue(KingCrownItem.crowned(p),"counted at the head of the table, a crown comes down: state "+mine.apply(p).getInt("KingState"));})
+        .thenExecute(()->{
+            var own=mine.apply(p);var worn=p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD);
+            h.assertTrue(own.getBoolean(KingFeast.CROWNED)&&p.getUUID().equals(KingCrownItem.owner(worn)),"the crown is on their head, and their own");
+            h.assertTrue(p.getInventory().items.stream().anyMatch(st->st.is(net.minecraft.world.item.Items.LEATHER_HELMET)),"what they wore there went into their pack");
+            h.assertFalse(KingCrownItem.crowned(q),"another reader is not crowned by it");
+            // 0.4.648 (the owner): the Queen names them by the presentation the House has read, and only when it is settled.
+            h.assertTrue(KingTexts.queenCrowned(p).contains("Now you're crowned, and the crowned")&&KingTexts.linesHint(p).contains("stops anybody crowned"),"unread, a reader is only crowned: "+KingTexts.queenCrowned(p));
+            HouseRead.signal(p,HouseRead.Trait.SELF,"FEM",false);
+            h.assertTrue(KingTexts.queenCrowned(p).contains("Now you're crowned, and the crowned"),"an unsettled read is still only crowned");
+            HouseRead.signal(p,HouseRead.Trait.SELF,"FEM",true);
+            h.assertTrue(KingTexts.queenCrowned(p).contains("Now you're a queen")&&KingTexts.linesHint(p).contains("stops a queen"),"read as a woman, a queen: "+KingTexts.queenCrowned(p));
+            HouseRead.restart(q,HouseRead.Trait.SELF,"MASC");HouseRead.signal(q,HouseRead.Trait.SELF,"MASC",false);HouseRead.signal(q,HouseRead.Trait.SELF,"MASC",true);
+            h.assertTrue(KingTexts.queenCrowned(q).contains("Now you're a king")&&KingTexts.linesHint(q).contains("stops a king crowned here"),"read as a man, a king: "+KingTexts.queenCrowned(q));
+            // Off the peg and looked at by nobody, a crowned reader is still a sort of thing, and is told of the lines once.
+            at.accept(p,new double[]{-20.5,KingSite.FEAST_NEAR-.5});tick.run();
+            h.assertTrue(own.getBoolean("KingLinesSeen")&&own.getInt("KingState")>=KingBreath.SORT,"crowned: told of the lines, and a sort of thing at least: "+own.getInt("KingState"));
+            // Beside him: in check, too much of a thing, and no hedge stops them.
+            beside(p,l,b);tick.run();
+            h.assertTrue(own.getBoolean(KingSleep.CHECKED)&&own.getInt("KingState")==KingBreath.TOO_MUCH,"crowned beside him: check, and too much of a thing: "+own.getInt("KingState"));
+            var hedge=b.offset(KingSite.COUNTRY,0,-40);var st=l.getBlockState(hedge);
+            h.assertTrue(st.getCollisionShape(l,hedge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"no hedge stops a queen");
+        })
+        // From the second in-breath on, each in-breath stirs him.
+        .thenWaitUntil(()->{beside(p,l,b);tick.run();h.assertTrue(KingSleep.stirs(b)>=1,"in check, an in-breath stirs him: "+KingSleep.stirs(b)+" at cycle "+KingBreath.cycle(b));})
+        .thenExecute(()->{
+            // The crown off: only a thing again, the crown kept.
+            var crown=p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD);p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,net.minecraft.world.item.ItemStack.EMPTY);p.getInventory().add(crown);
+            tick.run();var own=mine.apply(p);
+            h.assertTrue(own.getBoolean(KingSleep.UNCROWNED)&&KingCrownItem.has(p)&&!KingCrownItem.crowned(p),"the crown off and carried");
+            at.accept(p,new double[]{KingSite.KING.getX()+1.5,KingSite.KING.getZ()+.5});own.putBoolean(KingForest.SONG,true);
+        })
+        // The crown off and the Knight's song sung beside him: he settles all the way.
+        .thenWaitUntil(()->{var own=mine.apply(p);p.setShiftKeyDown(true);p.setDeltaMovement(Vec3.ZERO);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getBoolean(KingSleep.LAST_SONG),"the crown off, the reader sings him the Knight's song");})
+        .thenExecute(()->{
+            p.setShiftKeyDown(false);
+            h.assertTrue(KingSleep.level(b)==KingSleep.FULL&&KingSleep.stirs(b)==0,"he settles all the way: level "+KingSleep.level(b));
+            // Off the board with the crown off: they leave him his sleep (having heard the brothers, as the walking-off case has them).
+            mine.apply(p).putBoolean(KingSleep.HEARD,true);
+            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);KingBreath.reader(p,b,mine.apply(p));
+            var own=mine.apply(p);
+            h.assertTrue(own.getBoolean("Ready")&&"left_him_his_sleep".equals(own.getString(KingSleep.ENDING)),"walked off with the crown off, they leave him his sleep");
+            var account=pages(KingTexts.account("p",own));
+            h.assertTrue(account.contains("a crown came down on me")&&account.contains("sang him the Knight's song")&&account.contains("I left him his sleep."),"the account has the feast, the crown and the song: "+account);
+            // A second reader, crowned, in check beside him when he wakes.
+            q.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,KingCrownItem.of(q.getUUID()));beside(q,l,b);
+        })
+        .thenWaitUntil(()->{beside(q,l,b);tick.run();h.assertTrue(mine.apply(q).getBoolean(KingSleep.CHECKED),"the second reader is in check");})
+        .thenExecute(()->{KingSleep.stir(l,b,null,null,KingSleep.WAKE_AT);h.assertTrue(KingSleep.waking(b),"six stirs wake him");})
+        .thenWaitUntil(()->{tick.run();var own=mine.apply(q);
+            h.assertTrue(own.getBoolean("Ready")&&"stood_until_he_woke".equals(own.getString(KingSleep.ENDING)),"in check when he woke, they stood there until he woke: "+own.getString(KingSleep.ENDING));})
+        .thenExecute(()->{
+            h.assertTrue(pages(KingTexts.account("q",mine.apply(q))).contains("I stood there crowned until his breathing woke him"),"the account says so");
             for(var who:new ServerPlayer[]{p,q})KingBreath.leave(who);done();h.succeed();
         });
     }

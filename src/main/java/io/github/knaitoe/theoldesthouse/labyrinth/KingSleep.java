@@ -37,6 +37,8 @@ public final class KingSleep {
     private KingSleep(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.SLEEPING_KING;
     public static final int DEEP=0,LIGHTLY=1,BARELY=2,AWAKE=3;
+    /** 0.4.648: settled by a last song from a reader leaving him: the country filled out to its edges, the only time it is. */
+    public static final int FULL=4;
     /** Six stirs wake him from a deep sleep. */
     public static final int WAKE_AT=6;
     /** A reader's own noises stir him at most once in this many ticks. */
@@ -46,6 +48,8 @@ public final class KingSleep {
     /** A country nobody has been in for this long is a fresh dream when somebody comes back. */
     static final int FORGOTTEN=200;
     public static final String MET="KingMet",HEARD="KingHeard",ENDING="KingEnding",STIRRED="KingStirred",COUNTED="KingCounted",FELL="KingFellThrough",CROSSED="KingDrawnCrossed";
+    /** 0.4.648: in check (crowned beside him); the crown off again after; a last song sung him on the way. */
+    public static final String CHECKED="KingChecked",UNCROWNED="KingUncrowned",LAST_SONG="KingLastSong";
 
     static final class Sleep{
         int stirs;long seen=-1;long wakingAt=-1;boolean awake;boolean tooSoon;@Nullable UUID namer;int turn;
@@ -62,6 +66,10 @@ public final class KingSleep {
         int knightUnseen,knightSeen,knightFalls;long knightAsked,knightRideFrom;boolean knightThinned,knightGone;
         // 0.4.647: whether the Knight's song, sung beside him, has settled him in this dream (it does once).
         boolean songSettled;
+        // 0.4.648: the feast (KingFeast): what has been introduced, as bits, and what the laid table shows; who is in check beside him
+        // now, who stood there crowned when he woke, and whether a last song has filled the country out to its edges.
+        int introduced,feastShown=-1;boolean filledOut;
+        final java.util.Set<UUID> checking=new java.util.HashSet<>(),stood=new java.util.HashSet<>();
         final java.util.Set<UUID> knightFellFor=new java.util.HashSet<>(),knightRaisedBy=new java.util.HashSet<>(),knightMet=new java.util.HashSet<>(),knightAskedOf=new java.util.HashSet<>(),sawKnightGo=new java.util.HashSet<>(),leftKnight=new java.util.HashSet<>();
     }
     /**
@@ -69,11 +77,13 @@ public final class KingSleep {
      * one reader's tick, which saves that reader's record whole afterward, so nothing is written to a record from here.
      */
     private static final Map<UUID,String> COMING_TO=new HashMap<>();
+    /** 0.4.648: readers who were there when he woke and nobody had said his name: a reader in check stood there until he woke. */
+    private static final Set<UUID> WOKE_STANDING=new HashSet<>();
     private static final Map<Long,Sleep> SLEEPS=new HashMap<>();
     static Sleep get(BlockPos b){return SLEEPS.computeIfAbsent(b.asLong(),k->new Sleep());}
 
     /** How deep he sleeps now: two stirs to each depth, and awake once the breathing has stopped and the lines have come. */
-    public static int level(BlockPos b){var s=get(b);return s.awake?AWAKE:Math.min(BARELY,s.stirs/2);}
+    public static int level(BlockPos b){var s=get(b);return s.awake?AWAKE:s.filledOut?FULL:Math.min(BARELY,s.stirs/2);}
     public static int stirs(BlockPos b){return get(b).stirs;}
     /** Whether his breathing has stopped: he is waking. */
     public static boolean waking(BlockPos b){return get(b).wakingAt>=0;}
@@ -98,6 +108,7 @@ public final class KingSleep {
         KingCaterpillar.tick(l,b);
         KingCourt.tick(l,b,s);
         KingForest.tick(l,b,s);
+        KingFeast.tick(l,b,s);
         if(s.wakingAt<0)return;
         long t=now-s.wakingAt;
         if(t>=LINES_AT&&!s.awake){s.awake=true;KingBreath.redraw(l,b);for(var p:readers(l,b))King.cue(p,s.tooSoon?KingTexts.LINES_TOO_SOON:KingTexts.LINES);}
@@ -115,7 +126,9 @@ public final class KingSleep {
         if(s.ridden.contains(p.getUUID()))own.putBoolean(KingGuard.RODE,true);
         // 0.4.647: the seventh square's peg (the forest's, where a reader is a line) counts only a thing: looked at, and fed.
         for(int r=2;r<=KingSite.RANKS;r++)if(KingQueen.onPeg(p,b,r)&&(own.getInt(COUNTED)&1<<r)==0&&(r!=7||state>=KingBreath.THING)&&(KingBreath.lookedAtByTheDream(p,b)||KingBreath.noticed(p,b))){
-            own.putInt(COUNTED,own.getInt(COUNTED)|1<<r);King.cue(p,KingTexts.COUNTED);}
+            own.putInt(COUNTED,own.getInt(COUNTED)|1<<r);if(r!=KingSite.RANKS)King.cue(p,KingTexts.COUNTED);}
+        // 0.4.648: counted on the eighth square's peg, at the head of the feast: the crown comes down.
+        if(KingQueen.onPeg(p,b,KingSite.RANKS)&&(own.getInt(COUNTED)&1<<KingSite.RANKS)!=0)KingFeast.crown(p,b,own,state);
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());boolean beside=KingBreath.beside(r);
         // 0.4.645: the drawn bridge. A thing that has gone through it into the brook is set back on the near bank, unhurt; anything
         // less that is standing on it has gone over as less than a thing.
@@ -130,7 +143,26 @@ public final class KingSleep {
         KingCourt.reader(p,b,own,state);
         // 0.4.647: the forest: the Knight's falls and his turn, and the song sung.
         KingForest.reader(p,b,own,state);
+        // 0.4.648: the feast's introductions.
+        KingFeast.reader(p,b,own,state);
         if(beside&&state>=KingBreath.THING&&!own.getBoolean(MET))own.putBoolean(MET,true);
+        // 0.4.648: check. Crowned beside him, every in-breath stirs him once, from the second breath on: at least one whole breath to
+        // choose in, however lightly he sleeps. A step away and back gives them that breath again.
+        boolean crowned=KingCrownItem.crowned(p);
+        // Crowned and off the peg: the eight lines from their feet (client.KingQueenLines), told once.
+        if(crowned&&!own.getBoolean("KingLinesSeen")&&!KingQueen.onPeg(p,b,KingSite.RANKS)){own.putBoolean("KingLinesSeen",true);King.cue(p,KingTexts.linesHint(p));}
+        if(crowned&&beside&&s.wakingAt<0){
+            if(!own.getBoolean(CHECKED)){own.putBoolean(CHECKED,true);King.cue(p,KingTexts.CHECK);}
+            own.remove(UNCROWNED);
+            if(!own.contains("KingCheckFrom"))own.putInt("KingCheckFrom",KingBreath.cycle(b)+2);
+            s.checking.add(p.getUUID());
+            int cycle=KingBreath.cycle(b);
+            if(KingBreath.in(b)&&cycle>=own.getInt("KingCheckFrom")&&own.getInt("KingCheckStir")!=cycle+1){own.putInt("KingCheckStir",cycle+1);stir(p.serverLevel(),b,p,own,1);}
+        }else{
+            s.checking.remove(p.getUUID());own.remove("KingCheckFrom");
+            // The crown off after check: they are leaving him, and thin with every square they go (KingBreath.away).
+            if(!crowned&&own.getBoolean(CHECKED)&&!own.getBoolean(UNCROWNED)&&s.wakingAt<0&&!own.getBoolean("Ready")){own.putBoolean(UNCROWNED,true);King.cue(p,KingTexts.UNCROWNED);}
+        }
         double moved=own.contains("KingLastX")?Math.hypot(r.x-own.getDouble("KingLastX"),r.z-own.getDouble("KingLastZ")):0;
         own.putDouble("KingLastX",r.x);own.putDouble("KingLastZ",r.z);
         boolean air=!p.onGround()&&!p.isInWater(),wasAir=own.getBoolean("KingAir");own.putBoolean("KingAir",air);
@@ -159,7 +191,8 @@ public final class KingSleep {
         int before=level(b);s.stirs+=times;s.turn=s.turn>0?-14:14;
         if(own!=null)own.putInt(STIRRED,own.getInt(STIRRED)+times);
         var at=Vec3.atCenterOf(b.offset(KingSite.KING));l.playSound(null,at.x,at.y,at.z,KingRegistry.STIR.get(),SoundSource.AMBIENT,1.4F,.9F+l.random.nextFloat()*.15F);
-        if(s.stirs>=WAKE_AT){wake(l,b,null,true);return;}
+        // 0.4.648: woken with a reader in check beside him is the last move, not too soon: they stood there until he woke.
+        if(s.stirs>=WAKE_AT){var here=readers(l,b).stream().map(ServerPlayer::getUUID).toList();s.checking.retainAll(here);s.stood.addAll(s.checking);wake(l,b,null,s.checking.isEmpty());return;}
         int after=level(b);
         if(after!=before)KingBreath.redraw(l,b);
         String line=after!=before?KingTexts.drewIn(after):KingTexts.STIRRED;
@@ -178,6 +211,18 @@ public final class KingSleep {
         return true;
     }
 
+    /**
+     * 0.4.648: the Knight's song, sung beside him by a reader in check who has taken the crown off: he settles all the way, and the
+     * country fills out to its edges behind them as they go, for the only time. Once a dream. True if it did.
+     */
+    public static boolean lastSong(ServerLevel l,BlockPos b){
+        var s=get(b);if(s.awake||s.wakingAt>=0||s.filledOut)return false;
+        s.filledOut=true;s.stirs=0;s.songSettled=true;
+        KingBreath.redraw(l,b);
+        for(var p:readers(l,b))King.cue(p,KingTexts.LAST_SONG_HEARD);
+        return true;
+    }
+
     /** The breathing stops in the middle of a breath: the first silence since the glass. */
     public static void wake(ServerLevel l,BlockPos b,@Nullable ServerPlayer namer,boolean tooSoon){
         var s=get(b);if(s.wakingAt>=0)return;
@@ -191,12 +236,14 @@ public final class KingSleep {
 
     /** The waking is over: everybody still in the country comes to, or, if he woke too soon, goes out with it. */
     static void finish(ServerLevel l,BlockPos b,Sleep s){
-        for(var p:readers(l,b))COMING_TO.put(p.getUUID(),s.tooSoon?"too_soon":p.getUUID().equals(s.namer)?"said_his_whole_name":"there_when_he_woke");
+        for(var p:readers(l,b))if(!s.tooSoon&&s.namer==null)WOKE_STANDING.add(p.getUUID());
+        for(var p:readers(l,b))COMING_TO.put(p.getUUID(),s.tooSoon?"too_soon":p.getUUID().equals(s.namer)?"said_his_whole_name":s.stood.contains(p.getUUID())?"stood_until_he_woke":"there_when_he_woke");
         reset(l,b);
     }
     /** A reader's own part of the waking's end, from their own tick. True if it moved them. */
     static boolean settle(ServerPlayer p,BlockPos b,CompoundTag own){
         var how=COMING_TO.remove(p.getUUID());if(how==null)return false;
+        if(WOKE_STANDING.remove(p.getUUID())&&how.equals("there_when_he_woke"))own.putBoolean("KingWokeStanding",true);
         if(own.getBoolean("Ready")){
             // Somebody who left him his sleep and is still in the drawing-room: he woke after they had gone.
             if("left_him_his_sleep".equals(own.getString(ENDING))&&!how.equals("too_soon"))own.putBoolean("KingWokeAfter",true);
@@ -217,7 +264,8 @@ public final class KingSleep {
      * in the drawing-room, and he goes on breathing behind the glass. True if that was so; anybody else is put back (KingBreath).
      */
     static boolean walkedOff(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(!own.getBoolean(MET)||!own.getBoolean(HEARD)||own.getBoolean("Ready")||waking(b))return false;
+        // 0.4.648: only after check, and with the crown off: to leave him his sleep a reader has to stop being a Queen.
+        if(!own.getBoolean(MET)||!own.getBoolean(HEARD)||!own.getBoolean(CHECKED)||KingCrownItem.crowned(p)||own.getBoolean("Ready")||waking(b))return false;
         var d=LabyrinthData.get(p.server);own.putString(ENDING,"left_him_his_sleep");
         LiteraryVignettes.ready(p,PLACE,own,"left_him_his_sleep");LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
         HousePackets.send(p,new HouseFadePayload(4,30,20));comeTo(p,b);King.cue(p,KingTexts.LEFT_HIM);
@@ -241,6 +289,7 @@ public final class KingSleep {
         var fresh=get(b);KingQueen.reset(l,b,fresh);KingGuard.reset(fresh);
         KingCourt.reset(l,b);
         KingForest.reset(l,b);
+        KingFeast.reset(l,b);
     }
     /** For tests: forget the dream at this country. */
     public static void forget(BlockPos b){SLEEPS.remove(b.asLong());}

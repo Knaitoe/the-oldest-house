@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.647** adds A sort of thing's seventh part: a forest where everything is a drawing, and a Knight who is only filled in while somebody looks at him, looks back, falls off his horse when nobody does, sings a song that a reader can sing back to the sleeping King to settle him, and asks at the last brook to be watched as far as the turn in the road. No Witness change (91 sources, 69 required). `docs/SLEEPING_KING_0_4_647.md`.
+Development candidate **0.4.648** adds A sort of thing's eighth part: a feast on the eighth square that is only a drawing until a reader looks at each thing long enough to introduce it, a crown that comes down on a reader counted at the head of the table, eight ruled lines from the feet along which no hedge or brook stops them, and check beside the sleeping King, where every in-breath stirs him until the reader takes the crown off, sings to him, or stands there until he wakes. The dream also goes on every server tick now. No Witness change (91 sources, 69 required). `docs/SLEEPING_KING_0_4_648.md`.
 
-Previous: 0.4.644 added the fourth part (the Queen, the glass table and the railway). `docs/SLEEPING_KING_0_4_644.md`.
+Previous: 0.4.647 added the seventh part (the forest, the Knight and the song). `docs/SLEEPING_KING_0_4_647.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 
