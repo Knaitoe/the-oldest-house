@@ -166,6 +166,21 @@ def tile():
     return im
 
 
+def seam():
+    # 0.4.629, the cut: a strip of depth that does not agree with the room. Each block is a little corridor seen end on, its edges
+    # running in to a point that is too far away for a wall a block thick; nearly black, the far end the darkest.
+    im = Image.new('RGBA', (16, 16)); px = im.load()
+    rings = ['#2c2926', '#24221f', '#1d1b19', '#171614', '#121110', '#0e0d0c', '#0a0a09', '#070706']
+    for y in range(16):
+        for x in range(16):
+            d = min(x, y, 15 - x, 15 - y)
+            px[x, y] = shade(rings[min(d, 7)], 0)
+    for i in range(8):
+        for p in ((i, i), (15 - i, i), (i, 15 - i), (15 - i, 15 - i)):
+            dot(im, p[0], p[1], '#34302c' if i < 3 else '#1a1816')
+    return im
+
+
 def ceiling():
     im = new(base='#d8d2c2', seed=6223, spread=2)
     for i, x in enumerate(range(3, 12)):
@@ -259,7 +274,7 @@ def materials():
     return {'brick': brick(), 'coping': coping(), 'felt': felt(), 'plaster': plaster(), 'boards': boards(),
             'paper': paper(), 'flatboards': boards(base='#a07a50', joint='#5e4228', width=5, seed=6240), 'tile': tile(),
             'ceiling': ceiling(), 'shopfront': shopfront(), 'pavement': pavement(), 'road': road(), 'corridor': corridor(),
-            'runner': runner(), 'facade': facade(), 'facade_lit': facade(True), 'facade_dark': facade(False)}
+            'runner': runner(), 'facade': facade(), 'facade_lit': facade(True), 'facade_dark': facade(False), 'seam': seam()}
 
 
 # ------------------------------------------------------------------------------------------------ fitting textures
@@ -734,7 +749,7 @@ NAMES = {'longer_fitting': "Rowan's Things", 'longer_brick': 'Soot Brick', 'long
          'longer_flatboards': 'Flat Floorboards', 'longer_tile': 'Small Bathroom Tile', 'longer_ceiling': 'Painted Ceiling',
          'longer_shopfront': 'Painted Shopfront', 'longer_pavement': 'Paving Slab', 'longer_road': 'Wet Road',
          'longer_corridor': 'Corridor Paper', 'longer_runner': 'Corridor Runner', 'longer_facade': 'Yard Brick',
-         'longer_facade_lit': 'Lit Window', 'longer_facade_dark': 'Dark Window'}
+         'longer_facade_lit': 'Lit Window', 'longer_facade_dark': 'Dark Window', 'longer_seam': 'Wrong Edge'}
 
 
 def java_lists():
