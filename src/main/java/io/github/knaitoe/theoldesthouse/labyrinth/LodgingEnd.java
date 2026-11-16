@@ -54,6 +54,12 @@ public final class LodgingEnd {
         for(int i=0;i<list.size();i++)if(list.getString(i).equals(id))return true;
         return false;
     }
+    /** 0.4.620: whether a reader was of copy {@code k}'s party when it ended: they may come back to it (LodgingAfter). */
+    public static boolean ofParty(MinecraftServer s,int k,java.util.UUID reader){
+        var b=SceneInstances.base(s,LodgingHouse.PLACE,k);if(b==null)return false;var list=LodgingStory.house(s,b).getList(PARTY,Tag.TAG_STRING);
+        for(int i=0;i<list.size();i++)if(list.getString(i).equals(reader.toString()))return true;
+        return false;
+    }
     /** Copy {@code k} has ended and takes nobody new (SceneInstances). */
     public static boolean closed(MinecraftServer s,int k){var b=SceneInstances.base(s,LodgingHouse.PLACE,k);return b!=null&&ended(s,b)!=0;}
 }
