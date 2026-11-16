@@ -31,6 +31,12 @@ public final class KingSite {
     private KingSite(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.SLEEPING_KING;
     public static final int CEIL=5,RANKS=8,SQUARE=16,PITCH=18,NEAR=-30,WEST=-25,EAST=24,COUNTRY=64;
+    /**
+     * 0.4.656: how far past either side hedge the scene still holds a reader, as its room holds them past the far hedge. Off the board
+     * they are nowhere (KingBreath): the King's own rule puts them back, or lets them leave him his sleep. Until 0.4.656 the scene
+     * ended at the side hedges, so a reader who went through one was no longer in it and nothing caught them.
+     */
+    public static final int OFF_BOARD=6;
     /** The glass's plane, between the drawing-room and the room behind it. */
     public static final double MIRROR_Z=-13.5;
     // ------------------------------------------------------------------------------------------------ the drawing-room

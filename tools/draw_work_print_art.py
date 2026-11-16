@@ -1166,7 +1166,11 @@ def fitting_models():
         m[f'mannequin_{s}'] = model(es, {'m': 'stand', 'c': 'sack', 'b': 'mannequin', 'g': 'glove'}, 'stand')
     for s in range(4):
         m[f'poster_{s}'] = model([element([1, 1, 15.5], [15, 15, 16], {'north': 'p', 'south': 'p'})], {'p': f'poster_{s}'}, f'poster_{s}')
-    m['section_0'] = model([element([0, 4, 15.5], [16, 12, 16], {'north': 's', 'south': 's', 'up': 's', 'down': 's'}, None, {'north': [0, 4, 16, 12], 'south': [0, 4, 16, 12]})], {'s': 'section'}, 'section')
+    # The section's top and bottom lie on its picture's own edge rows: left to the game they fell on clear rows and drew nothing
+    # (0.4.656).
+    m['section_0'] = model([element([0, 4, 15.5], [16, 12, 16], {'north': 's', 'south': 's', 'up': 's', 'down': 's'}, None,
+                                    {'north': [0, 4, 16, 12], 'south': [0, 4, 16, 12], 'up': [0, 4, 16, 4.5], 'down': [0, 11.5, 16, 12]})],
+                           {'s': 'section'}, 'section')
     for s in range(2):
         m[f'tube_{s}'] = model([element([2, 15, 6], [14, 16, 10], {'all': 'f'}), element([2.5, 13.5, 7], [13.5, 15, 9], {'all': 'l'})], {'f': 'tube_frame', 'l': 'tube_lit' if s == 0 else 'tube_dim'}, 'tube_frame')
     for s, front in enumerate(('crt_dark', 'crt_snow', 'crt_lit')):

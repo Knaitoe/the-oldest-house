@@ -2196,12 +2196,13 @@ def comic_models(m):
 def paper_models(m):
     """0.4.444: each paper lies flat, fourteen pixels square, its face the middle of its tile. The books and the stack stand a little
     higher, and a clipboard has its clip."""
-    def flat(face, h=.3):
-        return element([1, 0, 1], [15, h, 15], {'all': 'd'}, {'up': [1, 1, 15, 15], 'down': [1, 1, 15, 15], **{k: [1, 14, 15, 14 + min(1, h)] for k in ('north', 'south', 'east', 'west')}})
+    def flat(face, h=.3, sides=True):
+        # The tags are cut out of their sheet, so the sheet's edge runs through clear picture: they lie flat without sides (0.4.656).
+        return element([1, 0, 1], [15, h, 15], {'all': 'd'} if sides else {'up': 'd', 'down': 'd'}, {'up': [1, 1, 15, 15], 'down': [1, 1, 15, 15], **{k: [1, 14, 15, 14 + min(1, h)] for k in ('north', 'south', 'east', 'west')}})
     for name, h, extra in (('dispatch', .6, [element([6, .6, 1], [10, 1.1, 3], {'all': 'c'})]), ('log', .6, [element([6, .6, 1], [10, 1.1, 3], {'all': 'c'})]),
                            ('payroll', .3, []), ('signin', .3, []), ('intake', .3, []), ('tags', .3, []), ('forms', 1.5, []), ('ledger', 1.2, []),
                            ('letter', .3, []), ('receipt', .3, [])):
-        m[f'doc_{name}_0'] = model([flat(name, h)] + extra, {'d': f'doc_{name}', 'c': 'chrome'}, f'doc_{name}')
+        m[f'doc_{name}_0'] = model([flat(name, h, name != 'tags')] + extra, {'d': f'doc_{name}', 'c': 'chrome'}, f'doc_{name}')
 
 
 def feeding_models(m):

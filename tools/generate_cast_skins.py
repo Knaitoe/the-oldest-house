@@ -63,7 +63,7 @@ def cast():
         # Reapply exposed hands, neckline and preacher collar from the exact prior skin.
         for box in [(40,25,56,32),(32,57,48,64),(20,20,28,22)]:im.paste(old.crop(box),box[:2])
         im.save(p,optimize=True)
-    for name,materials in [('mother_of_strays',{'dress':0,'hem':1,'shawl':0}),('mother_pekingese',{'fur':7,'mane':7,'ear':7}),('clap_ghost_girl',{'cloth':5})]:
+    for name,materials in [('mother_of_strays',{'dress':0,'hem':1,'shawl':0}),('mother_pekingese',{'fur':7,'mane':7,'ear':7})]:
         spec=json.loads((ROOT/f'art/{name}.model.json').read_text());resolution=spec['texture']['width']//spec['texture'].get('uv_width',spec['texture']['width'])
         paths=[s['path'] for s in spec['texture'].get('stages',[])] or [spec['texture']['path']]
         for stage,file in enumerate(paths):

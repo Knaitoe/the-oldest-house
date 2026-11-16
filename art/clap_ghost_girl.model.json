@@ -347,6 +347,35 @@
           ]
         }
       ]
+    },
+    {
+      "name": "neck",
+      "parent": "body",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "cubes": [
+        {
+          "name": "neck",
+          "origin": [
+            -1,
+            -1,
+            -1
+          ],
+          "size": [
+            2,
+            1,
+            2
+          ],
+          "material": "skin",
+          "uv": [
+            76,
+            16
+          ]
+        }
+      ]
     }
   ]
 }

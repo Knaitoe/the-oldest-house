@@ -622,7 +622,9 @@ def fitting_models():
     m['gate_0'] = model([element([0, 0, 6], [16, 16, 10], {'all': 'g'})], {'g': 'gate'}, 'gate')
     for n in range(2):
         cleat = [element([6, 0, 6], [10, 8, 10], {'all': 't'}), element([4, 8, 7], [12, 10, 9], {'all': 't'})]
-        m[f'release_{n}'] = model(cleat + ([element([0, 9, 7.5], [8, 9.5, 8.5], {'up': 'r', 'down': 'r', 'north': 'r', 'south': 'r'})] if n == 0 else []), {'t': 'timber', 'r': 'rope'}, 'timber')
+        # The line's sides lie on the rope's full row; left to the game they fell on a clear row and drew nothing (0.4.656).
+        m[f'release_{n}'] = model(cleat + ([element([0, 9, 7.5], [8, 9.5, 8.5], {'up': 'r', 'down': 'r', 'north': 'r', 'south': 'r'},
+                                                          uv={'north': [8, 8, 16, 8.5], 'south': [0, 8, 8, 8.5]})] if n == 0 else []), {'t': 'timber', 'r': 'rope'}, 'timber')
     for n in range(4):
         m[f'rack_{n}'] = model([element([0, 2, 13], [16, 14, 16], front('f', 'o'))], {'f': f'rack_{n}', 'o': 'oak'}, 'oak')
     m['paddle_0'] = model([element([7, 0, 12], [9, 10, 14], {'all': 't'}), element([6, 10, 12.5], [10, 16, 13.5], {'all': 'p'}, BLADE)], {'t': 'timber', 'p': 'paddle'}, 'timber')

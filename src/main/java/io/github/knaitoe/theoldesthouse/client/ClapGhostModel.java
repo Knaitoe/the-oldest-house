@@ -29,6 +29,7 @@ public final class ClapGhostModel extends HierarchicalModel<ClapGhostEntity> {
         PartDefinition p_right_arm = p_root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(18, 16).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F).texOffs(27, 16).addBox(-1.0F, 3.0F, -1.0F, 2.0F, 5.0F, 2.0F), PartPose.offset(-4.0F, -15.0F, 0.0F));
         PartDefinition p_left_leg = p_root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(36, 16).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F).texOffs(45, 16).addBox(-1.0F, 5.0F, -2.0F, 2.0F, 1.0F, 3.0F), PartPose.offset(1.6F, -6.0F, 0.0F));
         PartDefinition p_right_leg = p_root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(56, 16).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F).texOffs(65, 16).addBox(-1.0F, 5.0F, -2.0F, 2.0F, 1.0F, 3.0F), PartPose.offset(-1.6F, -6.0F, 0.0F));
+        PartDefinition p_neck = p_body.addOrReplaceChild("neck", CubeListBuilder.create().texOffs(76, 16).addBox(-1.0F, -1.0F, -1.0F, 2.0F, 1.0F, 2.0F), PartPose.offset(0.0F, 0.0F, 0.0F));
         return LayerDefinition.create(mesh, 128, 128);
     }
     @Override public void setupAnim(ClapGhostEntity entity, float walk, float amount, float age, float yaw, float pitch) {

@@ -24,6 +24,9 @@ girl=[
     part('right_arm',pivot=(-4,-15,0),cubes=[cube('right_sleeve',(-1,0,-1),(2,3,2),'cloth'),cube('right_hand',(-1,3,-1),(2,5,2),'skin')]),
     part('left_leg',pivot=(1.6,-6,0),cubes=[cube('left_ankle',(-1,0,-1),(2,5,2),'skin'),cube('left_bare_foot',(-1,5,-2),(2,1,3),'foot')]),
     part('right_leg',pivot=(-1.6,-6,0),cubes=[cube('right_ankle',(-1,0,-1),(2,5,2),'skin'),cube('right_bare_foot',(-1,5,-2),(2,1,3),'foot')]),
+    # 0.4.656: her neck. Her head stood a pixel above her shoulders and her hair showed through under her chin. It is the last
+    # piece, so it takes the next free place on the sheet and no other piece's place moves.
+    part('neck','body',cubes=[cube('neck',(-1,-1,-1),(2,1,2),'skin')]),
 ]
 x=y=row=0
 for p in girl:
@@ -33,34 +36,13 @@ for p in girl:
         assert y+rh<=128
         c['uv']=(x,y);x+=rw;row=max(row,rh)
 
-palette=dict(cloth=(187,192,189),skin=(185,182,173),face=(193,188,178),foot=(181,177,167),hair=(35,31,36))
-tex=Image.new('RGBA',(512,512));draw=ImageDraw.Draw(tex)
-for p in girl:
-    for c in p['cubes']:
-        u,v=(n*4 for n in c['uv']);w,h,d=(n*4 for n in c['size']);mat=c['material'];base=palette[mat]
-        for yy in range(v,v+d+h):
-            for xx in range(u,u+2*(w+d)):
-                shade=((xx*7+yy*13)%5)-2
-                if mat=='cloth':shade-=7 if (xx-u)%12<2 else 0
-                if mat=='hair':shade-=9 if (xx-u)%8<2 else 0
-                if mat in ('skin','foot'):shade-=5 if yy>v+d+h-4 else 0
-                draw.point((xx,yy),tuple(max(0,min(255,n+shade)) for n in base)+(255,))
-        fx,fy=u+d,v+d
-        if mat=='face':
-            for ex in (3,15):
-                draw.line((fx+ex,fy+9,fx+ex+4,fy+9),fill=(77,73,77,255),width=2)
-                draw.line((fx+ex,fy+12,fx+ex+5,fy+12),fill=(145,139,140,255))
-            draw.line((fx+9,fy+19,fx+14,fy+19),fill=(118,105,104,255))
-        if mat=='cloth':
-            draw.line((u,v+d+h-4,u+2*(w+d)-1,v+d+h-4),fill=(146,154,152,255))
-            for px in range(u+2,u+2*(w+d),4):draw.point((px,v+d+h-2),fill=(220,220,205,255))
-        if mat=='foot':
-            # Small toe divisions on the front and top, not a boot texture.
-            for px in (fx+2,fx+5):
-                draw.line((px,fy,px,fy+2),fill=(143,137,131,255))
-                draw.line((px,v+d-3,px,v+d-1),fill=(143,137,131,255))
-            draw.line((fx+1,v+d-3,fx+w-2,v+d-3),fill=(202,196,184,255))
-tex.save(ASSETS/'entity/clap_ghost_girl.png')
+# 0.4.656: the girl is painted by tools/draw_clap_girl.py and written with the rest of the cast by tools/paint_character_skins.py,
+# which reads her pieces from art/clap_ghost_girl.model.json. Her sheet is read here for the preview only.
+(ART/'clap_ghost_girl.model.json').write_text(json.dumps(dict(format='oldest-house-cuboid-model-v1',texture=dict(width=512,height=512,uv_width=128,uv_height=128,path='clap_ghost_girl.png'),scale=.8,parts=girl),indent=2)+'\n')
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from draw_clap_girl import paint as paint_girl
+tex=paint_girl()
 
 item=Image.new('RGBA',(32,32));di=ImageDraw.Draw(item)
 di.polygon([(3,12),(6,8),(23,8),(25,12),(23,19),(7,19),(4,16)],fill=(39,35,43,255))
@@ -111,6 +93,9 @@ for p in girl:
     lines.append('        PartDefinition p_'+p['name']+' = '+parent+'.addOrReplaceChild("'+p['name']+'", '+builder+', PartPose.offset('+', '.join(ff(n) for n in p['pivot'])+'));')
 lines+=['        return LayerDefinition.create(mesh, 128, 128);','    }',
 '    @Override public void setupAnim(ClapGhostEntity entity, float walk, float amount, float age, float yaw, float pitch) {',
+'        pose(age,yaw);',
+'    }',
+'    public void pose(float age,float yaw){',
 '        root.getAllParts().forEach(ModelPart::resetPose);',
 '        root.xScale = root.yScale = root.zScale = 0.80F;',
 '        root.getChild("head").yRot = yaw * Mth.DEG_TO_RAD;',
@@ -120,7 +105,6 @@ lines+=['        return LayerDefinition.create(mesh, 128, 128);','    }',
 '        root.getChild("right_arm").zRot = 0.045F;',
 '    }','}']
 (JAVA/'ClapGhostModel.java').write_text('\n'.join(lines)+'\n')
-(ART/'clap_ghost_girl.model.json').write_text(json.dumps(dict(format='oldest-house-cuboid-model-v1',texture=dict(width=512,height=512,uv_width=128,uv_height=128,path='clap_ghost_girl.png'),scale=.8,parts=girl),indent=2)+'\n')
 
 # Orthographic preview of the actual cuboids and their exact UVs.
 def render():

@@ -375,9 +375,13 @@ def fitting_models():
     m['mattress_0'] = model([element([0, 0, 0], [16, 2, 16], {'all': 'm'}, uv={'north': [0, 0, 16, 2], 'south': [0, 0, 16, 2], 'east': [0, 0, 16, 2], 'west': [0, 0, 16, 2]}),
                              element([1, 2, 1], [15, 2.5, 15], {'up': 'm'})], {'m': 'mattress'}, 'mattress')
     m['offer_0'] = model([element([3, 0, 3], [13, 0.25, 13], {'up': 'o', 'down': 'o'}, uv={'up': [3, 3, 13, 13], 'down': [3, 3, 13, 13]})], {'o': 'offer'}, 'offer')
+    # The stack's sides show the cards' own edges: left to the game they fell on the clear margin and drew nothing (0.4.656).
     for stage in range(2):
         m[f'cards_{stage}'] = model([element([1, 0, 1], [15, 0.25 + stage * 0.25, 15], {'up': 'c'}, uv={'up': [1, 1, 15, 15]})] +
-                                    ([element([6, 0.25, 5], [11, 1, 12], {'all': 'c'}, uv={'up': [6, 5, 11, 12]})] if stage == 0 else []),
+                                    ([element([6, 0.25, 5], [11, 1, 12], {'all': 'c'},
+                                               uv={'up': [6, 5, 11, 12], 'down': [6, 5, 11, 12], 'north': [6, 5, 11, 5.75], 'south': [6, 11.25, 11, 12],
+                                                   'east': [10.25, 5, 11, 12], 'west': [6, 5, 6.75, 12]},
+                                               rotation={'east': 90, 'west': 90})] if stage == 0 else []),
                                     {'c': f'cards_{stage}'}, f'cards_{stage}')
     m['phone_0'] = model([element([5, 3, 14], [11, 12, 16], {'all': 'p'}), element([6, 4, 12.5], [10, 12, 14], {'all': 'p'}, uv={'north': [6, 2, 10, 10]}),
                           element([7.5, 0.5, 13], [8.5, 4, 14], {'all': 'c'})], {'p': 'phone', 'c': 'cord'}, 'phone')

@@ -860,9 +860,13 @@ def fitting_models():
     m['hook_0'] = model(hook, {'i': 'iron'}, 'iron')
     m['hook_1'] = model(hook + [element([5, 3, 6], [11, 10, 12], {'all': 'g', 'up': 'i', 'down': 'i'}), element([5.5, 10, 6.5], [10.5, 11.5, 11.5], {'all': 'i'}),
                                 element([7.5, 11.5, 8.5], [8.5, 14, 9.5], {'all': 'i'})], {'i': 'iron', 'g': 'glass_lit'}, 'glass_lit')
-    # The line snapped at the first rise: a short coil left on the cleat and its frayed end.
+    # The line snapped at the first rise: a short coil left on the cleat and its frayed end. Each face of the end shows strands (row 1
+    # of the picture is the cut, where they part): left to the game, three of its half-pixel sides fell on clear rows and drew nothing
+    # (0.4.656).
     m['coil_3'] = model([element([4, 0, 4], [12, 2, 12], {'all': 'm'}), element([1, 0, 7], [15, 1.5, 9], {'all': 'i'}), element([7, 0, 0], [9, 1, 5], {'all': 'm'}),
-                         element([6, 0, -1], [10, .5, 1], {'all': 'x', 'down': None})], {'m': 'manila', 'i': 'iron', 'x': 'frayed'}, 'manila')
+                         element([6, 0, -1], [10, .5, 1], {'all': 'x', 'down': None},
+                                 uv={'up': [6, 0, 10, 2], 'north': [6, 1, 10, 1.5], 'south': [6, 1.5, 10, 2], 'east': [8, 1, 10, 1.5],
+                                     'west': [6, 1, 8, 1.5]})], {'m': 'manila', 'i': 'iron', 'x': 'frayed'}, 'manila')
     # The cable house's door bar: leaning on the wall by the door, and dropped across the doorway in its iron brackets.
     m['bar_0'] = model([element([5, 0, 13], [11, 28, 16], {'all': 't'})], {'t': 'timber'}, 'timber')
     m['bar_1'] = model([element([0, 5, 6], [16, 9, 10], {'all': 't'}), element([0, 14, 6], [16, 18, 10], {'all': 't'}),

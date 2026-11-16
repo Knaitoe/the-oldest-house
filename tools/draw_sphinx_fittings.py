@@ -494,7 +494,11 @@ def fitting_models():
         return [element([x, y, 9.5], [x + 1, y + 1, 15.5], {'all': 'i'}),
                 element([x - .5, y - .5, 9], [x + 1.5, y + 1.5, 9.5], {'all': 'i'}),
                 element([x - .25, y - 3, 10], [x + 1.25, y - .5, 10.5], {'all': 't'}, uv={f: [3, 3, 13, 13] for f in ('north', 'south', 'east', 'west', 'up', 'down')})]
-    plate = element([4, 3, 15.5], [12, 13, 16], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}, uv={'north': [0, 0, 16, 16]})
+    # The plate shows its picture one pixel to one, as the block's own shape is drawn: eight by ten of brass with its rim round every
+    # edge. Until 0.4.656 the whole picture was squeezed onto its face, so the brass showed at half size in a clear margin and its
+    # edges drew nothing.
+    plate = element([4, 3, 15.5], [12, 13, 16], {'north': 's', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'},
+                    uv={'east': [4, 3, 4.5, 13], 'west': [11.5, 3, 12, 13], 'up': [4, 3, 12, 3.5], 'down': [4, 12.5, 12, 13]})
     m['survey_0'] = model([plate], {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
     m['survey_1'] = model([plate] + survey_pin(7.5, 7.5), {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')
     m['survey_2'] = model([plate] + survey_pin(6, 7.5) + survey_pin(9, 8.5), {'s': 'socket', 'i': 'iron', 't': 'tag'}, 'socket')

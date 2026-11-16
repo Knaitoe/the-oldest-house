@@ -2151,9 +2151,11 @@ def elk_skin(wounded=False,skinned=False):
             art=panel((w,h),color,'hair',side);im.paste(art,rect[:2])
     body=net(0,0,10,12,23);head=net(68,0,8,7,10)
     for islands,color in [(body,'#8d7150'),(net(0,36,7,15,8),'#67503a'),(head,'#886d49'),(net(68,20,6,4,5),'#b49c72'),(net(100,20,6,3,2),'#a58c61'),(net(32,38,3,13,3),'#6b563e'),(net(48,38,4,2,4),'#383930'),(net(68,38,2,2,5),'#ad9670')]:paint_net(islands,color)
-    # Eyes, muzzle and rump occupy their own actual head/body faces.
+    # Eyes, muzzle and rump occupy their own actual head/body faces. Each eye is on its side of the head, the same two pixels back
+    # from the front and the same distance down on both sides: the glow drawn over them when an elk's eyes shine is one pair of
+    # boxes mirrored side to side (LiteraryRenderers.ElkEyes). Until 0.4.656 the right eye sat half a pixel nearer the front.
     for side in ('left','right'):
-        x0,y0,x1,y1=head[side];x=round((x0+(2 if side=='left' else x1-x0-3))*S);y=round((y0+2.5)*S)
+        x0,y0,x1,y1=head[side];x=round((x0+(2 if side=='left' else x1-x0-3.5))*S);y=round((y0+2.5)*S)
         d.rectangle((x,y,x+2,y+2),fill='#292d27');d.point((x+1,y),fill='#c2b68a')
     for box in (net(68,20,6,4,5)['front'],):
         x0,y0,x1,y1=[round(v*S) for v in box]
@@ -2234,6 +2236,9 @@ def main():
     # 0.4.585 (owner: "improve the texture of the boy before he transforms, too"): the boy in the cell has his own painter as well.
     from draw_caged_boy import paint as caged_boy
     paintings['caged_child']=caged_boy()
+    # 0.4.656 (the owner: "Can you improve the texture for the ghost girl from hide and clap?"): the girl from the wardrobe too.
+    from draw_clap_girl import paint as clap_girl
+    paintings['clap_ghost_girl']=clap_girl()
     paintings['minotaur_materials']=material_sheet(256,256)
     paintings['finale_materials']=material_sheet(256,512)
     for name,wound,skinned in [('literary_elk',False,False),('literary_elk_wounded',True,False),('literary_elk_carcass',True,False),('literary_elk_carcass_skinned',True,True)]:paintings[name]=elk_skin(wound,skinned)
