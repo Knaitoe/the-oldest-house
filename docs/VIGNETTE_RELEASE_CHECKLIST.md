@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.635 (docs/SECOND_PERSON_0_4_635.md): Second Person's third ending. Is the frightened reading taken only from the reader's own record, can it never fire after signing or at the last morning, and does the account stop at the season they left in?
+
 November 16 candidate 0.4.634 (docs/SECOND_PERSON_0_4_634.md): Second Person's second ending. Is signing only possible while the form is still on the mat, does every step of the last day wait on the reader's own record, and does a reader who never goes to the window still reach the latch?
 
 November 16 candidate 0.4.633 (docs/SECOND_PERSON_0_4_633.md): a fourth season in a private year. Is everything in the spring the reader's own record, does a year that skips it still reach the last morning, and is the decision still never the reader's?
