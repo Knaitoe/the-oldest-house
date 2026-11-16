@@ -178,6 +178,11 @@ LOOKS = {
     # Second Person (0.4.274): Iris Dunne across the landing, in her cardigan and glasses, her grey hair pinned; Sam from the resident's work, in a jacket for an evening out.
     'literary_flat_iris': Look('#d9b39e','#bab4ac','bun','#7a5468','#4a4440','cardigan','#d3c8b2',eyes='#5a6070',age=2,glasses=True),
     'literary_flat_sam': Look('#8e5f45','#221a16','close','#4d6a78','#2c3038','jacket','#d8d0c0',eyes='#3a3029'),
+    # 0.4.640: the other guests by the House's read of who the reader is drawn to. Dev and Hannah from work, dressed for supper;
+    # Marcus in what he has been living in on a friend's settee.
+    'literary_flat_dev': Look('#b07a56','#1e1814','part','#5a4a6a','#2c2e36','shirt','#e2dcd0',eyes='#3a3029',beard='stubble'),
+    'literary_flat_hannah': Look('#e0b294','#6a4430','ponytail','#7a5a48','#33343c','knit','#d8ccb4',eyes='#4a5a62'),
+    'literary_flat_marcus': Look('#c99a78','#3a2c22','messy','#5c6650','#3a3e44','hoodie','#a8ad9e',eyes='#4e4636'),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;

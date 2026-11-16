@@ -92,16 +92,18 @@ public final class SecondPersonSigned {
         }
     }
     static void samTalks(ServerPlayer p,net.minecraft.core.BlockPos b,LiteraryActor sam){
-        Talk.begin(p,TALK_SAM,"Sam");
-        for(var line:SecondPersonSpringTexts.SAM_HELLO){Talk.line(p,"Sam",line);}
-        sam.say("Sam",SecondPersonSpringTexts.SAM_HELLO.get(0));
+        String g=SecondPersonStory.guest(own(p));
+        Talk.begin(p,TALK_SAM,g);
+        for(var line:SecondPersonSpringTexts.SAM_HELLO){Talk.line(p,g,line);}
+        sam.say(g,SecondPersonSpringTexts.SAM_HELLO.get(0));
         Talk.ask(p,Talk.reply(SecondPersonSpringTexts.COME_IN,q->samAnswer(q,"in")),Talk.reply(SecondPersonSpringTexts.NOT_TODAY,q->samAnswer(q,"out")));
     }
     static void samAnswer(ServerPlayer p,String how){
         var own=own(p);if(!inSigned(own)||!own.getString("SamDoor").isEmpty()){Talk.close(p);return;}
         own.putString("SamDoor",how);own.putInt("SamGoneAt",dt(own));
-        Talk.line(p,"Sam",how.equals("in")?SecondPersonSpringTexts.SAM_IN:SecondPersonSpringTexts.SAM_OUT);Talk.end(p);
-        SecondPersonStory.turned(own,how.equals("in")?"Sam came to the door and talked to you as if you lived there. You asked them in.":"Sam came to the door and talked to you as if you lived there. You said not today.");
+        String g=SecondPersonStory.guest(own);
+        Talk.line(p,g,how.equals("in")?SecondPersonSpringTexts.SAM_IN:SecondPersonSpringTexts.SAM_OUT);Talk.end(p);
+        SecondPersonStory.turned(own,how.equals("in")?g+" came to the door and talked to you as if you lived there. You asked them in.":g+" came to the door and talked to you as if you lived there. You said not today.");
         save(p,own);
     }
     /** A hand on them, in the dark behind the reader: the cold round them, and nothing they can hear. */
@@ -121,7 +123,7 @@ public final class SecondPersonSigned {
     }
     static void account(StringBuilder b,CompoundTag own){
         b.append("You signed the form. For the last day of the year you lived there.");
-        b.append(switch(own.getString("SamDoor")){case "in"->" Sam came to the door and talked to you as if you always had, and you asked them in.";case "out"->" Sam came to the door and talked to you as if you always had, and you said not today.";default->" Somebody knocked, and went back down the stairs.";});
+        b.append(switch(own.getString("SamDoor")){case "in"->" "+SecondPersonStory.guest(own)+" came to the door and talked to you as if you always had, and you asked them in.";case "out"->" "+SecondPersonStory.guest(own)+" came to the door and talked to you as if you always had, and you said not today.";default->" Somebody knocked, and went back down the stairs.";});
         b.append(switch(own.getString("Call4")){case "lifted"->" The phone rang for you, and you listened.";case "put_down"->" The phone rang for you, and you put it down.";case "off"->" The phone rang for you, and you left it off the hook.";default->" The phone rang for you, and you let it.";});
         if(own.getBoolean("SawBehind"))b.append(" At dark, in the black window, they stood behind you where you used to stand"+(own.getBoolean("TouchedBehind")?", and you put a hand on them, and they shivered, and did not turn round.":", and you could not make them hear."));
         b.append(" The year was ordinary, and you had it.\n\nThe door was on the latch. You went out by it.");

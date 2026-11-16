@@ -61,6 +61,9 @@ public final class SecondPerson {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.SECOND_PERSON;
     /** The cast on stranger phases: Iris Dunne across the landing, and Sam from work. */
     public static final int IRIS=75,SAM=76;
+    /** 0.4.640: the other guests, by the House's settled read of who the reader is drawn to: Dev, Hannah, Marcus. */
+    public static final int DEV=214,HANNAH=215,MARCUS=216;
+    public static boolean guest(int phase){return phase==SAM||phase==DEV||phase==HANNAH||phase==MARCUS;}
     /** 0.4.633: the letting agent, in spring. */
     public static final int AGENT=77;
     public static boolean cast(int phase){return phase==IRIS||phase==SAM||phase==AGENT;}
@@ -146,6 +149,8 @@ public final class SecondPerson {
         var kitchen=seen.getCompound("kitchen");
         if(kitchen.getBoolean("Hung")){var dr=new CompoundTag();for(var key:List.of("Face","Hands","Hair","Clothes"))dr.putInt(key,kitchen.contains(key)?kitchen.getInt(key):-1);dr.putInt("Body",kitchen.getInt("Body"));dr.putInt("Mood",kitchen.getInt("Mood"));t.put("Drawing",dr);}
         t.putString("Home",HouseRead.value(d,id,HouseRead.Trait.HOME,true));
+        // 0.4.640: who comes for supper in autumn (DRAWN_TO), settled only: the larger change, as the design has it.
+        t.putString("DrawnTo",HouseRead.value(d,id,HouseRead.Trait.DRAWN_TO,true));
         // 0.4.639: why they have come to live here (AGE). A tentative read changes only the objects; a settled one the scene too.
         t.putString("Age",HouseRead.value(d,id,HouseRead.Trait.AGE,false));t.putBoolean("AgeSettled",!HouseRead.value(d,id,HouseRead.Trait.AGE,true).isEmpty());
         t.putBoolean("Unseen",HouseRead.value(d,id,HouseRead.Trait.SELF,false).equals("UNSEEN"));
@@ -425,7 +430,7 @@ public final class SecondPerson {
         var resident=stage(l,f,p,f.resident,residentMark(own),residentFrom(own),LiteraryActor.SP_RESIDENT,0,id->f.resident=id);
         props(l,f,own,resident);
         var iris=stage(l,f,p,f.iris,irisMark(own),at(5.5,UP,-30.5),LiteraryActor.STRANGER,IRIS,id->f.iris=id);
-        var sam=stage(l,f,p,f.sam,samMark(own),at(5.5,UP,-24.5),LiteraryActor.STRANGER,SAM,id->f.sam=id);
+        var sam=stage(l,f,p,f.sam,samMark(own),at(5.5,UP,-24.5),LiteraryActor.STRANGER,SecondPersonStory.guestPhase(own),id->f.sam=id);
         var agent=stage(l,f,p,f.agent,SecondPersonSpring.agentMark(own),SecondPersonSpring.STAIR_TOP,LiteraryActor.STRANGER,AGENT,id->f.agent=id);
         cold(l,f,p,own,resident,iris,sam);
         words(l,f,p,own,resident);
@@ -540,7 +545,7 @@ public final class SecondPerson {
             }
             case ROUTINE->{
                 String state=state(own,"routine");
-                if(sub==0){if(dt==10)say(f,a,"Sam's coming. Right.");if(arrived(a,b,residentMark(own))){next(own,state.equals("homed")||state.equals("home")||state.equals("placed")?1:2);}}
+                if(sub==0){if(dt==10)say(f,a,SecondPersonStory.guest(own)+"'s coming. Right.");if(arrived(a,b,residentMark(own))){next(own,state.equals("homed")||state.equals("home")||state.equals("placed")?1:2);}}
                 else if(sub==1){if(dt==60){say(f,a,"There.");}if(dt>=140){next(own,4);}}
                 else if(sub==2){if(dt==0||dt==1)say(f,a,"I had it. I had it this morning.");
                     if(state.equals("placed")||state.equals("home")){own.putBoolean("RoutineSet",true);next(own,3);SecondPersonStory.turned(own,"You set their "+SecondPersonStory.routine(own)+" out where they would see it.");}
@@ -565,13 +570,13 @@ public final class SecondPerson {
             }
             case STAY->{
                 if(own.getString("Evening").equals("seen")||sam==null&&own.getBoolean("SamLeft")){go(own,AUTUMN_DONE);return;}
-                if(sub==0){if(dt==40)say(f,sam,"Can I stay? I mean. It's late.");if(dt==41)own.putBoolean("StayLamp",lampOn(l,b));
+                if(sub==0){if(dt==40)say(f,sam,SecondPersonStory.friend(own)?"Could I stay? Not tonight. I mean live here. Just till I'm sorted.":"Can I stay? I mean. It's late.");if(dt==41)own.putBoolean("StayLamp",lampOn(l,b));
                     String choice="";if(own.getBoolean("ColdAtStay"))choice="cold";else if(dt>41&&!own.getBoolean("StayLamp")&&lampOn(l,b))choice="warm";
                     if(choice.isEmpty()&&dt>=300)choice="none";
                     if(!choice.isEmpty()&&dt>40){own.putString("StayChoice",choice);
                         String ev=own.getString("Evening");boolean stays=choice.equals("warm")&&!ev.equals("interfered")||!choice.equals("cold")&&(ev.equals("helped")||ev.equals("alone")||ev.equals("none")||ev.isEmpty());
                         own.putBoolean("SamStayed",stays);if(!stays){own.putBoolean("SamLeft",true);own.putInt("SamLeftAt",own.getInt("Clock"));open(l,b,FLAT_DOOR,true);}
-                        say(f,a,stays?"...Stay.":"I've got an early start.");if(choice.equals("cold"))SecondPersonStory.turned(own,"You made the flat cold.");if(choice.equals("warm"))SecondPersonStory.turned(own,"You made the flat warm.");next(own,1);}}
+                        say(f,a,SecondPersonStory.friend(own)?stays?"...All right. Yes. Stay.":"I don't think I can. I'm sorry.":stays?"...Stay.":"I've got an early start.");if(choice.equals("cold"))SecondPersonStory.turned(own,"You made the flat cold.");if(choice.equals("warm"))SecondPersonStory.turned(own,"You made the flat warm.");next(own,1);}}
                 else if(dt>=160){go(own,AUTUMN_DONE);}
             }
             default->{
@@ -588,7 +593,11 @@ public final class SecondPerson {
         if(sub==0){if(dt==20){sound(p,DoorSounds.KNOCK.get(),b,FLAT_DOOR,1,1);open(l,b,FLAT_DOOR,true);}if(dt==60)say(f,sam,"I brought wine. It's not good wine.");if(dt>=120)next(own,1);return;}
         if(sub==1){
             if(dt==140)open(l,b,FLAT_DOOR,false);
-            String[] talk={"Sam:This is nice. It's a nice flat.","They:It was cheap. It's quieter than you'd think.","Sam:How long have you been here now?","They:Since the end of the summer. It feels longer.",
+            String[] talk=SecondPersonStory.friend(own)
+                    // 0.4.640: Marcus has come about the spare room, and the evening is whether he moves in.
+                    ?new String[]{"Sam:This is good of you. I mean it.","They:It's only supper.","Sam:I'm on Gerry's settee. Gerry has views about the settee.","They:How long can you stay there?",
+                        "Sam:Till the end of the month. Then I don't know.","They:Iris feeds me. She'd feed you.","Sam:I'd pay my way. I'd do the bins.","They:Nobody does the bins."}
+                    :new String[]{"Sam:This is nice. It's a nice flat.","They:It was cheap. It's quieter than you'd think.","Sam:How long have you been here now?","They:Since the end of the summer. It feels longer.",
                     "Sam:Do you get on with the neighbours?","They:Iris. She feeds me.","Sam:I'd live on stew if someone brought it.","They:You would not."};
             if(dt%150==30&&dt/150<talk.length){var line=talk[dt/150].split(":",2);say(f,line[0].equals("Sam")?sam:a,line[1]);}
             if(own.getString("Evening").isEmpty()){
@@ -603,7 +612,7 @@ public final class SecondPerson {
                     switch(choice){
                         case "helped"->{say(f,sam,"You've made it nice. You didn't have to make it nice.");SecondPersonStory.turned(own,"You helped with the evening.");}
                         case "interfered"->{say(f,sam,"Your flat's haunted.");SecondPersonStory.turned(own,"You made yourself felt in the evening.");}
-                        case "seen"->{say(f,sam,"There's someone. In the window. Behind you.");SecondPersonStory.turned(own,"You stood in the window, and Sam saw someone standing there.");}
+                        case "seen"->{say(f,sam,"There's someone. In the window. Behind you.");SecondPersonStory.turned(own,"You stood in the window, and "+SecondPersonStory.guest(own)+" saw someone standing there.");}
                         default->SecondPersonStory.turned(own,"You left them alone with each other.");
                     }
                     if(choice.equals("seen")){next(own,2);return;}
@@ -613,7 +622,7 @@ public final class SecondPerson {
             return;
         }
         // The evening ends at the window.
-        if(dt==60)say(f,a,"There's nobody. Sam. There's nobody there.");
+        if(dt==60)say(f,a,"There's nobody. "+SecondPersonStory.guest(own)+". There's nobody there.");
         if(dt==140)say(f,sam,"I should go. I'm sorry. I should go.");
         if(dt==150){open(l,b,FLAT_DOOR,true);own.putBoolean("SamLeft",true);own.putInt("SamLeftAt",own.getInt("Clock"));}
         if(dt>=260){open(l,b,FLAT_DOOR,false);go(own,PHOTO);}
@@ -959,7 +968,7 @@ public final class SecondPerson {
             say(f,close,isSam?"Is it cold in here, or is it me?":isIris?"There you are.":"Somebody walked over my grave.");
             if(isSam&&seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("ColdBySam",true);
             if(seasonOf(own)==AUTUMN&&step(own)==STAY)own.putBoolean("ColdAtStay",true);
-            SecondPersonStory.add(own,"Cold",isSam?"Sam":isIris?"Iris":"them");
+            SecondPersonStory.add(own,"Cold",isSam?SecondPersonStory.guest(own):isIris?"Iris":"them");
         }
     }
     /** Hitting or touching someone in the flat: a flinch, never harm. */
@@ -973,7 +982,7 @@ public final class SecondPerson {
             say(f,a,a.isSleeping()?"Mm.":own.contains("Seen")?"...Is that you?":"...Who's there?");SecondPersonStory.add(own,"Touched","them");}
         else if(a.phase()==AGENT)SecondPersonSpring.touched(p,f,a,own);
         else if(a.phase()==IRIS){say(f,a,"Hello, you.");own.putBoolean("IrisMet",true);}
-        else if(a.phase()==SAM){say(f,a,"Did you feel that?");if(seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("ColdBySam",true);}
+        else if(guest(a.phase())){say(f,a,"Did you feel that?");if(seasonOf(own)==AUTUMN&&step(own)==EVENING)own.putBoolean("ColdBySam",true);}
         p.serverLevel().sendParticles(p,ParticleTypes.SNOWFLAKE,true,a.getX(),a.getY()+1.2,a.getZ(),6,.25,.4,.25,0);
         save(p,own);
     }

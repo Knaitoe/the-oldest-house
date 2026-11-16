@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.640** gives Second Person's autumn its guest by the House's read of who the reader is drawn to: Dev or Hannah from work, or Marcus, a friend who needs somewhere to live, with his own evening and ending; Sam otherwise. Three new painted guests. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_640.md.
+
 Development candidate **0.4.639** gives Second Person's summer its reasons: why the resident has come to live alone in the flat, read from the House's read of age. A first flat, the half of a shared life, or a long life come down to what would go through the door, with an armchair left on the landing. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_639.md.
 
 Development candidate **0.4.638** gives the phone in Second Person its other voices: for a reader whose home the House read as danger, someone from before who has the number and then the address; for a runaway, a wrong number and then a sister, Lou. Their own winter ticket, sleepwalk and account lines. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_638.md.
