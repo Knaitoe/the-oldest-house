@@ -38,6 +38,8 @@ public final class LastSwimmer {
     private LastSwimmer(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.LAST_SWIMMER;
     public static final int ATTENDANT=51,SWIMMER=52;
+    /** 0.4.654: the swimmer out of the water and standing, as nobody at the pool saw them (the great staircase, StairCompany). */
+    public static final int STOOD=234;
     /** One length of the pool, in ticks: fifteen seconds, so every turn comes round on a quarter of the pace clock. */
     public static final int LENGTH_TICKS=300;
     /** Between hauls; after the cover closes, the quiet, then the lights, then the steps. */

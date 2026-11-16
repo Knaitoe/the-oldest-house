@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.labyrinth.WitnessAccount.Story;
 import java.util.*;
+import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,6 +39,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * is one of the cast's bodies ({@link LiteraryActor}) dressed as its story dressed it and set down on the stair; its story's scene
  * does not run it. {@link #FIGURES} is the list, one row a figure, so any of them can be changed there. The stories whose figure is
  * some other kind of body are listed in {@link #NOT_YET} and have nobody on the stair until that body is given a way to stand here.
+ *
+ * <p>0.4.654 (docs/STAIR_STAND_INS_0_4_654.md): five more stories have someone, and a figure can be dressed for each reader as their
+ * own story ended or was given to them.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class StairCompany {
@@ -48,14 +52,19 @@ public final class StairCompany {
     // ------------------------------------------------------------------------------------------------ who they are
     /**
      * One figure: what the notes call it, the body it is dressed as, how it is posed, its size where that is not the body's own
-     * (0 leaves it), what it holds, and the story (or stories) it is from.
+     * (0 leaves it), what it holds, how it is dressed for one reader where that reader's story chose (null: as its row says), and
+     * the story (or stories) it is from.
      */
-    public record Figure(String name,int role,int phase,int gesture,double scale,ItemStack held,Story... stories){
-        boolean from(Story story){for(var s:stories)if(s==story)return true;return false;}
+    public record Figure(String name,int role,int phase,int gesture,double scale,ItemStack held,ToIntFunction<ServerPlayer> dressed,Story... stories){
+        public boolean from(Story story){for(var s:stories)if(s==story)return true;return false;}
+        /** 0.4.654: the dress this figure stands in for one reader: its row's, or the one their own story left them with. */
+        public int phaseFor(ServerPlayer p){return dressed==null?phase:dressed.applyAsInt(p);}
     }
-    private static Figure figure(String name,int role,int phase,Story... stories){return new Figure(name,role,phase,0,0,ItemStack.EMPTY,stories);}
-    private static Figure posed(String name,int role,int phase,int gesture,ItemStack held,Story... stories){return new Figure(name,role,phase,gesture,0,held,stories);}
-    private static Figure sized(String name,int role,int phase,double scale,Story... stories){return new Figure(name,role,phase,0,scale,ItemStack.EMPTY,stories);}
+    private static Figure figure(String name,int role,int phase,Story... stories){return new Figure(name,role,phase,0,0,ItemStack.EMPTY,null,stories);}
+    private static Figure posed(String name,int role,int phase,int gesture,ItemStack held,Story... stories){return new Figure(name,role,phase,gesture,0,held,null,stories);}
+    private static Figure sized(String name,int role,int phase,double scale,Story... stories){return new Figure(name,role,phase,0,scale,ItemStack.EMPTY,null,stories);}
+    /** A figure dressed for each reader by their own story; the row's dress is for a reader who has none of it. */
+    private static Figure chosen(String name,int role,int phase,ToIntFunction<ServerPlayer> dressed,Story... stories){return new Figure(name,role,phase,0,0,ItemStack.EMPTY,dressed,stories);}
     /** In her room a reader is a child's height, a little over half their own; on the stair they are their own height, so she is made as much taller. */
     public static final double MOTHER=1.85;
     private static final int S=LiteraryActor.STRANGER;
@@ -108,17 +117,32 @@ public final class StairCompany {
             figure("Silas",S,Kept.SILAS,Story.KEPT),
             figure("the pale man from booth four",S,LastOrders.STRANGER,Story.LAST_ORDERS),
             figure("Tully",S,BikeNightBullies.TULLY,Story.BIKE_NIGHT),
-            figure("June",S,PellPeople.FIRST+PellPeople.JUNE,Story.PELL_HOUSE));
+            figure("June",S,PellPeople.FIRST+PellPeople.JUNE,Story.PELL_HOUSE),
+            // 0.4.654: five more of the cast's own bodies, two of them dressed by the reader's own story.
+            chosen("Daniel, or Dan if he went back into the frame",S,LodgingPeople.FIRST+LodgingPeople.DANIEL,StairCompany::lodger,Story.ONES_INSIDE),
+            chosen("Rowan",S,LongerRowan.FIRST+LongerRowan.WOMAN,StairCompany::rowan,Story.LITTLE_LONGER),
+            posed("one of the brothers, pointing",S,KingBrothers.DUM,KingBrothers.ALONE,ItemStack.EMPTY,Story.SLEEPING_KING),
+            figure("the swimmer, out of the water",S,LastSwimmer.STOOD,Story.LAST_SWIMMER),
+            figure("Mr. Harrigan, on his feet",LiteraryActor.HARRIGAN,HarriganVignette.STANDING_PHASE,Story.HARRIGAN));
+    /**
+     * The ones already inside: of the two men, the one the house put back into the wall. Dan, where he went back into the frame he
+     * came out of and Daniel walked out; otherwise Daniel, held in a doorway until there was no room for him, or the first of the
+     * two, the one the other was made from, where the house let go of both or both died, or where the reader has no end of it yet.
+     */
+    static int lodger(ServerPlayer p){
+        var ending=WitnessAccount.record(LabyrinthData.get(p.server),p.getUUID()).getCompound("Stories").getString(Story.ONES_INSIDE.id);
+        return LodgingPeople.FIRST+(ending.equals(LodgingEnd.OUTCOMES[LodgingEnd.RETURNED])?LodgingPeople.DAN:LodgingPeople.DANIEL);
+    }
+    /** A little longer: the Rowan this reader was given (a copy of their record is asked, so nothing is kept by asking). */
+    static int rowan(ServerPlayer p){return LongerRowan.castFor(p,LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LongerRowan.PLACE));}
     /**
      * Stories on the owner's list whose figure is not one of the cast's bodies (the lake's people, the elk, the cousin, the hotel's
-     * and the table's, the girl from the wardrobe, the ones drawn as blocks or in a mirror), or is one that is only ever drawn seated
-     * or swimming (Mr. Harrigan, the swimmer), and the lodging house's people, drawn by their own renderer (the ones already inside), and Rowan, whose body is
-     * whichever of two the reader was given (a little longer, 0.4.630), and the King's country, whose people are cards, a bottle
-     * and a dream (a sort of thing, 0.4.645). Nobody stands on the stair for these yet.
+     * and the table's, the girl from the wardrobe, the ones drawn as blocks or in a mirror). Nobody stands on the stair for these
+     * yet. (0.4.654 gave five others someone: Mr. Harrigan and the swimmer on their feet, the lodging house's two men, Rowan, and
+     * one of the King's brothers.)
      */
-    public static final Set<Story> NOT_YET=EnumSet.of(Story.CLAP,Story.HARRIGAN,Story.DROWNED_TOWN,Story.PRESERVED_CAVE,Story.SHALLOWS,Story.GOATMAN,
-            Story.SEANCE,Story.HOTEL,Story.ELK_LOT,Story.ELK_FAN,Story.BACKSEAT,Story.DARE_IN_THE_DARK,Story.WORK_PRINT,Story.LEFT_RIGHT,Story.DEAD_AIR,
-            Story.LAST_SWIMMER,Story.ONES_INSIDE,Story.LITTLE_LONGER,Story.SLEEPING_KING);
+    public static final Set<Story> NOT_YET=EnumSet.of(Story.CLAP,Story.DROWNED_TOWN,Story.PRESERVED_CAVE,Story.SHALLOWS,Story.GOATMAN,
+            Story.SEANCE,Story.HOTEL,Story.ELK_LOT,Story.ELK_FAN,Story.BACKSEAT,Story.DARE_IN_THE_DARK,Story.WORK_PRINT,Story.LEFT_RIGHT,Story.DEAD_AIR);
     /** The Mother of Strays is not to be changed, so she is not made to stand here. */
     public static final Set<Story> LEFT_OUT=EnumSet.of(Story.MOTHER);
     /** Stories in which nobody is seen. */
@@ -196,7 +220,7 @@ public final class StairCompany {
     public static @Nullable LiteraryActor spawn(ServerLevel level,ServerPlayer p,Figure f,Vec3 at,float yaw,boolean shape){
         if(!level.isLoaded(BlockPos.containing(at)))return null;
         var a=LiteraryRegistry.ACTOR.get().create(level);if(a==null)return null;
-        a.company(p.getUUID());a.appearance(f.role(),f.phase());a.gesture(f.gesture());a.shape(shape);
+        a.company(p.getUUID());a.appearance(f.role(),f.phaseFor(p));a.gesture(f.gesture());a.shape(shape);
         if(f.scale()>0){var size=a.getAttribute(Attributes.SCALE);if(size!=null){size.setBaseValue(f.scale());a.refreshDimensions();}}
         if(!f.held().isEmpty())a.setItemInHand(InteractionHand.MAIN_HAND,f.held().copy());
         a.noPhysics=true;a.setNoGravity(true);a.setSilent(true);a.setInvulnerable(true);

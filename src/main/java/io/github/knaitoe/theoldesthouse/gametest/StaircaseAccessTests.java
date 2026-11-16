@@ -526,24 +526,75 @@ public final class StaircaseAccessTests {
             h.assertTrue(StairCompany.bodies(p).isEmpty()&&there.get(0).isRemoved()&&there.get(1).isRemoved(),"a reader whose walk home has ended leaves nobody standing");
         });
     }
+    /**
+     * 0.4.654: a figure whose story could end more than one way, or gave its reader one of two people, stands for each reader as that
+     * reader's own story had it, and asking does not change their record.
+     */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=600)
+    public static void aFigureIsDressedAsTheReadersOwnStoryLeftIt(GameTestHelper h){
+        var f=new Fixture(h,599000);ACTIVE.add(f);int y=FinaleArchitecture.TOP-30;
+        f.chunks.hold(f.level,new AABB(f.base.getX()-8,y-2,f.base.getZ()-8,f.base.getX()+9,y+6,f.base.getZ()+9));
+        h.onEachTick(()->{
+            if(f.finished||!f.chunks.ready())return;
+            var bodies=new ArrayList<LiteraryActor>();
+            try{
+                var back=f.player(h,"went_back");var held=f.player(h,"held_in_the_wall");var nobody=f.player(h,"never_there");
+                StairCompany.Figure lodger=null,rowan=null;
+                for(var figure:StairCompany.FIGURES){if(figure.from(WitnessAccount.Story.ONES_INSIDE))lodger=figure;if(figure.from(WitnessAccount.Story.LITTLE_LONGER))rowan=figure;}
+                h.assertTrue(lodger!=null&&rowan!=null&&lodger.dressed()!=null&&rowan.dressed()!=null,"the lodging house's and the radio shop's figures are dressed for each reader");
+                WitnessAccount.resolve(f.data(),back.getUUID(),WitnessAccount.Story.ONES_INSIDE,"returned_daniel");
+                WitnessAccount.resolve(f.data(),held.getUUID(),WitnessAccount.Story.ONES_INSIDE,"completed_dan");
+                h.assertTrue(lodger.phaseFor(back)==LodgingPeople.FIRST+LodgingPeople.DAN,"where Dan went back into the frame, it is Dan on the stair");
+                h.assertTrue(lodger.phaseFor(held)==LodgingPeople.FIRST+LodgingPeople.DANIEL&&lodger.phaseFor(nobody)==LodgingPeople.FIRST+LodgingPeople.DANIEL,"where Daniel was held in the wall, or for a reader with no end of it, it is Daniel");
+                var place=LongerRowan.PLACE;var keptMan=new net.minecraft.nbt.CompoundTag();keptMan.putInt(LongerRowan.CAST,LongerRowan.FIRST+LongerRowan.MAN);
+                LiteraryVignettes.save(f.data(),back.getUUID(),place,keptMan);
+                var keptWoman=new net.minecraft.nbt.CompoundTag();keptWoman.putInt(LongerRowan.CAST,LongerRowan.FIRST+LongerRowan.WOMAN);
+                LiteraryVignettes.save(f.data(),held.getUUID(),place,keptWoman);
+                h.assertTrue(rowan.phaseFor(back)==LongerRowan.FIRST+LongerRowan.MAN&&rowan.phaseFor(held)==LongerRowan.FIRST+LongerRowan.WOMAN,"each reader's Rowan is the one they were given");
+                int guess=rowan.phaseFor(nobody);
+                h.assertTrue((guess==LongerRowan.FIRST+LongerRowan.MAN||guess==LongerRowan.FIRST+LongerRowan.WOMAN)&&!LiteraryVignettes.personal(f.data(),nobody.getUUID(),place).contains(LongerRowan.CAST),
+                        "a reader who was never given one is shown one, and nothing is written into their record by asking");
+                int n=0;
+                for(var reader:new ServerPlayer[]{back,held})for(var figure:new StairCompany.Figure[]{lodger,rowan}){
+                    var at=new Vec3(f.base.getX()-3.5+n%2*3,y,f.base.getZ()-3.5+n/2*3);n++;
+                    var a=StairCompany.spawn(f.level,reader,figure,at,0);
+                    h.assertTrue(a!=null&&a.phase()==figure.phaseFor(reader)&&a.role()==figure.role(),"set down for a reader, it stands in their own story's dress: "+figure.name());
+                    bodies.add(a);
+                }
+                h.assertTrue(bodies.get(0).phase()!=bodies.get(2).phase()&&bodies.get(1).phase()!=bodies.get(3).phase(),"two readers whose stories went differently see different people");
+                var standing=EnumSet.of(WitnessAccount.Story.HARRIGAN,WitnessAccount.Story.LAST_SWIMMER,WitnessAccount.Story.SLEEPING_KING,WitnessAccount.Story.ONES_INSIDE,WitnessAccount.Story.LITTLE_LONGER);
+                int k=0;
+                for(var figure:StairCompany.FIGURES){
+                    boolean ours=false;for(var story:standing)ours|=figure.from(story);
+                    if(!ours)continue;
+                    var a=StairCompany.spawn(f.level,back,figure,new Vec3(f.base.getX()-4.5+k*2.2,y,f.base.getZ()+4.5),0);k++;
+                    h.assertTrue(a!=null,"set down: "+figure.name());bodies.add(a);
+                    h.assertTrue(a.getBbHeight()>=1.75F&&a.getEyeHeight()>=1.5F,
+                            "on their feet with a standing body's height, so a look at the head is a look at them: "+figure.name()+" ("+a.getBbHeight()+" high, eyes at "+a.getEyeHeight()+")");
+                }
+                h.assertTrue(k==5,"the five stories given someone in 0.4.654 each have a figure on their feet: "+k);
+                f.finished=true;h.succeed();
+            }finally{if(f.finished){for(var a:bodies)a.discard();f.close();ACTIVE.remove(f);}}
+        });
+    }
     /** Every figure on the list can be set down, and stays as it was set down while the server runs: nothing of its story moves it. */
     @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void everyFigureKeepsItsPlaceWhileTheServerRuns(GameTestHelper h){
         var f=new Fixture(h,598000);ACTIVE.add(f);int y=FinaleArchitecture.TOP-30;
         f.chunks.hold(f.level,new AABB(f.base.getX()-16,y-2,f.base.getZ()-16,f.base.getX()+17,y+6,f.base.getZ()+17));
-        var bodies=new ArrayList<LiteraryActor>();var places=new ArrayList<Vec3>();int[] waited={-1};
+        var bodies=new ArrayList<LiteraryActor>();var places=new ArrayList<Vec3>();var dress=new ArrayList<Integer>();int[] waited={-1};
         h.onEachTick(()->{
             if(f.finished||!f.chunks.ready())return;boolean last=false;
             try{
                 if(waited[0]<0){
                     var p=f.player(h,"keeper");
                     for(int i=0;i<StairCompany.FIGURES.size();i++){
-                        var at=new Vec3(f.base.getX()-10.5+i%8*3,y,f.base.getZ()-7.5+i/8*3);var figure=StairCompany.FIGURES.get(i);
-                        var a=StairCompany.spawn(f.level,p,figure,at,i*37%360-180);
-                        h.assertTrue(a!=null&&a.role()==figure.role()&&a.phase()==figure.phase()&&a.gesture()==figure.gesture(),"each figure on the list can be set down as its row says: "+figure.name());
+                        var at=new Vec3(f.base.getX()-12.5+i%10*2.7,y,f.base.getZ()-12.5+i/10*2.7);var figure=StairCompany.FIGURES.get(i);
+                        var a=StairCompany.spawn(f.level,p,figure,at,i*37%360-180);int phase=figure.phaseFor(p);
+                        h.assertTrue(a!=null&&a.role()==figure.role()&&a.phase()==phase&&a.gesture()==figure.gesture(),"each figure on the list can be set down as its row says: "+figure.name());
                         h.assertTrue(ItemStack.matches(a.getMainHandItem(),figure.held())&&a.getBbHeight()>.3,"holding what its row gives it, with a body to stand in: "+figure.name());
                         h.assertTrue(figure.scale()==0||a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SCALE)==figure.scale(),"and the size its row gives it: "+figure.name());
-                        bodies.add(a);places.add(at);
+                        bodies.add(a);places.add(at);dress.add(phase);
                     }
                     waited[0]=0;return;
                 }
@@ -552,7 +603,7 @@ public final class StaircaseAccessTests {
                 for(int i=0;i<bodies.size();i++){
                     var a=bodies.get(i);var figure=StairCompany.FIGURES.get(i);
                     h.assertTrue(a.isAlive()&&!a.isRemoved()&&a.position().distanceTo(places.get(i))<.001,"forty ticks on, each stands where it was set down: "+figure.name()+" at "+a.position()+", set at "+places.get(i));
-                    h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-(i*37%360-180)))<1&&a.role()==figure.role()&&a.phase()==figure.phase()&&a.gesture()==figure.gesture()&&a.fade()==0,
+                    h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-(i*37%360-180)))<1&&a.role()==figure.role()&&a.phase()==dress.get(i)&&a.gesture()==figure.gesture()&&a.fade()==0,
                             "turned as it was turned and dressed as it was dressed, whatever its story does with it elsewhere: "+figure.name()+" (phase "+a.phase()+", gesture "+a.gesture()+", fade "+a.fade()+", yaw "+a.getYRot()+")");
                     h.assertTrue(a.company()&&!a.shouldBeSaved()&&a.getDeltaMovement().lengthSqr()<1e-6,"still one of the stair's people, with nothing saved of it, and not on its way anywhere: "+figure.name());
                     h.assertTrue(figure.scale()==0||a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SCALE)==figure.scale(),"and still the size its row gives it: "+figure.name());

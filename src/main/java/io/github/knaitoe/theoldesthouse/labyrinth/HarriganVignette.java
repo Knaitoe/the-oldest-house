@@ -77,6 +77,8 @@ public final class HarriganVignette {
     public static final int FINAL_VISIT = 3;
     /** Mr. Harrigan is one scene actor (0.4.105), never an armour stand: alive, dead in his chair, or in his casket. */
     public static final int ALIVE_PHASE = 0, DEAD_PHASE = 1, CASKET_PHASE = 2;
+    /** 0.4.654: dead and on his feet, as he stands on the great staircase (StairCompany); never in his own scene. */
+    public static final int STANDING_PHASE = 3;
     private static final String ACTOR = "Harrigan0505";
     /**
      * 0.4.155: the copy of his room a call is about (docs/SCENE_COPIES_0_4_153.md). Each copy keeps its own record: the
