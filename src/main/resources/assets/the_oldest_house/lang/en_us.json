@@ -2019,5 +2019,7 @@
   "subtitles.the_oldest_house.king.whistle": "A train whistles",
   "block.the_oldest_house.king_drawn_bridge": "Drawn Bridge",
   "subtitles.the_oldest_house.king.cards": "A pack of cards flies up and falls",
-  "block.the_oldest_house.king_card": "One of the Pack"
+  "block.the_oldest_house.king_card": "One of the Pack",
+  "subtitles.the_oldest_house.king.knight_fall": "Armour clatters to the ground",
+  "subtitles.the_oldest_house.king.knight_song": "Someone sings the Knight's song"
 }

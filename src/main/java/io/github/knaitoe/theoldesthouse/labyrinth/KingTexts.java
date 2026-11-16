@@ -139,6 +139,32 @@ public final class KingTexts {
         CARD_STANDING="One of the court's pack, standing on its edge.",
         CARD_FALLEN="A card, lying flat in the grass.";
 
+    // ------------------------------------------------------------------------------------------------ 0.4.647, part 7
+    // Every line below is new in 0.4.647 and flagged in docs/SLEEPING_KING_0_4_647.md. The turn's request is the proposal's; the song
+    // is original.
+    public static final String KNIGHT_NAME="the Knight";
+    public static final String KNIGHT_HELLO="Good day. I ride with anybody going this way, as far as the last brook. I stay on better if I'm looked at.",
+        KNIGHT_AGAIN="Still going on? So am I, as long as you keep an eye on me.",
+        KNIGHT_DOWN="Nobody was looking, and I came off. Look at me a while and I'll get up.",
+        KNIGHT_UP="There. Up again. It's being looked at that does it.",
+        KNIGHT_TURN_ASK="Would you watch me as far as the turn? I go better watched.",
+        KNIGHT_RIDE_ON="On we go, then. Keep me in the corner of your eye.",
+        KNIGHT_CAKE="I keep a cake in the box on my saddle, in case. Here. A bite, and you'll be more than you are.";
+    public static final String R_SING="Would you sing something?",R_CAKE="Have you anything to eat?",R_RIDE_ON="Ride on.";
+    /** His song: four lines, eight bars. */
+    public static final String[] SONG_WORDS={
+        "My horse is only drawn, and I am only drawn as well;",
+        "look at me and I'm filled in. Look off, and off I fell.",
+        "I fell off at the second brook, and fell off at the third,",
+        "and somebody came back and looked, and never said a word."};
+    public static final String KNIGHT_FELL="Nobody was looking at the Knight. He thinned to a drawing and came off his horse into the path.",
+        KNIGHT_ROUND="He went round the turn filled in, and out of sight.",
+        KNIGHT_THINNED="He was a drawing before he got to the turn. Then there was nothing at the turn but the road.",
+        SANG="The Knight's song, under the breath, all four lines of it.",
+        KNIGHT_LOOKED="A rider on a drawn horse, beside the road. He fills in as he is looked at.",
+        SETTLED="He settled in his sleep, and breathed easier.",
+        SETTLED_OUT="He settled in his sleep, and the filled land went out again from him.";
+
     static String words(int n){return switch(n){case 2->"two";case 3->"three";case 4->"four";case 5->"five";case 6->"six";case 7->"seven";default->String.valueOf(n);};}
     /** When he turns over and the filled land draws in to the next depth of his sleep. */
     public static String drewIn(int level){return level>=2?"He turned over again, and the filled land drew in to his own square.":"He turned over in his sleep, and the filled land drew in toward him.";}
@@ -182,6 +208,22 @@ public final class KingTexts {
             case 3->out.add("I told the court what it was, and it was a pack of cards on the grass. He stirred, a long way off.");
             case 4->out.add("The court was a pack of cards on the grass by the time I came to it.");
             default->{}
+        }
+        // 0.4.647: the forest and the Knight.
+        boolean met=own.getBoolean("KingKnightMet")||own.getBoolean("KingKnightFell")||own.getInt("KingKnightTurn")!=0||own.getBoolean("KingHeardSong")||own.getBoolean("KingKnightCake");
+        if(met){
+            out.add("A knight rode with me through the forest on the seventh square. He was only drawn in while somebody looked at him.");
+            if(own.getBoolean("KingKnightFell"))out.add(own.getBoolean("KingKnightRaised")?"When nobody looked at him he came off his horse and lay in the path as a drawing, until I went back and looked at him, and he got up."
+                :"When nobody looked at him he came off his horse and lay in the path as a drawing.");
+            if(own.getBoolean("KingHeardSong"))out.add(own.getBoolean("KingSang")?"He sang me a song about a drawn horse, and I sang it afterwards, under my breath.":"He sang me a song about a drawn horse.");
+            if(own.getBoolean("KingSangToHim"))out.add("I sang it beside the King as well, and he settled in his sleep.");
+            if(own.getBoolean("KingKnightCake"))out.add("He gave me a cake out of a box on his saddle.");
+            if((own.getInt("KingCounted")&1<<7)!=0)out.add("On the forest's peg I was looked at and fed, and it counted me.");
+            switch(own.getInt("KingKnightTurn")){
+                case 1->out.add("At the last brook he asked me to watch him as far as the turn in the road. I watched, and he went round it filled in.");
+                case 2->out.add("At the last brook he asked me to watch him as far as the turn in the road. I did not watch him all the way, and he was a drawing before he got there.");
+                default->{}
+            }
         }
         out.add(switch(own.getString("KingEnding")){
             case "said_his_whole_name"->"I said the whole of his name. He opened his eyes. One of us went out.";

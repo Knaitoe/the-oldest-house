@@ -6509,5 +6509,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.king.cards"
+  },
+  "king.knight_fall": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/knight_fall",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.knight_fall"
+  },
+  "king.knight_song": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/knight_song",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.knight_song"
   }
 }

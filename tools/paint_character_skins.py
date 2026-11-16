@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 from PIL import Image, ImageDraw, ImageColor
+import random
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/main/resources/assets/the_oldest_house/textures/entity'
@@ -201,6 +202,9 @@ LOOKS = {
     'literary_king_hearts_queen': Look('#e8c0a2','#2a201c','long','#b8323a','#7a1e22','dress','#d8b04a',eyes='#3e3630',age=2,mark='hearts_queen',sleeve=11),
     'literary_king_herald': Look('#d8a888','#4e3a2c','close','#ece6d8','#3a2e2a','uniform','#b8323a',eyes='#4a4a44',age=1,mark='hearts_herald',sleeve=11),
     'literary_king_cat': Look('#c8843e','#c8843e','close','#c8843e','#c8843e','shirt','#e8d0a0',eyes='#d8c040',mark='king_cat'),
+    # 0.4.647: the Knight in the forest on the seventh square: an old soldier in plate that has seen a good many falls, its steel
+    # dented and dull, under a short pale surcoat checked at the hem like a board; a helmet with its visor up, a long grey moustache.
+    'literary_king_knight': Look('#dcb49a','#b8b4ac','close','#b4b8be','#8e9298','uniform','#ece6d6',eyes='#4e5a62',age=2,beard='moustache',mark='king_knight',sleeve=11),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
@@ -2040,6 +2044,71 @@ def paint(look):
             for x in range(8):px(x,8+y,blood[(x*3+y*5+x*y)%4])
         for x,y in ((1,9),(5,11),(3,14),(6,13)):px(x,y,'#a01e18')
         for x,y in ((2,12),(6,9)):px(x,y,'#2e0504')
+    if look.mark=='king_knight':
+        # 0.4.647 (drawn after the body, arms and legs, which it covers): plate on the arms and legs, banded, a cop at each elbow and knee, the feet in darker sabatons; mail at the body's
+        # sides and back; a short surcoat down the body front and back with a checked hem; and the helmet on the hat layer, its visor
+        # raised to a band across the brow and cheek-pieces either side of the face. Dents are lighter and darker pixels in the steel.
+        steel=look.cloth;dark=shade(steel,-46);light=shade(steel,34);rng=random.Random(647)
+        def plate(w,h,bands,cop,foot=False):
+            art=Image.new('RGBA',(w,h),rgb(steel)+(255,));d=ImageDraw.Draw(art)
+            for y in range(0,h,bands):d.line((0,y,w-1,y),fill=dark)
+            d.line((0,0,0,h-1),fill=shade(steel,-18));d.line((w-1,0,w-1,h-1),fill=shade(steel,-24))
+            if cop is not None:d.rectangle((1,cop-1,w-2,cop+2),fill=light);d.line((1,cop+2,w-2,cop+2),fill=dark)
+            if foot:d.rectangle((0,h-4,w-1,h-1),fill=shade(steel,-60))
+            for _ in range(w*h//40):d.point((rng.randrange(w),rng.randrange(h)),fill=light if rng.random()<.5 else shade(steel,-30))
+            return art
+        def mail(w,h):
+            art=Image.new('RGBA',(w,h),rgb(shade(steel,-20))+(255,));d=ImageDraw.Draw(art)
+            for y in range(0,h,2):
+                for x in range((y//2)%2,w,2):d.point((x,y),fill=dark)
+            return art
+        for arm in ((40,16),(32,48)):
+            for side,box in net(arm[0],arm[1],4,12,4).items():
+                w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
+                if side in ('top','bottom'):put(box,Image.new('RGBA',(w,h),rgb(dark if side=='bottom' else steel)+(255,)));continue
+                put(box,plate(w,h,5,11))
+                if side!='top':
+                    # A leather glove at the hand.
+                    g=Image.new('RGBA',(w,4),rgb('#5a4432')+(255,));im.paste(g,(round(box[0]*S),round(box[3]*S)-4))
+        for leg in ((0,16),(16,48)):
+            for side,box in net(leg[0],leg[1],4,12,4).items():
+                w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
+                if side in ('top','bottom'):put(box,Image.new('RGBA',(w,h),rgb(shade(steel,-60) if side=='bottom' else steel)+(255,)));continue
+                put(box,plate(w,h,6,11,foot=True))
+        coat=look.accent
+        for side,box in net(16,16,8,12,4).items():
+            w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
+            if side in ('top','bottom'):put(box,Image.new('RGBA',(w,h),rgb(steel)+(255,)));continue
+            art=mail(w,h)
+            if side in ('front','back'):
+                d=ImageDraw.Draw(art)
+                d.rectangle((1,2,w-2,h-1),fill=rgb(coat));d.line((1,2,1,h-1),fill=shade(coat,-30));d.line((w-2,2,w-2,h-1),fill=shade(coat,-30))
+                # A belt, and the hem checked like a board.
+                d.rectangle((1,12,w-2,13),fill='#4a3628');d.point((w//2,12),fill='#b8a060');d.point((w//2,13),fill='#b8a060')
+                for x in range(1,w-1):
+                    for y in (h-4,h-3,h-2,h-1):
+                        if ((x-1)//2+(y-(h-4))//2)%2==0:d.point((x,y),fill='#2e2c2a')
+                # Shoulder plates show above the coat.
+                d.rectangle((0,0,w-1,1),fill=rgb(steel));d.line((0,1,w-1,1),fill=dark)
+            put(box,art)
+        for side,box in net(32,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+            if side=='top':
+                art=plate(16,16,16,None);d=ImageDraw.Draw(art);d.line((8,0,8,15),fill=light);d.line((9,0,9,15),fill=dark)
+            elif side=='front':
+                # The visor raised: a band over the brow with its sight-slits, and cheek-pieces at the edges.
+                d.rectangle((0,0,15,3),fill=rgb(steel));d.line((0,0,15,0),fill=light);d.line((0,3,15,3),fill=dark)
+                d.line((2,2,6,2),fill='#1e1e22');d.line((9,2,13,2),fill='#1e1e22')
+                d.rectangle((0,4,1,12),fill=rgb(steel));d.rectangle((14,4,15,12),fill=rgb(steel));d.line((1,4,1,12),fill=dark);d.line((14,4,14,12),fill=dark)
+            elif side in ('left','right'):
+                art=plate(16,16,16,None);d=ImageDraw.Draw(art)
+                # The hinge of the visor, and holes over the ear.
+                hinge=2 if side=='right' else 13
+                d.rectangle((hinge-1,2,hinge+1,4),fill=light);d.point((hinge,3),fill=dark)
+                for y in (8,10):d.point((hinge,y),fill='#1e1e22')
+            elif side=='back':
+                art=plate(16,16,16,None);d=ImageDraw.Draw(art);d.line((0,14,15,14),fill=dark)
+            put(box,art)
     if look.mark=='lodging_failed_tied':
         # 0.4.602: rope round the wrists of the one tied to the post (the left arm is drawn from the right arm's pixels, so one
         # painted wrist is both): three turns over the cuff, the lay of the rope across them, and the skin gone dark above it.
