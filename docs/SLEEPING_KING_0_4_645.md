@@ -69,3 +69,7 @@ Account sentences:
 - "The bridge past the fifth square was only drawn, and it bore me because I was less."
 - "The bridge past the fifth square was only drawn. It let me through once, and bore me when I was less."
 - "The bridge past the fifth square was only drawn, and it would not bear me."
+
+Elsewhere (run 1680 found both gaps left by the story's registration in 0.4.643):
+- The Pell house's forged journal line for this story: "I shook the King to see if he would wake."
+- The great staircase lists the story with those whose people have no body to stand there yet (cards, a bottle and a dream).
