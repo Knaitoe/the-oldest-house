@@ -120,13 +120,14 @@ public final class SecondPerson {
     @Nullable static BlockPos placedAt(CompoundTag own,String thing){var t=thing(own,thing);return t.contains("At")?BlockPos.of(t.getLong("At")):null;}
     static void placedAt(CompoundTag own,String thing,@Nullable BlockPos at){var t=thing(own,thing);if(at==null)t.remove("At");else t.putLong("At",at.asLong());own.put("Thing_"+thing,t);}
     /** Is it dark in the flat? (Words on the street window, and the window behind the resident's chair.) */
-    static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING||s==WINTER&&st!=W_DAY&&st!=WINTER_DONE||SecondPersonSigned.dark(own);}
+    static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING||s==WINTER&&st!=W_DAY&&st!=WINTER_DONE||SecondPersonSigned.dark(own)||SecondPersonGone.gone(own);}
     /** The flat's hour, from the year so far. */
     static long hour(CompoundTag own){
         int s=seasonOf(own),st=step(own);
         if(s==SUMMER)return switch(st){case ARRIVE,UNPACK->8200;case GLASS_HUNG->10800;case BATH->13200;case NIGHT->18000;default->23400;};
         if(s==AUTUMN)return switch(st){case IRIS_VISIT->11400;case ROUTINE->12100;case EVENING->13600;case PHOTO->14200;case CALL->15000;case STAY->16000;default->17500;};
         if(s==WINTER)return switch(st){case W_FUNERAL->sub(own)>=2?18000:12700;case W_MORNING->23500;case W_DAY->4500;case W_EVENING->13400;case W_NIGHT->18500;default->2000;};
+        if(s==SecondPersonGone.GONE)return SecondPersonGone.hour(own);
         if(s==SPRING)return switch(st){case SecondPersonSigned.S_SIGNED->SecondPersonSigned.hour(own);case SecondPersonSpring.S_AGENT->2600;case SecondPersonSpring.S_DECIDE->6000;case SecondPersonSpring.S_POST->8200;default->11400;};
         return 900;
     }
@@ -256,6 +257,7 @@ public final class SecondPerson {
             case W_NIGHT->{return sub>=2&&sub<100?station(own,(sub-2)/2):bed();}
             default->{return seat(ARMCHAIR,WEST);}
         }
+        if(s==SecondPersonGone.GONE)return SecondPersonGone.residentMark(own);
         if(s==SPRING)return step(own)==SecondPersonSigned.S_SIGNED?SecondPersonSigned.residentMark(own):SecondPersonSpring.residentMark(own);
         // The last morning.
         boolean stays=own.getString("Decision").equals("stay");
@@ -424,7 +426,7 @@ public final class SecondPerson {
         ringing(l,f,p,own,resident);
         cupboard(l,f,p,own,r);
         int s=seasonOf(own);
-        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING){if(step(own)==SecondPersonSigned.S_SIGNED)SecondPersonSigned.day(l,f,p,own,r,resident,sam);else SecondPersonSpring.spring(l,f,p,own,resident,agent);}else morning(l,f,p,own,r,resident);
+        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING){if(step(own)==SecondPersonSigned.S_SIGNED)SecondPersonSigned.day(l,f,p,own,r,resident,sam);else SecondPersonSpring.spring(l,f,p,own,resident,agent);}else if(s==SecondPersonGone.GONE)SecondPersonGone.night(l,f,p,own,r,resident);else morning(l,f,p,own,r,resident);
     }
 
     static void summer(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,Vec3 r,@Nullable LiteraryActor a){
@@ -872,7 +874,11 @@ public final class SecondPerson {
         var b=f.base;int s=seasonOf(own);
         p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,80,0,false,false));
         clearWords(l,f);mirror(l,b,false);
-        if(s==SUMMER){own.putInt("Season",AUTUMN);go(own,IRIS_VISIT);season(l,b,1);
+        // 0.4.635, E3: frightened out, the season does not go by; they leave in the night instead.
+        if(s!=MORNING&&s!=SecondPersonGone.GONE&&!SecondPersonSigned.signed(own)&&SecondPersonGone.frightened(own)){
+            if(s==SPRING)SecondPersonSpring.application(l,b,false);
+            SecondPersonGone.begin(l,f,p,own);}
+        else if(s==SUMMER){own.putInt("Season",AUTUMN);go(own,IRIS_VISIT);season(l,b,1);
             // What was never found stays lost; what the reader put where it lives stays where they put it.
             cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,1)));SecondPersonStory.turned(own,"You let the summer go by in the cupboard.");}
         else if(s==AUTUMN){own.putInt("Season",WINTER);go(own,W_FUNERAL);season(l,b,2);lamp(l,b,false);cloth(l,b,-1);

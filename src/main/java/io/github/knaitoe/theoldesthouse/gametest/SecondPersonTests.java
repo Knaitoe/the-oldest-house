@@ -373,4 +373,35 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_signed") public static void signedDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.635, E3: nobody home. An autumn of hidden things, cold and the tap at night, then the cupboard: the season does not go by. In
+     * the night they sit up dressed, take one bag and go; the flat is the reader's, the account says why from the record, and there is no
+     * winter and no last morning in it.
+     */
+    @GameTest(template="empty",batch="second_gone",timeoutTicks=6000)
+    public static void nobodyHome(GameTestHelper h){
+        var f=fixture(h);var p=f.player("flat_gone",P);var b=f.base(P);var l=f.level(P);
+        resident(h,f,p)
+            .thenExecute(()->{f.source(p,P);street(f,p);
+                autumnOver(f,p,List.of("porch"),own->{
+                    var hid=new ListTag();for(var th:List.of("photo","drawing","coat"))hid.add(StringTag.valueOf(th));own.put("Hidden",hid);
+                    var cold=new ListTag();for(var who:List.of("them","Sam"))cold.add(StringTag.valueOf(who));own.put("Cold",cold);
+                    own.putString("Night","tap");own.putString("Evening","seen");own.putString("RoutineWhere","on the bathroom shelf, where you put it");
+                    h.assertTrue(SecondPersonGone.frightened(own),"a year far more frightening than gentle");});})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPersonGone.GONE,"frightened out: the autumn does not go by"))
+            .thenExecute(()->h.assertTrue(own(f,p).getInt("LeftIn")==SecondPerson.AUTUMN,"left in the autumn"))
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")>=1&&SecondPerson.resident(l,b)!=null,"up, dressed, with one bag"))
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")>=4,"out of the door, down the stairs"))
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Ready")&&own(f,p).getString("Outcome").equals("nobody_home"),"nobody home; the book on the bench"))
+            .thenExecute(()->{h.assertTrue(SecondPerson.resident(l,b)==null,"nobody left in the flat");
+                h.assertTrue(SecondPersonStory.latest(own(f,p)).contains(SecondPersonGone.LAST_PAGE),"the book's last page: "+SecondPersonStory.latest(own(f,p)));
+                String text=account(f,p);
+                for(var want:List.of("They left in the night, in the autumn, with one bag","You hid their things","You made the air go cold round them twice","On the first night you ran the tap","Nobody could see you"))
+                    h.assertTrue(text.contains(want),"the account says \""+want+"\": "+text);
+                h.assertFalse(text.contains("On the last morning"),"no last morning: "+text);
+                h.assertFalse(text.contains("In the winter Iris died"),"no winter: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="second_gone") public static void goneDone(ServerLevel l){close();}
 }

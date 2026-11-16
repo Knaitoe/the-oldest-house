@@ -134,6 +134,8 @@ public final class SecondPersonStory {
             default->{b.append("The last of the spring.\n\n");
                 can=List.of("The airing cupboard is warm. Go in and shut the door.");}
         }}
+        else if(season==SecondPersonGone.GONE){b.append(SecondPersonGone.page(own));
+            can=SecondPerson.sub(own)>=5?List.of("Go out by the front door and down to the street."):List.of("Wait.");}
         else{b.append(whileAway(own,4)).append("\n\nIt is morning. The front door has been left on the latch.\n\n");
             can=own.getString("LastAct").isEmpty()?List.of("One last thing first, if you like: lay their "+routine(own)+" out where they will see it.","Or turn the glass round.","Or write a word on the window.","Then go out by the front door and down to the street."):List.of("Go out by the front door and down to the street.");}
         for(int i=0;i<can.size();i++)b.append(i+1).append(". ").append(can.get(i)).append("\n");
@@ -271,9 +273,13 @@ public final class SecondPersonStory {
         var words=list(own,"Words");var seen=list(own,"WordsSeen");
         if(!words.isEmpty()){b.append("You wrote on glass: ").append(String.join(", ",words)).append(".");if(!seen.isEmpty())b.append(" They read ").append(seen.size()==words.size()?"every one":String.join(", ",seen)).append(".");b.append("\n\n");}
         // 0.4.369, the winter.
-        if(own.getInt("Season")>=SecondPerson.WINTER)winter(b,own,routine);
+        // 0.4.635: a year they left early is told only as far as the season they left in.
+        boolean gone=SecondPersonGone.gone(own);int reached=gone?own.getInt("LeftIn"):own.getInt("Season");
+        if(reached>=SecondPerson.WINTER)winter(b,own,routine);
         // 0.4.633, the spring.
-        SecondPersonSpring.account(b,own);
+        if(!gone||reached==SecondPerson.SPRING)SecondPersonSpring.account(b,own);
+        // 0.4.635, E3: frightened out, the night they left takes the last morning's place.
+        if(gone){SecondPersonGone.account(b,own);return b.toString();}
         // 0.4.634, E2: signed, the last day was the reader's, and it takes the last morning's place.
         if(SecondPersonSigned.signed(own)){SecondPersonSigned.account(b,own);return b.toString();}
         // The last morning.
