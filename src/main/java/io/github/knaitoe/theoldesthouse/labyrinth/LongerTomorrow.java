@@ -159,7 +159,9 @@ public final class LongerTomorrow {
                 if(near(p,a)&&!Talk.waiting(p)&&!own.contains(CALLBACK))breakfast(p,a,own);
                 return true;
             }
-            case CHOOSING,DONE->{var k=LongerKettle.KETTLE_SPOT;LongerKettle.keep(a,b,new LongerRowan.Spot(k.x(),k.y(),k.z(),k.look(),LongerBench.REST),here);return true;}
+            // 0.4.629: a while after the choice, the cut (LongerCut).
+            case DONE->{if(LongerCut.tick(l,b,a,here,p,own))return true;var k=LongerKettle.KETTLE_SPOT;LongerKettle.keep(a,b,new LongerRowan.Spot(k.x(),k.y(),k.z(),k.look(),LongerBench.REST),here);return true;}
+            case CHOOSING->{var k=LongerKettle.KETTLE_SPOT;LongerKettle.keep(a,b,new LongerRowan.Spot(k.x(),k.y(),k.z(),k.look(),LongerBench.REST),here);return true;}
             default->{return false;}
         }
     }
@@ -250,7 +252,7 @@ public final class LongerTomorrow {
             case AT_DOOR->{if(!Talk.resume(p,LongerRowan.TALK))atDoor(p,a);return true;}
             case KITCHEN->{if(!Talk.resume(p,LongerRowan.TALK)&&!own.contains(CALLBACK))breakfast(p,a,own);return true;}
             case CHOOSING->{Talk.resume(p,LongerRowan.TALK);return true;}
-            case DONE->{begin(p);line(p,a,LongerTexts.READY_WHEN);Talk.end(p);return true;}
+            case DONE->{if(LongerCut.talk(p,a,own))return true;begin(p);line(p,a,LongerTexts.READY_WHEN);Talk.end(p);return true;}
             default->{return false;}
         }
     }

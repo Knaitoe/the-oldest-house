@@ -22,7 +22,7 @@ public final class LongerRegistry {
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final Map<String,DeferredBlock<Block>> MATERIALS=new LinkedHashMap<>();
     public static final List<String> MATERIAL_NAMES=List.of("brick","coping","felt","plaster","boards","paper","flatboards","tile","ceiling",
-        "shopfront","pavement","road","corridor","runner","facade","facade_lit","facade_dark");
+        "shopfront","pavement","road","corridor","runner","facade","facade_lit","facade_dark","seam");
     private static final Set<String> WOOD=Set.of("boards","flatboards","shopfront","runner");
     static{for(String name:MATERIAL_NAMES){var props=fixed(WOOD.contains(name)?Blocks.OAK_PLANKS:Blocks.STONE);if(name.equals("facade_lit"))props=props.lightLevel(s->6);
         MATERIALS.put(name,BLOCKS.registerSimpleBlock("longer_"+name,props));}}

@@ -904,4 +904,72 @@ public final class LongerTests {
             Talk.close(p);done();h.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.629, the cut
+    private static int cut(LiteraryTests.Fixture f,ServerPlayer p){return LongerCut.stage(f.own(p,P));}
+    private static void chose(LiteraryTests.Fixture f,ServerPlayer p){
+        returned(f,p,own->{own.putInt(LongerTomorrow.STAGE,LongerTomorrow.DONE);own.putBoolean(LongerTomorrow.SHIFTED,true);own.putBoolean(LongerTomorrow.COAT,true);
+            own.putString(LongerTomorrow.CALLBACK,LongerTomorrow.PLAIN);own.putString(LongerTomorrow.LIST,"Bread");own.putString(LongerTomorrow.CHOICE,LongerTomorrow.TOGETHER);
+            own.putString(LongerRoof.HAND,LongerRoof.TOOK);});
+        var b=LiteraryVignettes.base(p,P);LongerRowan.arrive(p,b,f.own(p,P));
+    }
+
+    /**
+     * The cut, from beside Rowan: a while after the choice Rowan goes to pull the toaster's plug; the radio stops in the middle of the
+     * phrase; the wall by the toaster turns to a wrong edge; Rowan turns to the reader with a hand out and says only "Wait."; the
+     * worktop's end, the toaster and Rowan go back along a passage the reader cannot enter, and it closes. Afterwards: Rowan is gone and
+     * not made again, the wall is a shallow recess with brick at its back, the toaster and the worktop's end gone; the radio off; the
+     * kettle, the cups and the empty hook where they were.
+     */
+    @GameTest(template="empty",batch="longer_cut_beside",timeoutTicks=3000)
+    public static void theCutFromBesideRowanAndTheRoomAfter(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_cut_beside",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{chose(f,p);f.at(p,P,3.5,6,-12.5);})
+        .thenIdle(5).thenExecute(()->LongerCut.waited(LiteraryVignettes.base(p,P),LongerCut.AFTER))
+        .thenWaitUntil(()->h.assertTrue(cut(f,p)==LongerCut.CUTTING,"Rowan at the toaster, the cut begun: "+cut(f,p)))
+        .thenExecute(()->{var b=LiteraryVignettes.base(p,P);var s=l.getBlockState(b.offset(LongerSite.FLAT_RADIO));
+            h.assertTrue(s.getValue(LongerBlock.STAGE)==0,"the radio stops");})
+        .thenWaitUntil(()->h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.WAIT_R),"one word: Wait."))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a!=null&&a.gesture()==LongerRoof.REACH,"Rowan reaching for the reader");
+            h.assertTrue(l.getBlockState(b.offset(LongerCut.MOUTH,LongerSite.UP,LongerCut.Z)).is(net.minecraft.world.level.block.Blocks.BARRIER),"the reader cannot follow into it");
+            var lines=Talk.lines(p);int w=lines.lastIndexOf(LongerTexts.ROWAN+": "+LongerTexts.WAIT_R);
+            h.assertTrue(lines.subList(w+1,lines.size()).stream().noneMatch(x->x.startsWith(LongerTexts.ROWAN+":")),"no long final speech: "+lines);
+        })
+        .thenWaitUntil(()->h.assertTrue(cut(f,p)==LongerCut.DONE,"the space is gone: "+cut(f,p)))
+        .thenIdle(10)
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(rowan(h,p)==null,"Rowan is gone");
+            h.assertTrue(l.getBlockState(b.offset(LongerCut.MOUTH,LongerSite.UP,LongerCut.Z)).isAir()&&l.getBlockState(b.offset(LongerCut.MOUTH+1,LongerSite.UP,LongerCut.Z)).is(LongerRegistry.material("brick")),"a shallow recess, brick at its back");
+            h.assertTrue(l.getBlockState(b.offset(LongerSite.TOASTER)).isAir(),"the toaster gone with them");
+            h.assertTrue(LongerBlock.is(l.getBlockState(b.offset(LongerSite.KETTLE)),LongerBlock.Kind.KETTLE)&&LongerBlock.is(l.getBlockState(b.offset(LongerSite.CUPS)),LongerBlock.Kind.CUPS),"the kettle and the cups where they were");
+            h.assertTrue(l.getBlockState(b.offset(LongerSite.HOOK)).getValue(LongerBlock.STAGE)==1,"the hook empty");
+            // Arriving again does not make Rowan again.
+            LongerRowan.arrive(p,b,f.own(p,P));
+        })
+        .thenIdle(40)
+        .thenExecute(()->{h.assertTrue(rowan(h,p)==null,"not made again");Talk.close(p);done();h.succeed();});
+    }
+
+    /** The cut does not wait for the reader: down at the door it happens all the same; leaving part way through finishes it as it would have. */
+    @GameTest(template="empty",batch="longer_cut_door",timeoutTicks=3000)
+    public static void theCutFromTheDoorAndLeavingPartWay(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_cut_door",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{chose(f,p);f.at(p,P,1.5,0,-9.5);})
+        .thenIdle(5).thenExecute(()->LongerCut.waited(LiteraryVignettes.base(p,P),LongerCut.AFTER))
+        .thenWaitUntil(()->h.assertTrue(cut(f,p)==LongerCut.CUTTING,"begun with the reader at the door: "+cut(f,p)))
+        .thenIdle(LongerCut.WAIT+5)
+        .thenExecute(()->{var b=LiteraryVignettes.base(p,P);LongerRowan.arrive(p,b,f.own(p,P));})
+        .thenIdle(5)
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(cut(f,p)==LongerCut.DONE&&rowan(h,p)==null,"finished as it would have: "+cut(f,p));
+            h.assertTrue(l.getBlockState(b.offset(LongerCut.MOUTH+1,LongerSite.UP,LongerCut.Z)).is(LongerRegistry.material("brick"))&&!l.getBlockState(b.offset(LongerCut.MOUTH,LongerSite.UP,LongerCut.Z)).is(net.minecraft.world.level.block.Blocks.BARRIER),"the room as after, no barrier left");
+            Talk.close(p);done();h.succeed();
+        });
+    }
 }

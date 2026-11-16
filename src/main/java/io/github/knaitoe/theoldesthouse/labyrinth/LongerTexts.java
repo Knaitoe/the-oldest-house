@@ -173,6 +173,10 @@ public final class LongerTexts {
         READY_WHEN="Ready when you are.",GO_TOGETHER="Let's go together.",TOMORROW_MATTERS="I'd like that. Tomorrow, I mean.",CARRY_BREAD="You're carrying the bread.",
         FRIENDS_ROAD="Friends on the road, then?",GOOD_GO="Good.",DAY_AFTER="So would I. And the day after.",SO_WOULD_I="So would I.",
         CARRY_EVERYTHING="I'm carrying everything. You've got the list.",FRIENDS_ROAD_R="Friends on the road.";
+    /** 0.4.629, chapter 6, the cut (LongerCut). One word from Rowan, the proposal's "Wait."; the rest are cues, flagged in docs/A_LITTLE_LONGER_0_4_629.md. */
+    public static final String UNPLUG="Rowan goes to pull the toaster's plug out before you go.",RADIO_STOPS="The radio stops in the middle of the phrase.",
+        EDGE="By the toaster the wall has an edge it did not have, and it goes back further than any wall is thick.",WAIT_R="Wait.",
+        WALL_AGAIN="Where the wall was there is a shallow space with bare brick at the back of it.";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),
