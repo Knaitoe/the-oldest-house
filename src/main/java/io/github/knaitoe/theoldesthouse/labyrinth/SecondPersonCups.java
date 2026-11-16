@@ -65,7 +65,8 @@ public final class SecondPersonCups {
         if(own.getBoolean("SleeveFinished"))out.add("I finished Iris's sleeve. It's the wrong length. I don't care.");
         else if(own.getBoolean("IrisKnocked"))out.add("Iris knew. She said I had company. I thought she meant a cat.");
         else out.add("Iris used to say this flat was never empty.");
-        out.add(SecondPersonStory.haven(own)?"I rang home on Sunday. I said I was all right. I think I meant it.":"I rang back, in the end. We talked for an hour about nothing.");
+        out.add(switch(SecondPersonStory.home(own)){case "HAVEN"->"I rang home on Sunday. I said I was all right. I think I meant it.";case "DANGER"->"I changed the number. Nobody rings now, and I like it.";
+            case "RUNAWAY"->"I wrote to Lou. I haven't posted it. I will.";default->"I rang back, in the end. We talked for an hour about nothing.";});
         out.add(own.getBoolean("SamStayed")?"Sam comes at the weekends now. Sam always comes.":"Sam asked after you. I said you were fine. I don't know why I said that.");
         out.add(switch(own.getString("Seen")){
             case "still"->"You stood still for me, that night in the glass. I've thought about it a lot.";

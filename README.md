@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.638** gives the phone in Second Person its other voices: for a reader whose home the House read as danger, someone from before who has the number and then the address; for a runaway, a wrong number and then a sister, Lou. Their own winter ticket, sleepwalk and account lines. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_638.md.
+
 Development candidate **0.4.637** brings Second Person back as an aftermath room: a reader who finished the year can find the flat again as their ending left it. Their life goes on in the armchair, or there is a forwarding card on the mat; they stand at the window at night; dust and their things where you left them; the second cup out on the table. Nothing to do and nothing to earn. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_637.md.
 
 Development candidate **0.4.636** gives Second Person its fourth ending: be known gently, and at the end of the spring the resident sets out two cups on the kitchen table, talks to you across it, and asks if you will be here when they wake up. They will get older here. You won't. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_636.md.

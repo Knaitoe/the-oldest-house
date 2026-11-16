@@ -774,7 +774,10 @@ public final class SecondPerson {
             case "glass"->{if(dt==10&&glass(l,b)>=0){handle(a);glass(l,b,glass(l,b)==0?1:0);sound(p,SoundEvents.ITEM_FRAME_ROTATE_ITEM,b,GLASS,1,1);}}
             case "knock"->{if(dt==10||dt==25||dt==40){handle(a);}if(dt==10||dt==25||dt==40)sound(p,DoorSounds.KNOCK.get(),b,new BlockPos(-2,UP+1,-30),.8F,1);}
             default->{
-                if(dt==60){handle(a);open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,.8F,1);say(f,a,SecondPersonStory.haven(own)?"Is that you? I've left it open for you.":"...");}
+                // 0.4.638: someone from before is kept out, not let in; the lock is tried twice and the door stays shut.
+                if(SecondPersonStory.home(own).equals("DANGER")){if(dt==30||dt==60){handle(a);sound(p,SoundEvents.IRON_TRAPDOOR_CLOSE,b,FLAT_DOOR,.5F,1.4F);}}
+                else if(dt==60){handle(a);open(l,b,FLAT_DOOR,true);sound(p,SoundEvents.WOODEN_DOOR_OPEN,b,FLAT_DOOR,.8F,1);}
+                if(dt==60){say(f,a,switch(SecondPersonStory.home(own)){case "HAVEN"->"Is that you? I've left it open for you.";case "DANGER"->"Locked. It's locked. It's locked.";case "RUNAWAY"->"I'm going home. I'm going home now.";default->"...";});}
             }
         }
         if(dt<holdFor(station))return;
