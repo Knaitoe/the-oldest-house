@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.653 (docs/MINOTAUR_SIZE_0_4_653.md): when a creature or person grows, does every way it walks still fit it, the joins between them included (a doorway into a passage, a causeway onto a stair), and does it come and go from where it stands and turns without passing through anything? Are its sounds and particles still where its hooves, mouth and horns now are?
+
 November 16 candidate 0.4.652 (docs/STAIRCASE_JUDGEMENT_0_4_652.md): where a scene is dark by design, is every fixed light in it there for a reason the scene needs, and does none of them hand the reader something (a depth, a count) the scene means them to find out? Where a reader is meant to look over something, can they from every place they are likely to stop, corners included?
 
 November 16 candidate 0.4.651 (docs/MODEL_FACES_0_4_651.md): for a new model, does every face of a pixel or more show something of its picture (tools/flicker.py --check), and where a face would show nothing (a clear border, an edge against another piece or the floor), is it left off rather than mapped onto clear pixels? Does a thin piece whose picture is drawn for its front have its edges drawn from that picture's own edge?

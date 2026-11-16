@@ -106,11 +106,13 @@ public final class WitnessEnding {
         if(step>=route.size()){depart(player,creature,record,origin);return;}
         BlockPos at=route.get(step);player.serverLevel().getChunkAt(at);
         Vec3 target=Vec3.atBottomCenterOf(at);
-        if(step==2)target=target.add(record.getInt("PassSide")*1.25,0,0);
+        // 0.4.653: it passes the reader by as far again as it is broad.
+        if(step==2)target=target.add(record.getInt("PassSide")*1.25*MinotaurEntity.SCALE,0,0);
         if(step>=5){
             BlockPos b=FinaleArchitecture.base(origin);int x=at.getX()-b.getX(),z=at.getZ()-b.getZ();
             // The broad body must clear the higher treads on the inside of a spiral turn.
-            target=target.add(Math.abs(x)==FinaleArchitecture.STAIR_RADIUS?Math.signum(x)*.6:0,0,Math.abs(z)==FinaleArchitecture.STAIR_RADIUS?Math.signum(z)*.6:0);
+            double out=.6*MinotaurEntity.SCALE;
+            target=target.add(Math.abs(x)==FinaleArchitecture.STAIR_RADIUS?Math.signum(x)*out:0,0,Math.abs(z)==FinaleArchitecture.STAIR_RADIUS?Math.signum(z)*out:0);
         }
         Vec3 delta=target.subtract(creature.position());
         if(delta.multiply(1,0,1).lengthSqr()<(step>=5?.0225:.65)&&Math.abs(delta.y)<1.2){

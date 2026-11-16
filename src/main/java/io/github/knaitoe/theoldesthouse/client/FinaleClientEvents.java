@@ -20,7 +20,9 @@ public final class FinaleClientEvents {
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event){event.registerEntityRenderer(FinaleRegistry.MINOTAUR.get(),MinotaurRenderer::new);event.registerEntityRenderer(FinaleRegistry.WITNESS.get(),WitnessRenderer::new);event.registerBlockEntityRenderer(io.github.knaitoe.theoldesthouse.house.HouseBlockEntities.TREE_TENDRIL.get(),TreeTendrilRenderer::new);}
     private static final class MinotaurRenderer extends MobRenderer<MinotaurEntity,MinotaurModel>{
         private final CagedBoyRenderer boy;
-        MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),1.1F);boy=new CagedBoyRenderer(context);}
+        MinotaurRenderer(EntityRendererProvider.Context context){super(context,new MinotaurModel(context.bakeLayer(MinotaurModel.LAYER)),1.1F*MinotaurEntity.SCALE);boy=new CagedBoyRenderer(context);}
+        /** 0.4.653: the whole model half again its size; the boy it was is drawn by his own renderer, at his own. */
+        @Override protected void scale(MinotaurEntity e,com.mojang.blaze3d.vertex.PoseStack poses,float partial){poses.scale(MinotaurEntity.SCALE,MinotaurEntity.SCALE,MinotaurEntity.SCALE);}
         @Override public ResourceLocation getTextureLocation(MinotaurEntity entity){return SKIN;}
         @Override public void render(MinotaurEntity e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){if(e.childAppearance())boy.render(e,yaw,partial,poses,buffers,light);else super.render(e,yaw,partial,poses,buffers,light);}
     }
