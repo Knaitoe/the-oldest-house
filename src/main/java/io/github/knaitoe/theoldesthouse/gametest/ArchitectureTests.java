@@ -135,7 +135,10 @@ public final class ArchitectureTests {
                 h.assertTrue(stone.test(base.offset(sx*face,y-3,sz*r))&&stone.test(base.offset(sx*face,y-4,sz*r))&&stone.test(base.offset(sx*r,y-4,sz*face)),"corbelled courses carry the landing's margin along each wall: "+at);
                 for(int w=r-5;w<=r+6;w++)h.assertTrue(!rail.test(base.offset(sx*(r+6),y,sz*w))&&!rail.test(base.offset(sx*w,y,sz*(r+6))),"a landing has no rail toward its walls: "+at+" / "+w);
                 h.assertTrue(rail.test(base.offset(sx*(r-6),y,sz*(r-6))),"the rail turns the landing's inner corner: "+at);
-                for(int up=0;up<2;up++)for(int w:new int[]{-5,5})h.assertTrue(stone.test(base.offset(sx*(r-6),y+up,sz*(r+w)))&&stone.test(base.offset(sx*(r+w),y+up,sz*(r-6))),"a newel stands either side of each flight: "+at+" / "+w);
+                for(int up=0;up<2;up++)for(int w:new int[]{-5,5}){var one=base.offset(sx*(r-6),y+up,sz*(r+w));var two=base.offset(sx*(r+w),y+up,sz*(r-6));
+                    if(w>0||up==0)h.assertTrue(stone.test(one)&&stone.test(two),"a newel stands either side of each flight: "+at+" / "+w);
+                    // 0.4.652: the two at the inner corner stand only as high as the rail, and nothing stands above the corner's rail.
+                    else h.assertTrue(clear.test(one)&&clear.test(two)&&clear.test(base.offset(sx*(r-6),y+1,sz*(r-6))),"the inner corner's newels stand only as high as its rail: "+at);}
                 for(int w=-4;w<=4;w++)h.assertTrue(clear.test(base.offset(sx*(r-6),y,sz*(r+w)))&&clear.test(base.offset(sx*(r+w),y,sz*(r-6))),"nine clear blocks between the newels: "+at+" / "+w);
                 for(int w=r+6;w<face;w++)h.assertTrue(rail.test(base.offset(sx*(r-6),y,sz*w))&&rail.test(base.offset(sx*w,y,sz*(r-6))),"a rail runs from each outer newel to the wall: "+at+" / "+w);
                 h.assertTrue(faced.test(base.offset(sx*(r-6),y,sz*face))&&faced.test(base.offset(sx*face,y,sz*(r-6))),"and ends at a pilaster: "+at);
@@ -156,6 +159,9 @@ public final class ArchitectureTests {
             }
         }
         h.assertTrue(landings>=16&&ties>=30&&strings>=1000,"the first three hundred blocks hold their landings, ties and strings: "+landings+" / "+ties+" / "+strings);
+        // 0.4.652: no lamp on the well's walls, where 0.4.593 hung one on each wall every ninety-six blocks.
+        for(int y=FinaleArchitecture.LOOP_BOTTOM+18;y<top;y+=96)for(int[] w:new int[][]{{-33,0},{33,0},{0,-33},{0,33}})
+            h.assertTrue(!l.getBlockState(base.offset(w[0],y,w[1])).is(Blocks.SOUL_LANTERN),"no lamp on the well's wall at "+y);
         // The head of the stair: closed at its west end, clear from the door to its north rail, and no rail inside the entry hall.
         for(int up=0;up<2;up++)h.assertTrue(stone.test(base.offset(-1,top+up,r-5))&&stone.test(base.offset(-1,top+up,r-2)),"posts close the head of the stair");
         for(int z=r-4;z<r-2;z++)h.assertTrue(rail.test(base.offset(-1,top,z)),"a rail closes the head of the stair at "+z);

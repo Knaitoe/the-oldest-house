@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.651** mends the model faces that drew nothing. A face whose texture square held only clear pixels showed nothing at all: the Stanley's dinner candles had no bodies under their flames, a chandelier hung by no cable, bulbs and dishes stood on no posts, jars had no glass, a cut pie had no top and a mailbox flag was missing. Each now shows the part of its picture it is meant to, or is left off where it shows nothing (the clear edges of a round clock, of glass held in a frame); `tools/flicker.py --check` fails on any such face. No gameplay, Witness, layout or protocol change. `docs/MODEL_FACES_0_4_651.md`.
+Development candidate **0.4.652** settles the great staircase's open questions by judgement. The 108 lamps on the well's walls are gone: the stair is dark all the way down, lit only by what readers carry and the fires they light, and nothing at a fixed height tells how deep it goes. The two newels at each landing's inner corner now stand as high as the rail, so a reader pressed into the corner leans out on the diagonal to watch a light fall, and the light drifts the way they leaned. The first time a reader calls Tom from the well he says the one thing known of its depth. Everything else asked of the owner in 0.4.593 to 0.4.596 stays as built, with the reasons in the note. No Witness, layout or protocol change. `docs/STAIRCASE_JUDGEMENT_0_4_652.md`.
 
-Previous: 0.4.650 put every model face on its own picture. `docs/MODEL_FACES_0_4_650.md`.
+Previous: 0.4.651 mended the model faces that drew nothing. `docs/MODEL_FACES_0_4_651.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 
