@@ -142,8 +142,9 @@ public final class StaircaseFallingLight {
     public static boolean held(ServerPlayer p,ItemEntity item,BlockPos origin){
         if(!p.serverLevel().dimension().equals(HouseDimensions.INTERIOR)||!isLight(item.getItem()))return false;
         var lean=StaircaseLean.over(p.level(),origin,p.position(),p.getEyeHeight(),p.getYRot(),p.getXRot());if(lean==null)return false;
-        var out=Direction.fromYRot(p.getYRot());
-        item.setPos(p.getX()+lean.x,p.getEyeY()+lean.y-.3,p.getZ()+lean.z);item.setDeltaMovement(out.getStepX()*.02,-.05,out.getStepZ()*.02);
+        // It drifts on the way the reader leaned: straight out over a flight's rail, or along the diagonal over a corner (0.4.652).
+        double across=Math.hypot(lean.x,lean.z);
+        item.setPos(p.getX()+lean.x,p.getEyeY()+lean.y-.3,p.getZ()+lean.z);item.setDeltaMovement(lean.x/across*.02,-.05,lean.z/across*.02);
         return true;
     }
     /** A reader in the well has let go of something that burns: it is watched until it lands on the stair or the well has it. */

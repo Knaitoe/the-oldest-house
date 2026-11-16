@@ -185,6 +185,85 @@ public final class FireAndCompanionTests {
             remove(p);
         }
     }
+    /**
+     * 0.4.652: at a landing's inner corner a reader pressed into the corner and facing it leans out on the diagonal, over the rail
+     * that turns the corner and between the two newels, which stand only as high as it; a light let go there falls from the hand
+     * held out over the drop and drifts the way they leaned.
+     */
+    @GameTest(template="empty",batch="stair_light",timeoutTicks=100)
+    public static void aReaderLeansOverALandingsInnerCorner(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"stair_light_corner");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
+        BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+250000,0,250000);var base=FinaleArchitecture.base(origin);
+        // The corner of a landing as it is built: the reader's cell, a newel a block high to its west and to its north, the rail
+        // diagonally between them, all on the landing's floor, and the drop beyond the rail on the diagonal.
+        var cell=new BlockPos(base.getX()+10,FinaleArchitecture.TOP-60,base.getZ()+10);BlockPos west=cell.west(),north=cell.north(),rail=cell.offset(-1,0,-1),beyond=rail.offset(-1,0,-1);
+        var bars=io.github.knaitoe.theoldesthouse.labyrinth.StairWell.BALUSTRADE.get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST,true).setValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.SOUTH,true);
+        var floor=List.of(cell.below(),west.below(),north.below(),rail.below());
+        double y=cell.getY(),pressed=cell.getX()+.3,back=cell.getX()+.6,dz=cell.getZ()-cell.getX();float corner=135,eye=1.62F;
+        java.util.function.BiFunction<Double,Float,Vec3> lean=(at,yaw)->io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(at,y,at+dz),eye,yaw,50);
+        try{
+            level.getChunkAt(cell);for(var at:floor)level.setBlock(at,Blocks.STONE.defaultBlockState(),3);
+            level.setBlock(west,Blocks.STONE.defaultBlockState(),3);level.setBlock(north,Blocks.STONE.defaultBlockState(),3);level.setBlock(rail,bars,3);
+            var over=lean.apply(pressed,corner);double out=(.6/Math.sqrt(2)+Math.sqrt(2)+.2)/Math.sqrt(2);
+            h.assertTrue(over!=null&&Math.abs(over.x+out)<.001&&Math.abs(over.z+out)<.001&&Math.abs(over.y+.25)<.001,"pressed into the corner and looking down it, the eye goes out on the diagonal: "+over);
+            h.assertTrue(pressed+over.x<rail.getX()&&pressed+dz+over.z<rail.getZ()&&y+eye+over.y>rail.getY()+1,"leaning, the eye is past the rail's far corner and above its top");
+            h.assertTrue(lean.apply(pressed,90F)==null&&lean.apply(pressed,180F)==null,"straight out from the corner there is a newel, not the rail");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.StaircaseLean.over(level,origin,new Vec3(pressed,y,pressed+dz),eye,corner,10)==null,"looking out level, a reader stands as they are");
+            h.assertTrue(lean.apply(back,corner)==null,"half a step back from the corner is not at it");
+            level.setBlock(west.above(),Blocks.STONE.defaultBlockState(),3);
+            h.assertTrue(lean.apply(pressed,corner)==null,"with a newel two blocks high, the eye does not go over it");
+            level.setBlock(west.above(),Blocks.AIR.defaultBlockState(),3);
+            level.setBlock(beyond.below(),Blocks.STONE.defaultBlockState(),3);
+            h.assertTrue(lean.apply(pressed,corner)==null,"where there is floor beyond the corner there is no drop to lean out over");
+            level.setBlock(beyond.below(),Blocks.AIR.defaultBlockState(),3);
+            // Let go while leaning, a light falls from the hand out over the drop and drifts the way the reader leaned.
+            p.teleportTo(level,pressed,y,pressed+dz,corner,50);
+            var torch=new net.minecraft.world.entity.item.ItemEntity(level,p.getX(),p.getEyeY()-.3,p.getZ(),new ItemStack(Items.TORCH));
+            h.assertTrue(StaircaseFallingLight.held(p,torch,origin),"a light let go while leaning over the corner leaves the hand held out over it");
+            var drift=torch.getDeltaMovement();
+            h.assertTrue(torch.getX()+.125<rail.getX()&&torch.getZ()+.125<rail.getZ()&&torch.getY()>rail.getY()+1&&drift.y<0&&drift.x<0&&Math.abs(drift.x-drift.z)<1e-6,
+                    "it starts beyond the rail's far corner, above the rail, and falls along the diagonal: "+torch.position()+" at "+drift);
+            h.succeed();
+        }finally{
+            for(var at:List.of(cell,west,north,rail,west.above(),beyond.below()))level.setBlock(at,Blocks.AIR.defaultBlockState(),3);
+            for(var at:floor)level.setBlock(at,Blocks.AIR.defaultBlockState(),3);
+            remove(p);
+        }
+    }
+    /**
+     * 0.4.652: the first call on Tom's radio from inside the well is the one thing anybody knows of its depth, a light let fall that
+     * nobody heard land. It is said once to each reader, and only from the well.
+     */
+    @GameTest(template="empty",batch="stair_light",timeoutTicks=60)
+    public static void tomTellsOfALightLetFallOnceFromTheWell(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"stair_light_radio");var peer=NativeTestPlayers.survival(h,"stair_light_radio_peer");var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);
+        BlockPos origin=new BlockPos(h.absolutePos(BlockPos.ZERO).getX()+260000,0,260000);var base=FinaleArchitecture.base(origin);
+        var data=LabyrinthData.get(p.server);var old=FinaleProgress.world(p.server).copy();
+        java.util.function.Function<ServerPlayer,String> cue=r->NovelVignettes.personal(data,r.getUUID()).getString("Cue");
+        double inX=base.getX()+10.5,inY=FinaleArchitecture.TOP-60,inZ=base.getZ()+10.5;
+        try{
+            for(var r:List.of(p,peer)){var own=NovelVignettes.personal(data,r.getUUID());own.remove(NovelVignettes.RADIO_LIGHT);NovelVignettes.save(data,r.getUUID(),own);
+                CompoundTag record=new CompoundTag();record.putString("Phase",FinaleProgress.Phase.STAIRCASE.name());FinaleProgress.save(p.server,r.getUUID(),record);}
+            p.teleportTo(level,inX,inY,inZ,0,0);
+            NovelVignettes.radio(p,origin);
+            h.assertTrue(NovelVignettes.RADIO_LIGHT_LINE.equals(cue.apply(p)),"the first call from the well: "+cue.apply(p));
+            NovelVignettes.radio(p,origin);
+            h.assertTrue(!NovelVignettes.RADIO_LIGHT_LINE.equals(cue.apply(p))&&cue.apply(p).startsWith("Tom: "),"it is said once; the next call has his usual line: "+cue.apply(p));
+            // Beyond the well's walls a reader on the stair hears his usual line; in the well, their own first call has it too.
+            peer.teleportTo(level,base.getX()+FinaleArchitecture.SHAFT_RADIUS+20.5,FinaleArchitecture.TOP+1,base.getZ()+.5,0,0);
+            NovelVignettes.radio(peer,origin);
+            h.assertTrue(!NovelVignettes.RADIO_LIGHT_LINE.equals(cue.apply(peer)),"outside the well the call is the usual one: "+cue.apply(peer));
+            peer.teleportTo(level,inX,inY,inZ,0,0);
+            NovelVignettes.radio(peer,origin);
+            h.assertTrue(NovelVignettes.RADIO_LIGHT_LINE.equals(cue.apply(peer)),"another reader hears it on their own first call from the well: "+cue.apply(peer));
+            h.succeed();
+        }finally{
+            data.setState(FinaleProgress.STATE,old);
+            for(var r:List.of(p,peer)){var own=NovelVignettes.personal(data,r.getUUID());for(var key:List.of(NovelVignettes.RADIO_LIGHT,"Cue","CueUntil","CuePlace","CueFresh"))own.remove(key);NovelVignettes.save(data,r.getUUID(),own);}
+            remove(p);remove(peer);
+        }
+    }
     @GameTest(template="empty",batch="stair_fire",timeoutTicks=160)
     public static void fiveNativeFiresConsumeBookAndUnlockOnlyTheirReader(GameTestHelper h){
         var p=NativeTestPlayers.survival(h,"stair_fire_reader");var peer=h.makeMockServerPlayerInLevel();var level=HouseTestLevel.get(p.server,HouseDimensions.INTERIOR);

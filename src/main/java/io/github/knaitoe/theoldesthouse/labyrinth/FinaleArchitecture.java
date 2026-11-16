@@ -182,9 +182,8 @@ public final class FinaleArchitecture {
                 put(blocks,b,i,y-1,-SHAFT_RADIUS+1,capital);put(blocks,b,i,y-1,SHAFT_RADIUS-1,capital);
                 put(blocks,b,-SHAFT_RADIUS+1,y-1,i,capital);put(blocks,b,SHAFT_RADIUS-1,y-1,i,capital);}
         }
-        for(int y=LOOP_BOTTOM+18;y<TOP;y+=96)for(int[] at:new int[][]{{-33,0},{33,0},{0,-33},{0,33}}){
-            put(blocks,b,at[0],y-1,at[1],stone);put(blocks,b,at[0],y,at[1],Blocks.SOUL_LANTERN.defaultBlockState());
-        }
+        // 0.4.652: no lamps on the well's walls (docs/STAIRCASE_JUDGEMENT_0_4_652.md). It is as dark as the novel's stair, the only
+        // lights in it are a reader's own, and nothing at a fixed height tells how deep it goes: only a light let fall does that.
         var steps=allSteps(manor);List<BlockPos> descent=staircaseRoute(manor);
         // Full turn platforms are laid first. Flat approach/departure runs share their floor height.
         var hearths=new HashSet<>(StaircaseFire.braziers(manor));
@@ -301,8 +300,8 @@ public final class FinaleArchitecture {
     /**
      * A corner landing, whole. It fills its corner of the well from six blocks inside the turn to the faces of the two walls, so it
      * rests on them: two corbelled courses run under its margin along each wall. Its rails stand only where it meets the well:
-     * a newel either side of each flight (nine clear blocks between them), the rail turning the inner corner between the two
-     * nearest, and a rail from each outer newel to the pilaster at the wall. u runs out toward one wall and v toward the other,
+     * a newel either side of each flight (nine clear blocks between them; 0.4.652: the two at the inner corner only as high as the
+     * rail), the rail turning the inner corner between the two nearest, and a rail from each outer newel to the pilaster at the wall. u runs out toward one wall and v toward the other,
      * from the turn's own step.
      */
     private static void landing(Map<BlockPos,BlockState> plan,BlockPos at,int sx,int sz,boolean hearth){
@@ -316,7 +315,9 @@ public final class FinaleArchitecture {
         }
         // A hearthstone under a fire: the five camps.
         if(hearth)for(int u=2;u<=4;u++)for(int v=2;v<=4;v++)plan.put(at.offset(sx*u,-1,sz*v),basalt);
-        for(int h=0;h<2;h++)for(int w:new int[]{-5,5}){plan.put(at.offset(sx*-6,h,sz*w),post);plan.put(at.offset(sx*w,h,sz*-6),post);}
+        // 0.4.652: the two newels at the inner corner stand only as high as the rail, so a reader can lean over the corner into the
+        // well (StaircaseLean.corner); the outer two stand two blocks high, as 0.4.593 built them.
+        for(int w:new int[]{-5,5})for(int h=0;h<(w<0?1:2);h++){plan.put(at.offset(sx*-6,h,sz*w),post);plan.put(at.offset(sx*w,h,sz*-6),post);}
         plan.put(at.offset(sx*-6,0,sz*-6),StairWell.BALUSTRADE.get().defaultBlockState()
                 .setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(sx>0?Direction.EAST:Direction.WEST),true).setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(sz>0?Direction.SOUTH:Direction.NORTH),true));
         for(int w=6;w<edge;w++){plan.put(at.offset(sx*-6,0,sz*w),rail(Direction.SOUTH));plan.put(at.offset(sx*w,0,sz*-6),rail(Direction.EAST));}

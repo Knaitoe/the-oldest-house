@@ -353,8 +353,18 @@ public final class NovelVignettes {
         // inventory does not establish its loss and must not mint another lighter.
         if(handed)actor.swing(InteractionHand.MAIN_HAND);
         cue(p,own,handed?"Tom: Here. Keep your thumb over the lid. It opens in my pocket.":"Tom: I'll stay here. Leave the radio on.");save(data,p.getUUID(),own);}
-    public static void radio(ServerPlayer p){var own=personal(LabyrinthData.get(p.server),p.getUUID());String line;
+    /** 0.4.652: Tom's line to a reader who calls from the great staircase's well, and the reader's own flag that it was said. */
+    public static final String RADIO_LIGHT="Radio_Light",RADIO_LIGHT_LINE="Tom: Somebody let a torch go over the rail once. Nobody heard it land.";
+    private static boolean inWell(ServerPlayer p,FinaleProgress.Phase phase,@Nullable BlockPos origin){
+        return phase==FinaleProgress.Phase.STAIRCASE&&origin!=null&&p.serverLevel().dimension().equals(HouseDimensions.INTERIOR)&&StaircaseFallingLight.inWell(origin,p.position());
+    }
+    public static void radio(ServerPlayer p){radio(p,HouseSavedData.get(p.server).houseOrigin());}
+    /** A call on the radio, with the House's origin given (the case that checks Tom's line from the well gives its own). */
+    public static void radio(ServerPlayer p,@Nullable BlockPos origin){var own=personal(LabyrinthData.get(p.server),p.getUUID());String line;
         var phase=FinaleProgress.phase(p.server,p.getUUID());if(phase==FinaleProgress.Phase.COLLAPSE||phase==FinaleProgress.Phase.ESCAPE)line="Tom: The landing's moving. Find the water below the broken wall. Keep—";
+        // 0.4.652: the first call from the well itself. All anybody knows of its depth is a light let fall that never landed
+        // (docs/STAIRCASE_JUDGEMENT_0_4_652.md); it is said once, and the reader may find it out for themselves.
+        else if(inWell(p,phase,origin)&&!own.getBoolean(RADIO_LIGHT)){line=RADIO_LIGHT_LINE;own.putBoolean(RADIO_LIGHT,true);}
         else if(LabyrinthData.get(p.server).returnDepth(p.getUUID())>=12)line="Tom: ...same doors. I can still hear you.";
         else line="Tom: The numbers change. Your way back still runs through the doors you opened.";cue(p,own,line);save(LabyrinthData.get(p.server),p.getUUID(),own);p.playNotifySound(NovelRegistry.RADIO_STATIC.get(),SoundSource.PLAYERS,.2F,1);
     }
