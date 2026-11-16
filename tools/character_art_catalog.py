@@ -120,7 +120,8 @@ def entries():
     rows.append({'name':'literary_king','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':217})
     # 0.4.643: the two brothers in the wood, on two hundred and eighteen and nineteen.
     # 0.4.644: the Queen on the hill and the Guard on the train, on two hundred and twenty and twenty-one.
-    for name,phase in (('dum',218),('dee',219),('queen',220),('guard',221)):
+    # 0.4.645: the Caterpillar on the mushroom, on two hundred and twenty-two.
+    for name,phase in (('dum',218),('dee',219),('queen',220),('guard',221),('caterpillar',222)):
         rows.append({'name':'literary_king_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # Speak Up (0.4.327): Joan, Pat, Dell and Ruth on stranger phases ninety to ninety-three.
     for name,phase in (('joan',90),('pat',91),('dell',92),('ruth',93)):

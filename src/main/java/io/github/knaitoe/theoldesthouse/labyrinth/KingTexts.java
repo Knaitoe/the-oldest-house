@@ -90,6 +90,25 @@ public final class KingTexts {
         JUMPED="The train took the brook at a jump. The road is under your feet on the far side.",
         WHEEL="A carriage wheel, standing in the grass.";
 
+    // ------------------------------------------------------------------------------------------------ 0.4.645, part 5
+    // Every line below is new in 0.4.645 and flagged in docs/SLEEPING_KING_0_4_645.md. "Who are you?" and the reply about not being
+    // oneself are Carroll's.
+    public static final String CATERPILLAR_NAME="the Caterpillar";
+    public static final String CAT_WHO="Who are you?",
+        CAT_YOU="You! You were more of a thing at the hill, and you will be less of one at the bridge. Which is it?",
+        CAT_SIDES="One side of this will make you more, and the other side will make you less.",
+        CAT_BRIDGE="The bridge is only drawn. A drawing bears a drawing.";
+    public static final String R_TOO_MUCH="Too much of a thing, I think, just now.",
+        R_A_THING="A thing, at the moment. I was less of one on the way here.",
+        R_A_SORT="A sort of thing. I was a thing a little while ago.",
+        R_HARDLY="Hardly anything. I have been several things since I came in.",
+        R_NOT_MYSELF="I can't explain myself, because I'm not myself, you see.";
+    public static final String STALK="A mushroom's stalk, as tall as a table.",
+        MUSHROOM_MORE="A piece from this side. More.",
+        MUSHROOM_LESS="A piece from that side. Less.",
+        FELL_THROUGH="The bridge was only drawn, and would not bear a thing. The bank is under your feet again.",
+        DRAWN_CROSSED="Over the drawn bridge, as a drawing.";
+
     static String words(int n){return switch(n){case 2->"two";case 3->"three";case 4->"four";case 5->"five";case 6->"six";case 7->"seven";default->String.valueOf(n);};}
     /** When he turns over and the filled land draws in to the next depth of his sleep. */
     public static String drewIn(int level){return level>=2?"He turned over again, and the filled land drew in to his own square.":"He turned over in his sleep, and the filled land drew in toward him.";}
@@ -120,6 +139,10 @@ public final class KingTexts {
             +"The two of them had a longer name for the King.");
         if(own.getBoolean("KingRattle"))out.add("One of them had left a rattle under his tree. I went in to it between his breaths and picked it up, and after that there was nothing for them to fight about.");
         else if(own.getBoolean("KingSawBattle"))out.add("They dressed for a battle over a rattle and fought it beside him, and he turned over in his sleep. Something went over the wood like a cloud, and they ran.");
+        // 0.4.645: the mushroom and the drawn bridge.
+        if(own.getBoolean("KingAsked"))out.add("Somebody on a mushroom asked me who I was, and I could only tell it what I was at the time.");
+        if(own.getBoolean("KingDrawnCrossed"))out.add(own.getBoolean("KingFellThrough")?"The bridge past the fifth square was only drawn. It let me through once, and bore me when I was less.":"The bridge past the fifth square was only drawn, and it bore me because I was less.");
+        else if(own.getBoolean("KingFellThrough"))out.add("The bridge past the fifth square was only drawn, and it would not bear me.");
         out.add(switch(own.getString("KingEnding")){
             case "said_his_whole_name"->"I said the whole of his name. He opened his eyes. One of us went out.";
             case "there_when_he_woke"->"Somebody else said the whole of his name. He opened his eyes, and the country went over to lines with me in it.";
