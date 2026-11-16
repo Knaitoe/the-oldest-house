@@ -111,7 +111,8 @@ public final class LongerRoof {
                 if(w.via<DOWNSTAIRS.size()){if(LongerRowan.step(a,DOWNSTAIRS.get(w.via).add(b.getX(),b.getY(),b.getZ())))w.via++;return true;}
                 LongerKettle.place(a,b,WORKTOP_SPOT);a.gesture(LongerBench.REST);stage(p,own,DONE);return true;
             }
-            case DONE->{LongerKettle.keep(a,b,WORKTOP_SPOT,here);return true;}
+            // 0.4.627: indoors again the next chapter has them (LongerReturn).
+            case DONE->{if(LongerReturn.tick(l,b,a,here,p,own))return true;LongerKettle.keep(a,b,WORKTOP_SPOT,here);return true;}
             default->{return false;}
         }
     }
@@ -239,7 +240,7 @@ public final class LongerRoof {
             case QUIET->{return true;}
             case HAND_HELD,ASKING->{Talk.resume(p,LongerRowan.TALK);return true;}
             case DOWN->{return true;}
-            case DONE->{begin(p);line(p,a,LongerTexts.INDOORS_AGAIN);Talk.end(p);return true;}
+            case DONE->{if(LongerReturn.talk(p,a,own))return true;begin(p);line(p,a,LongerTexts.INDOORS_AGAIN);Talk.end(p);return true;}
             default->{return false;}
         }
     }
