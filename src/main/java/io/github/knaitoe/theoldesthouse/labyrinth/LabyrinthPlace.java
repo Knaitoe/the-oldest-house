@@ -708,7 +708,11 @@ public enum LabyrinthPlace {
     /** 0.4.549, The Ones Already Inside (LodgingHouse, docs/THE_ONES_ALREADY_INSIDE_PLAN.md): a lodging house over a cellar, with
      * passages behind its walls (LodgingSite). One night, a party's story. This slice, the house: its walls, floors, stairs, doors,
      * hatches, frames and the support under them. Not dealt until the story can be finished. */
-    ONES_INSIDE("ones_already_inside",Kind.ONE_SHOT,240,new BoundingBox(-17,-5,-32,17,10,0),literaryEntry());
+    ONES_INSIDE("ones_already_inside",Kind.ONE_SHOT,240,new BoundingBox(-17,-5,-32,17,10,0),literaryEntry()),
+    /** 0.4.621, A Little Longer (Longer, docs/A_LITTLE_LONGER_PLAN.md): Rowan's radio repair shop, the flat above it, the roof landing and
+     * a short stretch of the House's corridor (LongerSite), at night, in the rain. Seven chapters, each a visit. This slice, the place.
+     * Not dealt until its evening can be played. */
+    LITTLE_LONGER("a_little_longer",Kind.MULTI_VISIT,241,new BoundingBox(-16,-2,-30,16,30,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

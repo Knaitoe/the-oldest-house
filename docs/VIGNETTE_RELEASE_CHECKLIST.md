@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.621 (docs/A_LITTLE_LONGER_0_4_621.md): a place built ahead of its story. Is it never dealt and no Witness source until it can be finished? Does every door and fitting answer, and can nobody fall from the roof?
+
 November 16 candidate 0.4.620 (docs/ONES_INSIDE_AFTER_0_4_620.md): an aftermath for a shared ending. Does the reader come back to the house they ended in, rather than a fresh one? Does it give nothing to do or earn, and count only once?
 
 November 15 candidate 0.4.619 (docs/ONES_INSIDE_SELF_0_4_619.md): personhood in a shared scene. Is every fragment delivered to its reader alone, with nothing in the shared room changed? Does an unread, uncertain or turned-off read give the whole neutral version?
