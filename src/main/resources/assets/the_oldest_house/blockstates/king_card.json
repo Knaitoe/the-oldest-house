@@ -1,0 +1,274 @@
+{
+  "variants": {
+    "face=0,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_two_standing"
+    },
+    "face=0,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_two_fallen"
+    },
+    "face=1,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_three_standing"
+    },
+    "face=1,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_three_fallen"
+    },
+    "face=2,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_four_standing"
+    },
+    "face=2,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_four_fallen"
+    },
+    "face=3,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_five_standing"
+    },
+    "face=3,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_five_fallen"
+    },
+    "face=4,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_six_standing"
+    },
+    "face=4,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_six_fallen"
+    },
+    "face=5,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_eight_standing"
+    },
+    "face=5,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_eight_fallen"
+    },
+    "face=6,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_knave_standing"
+    },
+    "face=6,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_knave_fallen"
+    },
+    "face=7,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_queen_standing"
+    },
+    "face=7,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_queen_fallen"
+    },
+    "face=8,facing=north,fallen=false": {
+      "model": "the_oldest_house:block/king/card_king_standing"
+    },
+    "face=8,facing=north,fallen=true": {
+      "model": "the_oldest_house:block/king/card_king_fallen"
+    },
+    "face=0,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_two_standing",
+      "y": 90
+    },
+    "face=0,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_two_fallen",
+      "y": 90
+    },
+    "face=1,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_three_standing",
+      "y": 90
+    },
+    "face=1,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_three_fallen",
+      "y": 90
+    },
+    "face=2,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_four_standing",
+      "y": 90
+    },
+    "face=2,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_four_fallen",
+      "y": 90
+    },
+    "face=3,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_five_standing",
+      "y": 90
+    },
+    "face=3,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_five_fallen",
+      "y": 90
+    },
+    "face=4,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_six_standing",
+      "y": 90
+    },
+    "face=4,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_six_fallen",
+      "y": 90
+    },
+    "face=5,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_eight_standing",
+      "y": 90
+    },
+    "face=5,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_eight_fallen",
+      "y": 90
+    },
+    "face=6,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_knave_standing",
+      "y": 90
+    },
+    "face=6,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_knave_fallen",
+      "y": 90
+    },
+    "face=7,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_queen_standing",
+      "y": 90
+    },
+    "face=7,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_queen_fallen",
+      "y": 90
+    },
+    "face=8,facing=east,fallen=false": {
+      "model": "the_oldest_house:block/king/card_king_standing",
+      "y": 90
+    },
+    "face=8,facing=east,fallen=true": {
+      "model": "the_oldest_house:block/king/card_king_fallen",
+      "y": 90
+    },
+    "face=0,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_two_standing",
+      "y": 180
+    },
+    "face=0,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_two_fallen",
+      "y": 180
+    },
+    "face=1,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_three_standing",
+      "y": 180
+    },
+    "face=1,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_three_fallen",
+      "y": 180
+    },
+    "face=2,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_four_standing",
+      "y": 180
+    },
+    "face=2,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_four_fallen",
+      "y": 180
+    },
+    "face=3,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_five_standing",
+      "y": 180
+    },
+    "face=3,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_five_fallen",
+      "y": 180
+    },
+    "face=4,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_six_standing",
+      "y": 180
+    },
+    "face=4,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_six_fallen",
+      "y": 180
+    },
+    "face=5,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_eight_standing",
+      "y": 180
+    },
+    "face=5,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_eight_fallen",
+      "y": 180
+    },
+    "face=6,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_knave_standing",
+      "y": 180
+    },
+    "face=6,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_knave_fallen",
+      "y": 180
+    },
+    "face=7,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_queen_standing",
+      "y": 180
+    },
+    "face=7,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_queen_fallen",
+      "y": 180
+    },
+    "face=8,facing=south,fallen=false": {
+      "model": "the_oldest_house:block/king/card_king_standing",
+      "y": 180
+    },
+    "face=8,facing=south,fallen=true": {
+      "model": "the_oldest_house:block/king/card_king_fallen",
+      "y": 180
+    },
+    "face=0,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_two_standing",
+      "y": 270
+    },
+    "face=0,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_two_fallen",
+      "y": 270
+    },
+    "face=1,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_three_standing",
+      "y": 270
+    },
+    "face=1,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_three_fallen",
+      "y": 270
+    },
+    "face=2,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_four_standing",
+      "y": 270
+    },
+    "face=2,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_four_fallen",
+      "y": 270
+    },
+    "face=3,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_five_standing",
+      "y": 270
+    },
+    "face=3,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_five_fallen",
+      "y": 270
+    },
+    "face=4,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_six_standing",
+      "y": 270
+    },
+    "face=4,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_six_fallen",
+      "y": 270
+    },
+    "face=5,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_eight_standing",
+      "y": 270
+    },
+    "face=5,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_eight_fallen",
+      "y": 270
+    },
+    "face=6,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_knave_standing",
+      "y": 270
+    },
+    "face=6,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_knave_fallen",
+      "y": 270
+    },
+    "face=7,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_queen_standing",
+      "y": 270
+    },
+    "face=7,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_queen_fallen",
+      "y": 270
+    },
+    "face=8,facing=west,fallen=false": {
+      "model": "the_oldest_house:block/king/card_king_standing",
+      "y": 270
+    },
+    "face=8,facing=west,fallen=true": {
+      "model": "the_oldest_house:block/king/card_king_fallen",
+      "y": 270
+    }
+  }
+}

@@ -27,7 +27,9 @@ public final class KingRegistry {
         /** 0.4.643: he stirs in his sleep; the crow over the wood. */
         STIR=sound("king.stir"),CROW=sound("king.crow"),
         // 0.4.644: the train starting and its whistle before the jump.
-        TRAIN=sound("king.train"),WHISTLE=sound("king.whistle");
+        TRAIN=sound("king.train"),WHISTLE=sound("king.whistle"),
+        // 0.4.646: the court's pack going up and coming down as cards.
+        CARDS=sound("king.cards");
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     /** The country's materials; every one has its ruled twin, named with "_ruled". */
     public static final List<String> COUNTRY=List.of("turf_light","turf_dark","soil","hedge","brook","bridge","path","bark","bough");
@@ -62,10 +64,13 @@ public final class KingRegistry {
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingHedgeBlock>> HEDGE_TYPE=CODECS.register("king_hedge",()->KingHedgeBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingVergeBlock>> VERGE_TYPE=CODECS.register("king_verge",()->KingVergeBlock.CODEC);
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingDrawnBridgeBlock>> DRAWN_TYPE=CODECS.register("king_drawn_bridge",()->KingDrawnBridgeBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingCardBlock>> CARD_TYPE=CODECS.register("king_card",()->KingCardBlock.CODEC);
     /** 0.4.642: the brook's unseen verge (KingVergeBlock). */
     public static final DeferredBlock<KingVergeBlock> VERGE=BLOCKS.registerBlock("king_verge",KingVergeBlock::new,BlockBehaviour.Properties.of().noOcclusion().strength(-1,3600000).noLootTable().isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
     /** 0.4.645: the drawn bridge beyond the fifth square (KingDrawnBridgeBlock). */
     public static final DeferredBlock<KingDrawnBridgeBlock> DRAWN_BRIDGE=BLOCKS.registerBlock("king_drawn_bridge",KingDrawnBridgeBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
+    /** 0.4.646: one of the court's pack, stood on its edge or fallen flat (KingCardBlock). */
+    public static final DeferredBlock<KingCardBlock> CARD=BLOCKS.registerBlock("king_card",KingCardBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
     public static final DeferredBlock<KingBlock> FITTING=BLOCKS.registerBlock("king_fitting",KingBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(KingBlock::light));
     private KingRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}

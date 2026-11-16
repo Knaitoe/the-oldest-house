@@ -6500,5 +6500,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.king.whistle"
+  },
+  "king.cards": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/cards",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.cards"
   }
 }

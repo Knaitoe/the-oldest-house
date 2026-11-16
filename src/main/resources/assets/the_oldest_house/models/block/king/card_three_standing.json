@@ -1,0 +1,122 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "fl": "the_oldest_house:block/king/card_three_lo",
+    "fh": "the_oldest_house:block/king/card_three_hi",
+    "bl": "the_oldest_house:block/king/card_back_lo",
+    "bh": "the_oldest_house:block/king/card_back_hi",
+    "particle": "the_oldest_house:block/king/card_three_lo"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        0,
+        7.75
+      ],
+      "to": [
+        13.5,
+        16,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#fl",
+          "uv": [
+            2,
+            0,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#bl",
+          "uv": [
+            2,
+            0,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#bl",
+          "uv": [
+            2,
+            0,
+            2.5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#bl",
+          "uv": [
+            2,
+            0,
+            2.5,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        16,
+        7.75
+      ],
+      "to": [
+        13.5,
+        24,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#fh",
+          "uv": [
+            2,
+            8,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#bh",
+          "uv": [
+            2,
+            8,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#bh",
+          "uv": [
+            2,
+            8,
+            2.5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#bh",
+          "uv": [
+            2,
+            8,
+            2.5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#bh",
+          "uv": [
+            2,
+            8,
+            13,
+            8.5
+          ]
+        }
+      }
+    }
+  ]
+}

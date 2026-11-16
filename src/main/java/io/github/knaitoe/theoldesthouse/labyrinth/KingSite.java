@@ -78,6 +78,22 @@ public final class KingSite {
     /** The drawn bridge's two rows (the brook beyond the fifth rank), across the road at x -1 and 0. */
     public static boolean onDrawnBridge(Vec3 r){int z=(int)Math.floor(r.z);return r.x>=-1.4&&r.x<1.4&&(z==rankFar(5)-1||z==rankFar(5)-2);}
     /** The Queen's peg on a square (2 to 8): beside the road, just past the crossing. */
+    /**
+     * 0.4.646: the court of cards on the sixth square. The herald waits at the far bank of the drawn bridge; the dock is on the road; the
+     * King and Queen of Hearts stand at the far end of it; jurors stand in two rows either side, and a row of the pack's guard stands
+     * across the middle file just short of the brook, faces to the court. The lawn is the east file, and the Cat's tree stands on it.
+     */
+    public static final BlockPos COURT_KING=new BlockPos(-3,0,-130),COURT_QUEEN=new BlockPos(2,0,-130),HERALD=new BlockPos(-3,0,-121);
+    public static final int GUARD_ROW=-133,JURY_WEST=-6,JURY_EAST=5,JURY_NEAR=-123,JURY_FAR=-128;
+    public static final net.minecraft.world.phys.Vec3 DOCK=new net.minecraft.world.phys.Vec3(.5,0,-126.5);
+    public static final BlockPos CAT_TREE=new BlockPos(18,0,-127);
+    /** Where the Cat's head is, in its tree and over the court (the actor's feet: the head is a block and three quarters up). */
+    public static final net.minecraft.world.phys.Vec3 CAT_IN_TREE=new net.minecraft.world.phys.Vec3(15.5,3.45,-126.5),CAT_OVER=new net.minecraft.world.phys.Vec3(-.5,2.6,-131.5);
+    /** Whether a place is in the court: the sixth square's middle file, from the bank to the guard. */
+    public static boolean inCourt(Vec3 r){return rank((int)Math.floor(r.z))==6&&file((int)Math.floor(r.x))==2;}
+    /** Whether a reader has got past the court's guard, toward the brook. */
+    public static boolean pastCourt(Vec3 r){return r.z<GUARD_ROW-.4&&r.z>=rankFar(6)-3&&file((int)Math.floor(r.x))==2;}
+
     public static BlockPos peg(int rank){return new BlockPos(2,0,rankNear(rank)-1);}
     /** The hill's height over a column, 0 off it. */
     public static int hill(int x,int z){double d=Math.hypot(x-HILL.getX(),z-HILL.getZ());return d>=HILL_RADIUS?0:(int)Math.round(HILL_HEIGHT*(1-d/HILL_RADIUS)+.25);}
@@ -195,6 +211,8 @@ public final class KingSite {
         carriage(l,b);
         mushroom(l,b);
         drawnBridge(l,b);
+        court(l,b);
+        tree(l,b,CAT_TREE.getX(),CAT_TREE.getZ(),6,2);
         // 0.4.644: a peg on every square from the second, and the glass table by the road on the hill's square.
         for(int r=2;r<=RANKS;r++)set(l,b,peg(r),KingBlock.of(KingBlock.Kind.PEG,Direction.NORTH));
         set(l,b,GLASS_TABLE,KingBlock.of(KingBlock.Kind.GLASS_TABLE,Direction.WEST));
@@ -239,6 +257,18 @@ public final class KingSite {
     /** 0.4.645: the footbridge beyond the fifth square is only drawn (KingDrawnBridgeBlock). */
     static void drawnBridge(ServerLevel l,BlockPos b){
         for(int z=rankFar(5)-2;z<=rankFar(5)-1;z++)for(int x=-1;x<=0;x++)set(l,b,x,-1,z,KingRegistry.DRAWN_BRIDGE.get().defaultBlockState());
+    }
+    /**
+     * 0.4.646: the court's pack standing: the jurors in their two rows, faces in, and the guard across the middle file, faces to the
+     * court. Whatever lay fallen where the King, the Queen and the herald stand is cleared, for a fresh dream.
+     */
+    public static void court(ServerLevel l,BlockPos b){
+        for(int x=-8;x<=7;x++)set(l,b,x,0,GUARD_ROW,KingCardBlock.of(Math.floorMod(x+8,6),Direction.SOUTH,false));
+        for(int z=JURY_FAR;z<=JURY_NEAR;z++){
+            set(l,b,JURY_WEST,0,z,KingCardBlock.of(Math.floorMod(z,6),Direction.EAST,false));
+            set(l,b,JURY_EAST,0,z,KingCardBlock.of(Math.floorMod(z+3,6),Direction.WEST,false));
+        }
+        for(var at:new BlockPos[]{COURT_KING,COURT_QUEEN,HERALD})if(KingCardBlock.is(l.getBlockState(b.offset(at))))set(l,b,at,AIR);
     }
     /** 0.4.643: the brothers' rattle lying on his square. */
     public static void rattle(ServerLevel l,BlockPos b){set(l,b,RATTLE,KingBlock.of(KingBlock.Kind.RATTLE,Direction.NORTH));}

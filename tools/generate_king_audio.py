@@ -21,6 +21,8 @@ ROWS = {
     'crow': ('Great wings pass over', 96),
     'train': ('A train gets up steam', 48),
     'whistle': ('A train whistles', 96),
+    # 0.4.646: the court's pack going up and coming down.
+    'cards': ('A pack of cards flies up and falls', 64),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -147,7 +149,27 @@ def whistle():
     return (tone + breath) * envelope(t, .08, .35)
 
 
-MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle}
+def cards():
+    # 0.4.646: a whole pack thrown up at once, the riffle of fifty-odd edges in under a second, rising; then the cards coming down
+    # over two seconds, each a soft flutter and a slap on grass, thinning out to the last few.
+    n = seconds(3.6)
+    t = times(n)
+    out = np.zeros(n)
+    edges = band(rng.standard_normal(n), 1800, 7000)
+    for k in range(54):
+        at = .05 + .8 * (k / 54) ** 1.4
+        out += edges * np.exp(-((t - at) / .004) ** 2) * (.5 + .5 * k / 54)
+    rush = band(rng.standard_normal(n), 500, 3000) * np.exp(-((t - .5) / .3) ** 2) * .35
+    flutter = band(rng.standard_normal(n), 300, 2400)
+    slap = band(rng.standard_normal(n), 120, 900)
+    for k in range(40):
+        at = 1.1 + 2.2 * rng.random() ** 1.7
+        out += flutter * np.exp(-((t - at + .12) / .06) ** 2) * .12
+        out += slap * np.exp(-np.clip(t - at, 0, None) / .02) * (t >= at) * .5 * (1 - (at - 1.1) / 2.6)
+    return out + rush
+
+
+MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle, 'cards': cards}
 
 
 def main():

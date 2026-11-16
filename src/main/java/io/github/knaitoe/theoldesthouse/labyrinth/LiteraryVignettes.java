@@ -373,7 +373,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.ONES_INSIDE){if(LodgingPeople.is(actor))LodgingPeople.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LITTLE_LONGER){if(LongerRowan.is(actor))LongerRowan.talk(p,actor,own);}
         // 0.4.643: the King, and the two brothers in his wood.
-        else if(place==LabyrinthPlace.SLEEPING_KING){if(King.is(actor))King.talk(p,actor,own);else if(KingBrothers.is(actor))KingBrothers.talk(p,actor,own);else if(KingQueen.is(actor))King.cue(p,KingTexts.QUEEN_HAND);else if(KingGuard.is(actor))King.cue(p,KingTexts.GUARD_HAND);else if(KingCaterpillar.is(actor))KingCaterpillar.talk(p,actor,own);}
+        else if(place==LabyrinthPlace.SLEEPING_KING){if(King.is(actor))King.talk(p,actor,own);else if(KingBrothers.is(actor))KingBrothers.talk(p,actor,own);else if(KingQueen.is(actor))King.cue(p,KingTexts.QUEEN_HAND);else if(KingGuard.is(actor))King.cue(p,KingTexts.GUARD_HAND);else if(KingCaterpillar.is(actor))KingCaterpillar.talk(p,actor,own);else if(KingCourt.is(actor))KingCourt.talk(p,actor,own);else if(KingCourt.cat(actor))KingCourt.talkCat(p,actor,own);}
         else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else if(CalderPeople.is(actor))CalderPeople.talk(p,actor);else if(!BikeNightSpecters.is(actor))BikeNightGus.talk(p,actor);}
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);

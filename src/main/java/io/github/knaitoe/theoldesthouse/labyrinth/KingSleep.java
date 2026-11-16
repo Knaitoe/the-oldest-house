@@ -54,6 +54,9 @@ public final class KingSleep {
         // 0.4.644: the Queen (KingQueen) and the Guard's ride (KingGuard); who has run with her and who has ridden, in this dream.
         int queen;@Nullable UUID queenWith;long queenAt;final java.util.Set<UUID> ran=new java.util.HashSet<>();
         @Nullable UUID rider;long rideAt;@Nullable BlockPos riderSeat;final java.util.Set<UUID> ridden=new java.util.HashSet<>();
+        // 0.4.646: the court of cards (KingCourt): whether the pack has come down and who said what it was, until when the Cat is over
+        // the court, and until when the herald has his scroll up.
+        boolean courtFallen;long catUntil;long heraldReadsUntil;final java.util.Set<UUID> fellBy=new java.util.HashSet<>();
     }
     /**
      * How the waking ended for each reader who was in the country, kept until that reader's own tick settles it. The waking ends inside
@@ -84,6 +87,7 @@ public final class KingSleep {
         KingQueen.tick(l,b,s);
         KingGuard.tick(l,b,s);
         KingCaterpillar.tick(l,b);
+        KingCourt.tick(l,b,s);
         if(s.wakingAt<0)return;
         long t=now-s.wakingAt;
         if(t>=LINES_AT&&!s.awake){s.awake=true;KingBreath.redraw(l,b);for(var p:readers(l,b))King.cue(p,s.tooSoon?KingTexts.LINES_TOO_SOON:KingTexts.LINES);}
@@ -111,6 +115,8 @@ public final class KingSleep {
             }
             if(state<KingBreath.THING&&p.onGround()&&!own.getBoolean(CROSSED)){own.putBoolean(CROSSED,true);King.cue(p,KingTexts.DRAWN_CROSSED);}
         }
+        // 0.4.646: the court of cards: the summons, the sentence, and the way past the guard.
+        KingCourt.reader(p,b,own,state);
         if(beside&&state>=KingBreath.THING&&!own.getBoolean(MET))own.putBoolean(MET,true);
         double moved=own.contains("KingLastX")?Math.hypot(r.x-own.getDouble("KingLastX"),r.z-own.getDouble("KingLastZ")):0;
         own.putDouble("KingLastX",r.x);own.putDouble("KingLastZ",r.z);
@@ -208,6 +214,7 @@ public final class KingSleep {
         var king=King.find(l,b);if(king!=null)King.lie(king,b.offset(KingSite.KING),180);
         KingBrothers.reset(l,b);
         var fresh=get(b);KingQueen.reset(l,b,fresh);KingGuard.reset(fresh);
+        KingCourt.reset(l,b);
     }
     /** For tests: forget the dream at this country. */
     public static void forget(BlockPos b){SLEEPS.remove(b.asLong());}

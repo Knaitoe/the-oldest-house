@@ -2,7 +2,7 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.645** adds A sort of thing's fifth part: a Caterpillar on a mushroom who asks who you are and only hears what you are at the moment, a mushroom whose two sides fill the bottle and the cake again, and a bridge that is only drawn, so that a thing falls through it and only something less can cross. No Witness change (91 sources, 69 required). `docs/SLEEPING_KING_0_4_645.md`.
+Development candidate **0.4.646** adds A sort of thing's sixth part: a court of cards that names you and holds you a thing while it looks at you, a guard of cards that only something less can slip between, and three ways past it: a Cat that is only a head and will be looked at instead, the bottle, or saying what the court is, so that the pack comes down as cards and the King stirs. No Witness change (91 sources, 69 required). `docs/SLEEPING_KING_0_4_646.md`.
 
 Previous: 0.4.644 added the fourth part (the Queen, the glass table and the railway). `docs/SLEEPING_KING_0_4_644.md`.
 
