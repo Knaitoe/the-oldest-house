@@ -831,6 +831,7 @@ public final class PellTexts {
         case "the_kept"->"I opened their doors so it would leave mine alone.";
         case "last_orders"->"I took everything off his table.";
         case "bike_night"->"I led them up into the graveyard on purpose.";
+        case "ones_already_inside"->"I knew which of the two men was the first one. I told the house it was the other.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

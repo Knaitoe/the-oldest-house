@@ -127,6 +127,7 @@ final class CoopAccounts {
         together(BIKE_NIGHT,with("%s {was} out on a bike that night too."));
         together(PELL_HOUSE,PELL);
         together(ONES_INSIDE,with("%s {was} in the lodging house with me."));
+        together(LITTLE_LONGER,with("%s {was} in the radio shop too, in another copy of it."));
         together(TALL_GRASS,with("%s {was} on the road with me."));
         together(GROWING_THINGS,with("%s {was} at the Barretts' with me."));
         together(LAST_CROSSING,with("%s {was} on the roll with me."));

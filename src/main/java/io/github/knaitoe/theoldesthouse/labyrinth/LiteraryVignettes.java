@@ -115,6 +115,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.PELL_HOUSE&&!PellHouse.dealable(d,p))return false;
         // 0.4.549: The Ones Already Inside is not dealt until its story can be finished.
         if(place==LabyrinthPlace.ONES_INSIDE&&!LodgingHouse.dealable(d,p))return false;
+        // 0.4.621: A Little Longer is not dealt until its evening can be played.
+        if(place==LabyrinthPlace.LITTLE_LONGER&&!Longer.dealable(d,p))return false;
         // 0.4.218: the street is dealt only to a reader who has a companion following them.
         if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;
         // 0.4.209: the dark halls' horrors are dealt only in the dark band.
@@ -172,6 +174,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.BIKE_NIGHT){BikeNight.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.PELL_HOUSE){PellHouse.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.ONES_INSIDE){LodgingHouse.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.LITTLE_LONGER){Longer.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.TALL_GRASS){TallGrass.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.GROWING_THINGS){GrowingThings.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_CROSSING){LastCrossing.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
@@ -285,6 +288,7 @@ public final class LiteraryVignettes {
             case BIKE_NIGHT->handled=BikeNight.click(p,b,rel,own);
             case PELL_HOUSE->handled=PellHouse.click(p,b,rel,own);
             case ONES_INSIDE->handled=LodgingHouse.click(p,b,rel,own);
+            case LITTLE_LONGER->handled=Longer.click(p,b,rel,own);
             case PLACE_FOR_YOU->handled=PlaceForYou.click(p,b,rel,own);
             case SECOND_PERSON->handled=SecondPerson.click(p,b,rel,own,e.getFace());
             case CAMP_BLOOD->handled=CampSession.click(p,b,rel,own);

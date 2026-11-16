@@ -1,0 +1,105 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "o": "the_oldest_house:block/longer/order",
+    "k": "the_oldest_house:block/longer/iron",
+    "particle": "the_oldest_house:block/longer/order"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        2,
+        15.5
+      ],
+      "to": [
+        12,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#o",
+          "uv": [
+            4,
+            2,
+            12,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#o"
+        },
+        "down": {
+          "texture": "#o"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        6,
+        14
+      ],
+      "to": [
+        8.5,
+        7,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7.5,
+        6,
+        16
+      ],
+      "to": [
+        8.5,
+        7,
+        16.02
+      ],
+      "faces": {
+        "south": {
+          "texture": "#k",
+          "uv": [
+            7.5,
+            9,
+            8.5,
+            10
+          ]
+        }
+      }
+    }
+  ]
+}

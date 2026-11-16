@@ -90,6 +90,7 @@ jobs:
           python3 tools/draw_pell_faces.py --check
           python3 tools/draw_lodging_house.py --check
           python3 tools/draw_lodging_things.py --check
+          python3 tools/draw_longer_art.py --check
           python3 tools/draw_pell_tapes.py --check
           python3 tools/draw_calder_art.py --check
           python3 tools/draw_calder_signs.py --check
@@ -2528,6 +2529,42 @@ jobs:
         with:
           name: lodging-house-diagnostics-${{ github.sha }}
           path: build/lodging-house-native.log
+
+  longer-gameplay:
+    needs: quick
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Native radio shop (A Little Longer), its rooms, stairs, doors and fittings
+        timeout-minutes: 13
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_longer --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/longer-native.log
+          python3 - <<'PY_CHECK'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/longer-native.log').read_text())
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/LongerTests.java').read_text()))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} native radio shop cases passed; the complete suite remains required.')
+          PY_CHECK
+      - name: Upload radio shop diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: longer-diagnostics-${{ github.sha }}
+          path: build/longer-native.log
 
   pinehook-gameplay:
     needs: quick
