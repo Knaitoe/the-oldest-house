@@ -647,6 +647,15 @@ def fitting_models():
             element([5, 7, 3], [11, 12, 9], {'all': 's', 'down': 'k'}),
             element([10.9, 8, 4], [11.4, 10, 7], {'all': 'p'}),
         ], {'k': 'iron', 'b': 'brass', 's': shade_t, 'p': 'tape'}, shade_t)
+    # 0.4.623: lit and turned onto the radio beside it (the radio stands to the lamp's left as it faces the room): the arm swung over,
+    # the shade tipped down at the set.
+    m['lamp_2'] = model([
+        element([4, 0, 5], [12, 1, 13], {'all': 'k'}),
+        element([7.5, 1, 8.5], [8.5, 7, 9.5], {'all': 'b'}),
+        element([2.5, 6, 8.5], [8.5, 7, 9.5], {'all': 'b'}),
+        element([0, 6.5, 5.5], [5.5, 11.5, 11.5], {'all': 's', 'down': 'k'}, rot={'origin': [2.75, 9, 8.5], 'axis': 'z', 'angle': 22.5}),
+        element([0.2, 7.5, 5.3], [3, 9.5, 5.6], {'all': 'p'}, rot={'origin': [2.75, 9, 8.5], 'axis': 'z', 'angle': 22.5}),
+    ], {'k': 'iron', 'b': 'brass', 's': 'shade_lit', 'p': 'tape'}, 'shade_lit')
     # The radio: off (0), playing (1), and turned round with its back panel off, the panel leant against it (2).
     for stage in range(2):
         m[f'radio_{stage}'] = model([element([2, 0, 5], [14, 9, 12], {'all': 'c', 'north': 'f'}, uv={'north': [1, 2, 15, 11]}),
@@ -717,7 +726,7 @@ def fitting_models():
 
 KINDS = ['workbench', 'trays', 'lamp', 'radio', 'chair', 'order', 'shelf', 'counter', 'kettle', 'cups', 'toaster', 'table', 'armchair',
          'kitchen_chair', 'hook', 'window', 'worktop', 'basin', 'lavatory', 'bench', 'awning', 'tank']
-STAGES = {'workbench': 3, 'lamp': 2, 'radio': 3, 'shelf': 3, 'kettle': 2, 'cups': 3, 'toaster': 2, 'hook': 2, 'window': 2, 'worktop': 2}
+STAGES = {'workbench': 3, 'lamp': 3, 'radio': 3, 'shelf': 3, 'kettle': 2, 'cups': 3, 'toaster': 2, 'hook': 2, 'window': 2, 'worktop': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 4
 NAMES = {'longer_fitting': "Rowan's Things", 'longer_brick': 'Soot Brick', 'longer_coping': 'Parapet Coping', 'longer_felt': 'Roofing Felt',

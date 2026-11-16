@@ -1,4 +1,5 @@
-"""Original sounds for A Little Longer (0.4.622): Rowan humming at the bench, and a radio being tuned through static.
+"""Original sounds for A Little Longer (0.4.622): Rowan humming at the bench, and a radio being tuned through static; 0.4.623: the
+burst when the mended set is first switched on ("The radio produces a harsh burst of noise.").
 
 The proposal: "The player hears a radio being tuned and someone humming before seeing Rowan." Rowan "hums the same few notes when
 concentrating", so the hum is always the same five notes, taken a little differently each time only by where it starts in the take.
@@ -13,6 +14,7 @@ from pathlib import Path
 ROWS = {
     'hum': ('Someone hums', 12),
     'tuning': ('A radio is tuned', 16),
+    'burst': ('A radio bursts and pops', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -88,7 +90,25 @@ def tuning():
     return band(out + murmur + music, 200, 4500) + crackle
 
 
-MAKERS = {'hum': hum, 'tuning': tuning}
+def burst():
+    # A valve set switched on with a fault: a moment of rising hum as it warms, then a harsh blast of broadband noise with a howl in it,
+    # a loud pop, crackle as something arcs, and the hum dying away.
+    n = seconds(2.2)
+    t = times(n)
+    warm = np.sin(2 * np.pi * 100 * t) * .12 * np.clip(t / .35, 0, 1) * (t < .45)
+    blast_env = np.where(t < .42, 0, np.exp(-(t - .42) / .28)) * (t >= .42)
+    blast = band(rng.standard_normal(n), 120, 6500) * blast_env
+    howl_f = 900 - 500 * np.clip((t - .42) / .6, 0, 1)
+    howl = np.sin(2 * np.pi * np.cumsum(howl_f) / RATE) * blast_env * .5
+    pop = np.zeros(n)
+    k = seconds(.43)
+    pop[k:k + seconds(.012)] = np.hanning(seconds(.012)) * 2.2
+    crackle = (rng.random(n) > .996) * rng.standard_normal(n) * 1.1 * np.where((t > .45) & (t < 1.4), 1, 0)
+    hum_out = np.sin(2 * np.pi * 50 * t) * .2 * np.where(t > .5, np.exp(-(t - .5) / .5), 0)
+    return warm + blast + howl + band(pop, 60, 5000) + crackle + hum_out
+
+
+MAKERS = {'hum': hum, 'tuning': tuning, 'burst': burst}
 
 
 def main():

@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.*;
  * Models face north as drawn and turn with {@link #FACING}; a thing against a wall has its back to it, and a seat faces the way its
  * sitter looks.
  * <p>
- * Stages: the workbench's left end (0), middle (1) and right end (2); the lamp off (0) or on (1); the radio off (0), playing (1) or with
+ * Stages: the workbench's left end (0), middle (1) and right end (2); the lamp off (0), on (1) or on and turned onto the radio (2, 0.4.623); the radio off (0), playing (1) or with
  * its back panel off (2); the shelf's three loads (0-2); the kettle cold (0) or boiling (1); the two cups together (0), the cracked one
  * alone (1) or the whole one alone (2); the toaster up (0) or down (1); the coat hook with Rowan's coat (0) or empty (1); the window's
  * lower (0) and upper (1) halves; the worktop (0) or the worktop with the sink (1).
@@ -40,7 +40,7 @@ public final class LongerBlock extends HorizontalDirectionalBlock {
     public static Kind kind(BlockState s){return s.is(LongerRegistry.FITTING.get())?s.getValue(KIND):null;}
     public static int stage(BlockState s){return s.is(LongerRegistry.FITTING.get())?s.getValue(STAGE):-1;}
     public static boolean seat(BlockState s){return s.is(LongerRegistry.FITTING.get())&&s.getValue(KIND).seat();}
-    public static int light(BlockState s){return s.getValue(KIND)==Kind.LAMP&&s.getValue(STAGE)==1?12:s.getValue(KIND)==Kind.RADIO&&s.getValue(STAGE)==1?3:0;}
+    public static int light(BlockState s){return s.getValue(KIND)==Kind.LAMP&&s.getValue(STAGE)>=1?12:s.getValue(KIND)==Kind.RADIO&&s.getValue(STAGE)==1?3:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}

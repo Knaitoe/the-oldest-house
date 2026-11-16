@@ -127,7 +127,7 @@
       "model": "the_oldest_house:block/longer/lamp_1"
     },
     "facing=north,kind=lamp,stage=2": {
-      "model": "the_oldest_house:block/longer/lamp_0"
+      "model": "the_oldest_house:block/longer/lamp_2"
     },
     "facing=north,kind=lamp,stage=3": {
       "model": "the_oldest_house:block/longer/lamp_0"
@@ -141,7 +141,7 @@
       "y": 90
     },
     "facing=east,kind=lamp,stage=2": {
-      "model": "the_oldest_house:block/longer/lamp_0",
+      "model": "the_oldest_house:block/longer/lamp_2",
       "y": 90
     },
     "facing=east,kind=lamp,stage=3": {
@@ -157,7 +157,7 @@
       "y": 180
     },
     "facing=south,kind=lamp,stage=2": {
-      "model": "the_oldest_house:block/longer/lamp_0",
+      "model": "the_oldest_house:block/longer/lamp_2",
       "y": 180
     },
     "facing=south,kind=lamp,stage=3": {
@@ -173,7 +173,7 @@
       "y": 270
     },
     "facing=west,kind=lamp,stage=2": {
-      "model": "the_oldest_house:block/longer/lamp_0",
+      "model": "the_oldest_house:block/longer/lamp_2",
       "y": 270
     },
     "facing=west,kind=lamp,stage=3": {

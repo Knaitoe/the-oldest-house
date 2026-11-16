@@ -32,7 +32,7 @@ public final class LongerRegistry {
     public static final DeferredBlock<LongerBlock> FITTING=BLOCKS.registerBlock("longer_fitting",LongerBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(LongerBlock::light));
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** 0.4.622 (tools/generate_longer_audio.py): Rowan's five notes, hummed at the bench; a valve set's dial turned through the band. */
-    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> HUM=sound("longer.hum"),TUNING=sound("longer.tuning");
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> HUM=sound("longer.hum"),TUNING=sound("longer.tuning"),BURST=sound("longer.burst");
     private LongerRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
 }
