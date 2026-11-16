@@ -1779,6 +1779,49 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_end") public static void endDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.619: personhood fragments
+    @GameTest(template="empty",batch="lodging_self",timeoutTicks=3000)
+    public static void whatTheHouseReadIsMadeReadyForThatReaderAloneAndTheUnreadGetTheNeutralHouse(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_self_a",P);var q=f.player("lodging_self_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);var data=LabyrinthData.get(s);
+                // Every read value has its line; nothing read, nothing said.
+                for(var v:List.of("HAVEN","DANGER","RUNAWAY"))h.assertTrue(!LodgingSelf.homeUpstairs(v).isEmpty(),"a landing for "+v);
+                for(var v:List.of("ANALOG","TRANSITIONAL","DIGITAL"))h.assertTrue(!LodgingSelf.ageNightstand(v).isEmpty(),"a nightstand for "+v);
+                for(var v:List.of("WRAPPED","BRAIDED_AND_OILED","BRUSHED_DRY","WASHED_AND_BARBERED"))h.assertTrue(!LodgingSelf.hairRoutine(v).isEmpty(),"a routine for "+v);
+                h.assertTrue(LodgingSelf.homeUpstairs("").isEmpty()&&LodgingSelf.ageNightstand("").isEmpty()&&LodgingSelf.hairRoutine("").isEmpty()&&LodgingSelf.glass("").isEmpty()&&LodgingSelf.veraOffer("","").isEmpty(),"the unread get nothing");
+                // One reader read, one not.
+                f.at(p,P,.5,0,-3.5);f.at(q,P,-.5,0,-3.5);
+                var a=own(p);var snap=new CompoundTag();snap.putString("Home","HAVEN");snap.putString("Age","ANALOG");snap.putString("Hair","WRAPPED");snap.putString("Drawn","NO_ONE");snap.putString("Glass","covered");
+                a.put(LodgingSelf.SNAP,snap);for(var k:List.of(LodgingSelf.HOME_SHOWN,LodgingSelf.HAIR_SHOWN,LodgingSelf.GLASS_SHOWN,LodgingSelf.VERA_SHOWN,LodgingSelf.AGE_SHOWN,"WentUp"))a.remove(k);LiteraryVignettes.save(data,p.getUUID(),P,a);
+                var c=own(q);c.put(LodgingSelf.SNAP,new CompoundTag());for(var k:List.of(LodgingSelf.HOME_SHOWN,LodgingSelf.GLASS_SHOWN,LodgingSelf.VERA_SHOWN,"WentUp"))c.remove(k);LiteraryVignettes.save(data,q.getUUID(),P,c);
+                // Up the stair: the landing, for the read reader only.
+                LodgingSelf.reader(p,b,own(p),true);LodgingSelf.reader(q,b,own(q),true);
+                h.assertTrue(own(p).getBoolean(LodgingSelf.HOME_SHOWN)&&!own(q).getBoolean(LodgingSelf.HOME_SHOWN),"the landing is made ready for the read reader alone");
+                // The hall glass: the read reader's own way; the other's as it always was.
+                h.assertTrue(LodgingSelf.glass("covered").equals(LodgingSelf.hallGlass(p,own(p)))&&LodgingSelf.hallGlass(q,own(q))==null,"the hall glass as each left the coatroom's");
+                // Vera's offer: the read reader hears rest and a room alone; the other only the script.
+                LodgingSelf.offer(p,who[LodgingPeople.VERA],own(p));LodgingSelf.offer(q,who[LodgingPeople.VERA],own(q));
+                has(h,p,"Vera: You could rest. That's all it would be. Somebody else to get up in the mornings.");
+                has(h,p,"Vera: And nobody would ask anything of you. You'd have the room to yourself.");
+                h.assertTrue(Talk.lines(q).stream().noneMatch(x->x.contains("You could rest")),"never said to the other reader");
+                h.assertTrue(!own(q).getBoolean(LodgingSelf.VERA_SHOWN),"nothing recorded for the unread reader");
+                // The routine, a hand on the body once awake.
+                h.assertTrue(LodgingSelf.hairRoutine("WRAPPED").equals(LodgingSelf.touchedAwake(p,own(p)))&&LodgingSelf.touchedAwake(q,own(q))==null,"its hands try the read reader's routine");
+                // The account says what each was shown, and nothing for the other.
+                var mine=bookText(LodgingTexts.account("p",own(p)));var theirs=bookText(LodgingTexts.account("q",own(q)));
+                h.assertTrue(mine.contains("getting it wrong")&&mine.contains("Vera made it sound like rest."),"the read reader's account: "+mine);
+                h.assertTrue(!theirs.contains("getting it wrong")&&!theirs.contains("Vera made it sound"),"the unread reader's account has none of it: "+theirs);
+                LodgingStory.hold(b,false);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_self") public static void selfDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete") public static void completeDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete_held") public static void completeHeldDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_return") public static void returnDone(ServerLevel l){done();}

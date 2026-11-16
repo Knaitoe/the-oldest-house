@@ -354,6 +354,8 @@ public final class LodgingTexts {
         if(own.getBoolean(LodgingKey.HEARD_CONFESSION))p.add("Rae told you she had known all along that he was alive.");
         if(own.getBoolean(LodgingKey.USED_KEY))p.add("You turned the key in his straps yourself.");
         if(own.getBoolean(LodgingVera.OFFERED))p.add(own.getBoolean(LodgingVera.TRUTH)?"Vera asked for help keeping one of them quiet while she mended the other, and when you pressed her she said the other would not come through it.":"Vera asked for help keeping one of them quiet while she mended the other.");
+        // 0.4.619: what the house had made ready for this reader alone (LodgingSelf).
+        LodgingSelf.account(p,own);
         if(own.getBoolean("WentDown"))p.add("Under the house the whole of it stood on posts, and the posts stood on a beam, and the beam was held by one wheel.");
         if(own.getBoolean(LodgingCellar.KNOWS_THIRD))p.add("Down there you learned that all of it could be let go at once.");
         // 0.4.612: the passages, and what Vera asked of the reader.

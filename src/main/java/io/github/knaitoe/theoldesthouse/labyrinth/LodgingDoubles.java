@@ -163,7 +163,9 @@ public final class LodgingDoubles {
     public static void touched(ServerPlayer p,LiteraryActor a){
         if(LiteraryVignettes.current(p)!=LodgingPeople.PLACE)return;var own=LodgingHouse.own(p);boolean mine=mine(p,a);
         if(mine&&!own.getBoolean(SAW)){own.putBoolean(SAW,true);LodgingHouse.save(p,own);}
-        LodgingHouse.cue(p,mine?(a.gesture()==AWAKE?LodgingTexts.DOUBLE_OWN_AWAKE:LodgingTexts.DOUBLE_OWN):LodgingTexts.doubleOf(whose(p,a),a.gesture()==AWAKE));
+        // 0.4.619: awake, its hands try this reader's own routine, if the House read one (LodgingSelf).
+        String routine=mine&&a.gesture()==AWAKE?LodgingSelf.touchedAwake(p,own):null;
+        LodgingHouse.cue(p,routine!=null?routine:mine?(a.gesture()==AWAKE?LodgingTexts.DOUBLE_OWN_AWAKE:LodgingTexts.DOUBLE_OWN):LodgingTexts.doubleOf(whose(p,a),a.gesture()==AWAKE));
         if(mine)ask(p);
     }
     /** The questions at the room or to Vera; Vera answers only if she is near enough to hear them. */
