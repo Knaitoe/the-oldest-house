@@ -1,0 +1,64 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/second/form",
+    "b": "the_oldest_house:block/second/form_back",
+    "particle": "the_oldest_house:block/second/form"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        2
+      ],
+      "to": [
+        13,
+        0.25,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#f",
+          "uv": [
+            3,
+            2,
+            13,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#b",
+          "uv": [
+            3,
+            2,
+            13,
+            14
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          0,
+          8
+        ],
+        "axis": "y",
+        "angle": 22.5
+      }
+    }
+  ]
+}

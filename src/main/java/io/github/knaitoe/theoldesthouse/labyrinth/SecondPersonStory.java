@@ -118,7 +118,18 @@ public final class SecondPersonStory {
             default->{b.append("The last of the winter.\n\n");
                 can=List.of("The airing cupboard is warm. Go in and shut the door.");}
         }}
-        else{b.append(whileAway(own,3)).append("\n\nIt is morning. The front door has been left on the latch.\n\n");
+        else if(season==SecondPerson.SPRING){switch(step){
+            case SecondPersonSpring.S_AGENT->{b.append(whileAway(own,3)).append(" A letting agent is coming to look round.\n\n");
+                can=List.of("Stand close to the agent, where the air goes cold.","Or keep out of their way.");}
+            case SecondPersonSpring.S_DECIDE->{b.append("They have the letter at the kitchen table. They have until the end of the week to say.\n\n");
+                can=List.of("Lay out what they would need to go: their coat by the door.","Or what they would need to stay: their things put where they live.","Or leave them to it.");}
+            case SecondPersonSpring.S_POST->{
+                if(own.contains("AskedAt")){b.append("They have read the form, and asked the room a question.\n\n");can=List.of("Breathe on the glass. It holds one word.","Or say nothing.");}
+                else{b.append("The post has come. There is a form on the mat.\n\n");can=List.of("Read it.","Turn it face down.","Leave it where it is.");}}
+            default->{b.append("The last of the spring.\n\n");
+                can=List.of("The airing cupboard is warm. Go in and shut the door.");}
+        }}
+        else{b.append(whileAway(own,4)).append("\n\nIt is morning. The front door has been left on the latch.\n\n");
             can=own.getString("LastAct").isEmpty()?List.of("One last thing first, if you like: lay their "+routine(own)+" out where they will see it.","Or turn the glass round.","Or write a word on the window.","Then go out by the front door and down to the street."):List.of("Go out by the front door and down to the street.");}
         for(int i=0;i<can.size();i++)b.append(i+1).append(". ").append(can.get(i)).append("\n");
         var pages=list(own,"Pages");
@@ -139,7 +150,9 @@ public final class SecondPersonStory {
                 .append(own.getBoolean("BorrowedCoat")?"a borrowed coat":"the coat from the hook").append(". You were not there.");
             var back=list(own,"Returned");if(!back.isEmpty())b.append(" Afterwards, looking for their good shoes, they found ").append(thing(own,back.get(0))).append(" under the bed, where you had put it.");
             return b.toString();}
-        var b=new StringBuilder("While you were in the cupboard, the rest of the winter went on without you, then a letter came about the tenancy.");
+        // 0.4.633: the winter's turn now opens the spring, and the spring's turn the last morning.
+        if(season==3)return "While you were in the cupboard, the rest of the winter went on without you. Then the tenancy came up.";
+        var b=new StringBuilder("While you were in the cupboard, the end of the week came, and the letter about the tenancy was answered.");
         if(!list(own,"HousePages").isEmpty())b.append(" In the morning they told you about it, as if you had been there.");
         return b.toString();
     }
@@ -210,6 +223,10 @@ public final class SecondPersonStory {
         switch(own.getString("Seen")){case "still","touch_kind"->stay++;case "gone","touch_afraid"->go++;default->{}}
         if(own.getString("SeenWord").equals("STAY")||own.getString("SeenWord").equals("HELLO"))stay++;else if(own.getString("SeenWord").equals("GO"))go++;
         go+=own.getInt("HousePattern")<0?1:0;
+        // 0.4.633, the spring: the rent held or raised, and what the reader laid out while they decided.
+        switch(own.getString("Rent")){case "same"->stay++;case "up"->go++;default->{}}
+        if(own.getBoolean("LaidStay"))stay++;
+        if(own.getBoolean("LaidGo"))go++;
         return stay>=go;
     }
 
@@ -250,6 +267,8 @@ public final class SecondPersonStory {
         if(!words.isEmpty()){b.append("You wrote on glass: ").append(String.join(", ",words)).append(".");if(!seen.isEmpty())b.append(" They read ").append(seen.size()==words.size()?"every one":String.join(", ",seen)).append(".");b.append("\n\n");}
         // 0.4.369, the winter.
         if(own.getInt("Season")>=SecondPerson.WINTER)winter(b,own,routine);
+        // 0.4.633, the spring.
+        SecondPersonSpring.account(b,own);
         // The last morning.
         b.append(own.getString("Decision").equals("stay")?"On the last morning they had decided to stay. When you looked back from the street there was a light in the window, and they were standing at it."
                 :"On the last morning they had decided to go. You watched from the street as they came out of the side door with one bag and walked to the bus stop and away.");

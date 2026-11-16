@@ -49,6 +49,8 @@ public final class SecondPersonTests {
     private static void thing(CompoundTag own,String th,String state,String where){var t=own.getCompound("Thing_"+th);t.putString("State",state);if(where!=null)t.putString("Where",where);own.put("Thing_"+th,t);}
     private static CompoundTag own(LiteraryTests.Fixture f,ServerPlayer p){return f.own(p,P);}
     private static void save(LiteraryTests.Fixture f,ServerPlayer p,CompoundTag own){LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}
+    /** 0.4.633: the spring to its end, without the deciding; then the cupboard, and the last morning reads the year as it stands. */
+    private static void springOver(LiteraryTests.Fixture f,ServerPlayer p){var own=own(f,p);own.putInt("Step",SecondPersonSpring.SPRING_DONE);own.putInt("T",0);own.putInt("Sub",0);own.putInt("SubT",0);save(f,p,own);cupboard(f,p);}
     /** Into the warm cupboard with the door shut. */
     private static void cupboard(LiteraryTests.Fixture f,ServerPlayer p){at(f,p,-6.5,UP,-28.5);shut(f.level(P),f.base(P).offset(SecondPersonSite.CUPBOARD_DOOR));}
     /** Autumn over, with what the quiet rooms showed and what the year left behind; then the reader goes into the cupboard. */
@@ -145,6 +147,8 @@ public final class SecondPersonTests {
                 // The winter, to its end: the phone already let ring.
                 var own=own(f,p);own.putInt("Step",SecondPerson.WINTER_DONE);own.putInt("T",0);own.putInt("Sub",0);own.putInt("SubT",0);own.putString("Call3","unanswered");save(f,p,own);
                 cupboard(f,p);})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.SPRING,"the winter goes by in the cupboard, into the spring"))
+            .thenExecute(()->springOver(f,p))
             .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.MORNING,"the rest of the year goes by in the cupboard"))
             .thenExecute(()->{var own=f.own(p,P);
                 h.assertTrue(own.getString("Decision").equals("go")&&!SecondPersonStory.stays(own),"from the year, they have decided to go");
@@ -207,6 +211,8 @@ public final class SecondPersonTests {
             .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("AllRight"),"the third morning: \"All right. All right.\""))
             .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Step")==SecondPerson.WINTER_DONE&&own(f,p).getBoolean("SleeveFinished")&&SecondPersonSite.sleeve(l,b)==1,"the end of the winter: the sleeve finished and folded on the chair"))
             .thenExecute(()->cupboard(f,p))
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.SPRING,"the winter goes by in the cupboard, into the spring"))
+            .thenExecute(()->springOver(f,p))
             .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.MORNING,"the rest of the winter goes by in the cupboard"))
             .thenExecute(()->{var own=own(f,p);var house=SecondPersonStory.list(own,"HousePages");
                 h.assertTrue(house.size()==2&&house.get(0).contains("end of their bed while they slept")&&house.get(1).contains("kettle"),"the House carried on in the reader's name, as gently as they had: "+house);
@@ -251,6 +257,8 @@ public final class SecondPersonTests {
             .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Ringing")==3,"at the end of the winter the phone rings"))
             .thenWaitUntil(()->h.assertTrue(own(f,p).getString("Call3").equals("unanswered"),"they do not answer it, and neither does the reader"))
             .thenExecute(()->cupboard(f,p))
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.SPRING,"the winter goes by in the cupboard, into the spring"))
+            .thenExecute(()->springOver(f,p))
             .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.MORNING,"the rest of the winter in the cupboard"))
             .thenExecute(()->{var own=own(f,p);var house=SecondPersonStory.list(own,"HousePages");
                 h.assertTrue(house.size()==2&&house.get(0).contains("stood at the end of their bed all night")&&house.get(1).contains("opened every door"),"the House, a little worse than the reader: "+house);
@@ -261,4 +269,65 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_hard_winter") public static void hardDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.633, spring: the let. The winter's turn opens the spring with the tenancy. The agent comes up the stairs with a clipboard; a
+     * reader who stands close makes the air go cold round them, and the rent stays where it was. While the resident decides, their coat
+     * laid by the door weighs toward going; what they decide is kept for the last morning. The post brings a form for the flat in the
+     * reader's handwriting with the reader's name; read, the resident reads it too and asks the room "Is this you?", and the word written
+     * on the glass is the one they keep. The account tells it all, and the last morning keeps the spring's decision.
+     */
+    @GameTest(template="empty",batch="second_spring",timeoutTicks=12000)
+    public static void springTheLetTheAgentAndTheForm(GameTestHelper h){
+        var f=fixture(h);var p=f.player("flat_spring",P);var b=f.base(P);var l=f.level(P);
+        resident(h,f,p)
+            .thenExecute(()->{f.source(p,P);street(f,p);
+                autumnOver(f,p,List.of("porch","kitchen"),own->{thing(own,"coat","homed",null);var snap=own.getCompound("Snap");snap.putString("Home","HAVEN");own.put("Snap",snap);own.putString("Evening","helped");});})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.WINTER,"into the winter"))
+            .thenExecute(()->{var own=own(f,p);own.putInt("Step",SecondPerson.WINTER_DONE);own.putInt("T",0);own.putInt("Sub",0);own.putInt("SubT",0);own.putString("Call3","unanswered");save(f,p,own);cupboard(f,p);})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.SPRING&&step(f,p)==SecondPersonSpring.S_AGENT,"the winter goes by in the cupboard, and the tenancy comes up"))
+            .thenExecute(()->{h.assertTrue(SecondPersonStory.latest(own(f,p)).contains("Then the tenancy came up.")&&SecondPersonStory.latest(own(f,p)).contains("letting agent"),"the book says so: "+SecondPersonStory.latest(own(f,p)));
+                h.assertTrue(l.getBlockState(b.offset(-1,4,-10)).is(net.minecraft.world.level.block.Blocks.CHERRY_LEAVES),"the street tree in blossom");
+                street(f,p);})
+            .thenWaitUntil(()->h.assertTrue(SecondPerson.agent(l,b)!=null&&own(f,p).getInt("Sub")>=1,"the agent comes up the stairs and is let in"))
+            .thenWaitUntil(()->{var a=SecondPerson.agent(l,b);
+                // Close enough to the agent for the air to go cold round them, wherever the walk round takes them.
+                if(a!=null){p.teleportTo(l,a.getX()+.7,a.getY(),a.getZ(),180,0);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);}
+                h.assertTrue(own(f,p).getBoolean("AgentCold"),"the agent feels the cold");})
+            .thenExecute(()->{h.assertTrue(SecondPerson.agent(l,b).getMainHandItem().is(SecondPersonRegistry.CARRIED.get()),"the agent has the clipboard in hand");street(f,p);})
+            .thenWaitUntil(()->h.assertTrue("same".equals(own(f,p).getString("Rent")),"the rent stays where it was: "+own(f,p).getString("Rent")))
+            .thenWaitUntil(()->h.assertTrue(step(f,p)==SecondPersonSpring.S_DECIDE,"the agent gone, they sit with the letter"))
+            .thenWaitUntil(()->h.assertTrue(SecondPerson.agent(l,b)==null,"and the agent is not left behind"))
+            .thenExecute(()->{
+                at(f,p,1.5,UP,-25.5);
+                h.assertTrue(click(f,p,SecondPersonSite.HOOK,Direction.EAST)&&SecondPerson.held(p).equals("coat"),"their coat off its hook");
+                h.assertTrue(click(f,p,new BlockPos(1,UP-1,-27),Direction.UP)&&own(f,p).getBoolean("LaidGo"),"laid by the door, as if for going");
+                street(f,p);})
+            .thenWaitUntil(()->h.assertTrue(step(f,p)==SecondPersonSpring.S_POST&&!own(f,p).getString("Decision").isEmpty(),"they decide, and the post comes"))
+            .thenWaitUntil(()->h.assertTrue(SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonSpring.APPLICATION_AT)),SecondPersonBlock.Kind.APPLICATION),"a form on the mat"))
+            .thenExecute(()->{
+                at(f,p,1.5,UP,-25.5);
+                h.assertTrue(click(f,p,SecondPersonSpring.APPLICATION_AT,Direction.UP)&&Talk.lines(p).stream().anyMatch(x->x.contains("flat_spring")),"the form has the reader's name on it: "+Talk.lines(p));
+                say(h,p,SecondPersonSpringTexts.READ_IT);
+                h.assertTrue(own(f,p).getString("Application").equals("read")&&Talk.lines(p).stream().anyMatch(x->x.contains("I was here first")),"read all of it: "+Talk.lines(p));
+                Talk.close(p);street(f,p);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).contains("AskedAt"),"they read it too, and ask the room"))
+            .thenExecute(()->{h.assertTrue(SecondPersonStory.latest(own(f,p)).contains("asked the room a question"),"the book has the question");
+                h.assertTrue(!SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonSpring.APPLICATION_AT)),SecondPersonBlock.Kind.APPLICATION),"the form picked up off the mat");
+                h.assertTrue(click(f,p,new BlockPos(-3,UP+1,-12),Direction.SOUTH)&&Talk.waiting(p,"sp_word"),"breath on the street window");say(h,p,"YES");
+                h.assertTrue(own(f,p).getString("SpringAnswer").equals("YES"),"the answer kept: "+own(f,p));})
+            .thenWaitUntil(()->h.assertTrue(step(f,p)==SecondPersonSpring.SPRING_DONE,"the form in the drawer, and the spring at its end"))
+            .thenExecute(()->{String text=account(f,p);
+                for(var want:List.of("the tenancy came up","the rent stayed where it was","you laid their things by the door","with your name on it","asked the room if it was you","You wrote YES on the glass, and they kept the word"))
+                    h.assertTrue(text.contains(want),"the account says \""+want+"\": "+text);
+                var own=own(f,p);own.putString("KeptDecision",own.getString("Decision"));save(f,p,own);
+                cupboard(f,p);})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.MORNING,"the rest of the spring goes by in the cupboard"))
+            .thenExecute(()->{var own=own(f,p);
+                h.assertTrue(own.getString("Decision").equals(own.getString("KeptDecision")),"the last morning keeps what they decided in the spring");
+                h.assertTrue(!SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonSpring.APPLICATION_AT)),SecondPersonBlock.Kind.APPLICATION),"no form left on the mat");
+                h.assertTrue(SecondPersonStory.latest(own).contains("the letter about the tenancy was answered"),"the morning's page: "+SecondPersonStory.latest(own));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="second_spring") public static void springDone(ServerLevel l){close();}
 }

@@ -508,6 +508,46 @@ def ticket():
     return im
 
 
+def form():
+    # 0.4.633, spring: the letting agent's application form, filled in. A printed header band, ruled boxes, and the answers in a
+    # hand that leans the wrong way; the name box at the top, the signature line at the foot still empty.
+    im = new(base='#ece8de', seed=2819, spread=2)
+    fill(im, 0, 0, 16, 2, '#5a6a7a')
+    for x in range(2, 14):
+        if x % 3 != 0:
+            dot(im, x, 1, '#dfe4e8')
+    for y in (4, 7, 10):
+        for x in range(1, 15):
+            dot(im, x, y + 1, '#a8acb4')
+        dot(im, 1, y, '#7a8290'); dot(im, 2, y, '#7a8290')
+    # The answers, in ink, a little slanted.
+    for x, y in ((4, 4), (5, 3), (6, 4), (7, 4), (8, 3), (9, 4), (10, 4), (4, 7), (5, 7), (6, 6), (7, 7), (9, 7), (10, 6), (4, 10), (5, 9), (6, 10), (8, 10), (9, 10)):
+        dot(im, x, y, '#2a3a6a')
+    for x in range(6, 14):
+        dot(im, x, 14, '#6a7080')
+    dot(im, 4, 13, '#7a8290'); dot(im, 5, 14, '#7a8290')
+    return im
+
+
+def form_back():
+    # Turned face down: the blank back, and the boxes faintly through the paper.
+    im = new(base='#e6e2d6', seed=2820, spread=2)
+    for y in (5, 8, 11):
+        for x in range(1, 15):
+            if x % 2 == 0:
+                dot(im, x, y, '#d8d4c8')
+    fill(im, 0, 0, 16, 1, '#dcd8cc')
+    return im
+
+
+def hardboard():
+    # The clipboard's back: brown hardboard, a fine speckle, the edges worn paler.
+    im = new(base='#7a5a3a', seed=2821, spread=3)
+    for i in range(16):
+        dot(im, i, 0, '#9a7a56'); dot(im, i, 15, '#9a7a56'); dot(im, 0, i, '#9a7a56'); dot(im, 15, i, '#9a7a56')
+    return im
+
+
 def knit_folded():
     im = wool()
     for x in range(16):
@@ -527,7 +567,7 @@ def textures():
         'pole': new(base='#6a6a6c', seed=2802, spread=2), 'rota': rota(), 'cloth': cloth(0), 'cloth_rumpled': cloth(1), 'plate': plate(),
         'bakelite': bakelite(), 'dial': dial(), 'cream': new(base='#e8e2d0', seed=2803, spread=2), 'frame': new(base='#3a2c22', seed=2804, spread=2),
         'tin_lid': tin_lid(), 'tin_side': tin_side(), 'tin_in': tin_in(), 'wool': wool(), 'needle': needle(), 'envelope': envelope(),
-        'ticket': ticket(), 'knit_folded': knit_folded(),
+        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_back': form_back(), 'hardboard': hardboard(),
     }
     out.update({f'block/second/{k}.png': v for k, v in t.items()})
     return out
@@ -620,11 +660,22 @@ def fitting_models():
     m['sleeve_1'] = model([element([3, -8, 3], [13, -6, 12], {'up': 'f', 'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'down': 'w'}, uv={'up': [0, 0, 16, 16]})], {'f': 'knit_folded', 'w': 'wool'}, 'knit_folded')
     m['sleeve_2'] = model([element([3, 0, 2], [13, 0.75, 13], {'all': 'w'}, uv={'up': [0, 0, 16, 16]}), element([2.5, 0.75, 12], [13.5, 1, 12.5], {'all': 'n'}), element([2.5, 0.75, 13], [13.5, 1, 13.5], {'all': 'n'})],
                           {'w': 'wool', 'n': 'needle'}, 'wool')
+    # 0.4.633: the agent's clipboard, the form clipped to hardboard under a steel clip.
+    m['clipboard'] = model([element([3, 0, 1], [13, 0.5, 15], {'all': 'h'}, uv={'up': [3, 1, 13, 15], 'down': [3, 1, 13, 15]}),
+                            element([3.5, 0.5, 1.5], [12.5, 0.75, 13.5], {'up': 'f', 'down': 'f', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14]}),
+                            element([6, 0.5, 13], [10, 1.5, 14.5], {'all': 'n'})],
+                           {'h': 'hardboard', 'f': 'form', 'b': 'form_back', 'n': 'needle'}, 'hardboard')
+    # 0.4.633: the application on the mat, face up (0) or turned face down (1); a sheet lying a little askew where it fell through the door.
+    sheet_rot = {'origin': [8, 0, 8], 'axis': 'y', 'angle': 22.5}
+    m['application_0'] = model([element([3, 0, 2], [13, 0.25, 14], {'up': 'f', 'down': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14], 'down': [3, 2, 13, 14]}, rot=sheet_rot)],
+                               {'f': 'form', 'b': 'form_back'}, 'form')
+    m['application_1'] = model([element([3, 0, 2], [13, 0.25, 14], {'up': 'b', 'down': 'f', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14], 'down': [3, 2, 13, 14]}, rot=sheet_rot)],
+                               {'f': 'form', 'b': 'form_back'}, 'form_back')
     return m
 
 
-KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve']
-STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3}
+KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve', 'application']
+STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 DISPLAY = {
@@ -640,9 +691,13 @@ DISPLAY = {
 # so it runs from the hand at the temple down the side of the face to the mouth, its cups toward the head.
 RECEIVER_DISPLAY = dict(DISPLAY, thirdperson_righthand={'rotation': [146.7, 8.1, 92.8], 'translation': [-4.19, -3.64, 4.32], 'scale': [0.55, 0.55, 0.55]},
                         thirdperson_lefthand={'rotation': [146.7, 8.1, 92.8], 'translation': [-4.19, -3.64, 4.32], 'scale': [0.55, 0.55, 0.55]})
+# 0.4.633: the clipboard held upright against the forearm, its face out, the way it is carried round a flat.
+CLIPBOARD_DISPLAY = dict(DISPLAY, thirdperson_righthand={'rotation': [0, 0, 0], 'translation': [0, 1, -1], 'scale': [0.6, 0.6, 0.6]},
+                         thirdperson_lefthand={'rotation': [0, 0, 0], 'translation': [0, 1, -1], 'scale': [0.6, 0.6, 0.6]})
 # What a reader carries: the routine item by its number (custom model data 1-16), the coat (17), the drawing (18), the photograph (19);
-# 0.4.369, the train ticket (20) and Iris's sleeve (21); 0.4.370, the landline's receiver in the resident's hand (22).
-CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0'), ('ticket', 'ticket_0'), ('sleeve', 'sleeve_2'), ('receiver', 'receiver')]
+# 0.4.369, the train ticket (20) and Iris's sleeve (21); 0.4.370, the landline's receiver in the resident's hand (22); 0.4.633, the agent's
+# clipboard form (23).
+CARRIED = [(f'routine_{i}', f'routine_{i}') for i in range(16)] + [('coat', 'coat_0'), ('sheet', 'sheet_0'), ('photo', 'photo_0'), ('ticket', 'ticket_0'), ('sleeve', 'sleeve_2'), ('receiver', 'receiver'), ('form', 'clipboard')]
 NAMES = {'sp_fitting': 'Things in the Flat', 'sp_brick': 'Stock Brick', 'sp_paving': 'Paving Slab', 'sp_road': 'Road', 'sp_kerb': 'Curb',
          'sp_shopfront': 'Painted Shopfront', 'sp_paper': 'Faded Wallpaper', 'sp_kitchen': 'Kitchen Tiles', 'sp_carpet': 'Worn Carpet',
          'sp_lino': 'Chequered Lino', 'sp_tile': 'Avocado Tile', 'sp_ceiling': 'Artex Ceiling', 'sp_launderette': 'Launderette Floor'}
@@ -667,7 +722,7 @@ def files():
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/sp_fitting.json'] = {'variants': variants}
     for name, parent in CARRIED:
-        out[f'models/item/sp_carried_{name}.json'] = {'parent': NS + f'block/second/{parent}', 'display': RECEIVER_DISPLAY if name == 'receiver' else DISPLAY}
+        out[f'models/item/sp_carried_{name}.json'] = {'parent': NS + f'block/second/{parent}', 'display': RECEIVER_DISPLAY if name == 'receiver' else CLIPBOARD_DISPLAY if name == 'form' else DISPLAY}
     out['models/item/sp_carried.json'] = {'parent': NS + 'item/sp_carried_coat',
                                           'overrides': [{'predicate': {'custom_model_data': i + 1}, 'model': NS + f'item/sp_carried_{name}'} for i, (name, _) in enumerate(CARRIED)]}
     return out

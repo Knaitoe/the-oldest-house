@@ -24,7 +24,9 @@ public final class SecondPersonBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         BOOK,SHELF,BOX,GLASS,MIRROR,TANK,PHOTO,SHEET,COAT,ROUTINE,SIGN,STOP,ROTA,CLOTH,PHONE,
         /** 0.4.369, winter: Iris's sewing tin, the train ticket in its envelope, the sleeve she never finished. */
-        TIN,TICKET,SLEEVE;
+        TIN,TICKET,SLEEVE,
+        /** 0.4.633, spring: the application on the mat, face up (0) or turned face down (1). */
+        APPLICATION;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -59,6 +61,7 @@ public final class SecondPersonBlock extends HorizontalDirectionalBlock {
             case TIN->stage==0?Block.box(3.5,0,3.5,12.5,5,12.5):Block.box(3,0,3,13,8,13);
             case TICKET->Block.box(3,0,4,14,1,12);
             case SLEEVE->stage==2?Block.box(3,0,2,13,1,14):Block.box(2,0,2,14,1,14);
+            case APPLICATION->Block.box(2,0,2,14,1,14);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

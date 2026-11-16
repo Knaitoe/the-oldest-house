@@ -132,6 +132,12 @@
         "custom_model_data": 22
       },
       "model": "the_oldest_house:item/sp_carried_receiver"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 23
+      },
+      "model": "the_oldest_house:item/sp_carried_form"
     }
   ]
 }

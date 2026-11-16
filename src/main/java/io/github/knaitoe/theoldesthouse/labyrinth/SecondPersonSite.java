@@ -196,9 +196,10 @@ public final class SecondPersonSite {
         phone(l,b,false);lamp(l,b,false);mirror(l,b,false);set(l,b,CLOTH,Blocks.AIR.defaultBlockState());set(l,b,ROTA,Blocks.AIR.defaultBlockState());set(l,b,RADIO,Blocks.AIR.defaultBlockState());
         set(l,b,BENCH_BOOK,Blocks.SPRUCE_SLAB.defaultBlockState());set(l,b,TIN_AT,Blocks.AIR.defaultBlockState());set(l,b,TICKET_HOME,Blocks.AIR.defaultBlockState());set(l,b,ARM,Blocks.AIR.defaultBlockState());season(l,b,0);
     }
-    /** The street through the window: in leaf (0), autumn with leaves down (1), winter, bare, with snow lying (2), the last morning, bare (3). */
+    /** The street through the window: in leaf (0), autumn with leaves down (1), winter, bare, with snow lying (2), the last morning, bare (3);
+     *  0.4.633, spring, the tree in blossom (4). */
     public static void season(ServerLevel l,BlockPos b,int season){
-        var crown=season==0?leaves(Blocks.OAK_LEAVES):season==1?leaves(Blocks.DARK_OAK_LEAVES):Blocks.AIR.defaultBlockState();
+        var crown=season==0?leaves(Blocks.OAK_LEAVES):season==1?leaves(Blocks.DARK_OAK_LEAVES):season==4?leaves(Blocks.CHERRY_LEAVES):Blocks.AIR.defaultBlockState();
         snow(l,b,season==2);
         // 0.4.283: the crown rounded, its eight corners left open.
         for(int x=-2;x<=0;x++)for(int z=-11;z<=-9;z++)for(int y=3;y<=5;y++){if(x==-1&&z==-10&&y==3)continue;if(x!=-1&&z!=-10&&y!=4){set(l,b,x,y,z,Blocks.AIR.defaultBlockState());continue;}boolean edge=Math.abs(x+1)+Math.abs(z+10)+Math.abs(y-4)>2;set(l,b,x,y,z,season==1&&edge&&Math.floorMod(x*7+z*3+y,3)==0?Blocks.AIR.defaultBlockState():crown);}

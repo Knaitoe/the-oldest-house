@@ -1480,6 +1480,14 @@
     "phase": 76
   },
   {
+    "name": "literary_flat_agent",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 77
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

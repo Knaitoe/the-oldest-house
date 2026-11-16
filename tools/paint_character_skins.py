@@ -178,6 +178,8 @@ LOOKS = {
     # Second Person (0.4.274): Iris Dunne across the landing, in her cardigan and glasses, her grey hair pinned; Sam from the resident's work, in a jacket for an evening out.
     'literary_flat_iris': Look('#d9b39e','#bab4ac','bun','#7a5468','#4a4440','cardigan','#d3c8b2',eyes='#5a6070',age=2,glasses=True),
     'literary_flat_sam': Look('#8e5f45','#221a16','close','#4d6a78','#2c3038','jacket','#d8d0c0',eyes='#3a3029'),
+    # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
+    'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
     # Dell, stubbled, in flannel, sits in the chair across the way on; Ruth, opposite the guest, is the one who looks at them.
     'literary_supper_joan': Look('#d6b098','#9a948c','short','#6a3a42','#3a3638','cardigan','#d8ccb6',eyes='#5a5a52',age=2),
