@@ -21,12 +21,13 @@ import net.minecraft.world.phys.shapes.*;
  * and cap (CAP, 0.4.645). 0.4.648: the feast on the eighth square, every piece of it drawn (stage 0) until it has been looked at and
  * introduced, then filled (stage 1): the long table under its cloth (FEAST_TABLE, its drape to the side it faces), the same with a leg of
  * mutton (MUTTON), a pudding (PUDDING) or a pair of candles (CANDLES) on it, and the high-backed chairs round it (FEAST_CHAIR, facing the
- * table). Nothing at the feast can be climbed on or sat in.
+ * table). Nothing at the feast can be climbed on or sat in. 0.4.649: the King's night-cap hung on a bough of his tree (NIGHTCAP), in the
+ * country come back to after he has woken (KingAfter).
  */
 public final class KingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<KingBlock> CODEC=simpleCodec(KingBlock::new);
     public enum Kind implements StringRepresentable {
-        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL,STALK,CAP,FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR;
+        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL,STALK,CAP,FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR,NIGHTCAP;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -77,10 +78,12 @@ public final class KingBlock extends HorizontalDirectionalBlock {
             case PUDDING->Shapes.or(BOARD,box(f,0,6,0,16,12,1),box(f,5,14,5,11,20,11));
             case CANDLES->Shapes.or(BOARD,box(f,0,6,0,16,12,1),box(f,3.5,14,6,12.5,30,10));
             case FEAST_CHAIR->Shapes.or(Block.box(2,0,2,14,9,14),box(f,2,9,13,14,23,15));
+            // 0.4.649: the night-cap, hanging from the bough above it.
+            case NIGHTCAP->Block.box(5,0,5,11,16,11);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE,PEG->Shapes.empty();
+        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE,PEG,NIGHTCAP->Shapes.empty();
             // 0.4.648: nothing at the feast can be stood on or sat in; a body walks round it.
             case FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR->Block.box(0,0,0,16,24,16);
             default->getShape(s,l,p,c);};

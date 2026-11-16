@@ -33,7 +33,9 @@ public final class Aftermath {
     public static final Set<LabyrinthPlace> PLACES=EnumSet.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.MASQUE,LabyrinthPlace.GHOSTS_SET,
             LabyrinthPlace.THREE_FINGERS,LabyrinthPlace.CHILD_ROOM,LabyrinthPlace.PELL_HOUSE,LabyrinthPlace.ONES_INSIDE,
             // 0.4.637: the flat, as the reader's ending left it (SecondPersonAfter).
-            LabyrinthPlace.SECOND_PERSON);
+            LabyrinthPlace.SECOND_PERSON,
+            // 0.4.649: the King's country, ruled and silent if he woke, filled to its edges if he slept (KingAfter).
+            LabyrinthPlace.SLEEPING_KING);
     /** How many times a finished scene comes back to the reader who finished it. */
     public static final int RETURNS=2;
     /** 0.4.542: how many times this scene comes back; the Pell house once, "FOR SALE" or lived in (PellAftermath). */

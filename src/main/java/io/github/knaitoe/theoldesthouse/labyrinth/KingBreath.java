@@ -92,7 +92,8 @@ public final class KingBreath {
     static void advance(ServerLevel l,BlockPos b){
         var c=clock(b);int now=l.getServer().getTickCount();if(c.last==now)return;
         // 0.4.643: when he wakes the breathing stops in the middle of a breath (KingSleep), and the clock with it.
-        boolean stopped=KingSleep.waking(b);
+        // 0.4.649: and in the country come back to after he woke, nothing breathes at all.
+        boolean stopped=KingSleep.silent(b);
         int before=c.ticks%CYCLE;if(!stopped)c.ticks+=c.last<0?0:Math.min(20,Math.max(0,now-c.last));c.last=now;int after=c.ticks%CYCLE;
         boolean breathedIn=before>=IN&&after<IN||c.shown<0,breathedOut=before<IN&&after>=IN;
         if(!stopped&&(breathedIn||breathedOut))breathe(l,b,after<IN);
@@ -126,6 +127,12 @@ public final class KingBreath {
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
         if(!KingSite.inside(r)||r.y<-2.5)return NOWHERE;
         int land=land(p,b,own);
+        // 0.4.649: in the country come back to, a reader is a line from one end of it to the other, and a thing only in the house.
+        if(KingSleep.after(b)!=KingAfter.NONE){
+            boolean house=own.getBoolean("KingOffCountry");
+            if(house&&p.onGround()){own.putDouble("KingBackX",r.x);own.putDouble("KingBackY",r.y);own.putDouble("KingBackZ",r.z);}
+            return house?THING:LINE;
+        }
         int state=land;
         boolean crowned=KingCrownItem.crowned(p);
         if(leaving(p,b,own)){
@@ -158,6 +165,8 @@ public final class KingBreath {
         var l=p.serverLevel();var under=BlockPos.containing(p.getX(),p.getY()-.2,p.getZ());var st=l.getBlockState(under);
         if(st.isAir())st=l.getBlockState(under.below());
         int land;
+        // 0.4.649: whether the ground under them is the country's at all (in the air, what it last was).
+        if(!st.isAir())own.putBoolean("KingOffCountry",!KingRegistry.isCountry(st));
         if(st.isAir())land=own.contains("KingLand")?own.getInt("KingLand"):THING;
         else if(!KingRegistry.isCountry(st))land=THING;
         else if(KingRegistry.ruled(st))land=LINE;
@@ -266,7 +275,8 @@ public final class KingBreath {
         for(long cell:c.shownLevel!=level?KingSite.changing():KingSite.breathing(level)){
             int x=BlockPos.getX(cell),z=BlockPos.getZ(cell);var column=b.offset(x,0,z);if(!l.isLoaded(column))continue;
             boolean ruled=KingSite.ruled(x,z,shift,level);
-            for(int y=-3;y<=8;y++){var at=column.atY(b.getY()+y);var st=l.getBlockState(at);var twin=KingRegistry.twin(st,ruled);if(twin!=null&&twin!=st)l.setBlock(at,twin,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);}
+            // 0.4.649: as high as his own tree's crown, which is the tallest thing in the country.
+            for(int y=-3;y<=11;y++){var at=column.atY(b.getY()+y);var st=l.getBlockState(at);var twin=KingRegistry.twin(st,ruled);if(twin!=null&&twin!=st)l.setBlock(at,twin,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);}
         }
         c.shown=shift;c.shownLevel=level;
     }

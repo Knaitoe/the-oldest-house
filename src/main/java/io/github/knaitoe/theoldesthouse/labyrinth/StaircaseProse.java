@@ -177,7 +177,12 @@ public final class StaircaseProse {
         new Kind("unwound","house",2.0,1,"Line taken back: {times}",
             "{Times} the line paid out through your fingers, back toward the cave.",
             "The cave pulled your line back {times}. Each time you let it go.",
-            "You laid a line through the halls, and {times} something at the far end took it back."));
+            "You laid a line through the halls, and {times} something at the far end took it back."),
+        // 0.4.649: the King's country (docs/SLEEPING_KING_0_4_649.md); the first line is the proposal's, turned to the reader.
+        new Kind("ruled","house",2.4,1,"The King: {x}",
+            "In a country ruled into squares you were a thing while you kept its rules, and a line when you did not.",
+            "An old man was dreaming a country in squares. On it you were as much of a thing as his dream made of you.",
+            "You crossed a country of squares, a thing on some and a line on others, and left the King {x}."));
 
     private static final String[] QUIET = {
         "This leaf is nearly blank. Whatever you did before the House, you did quietly.",
@@ -440,6 +445,7 @@ public final class StaircaseProse {
             case "followed"->"Something followed you home: "+value+". The writer has left the door in the margin unlatched.";
             case "remembered"->"The manor kept "+value+" for you. In the margin, a room has been drawn very small.";
             case "unwound"->"The cave took your line back. A thread runs off the edge of the page.";
+            case "ruled"->"You crossed the King's country. The writer has drawn you twice in the margin, once filled in and once in outline.";
             case "ledger"->"The upper ledger kept a room for everything you killed. The plan of a house is drawn in the margin, its last room empty.";
             default->"The page has room for a memory that has not been written.";};
     }

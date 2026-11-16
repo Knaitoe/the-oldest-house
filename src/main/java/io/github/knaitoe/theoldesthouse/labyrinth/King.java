@@ -35,7 +35,14 @@ public final class King {
     public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingFeast.ensure(p.serverLevel(),b,KingSleep.get(b));KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);KingCaterpillar.ensure(p.serverLevel(),b);KingCourt.ensure(p.serverLevel(),b,KingSleep.get(b));KingForest.ensure(p.serverLevel(),b,KingSleep.get(b));}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
+        KingAfter.arrive(own);
+        // 0.4.649: a country standing as its aftermath is not peopled for a reader who has had their ending (KingAfter).
+        if(KingSleep.after(b)!=KingAfter.NONE&&KingAfter.done(own))return;
+        people(p.serverLevel(),b);
+    }
+    /** The King and all the dream's people, each where a dream has them, wherever their ground is loaded. */
+    static void people(ServerLevel l,BlockPos b){ensure(l,b);KingFeast.ensure(l,b,KingSleep.get(b));KingBrothers.ensure(l,b,KingSleep.get(b));KingQueen.ensure(l,b);KingGuard.ensure(l,b);KingCaterpillar.ensure(l,b);KingCourt.ensure(l,b,KingSleep.get(b));KingForest.ensure(l,b,KingSleep.get(b));}
 
     /**
      * 0.4.643: a hand on the King. A line's hand goes into him; before the brothers have said his name he is only an old man asleep;
@@ -130,6 +137,8 @@ public final class King {
             case WHEEL->cue(p,KingTexts.WHEEL);
             // 0.4.648: the feast, drawn or introduced.
             case FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR->KingFeast.click(p,st.getValue(KingBlock.KIND),KingBlock.filled(st));
+            // 0.4.649: his night-cap on a bough, in the country he woke in.
+            case NIGHTCAP->cue(p,KingTexts.NIGHTCAP);
             // 0.4.645: the mushroom. The side a reader stands on is the side they break from: the west side more, the east side
             // less. A piece fills the bottle or the cake again (or gives one, if they have none of that side's).
             case STALK->cue(p,KingTexts.STALK);

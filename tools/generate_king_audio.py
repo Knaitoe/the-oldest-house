@@ -29,6 +29,8 @@ ROWS = {
     # 0.4.648: a thing at the feast introduced and filled in; and the crown coming down on a reader.
     'introduced': ('Something at the table fills in', 24),
     'crowned': ('A crown comes down', 24),
+    # 0.4.649: the keepsake crown filling in on its wearer's head, because something is looking at them.
+    'crown_fills': ('A crown fills in', 8),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -226,6 +228,22 @@ def crowned():
     return out + weight
 
 
+def crown_fills():
+    # 0.4.649: the drawn crown filling in on a head: a few quick strokes of a pencil, close, and a band of gold coming to be there,
+    # one low soft ring that is gone again almost at once. Quiet: it is the wearer's own to hear.
+    n = seconds(1.1)
+    t = times(n)
+    out = np.zeros(n)
+    lead = band(rng.standard_normal(n), 1800, 6500)
+    for k in range(6):
+        at = .03 + k * .055 + rng.random() * .015
+        out += lead * np.exp(-((t - at) / .016) ** 2) * (.2 + .18 * np.sin(np.pi * k / 6))
+    land = .42
+    for ratio, part in ((1, 1), (2.0, .3), (2.92, .14)):
+        out += part * np.sin(2 * np.pi * 660 * ratio * np.clip(t - land, 0, None)) * np.exp(-np.clip(t - land, 0, None) / .22) * (t >= land) * .38
+    return out
+
+
 # The Knight's song: eight bars in a lilting six-eight, one note to a syllable or held, a falling tune that lifts once and comes home.
 # (MIDI note, eighths.) Original.
 SONG = [
@@ -271,7 +289,7 @@ def knight_song():
 
 
 MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle, 'cards': cards,
-          'knight_fall': knight_fall, 'knight_song': knight_song, 'introduced': introduced, 'crowned': crowned}
+          'knight_fall': knight_fall, 'knight_song': knight_song, 'introduced': introduced, 'crowned': crowned, 'crown_fills': crown_fills}
 
 
 def main():

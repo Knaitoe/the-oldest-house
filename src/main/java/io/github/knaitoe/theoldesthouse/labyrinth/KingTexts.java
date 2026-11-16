@@ -66,6 +66,27 @@ public final class KingTexts {
         WENT_OUT="He woke, and the country went out with you in it.",
         CAME_TO="The fire, the glass and the armchair. There is a book on the armchair.",
         LEFT_HIM="The last of the board let go. The drawing-room came round you, and behind the glass he is still breathing.";
+    // ------------------------------------------------------------------------------------------------ 0.4.649, part 9
+    // Every line below is new in 0.4.649 and flagged in docs/SLEEPING_KING_0_4_649.md, except the two Witness lines the proposal gives.
+    public static final String
+        AFTER_WOKE="The country is all lines, and nothing in it is breathing. His night-cap hangs on a bough. Nobody is under the tree.",
+        AFTER_SLEPT="The country is filled in to its edges, and he is breathing under his tree. Out on it, you are a line.",
+        NIGHTCAP="His night-cap, hung on a bough by its band. The tassel hangs straight down.",
+        CROWN_ONLY_DRAWN="Out of his country the crown is only drawn: an outline, with nothing in it.",
+        CROWN_FILLED_IN="The crown has its weight back. Something is looking at you.";
+    /** The Witness account's line, by how it ended for this reader (WitnessAccount); the first and the last are the proposal's own. */
+    public static String witness(String outcome){
+        return switch(outcome){
+            case "said_his_whole_name","stood_until_he_woke"->"I woke the King, and came to in the drawing-room with his country gone.";
+            case "there_when_he_woke"->"I was in the King's country when he woke, and came to in the drawing-room with it gone.";
+            case "left_him_his_sleep"->"I left the King asleep and walked out of his country as a line.";
+            default->WitnessAccount.Story.SLEEPING_KING.text;
+        };
+    }
+    /** How a reader's ending left him, for their own book's leaf (StaircaseAccount): awake or asleep; empty before any ending. */
+    public static String leftHim(CompoundTag own){
+        return switch(KingAfter.left(own)){case KingAfter.WOKE->"awake";case KingAfter.SLEPT->"asleep";default->"";};
+    }
     // ------------------------------------------------------------------------------------------------ 0.4.644, part 4
     // Every line below is new in 0.4.644 and flagged in docs/SLEEPING_KING_0_4_644.md.
     public static final String QUEEN_NAME="the Queen",GUARD_NAME="the Guard";

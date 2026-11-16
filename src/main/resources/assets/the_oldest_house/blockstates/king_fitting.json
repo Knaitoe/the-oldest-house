@@ -1799,6 +1799,96 @@
     "facing=west,kind=feast_chair,stage=5": {
       "model": "the_oldest_house:block/king/feast_chair_0",
       "y": 270
+    },
+    "facing=north,kind=nightcap,stage=0": {
+      "model": "the_oldest_house:block/king/nightcap_0"
+    },
+    "facing=north,kind=nightcap,stage=1": {
+      "model": "the_oldest_house:block/king/nightcap_0"
+    },
+    "facing=north,kind=nightcap,stage=2": {
+      "model": "the_oldest_house:block/king/nightcap_0"
+    },
+    "facing=north,kind=nightcap,stage=3": {
+      "model": "the_oldest_house:block/king/nightcap_0"
+    },
+    "facing=north,kind=nightcap,stage=4": {
+      "model": "the_oldest_house:block/king/nightcap_0"
+    },
+    "facing=north,kind=nightcap,stage=5": {
+      "model": "the_oldest_house:block/king/nightcap_0"
+    },
+    "facing=east,kind=nightcap,stage=0": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 90
+    },
+    "facing=east,kind=nightcap,stage=1": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 90
+    },
+    "facing=east,kind=nightcap,stage=2": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 90
+    },
+    "facing=east,kind=nightcap,stage=3": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 90
+    },
+    "facing=east,kind=nightcap,stage=4": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 90
+    },
+    "facing=east,kind=nightcap,stage=5": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 90
+    },
+    "facing=south,kind=nightcap,stage=0": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 180
+    },
+    "facing=south,kind=nightcap,stage=1": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 180
+    },
+    "facing=south,kind=nightcap,stage=2": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 180
+    },
+    "facing=south,kind=nightcap,stage=3": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 180
+    },
+    "facing=south,kind=nightcap,stage=4": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 180
+    },
+    "facing=south,kind=nightcap,stage=5": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 180
+    },
+    "facing=west,kind=nightcap,stage=0": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 270
+    },
+    "facing=west,kind=nightcap,stage=1": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 270
+    },
+    "facing=west,kind=nightcap,stage=2": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 270
+    },
+    "facing=west,kind=nightcap,stage=3": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 270
+    },
+    "facing=west,kind=nightcap,stage=4": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 270
+    },
+    "facing=west,kind=nightcap,stage=5": {
+      "model": "the_oldest_house:block/king/nightcap_0",
+      "y": 270
     }
   }
 }

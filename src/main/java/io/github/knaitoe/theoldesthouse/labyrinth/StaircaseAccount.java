@@ -87,6 +87,9 @@ public final class StaircaseAccount {
         // 0.4.201: the rooms the Winchester's upper ledger kept for this reader's dead.
         var ledger = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.WINCHESTER).getString("Ledger201");
         if (!ledger.isBlank()) count(out, "ledger", ledger.split("\\. ").length);
+        // 0.4.649: the King's country, by how the reader's ending left him.
+        var ruled = KingTexts.leftHim(LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.SLEEPING_KING));
+        if (!ruled.isEmpty()) StaircaseProse.fact("ruled", 1, ruled).ifPresent(out::add);
         return out;
     }
     /** Who follows this reader home now, in prose, from the rooms' own records. */
