@@ -72,18 +72,38 @@ public final class KingBreath {
     /** 0.4.643: the land shows his sleep's depth at once (KingSleep, when it changes and when it is put back). */
     static void redraw(ServerLevel l,BlockPos b){var c=clock(b);show(l,b,c.shown<0?0:c.shown);}
 
+    /**
+     * 0.4.648: the countries with a reader in them, by base, and the dimension each is in. The dream goes on every server tick while
+     * somebody is in it ({@link #advance}); a reader's own part comes only every quarter second (LiteraryVignettes), and until 0.4.648
+     * the dream went on only then, so its people walked at a fifth of their pace and a line timed to the tick could be missed.
+     */
+    private static final Map<Long,net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level>> ACTIVE=new ConcurrentHashMap<>();
+    /** Once a server tick (KingSleep): every country somebody is in goes on; one nobody is in is let go. */
+    static void tickAll(net.minecraft.server.MinecraftServer server){
+        if(ACTIVE.isEmpty())return;
+        for(var e:List.copyOf(ACTIVE.entrySet())){
+            var l=server.getLevel(e.getValue());var b=BlockPos.of(e.getKey());
+            if(l==null||KingSleep.readers(l,b).isEmpty()){ACTIVE.remove(e.getKey());continue;}
+            advance(l,b);
+        }
+    }
+    /** The breath, once a server tick at most, and the dream's own tick with it. */
+    static void advance(ServerLevel l,BlockPos b){
+        var c=clock(b);int now=l.getServer().getTickCount();if(c.last==now)return;
+        // 0.4.643: when he wakes the breathing stops in the middle of a breath (KingSleep), and the clock with it.
+        boolean stopped=KingSleep.waking(b);
+        int before=c.ticks%CYCLE;if(!stopped)c.ticks+=c.last<0?0:Math.min(20,Math.max(0,now-c.last));c.last=now;int after=c.ticks%CYCLE;
+        boolean breathedIn=before>=IN&&after<IN||c.shown<0,breathedOut=before<IN&&after>=IN;
+        if(!stopped&&(breathedIn||breathedOut))breathe(l,b,after<IN);
+        show(l,b,after<IN?1:0);
+        KingSleep.tick(l,b);
+    }
+
     /** Every quarter second for each reader in the country (LiteraryVignettes). */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
-        var l=p.serverLevel();var c=clock(b);int now=l.getServer().getTickCount();
-        if(c.last!=now){
-            // 0.4.643: when he wakes the breathing stops in the middle of a breath (KingSleep), and the clock with it.
-            boolean stopped=KingSleep.waking(b);
-            int before=c.ticks%CYCLE;if(!stopped)c.ticks+=c.last<0?0:Math.min(20,Math.max(0,now-c.last));c.last=now;int after=c.ticks%CYCLE;
-            boolean breathedIn=before>=IN&&after<IN||c.shown<0,breathedOut=before<IN&&after>=IN;
-            if(!stopped&&(breathedIn||breathedOut))breathe(l,b,after<IN);
-            show(l,b,after<IN?1:0);
-            KingSleep.tick(l,b);
-        }
+        var l=p.serverLevel();
+        ACTIVE.put(b.asLong(),l.dimension());
+        advance(l,b);
         int state=sum(p,b,own);
         // 0.4.643: off the board, a reader who has been to him and heard the brothers leaves him his sleep; anybody else is put back.
         if(state==NOWHERE){if(KingSleep.walkedOff(p,b,own))return;back(p,b,own);state=SORT;}

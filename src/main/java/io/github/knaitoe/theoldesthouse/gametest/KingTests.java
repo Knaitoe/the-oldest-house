@@ -275,7 +275,8 @@ public final class KingTests {
         .thenWaitUntil(()->h.assertTrue(KingBrothers.find(l,b,KingBrothers.DUM)!=null&&King.find(l,b)!=null,"the brothers and the King are there"))
         .thenExecute(()->{KingBrothers.name(p);KingBrothers.soon(b,l.getGameTime());})
         .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)>=KingBrothers.FIGHT,"they dress, then fight: "+KingBrothers.battle(b)))
-        .thenExecute(()->h.assertTrue(KingSleep.stirs(b)>=2&&f.own(p,P).getBoolean("KingSawBattle"),"a battle beside him stirs him twice, and the reader saw it: "+KingSleep.stirs(b)))
+        // 0.4.648: the dream goes on every server tick; the reader's own record takes in what they saw at their next quarter second.
+        .thenWaitUntil(()->h.assertTrue(KingSleep.stirs(b)>=2&&f.own(p,P).getBoolean("KingSawBattle"),"a battle beside him stirs him twice, and the reader saw it: "+KingSleep.stirs(b)))
         .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)==KingBrothers.GONE&&KingBrothers.find(l,b,KingBrothers.DUM)==null,"then the shadow, and they run"))
         .thenExecute(()->{
             beside(p,l,b);KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
@@ -571,11 +572,14 @@ public final class KingTests {
             KingSleep.stir(l,b,null,null,2);
             h.assertTrue(KingSleep.stirs(b)==2&&KingSleep.level(b)==1,"stirred twice, he sleeps a depth lighter");
             at.accept(p,new double[]{KingSite.KING.getX()+1.5,KingSite.KING.getZ()+.5});
-            var own=mine.apply(p);own.putBoolean(KingForest.SONG,true);
-            p.setShiftKeyDown(true);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-            for(int i=0;i<12;i++)KingBreath.reader(p,b,own);
-            p.setShiftKeyDown(false);
-            h.assertTrue(own.getBoolean("KingSang")&&own.getBoolean(KingForest.SANG_TO_HIM),"crouching still beside him, the reader sings his song");
+            mine.apply(p).putBoolean(KingForest.SONG,true);
+        })
+        // 0.4.648: crouching still a little over half a second of game time, however often their own part comes.
+        .thenWaitUntil(()->{var own=mine.apply(p);p.setShiftKeyDown(true);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getBoolean("KingSang"),"crouching still beside him, the reader sings his song");})
+        .thenExecute(()->{
+            var own=mine.apply(p);p.setShiftKeyDown(false);
+            h.assertTrue(own.getBoolean(KingForest.SANG_TO_HIM),"sung beside him, it settles him");
             h.assertTrue(KingSleep.stirs(b)==0&&KingSleep.level(b)==0,"the song settles him: "+KingSleep.stirs(b));
             // On to the last brook, keeping an eye on him.
             at.accept(p,brook);
