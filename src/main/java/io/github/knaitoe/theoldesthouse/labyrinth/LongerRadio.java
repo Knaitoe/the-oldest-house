@@ -145,7 +145,8 @@ public final class LongerRadio {
                 if(LongerRowan.step(a,BENCH_SPOT.at(b))){LongerKettle.place(a,b,BENCH_SPOT);a.gesture(LongerKettle.CUP_HELD);stage(p,own,ROOF);}
                 return true;
             }
-            case ROOF->{LongerKettle.keep(a,b,new LongerRowan.Spot(BENCH_SPOT.x(),BENCH_SPOT.y(),BENCH_SPOT.z(),BENCH_SPOT.look(),LongerKettle.CUP_HELD),here);return true;}
+            // 0.4.626: on the roof the next chapter has them (LongerRoof).
+            case ROOF->{if(LongerRoof.tick(l,b,a,here,p,own))return true;LongerKettle.keep(a,b,new LongerRowan.Spot(BENCH_SPOT.x(),BENCH_SPOT.y(),BENCH_SPOT.z(),BENCH_SPOT.look(),LongerKettle.CUP_HELD),here);return true;}
             default->{return false;}
         }
     }
@@ -242,7 +243,7 @@ public final class LongerRadio {
             case PASSING->{repair(p,a,own);return true;}
             case TO_INVITE->{invite(p,a,own);return true;}
             case UP->{return true;}
-            case ROOF->{Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.ROOF_WAIT);Talk.end(p);return true;}
+            case ROOF->{if(LongerRoof.talk(p,a,own))return true;Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.ROOF_WAIT);Talk.end(p);return true;}
             default->{return false;}
         }
     }

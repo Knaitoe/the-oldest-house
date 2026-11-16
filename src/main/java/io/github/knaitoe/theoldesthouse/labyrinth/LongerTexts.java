@@ -121,6 +121,29 @@ public final class LongerTexts {
         COME_OUTSIDE="When you finish that, come outside with me.",WHY="Why?",SHOW_YOU="Because I want to show you something.",
         STAND_UP="And because you keep finding reasons to stand up.",BRING_CUP="Bring your cup. Come and sit outside with me a while.",
         GO_WITH="Go with them",IN_A_MINUTE="In a minute.",UP_THERE="I'll be up there.",ROOF_WAIT="It's up here. Come and look.";
+    /**
+     * 0.4.626, chapter 4, the roof (LongerRoof). The proposal's own lines word for word: "I thought I'd be braver if something like this
+     * happened.", "You got the lights back on." (the reader's), "That was wiring. I'm good at wiring.", "Was there really something you
+     * wanted to show me?" and "The sky?" (the reader's), "Yes.", "At first." The rest are new and flagged in docs/A_LITTLE_LONGER_0_4_626.md.
+     */
+    public static final String THERE_SKY="There. Between those two. That's the sky.",NOT_SURE_SKY="I'm not sure it's a real one. I like looking at it anyway.",
+        IS_IT_REAL="Is it real?",REAL_RAIN="Real enough to get rain out of.",SIT_BESIDE="Sit down beside them",MAKE_ROOM="Rowan moves their cup to make room.",
+        NEARER_BENCH="You would have to be nearer the bench.",SAY_NOTHING_WHILE="Say nothing for a while",NICE_QUIET="This is nice. Saying nothing.",
+        BRAVER="I thought I'd be braver if something like this happened.",LIGHTS_ON="You got the lights back on.",WIRING="That was wiring. I'm good at wiring.",
+        IT_MATTERS="It matters, though.",FRIGHTENED_TOO="I'm frightened too.",GOOD_AT_WIRING="You're good at a lot of wiring.",SIT_WITH_IT="Sit with it",
+        MAYBE="Maybe.",NOT_JUST_ME="Good. I mean, not good. Good that it's not just me.",TWO_THINGS="Two things. I'm good at two things.",
+        BREATHES_OUT="Rowan breathes out, and leaves it there.",
+        REMEMBER_HELD="You held the panel. Most people would have watched.",REMEMBER_SCREW="You picked that screw up off the floor. I'd have been on my knees all night.",
+        REMEMBER_LAMP="You moved the lamp before I asked. I noticed that.",REMEMBER_DOOR="You waited at the door before you came in. People don't, usually.",
+        GLAD_STOPPED="I'm glad I stopped.",GLAD_STAYED="I'm glad you stayed.",
+        REALLY_SHOW="Was there really something you wanted to show me?",YES_SHOW="Yes.",THE_SKY_Q="The sky?",AT_FIRST="At first.",
+        SIT_CLOSER="Can I sit closer?",YOU_CAN="You can.",HERE_HAND="Here.",TAKE_IT="Take their hand",NOT_YET="Not yet.",ALL_RIGHT="All right.",
+        HAND_TAKEN="Their hand is warm from the cup.",
+        CAN_I_START="Can I...",PIGEON="There's a pigeon. Sorry. There isn't a pigeon.",CAN_I_KISS="Can I kiss you?",KISS_YES="Yes.",NOT_TONIGHT_R="Not tonight.",
+        STILL_HERE="That's all right. I'll still be here.",CAN_I_KISS_YOU="Can I kiss you?",KISS_YES_R="Yes.",COME_HERE="You'll have to come over here for that.",
+        LEANS_IN="Rowan leans in. The rain keeps on.",
+        FRIENDS="I'd like us to be friends.",FRIEND_ON_ROOF="Then I've got a friend on a roof. That's more than I had this morning.",
+        GO_BACK_IN="Go back in",COLLAR="Come on. It's getting into my collar.",INDOORS_AGAIN="Warmer in here. Just about.";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),

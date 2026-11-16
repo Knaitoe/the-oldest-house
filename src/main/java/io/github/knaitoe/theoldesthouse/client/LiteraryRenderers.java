@@ -294,6 +294,13 @@ public final class LiteraryRenderers {
                 case 12->{float r=net.minecraft.util.Mth.sin(age*.42F),q=net.minecraft.util.Mth.cos(age*.42F);
                     rightArm.xRot=-.78F+r*.07F;rightArm.yRot=-.34F+q*.08F;rightArm.zRot=0;leftArm.xRot=-.72F;leftArm.yRot=.38F;leftArm.zRot=0;
                     body.xRot+=.1F;if(!speaking)head.xRot+=.42F;}
+                // 0.4.626, the roof (labyrinth.LongerRoof). Pointing up at the patch of sky between the buildings, sitting: the right arm
+                // raised up and forward, the head tipped back to follow it.
+                case 13->{rightArm.xRot=-2.75F;rightArm.yRot=-.25F;rightArm.zRot=-.5F;leftArm.xRot=-.5F;leftArm.yRot=.12F;leftArm.zRot=-.05F;head.xRot-=.5F;head.yRot-=.18F;}
+                // A hand held out to the reader on the bench beside them: the left arm forward and out toward them, palm up, steady.
+                case 14->{float hold=net.minecraft.util.Mth.sin(age*.07F)*.015F;leftArm.xRot=-1.02F+hold;leftArm.yRot=.62F;leftArm.zRot=-.12F;rightArm.xRot=-.42F;rightArm.yRot=.08F;rightArm.zRot=.04F;}
+                // Leaning in to them: the body tipped toward the bench beside, the head with it and down a little.
+                case 15->{body.zRot-=.2F;head.zRot-=.24F;head.xRot+=.12F;head.x+=1.1F;leftArm.x+=1.1F;rightArm.x+=1.1F;leftArm.xRot=-.62F;leftArm.yRot=.3F;rightArm.xRot=-.42F;rightArm.yRot=.08F;}
                 default->{}
             }
         }
