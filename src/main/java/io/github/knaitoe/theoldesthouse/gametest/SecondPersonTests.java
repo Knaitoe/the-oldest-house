@@ -480,4 +480,30 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_after") public static void afterDone(ServerLevel l){close();}
+
+    private static CompoundTag homed(String home){var own=new CompoundTag();var snap=new CompoundTag();snap.putString("Home",home);own.put("Snap",snap);return own;}
+    /**
+     * 0.4.638: the House's read of home gives the phone its own voices. Someone from before (DANGER), whom they do not answer; a wrong
+     * number and then a sister, Lou (RUNAWAY); a kind parent (HAVEN); an old friend when the House has no home for the reader. Every
+     * call, silence and caught line differs between them, and the winter ticket comes from someone of their own.
+     */
+    @GameTest(template="empty",batch="second_homes",timeoutTicks=200)
+    public static void theOtherHomes(GameTestHelper h){
+        var homes=List.of("HAVEN","DANGER","RUNAWAY","");
+        var seen=new java.util.HashMap<String,String>();
+        for(var home:homes){var own=homed(home);
+            h.assertTrue(SecondPersonStory.home(own).equals(home),"the home read back: "+home);
+            for(int call=1;call<=4;call++){
+                for(var line:SecondPersonStory.call(own,call)){var was=seen.put(line,home);h.assertTrue(was==null||was.equals(home),"\""+line+"\" belongs to one home only");}
+                for(var line:SecondPersonStory.listened(own,call)){var was=seen.put(line,home);h.assertTrue(was==null||was.equals(home),"\""+line+"\" belongs to one home only");}
+            }
+            for(int call=1;call<=2;call++){var line=SecondPersonStory.caught(own,call);var was=seen.put(line,home);h.assertTrue(was==null||was.equals(home),"\""+line+"\" belongs to one home only");}
+        }
+        h.assertTrue(SecondPersonStory.caller(homed("DANGER"),1).equals("Someone from before, on the line")&&SecondPersonStory.call(homed("DANGER"),1).contains("I know you're in."),"someone from before, who knows they are there");
+        h.assertTrue(SecondPersonStory.caller(homed("RUNAWAY"),1).equals("A wrong number, on the line")&&SecondPersonStory.caller(homed("RUNAWAY"),2).equals("Lou, on the line"),"a wrong number, and then Lou");
+        h.assertTrue(SecondPersonStory.ticketDesc(homed("DANGER")).contains("Nobody needs to know where")&&SecondPersonStory.ticketDesc(homed("RUNAWAY")).contains("Lou"),"the winter ticket from a friend who knows, or from Lou");
+        h.assertTrue(SecondPersonStory.home(homed("SOMETHING_ELSE")).isEmpty(),"anything else is no home at all");
+        h.succeed();
+    }
+    @AfterBatch(batch="second_homes") public static void homesDone(ServerLevel l){close();}
 }

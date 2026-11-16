@@ -20,41 +20,88 @@ public final class SecondPersonStory {
     /** A page the reader turned: what they did, in the book's words, kept in order for the book and the account. */
     static void turned(CompoundTag own,String page){var l=own.getList("Pages",Tag.TAG_STRING);if(l.size()<40)l.add(StringTag.valueOf(page));own.put("Pages",l);}
     static boolean haven(CompoundTag own){return own.getCompound("Snap").getString("Home").equals("HAVEN");}
+    /** 0.4.638: the home the House read, when it read one: HAVEN, DANGER or RUNAWAY; otherwise empty, and the caller is an old friend. */
+    public static String home(CompoundTag own){String h=own.getCompound("Snap").getString("Home");return h.equals("HAVEN")||h.equals("DANGER")||h.equals("RUNAWAY")?h:"";}
     static String routine(CompoundTag own){int r=own.getCompound("Snap").getInt("Routine");return r<0?"washcloth":HouseReadMoments.ROUTINES[Math.floorMod(r,HouseReadMoments.ROUTINES.length)];}
     static String thing(CompoundTag own,String thing){return switch(thing){case "photo"->"the photograph from home";case "drawing"->"the drawing";case "coat"->"the coat";case "ticket"->"the train ticket";case "sleeve"->"Iris's sleeve";default->"the "+routine(own);};}
 
     // ------------------------------------------------------------------------------------------------ the voices on the phone
-    /** Who rings: a parent who is kind and starting to forget (a home the House read as a haven), or an old friend. */
-    static String caller(CompoundTag own){return caller(own,1);}
+    /**
+     * Who rings: a parent who is kind and starting to forget (a home the House read as a haven), someone from before whom they do not
+     * answer (danger), a wrong number and then a sister, Lou, from the family they left (runaway), or an old friend.
+     */
+    public static String caller(CompoundTag own){return caller(own,1);}
     /** 0.4.369: the third call, at the end of the winter, is the hospital ward for a reader whose home is a haven. */
-    static String caller(CompoundTag own,int call){return haven(own)?call==3?"The ward, on the line":"Mum or Dad, on the line":"An old friend, on the line";}
-    static List<String> call(CompoundTag own,int call){
-        // 0.4.634, E2: on the last day, the phone rings for the reader.
-        if(call==4)return haven(own)?List.of("Hello, love. You sound different. Good different.","Is it nice there now? Is it yours now?","I'll let you go. Night night.")
-                :List.of("You picked up. You actually picked up.","You sound like you've slept, for once.","Don't be a stranger. You know where I am.");
-        if(call==3)return haven(own)?List.of("Hello? Is this the right number? This is the ward.","We've someone here asking for you. Asking and asking.","If you can come. Even for an hour.")
-                :List.of("You didn't come. We waited for both trains.","It's fine. It's fine. Happy new year.","Ring me. Or don't. Just be alive.");
+    public static String caller(CompoundTag own,int call){return switch(home(own)){
+        case "HAVEN"->call==3?"The ward, on the line":"Mum or Dad, on the line";
+        case "DANGER"->"Someone from before, on the line";
+        case "RUNAWAY"->call==1?"A wrong number, on the line":"Lou, on the line";
+        default->"An old friend, on the line";};}
+    public static List<String> call(CompoundTag own,int call){
         boolean tried=own.getString("Call1").equals("off");
-        if(haven(own))return call==1?List.of("Hello? Love? It's only me.","I wanted to know you got in all right.","Did you say Tuesday? For the bed, I mean. Did you say Tuesday?")
-                :tried?List.of("There you are. I tried and tried, you know. It just rang.","Listen, what's the new address? I've written it down somewhere.","Say it again. The number of the flat.")
-                :List.of("Only me again. How is it?","Listen, what's the new address? I've written it down somewhere.","Say it again. The number of the flat.");
-        return call==1?List.of("It's me. Just checking you're alive.","The new place. Is it awful?","It's awful, isn't it.")
-                :tried?List.of("Oh, so you do exist. I tried and tried. It just rang and rang.","I'm coming to see it. Don't argue. A weekend.","You can show me round your awful flat.")
-                :List.of("Me again. I've decided something.","I'm coming to see it. Don't argue. A weekend.","You can show me round your awful flat.");
+        switch(home(own)){
+            case "HAVEN"->{
+                // 0.4.634, E2: on the last day, the phone rings for the reader.
+                if(call==4)return List.of("Hello, love. You sound different. Good different.","Is it nice there now? Is it yours now?","I'll let you go. Night night.");
+                if(call==3)return List.of("Hello? Is this the right number? This is the ward.","We've someone here asking for you. Asking and asking.","If you can come. Even for an hour.");
+                return call==1?List.of("Hello? Love? It's only me.","I wanted to know you got in all right.","Did you say Tuesday? For the bed, I mean. Did you say Tuesday?")
+                        :tried?List.of("There you are. I tried and tried, you know. It just rang.","Listen, what's the new address? I've written it down somewhere.","Say it again. The number of the flat.")
+                        :List.of("Only me again. How is it?","Listen, what's the new address? I've written it down somewhere.","Say it again. The number of the flat.");
+            }
+            // 0.4.638: someone from before. Nothing violent is said; it is that they have the number, and then the address.
+            case "DANGER"->{
+                if(call==4)return List.of("Is this still their number?","Tell them nobody's looking any more.","Tell them that. Please.");
+                if(call==3)return List.of("I came round. You didn't come to the door.","I left you a note. Did you read it?","I'll come again.");
+                return call==1?List.of("I know you're in.","I know it's you. I can hear the street.","I know you're in.")
+                        :tried?List.of("You took the phone off the hook. That's fine.","Flat two. Above the launderette. I've written it down.","I've got a pen.")
+                        :List.of("It's me. You know it's me.","Flat two. Above the launderette. I've written it down.","I've got a pen.");
+            }
+            // 0.4.638: the family they left. Nobody should have this number; the first time it is only a wrong number.
+            case "RUNAWAY"->{
+                if(call==4)return List.of("Is that you? It's Lou.","You don't have to say anything.","I'm glad you've got somewhere.");
+                if(call==3)return List.of("It's Lou again. It's nearly the new year.","I came up. I stood on your landing. I didn't knock.","I'll write. You don't have to write back.");
+                return call==1?List.of("Hello? Is that the chip shop?","Sorry. Sorry, wrong number.","Sorry, love.")
+                        :tried?List.of("It's Lou. Don't hang up. It rang and rang, last time.","Mum gave me the number. She doesn't know I've got it.","I just want to know you're all right.")
+                        :List.of("It's Lou. Don't hang up.","Mum gave me the number. She doesn't know I've got it.","I just want to know you're all right.");
+            }
+            default->{
+                if(call==4)return List.of("You picked up. You actually picked up.","You sound like you've slept, for once.","Don't be a stranger. You know where I am.");
+                if(call==3)return List.of("You didn't come. We waited for both trains.","It's fine. It's fine. Happy new year.","Ring me. Or don't. Just be alive.");
+                return call==1?List.of("It's me. Just checking you're alive.","The new place. Is it awful?","It's awful, isn't it.")
+                        :tried?List.of("Oh, so you do exist. I tried and tried. It just rang and rang.","I'm coming to see it. Don't argue. A weekend.","You can show me round your awful flat.")
+                        :List.of("Me again. I've decided something.","I'm coming to see it. Don't argue. A weekend.","You can show me round your awful flat.");
+            }
+        }
     }
     /** What they say into the silence when the reader lifts the receiver and only listens. */
-    static List<String> listened(CompoundTag own,int call){
-        if(call==4)return haven(own)?List.of("You don't have to say anything. I can hear you're all right.","Night, love."):List.of("I'll take that as a yes.","Night.");
-        if(call==3)return haven(own)?List.of("Hello? ...I'll put it down that I rang.","I'll tell them you're coming.","I'll tell them something."):List.of("I know you're there.","I'm not angry. I was. I'm not.","Happy new year, you idiot.");
-        if(haven(own))return call==1?List.of("This line's terrible. I'll let you go.","Ring me when you're settled.","Did you say Tuesday?")
-                :List.of("Never mind. I'll find it.","I've got it written on something.","Night, love. Night night.");
-        return call==1?List.of("I can hear you breathing, you know.","You're doing the silent thing.","Ring me.")
-                :List.of("Fine. Be mysterious.","I'm still coming.","Ring me, you coward.");
+    public static List<String> listened(CompoundTag own,int call){
+        return switch(home(own)){
+            case "HAVEN"->call==4?List.of("You don't have to say anything. I can hear you're all right.","Night, love.")
+                    :call==3?List.of("Hello? ...I'll put it down that I rang.","I'll tell them you're coming.","I'll tell them something.")
+                    :call==1?List.of("This line's terrible. I'll let you go.","Ring me when you're settled.","Did you say Tuesday?")
+                    :List.of("Never mind. I'll find it.","I've got it written on something.","Night, love. Night night.");
+            case "DANGER"->call==4?List.of("...Is somebody there?","Never mind. Never mind.")
+                    :call==3?List.of("I can hear you.","You can't stay in there forever.")
+                    :call==1?List.of("Say something.","You can't not say anything forever.","I know you're in.")
+                    :List.of("I can wait.","I'm very good at waiting.","Goodnight.");
+            case "RUNAWAY"->call==4?List.of("That's all right. I'll take that.","Night, then.")
+                    :call==3?List.of("Are you there? I think you're there.","Happy new year. From all of us. Well. From me.")
+                    :call==1?List.of("Hello? Chip shop?","...Wrong number. Sorry.")
+                    :List.of("I can hear you there.","That's all right. That's all right.","I'll ring next month.");
+            default->call==4?List.of("I'll take that as a yes.","Night.")
+                    :call==3?List.of("I know you're there.","I'm not angry. I was. I'm not.","Happy new year, you idiot.")
+                    :call==1?List.of("I can hear you breathing, you know.","You're doing the silent thing.","Ring me.")
+                    :List.of("Fine. Be mysterious.","I'm still coming.","Ring me, you coward.");
+        };
     }
     /** What the resident says when they catch the phone themselves. */
-    static String caught(CompoundTag own,int call){
-        if(haven(own))return call==1?"Hello? No, I'm here, I was in the bath. Tuesday, yes. Tuesday.":"It's flat two. Above the launderette. Two. Have you got a pen?";
-        return call==1?"Alive. Just about. It's not awful. It's a bit awful.":"A weekend's fine. Bring your own pillow.";
+    public static String caught(CompoundTag own,int call){
+        return switch(home(own)){
+            case "HAVEN"->call==1?"Hello? No, I'm here, I was in the bath. Tuesday, yes. Tuesday.":"It's flat two. Above the launderette. Two. Have you got a pen?";
+            case "DANGER"->call==1?"Hello? ...Nobody. It was nobody.":"How did you get this number?";
+            case "RUNAWAY"->call==1?"Hello? ...No. Wrong number. Ha. Wrong number.":"Lou. How did you— No. Don't. I'm fine.";
+            default->call==1?"Alive. Just about. It's not awful. It's a bit awful.":"A weekend's fine. Bring your own pillow.";
+        };
     }
 
     // ------------------------------------------------------------------------------------------------ the words on glass
@@ -67,10 +114,13 @@ public final class SecondPersonStory {
 
     // ------------------------------------------------------------------------------------------------ 0.4.369, the winter ticket
     /** What was in the post on the hall table. */
-    static String ticketDesc(CompoundTag own){return haven(own)?"a letter from home with a train ticket in it, and on the envelope, in a hand they know: They're in hospital. Come when you can."
-            :"a card from the old friend with a train ticket folded inside: You're coming for New Year. It's non-refundable.";}
-    static String ticketLine(CompoundTag own){return haven(own)?"They're asking for me.":"New Year. You absolute— New Year.";}
-    static String backLine(CompoundTag own){return haven(own)?"They knew me. Not the first day. Then they did.":"I'd forgotten I liked people.";}
+    public static String ticketDesc(CompoundTag own){return switch(home(own)){
+        case "HAVEN"->"a letter from home with a train ticket in it, and on the envelope, in a hand they know: They're in hospital. Come when you can.";
+        case "DANGER"->"a card from a friend who knows, with a train ticket in it: Come and stay till it's over. Nobody needs to know where.";
+        case "RUNAWAY"->"a letter from Lou with a train ticket in it: Come home for New Year. Just for the day. Nobody will make you stay.";
+        default->"a card from the old friend with a train ticket folded inside: You're coming for New Year. It's non-refundable.";};}
+    static String ticketLine(CompoundTag own){return switch(home(own)){case "HAVEN"->"They're asking for me.";case "DANGER"->"Nobody needs to know where.";case "RUNAWAY"->"Home. Just for the day.";default->"New Year. You absolute— New Year.";};}
+    static String backLine(CompoundTag own){return switch(home(own)){case "HAVEN"->"They knew me. Not the first day. Then they did.";case "DANGER"->"I slept. I slept the whole week.";case "RUNAWAY"->"Nobody made me stay. Nobody even asked me to.";default->"I'd forgotten I liked people.";};}
 
     // ------------------------------------------------------------------------------------------------ the book's latest page
     /** The book opened at its latest page: where things stand, then by number what the reader can do now. */
@@ -254,7 +304,8 @@ public final class SecondPersonStory {
         b.append(own.getBoolean("RoutineSet")?"Their "+routine+" went missing once, the evening it mattered, and you set it out where they would see it. \"Thanks,\" they said, to the room."
                 :"Their "+routine+" lived "+(own.getString("RoutineWhere").isEmpty()?"on the bathroom shelf":own.getString("RoutineWhere"))+".").append("\n\n");
         // The calls.
-        b.append(haven(own)?"The one who rang was a parent, kind, and starting to forget. ":"The one who rang was an old friend. ");
+        b.append(switch(home(own)){case "HAVEN"->"The one who rang was a parent, kind, and starting to forget. ";case "DANGER"->"The one who rang was someone from before, who should not have had the number. ";
+            case "RUNAWAY"->"The first time it was a wrong number. After that it was a sister, Lou, from the family they had left. ";default->"The one who rang was an old friend. ";});
         b.append(callLine(own.getString("Call1"),1,own)).append(" ").append(callLine(own.getString("Call2"),2,own)).append("\n\n");
         // The first night.
         b.append(switch(own.getString("Night")){case "doorway"->"The first night you stood in their doorway, and they said \"...hello?\" into the dark.";case "tap"->"The first night you ran the kitchen tap, and they got up and turned it off, and stood a long time at the sink.";
@@ -324,14 +375,18 @@ public final class SecondPersonStory {
             if(acts.size()>0&&walk.subList(0,Math.min(walk.size(),own.getInt("WalkDone"))).stream().anyMatch(st->List.of("kitchen","waiting","bathroom","coatroom","shelter").contains(st)))b.append(" Some of it was what you had done in the rooms before this one, in the order you did it.");
             switch(own.getString("Sleepwalk")){
                 case "brought"->b.append(" You brought them back with ").append(switch(own.getString("BroughtBy")){case "lamp"->"the lamp";case "knock"->"a knock";default->"your hand";}).append(", and they stood blinking where they were and went back to bed.");
-                case "left"->b.append(haven(own)?" You let them be. They opened the front door for somebody who was not coming, and woke in the doorway, cold.":" You let them be. They woke in the open doorway, cold.");
+                case "left"->b.append(switch(home(own)){case "HAVEN"->" You let them be. They opened the front door for somebody who was not coming, and woke in the doorway, cold.";
+                    case "DANGER"->" You let them be. They checked the lock twice, and woke sitting against the door, cold.";case "RUNAWAY"->" You let them be. They went out onto the landing, towards the stairs, and woke on the top step, cold.";
+                    default->" You let them be. They woke in the open doorway, cold.";});
                 default->{}
             }
             if(own.getBoolean("DrewAtNight"))b.append(" In the morning there was a drawing on the kitchen table: a face. The one you drew at a kitchen table, before you ever came here.");
             b.append("\n\n");
         }
         switch(own.getString("Ticket")){
-            case "mat"->b.append("When the post brought a train ticket you put it on the mat by the door, where it could not be missed. They went. ").append(haven(own)?"They came back saying they had been known, in the end.":"They came back saying they had forgotten they liked people.");
+            case "mat"->b.append("When the post brought a train ticket you put it on the mat by the door, where it could not be missed. They went. ").append(switch(home(own)){
+                case "HAVEN"->"They came back saying they had been known, in the end.";case "DANGER"->"They came back saying they had slept the whole week.";
+                case "RUNAWAY"->"They came back saying nobody had made them stay.";default->"They came back saying they had forgotten they liked people.";});
             case "left"->b.append("When the post brought a train ticket you left it on the hall table. They put it in a pocket and said \"Next week.\"");
             case "hidden"->b.append("When the post brought a train ticket you hid it, and they never knew it had come.");
             default->{}
@@ -361,6 +416,6 @@ public final class SecondPersonStory {
     static String callLine(String what,int call,CompoundTag own){
         String which=call==1?"The first time":"The second time";
         return switch(what){case "lifted"->which+", you lifted the receiver and listened, and said nothing back.";case "put_down"->which+", you lifted it and put it down again.";
-            case "off"->which+", you left it off the hook.";case "left"->which+", you let it ring, and they caught it themselves.";default->"";};
+            case "off"->which+", you left it off the hook.";case "left"->which+(home(own).equals("DANGER")?", you let it ring, and they lifted it themselves, and put it down.":", you let it ring, and they caught it themselves.");default->"";};
     }
 }

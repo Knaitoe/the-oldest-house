@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.638 (docs/SECOND_PERSON_0_4_638.md): Second Person's other homes. Is every voice read from the reader's own snapshot, does an unread or other home keep the old friend word for word, and does the DANGER latch keep the door shut?
+
 November 16 candidate 0.4.637 (docs/SECOND_PERSON_0_4_637.md): Second Person's aftermath. Does a finished reader find only the aftermath (no season, call, word or cupboard running), does nothing in it give credit or reopen a choice, and does it come back no more than the House's limit?
 
 November 16 candidate 0.4.636 (docs/SECOND_PERSON_0_4_636.md): Second Person's fourth ending. Is known() read only from the reader's own record, does a word written at the question go to the cups and not the winter/spring hooks, and is the evening never reached once signed or frightened?
