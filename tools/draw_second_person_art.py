@@ -529,6 +529,15 @@ def form():
     return im
 
 
+def form_signed():
+    # 0.4.634: the same form, signed: a name in ink looped along the line at the foot, a little wet-dark where the pen paused.
+    im = form()
+    for x, y in ((5, 13), (6, 12), (7, 13), (8, 13), (9, 12), (10, 13), (11, 13), (12, 12)):
+        dot(im, x, y, '#1e2a5a')
+    dot(im, 12, 13, '#14204a')
+    return im
+
+
 def form_back():
     # Turned face down: the blank back, and the boxes faintly through the paper.
     im = new(base='#e6e2d6', seed=2820, spread=2)
@@ -567,7 +576,7 @@ def textures():
         'pole': new(base='#6a6a6c', seed=2802, spread=2), 'rota': rota(), 'cloth': cloth(0), 'cloth_rumpled': cloth(1), 'plate': plate(),
         'bakelite': bakelite(), 'dial': dial(), 'cream': new(base='#e8e2d0', seed=2803, spread=2), 'frame': new(base='#3a2c22', seed=2804, spread=2),
         'tin_lid': tin_lid(), 'tin_side': tin_side(), 'tin_in': tin_in(), 'wool': wool(), 'needle': needle(), 'envelope': envelope(),
-        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_back': form_back(), 'hardboard': hardboard(),
+        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_signed': form_signed(), 'form_back': form_back(), 'hardboard': hardboard(),
     }
     out.update({f'block/second/{k}.png': v for k, v in t.items()})
     return out
@@ -671,11 +680,13 @@ def fitting_models():
                                {'f': 'form', 'b': 'form_back'}, 'form')
     m['application_1'] = model([element([3, 0, 2], [13, 0.25, 14], {'up': 'b', 'down': 'f', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14], 'down': [3, 2, 13, 14]}, rot=sheet_rot)],
                                {'f': 'form', 'b': 'form_back'}, 'form_back')
+    m['application_2'] = model([element([3, 0, 2], [13, 0.25, 14], {'up': 'f', 'down': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14], 'down': [3, 2, 13, 14]}, rot=sheet_rot)],
+                               {'f': 'form_signed', 'b': 'form_back'}, 'form_signed')
     return m
 
 
 KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve', 'application']
-STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 2}
+STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 DISPLAY = {

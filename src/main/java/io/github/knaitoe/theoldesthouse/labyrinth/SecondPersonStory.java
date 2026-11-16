@@ -29,6 +29,9 @@ public final class SecondPersonStory {
     /** 0.4.369: the third call, at the end of the winter, is the hospital ward for a reader whose home is a haven. */
     static String caller(CompoundTag own,int call){return haven(own)?call==3?"The ward, on the line":"Mum or Dad, on the line":"An old friend, on the line";}
     static List<String> call(CompoundTag own,int call){
+        // 0.4.634, E2: on the last day, the phone rings for the reader.
+        if(call==4)return haven(own)?List.of("Hello, love. You sound different. Good different.","Is it nice there now? Is it yours now?","I'll let you go. Night night.")
+                :List.of("You picked up. You actually picked up.","You sound like you've slept, for once.","Don't be a stranger. You know where I am.");
         if(call==3)return haven(own)?List.of("Hello? Is this the right number? This is the ward.","We've someone here asking for you. Asking and asking.","If you can come. Even for an hour.")
                 :List.of("You didn't come. We waited for both trains.","It's fine. It's fine. Happy new year.","Ring me. Or don't. Just be alive.");
         boolean tried=own.getString("Call1").equals("off");
@@ -41,6 +44,7 @@ public final class SecondPersonStory {
     }
     /** What they say into the silence when the reader lifts the receiver and only listens. */
     static List<String> listened(CompoundTag own,int call){
+        if(call==4)return haven(own)?List.of("You don't have to say anything. I can hear you're all right.","Night, love."):List.of("I'll take that as a yes.","Night.");
         if(call==3)return haven(own)?List.of("Hello? ...I'll put it down that I rang.","I'll tell them you're coming.","I'll tell them something."):List.of("I know you're there.","I'm not angry. I was. I'm not.","Happy new year, you idiot.");
         if(haven(own))return call==1?List.of("This line's terrible. I'll let you go.","Ring me when you're settled.","Did you say Tuesday?")
                 :List.of("Never mind. I'll find it.","I've got it written on something.","Night, love. Night night.");
@@ -123,6 +127,7 @@ public final class SecondPersonStory {
                 can=List.of("Stand close to the agent, where the air goes cold.","Or keep out of their way.");}
             case SecondPersonSpring.S_DECIDE->{b.append("They have the letter at the kitchen table. They have until the end of the week to say.\n\n");
                 can=List.of("Lay out what they would need to go: their coat by the door.","Or what they would need to stay: their things put where they live.","Or leave them to it.");}
+            case SecondPersonSigned.S_SIGNED->{b.append(SecondPersonSigned.page(own));can=List.of();}
             case SecondPersonSpring.S_POST->{
                 if(own.contains("AskedAt")){b.append("They have read the form, and asked the room a question.\n\n");can=List.of("Breathe on the glass. It holds one word.","Or say nothing.");}
                 else{b.append("The post has come. There is a form on the mat.\n\n");can=List.of("Read it.","Turn it face down.","Leave it where it is.");}}
@@ -269,6 +274,8 @@ public final class SecondPersonStory {
         if(own.getInt("Season")>=SecondPerson.WINTER)winter(b,own,routine);
         // 0.4.633, the spring.
         SecondPersonSpring.account(b,own);
+        // 0.4.634, E2: signed, the last day was the reader's, and it takes the last morning's place.
+        if(SecondPersonSigned.signed(own)){SecondPersonSigned.account(b,own);return b.toString();}
         // The last morning.
         b.append(own.getString("Decision").equals("stay")?"On the last morning they had decided to stay. When you looked back from the street there was a light in the window, and they were standing at it."
                 :"On the last morning they had decided to go. You watched from the street as they came out of the side door with one bag and walked to the bus stop and away.");

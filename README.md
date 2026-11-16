@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.634** gives Second Person its second ending: sign the form on the mat and the flat is yours for the last day of the year. Sam knocks and talks to you as if you lived there, the phone rings for you, and at dark, in the black street window, the one who lived there stands behind you and asks if somebody is in their flat. The door is on the latch. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_634.md.
+
 Development candidate **0.4.633** gives Second Person its spring: the tenancy comes up, a letting agent looks round (stand close and the rent stays where it was), the resident decides whether to stay, and the post brings an application for the flat in the reader's handwriting with the reader's name. Read it, and they ask the room if it is you; a word on the glass answers. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_633.md.
 
 Development candidate **0.4.632** finishes A Little Longer (slice 12: personhood). A settled read of the reader changes three small things: Rowan's first request gets an address, Rowan's first question about staying gets one more sentence, and after the rain on the roof Rowan holds out a dry tea towel, once. Every unread or uncertain reader gets the lines as written. AGE is not used yet (one adult Rowan per body). No layout, protocol or Witness change. See docs/A_LITTLE_LONGER_0_4_632.md.
