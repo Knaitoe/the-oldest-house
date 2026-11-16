@@ -832,6 +832,8 @@ public final class PellTexts {
         case "last_orders"->"I took everything off his table.";
         case "bike_night"->"I led them up into the graveyard on purpose.";
         case "ones_already_inside"->"I knew which of the two men was the first one. I told the house it was the other.";
+        // 0.4.638 (run 1672: the forged lines missed A Little Longer).
+        case "a_little_longer"->"I turned the dial off their station when they weren't looking.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

@@ -46,3 +46,9 @@ passes 22 of 22.
 
 With this slice every part of the plan is built. The House's other readers (two-person scenes, the multiplayer audit) need nothing new:
 every evening is a private copy.
+
+## Later: the Pell house's forged line (run 1672)
+
+The Pell house writes a twisted line, in the reader's own hand, for every Witness story resolved after Tilly answered; A Little Longer
+had none, so the Pell house's check of every story failed. New line (flagged): "I turned the dial off their station when they weren't
+looking." (PellTexts.forged, story `a_little_longer`).
