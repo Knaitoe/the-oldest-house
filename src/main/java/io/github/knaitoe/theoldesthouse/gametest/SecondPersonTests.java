@@ -330,4 +330,47 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_spring") public static void springDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.634, E2: their name on the post. The form on the mat is signed; for the last day of the year the reader lives there: Sam knocks
+     * and talks to them as the tenant, the phone rings for them, and at dark, in the black street window, the resident stands behind them
+     * where the reader used to stand. The door is on the latch and the reader goes out by it; the account is the last day's, not the
+     * last morning's.
+     */
+    @GameTest(template="empty",batch="second_signed",timeoutTicks=9000)
+    public static void theirNameOnThePost(GameTestHelper h){
+        var f=fixture(h);var p=f.player("flat_signed",P);var b=f.base(P);var l=f.level(P);
+        resident(h,f,p)
+            .thenExecute(()->{f.source(p,P);street(f,p);
+                autumnOver(f,p,List.of("porch"),own->{thing(own,"coat","homed",null);own.putBoolean("SamStayed",true);});})
+            .thenWaitUntil(()->h.assertTrue(season(f,p)==SecondPerson.WINTER,"into the winter"))
+            .thenExecute(()->{var own=own(f,p);own.putInt("Season",SecondPerson.SPRING);own.putInt("Step",SecondPersonSpring.S_POST);own.putInt("T",0);own.putInt("Sub",0);own.putInt("SubT",0);save(f,p,own);
+                SecondPersonSite.season(l,b,4);street(f,p);})
+            .thenWaitUntil(()->h.assertTrue(SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonSpring.APPLICATION_AT)),SecondPersonBlock.Kind.APPLICATION),"the form on the mat"))
+            .thenExecute(()->{at(f,p,1.5,UP,-25.5);
+                h.assertTrue(click(f,p,SecondPersonSpring.APPLICATION_AT,Direction.UP),"the form, in the reader's hand");say(h,p,SecondPersonSpringTexts.SIGN_IT);
+                h.assertTrue(own(f,p).getString("Application").equals("signed")&&step(f,p)==SecondPersonSigned.S_SIGNED,"signed: "+own(f,p));
+                h.assertTrue(SecondPersonBlock.stage(l.getBlockState(b.offset(SecondPersonSpring.APPLICATION_AT)))==2,"the signature on the line");
+                Talk.close(p);street(f,p);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")==1&&SecondPerson.sam(l,b)!=null,"somebody at the door: Sam"))
+            .thenExecute(()->at(f,p,1.5,UP,-26.5))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,SecondPersonSigned.TALK_SAM),"Sam talks to the reader as the tenant: "+Talk.lines(p)))
+            .thenExecute(()->{h.assertTrue(Talk.lines(p).stream().anyMatch(x->x.contains("There you are.")),"greeted: "+Talk.lines(p));say(h,p,SecondPersonSpringTexts.COME_IN);
+                h.assertTrue(own(f,p).getString("SamDoor").equals("in"),"asked in");Talk.close(p);street(f,p);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Ringing")==4,"the phone rings for the reader"))
+            .thenExecute(()->{h.assertTrue(click(f,p,SecondPersonSite.PHONE,Direction.UP)&&Talk.waiting(p,"sp_call_4"),"lifted");say(h,p,"Listen.");
+                h.assertTrue(own(f,p).getString("Call4").equals("lifted"),"listened");Talk.close(p);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")==3,"dark"))
+            .thenExecute(()->{p.stopRiding();p.teleportTo(l,b.getX()-3.5,b.getY()+UP,b.getZ()-14.2,0,0);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("SawBehind")&&SecondPerson.resident(l,b)!=null,"in the black glass, behind them, the resident"))
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("Sub")==4,"the door on the latch"))
+            .thenExecute(()->street(f,p))
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getBoolean("Ready")&&own(f,p).getString("Outcome").equals("their_name_on_the_post"),"out by the door; the book on the bench"))
+            .thenExecute(()->{String text=account(f,p);
+                for(var want:List.of("You signed the form","Sam came to the door","you asked them in","The phone rang for you, and you listened","where you used to stand","The year was ordinary, and you had it"))
+                    h.assertTrue(text.contains(want),"the account says \""+want+"\": "+text);
+                h.assertFalse(text.contains("On the last morning"),"the last day takes the last morning's place: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="second_signed") public static void signedDone(ServerLevel l){close();}
 }

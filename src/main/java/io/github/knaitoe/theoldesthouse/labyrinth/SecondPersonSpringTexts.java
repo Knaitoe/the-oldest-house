@@ -41,6 +41,17 @@ public final class SecondPersonSpringTexts {
     public static final String ASK="Is this you?";
     public static final String NO_ANSWER="...Somebody's idea of a joke.";
     public static final String KEEN="Somebody's keen.";
+    // 0.4.634, E2: the form signed, and the last day.
+    public static final String SIGN_IT="Sign it.";
+    public static final java.util.List<String> SIGNED=java.util.List.of("You write your name on the line at the foot. It comes out the way it always does.","The ink is still wet when the room changes.");
+    public static final String LAST_DAY="The rest of the year goes by. Then a last day of it, and the flat is yours.";
+    public static final java.util.List<String> SAM_HELLO=java.util.List.of("There you are.","You look well. You look like you've slept.","I can't stop. I just wanted to see you in it. The place.");
+    public static final String COME_IN="Come in.",NOT_TODAY="Not today.";
+    public static final String SAM_IN="Just for a minute, then. Look at you.",SAM_OUT="Next time, then. Don't be a stranger.";
+    public static final String SAM_GONE="Whoever it was goes back down the stairs.";
+    public static final String DARK="It gets dark. The street window is black.";
+    public static final String BEHIND="In the black glass, behind you, someone stands where you used to stand.";
+    public static final String THEY_ASK="...Hello?",THEY_ASK_AGAIN="Is somebody in my flat?";
     public static String answer(String word){return switch(word){
         case "YES"->"Then you were here first.";
         case "NO"->"Then who keeps writing it?";

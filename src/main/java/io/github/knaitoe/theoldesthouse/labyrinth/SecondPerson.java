@@ -120,14 +120,14 @@ public final class SecondPerson {
     @Nullable static BlockPos placedAt(CompoundTag own,String thing){var t=thing(own,thing);return t.contains("At")?BlockPos.of(t.getLong("At")):null;}
     static void placedAt(CompoundTag own,String thing,@Nullable BlockPos at){var t=thing(own,thing);if(at==null)t.remove("At");else t.putLong("At",at.asLong());own.put("Thing_"+thing,t);}
     /** Is it dark in the flat? (Words on the street window, and the window behind the resident's chair.) */
-    static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING||s==WINTER&&st!=W_DAY&&st!=WINTER_DONE;}
+    static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING||s==WINTER&&st!=W_DAY&&st!=WINTER_DONE||SecondPersonSigned.dark(own);}
     /** The flat's hour, from the year so far. */
     static long hour(CompoundTag own){
         int s=seasonOf(own),st=step(own);
         if(s==SUMMER)return switch(st){case ARRIVE,UNPACK->8200;case GLASS_HUNG->10800;case BATH->13200;case NIGHT->18000;default->23400;};
         if(s==AUTUMN)return switch(st){case IRIS_VISIT->11400;case ROUTINE->12100;case EVENING->13600;case PHOTO->14200;case CALL->15000;case STAY->16000;default->17500;};
         if(s==WINTER)return switch(st){case W_FUNERAL->sub(own)>=2?18000:12700;case W_MORNING->23500;case W_DAY->4500;case W_EVENING->13400;case W_NIGHT->18500;default->2000;};
-        if(s==SPRING)return switch(st){case SecondPersonSpring.S_AGENT->2600;case SecondPersonSpring.S_DECIDE->6000;case SecondPersonSpring.S_POST->8200;default->11400;};
+        if(s==SPRING)return switch(st){case SecondPersonSigned.S_SIGNED->SecondPersonSigned.hour(own);case SecondPersonSpring.S_AGENT->2600;case SecondPersonSpring.S_DECIDE->6000;case SecondPersonSpring.S_POST->8200;default->11400;};
         return 900;
     }
 
@@ -256,7 +256,7 @@ public final class SecondPerson {
             case W_NIGHT->{return sub>=2&&sub<100?station(own,(sub-2)/2):bed();}
             default->{return seat(ARMCHAIR,WEST);}
         }
-        if(s==SPRING)return SecondPersonSpring.residentMark(own);
+        if(s==SPRING)return step(own)==SecondPersonSigned.S_SIGNED?SecondPersonSigned.residentMark(own):SecondPersonSpring.residentMark(own);
         // The last morning.
         boolean stays=own.getString("Decision").equals("stay");
         if(st==LATCH)return stays?seat(RESIDENT_CHAIR,EAST):beside("hall_bag").pose(G_BAG);
@@ -282,7 +282,7 @@ public final class SecondPerson {
         return Mark.gone();
     }
     static Mark samMark(CompoundTag own){
-        int s=seasonOf(own),st=step(own),sub=sub(own);if(s!=AUTUMN)return Mark.gone();
+        int s=seasonOf(own),st=step(own),sub=sub(own);if(SecondPersonSigned.inSigned(own))return SecondPersonSigned.samMark(own);if(s!=AUTUMN)return Mark.gone();
         // Going home: out to the landing, then gone.
         if(own.getBoolean("SamLeft"))return own.getInt("Clock")-own.getInt("SamLeftAt")<160?Mark.stand(4.5,UP,-27.5,EAST):Mark.gone();
         boolean left=own.getString("Evening").equals("seen")&&st>EVENING||own.getBoolean("SamLeft");
@@ -424,7 +424,7 @@ public final class SecondPerson {
         ringing(l,f,p,own,resident);
         cupboard(l,f,p,own,r);
         int s=seasonOf(own);
-        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING)SecondPersonSpring.spring(l,f,p,own,resident,agent);else morning(l,f,p,own,r,resident);
+        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING){if(step(own)==SecondPersonSigned.S_SIGNED)SecondPersonSigned.day(l,f,p,own,r,resident,sam);else SecondPersonSpring.spring(l,f,p,own,resident,agent);}else morning(l,f,p,own,r,resident);
     }
 
     static void summer(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,Vec3 r,@Nullable LiteraryActor a){
@@ -900,7 +900,7 @@ public final class SecondPerson {
         if(f.ring%40==0)sound(p,WorkPrintRegistry.RING.get(),f.base,PHONE,1,1);
         if(--f.ring<0){
             // Nobody lifted it: they catch it themselves.
-            String key="Call"+call;if(own.getString(key).isEmpty()){own.putString(key,call==3?"unanswered":"left");SecondPersonStory.turned(own,call==1?"You let the phone ring in the evening.":call==2?"You let the phone ring again.":"You let the phone ring at the end of the winter, and so did they.");}
+            String key="Call"+call;if(own.getString(key).isEmpty()){own.putString(key,call>=3?"unanswered":"left");SecondPersonStory.turned(own,call==1?"You let the phone ring in the evening.":call==2?"You let the phone ring again.":"You let the phone ring at the end of the winter, and so did they.");}
             own.remove("Ringing");
         }
     }
@@ -946,6 +946,7 @@ public final class SecondPerson {
     public static void touched(ServerPlayer p,LiteraryActor a){
         if(LiteraryVignettes.current(p)!=PLACE)return;var b=LiteraryVignettes.base(p,PLACE);var f=b==null?null:flat(b);if(f==null)return;var own=own(p);
         if(a.role()==LiteraryActor.SP_RESIDENT){
+            if(SecondPersonSigned.inSigned(own)){SecondPersonSigned.touched(f,a,own);save(p,own);return;}
             // 0.4.369: a hand while they look at the reader in the glass, or while they walk asleep, is its own answer.
             if(own.getBoolean("SeenOpen")){own.putString("SeenHow","touch");save(p,own);return;}
             if(own.getBoolean("Walking")){if(own.getString("BroughtBy").isEmpty())own.putString("BroughtBy","hand");save(p,own);return;}

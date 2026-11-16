@@ -202,15 +202,22 @@ public final class SecondPersonSpring {
     static boolean click(ServerPlayer p,BlockPos b,CompoundTag own){
         String app=own.getString("Application");
         if(app.equals("down")){cue(p,"Face down.");return true;}
-        if(app.equals("read")){cue(p,SecondPersonSpringTexts.REREAD);return true;}
+        if(app.equals("signed")){cue(p,SecondPersonSpringTexts.REREAD);return true;}
+        if(app.equals("read")){
+            // 0.4.634: read, it can still be signed while it lies there.
+            if(sub(own)>=2){cue(p,SecondPersonSpringTexts.REREAD);return true;}
+            Talk.begin(p,TALK,SecondPersonSpringTexts.FORM);Talk.line(p,"",SecondPersonSpringTexts.REREAD);
+            Talk.ask(p,Talk.act(SecondPersonSpringTexts.SIGN_IT,q->choose(q,b,"sign")),Talk.act(SecondPersonSpringTexts.LEAVE_IT,Talk::close));return true;}
         if(!app.equals("mat")||sub(own)>=2)return true;
         Talk.begin(p,TALK,SecondPersonSpringTexts.FORM);
         for(var line:SecondPersonSpringTexts.form(p.getGameProfile().getName()))Talk.line(p,"",line);
-        Talk.ask(p,Talk.act(SecondPersonSpringTexts.READ_IT,q->choose(q,b,"read")),Talk.act(SecondPersonSpringTexts.FACE_DOWN,q->choose(q,b,"down")),Talk.act(SecondPersonSpringTexts.LEAVE_IT,Talk::close));
+        Talk.ask(p,Talk.act(SecondPersonSpringTexts.READ_IT,q->choose(q,b,"read")),Talk.act(SecondPersonSpringTexts.SIGN_IT,q->choose(q,b,"sign")),Talk.act(SecondPersonSpringTexts.FACE_DOWN,q->choose(q,b,"down")),Talk.act(SecondPersonSpringTexts.LEAVE_IT,Talk::close));
         return true;
     }
     static void choose(ServerPlayer p,BlockPos b,String how){
-        var own=own(p);if(!own.getString("Application").equals("mat")){Talk.close(p);return;}var l=p.serverLevel();
+        var own=own(p);String was=own.getString("Application");var l=p.serverLevel();
+        if(how.equals("sign")){if((was.equals("mat")||was.equals("read"))&&step(own)==S_POST&&sub(own)<2)SecondPersonSigned.sign(p,own);else Talk.close(p);return;}
+        if(!was.equals("mat")){Talk.close(p);return;}
         own.putString("Application",how);
         if(how.equals("read")){for(var line:SecondPersonSpringTexts.READ_ALL)Talk.line(p,"",line);Talk.end(p);SecondPersonStory.turned(own,"You read the form on the mat. It was in your handwriting.");}
         else{Talk.close(p);SecondPersonSite.set(l,b,APPLICATION_AT,SecondPersonBlock.of(SecondPersonBlock.Kind.APPLICATION,Direction.SOUTH,1));sound(p,SoundEvents.BOOK_PAGE_TURN,b,APPLICATION_AT,.7F,1.2F);SecondPersonStory.turned(own,"You turned the form face down.");}
@@ -234,6 +241,7 @@ public final class SecondPersonSpring {
             case "read"->{b.append(" Then a form for the flat came through the door, for when the current tenant leaves, in your handwriting, with your name on it. You read it. They read it too, and asked the room if it was you.");
                 if(!own.getString("SpringAnswer").isEmpty())b.append(" You wrote ").append(own.getString("SpringAnswer")).append(" on the glass, and they kept the word.");}
             case "down"->b.append(" Then a form for the flat came through the door, in your handwriting, with your name on it. You turned it face down, and they never turned it over.");
+            case "signed"->b.append(" Then a form for the flat came through the door, for when the current tenant leaves, in your handwriting, with your name on it.");
             case "theirs","mat"->b.append(" Then a form for the flat came through the door, in your handwriting, with your name on it. You left it on the mat. They read it and said somebody was keen.");
             default->{}
         }
