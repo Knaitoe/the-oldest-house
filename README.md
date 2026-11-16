@@ -2,6 +2,8 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
+Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
+
 Development candidate **0.4.641** begins A sort of thing (part 1: the place). A drawing-room with a fire and a looking-glass over it, the same room the other way round behind the glass, and beyond it a country laid out in squares, filled where the King sleeps deepest and only drawn (ruled, on paper) where he does not, with an old man asleep under a tree in the wood. A hand on the glass takes a reader through. Nobody else is in it yet and the House does not deal it. See docs/SLEEPING_KING_0_4_641.md.
 
 Development candidate **0.4.640** gives Second Person's autumn its guest by the House's read of who the reader is drawn to: Dev or Hannah from work, or Marcus, a friend who needs somewhere to live, with his own evening and ending; Sam otherwise. Three new painted guests. No layout, protocol or Witness change. See docs/SECOND_PERSON_0_4_640.md.

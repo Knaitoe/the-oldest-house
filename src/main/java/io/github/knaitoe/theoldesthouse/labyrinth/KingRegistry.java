@@ -35,14 +35,27 @@ public final class KingRegistry {
             case "bridge","bark","panel","floorboards"->Blocks.OAK_PLANKS;case "path"->Blocks.GRAVEL;default->Blocks.STONE;};
     }
     static{for(String name:MATERIAL_NAMES){var props=fixed(like(name));if(name.startsWith("brook"))props=props.noOcclusion();
-        MATERIALS.put(name,BLOCKS.registerSimpleBlock("king_"+name,props));}}
+        // 0.4.642: a hedge holds a thing and gives to anything less (KingHedgeBlock); a body inside one is not choked or blinded.
+        if(name.startsWith("hedge")){var hedge=props.isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false);MATERIALS.put(name,BLOCKS.registerBlock("king_"+name,KingHedgeBlock::new,hedge));}
+        else MATERIALS.put(name,BLOCKS.registerSimpleBlock("king_"+name,props));}}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     /** A country material, filled or ruled. */
     public static BlockState country(String name,boolean ruled){return material(ruled?name+"_ruled":name).defaultBlockState();}
+    /** 0.4.642: whether a block is one of the country's materials, filled or ruled. */
+    public static boolean isCountry(BlockState s){for(var name:COUNTRY){if(s.is(MATERIALS.get(name).get())||s.is(MATERIALS.get(name+"_ruled").get()))return true;}return false;}
+    /** 0.4.642: a country material as its filled or ruled twin; null for anything else. */
+    public static BlockState twin(BlockState s,boolean ruled){
+        for(var name:COUNTRY){if(s.is(MATERIALS.get(name).get())||s.is(MATERIALS.get(name+"_ruled").get()))return country(name,ruled);}
+        return null;
+    }
     public static boolean material(BlockState s){for(var b:MATERIALS.values())if(s.is(b.get()))return true;return false;}
     /** Whether a block is a country material drawn ruled. */
     public static boolean ruled(BlockState s){for(var e:MATERIALS.entrySet())if(e.getKey().endsWith("_ruled")&&s.is(e.getValue().get()))return true;return false;}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingBlock>> FITTING_TYPE=CODECS.register("king_fitting",()->KingBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingHedgeBlock>> HEDGE_TYPE=CODECS.register("king_hedge",()->KingHedgeBlock.CODEC);
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<KingVergeBlock>> VERGE_TYPE=CODECS.register("king_verge",()->KingVergeBlock.CODEC);
+    /** 0.4.642: the brook's unseen verge (KingVergeBlock). */
+    public static final DeferredBlock<KingVergeBlock> VERGE=BLOCKS.registerBlock("king_verge",KingVergeBlock::new,BlockBehaviour.Properties.of().noOcclusion().strength(-1,3600000).noLootTable().isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
     public static final DeferredBlock<KingBlock> FITTING=BLOCKS.registerBlock("king_fitting",KingBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(KingBlock::light));
     private KingRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}

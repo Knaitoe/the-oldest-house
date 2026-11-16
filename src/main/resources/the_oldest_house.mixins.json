@@ -28,7 +28,8 @@
     "PlayerInfoSkinMixin",
     "ActionBarWrapMixin",
     "TitleSplashMixin",
-    "ModelUvRangeMixin"
+    "ModelUvRangeMixin",
+    "KingShadowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

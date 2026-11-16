@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.642 (docs/SLEEPING_KING_0_4_642.md): does every state hold only the reader it belongs to (hedge and verge collision read from that reader alone, the client's copy lapsing when they leave), does a rooted reader come free on the out-breath and on leaving the country, and is a reader put back rather than lost when they go off the board?
+
 November 16 candidate 0.4.641 (docs/SLEEPING_KING_0_4_641.md): a place built ahead of its story. Is it never dealt and no Witness source until part 3? Does the glass take a reader through and back, and is the board walkable from behind the glass only?
 
 November 16 candidate 0.4.640 (docs/SECOND_PERSON_0_4_640.md): Second Person's guests. Is the read settled-only and honouring the server option, does each guest have a face and a phase, and is the name right everywhere it is said?
