@@ -196,6 +196,11 @@ LOOKS = {
     'literary_king_guard': Look('#d8a888','#6a6058','close','#3a3e4a','#2e323c','uniform','#c9a84a',eyes='#4a4a44',age=2,beard='moustache',mark='king_guard',sleeve=11),
     # 0.4.645: the Caterpillar on the mushroom, an old man in a long coat ringed round in segments like its namesake, a full beard.
     'literary_king_caterpillar': Look('#d2b896','#3e4630','close','#5f8a3c','#47692c','coat','#9cc064',eyes='#2c2c24',age=3,beard='full',mark='king_caterpillar',sleeve=11),
+    # 0.4.646: the court of cards on the sixth square: the King and Queen of Hearts in their cards, the herald, and the Cat (a head).
+    'literary_king_hearts_king': Look('#e0b090','#d8d4c8','short','#b8323a','#7a1e22','coat','#d8b04a',eyes='#3e3630',age=3,beard='full',mark='hearts_king',sleeve=11),
+    'literary_king_hearts_queen': Look('#e8c0a2','#2a201c','long','#b8323a','#7a1e22','dress','#d8b04a',eyes='#3e3630',age=2,mark='hearts_queen',sleeve=11),
+    'literary_king_herald': Look('#d8a888','#4e3a2c','close','#ece6d8','#3a2e2a','uniform','#b8323a',eyes='#4a4a44',age=1,mark='hearts_herald',sleeve=11),
+    'literary_king_cat': Look('#c8843e','#c8843e','close','#c8843e','#c8843e','shirt','#e8d0a0',eyes='#d8c040',mark='king_cat'),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
@@ -1585,6 +1590,58 @@ def paint(look):
                 if part[side]==net(16,16,8,12,4)['front']:
                     for y in range(2,h-2,6):d.rectangle((w//2-1,y,w//2,y+1),fill=rgb(look.accent))
                 im.paste(art,(round(box[0]*S),round(box[1]*S)),art)
+    if look.mark in ('hearts_king','hearts_queen','hearts_herald'):
+        # 0.4.646: the court are cards. Down the body front a card: a pale panel with a dark edge and the suit's pips, one large heart
+        # in the middle and a small one in two corners (the King and Queen); the herald wears a pale tabard with a row of hearts.
+        red='#b8323a';card='#efe8d8'
+        def heart(d,x,y,big):
+            pts=[(1,0),(3,0),(0,1),(1,1),(2,1),(3,1),(4,1),(1,2),(2,2),(3,2),(2,3)] if not big else [(1,0),(2,0),(4,0),(5,0),(0,1),(1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(0,2),(1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(1,3),(2,3),(3,3),(4,3),(5,3),(2,4),(3,4),(4,4),(3,5)]
+            for px,py in pts:d.point((x+px,y+py),fill=rgb(red))
+        for side in ('front','back'):
+            box=net(16,16,8,12,4)[side];w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
+            art=Image.new('RGBA',(w,h));d=ImageDraw.Draw(art)
+            if look.mark=='hearts_herald':
+                d.rectangle((2,0,w-3,h-1),fill=rgb(card));d.line((2,0,2,h-1),fill=shade(card,-40));d.line((w-3,0,w-3,h-1),fill=shade(card,-40))
+                for y in range(3,h-4,7):heart(d,w//2-2,y,False)
+            else:
+                d.rectangle((1,2,w-2,h-2),fill=rgb(card));d.rectangle((1,2,w-2,h-2),outline=shade(card,-60))
+                heart(d,w//2-3,h//2-3,True)
+                if side=='front':heart(d,2,4,False);heart(d,w-7,h-8,False)
+            im.paste(art,(round(box[0]*S),round(box[1]*S)),art)
+        if look.mark!='hearts_herald':
+            # A crown on the hat layer: four points with a heart's red in the front one, the band gilt.
+            gold='#d8b04a'
+            for side,box in net(32,0,8,8,8).items():
+                art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+                if side not in ('top','bottom'):
+                    for x in (0,5,10,14):d.rectangle((x,0,x+1,2),fill=rgb(gold))
+                    d.rectangle((0,3,15,5),fill=rgb(gold));d.line((0,3,15,3),fill=shade(gold,24));d.line((0,5,15,5),fill=shade(gold,-38))
+                    if side=='front':d.rectangle((7,3,8,4),fill=rgb(red))
+                put(box,art)
+    if look.mark=='king_cat':
+        # 0.4.646: the Cat is a head. Striped fur all round it; on the front two eyes, round and pale with slit pupils, and a grin of
+        # teeth from one side of the head nearly to the other. Its ears (the cast model's ears, at 122,60) are fur with a pink inside.
+        fur=look.skin;stripe=shade(fur,-46);light=shade(fur,30)
+        for side,box in net(0,0,8,8,8).items():
+            art=Image.new('RGBA',(16,16),rgb(fur)+(255,));d=ImageDraw.Draw(art)
+            if side in ('top','left','right','back'):
+                for k in range(0,16,4):d.line((k,0,k+2,15),fill=stripe) if side=='top' else d.line((0,k+1,15,k+2),fill=stripe)
+            if side=='front':
+                for y in (0,1):d.line((5,y,10,y),fill=stripe)
+                d.line((0,4,2,5),fill=stripe);d.line((13,5,15,4),fill=stripe)
+                for x in (3,10):
+                    d.rectangle((x,5,x+2,7),fill=rgb(look.eyes));d.line((x+1,5,x+1,7),fill='#1c1814');d.point((x,5),fill=shade(look.eyes,40))
+                d.rectangle((7,8,8,9),fill='#c86a6a')
+                d.line((1,10,14,10),fill='#2a1a16');d.line((1,10,1,12),fill='#2a1a16');d.line((14,10,14,12),fill='#2a1a16')
+                d.rectangle((2,11,13,12),fill='#f4efe2')
+                for x in range(3,14,2):d.point((x,12),fill='#c8c0b0')
+                d.line((2,13,13,13),fill='#2a1a16')
+                d.line((6,14,9,14),fill=light)
+            put(box,art)
+        for side,box in net(32,0,8,8,8).items():put(box,Image.new('RGBA',(16,16)))
+        ears=Image.new('RGBA',(round(6*S),round(3*S)),rgb(fur)+(255,));d=ImageDraw.Draw(ears)
+        d.rectangle((round(1*S),round(1*S),round(3*S)-1,round(3*S)-1),fill='#d89a8a')
+        im.paste(ears,(round(122*S),round(60*S)))
     if look.mark=='king_guard':
         # 0.4.644: the Guard's peaked cap of folded white paper on the hat layer, its folds showing, a black peak at the front; brass
         # buttons and a ticket punch on a cord on the coat front.

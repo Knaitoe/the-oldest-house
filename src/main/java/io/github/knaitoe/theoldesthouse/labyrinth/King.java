@@ -35,7 +35,7 @@ public final class King {
     public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);KingCaterpillar.ensure(p.serverLevel(),b);}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);KingCaterpillar.ensure(p.serverLevel(),b);KingCourt.ensure(p.serverLevel(),b,KingSleep.get(b));}
 
     /**
      * 0.4.643: a hand on the King. A line's hand goes into him; before the brothers have said his name he is only an old man asleep;
@@ -86,6 +86,8 @@ public final class King {
         var l=p.serverLevel();var at=b.offset(rel);var st=l.getBlockState(at);
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
         if(KingRegistry.ruled(st)){cue(p,KingTexts.RULED);return true;}
+        // 0.4.646: one of the court's pack, standing or fallen.
+        if(KingCardBlock.is(st)){cue(p,st.getValue(KingCardBlock.FALLEN)?KingTexts.CARD_FALLEN:KingTexts.CARD_STANDING);return true;}
         if(!st.is(KingRegistry.FITTING.get()))return false;
         boolean behind=rel.getZ()<KingSite.MIRROR_Z;
         switch(st.getValue(KingBlock.KIND)){

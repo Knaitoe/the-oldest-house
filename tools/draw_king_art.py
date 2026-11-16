@@ -498,12 +498,108 @@ def pane():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.646: the court's pack
+# A card is eleven texels wide and twenty-four tall, one to one with its model, drawn whole and cut into the lower sixteen rows and the
+# upper eight (a block texture is square). Pale face, a darker edge, the corners cut round; the index at two corners; the pips set as on
+# a real card; the court cards a figure from the waist, crowned, drawn again upside down below the middle.
+CARD_W, CARD_H = 11, 24
+CARD_FACES = ['two', 'three', 'four', 'five', 'six', 'eight', 'knave', 'queen', 'king']
+CARD_PAPER, CARD_EDGE = '#efe8d8', '#8a8070'
+HEART, SPADE, GOLD = '#b8323a', '#2a2a30', '#d8b04a'
+HEART_PIP = [(0, 0), (2, 0), (0, 1), (1, 1), (2, 1), (1, 2)]
+SPADE_PIP = [(1, 0), (0, 1), (1, 1), (2, 1), (0, 2), (2, 2)]
+PIPS = {2: [(4, 2), (4, 17)], 3: [(4, 2), (4, 10), (4, 17)], 4: [(2, 2), (6, 2), (2, 17), (6, 17)],
+        5: [(2, 2), (6, 2), (4, 10), (2, 17), (6, 17)], 6: [(2, 2), (6, 2), (2, 10), (6, 10), (2, 17), (6, 17)],
+        8: [(2, 2), (6, 2), (2, 7), (6, 7), (2, 12), (6, 12), (2, 17), (6, 17)]}
+
+
+def card_blank():
+    im = Image.new('RGBA', (CARD_W, CARD_H), (0, 0, 0, 0))
+    fill(im, 0, 0, CARD_W, CARD_H, CARD_PAPER)
+    frame(im, 0, 0, CARD_W, CARD_H, CARD_EDGE)
+    for x, y in ((0, 0), (CARD_W - 1, 0), (0, CARD_H - 1), (CARD_W - 1, CARD_H - 1)):
+        im.putpixel((x, y), (0, 0, 0, 0))
+    return im
+
+
+def pip(im, x, y, suit, flip=False):
+    shape = HEART_PIP if suit == HEART else SPADE_PIP
+    for px, py in shape:
+        dot(im, x + px, y + (2 - py if flip else py), suit)
+    if suit == SPADE:
+        dot(im, x + 1, y - 1 if flip else y + 3, suit)
+
+
+def card_face(name):
+    im = card_blank()
+    i = CARD_FACES.index(name)
+    suit = HEART if i % 2 == 0 or i >= 6 else SPADE
+    if i < 6:
+        count = [2, 3, 4, 5, 6, 8][i]
+        for x, y in PIPS[count]:
+            pip(im, x, y, suit, flip=y > 12)
+        # The index: a pip in the top left corner and its turned twin in the bottom right.
+        dot(im, 1, 1, suit); dot(im, CARD_W - 2, CARD_H - 2, suit)
+    else:
+        # The court: a figure from the waist, crowned, in the suit's colour, mirrored about the middle as on a real card.
+        robe = HEART if name != 'knave' else '#3e5a8a'
+        half = Image.new('RGBA', (CARD_W - 2, 11), (0, 0, 0, 0))
+        fill(half, 3, 0, 6, 1, GOLD) if name != 'knave' else fill(half, 3, 0, 6, 1, '#4a3a2a')
+        if name != 'knave':
+            for x in (3, 5):
+                dot(half, x, 0, GOLD)
+        fill(half, 3, 1, 6, 4, '#e8c4a2')
+        dot(half, 3, 2, '#2a201c'); dot(half, 5, 2, '#2a201c')
+        if name == 'king':
+            fill(half, 3, 3, 6, 5, '#d8d4c8')
+        if name == 'queen':
+            fill(half, 2, 1, 3, 5, '#2a201c'); fill(half, 6, 1, 7, 5, '#2a201c')
+        fill(half, 1, 5, 8, 11, robe)
+        fill(half, 4, 5, 5, 11, GOLD)
+        dot(half, 2, 7, CARD_PAPER); dot(half, 6, 8, CARD_PAPER)
+        im.alpha_composite(half, (1, 1))
+        im.alpha_composite(half.transpose(Image.Transpose.ROTATE_180), (1, CARD_H - 12))
+        for x in range(1, CARD_W - 1):
+            dot(im, x, 12, CARD_EDGE)
+        dot(im, 1, 1, HEART)
+    return im
+
+
+def card_back():
+    im = card_blank()
+    for y in range(2, CARD_H - 2):
+        for x in range(2, CARD_W - 2):
+            if (x + y) % 3 == 0 or (x - y) % 3 == 0:
+                dot(im, x, y, '#3e5a8a')
+            else:
+                dot(im, x, y, '#d4ddea')
+    frame(im, 1, 1, CARD_W - 1, CARD_H - 1, '#3e5a8a')
+    return im
+
+
+def card_halves(card):
+    """The card cut into a lower and an upper texture: rows 8 to 23 at x 2 to 12 of the first, rows 0 to 7 at y 8 to 15 of the second."""
+    lo = Image.new('RGBA', (16, 16), (0, 0, 0, 0)); hi = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    lo.alpha_composite(card.crop((0, 8, CARD_W, CARD_H)), (2, 0))
+    hi.alpha_composite(card.crop((0, 0, CARD_W, 8)), (2, 8))
+    return lo, hi
+
+
+def cards():
+    out = {}
+    for name in CARD_FACES + ['back']:
+        card = card_back() if name == 'back' else card_face(name)
+        lo, hi = card_halves(card)
+        out[f'card_{name}_lo'] = lo; out[f'card_{name}_hi'] = hi
+    return out
+
+
 def textures():
     out = {f'block/king_{k}.png': v for k, v in materials().items()}
     t = {'marble': marble(), 'gilt': gilt(), 'glass': glass(), 'grate': grate(), 'fire': fire(), 'rug': rug(), 'ivory': ivory(),
          'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned(),
          'peg': peg(), 'tabletop': tabletop(), 'bottle': bottle(), 'cake': cake(), 'leather': leather(), 'wheel': wheel(),
-         'stalk': stalk(), 'cap': cap(), 'gills': gills()}
+         'stalk': stalk(), 'cap': cap(), 'gills': gills(), **cards()}
     out.update({f'block/king/{k}.png': v for k, v in t.items()})
     # 0.4.644: the bottle and the cake in the hand.
     out.update({'item/king/bottle.png': bottle_item(), 'item/king/cake.png': cake_item()})
@@ -645,6 +741,21 @@ def fitting_models():
                         element([-6, 10, -6], [22, 15, 22], {'up': 'c', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'down': 'g'},
                                 uv={f: [0, 0, 16, 16] for f in ('up', 'down')} | {f: [0, 0, 16, 3] for f in ('north', 'south', 'east', 'west')})],
                        {'s': 'stalk', 'c': 'cap', 'g': 'gills'}, 'cap')
+    # 0.4.646: the court's pack. Standing, the card across the middle of its block, its face to the north (the block's facing turns it),
+    # its back to the south, half a pixel thick: a lower piece sixteen high and an upper eight. Fallen, the same two pieces lying flat,
+    # face up, the card's head to the north.
+    for name in CARD_FACES:
+        t = {'fl': f'card_{name}_lo', 'fh': f'card_{name}_hi', 'bl': 'card_back_lo', 'bh': 'card_back_hi'}
+        m[f'card_{name}_standing'] = model([
+            element([2.5, 0, 7.75], [13.5, 16, 8.25], {'north': 'fl', 'south': 'bl', 'east': 'bl', 'west': 'bl'},
+                    uv={'north': [2, 0, 13, 16], 'south': [2, 0, 13, 16], 'east': [2, 0, 2.5, 16], 'west': [2, 0, 2.5, 16]}),
+            element([2.5, 16, 7.75], [13.5, 24, 8.25], {'north': 'fh', 'south': 'bh', 'east': 'bh', 'west': 'bh', 'up': 'bh'},
+                    uv={'north': [2, 8, 13, 16], 'south': [2, 8, 13, 16], 'east': [2, 8, 2.5, 16], 'west': [2, 8, 2.5, 16], 'up': [2, 8, 13, 8.5]})],
+            t, 'fl')
+        m[f'card_{name}_fallen'] = model([
+            element([2.5, 0, 4], [13.5, 0.5, 20], {'up': 'fl', 'down': 'bl'}, uv={'up': [2, 0, 13, 16], 'down': [2, 0, 13, 16]}),
+            element([2.5, 0, -4], [13.5, 0.5, 4], {'up': 'fh', 'down': 'bh'}, uv={'up': [2, 8, 13, 16], 'down': [2, 8, 13, 16]})],
+            t, 'fl')
     for stage in range(2):
         rail = [element([0, 0, 6], [16, 2, 10], {'all': 's'})] if stage == 0 else [element([0, 14, 6], [16, 16, 10], {'all': 's'})]
         els = rail + [element([0, 0, 6.5], [2, 16, 9.5], {'all': 's'}), element([14, 0, 6.5], [16, 16, 9.5], {'all': 's'}),
@@ -663,7 +774,7 @@ NAMES = {'king_fitting': 'Drawing-Room Things', 'king_turf_light': 'Light Square
          'king_hedge': 'Box Hedge', 'king_brook': 'Brook', 'king_bridge': 'Footbridge', 'king_path': 'Gravel Road', 'king_bark': 'Old Bark',
          'king_bough': 'Bough', 'king_wallpaper': 'Trellis Paper', 'king_panel': 'Dado Panel', 'king_floorboards': 'Drawing-Room Floor',
          'king_ceiling': 'Drawing-Room Ceiling', 'king_chimney': 'Chimney Stone', 'king_hearth': 'Hearth',
-         'king_verge': "Brook's Edge", 'king_drawn_bridge': 'Drawn Bridge'}
+         'king_verge': "Brook's Edge", 'king_drawn_bridge': 'Drawn Bridge', 'king_card': 'One of the Pack'}
 ITEM_NAMES = {'king_bottle': 'A Little Bottle', 'king_cake': 'A Very Small Cake'}
 for k in list(COUNTRY):
     NAMES[f'king_{k}_ruled'] = NAMES[f'king_{k}'] + ', Ruled'
@@ -702,6 +813,16 @@ def files():
     # 0.4.642: the brook's verge is never drawn (KingVergeBlock); its model only names what breaking it would scatter.
     out['models/block/king_verge.json'] = {'textures': {'particle': NS + 'block/king_brook'}}
     out['blockstates/king_verge.json'] = {'variants': {'': {'model': NS + 'block/king_verge'}}}
+    # 0.4.646: the court's pack (KingCardBlock): every facing, face and whether it has fallen.
+    cv = {}
+    for facing, y in FACING_Y.items():
+        for i, name in enumerate(CARD_FACES):
+            for fallen in (False, True):
+                v = {'model': NS + f'block/king/card_{name}_{"fallen" if fallen else "standing"}'}
+                if y:
+                    v['y'] = y
+                cv[f'face={i},facing={facing},fallen={str(fallen).lower()}'] = v
+    out['blockstates/king_card.json'] = {'variants': cv}
     # 0.4.645: the drawn bridge is the footbridge's ruled drawing, and nothing else (KingDrawnBridgeBlock).
     out['models/block/king_drawn_bridge.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'block/king_bridge_ruled'}}
     out['blockstates/king_drawn_bridge.json'] = {'variants': {'': {'model': NS + 'block/king_drawn_bridge'}}}

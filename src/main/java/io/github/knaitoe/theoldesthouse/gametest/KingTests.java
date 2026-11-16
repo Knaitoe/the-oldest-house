@@ -432,4 +432,93 @@ public final class KingTests {
             KingBreath.leave(p);done();h.succeed();
         });
     }
+
+    /**
+     * 0.4.646, the court of cards. The herald names a reader as they come on to the sixth square, and the court holds them a thing; the
+     * pack's guard bears a thing and lets a sort of thing through edge-on; a held reader who gets past anyway is set back in the dock.
+     * The three ways out, one reader each: the bottle (a step under what the court holds them to), the Cat (the court looks at it
+     * instead), and the cards (too much of a thing says what the court is, and the pack comes down, and the King stirs). A reader who
+     * comes after finds the court a pack of cards on the grass. A fresh dream stands the pack up again.
+     */
+    @GameTest(template="empty",batch="king_court",timeoutTicks=1800)
+    public static void theCourtOfCardsAndTheCat(GameTestHelper h){
+        var f=place(h);var p=f.player("king_court_bottle",P);var q=f.player("king_court_cat",P);var r=f.player("king_court_cards",P);var t=f.player("king_court_late",P);
+        var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        // One record a reader, carried from step to step as a tick carries it (f.own hands out a fresh copy each time).
+        var owns=new java.util.HashMap<java.util.UUID,net.minecraft.nbt.CompoundTag>();
+        java.util.function.Function<ServerPlayer,net.minecraft.nbt.CompoundTag> mine=w->owns.computeIfAbsent(w.getUUID(),u->f.own(w,P));
+        java.util.function.BiConsumer<ServerPlayer,double[]> at=(who,xz)->{who.teleportTo(l,b.getX()+xz[0],b.getY(),b.getZ()+xz[1],180,0);who.setOnGround(true);
+            // Twice, as two ticks: what the court does on a step (the summons) counts in the state from the next.
+            KingBreath.reader(who,b,mine.apply(who));KingBreath.reader(who,b,mine.apply(who));};
+        double[] onSquare={.5,-121.5},past={.5,-134.6},far={-30.5,-60.5};
+        h.startSequence().thenExecute(()->{for(var who:new ServerPlayer[]{p,q,r,t})at.accept(who,far);})
+        .thenWaitUntil(()->{for(var who:new ServerPlayer[]{p,q,r,t})KingBreath.reader(who,b,mine.apply(who));
+            h.assertTrue(KingCourt.find(l,b,KingCourt.KING)!=null&&KingCourt.find(l,b,KingCourt.QUEEN)!=null&&KingCourt.find(l,b,KingCourt.HERALD)!=null&&KingCourt.find(l,b,KingCourt.CAT)!=null,"the court, the herald and the Cat are in their places");})
+        .thenExecute(()->{
+            // The summons: on to the square, named, and a thing while the court attends.
+            at.accept(p,onSquare);var own=mine.apply(p);
+            h.assertTrue(own.getBoolean("KingSummoned")&&KingCourt.holding(p,b,own)&&own.getInt("KingState")>=KingBreath.THING,"named by the herald and held a thing: "+own.getInt("KingState")+" summoned "+own.getBoolean("KingSummoned")+" held "+KingCourt.holding(p,b,own)+" at "+p.position().subtract(b.getX(),b.getY(),b.getZ())+" rank "+KingSite.rank((int)Math.floor(p.getZ()-b.getZ())));
+            // The guard: a wall to a thing, nothing to a sort of thing.
+            var guard=b.offset(0,0,KingSite.GUARD_ROW);
+            h.assertTrue(KingCardBlock.standing(l.getBlockState(guard)),"the pack's guard stands across the road");
+            KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
+            h.assertFalse(l.getBlockState(guard).getCollisionShape(l,guard,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"a thing cannot get between the guard");
+            KingBreath.STATES.put(p.getUUID(),KingBreath.SORT);
+            h.assertTrue(l.getBlockState(guard).getCollisionShape(l,guard,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"a sort of thing goes between them edge-on");
+            // Past the guard by no way at all: set back in the dock.
+            at.accept(p,past);
+            var rel=p.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(rel.distanceTo(KingSite.DOCK)<1&&own.getInt("KingCourtWay")==0,"the court has not finished with them: "+rel);
+            // The bottle: a step under what the court holds them to, and out.
+            KingBreath.swallow(p,false,l.getGameTime()+KingDraughtItem.LASTS);
+            at.accept(p,new double[]{KingSite.DOCK.x,KingSite.DOCK.z});
+            h.assertTrue(own.getInt("KingState")==KingBreath.SORT,"held a thing, a swallow makes them a sort of thing: "+own.getInt("KingState"));
+            at.accept(p,past);
+            h.assertTrue(own.getInt("KingCourtWay")==KingCourt.BY_BOTTLE&&!KingCourt.holding(p,b,own),"out by the bottle: "+own.getInt("KingCourtWay"));
+            KingBreath.leave(p);
+            // The Cat: called, it goes over the court, and nobody is held while they look at it.
+            at.accept(q,onSquare);
+            h.assertTrue(KingCourt.holding(q,b,mine.apply(q)),"the second reader is named and held");
+            KingCourt.call(q);
+            h.assertTrue(KingCourt.attendingToCat(l,b)&&!KingCourt.holding(q,b,mine.apply(q)),"the court looks at the Cat and holds nobody");
+        })
+        .thenWaitUntil(()->{KingBreath.reader(q,b,mine.apply(q));var cat=KingCourt.find(l,b,KingCourt.CAT);
+            h.assertTrue(cat!=null&&cat.position().subtract(b.getX(),b.getY(),b.getZ()).distanceTo(KingSite.CAT_OVER)<.5,"the Cat's head is over the court");
+            var queen=KingCourt.find(l,b,KingCourt.QUEEN);h.assertTrue(queen!=null&&queen.gesture()==KingCourt.LOOKING_UP,"the court looks up at it");})
+        .thenExecute(()->{
+            at.accept(q,past);
+            h.assertTrue(mine.apply(q).getInt("KingCourtWay")==KingCourt.BY_CAT,"out while they argued over the Cat: "+mine.apply(q).getInt("KingCourtWay"));
+            KingBreath.leave(q);KingCourt.forgetCat(b);
+            // The cards: too much of a thing (the cake) says what the court is, the pack comes down, and the King stirs once.
+            at.accept(r,onSquare);var own=mine.apply(r);
+            KingBreath.swallow(r,true,l.getGameTime()+KingDraughtItem.LASTS);at.accept(r,new double[]{KingSite.DOCK.x,KingSite.DOCK.z});
+            h.assertTrue(own.getInt("KingState")==KingBreath.TOO_MUCH,"held a thing, a bite makes them too much of one: "+own.getInt("KingState"));
+            int stirs=KingSleep.stirs(b);
+            KingCourt.pack(r);
+            var guard=b.offset(0,0,KingSite.GUARD_ROW);
+            h.assertTrue(KingCardBlock.is(l.getBlockState(guard))&&!KingCardBlock.standing(l.getBlockState(guard)),"the guard lies flat in the grass");
+            h.assertTrue(KingCourt.find(l,b,KingCourt.KING)==null&&KingCourt.find(l,b,KingCourt.QUEEN)==null&&KingCourt.find(l,b,KingCourt.HERALD)==null,"the court has come down as cards");
+            var king=l.getBlockState(b.offset(KingSite.COURT_KING));
+            h.assertTrue(KingCardBlock.is(king)&&king.getValue(KingCardBlock.FACE)==KingCardBlock.KING&&king.getValue(KingCardBlock.FALLEN),"the King of Hearts is a card where he stood");
+            h.assertTrue(KingSleep.stirs(b)==stirs+1,"the King stirred once, a long way off: "+KingSleep.stirs(b));
+            KingBreath.swallow(r,false,l.getGameTime());at.accept(r,past);
+            h.assertTrue(own.getInt("KingCourtWay")==KingCourt.BY_CARDS,"out by saying what the court was: "+own.getInt("KingCourtWay"));
+            // A reader who comes after is named by nobody, and finds a pack of cards on the grass.
+            at.accept(t,onSquare);
+            h.assertFalse(mine.apply(t).getBoolean("KingSummoned"),"no herald is left to name the late reader");
+            at.accept(t,past);
+            h.assertTrue(mine.apply(t).getInt("KingCourtWay")==KingCourt.ALREADY_CARDS,"the late reader found the cards on the grass");
+            // The accounts say which way each went.
+            h.assertTrue(pages(KingTexts.account("p",mine.apply(p))).contains("edge-on")&&pages(KingTexts.account("r",own)).contains("pack of cards"),"the accounts say which way each left the court");
+            // A fresh dream stands the pack up again (on its first tick).
+            KingSleep.forget(b);
+        })
+        .thenWaitUntil(()->{KingBreath.reader(r,b,mine.apply(r));
+            h.assertTrue(KingCardBlock.standing(l.getBlockState(b.offset(0,0,KingSite.GUARD_ROW))),"a fresh dream stands the pack up again");})
+        .thenExecute(()->{for(var who:new ServerPlayer[]{r,t})KingBreath.leave(who);done();h.succeed();});
+    }
+    private static String pages(net.minecraft.world.item.ItemStack book){
+        var c=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(c==null)return "";
+        var out=new StringBuilder();for(var page:c.pages())out.append(page.raw().getString()).append(' ');return out.toString();
+    }
 }

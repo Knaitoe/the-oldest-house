@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "fl": "the_oldest_house:block/king/card_king_lo",
+    "fh": "the_oldest_house:block/king/card_king_hi",
+    "bl": "the_oldest_house:block/king/card_back_lo",
+    "bh": "the_oldest_house:block/king/card_back_hi",
+    "particle": "the_oldest_house:block/king/card_king_lo"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        0,
+        4
+      ],
+      "to": [
+        13.5,
+        0.5,
+        20
+      ],
+      "faces": {
+        "up": {
+          "texture": "#fl",
+          "uv": [
+            2,
+            0,
+            13,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#bl",
+          "uv": [
+            2,
+            0,
+            13,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        0,
+        -4
+      ],
+      "to": [
+        13.5,
+        0.5,
+        4
+      ],
+      "faces": {
+        "up": {
+          "texture": "#fh",
+          "uv": [
+            2,
+            8,
+            13,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#bh",
+          "uv": [
+            2,
+            8,
+            13,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -109,6 +109,8 @@ public final class KingBreath {
         // Notice, one step up and no further than a thing: another reader's look, a look from one of the dream's people, or this
         // square's peg having counted them (0.4.644).
         if(state<THING&&(noticed(p,b)||lookedAtByTheDream(p,b)||counted(own,KingSite.rank((int)Math.floor(r.z)))))state++;
+        // 0.4.646: named by the court and not yet out, they are a thing while it attends to them; a swallow still takes them a step under.
+        if(KingCourt.holding(p,b,own))state=Math.max(state,THING);
         // 0.4.644: what they have swallowed, one step either way, for its twenty seconds; cake past a thing only on a thing.
         var swallowed=SWALLOWED.get(p.getUUID());
         if(swallowed!=null){if(p.level().getGameTime()>=swallowed.until)SWALLOWED.remove(p.getUUID());else state=swallowed.more?Math.min(TOO_MUCH,state+1):Math.max(NOWHERE,state-1);}
@@ -145,7 +147,7 @@ public final class KingBreath {
     }
     /** 0.4.644: looked at by one of the dream's people (the Queen, the Guard, the brothers), with nothing between them. */
     static boolean lookedAtByTheDream(ServerPlayer p,BlockPos b){
-        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a)||KingCaterpillar.is(a))){
+        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a)||KingCaterpillar.is(a)||KingCourt.is(a))){
             if(!a.isAlive())continue;
             var eye=a.getEyePosition();var to=p.getBoundingBox().getCenter().subtract(eye);double d=to.length();if(d<1e-3)return true;
             var view=Vec3.directionFromRotation(a.getXRot(),a.getYHeadRot());
@@ -161,6 +163,8 @@ public final class KingBreath {
     record Swallowed(boolean more,long until){}
     static final Map<UUID,Swallowed> SWALLOWED=new ConcurrentHashMap<>();
     public static void swallow(ServerPlayer p,boolean more,long until){SWALLOWED.put(p.getUUID(),new Swallowed(more,until));}
+    /** 0.4.646: whether a swallow from the bottle is still taking this reader a step under what they would be. */
+    public static boolean swallowedLess(ServerPlayer p){var w=SWALLOWED.get(p.getUUID());return w!=null&&!w.more&&p.level().getGameTime()<w.until;}
     public static boolean looksAt(Player q,Entity p){
         var eye=q.getEyePosition();var to=p.getBoundingBox().getCenter().subtract(eye);double d=to.length();if(d<1e-3)return true;
         if(q.getViewVector(1).dot(to.scale(1/d))<Math.cos(Math.toRadians(25)))return false;

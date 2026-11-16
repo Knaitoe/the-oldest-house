@@ -109,6 +109,36 @@ public final class KingTexts {
         FELL_THROUGH="The bridge was only drawn, and would not bear a thing. The bank is under your feet again.",
         DRAWN_CROSSED="Over the drawn bridge, as a drawing.";
 
+    // ------------------------------------------------------------------------------------------------ 0.4.646, part 6
+    // Every line below is new in 0.4.646 and flagged in docs/SLEEPING_KING_0_4_646.md. "Nothing but a pack of cards" is Carroll's; the
+    // Cat's first line is the proposal's.
+    public static final String HEARTS_KING_NAME="the court",HEARTS_QUEEN_NAME="the court",HERALD_NAME="the herald",CAT_NAME="the Cat";
+    public static final String HERALD_COME="Come before the court, and stand in the dock, and be looked at.",
+        HERALD_TALK="Your name is on the scroll. That is all the scroll says.",
+        KING_TALK="The court is sitting. It has been sitting a long while.",
+        SENTENCE_FIRST="Sentence first.",
+        SENTENCE_AFTER="What it was for, we'll find out afterwards. We have never got as far as afterwards.",
+        WHAT_FOR="That comes afterwards. Nothing has ever been carried out.",
+        ARGUE_KING="A head can't be taken off unless there's something to take it off.",
+        ARGUE_QUEEN="Anything that has a head can be made to do without it.",
+        ARGUE_HERALD="It's only grinning. It never does anything else.",
+        ARGUE_KING_AGAIN="Then it must be sentenced. Sentence first.";
+    public static final String R_WHAT_FOR="What is the sentence for?",R_PACK="You're nothing but a pack of cards!";
+    public static final String CAT_HEAD="They can't take a head off a line. They have tried it on me.",
+        CAT_OFFER="Shall I go and be looked at, instead of you? They can only look at one thing at a time.",
+        CAT_LATER="I'll be here. Some of me, anyway.",
+        CAT_THERE="They're looking at me now. Go on, while they are.",
+        CAT_GOING="They'll stop looking at me soon. I'd be on the far side by then.";
+    public static final String R_COME="Go and be looked at.",R_NOT_NOW="Not yet.";
+    public static final String SUMMONED="Your name, read off a scroll. On this square you are a thing for as long as the court attends to you.",
+        NOT_FINISHED="The guard closed up, and the court set you back in the dock. It has not finished looking at you.",
+        EDGE_ON="Out between two of the guard, edge-on.",
+        COURT_DONE="The court has done with you.",
+        PACK_FELL="The pack went up, and came down as cards on the grass. A long way off, the King stirred.",
+        CAT_OVER="A head is over the court, grinning, and every face in it has turned up to look.",
+        CARD_STANDING="One of the court's pack, standing on its edge.",
+        CARD_FALLEN="A card, lying flat in the grass.";
+
     static String words(int n){return switch(n){case 2->"two";case 3->"three";case 4->"four";case 5->"five";case 6->"six";case 7->"seven";default->String.valueOf(n);};}
     /** When he turns over and the filled land draws in to the next depth of his sleep. */
     public static String drewIn(int level){return level>=2?"He turned over again, and the filled land drew in to his own square.":"He turned over in his sleep, and the filled land drew in toward him.";}
@@ -143,6 +173,16 @@ public final class KingTexts {
         if(own.getBoolean("KingAsked"))out.add("Somebody on a mushroom asked me who I was, and I could only tell it what I was at the time.");
         if(own.getBoolean("KingDrawnCrossed"))out.add(own.getBoolean("KingFellThrough")?"The bridge past the fifth square was only drawn. It let me through once, and bore me when I was less.":"The bridge past the fifth square was only drawn, and it bore me because I was less.");
         else if(own.getBoolean("KingFellThrough"))out.add("The bridge past the fifth square was only drawn, and it would not bear me.");
+        // 0.4.646: the court of cards, and which way the reader left it.
+        int way=own.getInt("KingCourtWay");
+        if(own.getBoolean("KingSummoned"))out.add("A herald on the sixth square read my name off a scroll, and a court of cards sentenced me first and left it there.");
+        switch(way){
+            case 1->out.add("A head with no cat to it came over the court, and while they argued whether it could be taken off, I went out between the guard edge-on.");
+            case 2->out.add("I drank, and went out between the guard edge-on while the court was still looking at where I had been.");
+            case 3->out.add("I told the court what it was, and it was a pack of cards on the grass. He stirred, a long way off.");
+            case 4->out.add("The court was a pack of cards on the grass by the time I came to it.");
+            default->{}
+        }
         out.add(switch(own.getString("KingEnding")){
             case "said_his_whole_name"->"I said the whole of his name. He opened his eyes. One of us went out.";
             case "there_when_he_woke"->"Somebody else said the whole of his name. He opened his eyes, and the country went over to lines with me in it.";

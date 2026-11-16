@@ -1560,6 +1560,38 @@
     "phase": 222
   },
   {
+    "name": "literary_king_hearts_king",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 223
+  },
+  {
+    "name": "literary_king_hearts_queen",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 224
+  },
+  {
+    "name": "literary_king_herald",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 225
+  },
+  {
+    "name": "literary_king_cat",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 226
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",
