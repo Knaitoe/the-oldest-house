@@ -178,6 +178,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.634, Second Person: E2.** The signed last day is in that reader's own copy and record: Sam, the call, the reflection and the latch are staged and saved for that reader only.
 - **0.4.635, Second Person: E3.** Frightened out is read from that reader's own record; the night they leave is staged in that reader's copy only.
 - **0.4.636, Second Person: E4.** Known gently is read from that reader's own record; the cups, the talk and the question are staged in that reader's copy only, and the answer is that reader's word.
+- **0.4.637, Second Person: aftermath.** Whether a visit is the aftermath is read from that reader's own record; the flat is that reader's own copy, so the aftermath is staged for them alone, and the dust is sent to them only.
 - **0.4.631, A Little Longer: leaving early and coming back.** The question, the reunion and the early going are each reader's own, in their own copy, from their own record.
 - **0.4.630, A Little Longer: the room afterward.** Every reader's evening is their own copy, so the room afterward, its radio, the cups and the list are each reader's alone; the account, its outcome and the resolution come only from that reader's record.
 - **0.4.621, A Little Longer: the place.** Not dealt yet. The plan makes every reader's evening their own copy (one private instance each); the rain and the quiet are client-side, each reader's own.

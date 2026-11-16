@@ -31,7 +31,9 @@ public final class Aftermath {
      * on unfinished stories (LabyrinthDealer), and never giving credit (the scenes' endings check Completed).
      */
     public static final Set<LabyrinthPlace> PLACES=EnumSet.of(LabyrinthPlace.LAST_SWIMMER,LabyrinthPlace.VACANT_POSSESSION,LabyrinthPlace.MASQUE,LabyrinthPlace.GHOSTS_SET,
-            LabyrinthPlace.THREE_FINGERS,LabyrinthPlace.CHILD_ROOM,LabyrinthPlace.PELL_HOUSE,LabyrinthPlace.ONES_INSIDE);
+            LabyrinthPlace.THREE_FINGERS,LabyrinthPlace.CHILD_ROOM,LabyrinthPlace.PELL_HOUSE,LabyrinthPlace.ONES_INSIDE,
+            // 0.4.637: the flat, as the reader's ending left it (SecondPersonAfter).
+            LabyrinthPlace.SECOND_PERSON);
     /** How many times a finished scene comes back to the reader who finished it. */
     public static final int RETURNS=2;
     /** 0.4.542: how many times this scene comes back; the Pell house once, "FOR SALE" or lived in (PellAftermath). */

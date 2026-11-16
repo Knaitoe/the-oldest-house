@@ -123,6 +123,7 @@ public final class SecondPerson {
     static boolean dark(CompoundTag own){int s=seasonOf(own),st=step(own);return s==SUMMER&&(st==BATH||st==NIGHT)||s==AUTUMN&&st>=EVENING||s==WINTER&&st!=W_DAY&&st!=WINTER_DONE||SecondPersonSigned.dark(own)||SecondPersonGone.gone(own);}
     /** The flat's hour, from the year so far. */
     static long hour(CompoundTag own){
+        if(SecondPersonAfter.after(own))return SecondPersonAfter.hour(own);
         int s=seasonOf(own),st=step(own);
         if(s==SUMMER)return switch(st){case ARRIVE,UNPACK->8200;case GLASS_HUNG->10800;case BATH->13200;case NIGHT->18000;default->23400;};
         if(s==AUTUMN)return switch(st){case IRIS_VISIT->11400;case ROUTINE->12100;case EVENING->13600;case PHOTO->14200;case CALL->15000;case STAY->16000;default->17500;};
@@ -154,6 +155,7 @@ public final class SecondPerson {
     // ------------------------------------------------------------------------------------------------ arrival
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!own.contains("Snap")){own.put("Snap",snapshot(p));own.putInt("Season",SUMMER);go(own,ARRIVE);}
+        SecondPersonAfter.arrive(own);
         var f=FLATS.computeIfAbsent(b.asLong(),k->new Flat(b));f.sent=Long.MIN_VALUE;f.empty=0;
         sky(p,f,own);
     }
@@ -414,6 +416,8 @@ public final class SecondPerson {
     /** The year, one tick at a time, for one reader in their flat. */
     static void story(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own){
         var b=f.base;var r=rel(p.position(),b);
+        // 0.4.637: a finished year comes back as its aftermath, and nothing else happens in it.
+        if(SecondPersonAfter.after(own)){SecondPersonAfter.visit(l,f,p,own,r);return;}
         // Everyone at their marks.
         f.drift=own.getBoolean("Walking");
         var resident=stage(l,f,p,f.resident,residentMark(own),residentFrom(own),LiteraryActor.SP_RESIDENT,0,id->f.resident=id);
@@ -1078,6 +1082,7 @@ public final class SecondPerson {
     /** A right-click in the flat (the book on the shelf and the bench book are LiteraryVignettes'). */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own,@Nullable Direction face){
         var l=p.serverLevel();var s=l.getBlockState(b.offset(rel));var v=Vec3.atCenterOf(rel);var f=flat(b);if(f==null)return false;
+        if(SecondPersonAfter.inert(own))return true;
         String holding=held(p);
         // Carrying something of theirs: set it down.
         if(!holding.isEmpty()&&p.getMainHandItem().is(SecondPersonRegistry.CARRIED.get())){

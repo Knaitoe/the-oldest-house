@@ -440,4 +440,44 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_cups") public static void cupsDone(ServerLevel l){close();}
+
+    /** 0.4.637: a finished year come back, for each ending as it was left. */
+    private static void after(LiteraryTests.Fixture f,ServerPlayer p,String outcome,String decision){
+        var own=own(f,p);own.putBoolean("Completed",true);own.putBoolean("Ready",true);own.putString("Outcome",outcome);own.putString("Decision",decision);
+        own.putString("RoutineWhere","on the bathroom shelf, where you put it");own.putInt("Visit",own.getInt("Visit")+1);
+        SecondPerson.arrive(p,f.base(P),own);save(f,p,own);
+    }
+    private static boolean near(@javax.annotation.Nullable LiteraryActor a,BlockPos b,double x,double z){return a!=null&&a.position().distanceToSqr(b.getX()+x,a.getY(),b.getZ()+z)<2.25;}
+    /**
+     * 0.4.637, the aftermath. The flat comes back to a reader who finished the year, as their ending left it, with nothing to do in it:
+     * the card with a forwarding address on the mat, or their life going on in the armchair; the resident at the window at night; the
+     * empty flat's dust; the second cup out on the kitchen table. Nothing answers a hand but the empty flat's things, and it comes back
+     * only as often as the House allows.
+     */
+    @GameTest(template="empty",batch="second_after",timeoutTicks=4000)
+    public static void theFlatAfter(GameTestHelper h){
+        var f=fixture(h);var p=f.player("flat_after",P);var b=f.base(P);var l=f.level(P);
+        resident(h,f,p)
+            .thenExecute(()->{street(f,p);after(f,p,SecondPersonAfter.LATCH,"go");
+                h.assertTrue(SecondPersonAfter.after(own(f,p))&&Aftermath.PLACES.contains(P),"a finished year comes back as its aftermath, and the flat is among the aftermath rooms");})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("AfterT")>=45&&SecondPerson.resident(l,b)==null
+                &&SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonSite.MAT)),SecondPersonBlock.Kind.APPLICATION)&&SecondPersonBlock.stage(l.getBlockState(b.offset(SecondPersonSite.MAT)))==SecondPersonAfter.FORWARDING,
+                "gone: an empty flat, and the forwarding card on the mat: "+own(f,p)))
+            .thenExecute(()->{h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"counted once as a return");
+                h.assertFalse(SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonSite.BENCH_BOOK)),SecondPersonBlock.Kind.BOOK),"no book on the bench this time");
+                after(f,p,SecondPersonAfter.LATCH,"stay");})
+            .thenWaitUntil(()->h.assertTrue(near(SecondPerson.resident(l,b),b,SecondPersonSite.ARMCHAIR.getX()+.5,SecondPersonSite.ARMCHAIR.getZ()+.5),"stayed: their life going on, in the armchair"))
+            .thenExecute(()->after(f,p,SecondPersonAfter.POST,"stay"))
+            .thenWaitUntil(()->h.assertTrue(near(SecondPerson.resident(l,b),b,-3.5,-14.5)&&SecondPersonAfter.hour(own(f,p))==18000,"the resident at the window, at night"))
+            .thenExecute(()->{h.assertTrue(click(f,p,SecondPersonSite.PHONE,Direction.UP)&&!Talk.waiting(p,"sp_call_1")&&SecondPersonAfter.inert(own(f,p)),"nothing in the flat answers a hand");
+                after(f,p,SecondPersonAfter.NOBODY,"go");})
+            .thenWaitUntil(()->h.assertTrue(own(f,p).getInt("AfterT")>=45&&SecondPerson.resident(l,b)==null&&!SecondPersonAfter.inert(own(f,p)),"nobody home: the flat empty, and its things still to be moved"))
+            .thenExecute(()->after(f,p,SecondPersonAfter.CUPS,"stay"))
+            .thenWaitUntil(()->h.assertTrue(SecondPersonBlock.is(l.getBlockState(b.offset(SecondPersonCups.CUPS_AT)),SecondPersonBlock.Kind.CUPS)&&SecondPersonBlock.stage(l.getBlockState(b.offset(SecondPersonCups.CUPS_AT)))==0
+                &&near(SecondPerson.resident(l,b),b,SecondPersonSite.RESIDENT_CHAIR.getX()+.5,SecondPersonSite.RESIDENT_CHAIR.getZ()+.5),"the second cup out, and them at the table"))
+            .thenExecute(()->{h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)>=Aftermath.limit(P)&&!Aftermath.canDeal(f.data(),p.getUUID(),P),"it comes back only as often as the House allows: "+Aftermath.returns(f.data(),p.getUUID(),P));
+                h.assertTrue(SecondPersonAfter.line(own(f,p)).equals(SecondPersonAfter.SECOND_CUP),"the line for two cups");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="second_after") public static void afterDone(ServerLevel l){close();}
 }
