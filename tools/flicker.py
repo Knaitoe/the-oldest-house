@@ -17,7 +17,8 @@ the same way. A tool that writes models writes them with dumps() here
 in place of json.dumps, and every model it draws is settled on the way out.
 
     python3 tools/flicker.py            every model in the pack: which have faces that flicker, and how much of them
-    python3 tools/flicker.py --check    the same, and fails if any has; and if any see-through face is laid over itself
+    python3 tools/flicker.py --check    the same, and fails if any has; and if any see-through face is laid over itself, any face
+                                        is mapped off its picture (0.4.650) or any face draws nothing (blank, 0.4.651)
     python3 tools/flicker.py --cure     settles every model in the pack where it lies (a tool that writes with dumps() agrees with it),
                                         each face's mapping first kept on its own picture (fitted, 0.4.650)
     python3 tools/flicker.py NAME ...   only these models (block/bike_night/wasp), with every pair
@@ -893,6 +894,43 @@ def doubled(parts, pixels, cover=COVER):
     return found
 
 
+# A face less than this across, either way, is a sliver (the edge of a mark laid flat on a floor, a pane's edge in its frame, a
+# copy the cure laid): whether it draws anything or not, nobody sees it.
+SLIVER = 1.0
+
+
+def _span(e, k):
+    (x0, y0, z0), (x1, y1, z1) = e['from'], e['to']
+    return {'up': (x1 - x0, z1 - z0), 'down': (x1 - x0, z1 - z0), 'north': (x1 - x0, y1 - y0), 'south': (x1 - x0, y1 - y0),
+            'east': (z1 - z0, y1 - y0), 'west': (z1 - z0, y1 - y0)}[k]
+
+
+def blank(parts, pixels, sliver=SLIVER):
+    """The faces of one model that draw nothing: at least `sliver` across both ways, and every pixel of their picture where they
+    lie (pictured) clear (below CLEAR). Such a face is a hole where a piece should show its side, or a stalk, a cable, a flame
+    left out, or a face that was never meant to show anything (the top of a weed, the edge of a pane in its frame): it is given
+    the part of its picture it is meant to show, or left off. Only pictures in the pack are looked at; a face drawn with one of
+    the game's own pictures is not. (0.4.651.) Each as (piece, face)."""
+    found = []
+    for i, e in enumerate(parts):
+        if e.get('__comment') == LAID:
+            continue
+        for k, f in e.get('faces', {}).items():
+            if min(abs(d) for d in _span(e, k)) < sliver - 1e-6:
+                continue
+            got = pixels(f.get('texture', ''))
+            if not got:
+                continue
+            w, h, px = got
+            uv = pictured(e, k, f)
+            us = [c[0] * w / 16 for c in uv]; vs = [c[1] * h / 16 for c in uv]
+            x0 = max(0, int(min(us) + 1e-6)); x1 = min(w, max(x0 + 1, math.ceil(max(us) - 1e-6)))
+            y0 = max(0, int(min(vs) + 1e-6)); y1 = min(h, max(y0 + 1, math.ceil(max(vs) - 1e-6)))
+            if not any(px[x, y][3] >= CLEAR for x in range(x0, x1) for y in range(y0, y1)):
+                found.append((i, k))
+    return found
+
+
 # ------------------------------------------------------------------------------------------------------------------ the whole pack
 class Pictures:
     """The pack's pictures, read once each: by name ('the_oldest_house:block/x'), as (width, height, the pixels) or None."""
@@ -1030,6 +1068,20 @@ def main(argv):
     if off:
         print(f'{len(off)} models have faces mapped off their pictures. A tool that writes its models with flicker.dumps keeps them on; '
               f'python3 tools/flicker.py --cure keeps the pack on as it lies.')
+        if '--check' in argv:
+            return 1
+    # 0.4.651: a face that draws nothing is a hole in its piece, or a part left out; it is given its picture, or left off.
+    models, pictures, empty = pack(), Pictures(), {}
+    for name in sorted(models):
+        parts, textures = whole(name, models)
+        got = blank(parts, pictures.of(textures)) if parts else []
+        if got:
+            empty[name] = got
+    for name, faces in empty.items():
+        print(f'{len(faces):3d} faces draw nothing: {name} ({", ".join(f"piece {i} {k}" for i, k in faces[:6])}{", ..." if len(faces) > 6 else ""})')
+    if empty:
+        print(f'{len(empty)} models have faces that draw nothing: each is given the part of its picture it is meant to show, '
+              f'or left off, in the tool that draws it.')
         if '--check' in argv:
             return 1
     for name in sorted(found, key=lambda n: -sum(g[4] for g in found[n])):

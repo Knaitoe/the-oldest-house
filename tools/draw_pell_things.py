@@ -2506,15 +2506,19 @@ def thing_models():
         out[f'mattress_{end}'] = m([element([0, 0, 0], [16, 4, 16], {'up': 'm', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'})],
                                    {'m': 'mattress_head' if end == 0 else 'mattress_foot', 's': 'mattress_side'}, 'mattress_side')
     # The circle is painted on the floor: each cell is the floor's own boards with the paint on top, and a toy standing on the line
-    # where there is one (in the cell above, where nothing stops a body).
+    # where there is one (in the cell above, where nothing stops a body). A cell the line does not cross (the two inside it, and the
+    # four spare ones) has no paint over its boards (0.4.651: it had a coat of nothing), and breaks into boards.
+    cells = circle_cells()
     for i in range(16):
         dx, dz = i % CIRCLE_W, i // CIRCLE_W
-        els = [element([0, 0, 0], [16, 16, 16], {k: 'k' for k in ('north', 'south', 'east', 'west', 'up', 'down')}),
-               element([0, 16.05, 0], [16, 16.1, 16], {'up': 'c'})]
+        painted = cells[f'circle_{i}'].getchannel('A').getextrema()[1] >= 26
+        els = [element([0, 0, 0], [16, 16, 16], {k: 'k' for k in ('north', 'south', 'east', 'west', 'up', 'down')})]
+        if painted:
+            els.append(element([0, 16.05, 0], [16, 16.1, 16], {'up': 'c'}))
         toy = TOYS.get((dx, dz))
         if toy:
             els += toy_elements(toy, dx, dz)
-        out[f'circle_{i}'] = m(els, {'k': FLOOR, 'c': f'circle_{i}', 'y': 'toys'}, f'circle_{i}')
+        out[f'circle_{i}'] = m(els, {'k': FLOOR, 'c': f'circle_{i}', 'y': 'toys'}, f'circle_{i}' if painted else FLOOR)
     shoe_els = []
     for x, c in SHOES:
         side, top = c, c + 't'

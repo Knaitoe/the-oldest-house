@@ -77,11 +77,15 @@ def mailbox_front(open_):
 
 
 def flag(up):
+    """The mailbox's flag, drawn at the size of the plate it is painted on (six across, seven high, the box's back at the left):
+    raised, its arm stands up from the pivot by the back corner with the red flag at the top, over the lid; lowered, the arm lies
+    forward along the box with the flag at its end. (0.4.651; drawn across a whole block's picture before, so only a corner of the
+    raised flag fell on the plate and none of the lowered one.)"""
     im = blank()
     if up:
-        fill(im, 7, 2, 9, 16, '#5a5e60'); fill(im, 2, 2, 9, 7, '#b22c22'); dot(im, 2, 2, '#d24a3a')
+        fill(im, 1, 0, 2, 6, '#5a5e60'); fill(im, 2, 0, 6, 3, '#b22c22'); dot(im, 2, 0, '#d24a3a'); dot(im, 1, 5, '#3a3d40')
     else:
-        fill(im, 0, 12, 16, 14, '#5a5e60'); fill(im, 10, 9, 16, 14, '#8a2a20')
+        fill(im, 1, 5, 4, 6, '#5a5e60'); fill(im, 4, 4, 6, 7, '#8a2a20'); dot(im, 1, 5, '#3a3d40')
     return im
 
 
@@ -426,7 +430,7 @@ def fitting_models():
     for st in (0, 1):
         m[f'mailbox_{st}'] = model([element([7, 0, 7], [9, 8, 9], {'all': 'w'}),
                                     element([4, 8, 2], [12, 14, 14], {'north': 'f', 'south': 'f', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}),
-                                    element([12, 9, 6], [12.5, 16, 12], {'east': 'g', 'west': 'g'})],
+                                    element([12, 9, 6], [12.5, 16, 12], {'east': 'g', 'west': 'g'}, uv={'east': [0, 0, 6, 7], 'west': [6, 0, 0, 7]})],
                                    {'w': 'post', 'f': f'mailbox_front_{st}', 's': 'mailbox_side', 'g': f'flag_{st}'}, 'mailbox_side')
         m[f'shield_{st}'] = model([pole_el(0, 4), element([1, 2, 7.5], [15, 16, 8.5], {'north': 's', 'south': 's'})], {'p': 'pole', 's': f'shield_{st}'}, 'pole')
         m[f'mile_{st}'] = model([element([6.5, 0, 7], [9.5, 13, 9], {'north': 'm', 'south': 'm', 'east': 'm', 'west': 'm', 'up': 'm'})], {'m': f'mile_{st}'}, f'mile_{st}')

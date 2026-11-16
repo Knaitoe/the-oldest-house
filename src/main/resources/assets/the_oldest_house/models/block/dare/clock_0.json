@@ -29,18 +29,6 @@
         },
         "south": {
           "texture": "#tex"
-        },
-        "east": {
-          "texture": "#tex"
-        },
-        "west": {
-          "texture": "#tex"
-        },
-        "up": {
-          "texture": "#tex"
-        },
-        "down": {
-          "texture": "#tex"
         }
       }
     }

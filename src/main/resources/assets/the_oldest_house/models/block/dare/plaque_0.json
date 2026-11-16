@@ -37,10 +37,22 @@
           "texture": "#tex"
         },
         "up": {
-          "texture": "#tex"
+          "texture": "#tex",
+          "uv": [
+            0,
+            4,
+            16,
+            5
+          ]
         },
         "down": {
-          "texture": "#tex"
+          "texture": "#tex",
+          "uv": [
+            0,
+            11,
+            16,
+            12
+          ]
         }
       }
     }

@@ -301,6 +301,12 @@ def models():
     incubator['textures']={'frame':PREFIX+'enamel','glass':PREFIX+'glass','fabric':PREFIX+'sheet','controls':PREFIX+'controls','particle':PREFIX+'enamel'}
     incubator['elements'][0]['faces']['south']={'texture':'#frame'}
     incubator['elements'][0]['faces']['north']={'texture':'#controls','uv':[0,0,14,2]}
+    # The glass is clear but for its border and a glint or two, so each pane and the lid keep only their two broad faces; their thin
+    # edges fell on the clear middle and drew nothing (0.4.651). The rails below are the frame's edges.
+    for pane in incubator['elements'][3:8]:
+        thin=min(range(3),key=lambda a:pane['to'][a]-pane['from'][a])
+        keep=(('west','east'),('down','up'),('north','south'))[thin]
+        pane['faces']={k:v for k,v in pane['faces'].items() if k in keep}
     # A clear case needs a readable frame, even where the thin glass UVs sample its transparent centre.
     # These rails stay inside the incubator's existing 1..15 collision footprint and 15-pixel top.
     rails=[[x,5,z,x+.5,14.75,z+.5] for x in (1.25,14.25) for z in (1.25,14.25)]

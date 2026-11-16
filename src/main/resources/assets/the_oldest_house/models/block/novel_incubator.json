@@ -122,18 +122,6 @@
         15
       ],
       "faces": {
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
-          "texture": "#glass"
-        },
-        "north": {
-          "texture": "#glass"
-        },
-        "south": {
-          "texture": "#glass"
-        },
         "east": {
           "texture": "#glass"
         },
@@ -154,18 +142,6 @@
         15
       ],
       "faces": {
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
-          "texture": "#glass"
-        },
-        "north": {
-          "texture": "#glass"
-        },
-        "south": {
-          "texture": "#glass"
-        },
         "east": {
           "texture": "#glass"
         },
@@ -186,22 +162,10 @@
         2
       ],
       "faces": {
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
-          "texture": "#glass"
-        },
         "north": {
           "texture": "#glass"
         },
         "south": {
-          "texture": "#glass"
-        },
-        "east": {
-          "texture": "#glass"
-        },
-        "west": {
           "texture": "#glass"
         }
       }
@@ -218,22 +182,10 @@
         15
       ],
       "faces": {
-        "up": {
-          "texture": "#glass"
-        },
-        "down": {
-          "texture": "#glass"
-        },
         "north": {
           "texture": "#glass"
         },
         "south": {
-          "texture": "#glass"
-        },
-        "east": {
-          "texture": "#glass"
-        },
-        "west": {
           "texture": "#glass"
         }
       }
@@ -255,18 +207,6 @@
         },
         "down": {
           "texture": "#glass"
-        },
-        "north": {
-          "texture": "#glass"
-        },
-        "south": {
-          "texture": "#glass"
-        },
-        "east": {
-          "texture": "#glass"
-        },
-        "west": {
-          "texture": "#glass"
         }
       }
     },
@@ -523,102 +463,6 @@
         },
         "down": {
           "texture": "#frame"
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1.25,
-        4.98,
-        1.25
-      ],
-      "to": [
-        1.75,
-        5,
-        1.75
-      ],
-      "faces": {
-        "down": {
-          "texture": "#frame",
-          "uv": [
-            1.25,
-            14.25,
-            1.75,
-            14.75
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        1.25,
-        4.98,
-        14.25
-      ],
-      "to": [
-        1.75,
-        5,
-        14.75
-      ],
-      "faces": {
-        "down": {
-          "texture": "#frame",
-          "uv": [
-            1.25,
-            1.25,
-            1.75,
-            1.75
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        14.25,
-        4.98,
-        1.25
-      ],
-      "to": [
-        14.75,
-        5,
-        1.75
-      ],
-      "faces": {
-        "down": {
-          "texture": "#frame",
-          "uv": [
-            14.25,
-            14.25,
-            14.75,
-            14.75
-          ]
-        }
-      }
-    },
-    {
-      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
-      "from": [
-        14.25,
-        4.98,
-        14.25
-      ],
-      "to": [
-        14.75,
-        5,
-        14.75
-      ],
-      "faces": {
-        "down": {
-          "texture": "#frame",
-          "uv": [
-            14.25,
-            1.25,
-            14.75,
-            1.75
-          ]
         }
       }
     }

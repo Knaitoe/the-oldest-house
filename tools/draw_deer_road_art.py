@@ -261,7 +261,8 @@ def fitting_models():
     for st, tex in ((0, 'grate'), (1, 'grate_hand')):
         m[f'grate_{st}'] = model([element([0, 0, 0], [16, 16, 2], {'north': 'g', 'south': 'g'}), element([0, 0, 14], [16, 16, 16], {'north': 'g', 'south': 'g'})], {'g': tex}, tex)
     m['triangle_0'] = model([element([2, 0, 7.5], [14, 12, 8.5], {'north': 't', 'south': 't'}), element([3, 0, 5], [13, 1, 11], {'up': 'c', 'down': 'c'})], {'t': 'triangle', 'c': 'triangle_case'}, 'triangle')
-    m['lamp_0'] = model([element([5, 6, 12], [11, 13, 16], {'all': 'l'})], {'l': 'lamp'}, 'lamp')
+    # The cage's two sides show its own side: the frame and the light behind it (0.4.651; they took the picture's clear margin).
+    m['lamp_0'] = model([element([5, 6, 12], [11, 13, 16], {'all': 'l'}, {'east': [4, 4, 8, 11], 'west': [4, 4, 8, 11]})], {'l': 'lamp'}, 'lamp')
     m['carcass_0'] = {'parent': 'minecraft:block/block', 'textures': {'particle': P + 'fur'}, 'elements': []}
     return m
 

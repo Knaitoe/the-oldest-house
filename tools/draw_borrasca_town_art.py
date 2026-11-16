@@ -161,7 +161,7 @@ def black():
 
 
 # ------------------------------------------------------------------------------------------------ the diner
-def pie(cut):
+def pie():
     im = new('#c8873e', 42220, 6)
     # A lattice of crust over cherries, a fluted rim.
     for i in range(16):
@@ -172,11 +172,15 @@ def pie(cut):
                 dot(im, x, y, '#e2aa5e')
             else:
                 dot(im, x, y, '#8e2330' if (x * 7 + y * 3) % 5 else '#6f1a25')
-    if cut:
-        fill(im, 8, 8, 16, 16, '#000000', 0)
-        for i in range(8, 16):
-            dot(im, i, 8, '#e2aa5e'); dot(im, 8, i, '#e2aa5e')
     return im
+
+
+def cut_pie(x, y, z):
+    """A pie with a quarter taken out of it (its back right quarter): the half and the quarter left, each topped with its own
+    part of the pie, and the two cut sides showing the cherries (0.4.651; it was one whole pie whose top fell on the empty corner
+    of a picture of a cut pie, so it showed no top at all, and its sides stood whole)."""
+    return [element([x, y, z], [x + 4, y + 2, z + 2], {'all': 'c', 'up': 'p', 'south': 'p'}, {'south': [5, 6, 9, 8]}),
+            element([x, y, z + 2], [x + 2, y + 2, z + 4], {'all': 'c', 'up': 'p', 'east': 'p'}, {'east': [5, 6, 7, 8]})]
 
 
 def crust():
@@ -1890,9 +1894,10 @@ def supper_models(m):
                            element([10, 0, 4], [14, 1.5, 12], {'all': 's'}), element([10.5, 1.5, 5], [11, 1.8, 11], {'all': 'c'}), element([12, 1.5, 5], [12.5, 1.8, 11], {'all': 'c'}),
                            element([13.2, 1.5, 5], [13.7, 1.8, 11], {'all': 'c'})],
                           {'p': 'plate', 's': 'steel', 'c': 'chrome'}, 'plate')
-    for stage, top in ((0, 'pie'), (1, 'pie_cut')):
+    for stage in range(2):
+        last = [element([10, 0, 9], [14, 2, 13], {'all': 'c', 'up': 'p'})] if stage == 0 else cut_pie(10, 0, 9)
         m[f'pies_{stage}'] = model([element([1, 0, 5], [5, 2, 9], {'all': 'c', 'up': 'p'}), element([6, 0, 3], [10, 2, 7], {'all': 'c', 'up': 'p'}),
-                                    element([10, 0, 9], [14, 2, 13], {'all': 'c', 'up': 'q'})], {'c': 'crust', 'p': 'pie', 'q': top}, 'crust')
+                                    *last], {'c': 'crust', 'p': 'pie'}, 'crust')
     # Three of them put away, flat, one on another; the top one's face up.
     flat = lambda y, dx, face: element([1 + dx, y, 0], [15 + dx, y + 2, 16], {'all': 'u', 'up': face}, {'up': [0, 0, 14, 16], 'down': [0, 0, 14, 16], 'north': [0, 13, 14, 15], 'south': [0, 13, 14, 15], 'east': [0, 13, 16, 15], 'west': [0, 13, 16, 15]})
     m['folded_0'] = model([flat(0, 0, 'u'), flat(2, .6, 'u'), flat(4, -.4, 'r')], {'u': 'folding_under', 'r': 'folding_ring'}, 'folding')
@@ -1907,7 +1912,7 @@ def textures():
     out['entity/borrasca_blood_pool.png'] = blood_pool()
     faces = {
         'wood': wood(), 'chrome': chrome(), 'glass': glass(), 'enamel': enamel(), 'black': black(),
-        'pie': pie(False), 'pie_cut': pie(True), 'crust': crust(), 'urn': urn(), 'menu': menu(),
+        'pie': pie(), 'crust': crust(), 'urn': urn(), 'menu': menu(),
         'pegboard': pegboard(False), 'pegboard_taken': pegboard(True),
         'pump_door': pump_door(), 'pump_side': pump_side(), 'pump_side_top': pump_side_top(), 'pump_dial_0': pump_dial(0), 'pump_dial_1': pump_dial(1),
         'pump_cap': pump_cap(), 'pump_trim': pump_trim(), 'pump_globe': pump_globe(), 'pump_base': pump_base(), 'pump_hose': pump_hose(),
@@ -1972,12 +1977,12 @@ def wall(face, frame_tex='wood', inset=1):
 
 def shop_models():
     m = {}
-    for stage, top in ((0, 'pie'), (1, 'pie_cut')):
-        pies = [element([3, 1, 4], [7, 3, 8], {'all': 'c', 'up': 'p'}), element([9, 1, 4], [13, 3, 8], {'all': 'c', 'up': 'p'}),
-                element([6, 1, 9], [10, 3, 13], {'all': 'c', 'up': 'q'})]
+    for stage in range(2):
+        last = [element([6, 1, 9], [10, 3, 13], {'all': 'c', 'up': 'p'})] if stage == 0 else cut_pie(6, 1, 9)
+        pies = [element([3, 1, 4], [7, 3, 8], {'all': 'c', 'up': 'p'}), element([9, 1, 4], [13, 3, 8], {'all': 'c', 'up': 'p'}), *last]
         m[f'pie_case_{stage}'] = model([element([1, 0, 2], [15, 1, 14], {'all': 'w'}), *pies,
                                         element([1, 1, 2], [15, 9, 14], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g'})],
-                                       {'w': 'chrome', 'c': 'crust', 'p': 'pie', 'q': top, 'g': 'glass'}, 'glass', True)
+                                       {'w': 'chrome', 'c': 'crust', 'p': 'pie', 'g': 'glass'}, 'glass', True)
     m['urn_0'] = model([element([4, 0, 4], [12, 12, 12], {'all': 'u', 'up': 'k'}), element([6, 12, 6], [10, 13, 10], {'all': 'k'}),
                         element([7, 3, 2], [9, 5, 4], {'all': 'k'})], {'u': 'urn', 'k': 'black'}, 'urn')
     m['menu_0'] = wall('menu')

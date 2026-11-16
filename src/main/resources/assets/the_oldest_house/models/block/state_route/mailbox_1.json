@@ -86,10 +86,22 @@
       ],
       "faces": {
         "east": {
-          "texture": "#g"
+          "texture": "#g",
+          "uv": [
+            0,
+            0,
+            6,
+            7
+          ]
         },
         "west": {
-          "texture": "#g"
+          "texture": "#g",
+          "uv": [
+            6,
+            0,
+            0,
+            7
+          ]
         }
       }
     }

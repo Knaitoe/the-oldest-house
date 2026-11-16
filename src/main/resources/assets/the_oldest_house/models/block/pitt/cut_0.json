@@ -53,36 +53,50 @@
       ],
       "faces": {
         "north": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            7,
+            7,
+            9,
+            8
+          ]
         },
         "south": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            7,
+            7,
+            9,
+            8
+          ]
         },
         "east": {
           "texture": "#c",
           "uv": [
+            7,
             0,
-            13,
-            6,
-            14
-          ]
+            8,
+            6
+          ],
+          "rotation": 90
         },
         "west": {
           "texture": "#c",
           "uv": [
-            10,
-            13,
-            16,
-            14
-          ]
+            7,
+            0,
+            8,
+            6
+          ],
+          "rotation": 90
         },
         "up": {
           "texture": "#c",
           "uv": [
             7,
-            10,
+            0,
             9,
-            16
+            6
           ]
         },
         "down": {
@@ -109,46 +123,62 @@
       ],
       "faces": {
         "north": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            8,
+            4
+          ],
+          "rotation": 90
         },
         "south": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            8,
+            4
+          ],
+          "rotation": 90
         },
         "east": {
           "texture": "#c",
           "uv": [
-            6,
-            13,
             7,
-            14
+            7,
+            8,
+            8
           ]
         },
         "west": {
           "texture": "#c",
           "uv": [
-            9,
-            13,
-            10,
-            14
+            7,
+            7,
+            8,
+            8
           ]
         },
         "up": {
           "texture": "#c",
           "uv": [
-            6,
-            9,
-            10,
-            10
-          ]
+            7,
+            0,
+            8,
+            4
+          ],
+          "rotation": 90
         },
         "down": {
           "texture": "#c",
           "uv": [
-            6,
-            6,
-            10,
-            7
-          ]
+            7,
+            0,
+            8,
+            4
+          ],
+          "rotation": 90
         }
       }
     }

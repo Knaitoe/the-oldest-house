@@ -753,7 +753,7 @@ ANIMATED = {'masque/clock_case': 3}
 DIRS = ('north', 'south', 'east', 'west', 'up', 'down')
 
 
-def box(frm, to, tex, faces_=DIRS, overrides=None, cull=None, rot=None, glow=False, shade=True):
+def box(frm, to, tex, faces_=DIRS, overrides=None, cull=None, rot=None, glow=False, shade=True, uv=None):
     faces = {}
     for d in faces_:
         face = {'texture': '#' + tex}
@@ -765,6 +765,10 @@ def box(frm, to, tex, faces_=DIRS, overrides=None, cull=None, rot=None, glow=Fal
             faces.pop(d, None)
         else:
             faces[d] = {**faces.get(d, {}), 'texture': '#' + t}
+    # The part of its picture a face shows, where the part it would take from where it lies is not the one meant (0.4.651).
+    for d, square in (uv or {}).items():
+        if d in faces:
+            faces[d]['uv'] = list(square)
     el = {'from': list(frm), 'to': list(to), 'faces': faces}
     if rot:
         el['rotation'] = rot

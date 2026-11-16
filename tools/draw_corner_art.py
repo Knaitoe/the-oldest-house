@@ -175,15 +175,21 @@ def board():
 
 
 def glass():
+    """One side of a jar, six wide and eight high in the picture's top corner, which every side of the jar shows: its two edges
+    and its foot catching the light, a ring under the lid and a streak of shine (0.4.651; the jar's sides took the picture's
+    middle from where they stood, which was clear, so three of its four sides drew nothing)."""
     im = new()
-    for y in range(16):
-        for x in range(16):
-            if x in (0, 15) or y == 15:
-                dot(im, x, y, '#cfe0dc', 170)
-    for y in range(2, 13):
-        dot(im, 3, y, '#f4fbfa', 200)
-    dot(im, 4, 3, '#f4fbfa', 200)
+    for y in range(8):
+        dot(im, 0, y, '#cfe0dc', 170); dot(im, 5, y, '#cfe0dc', 170)
+    for x in range(1, 5):
+        dot(im, x, 7, '#cfe0dc', 150); dot(im, x, 0, '#dce9e6', 120)
+    for y in range(2, 6):
+        dot(im, 1, y, '#f4fbfa', 200)
+    dot(im, 2, 2, '#f4fbfa', 200)
     return im
+
+
+JAR_SIDE = [0, 0, 6, 8]
 
 
 def lid():
@@ -536,7 +542,7 @@ def fitting_models():
     for stage, contents in ((1, 'teeth'), (2, 'nails'), (3, 'murk')):
         m[f'jar_{stage}'] = model(shelf + [
             element([5.5, 4.2, 9.5], [10.5, 10, 14.5], {'all': 'c'}),
-            element([5, 4, 9], [11, 12, 15], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g'}),
+            element([5, 4, 9], [11, 12, 15], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g'}, {k: JAR_SIDE for k in ('north', 'south', 'east', 'west')}),
             element([5, 12, 9], [11, 13, 15], {'all': 'l'})], {'b': 'board', 'c': contents, 'g': 'glass', 'l': 'lid'}, 'glass')
     for stage, shade_ in ((0, 'lamp_off'), (1, 'lamp_on')):
         m[f'lamp_{stage}'] = model([element([7.5, 9, 14], [8.5, 10, 16], {'all': 'm'}), element([7, 12, 12], [9, 13, 16], {'all': 'm'}),
