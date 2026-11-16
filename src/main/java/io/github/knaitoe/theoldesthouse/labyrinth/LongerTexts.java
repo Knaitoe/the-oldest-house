@@ -144,6 +144,19 @@ public final class LongerTexts {
         LEANS_IN="Rowan leans in. The rain keeps on.",
         FRIENDS="I'd like us to be friends.",FRIEND_ON_ROOF="Then I've got a friend on a roof. That's more than I had this morning.",
         GO_BACK_IN="Go back in",COLLAR="Come on. It's getting into my collar.",INDOORS_AGAIN="Warmer in here. Just about.";
+    /**
+     * 0.4.627, the return indoors (LongerReturn). The proposal's own lines word for word: "I was going to say there's something wrong
+     * with the radio again.", "Is there?" (the reader's), "No. I just don't want you to go yet.", "You could have just said that." (the
+     * reader's), "I'm trying." The rest are new and flagged in docs/A_LITTLE_LONGER_0_4_627.md.
+     */
+    public static final String RADIO_AGAIN="I was going to say there's something wrong with the radio again.",IS_THERE="Is there?",
+        DONT_GO_YET="No. I just don't want you to go yet.",MAKE_SOMETHING_UP="I was going to make something up about the radio. I don't need to, do I.",
+        NO_R="No.",GOOD_DONT_GO="Good. I don't want you to go yet.",DONT_WANT_EITHER="I don't want to go either.",JUST_SAID="You could have just said that.",
+        HOPING_TOO="I was hoping for another excuse too.",LET_IT_STAND="Let it stand",DOESNT_LOOK_AWAY="Rowan looks at you, and doesn't look away.",
+        TRYING="I'm trying.",BOTH_HOPING="Then we were both hoping.",NEITHER_FILLS="Neither of you fills the quiet.",
+        WASH_CUPS="Wash the cups",WASH_DRY="Rowan washes. You dry. The radio plays.",ABOUT_TOAST="The toast wasn't that bad.",
+        CHARCOAL="It was charcoal. We both know it was charcoal.",SIT_DOWN="Sit down",SITS_TOO="Rowan sits. Nobody says the next thing for a while.",
+        STAY_LONG="Stay as long as you like.";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),

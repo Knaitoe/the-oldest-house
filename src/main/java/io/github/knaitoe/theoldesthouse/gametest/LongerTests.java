@@ -770,4 +770,63 @@ public final class LongerTests {
             Talk.close(p);done();h.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.627, the return indoors
+    private static int back(LiteraryTests.Fixture f,ServerPlayer p){return LongerReturn.stage(f.own(p,P));}
+    private static void indoors(LiteraryTests.Fixture f,ServerPlayer p,boolean glad){
+        onRoof(f,p,null,LongerRadio.INVITE_DIRECT);var own=f.own(p,P);own.putInt(LongerRoof.STAGE,LongerRoof.DONE);if(glad)own.putBoolean(LongerRoof.GLAD,true);
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+    }
+
+    /**
+     * Back indoors Rowan starts on another job and drops the excuse, word for word from the proposal: "I was going to say there's something
+     * wrong with the radio again." / "Is there?" / "No. I just don't want you to go yet." Teased, "I'm trying." No joke follows it. Then the
+     * cups: Rowan walks to the sink and washes, and the chapter is done.
+     */
+    @GameTest(template="empty",batch="longer_return_cups",timeoutTicks=2400)
+    public static void backIndoorsRowanDropsTheExcuseAndTheCupsAreWashed(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_return_cups",P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{indoors(f,p,false);f.at(p,P,2.5,6,-12.5);})
+        .thenWaitUntil(()->h.assertTrue(back(f,p)==LongerReturn.ASKED,"the return begins: "+back(f,p)))
+        .thenExecute(()->{
+            var lines=Talk.lines(p);
+            h.assertTrue(lines.contains(LongerTexts.ROWAN+": "+LongerTexts.RADIO_AGAIN)&&lines.contains(LongerTexts.ROWAN+": "+LongerTexts.DONT_GO_YET),"the excuse dropped: "+lines);
+            h.assertTrue(lines.stream().noneMatch(x->x.contains(LongerTexts.MAKE_SOMETHING_UP)),"not the reciprocal form for a reader who never asked");
+            h.assertTrue(Talk.choose(p,LongerTexts.JUST_SAID)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.TRYING),"teased: I'm trying");
+            h.assertTrue(Talk.lines(p).indexOf(LongerTexts.ROWAN+": "+LongerTexts.TRYING)==Talk.lines(p).size()-1,"the admission stands, no joke after it");
+            h.assertTrue(Talk.choose(p,LongerTexts.WASH_CUPS)&&back(f,p)==LongerReturn.WASHING,"the cups");
+        })
+        .thenWaitUntil(()->{var a=rowan(h,p);var b=LiteraryVignettes.base(p,P);h.assertTrue(a!=null&&a.position().distanceTo(LongerRadio.SINK_SPOT.at(b))<.6,"Rowan walks to the sink");})
+        .thenExecute(()->LongerReturn.waited(LiteraryVignettes.base(p,P),LongerReturn.WASH))
+        .thenWaitUntil(()->h.assertTrue(back(f,p)==LongerReturn.DONE,"washed: "+back(f,p)))
+        .thenExecute(()->{var own=f.own(p,P);h.assertTrue(LongerReturn.TEASE.equals(own.getString(LongerReturn.HOW))&&LongerReturn.CUPS.equals(own.getString(LongerReturn.ORDINARY)),"kept");Talk.close(p);done();h.succeed();});
+    }
+
+    /**
+     * A reader who said on the roof they were glad they stopped is not asked as if it were new: "I was going to make something up about the
+     * radio. I don't need to, do I." / "No." / "Good. I don't want you to go yet." Let it stand; sit down, and Rowan walks to their chair
+     * and sits.
+     */
+    @GameTest(template="empty",batch="longer_return_sat",timeoutTicks=2400)
+    public static void aReaderWhoAskedToStayIsAnsweredInKindAndRowanSits(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_return_sat",P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{indoors(f,p,true);f.at(p,P,2.5,6,-12.5);})
+        .thenWaitUntil(()->h.assertTrue(back(f,p)==LongerReturn.ASKED,"the return begins: "+back(f,p)))
+        .thenExecute(()->{
+            var lines=Talk.lines(p);
+            h.assertTrue(lines.contains(LongerTexts.ROWAN+": "+LongerTexts.MAKE_SOMETHING_UP)&&lines.contains(LongerTexts.ROWAN+": "+LongerTexts.GOOD_DONT_GO),"the reciprocal form: "+lines);
+            h.assertTrue(lines.stream().noneMatch(x->x.contains(LongerTexts.RADIO_AGAIN)),"not pretending the invitation is new");
+            h.assertTrue(Talk.choose(p,LongerTexts.LET_IT_STAND),"let it stand");
+            h.assertTrue(Talk.choose(p,LongerTexts.SIT_DOWN)&&back(f,p)==LongerReturn.TO_CHAIR,"sit down");
+        })
+        .thenWaitUntil(()->h.assertTrue(back(f,p)==LongerReturn.DONE,"Rowan reaches the chair: "+back(f,p)))
+        .thenExecute(()->{
+            var a=rowan(h,p);var b=LiteraryVignettes.base(p,P);var own=f.own(p,P);
+            h.assertTrue(a!=null&&a.position().distanceTo(LongerReturn.chair(own).at(b))<.3&&a.gesture()==LongerKettle.CUP_HELD,"Rowan sits with the cup");
+            h.assertTrue(LongerReturn.QUIET.equals(own.getString(LongerReturn.HOW))&&LongerReturn.SAT.equals(own.getString(LongerReturn.ORDINARY)),"kept");
+            Talk.close(p);done();h.succeed();
+        });
+    }
 }
