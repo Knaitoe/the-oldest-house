@@ -77,7 +77,7 @@ public final class KingTests {
      */
     @GameTest(template="empty",batch="king_built",timeoutTicks=1600)
     public static void theDrawingRoomTheGlassAndTheRuledCountry(GameTestHelper h){
-        var f=place(h);var p=f.player("king_reader",P);var l=f.level(P);var b=f.base(P);
+        var f=place(h);var p=f.player("king_reader",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
         h.startSequence().thenIdle(5).thenExecute(()->{
             h.assertTrue(is(l,b,-7,3,-8,"wallpaper")&&is(l,b,-7,0,-8,"panel")&&is(l,b,0,-1,-5,"floorboards")&&is(l,b,0,KingSite.CEIL,-5,"ceiling")&&is(l,b,0,-1,-11,"hearth")&&is(l,b,-2,2,-12,"chimney"),
                 "the drawing-room's paper over its panel, its boards, ceiling, hearth and chimney-breast");
@@ -146,7 +146,7 @@ public final class KingTests {
      */
     @GameTest(template="empty",batch="king_breath",timeoutTicks=1600)
     public static void hisBreathAndHowMuchOfAThingAReaderIs(GameTestHelper h){
-        var f=place(h);var p=f.player("king_breather",P);var q=f.player("king_watcher",P);var l=f.level(P);var b=f.base(P);
+        var f=place(h);var p=f.player("king_breather",P);var q=f.player("king_watcher",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
         h.startSequence().thenIdle(5).thenExecute(()->{
             var own=new net.minecraft.nbt.CompoundTag();var theirs=new net.minecraft.nbt.CompoundTag();
             // Out-breath: the land shows its resting drawing.
