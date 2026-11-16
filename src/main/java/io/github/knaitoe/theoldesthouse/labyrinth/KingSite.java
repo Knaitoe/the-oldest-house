@@ -45,8 +45,15 @@ public final class KingSite {
     public static final BlockPos GARDEN_DOOR=new BlockPos(0,0,-27);
     /** The King's tree, on the fourth rank's east file, and where he lies under it. */
     public static final BlockPos TREE=new BlockPos(16,0,-91),KING=new BlockPos(16,0,-86);
-    /** Where the account will wait (part 3 and after): the foot of his tree. */
-    public static final BlockPos ENDING=new BlockPos(13,0,-88);
+    /** 0.4.643: the account waits on the drawing-room's armchair, where a reader comes to after either ending. */
+    public static final BlockPos ENDING=ARMCHAIR;
+    /** 0.4.643: where a reader comes to in the drawing-room, between the armchair and the fire, facing the glass. */
+    public static final net.minecraft.world.phys.Vec3 COME_TO=new net.minecraft.world.phys.Vec3(-2.5,0,-8.5);
+    /**
+     * 0.4.643: the brothers' rattle, lying spoiled on his square between him and the hedge's gap; the two of them stand arm in arm just
+     * inside the gap, facing along the road, Tweedledum to the south.
+     */
+    public static final BlockPos RATTLE=new BlockPos(13,0,-88),DUM=new BlockPos(10,0,-90),DEE=new BlockPos(10,0,-91);
 
     /** The z the rank (1 to 8) begins at, nearest the house, and the last z it covers. */
     public static int rankNear(int r){return NEAR-(r-1)*PITCH;}
@@ -65,31 +72,69 @@ public final class KingSite {
         if(z<sixth+.5){if(z<seventh)return 1;return Mth.clamp((sixth+.5-z)/(sixth+.5-seventh),0,1);}
         return 0;
     }
+    /**
+     * 0.4.643: how ruled the land at z is at each depth of his sleep (KingSleep): deep (0) is the proposal's table above; lightly (1) fills
+     * only the fourth rank, with the third and fifth the band; barely (2) and awake (3) are handled across the board by
+     * {@link #ruledness(int,int,int,int)}.
+     */
+    public static double ruledness(int z,int level){
+        if(level<=0)return ruledness(z);
+        double near=rankNear(4)+.5,far=rankNear(5)+.5;
+        if(z>near)return Mth.clamp((z-near)/PITCH,0,1);
+        if(z<far)return Mth.clamp((far-z)/PITCH,0,1);
+        return 0;
+    }
     /** Whether the block at (x,z) is drawn ruled: certain outside the band, by a fixed hash within it. */
     public static boolean ruled(int x,int z){return ruled(x,z,0);}
     /**
      * 0.4.642: how ruled the land at (x,z) is with the fill's edge moved {@code shift} blocks out (his in-breath moves it one, KingBreath):
      * toward the house on the near side of the wood and toward the far ranks beyond it, so the filled land grows both ways.
      */
-    public static double ruledness(int x,int z,int shift){
-        double r=shift==0?ruledness(z):z>rankFar(4)?ruledness(z-shift):ruledness(z+shift);
+    public static double ruledness(int x,int z,int shift){return ruledness(x,z,shift,0);}
+    /**
+     * 0.4.643: the same at a depth of his sleep. Barely asleep, only his own square is filled and the rest of the fourth rank is the
+     * band, thinning west across it; the in-breath moves that edge a block west. Awake, all of it is ruled.
+     */
+    public static double ruledness(int x,int z,int shift,int level){
+        double r;
+        if(level>=3)r=1;
+        else if(level==2){double edge=8.5-shift;r=z>rankNear(4)||z<rankFar(4)?1:x>=edge?0:Mth.clamp((edge-x)/34,0,1);}
+        else r=shift==0?ruledness(z,level):z>rankFar(4)?ruledness(z-shift,level):ruledness(z+shift,level);
         if(Math.abs(x)>EAST+1)r=Math.max(r,Mth.clamp((Math.abs(x)-EAST-1)/8.0,0,1));
         return r;
     }
-    public static boolean ruled(int x,int z,int shift){
-        double r=ruledness(x,z,shift);
+    public static boolean ruled(int x,int z,int shift){return ruled(x,z,shift,0);}
+    public static boolean ruled(int x,int z,int shift,int level){
+        double r=ruledness(x,z,shift,level);
         // Within the band the land goes over in clumps of four blocks, not one block at a time.
         if(r<=0)return false;if(r>=1)return true;return hash(x>>1,z>>1)<r;
     }
-    private static long[] breathing;
+    private static final long[][] BREATHING=new long[4][];
+    private static long[] changing;
     /** Every column (x, z, as BlockPos longs at y 0) whose drawing changes between the out-breath and the in-breath. */
-    public static synchronized long[] breathing(){
-        if(breathing==null){
+    public static long[] breathing(){return breathing(0);}
+    /** 0.4.643: the same at a depth of his sleep. */
+    public static synchronized long[] breathing(int level){
+        level=Mth.clamp(level,0,3);
+        if(BREATHING[level]==null){
             var cells=new java.util.ArrayList<Long>();
-            for(int x=-COUNTRY;x<=COUNTRY;x++)for(int z=rankFar(RANKS)-8;z<=0;z++)if(ruled(x,z,0)!=ruled(x,z,1))cells.add(BlockPos.asLong(x,0,z));
-            breathing=cells.stream().mapToLong(Long::longValue).toArray();
+            for(int x=-COUNTRY;x<=COUNTRY;x++)for(int z=rankFar(RANKS)-8;z<=0;z++)if(ruled(x,z,0,level)!=ruled(x,z,1,level))cells.add(BlockPos.asLong(x,0,z));
+            BREATHING[level]=cells.stream().mapToLong(Long::longValue).toArray();
         }
-        return breathing;
+        return BREATHING[level];
+    }
+    /** 0.4.643: every column whose drawing differs anywhere between the depths of his sleep and the two halves of his breath. */
+    public static synchronized long[] changing(){
+        if(changing==null){
+            var cells=new java.util.ArrayList<Long>();
+            for(int x=-COUNTRY;x<=COUNTRY;x++)for(int z=rankFar(RANKS)-8;z<=0;z++){
+                boolean first=ruled(x,z,0,0),differs=false;
+                for(int level=0;level<=3&&!differs;level++)for(int shift=0;shift<=1;shift++)if(ruled(x,z,shift,level)!=first){differs=true;break;}
+                if(differs)cells.add(BlockPos.asLong(x,0,z));
+            }
+            changing=cells.stream().mapToLong(Long::longValue).toArray();
+        }
+        return changing;
     }
     static double hash(int x,int z){long h=x*341873128712L+z*132897987541L;h^=h>>>29;h*=0xBF58476D1CE4E5B9L;h^=h>>>32;return (h&0xFFFFFF)/(double)0x1000000;}
 
@@ -119,7 +164,10 @@ public final class KingSite {
         room(l,b,true);
         board(l,b);
         wood(l,b);
+        rattle(l,b);
     }
+    /** 0.4.643: the brothers' rattle lying on his square. */
+    public static void rattle(ServerLevel l,BlockPos b){set(l,b,RATTLE,KingBlock.of(KingBlock.Kind.RATTLE,Direction.NORTH));}
 
     // ------------------------------------------------------------------------------------------------ the country round the strip
     static void country(ServerLevel l,BlockPos b){

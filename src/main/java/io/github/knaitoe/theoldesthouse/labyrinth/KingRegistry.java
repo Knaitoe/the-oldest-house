@@ -20,7 +20,9 @@ public final class KingRegistry {
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** His breath, in and out (tools/generate_king_audio.py), and a sort of thing's soft feet. */
-    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> BREATH_IN=sound("king.breath_in"),BREATH_OUT=sound("king.breath_out"),SOFT_STEP=sound("king.soft_step");
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> BREATH_IN=sound("king.breath_in"),BREATH_OUT=sound("king.breath_out"),SOFT_STEP=sound("king.soft_step"),
+        /** 0.4.643: he stirs in his sleep; the crow over the wood. */
+        STIR=sound("king.stir"),CROW=sound("king.crow");
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     /** The country's materials; every one has its ruled twin, named with "_ruled". */
     public static final List<String> COUNTRY=List.of("turf_light","turf_dark","soil","hedge","brook","bridge","path","bark","bough");

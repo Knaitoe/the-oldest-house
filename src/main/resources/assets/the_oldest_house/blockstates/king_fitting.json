@@ -719,6 +719,96 @@
     "facing=west,kind=window,stage=5": {
       "model": "the_oldest_house:block/king/window_0",
       "y": 270
+    },
+    "facing=north,kind=rattle,stage=0": {
+      "model": "the_oldest_house:block/king/rattle_0"
+    },
+    "facing=north,kind=rattle,stage=1": {
+      "model": "the_oldest_house:block/king/rattle_0"
+    },
+    "facing=north,kind=rattle,stage=2": {
+      "model": "the_oldest_house:block/king/rattle_0"
+    },
+    "facing=north,kind=rattle,stage=3": {
+      "model": "the_oldest_house:block/king/rattle_0"
+    },
+    "facing=north,kind=rattle,stage=4": {
+      "model": "the_oldest_house:block/king/rattle_0"
+    },
+    "facing=north,kind=rattle,stage=5": {
+      "model": "the_oldest_house:block/king/rattle_0"
+    },
+    "facing=east,kind=rattle,stage=0": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 90
+    },
+    "facing=east,kind=rattle,stage=1": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 90
+    },
+    "facing=east,kind=rattle,stage=2": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 90
+    },
+    "facing=east,kind=rattle,stage=3": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 90
+    },
+    "facing=east,kind=rattle,stage=4": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 90
+    },
+    "facing=east,kind=rattle,stage=5": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 90
+    },
+    "facing=south,kind=rattle,stage=0": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 180
+    },
+    "facing=south,kind=rattle,stage=1": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 180
+    },
+    "facing=south,kind=rattle,stage=2": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 180
+    },
+    "facing=south,kind=rattle,stage=3": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 180
+    },
+    "facing=south,kind=rattle,stage=4": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 180
+    },
+    "facing=south,kind=rattle,stage=5": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 180
+    },
+    "facing=west,kind=rattle,stage=0": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 270
+    },
+    "facing=west,kind=rattle,stage=1": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 270
+    },
+    "facing=west,kind=rattle,stage=2": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 270
+    },
+    "facing=west,kind=rattle,stage=3": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 270
+    },
+    "facing=west,kind=rattle,stage=4": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 270
+    },
+    "facing=west,kind=rattle,stage=5": {
+      "model": "the_oldest_house:block/king/rattle_0",
+      "y": 270
     }
   }
 }

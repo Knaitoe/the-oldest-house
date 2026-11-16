@@ -133,7 +133,10 @@ public final class WitnessAccount {
         // 0.4.618 (docs/ONES_INSIDE_ACCOUNTS_0_4_618.md): resolved by the account, ready to everybody in the house before one of its four ends played out.
         ONES_INSIDE("ones_already_inside","The ones already inside","understanding","I stayed in a lodging house where one man had been made out of another, and both of them were still in it. The house came to one of its ends while I was there."),
         // 0.4.630 (docs/A_LITTLE_LONGER_0_4_630.md): resolved by the account in the room afterward, ready ten seconds after the cut.
-        LITTLE_LONGER("a_little_longer","A little longer","memory","I spent an evening in a radio shop with someone who was fixing a set that kept losing its station. Then the wall by the toaster went back, and they went with it.");
+        LITTLE_LONGER("a_little_longer","A little longer","memory","I spent an evening in a radio shop with someone who was fixing a set that kept losing its station. Then the wall by the toaster went back, and they went with it."),
+        // 0.4.643 (docs/SLEEPING_KING_0_4_643.md): resolved by the account on the drawing-room's armchair, ready to a reader who said his
+        // name, was there when another did, or walked off the board and left him his sleep.
+        SLEEPING_KING("a_sort_of_thing","A sort of thing","understanding","I crossed a country drawn in squares to an old man asleep under a tree, and two brothers told me what I was in his dream.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

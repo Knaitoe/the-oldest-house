@@ -6464,5 +6464,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.bleed.sleeping_king"
+  },
+  "king.stir": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/stir",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.stir"
+  },
+  "king.crow": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/crow",
+        "attenuation_distance": 96
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.crow"
   }
 }
