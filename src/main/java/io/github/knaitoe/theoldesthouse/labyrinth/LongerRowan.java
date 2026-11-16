@@ -47,9 +47,10 @@ public final class LongerRowan {
     private LongerRowan(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.LITTLE_LONGER;
     /** Stranger phases: Rowan as a woman, Rowan as a man. */
-    public static final int FIRST=210,WOMAN=0,MAN=1,COUNT=2;
+    /** 0.4.628: the same two in their coats, on the next two phases (LongerTomorrow). */
+    public static final int FIRST=210,WOMAN=0,MAN=1,COAT=2,COUNT=4;
     public static boolean cast(int phase){return phase>=FIRST&&phase<FIRST+COUNT;}
-    public static String skin(int phase){return phase==FIRST+MAN?"longer_rowan_man":"longer_rowan_woman";}
+    public static String skin(int phase){int k=phase-FIRST;return ((k%2)==MAN?"longer_rowan_man":"longer_rowan_woman")+(k>=COAT?"_coat":"");}
     public static boolean is(@Nullable Entity e){return e instanceof LiteraryActor a&&a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     /** Their gestures, for the renderer (client.LiteraryRenderers.CastModel.longer): walking (nothing), at the radio, at the shelf, at the counter. */
     public static final int WALK=0,WORK=1,SHELF=2,COUNTER=3;
@@ -94,14 +95,14 @@ public final class LongerRowan {
     static final class Shop {UUID id;int phase=-1;int leg=-1,via=0,hold=0;long nextErrand=-1,nextHum=-1,nextTune=-1,lastTick=-1,spokenAt=-100000;}
     private static final Map<BlockPos,Shop> SHOPS=new HashMap<>();
     static Shop shop(BlockPos b){return SHOPS.computeIfAbsent(b.immutable(),k->new Shop());}
-    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();LongerRadio.clearAll();LongerRoof.clearAll();LongerReturn.clearAll();}
+    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();LongerRadio.clearAll();LongerRoof.clearAll();LongerReturn.clearAll();LongerTomorrow.clearAll();}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()-7,b.getY()-1,b.getZ()-19,b.getX()+8,b.getY()+LongerSite.ROOF+4,b.getZ()+1);}
     private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
 
     /** A reader arrives in their copy: the copy is kept ticking, and their Rowan is decided now if not already. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);LongerKettle.arrive(p,b,own);LongerRadio.arrive(p,b,own);LongerRoof.arrive(p,b,own);LongerReturn.arrive(p,b,own);
+        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);LongerKettle.arrive(p,b,own);LongerRadio.arrive(p,b,own);LongerRoof.arrive(p,b,own);LongerReturn.arrive(p,b,own);LongerTomorrow.arrive(p,b,own);
     }
     /** Rowan at this copy, if their body is here. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b){
@@ -121,7 +122,7 @@ public final class LongerRowan {
         s.id=a.getUUID();s.leg=-1;
     }
     /** Nobody at this copy: for a shop built again from nothing, and for tests. */
-    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);LongerRadio.forget(b);LongerRoof.forget(b);LongerReturn.forget(b);}
+    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);LongerRadio.forget(b);LongerRoof.forget(b);LongerReturn.forget(b);LongerTomorrow.forget(b);}
 
     /** Readers in this copy of the place. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){

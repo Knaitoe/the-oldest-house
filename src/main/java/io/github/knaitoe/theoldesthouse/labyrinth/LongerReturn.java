@@ -69,6 +69,8 @@ public final class LongerReturn {
             }
             case TO_CHAIR->{if(LongerRowan.step(a,chair(own).at(b))){LongerKettle.place(a,b,chair(own));a.gesture(LongerKettle.CUP_HELD);stage(p,own,DONE);}return true;}
             case DONE->{
+                // 0.4.628: tomorrow takes Rowan once the door has moved (LongerTomorrow).
+                if(LongerTomorrow.tick(l,b,a,here,p,own))return true;
                 if(SAT.equals(own.getString(ORDINARY)))LongerKettle.keep(a,b,chair(own),here);
                 else if(CUPS.equals(own.getString(ORDINARY)))LongerKettle.keep(a,b,new LongerRowan.Spot(LongerRadio.SINK_SPOT.x(),LongerRadio.SINK_SPOT.y(),LongerRadio.SINK_SPOT.z(),LongerRadio.SINK_SPOT.look(),LongerBench.REST),here);
                 else LongerKettle.keep(a,b,LongerRoof.WORKTOP_SPOT,here);
@@ -126,7 +128,7 @@ public final class LongerReturn {
             case ASKED->{Talk.resume(p,LongerRowan.TALK);return true;}
             case ORDINARY_TIME->{if(!Talk.resume(p,LongerRowan.TALK)){begin(p);ordinary(p);}return true;}
             case WASHING,TO_CHAIR->{return true;}
-            case DONE->{begin(p);line(p,a,LongerTexts.STAY_LONG);Talk.end(p);return true;}
+            case DONE->{if(LongerTomorrow.talk(p,a,own))return true;begin(p);line(p,a,LongerTexts.STAY_LONG);Talk.end(p);return true;}
             default->{return false;}
         }
     }
