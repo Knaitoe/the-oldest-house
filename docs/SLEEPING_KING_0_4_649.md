@@ -112,6 +112,15 @@ everybody who sees it at once.
     fault, not the mod: they were drawn again without the ground under a camera that looks up.
   - The tall pieces show their own faces from both sides; nothing samples from beside them.
 
+## Fixed after run 1683
+
+Run 1683 (0.4.648) failed the drawing-room case in the full suite: the King was found standing under his tree. He sleeps on the
+ground there, not in a bed, and the game gets up any sleeper with no bed under him on that sleeper's own tick; the dream laid him
+down again after, so he was stood up and laid down again every tick that his own tick ran, which is whenever a reader is near
+enough to his tree (in that run, the chunk was kept ticking by the suite). Only the dream wakes him now (`KingSleep.keepSleeping`).
+The drawing-room case now puts a second reader by his tree and checks that he sleeps on: it failed before the change, as run 1683
+did, and passes after it (14 King cases).
+
 ## New lines (for the owner)
 
 The Witness line, by the reader's own ending:

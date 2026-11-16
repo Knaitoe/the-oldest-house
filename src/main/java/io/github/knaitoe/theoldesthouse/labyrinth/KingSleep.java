@@ -98,6 +98,14 @@ public final class KingSleep {
 
     /** 0.4.648: every country with a reader in it goes on once a server tick (KingBreath.advance), between its readers' own parts. */
     @SubscribeEvent public static void serverTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){KingBreath.tickAll(e.getServer());}
+    /**
+     * He sleeps on the ground under his tree, not in a bed, and the game's rule that gets up a sleeper with no bed under him is not
+     * his: only the dream wakes him (wake, and the waking it starts). Without this his own tick stood him up whenever a reader was near
+     * enough for it to run, and the dream laid him down again after it, every tick (run 1683).
+     */
+    @SubscribeEvent public static void keepSleeping(net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e){
+        if(e.getEntity() instanceof LiteraryActor a&&King.is(a))e.setContinueSleeping(true);
+    }
 
     // ------------------------------------------------------------------------------------------------ once a tick, while anybody is there
     static void tick(ServerLevel l,BlockPos b){
