@@ -105,6 +105,7 @@ ROWS = {
     'bike_night': 'A card rattles in spokes behind a door',
     'pell_house': 'A hairbrush, slowly, behind a door',
     'ones_inside': 'Something moves inside a wall, behind a door',
+    'little_longer': 'A radio turns between stations behind a door',
 }
 
 
@@ -679,6 +680,7 @@ MAKERS = {
                       ('bike/card', 1.5, .8, 2500), ('bike/freewheel', 2.1, .6, 2500), ('bike/freewheel', 2.6, .5, 2500), length=3.3),
     'pell_house': own(('pell/brush', .2, 1, 2000), ('pell/brush', 1.9, .85, 2000, 0, 1.4)),
     'ones_inside': own(('literary/scratch', .3, 1, 1300), ('hall/settle', 2.2, .5, 800, 0, 1.0), length=3.3),
+    'little_longer': own(('longer/tuning', 0, 1, 2400, .4, 3.0), ('longer/tune', 2.4, .5, 1600, 3.0, .9), length=3.3),
 }
 
 

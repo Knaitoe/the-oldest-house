@@ -2374,5 +2374,21 @@
     "role": "STRANGER",
     "number": 0,
     "phase": 211
+  },
+  {
+    "name": "literary_longer_rowan_woman_coat",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 212
+  },
+  {
+    "name": "literary_longer_rowan_man_coat",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 213
   }
 ]

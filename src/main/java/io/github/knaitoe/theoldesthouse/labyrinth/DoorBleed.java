@@ -119,7 +119,7 @@ public enum DoorBleed {
     LAST_ORDERS(new Spec().drawn(1).light(0xFFB14F,Rhythm.STEADY).glow(.5F).sound("bleed.last_orders")),
     BIKE_NIGHT(new Spec().drawn(1).light(0xFF9A2E,Rhythm.CANDLE).glow(.7F).sound("bleed.bike_night")),
     PELL_HOUSE(new Spec().drawn(1).light(0xFFE8B0,Rhythm.STEADY).glow(.5F).sound("bleed.pell_house")),
-    LITTLE_LONGER(new Spec().light(0xFFE2B0,Rhythm.STEADY).air(Air.STEAM).sound("bleed.place_for_you")),
+    LITTLE_LONGER(new Spec().light(0xFFE2B0,Rhythm.STEADY).air(Air.STEAM).sound("bleed.little_longer")),
     ONES_INSIDE(new Spec().drawn(1).light(0xFFD27A,Rhythm.CANDLE).glow(.5F).sound("bleed.ones_inside"));
 
     /** What lies on the hall's floor at the door. */
