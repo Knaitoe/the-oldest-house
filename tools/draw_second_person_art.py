@@ -538,6 +538,25 @@ def form_signed():
     return im
 
 
+def forwarding():
+    # 0.4.637, the aftermath: the card left on the mat by someone who went. It is sampled from x 4 to 11 and y 5 to 10, one pixel to a
+    # sixteenth: a cream card with a worn edge, a stamp in the top corner, a line of capitals (PLEASE FORWARD) and two lines of address.
+    im = new(base='#d9d2c2', seed=2824, spread=1)
+    fill(im, 4, 5, 8, 6, '#efe9da')
+    for x in range(4, 12):
+        dot(im, x, 5, '#e2dbc9'); dot(im, x, 10, '#d4ccb8')
+    for y in range(5, 11):
+        dot(im, 4, y, '#e2dbc9'); dot(im, 11, y, '#d4ccb8')
+    dot(im, 10, 6, '#9a4a3a'); dot(im, 10, 7, '#7a3a2e'); dot(im, 9, 6, '#b8a07a')
+    for x in (5, 6, 7, 8):
+        dot(im, x, 6, '#2a2e3a')
+    for x in (5, 6, 8, 9):
+        dot(im, x, 8, '#3a4a7a')
+    for x in (5, 7, 8):
+        dot(im, x, 9, '#3a4a7a')
+    return im
+
+
 def mug():
     # 0.4.636, E4: the side of an ordinary glazed mug at the game's own pixel size: the cups sample its top-left 4 by 5. A pale rim,
     # cream glaze, one blue band, and darker where the glaze pooled at the foot. The rest of the sheet repeats the pattern for the handles.
@@ -597,7 +616,7 @@ def textures():
         'pole': new(base='#6a6a6c', seed=2802, spread=2), 'rota': rota(), 'cloth': cloth(0), 'cloth_rumpled': cloth(1), 'plate': plate(),
         'bakelite': bakelite(), 'dial': dial(), 'cream': new(base='#e8e2d0', seed=2803, spread=2), 'frame': new(base='#3a2c22', seed=2804, spread=2),
         'tin_lid': tin_lid(), 'tin_side': tin_side(), 'tin_in': tin_in(), 'wool': wool(), 'needle': needle(), 'envelope': envelope(),
-        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_signed': form_signed(), 'mug': mug(), 'mug_full': mug_top(1), 'mug_empty': mug_top(0), 'form_back': form_back(), 'hardboard': hardboard(),
+        'ticket': ticket(), 'knit_folded': knit_folded(), 'form': form(), 'form_signed': form_signed(), 'mug': mug(), 'forwarding': forwarding(), 'mug_full': mug_top(1), 'mug_empty': mug_top(0), 'form_back': form_back(), 'hardboard': hardboard(),
     }
     out.update({f'block/second/{k}.png': v for k, v in t.items()})
     return out
@@ -703,6 +722,10 @@ def fitting_models():
                                {'f': 'form', 'b': 'form_back'}, 'form_back')
     m['application_2'] = model([element([3, 0, 2], [13, 0.25, 14], {'up': 'f', 'down': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}, uv={'up': [3, 2, 13, 14], 'down': [3, 2, 13, 14]}, rot=sheet_rot)],
                                {'f': 'form_signed', 'b': 'form_back'}, 'form_signed')
+    # 0.4.637, the aftermath: the forwarding card on the mat, smaller than the form and turned the other way, as if dropped in passing.
+    card_rot = {'origin': [8, 0, 8], 'axis': 'y', 'angle': -22.5}
+    m['application_3'] = model([element([4, 0, 5], [12, 0.25, 11], {'up': 'c', 'down': 'k', 'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k'}, uv={'up': [4, 5, 12, 11], 'down': [4, 5, 12, 11]}, rot=card_rot)],
+                               {'c': 'forwarding', 'k': 'form_back'}, 'forwarding')
 
     # 0.4.636, E4: two cups on the kitchen table, one at each chair, handles turned out; stage 1, theirs drunk, the reader's still full.
     def cup(x0, z0, handle_south, top):
@@ -719,7 +742,7 @@ def fitting_models():
 
 
 KINDS = ['book', 'shelf', 'box', 'glass', 'mirror', 'tank', 'photo', 'sheet', 'coat', 'routine', 'sign', 'stop', 'rota', 'cloth', 'phone', 'tin', 'ticket', 'sleeve', 'application', 'cups']
-STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 3, 'cups': 2}
+STAGES = {'book': 2, 'box': 4, 'glass': 2, 'mirror': 2, 'tank': 2, 'photo': 2, 'routine': 16, 'sign': 3, 'cloth': 3, 'phone': 3, 'tin': 3, 'sleeve': 3, 'application': 4, 'cups': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 DISPLAY = {
