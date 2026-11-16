@@ -165,7 +165,7 @@ public final class LongerBench {
     private static void ask(ServerPlayer p,LiteraryActor a,CompoundTag own){
         var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;var w=work(b);w.reader=p.getUUID();
         own.putBoolean(LongerRowan.MET,true);stage(p,own,ASK);
-        Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.ASK_HOLD);
+        Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerSelf.askHold(p));
         askHold(p);
     }
     private static void askHold(ServerPlayer p){
@@ -303,7 +303,7 @@ public final class LongerBench {
         int st=stage(own);
         switch(st){
             case NONE->{if(!atBench)return false;w.reader=p.getUUID();ask(p,a,own);return true;}
-            case ASK->{if(!Talk.resume(p,LongerRowan.TALK)){Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.ASK_HOLD);askHold(p);}return true;}
+            case ASK->{if(!Talk.resume(p,LongerRowan.TALK)){Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerSelf.askHold(p));askHold(p);}return true;}
             case HOLDING->{Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.HOLD_REMIND);Talk.end(p);return true;}
             case ALONE->{
                 Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);

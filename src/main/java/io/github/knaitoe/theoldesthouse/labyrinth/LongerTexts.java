@@ -58,6 +58,8 @@ public final class LongerTexts {
      * "And one of those was right." The rest are new and flagged for the owner in docs/A_LITTLE_LONGER_0_4_623.md.
      */
     public static final String ASK_HOLD="Could you hold that side a second?",
+        /** 0.4.632 (LongerSelf), for a settled SELF read only. */
+        ASK_HOLD_MASC="Could you hold that side a second, man?",ASK_HOLD_FEM="Could you hold that side a second, miss?",ASK_HOLD_ANDRO="Could you hold that side a second, friend?",
         HOLD_IT="Hold the side of the radio",WATCH="Watch",NOT_NOW="Not right now.",
         ONE_HANDED="Fine. I've done it one-handed before.",
         HOLD_WHERE="The left side. Flat, like that.",HOLD_REMIND="Just the left side. Flat.",
@@ -81,7 +83,9 @@ public final class LongerTexts {
      * "That's worse." The rest are new and flagged for the owner in docs/A_LITTLE_LONGER_0_4_624.md.
      */
     public static final String MAKING_TEA="I'm making tea.",PART="Is that part of the repair?",NO="No.",SAY_NOTHING="Say nothing",
-        STAY_FOR="You could stay for it.",YES="I'd like that.",ONE_CUP="One cup.",KEEP_GOING="I should keep going.",
+        STAY_FOR="You could stay for it.",
+        /** 0.4.632 (LongerSelf), for a settled HOME read only. */
+        STAY_HAVEN="You could stay for it. Before you head back.",STAY_DANGER="You could stay for it. The door's right there whenever you want it.",STAY_RUNAWAY="You could stay for it. You don't have to be anywhere.",YES="I'd like that.",ONE_CUP="One cup.",KEEP_GOING="I should keep going.",
         GO_ON="All right. It's the same door you came in by.",STILL_THERE="Kettle's still there.",
         POURED="The one without the crack's yours.",TOOK_CUP="You take the cup without the crack.",
         NOTICED_LINE="This is the good chair. I know. I'm not getting up.",
@@ -185,6 +189,8 @@ public final class LongerTexts {
         LEFT_CUPS="You leave the cups where they are.",SCRAP_DOWN="You put the list down on the table, the writing up.",
         CUP_GOOD="The good cup",CUP_ROWANS="Rowan's cup";
     /** 0.4.631, leaving early and coming back (LongerEarly); flagged in docs/A_LITTLE_LONGER_0_4_631.md. */
+    /** 0.4.632, the one practical callback after the roof (LongerSelf). */
+    public static final String CLOTH="Here. The rain'll have got in your hair.",CLOTH_WRAPPED="Here. In case the rain got through.",CLOTH_CUE="Rowan takes a dry tea towel off the rail and holds it out.";
     public static final String EARLY_ASK="You're going? Do you want company?",EARLY_WITH="Come with me.",EARLY_BACK="I'll come back.",EARLY_ALONE="No. Goodnight.",
         EARLY_WITH_R="Give me a minute. I'll get my coat and pull the toaster's plug out.",EARLY_BACK_R="I'll be here.",EARLY_ALONE_R="Goodnight, then.",
         BACK_BENCH="You came back. I was about to stop for a cup of tea.",BACK_TEA="There you are. I thought you'd gone for good.",BACK_ROOF="You came back. I didn't know if you would.";
@@ -251,6 +257,7 @@ public final class LongerTexts {
             out.add(roof.toString());
         }
         if(backAt==4)out.add(back);
+        if(own.getBoolean(LongerSelf.CLOTH))out.add("Back inside, Rowan handed me a dry tea towel for the rain.");
         switch(own.getString(LongerReturn.ORDINARY)){
             case LongerReturn.CUPS->out.add("Back inside, Rowan washed the cups and I dried.");
             case LongerReturn.TOAST->out.add("Back inside, we argued about how bad the toast had been.");
