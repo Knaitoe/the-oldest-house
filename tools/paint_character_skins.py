@@ -310,6 +310,9 @@ LOOKS = {
     # between. The same work: a shirt with its sleeves turned back, a canvas bib apron with a pencil and a screwdriver in its pocket.
     'literary_longer_rowan_woman': Look('#c8936e','#3e2c22','ponytail','#6b786a','#3a3c40','shirt','#7a5a3e',eyes='#4a3e30',mark='longer_rowan',sleeve=6,shoes='#3a3028'),
     'literary_longer_rowan_man': Look('#b48868','#2e241e','short','#5d6b7a','#3a3c40','shirt','#7a5a3e',eyes='#3e3a30',beard='shadow',mark='longer_rowan',sleeve=6,shoes='#3a3028'),
+    # 0.4.628: the same two with the apron hung up and the coat from the hook on, its dark wool the hook's own coat, the shirt at the collar
+    'literary_longer_rowan_woman_coat': Look('#c8936e','#3e2c22','ponytail','#4a4640','#3a3c40','coat','#6b786a',eyes='#4a3e30',sleeve=11,shoes='#3a3028'),
+    'literary_longer_rowan_man_coat': Look('#b48868','#2e241e','short','#4a4640','#3a3c40','coat','#5d6b7a',eyes='#3e3a30',beard='shadow',sleeve=11,shoes='#3a3028'),
     # The failed bodies, in what they were wearing when their arrangements went wrong: what is left of a suit, a faded dress,
     # a nightshirt. Their faces are no longer kept up.
     'literary_lodging_failed_post': Look('#cfc5b2','#6b635a','receding','#5d5b54','#4b4943','suit','#8f8a7a',eyes='#77756a',age=1,mark='lodging_failed_tied'),

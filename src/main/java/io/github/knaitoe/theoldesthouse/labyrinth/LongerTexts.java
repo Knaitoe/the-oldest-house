@@ -157,6 +157,22 @@ public final class LongerTexts {
         WASH_CUPS="Wash the cups",WASH_DRY="Rowan washes. You dry. The radio plays.",ABOUT_TOAST="The toast wasn't that bad.",
         CHARCOAL="It was charcoal. We both know it was charcoal.",SIT_DOWN="Sit down",SITS_TOO="Rowan sits. Nobody says the next thing for a while.",
         STAY_LONG="Stay as long as you like.";
+    /**
+     * 0.4.628, chapter 5, tomorrow (LongerTomorrow). The proposal's own lines word for word: "What do you want for breakfast?",
+     * "Something you haven't set on fire." (the reader's), "All right. You're making it.", "What do we need?", "You already gave me the
+     * good cup." (the reader's), "You can have it tomorrow too." The rest are new and flagged in docs/A_LITTLE_LONGER_0_4_628.md.
+     */
+    public static final String HEAR_THAT="Did you hear that?",FOOT_LEFT="That was a foot to the left this morning.",FLOOR_NEW="And that floor wasn't there.",
+        DONE_BEFORE="Has it done this before?",NOT_WATCHING="Not since I've been watching it.",LOOK_FLOOR="Look at the floor",
+        PALE_TILES="Pale tiles, clean, laid by nobody. They stop at the door.",GO_SEE="We should go and see.",WE_SHOULD="We should.",
+        NOT_ON_MY_OWN="I'm not staying here on my own with it doing that. Give me a minute.",COAT_ON="Rowan hangs up the apron and puts their coat on.",
+        WHAT_BREAKFAST="What do you want for breakfast?",NOT_ON_FIRE="Something you haven't set on fire.",YOURE_MAKING_IT="All right. You're making it.",
+        GOOD_CUP="You already gave me the good cup.",CUP_TOMORROW="You can have it tomorrow too.",PICK_NEXT_TIME="You can pick what's on next time. Within reason.",
+        WANT_BREAKFAST="We'll want breakfast. Wherever we are.",FINDS_SCRAP="Rowan finds a scrap of paper and a pencil stub.",WHAT_NEED="What do we need?",
+        ADD_TEA="And tea. Proper tea.",ADD_TEA_FOR_ME="And tea, for me.",SCRAP_GIVEN="Rowan writes it under yours and hands you the scrap.",SCRAP_NAME="A scrap of paper",
+        READY_WHEN="Ready when you are.",GO_TOGETHER="Let's go together.",TOMORROW_MATTERS="I'd like that. Tomorrow, I mean.",CARRY_BREAD="You're carrying the bread.",
+        FRIENDS_ROAD="Friends on the road, then?",GOOD_GO="Good.",DAY_AFTER="So would I. And the day after.",SO_WOULD_I="So would I.",
+        CARRY_EVERYTHING="I'm carrying everything. You've got the list.",FRIENDS_ROAD_R="Friends on the road.";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),

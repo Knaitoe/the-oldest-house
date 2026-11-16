@@ -183,6 +183,6 @@ def entries():
     for name,phase in (('dan_cut',201),('dan_prick',201),('daniel_cut',203),('daniel_prick',203)):
         rows.append({'name':'literary_lodging_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # A Little Longer (0.4.622): Rowan, the woman and the man, on stranger phases two hundred and ten and two hundred and eleven.
-    for phase,name in enumerate(('woman','man'),210):
+    for phase,name in enumerate(('woman','man','woman_coat','man_coat'),210):
         rows.append({'name':'literary_longer_rowan_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

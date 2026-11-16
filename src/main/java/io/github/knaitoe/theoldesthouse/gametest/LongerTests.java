@@ -829,4 +829,79 @@ public final class LongerTests {
             Talk.close(p);done();h.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.628, tomorrow
+    private static int tomorrow(LiteraryTests.Fixture f,ServerPlayer p){return LongerTomorrow.stage(f.own(p,P));}
+    private static void returned(LiteraryTests.Fixture f,ServerPlayer p,java.util.function.Consumer<net.minecraft.nbt.CompoundTag> set){
+        onRoof(f,p,null,LongerRadio.INVITE_DIRECT);var own=f.own(p,P);own.putInt(LongerRoof.STAGE,LongerRoof.DONE);
+        own.putInt(LongerReturn.STAGE,LongerReturn.DONE);own.putString(LongerReturn.ORDINARY,LongerReturn.CUPS);set.accept(own);
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+    }
+
+    /**
+     * After the return the House moves the shop's back door a block and lays a strip of pale tile to it. Rowan hears it, goes down and
+     * says what is different; the reader says they should go and see. Rowan goes up, hangs the apron and puts the coat on. In the kitchen
+     * the burnt-toast callback, word for word ("What do you want for breakfast?" / "Something you haven't set on fire." / "All right.
+     * You're making it."), and the list: the reader's coffee, and Rowan's tea for them. The scrap is the reader's. In the romantic route
+     * "I'd like that" is answered unmistakably.
+     */
+    @GameTest(template="empty",batch="longer_tomorrow_toast",timeoutTicks=3600)
+    public static void theDoorMovesRowanPutsTheirCoatOnAndTheBreakfastListHasTwoHands(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_tomorrow_toast",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{returned(f,p,own->{own.putString(LongerKettle.TOAST,LongerKettle.TEASED);own.putString(LongerRoof.KISS,LongerRoof.ROWAN);});f.at(p,P,3.5,6,-12.5);})
+        .thenIdle(5).thenExecute(()->LongerTomorrow.waited(LiteraryVignettes.base(p,P),LongerTomorrow.AFTER))
+        .thenWaitUntil(()->h.assertTrue(tomorrow(f,p)>=LongerTomorrow.DOWN,"the door moves: "+tomorrow(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(LongerTomorrow.shifted(l,b)&&!(l.getBlockState(b.offset(LongerSite.BACK_DOOR)).getBlock() instanceof net.minecraft.world.level.block.DoorBlock),"the door a block east, the old opening walled");
+            h.assertTrue(l.getBlockState(b.offset(1,-1,-3)).is(LongerRegistry.material("tile")),"a strip of pale tile down the corridor");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.HEAR_THAT),"Rowan heard it");
+        })
+        .thenWaitUntil(()->h.assertTrue(tomorrow(f,p)==LongerTomorrow.AT_DOOR,"Rowan goes down to it: "+tomorrow(f,p)))
+        .thenExecute(()->f.at(p,P,1.5,0,-11))
+        .thenWaitUntil(()->h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.FOOT_LEFT),"Rowan says what is different"))
+        .thenExecute(()->{
+            h.assertTrue(Talk.choose(p,LongerTexts.DONE_BEFORE)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.NOT_WATCHING),"has it done this before");
+            h.assertTrue(Talk.choose(p,LongerTexts.GO_SEE)&&tomorrow(f,p)==LongerTomorrow.UP,"we should go and see; Rowan goes up for the coat");
+        })
+        .thenWaitUntil(()->h.assertTrue(tomorrow(f,p)==LongerTomorrow.KITCHEN,"the coat on: "+tomorrow(f,p)))
+        .thenExecute(()->{
+            var a=rowan(h,p);var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(a!=null&&a.phase()>=LongerRowan.FIRST+LongerRowan.COAT,"Rowan in the coat");
+            h.assertTrue(l.getBlockState(b.offset(LongerSite.HOOK)).getValue(LongerBlock.STAGE)==1,"the hook empty");
+            f.at(p,P,3.5,6,-12.5);
+        })
+        .thenWaitUntil(()->h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.WHAT_NEED),"the list"))
+        .thenExecute(()->{
+            var lines=Talk.lines(p);
+            h.assertTrue(lines.contains(LongerTexts.ROWAN+": "+LongerTexts.WHAT_BREAKFAST)&&lines.contains("you: "+LongerTexts.NOT_ON_FIRE)&&lines.contains(LongerTexts.ROWAN+": "+LongerTexts.YOURE_MAKING_IT),"the burnt-toast callback: "+lines);
+            h.assertTrue(lines.stream().noneMatch(x->x.contains(LongerTexts.CUP_TOMORROW)||x.contains(LongerTexts.PICK_NEXT_TIME)),"one callback only");
+            h.assertTrue(Talk.choose(p,"Coffee")&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ADD_TEA_FOR_ME),"coffee, and tea for Rowan");
+            boolean has=false;for(int i=0;i<p.getInventory().getContainerSize();i++)if(LongerTomorrow.isScrap(p.getInventory().getItem(i)))has=true;
+            h.assertTrue(has,"the scrap is the reader's");
+            h.assertTrue(Talk.choose(p,LongerTexts.TOMORROW_MATTERS)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.DAY_AFTER),"wanting another day, unmistakably");
+            var own=f.own(p,P);h.assertTrue(tomorrow(f,p)==LongerTomorrow.DONE&&LongerTomorrow.TOAST.equals(own.getString(LongerTomorrow.CALLBACK))&&"Coffee".equals(own.getString(LongerTomorrow.LIST))&&LongerTomorrow.MATTERS.equals(own.getString(LongerTomorrow.CHOICE)),"kept");
+            Talk.close(p);done();h.succeed();
+        });
+    }
+
+    /** The good cup's callback for a reader who took it; friends on the road, answered in kind; never the romantic line. */
+    @GameTest(template="empty",batch="longer_tomorrow_cup",timeoutTicks=3600)
+    public static void theGoodCupTomorrowAndFriendsOnTheRoad(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_tomorrow_cup",P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{returned(f,p,own->{own.putBoolean(LongerKettle.CUP,true);own.putBoolean(LongerRoof.FRIEND,true);
+            own.putInt(LongerTomorrow.STAGE,LongerTomorrow.KITCHEN);own.putBoolean(LongerTomorrow.SHIFTED,true);own.putBoolean(LongerTomorrow.COAT,true);});
+            {var b=LiteraryVignettes.base(p,P);LongerRowan.arrive(p,b,f.own(p,P));}f.at(p,P,3.5,6,-12.5);})
+        .thenWaitUntil(()->h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.WHAT_NEED),"the list"))
+        .thenExecute(()->{
+            var lines=Talk.lines(p);
+            h.assertTrue(lines.contains("you: "+LongerTexts.GOOD_CUP)&&lines.contains(LongerTexts.ROWAN+": "+LongerTexts.CUP_TOMORROW),"the good cup: "+lines);
+            h.assertTrue(Talk.choose(p,"Bread")&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ADD_TEA),"bread, and tea");
+            h.assertTrue(Talk.choose(p,LongerTexts.FRIENDS_ROAD)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.FRIENDS_ROAD_R),"friends on the road");
+            h.assertTrue(Talk.lines(p).stream().noneMatch(x->x.contains(LongerTexts.DAY_AFTER)),"not the romantic line");
+            Talk.close(p);done();h.succeed();
+        });
+    }
 }
