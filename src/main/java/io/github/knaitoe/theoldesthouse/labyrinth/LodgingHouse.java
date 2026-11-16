@@ -30,7 +30,7 @@ public final class LodgingHouse {
 
     /** 0.4.618: dealt to anybody who has not read their own account of it. */
     public static boolean dealable(LabyrinthData d,UUID reader){return !LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);LodgingParty.arrive(p,b,own);}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);LodgingParty.arrive(p,b,own);LodgingSelf.arrive(p,own);}
     /** Everybody reading in this house. */
     static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new java.util.ArrayList<ServerPlayer>();
@@ -42,8 +42,10 @@ public final class LodgingHouse {
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());
         // 0.4.602: the house's people, made if they are not there (after a reload they are taken up again).
         LodgingPeople.ensure(p.serverLevel(),b);
-        if(!own.getBoolean("WentUp")&&LodgingSite.upstairs(r)){own.putBoolean("WentUp",true);save(p,own);}
+        boolean firstUp=false;if(!own.getBoolean("WentUp")&&LodgingSite.upstairs(r)){own.putBoolean("WentUp",true);save(p,own);firstUp=true;}
         if(!own.getBoolean("WentDown")&&LodgingSite.inCellar(r)){own.putBoolean("WentDown",true);save(p,own);}
+        // 0.4.619: what the House read of this reader, made ready for them alone (LodgingSelf).
+        LodgingSelf.reader(p,b,own,firstUp);
     }
     public static void clearAll(){LodgingPeople.clearAll();LodgingTaken.clearAll();}
 
@@ -78,7 +80,7 @@ public final class LodgingHouse {
                 cue(p,(st.getValue(LodgingBlock.STAGE)&(kind==LodgingBlock.Kind.FRAME_BACK?2:kind==LodgingBlock.Kind.FRAME_SIDE?4:0))!=0
                 ||kind==LodgingBlock.Kind.FRAME_HEAD&&st.getValue(LodgingBlock.STAGE)>=3?LodgingTexts.DANIELS_FRAME:LodgingTexts.FRAME);return true;}
             case WINDOW->{cue(p,LodgingTexts.SHUTTERS);return true;}
-            case HALL_STAND->{cue(p,LodgingTexts.GLASS);return true;}
+            case HALL_STAND->{var mine=LodgingSelf.hallGlass(p,own);cue(p,mine!=null?mine:LodgingTexts.GLASS);return true;}
             case FIREPLACE->{cue(p,LodgingTexts.GRATE);return true;}
             // 0.4.615: a reader who knows the third way lifts its pawl (LodgingSever).
             case RATCHET->{if(!LodgingSever.ratchet(p,b))cue(p,LodgingTexts.RATCHET);return true;}

@@ -34,6 +34,7 @@ public final class LodgingVera {
         if(!own.getBoolean(OFFERED)){
             own.putBoolean(OFFERED,true);LodgingHouse.save(p,own);
             for(var line:LodgingTexts.VERA_OFFER)LodgingPeople.says(p,vera,"Vera",line);
+            LodgingSelf.offer(p,vera,own);
         }else LodgingHouse.cue(p,LodgingTexts.VERA_WAITS);
         if(LodgingKey.VERA.equals(LodgingKey.where(p.server,b)))LodgingHouse.cue(p,LodgingTexts.VERA_HAS_KEY);
         asks(p);

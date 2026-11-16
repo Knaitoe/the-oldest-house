@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 15 candidate 0.4.619 (docs/ONES_INSIDE_SELF_0_4_619.md): personhood in a shared scene. Is every fragment delivered to its reader alone, with nothing in the shared room changed? Does an unread, uncertain or turned-off read give the whole neutral version?
+
 November 15 candidate 0.4.618 (docs/ONES_INSIDE_ACCOUNTS_0_4_618.md): a shared ending with personal accounts. Does every reader who was part of it get their own account, and only them? Does each account leave out what that reader never did or saw? Is a finished copy closed to readers who would arrive in its aftermath?
 
 November 15 candidate 0.4.617 (docs/ONES_INSIDE_PARTY_0_4_617.md): a single shared object. When its holder leaves, logs off, dies or drops it, does it go back somewhere another reader can get it, and does a returning reader come back without a second copy? Does a reader who arrives late get enough to take part, without anything invented for them?
