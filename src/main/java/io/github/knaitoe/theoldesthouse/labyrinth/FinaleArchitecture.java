@@ -24,6 +24,11 @@ public final class FinaleArchitecture {
     public static final int STAIR_RADIUS=24, STAIR_HALF_WIDTH=4, SHAFT_RADIUS=34;
     /** The walled entry hall; arrival copies stay inside it, clear of the camp and the first tread. */
     public static final int HALL_HALF_WIDTH=3;
+    /** 0.4.653: the cell's gate, the two doorways of the passage to it and the causeway across the well are five blocks wide and
+     *  the gate and doorways seven high, for a creature half again its old size whose horns stand about six and a half blocks
+     *  high (docs/MINOTAUR_SIZE_0_4_653.md; MinotaurVisualProof measures them). The cell's walls stand a block higher still, so
+     *  its cracked wall closes over the gate. */
+    public static final int GATE_HALF=2,GATE_HIGH=7,CELL_HIGH=GATE_HIGH+1;
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public record Placement(BlockPos pos, BlockState block) {}
     private static final Map<MinecraftServer, List<Placement>> PLANS = new WeakHashMap<>();
@@ -151,7 +156,7 @@ public final class FinaleArchitecture {
     }
     private static boolean preserveUpgradeVoid(BlockPos manor,BlockPos pos){
         BlockPos b=base(manor);
-        if(pos.getZ()==b.getZ()+29&&Math.abs(pos.getX()-b.getX())<=1&&pos.getY()>=ARENA&&pos.getY()<ARENA+4)return true;
+        if(pos.getZ()==b.getZ()+29&&Math.abs(pos.getX()-b.getX())<=GATE_HALF&&pos.getY()>=ARENA&&pos.getY()<ARENA+GATE_HIGH)return true;
         if(pos.getZ()>=b.getZ()+35)return true;
         return pos.equals(b.offset(-10,ARENA,39))||pos.equals(lectern(manor))||pos.equals(exit(manor).above(2))
                 ||pos.equals(b.offset(0,TOP,18))||pos.equals(b.offset(-14,ARENA+4,35))||pos.equals(b.offset(14,ARENA+4,47));
@@ -226,17 +231,28 @@ public final class FinaleArchitecture {
         head(blocks,b);
         // The last stair ends in an actual corridor to the preparation chamber.
         BlockPos last=descent.get(descent.size()-1);int lx=last.getX()-b.getX(),lz=last.getZ()-b.getZ();
-        boxFloor(blocks,b,Math.min(lx,0)-1,Math.max(lx,0)+1,lz-1,lz+1,ARENA-1,stone);
-        boxFloor(blocks,b,-1,1,lz,32,ARENA-1,stone);
-        for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)for(int zz=26;zz<=SHAFT_RADIUS;zz++)put(blocks,b,xx,y,zz,Blocks.AIR.defaultBlockState());
+        // 0.4.653: the causeway is five wide. Its far edge stays where the stair goes on below it; it widens toward the chamber.
+        boxFloor(blocks,b,Math.min(lx,0)-GATE_HALF,Math.max(lx,0)+1,lz-1,lz-1+2*GATE_HALF,ARENA-1,stone);
+        boxFloor(blocks,b,-GATE_HALF,GATE_HALF,lz,32,ARENA-1,stone);
+        for(int xx=-GATE_HALF;xx<=GATE_HALF;xx++)for(int y=ARENA;y<ARENA+GATE_HIGH;y++)for(int zz=26;zz<=SHAFT_RADIUS;zz++)put(blocks,b,xx,y,zz,Blocks.AIR.defaultBlockState());
+        // The flight's inner rail opens where the causeway leaves the stair, so a reader steps off the stair onto it instead of
+        // over a rail and a pier (they stood there from 0.4.593 to 0.4.652): beside the last two treads, which are level with the
+        // causeway, and over the first riser above them. The creature is broader than the two treads, and turns onto the stair up
+        // that riser; the rail above it ends at its post.
+        for(int zz=lz-1;zz<=lz;zz++)put(blocks,b,lx-STAIR_HALF_WIDTH-1,ARENA,zz,Blocks.AIR.defaultBlockState());
+        BlockPos riser=descent.get(descent.size()-2),above=descent.get(descent.size()-3);
+        put(blocks,b,riser.getX()-b.getX()-STAIR_HALF_WIDTH-1,riser.getY(),riser.getZ()-b.getZ(),Blocks.AIR.defaultBlockState());
+        BlockPos end=b.offset(above.getX()-b.getX()-STAIR_HALF_WIDTH-1,above.getY(),above.getZ()-b.getZ());BlockState rail=blocks.get(end);
+        Direction toward=Direction.getNearest(riser.getX()-above.getX(),0,riser.getZ()-above.getZ());
+        if(rail!=null&&rail.is(StairWell.BALUSTRADE.get()))blocks.put(end,rail.setValue(PipeBlock.PROPERTY_BY_DIRECTION.get(toward),false));
         // The native cell gate is a connected bar plane; its prisoner is staged before commitment.
         boxFloor(blocks,b,-17,17,30,69,ARENA-1,stone);
         for(int y=ARENA;y<ARENA+13;y++)for(int zz=30;zz<=69;zz++){put(blocks,b,-17,y,zz,dark);put(blocks,b,17,y,zz,dark);}
-        for(int xx=-17;xx<=17;xx++)for(int y=ARENA;y<ARENA+13;y++){put(blocks,b,xx,y,69,dark);if(Math.abs(xx)>1)put(blocks,b,xx,y,30,dark);}
+        for(int xx=-17;xx<=17;xx++)for(int y=ARENA;y<ARENA+13;y++){put(blocks,b,xx,y,69,dark);if(Math.abs(xx)>GATE_HALF||y>=ARENA+GATE_HIGH)put(blocks,b,xx,y,30,dark);}
         for(int xx=-17;xx<=17;xx++)for(int zz=30;zz<=69;zz++)put(blocks,b,xx,ARENA+13,zz,dark);
-        for(int xx=-6;xx<=6;xx++)for(int y=ARENA;y<ARENA+7;y++)if(Math.abs(xx)>1)put(blocks,b,xx,y,59,Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState());
-        for(int zz=59;zz<=69;zz++)for(int y=ARENA;y<ARENA+7;y++){put(blocks,b,-6,y,zz,stone);put(blocks,b,6,y,zz,stone);}
-        for(int xx=-1;xx<=1;xx++)for(int y=ARENA;y<ARENA+4;y++)put(blocks,b,xx,y,59,cellBars());
+        for(int xx=-6;xx<=6;xx++)for(int y=ARENA;y<ARENA+CELL_HIGH;y++)if(Math.abs(xx)>GATE_HALF||y>=ARENA+GATE_HIGH)put(blocks,b,xx,y,59,Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState());
+        for(int zz=59;zz<=69;zz++)for(int y=ARENA;y<ARENA+CELL_HIGH;y++){put(blocks,b,-6,y,zz,stone);put(blocks,b,6,y,zz,stone);}
+        for(int xx=-GATE_HALF;xx<=GATE_HALF;xx++)for(int y=ARENA;y<ARENA+GATE_HIGH;y++)put(blocks,b,xx,y,59,cellBars());
         // Darkness at the bottom surrounds narrow, branching physical paths over a deep drop.
         for(var placement:escapeFloorPlan(manor))blocks.put(placement.pos(),placement.block());
         for(int xx=-31;xx<=31;xx++)for(int zz=70;zz<=121;zz++)put(blocks,b,xx,-27,zz,dark);
@@ -410,23 +426,23 @@ public final class FinaleArchitecture {
         level.setBlock(exit(manor).above(2),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,8),FLAGS);
     }
     public static void seal(ServerLevel level,BlockPos manor,boolean closed) {
-        BlockPos b=base(manor);for(int x=-1;x<=1;x++)for(int y=ARENA;y<ARENA+4;y++)
+        BlockPos b=base(manor);for(int x=-GATE_HALF;x<=GATE_HALF;x++)for(int y=ARENA;y<ARENA+GATE_HIGH;y++)
             level.setBlock(b.offset(x,y,29),(closed?Blocks.DEEPSLATE_TILES:Blocks.AIR).defaultBlockState(),FLAGS);
     }
     public static void openCell(ServerLevel level,BlockPos manor) {
-        BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),Blocks.AIR.defaultBlockState(),FLAGS);
+        BlockPos door=cell(manor);for(int x=-GATE_HALF;x<=GATE_HALF;x++)for(int y=0;y<GATE_HIGH;y++)level.setBlock(door.offset(x,y,0),Blocks.AIR.defaultBlockState(),FLAGS);
     }
     private static BlockState cellBars(){return Blocks.IRON_BARS.defaultBlockState().setValue(BlockStateProperties.EAST,true).setValue(BlockStateProperties.WEST,true);}
     private static void connectCell(ServerLevel level,BlockPos manor){
         var d=LabyrinthData.get(level.getServer());var s=d.state(STATE);if(s.getBoolean("ConnectedCellBars"))return;
-        var cell=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++){var at=cell.offset(x,y,0);if(level.getBlockState(at).is(Blocks.IRON_BARS))level.setBlock(at,cellBars(),FLAGS);}
+        var cell=cell(manor);for(int x=-GATE_HALF;x<=GATE_HALF;x++)for(int y=0;y<GATE_HIGH;y++){var at=cell.offset(x,y,0);if(level.getBlockState(at).is(Blocks.IRON_BARS))level.setBlock(at,cellBars(),FLAGS);}
         s.putBoolean("ConnectedCellBars",true);d.setState(STATE,s);
     }
     /** The cell's one door (0.4.84), in its back wall: there only while someone killed in the fight wakes inside. */
     public static BlockPos cellDoor(BlockPos manor){return base(manor).offset(0,ARENA,69);}
     /** Where the one killed in the fight wakes: the middle of the cell, facing the bars. */
     public static Vec3 cellSpot(BlockPos manor){return Vec3.atBottomCenterOf(base(manor).offset(0,ARENA,64));}
-    public static boolean inCell(BlockPos manor,Vec3 at){BlockPos b=base(manor);double x=at.x-b.getX(),y=at.y-b.getY(),z=at.z-b.getZ();return x>-5.2&&x<6.2&&z>59.8&&z<69.2&&y>=ARENA-.5&&y<ARENA+7;}
+    public static boolean inCell(BlockPos manor,Vec3 at){BlockPos b=base(manor);double x=at.x-b.getX(),y=at.y-b.getY(),z=at.z-b.getZ();return x>-5.2&&x<6.2&&z>59.8&&z<69.2&&y>=ARENA-.5&&y<ARENA+CELL_HIGH;}
     public static void placeCellDoor(ServerLevel level,BlockPos manor){
         BlockPos door=cellDoor(manor);if(level.getBlockState(door).is(Blocks.IRON_DOOR))return;
         var lower=Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.OPEN,false).setValue(DoorBlock.HALF,net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER);
@@ -438,7 +454,7 @@ public final class FinaleArchitecture {
         for(BlockPos at:List.of(door,door.above()))if(level.getBlockState(at).is(Blocks.IRON_DOOR))level.setBlock(at,Blocks.DEEPSLATE_TILES.defaultBlockState(),FLAGS);
     }
     public static void closeCell(ServerLevel level,BlockPos manor){
-        BlockPos door=cell(manor);for(int x=-1;x<=1;x++)for(int y=0;y<4;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);
+        BlockPos door=cell(manor);for(int x=-GATE_HALF;x<=GATE_HALF;x++)for(int y=0;y<GATE_HIGH;y++)level.setBlock(door.offset(x,y,0),cellBars(),FLAGS);
     }
     public static void clearAll(){StaircaseLeaves.clearCache();StaircaseFire.clearCache();PLANS.clear();routeOrigin=null;stepsCache=null;fullCache=null;descentCache=null;continuationCache=null;}
 }

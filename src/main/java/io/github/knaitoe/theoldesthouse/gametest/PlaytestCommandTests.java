@@ -48,7 +48,7 @@ public final class PlaytestCommandTests {
         for (var chunk : FinaleArchitecture.routeChunks(f.origin)) f.chunks.hold(f.level, new AABB(chunk.getWorldPosition()).inflate(1));
         for (int x=-16; x<=16; x++) for (int z=30; z<=70; z++)
             f.put(f.level, b.offset(x, FinaleArchitecture.ARENA-1, z), Blocks.DEEPSLATE_TILES.defaultBlockState());
-        for (int x=-1; x<=1; x++) for (int y=0; y<4; y++)
+        for (int x=-FinaleArchitecture.GATE_HALF; x<=FinaleArchitecture.GATE_HALF; x++) for (int y=0; y<FinaleArchitecture.GATE_HIGH; y++)
             f.put(f.level, FinaleArchitecture.cell(f.origin).offset(x,y,0), Blocks.IRON_BARS.defaultBlockState());
         int[] tick={0};
         h.onEachTick(() -> {

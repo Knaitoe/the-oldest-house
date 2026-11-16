@@ -1,7 +1,9 @@
 package io.github.knaitoe.theoldesthouse.client;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.FinaleArchitecture;
 import io.github.knaitoe.theoldesthouse.labyrinth.MinotaurEntity;
 import java.nio.file.*;
 import net.minecraft.client.*;
@@ -14,6 +16,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import org.joml.Vector3f;
 /** Native animated adult model, materials and render-cost proof after transformation. */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class MinotaurVisualProof extends Screen {
@@ -32,11 +35,29 @@ public final class MinotaurVisualProof extends Screen {
         }
         long cost=System.nanoTime()-start;if(frames>=4){total+=cost;max=Math.max(max,cost);}
     }
+    /** 0.4.653: the highest point of the creature, horns included, in every pose it walks in (level gaze, through a whole stride),
+     *  at the size the renderer draws it: the cell's gate and the passage's doorways (FinaleArchitecture.GATE_HIGH) must clear it. */
+    static float reach(MinotaurModel model){
+        float top=0;
+        for(int state:new int[]{MinotaurEntity.WATCHING,MinotaurEntity.WINDUP,MinotaurEntity.CHARGING,MinotaurEntity.STUNNED,MinotaurEntity.RELEASED,MinotaurEntity.LOOSE})
+            for(int step=0;step<24;step++){
+                model.pose(state,step*.4F,1F,step*7,0,0);float[] high={0};
+                model.root().visit(new PoseStack(),(pose,path,index,cube)->{
+                    for(float x:new float[]{cube.minX,cube.maxX})for(float y:new float[]{cube.minY,cube.maxY})for(float z:new float[]{cube.minZ,cube.maxZ})
+                        high[0]=Math.max(high[0],1.501F-pose.pose().transformPosition(x/16F,y/16F,z/16F,new Vector3f()).y());
+                });
+                top=Math.max(top,high[0]*MinotaurEntity.SCALE);
+            }
+        return top;
+    }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post event)throws Exception{
         var mc=Minecraft.getInstance();if(!Boolean.getBoolean("the_oldest_house.fontSmoke")||!(mc.screen instanceof MinotaurVisualProof p)||++p.frames<64)return;
         var dir=Path.of("../build/font-smoke");Files.createDirectories(dir);try(NativeImage im=Screenshot.takeScreenshot(mc.getMainRenderTarget())){im.writeToFile(dir.resolve("native-minotaur.png"));}
-        double average=p.total/60_000_000.0;Files.writeString(dir.resolve("minotaur-render-passed.txt"),"64 native rendered frames / four adult attack poses.\nMean CPU render submission: "+average+" ms; maximum: "+p.max/1_000_000.0+" ms.\n");
+        double average=p.total/60_000_000.0;float reach=reach(p.model);
+        Files.writeString(dir.resolve("minotaur-render-passed.txt"),"64 native rendered frames / four adult attack poses.\nMean CPU render submission: "+average+" ms; maximum: "+p.max/1_000_000.0+" ms.\n"
+                +"Highest point in any pose it walks in, horns included, at its size: "+reach+" blocks; the cell's gate and the passage's doorways stand "+FinaleArchitecture.GATE_HIGH+".\n");
         if(average>250)throw new IllegalStateException("Native Minotaur rendering stalls: "+average+" ms");
+        if(reach>FinaleArchitecture.GATE_HIGH-.25F)throw new IllegalStateException("The Minotaur's horns reach "+reach+" blocks, into the lintels of openings "+FinaleArchitecture.GATE_HIGH+" high");
         mc.setScreen(new InventoryVisualProof());
     }
 }

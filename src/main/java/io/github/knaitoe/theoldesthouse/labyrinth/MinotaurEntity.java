@@ -37,6 +37,9 @@ public final class MinotaurEntity extends PathfinderMob {
     /** Two hearts through the shield and any armour, and a throw backwards. */
     public static final float BLOCKED_DAMAGE=4;
     public static final String BLOCKS_TAG="MinotaurBlocks";
+    /** 0.4.653: half again the size 0.4.584 built it at, drawn and bodied alike (docs/MINOTAUR_SIZE_0_4_653.md). Its gate and the
+     *  passage to the stair were widened and raised with it (FinaleArchitecture.GATE_HALF, GATE_HIGH). */
+    public static final float SCALE=1.5F;
     public static final ResourceKey<DamageType> CHARGE=ResourceKey.create(Registries.DAMAGE_TYPE,ResourceLocation.fromNamespaceAndPath(io.github.knaitoe.theoldesthouse.TheOldestHouse.MOD_ID,"minotaur_charge"));
     private static final EntityDataAccessor<Integer> MOTION=SynchedEntityData.defineId(MinotaurEntity.class,EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> CHILD=SynchedEntityData.defineId(MinotaurEntity.class,EntityDataSerializers.BOOLEAN);
@@ -155,7 +158,7 @@ public final class MinotaurEntity extends PathfinderMob {
             }
             if(horizontalCollision||position().distanceToSqr(before)<.01){
                 level.playSound(null,blockPosition(),FinaleRegistry.HOOF.get(),SoundSource.HOSTILE,2.2F,.6F);
-                level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,floor(level)),getX()+charge.x*1.5,getY()+1.2,getZ()+charge.z*1.5,30,.6,.8,.6,.2);
+                level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,floor(level)),getX()+charge.x*1.5*SCALE,getY()+1.2*SCALE,getZ()+charge.z*1.5*SCALE,30,.6,.8,.6,.2);
                 motion(WATCHING,40);return;
             }
         }
@@ -170,7 +173,8 @@ public final class MinotaurEntity extends PathfinderMob {
     /** Grit and dust from under a hoof: the front one as it paws, both behind it as it runs. */
     private void hoof(net.minecraft.server.level.ServerLevel level,boolean running,boolean stamp){
         float yaw=getYRot()*Mth.DEG_TO_RAD;double fx=-Mth.sin(yaw),fz=Mth.cos(yaw),side=(tickCount%4<2?.45:-.45);
-        double x=getX()+(running?-fx*.8:fx*.75)+fz*side,z=getZ()+(running?-fz*.8:fz*.75)-fx*side;
+        double reach=(running?-.8:.75)*SCALE;side*=SCALE;
+        double x=getX()+fx*reach+fz*side,z=getZ()+fz*reach-fx*side;
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,floor(level)),x,getY()+.15,z,running?12:7,.35,.08,.35,.18);
         level.sendParticles(ParticleTypes.POOF,x,getY()+.2,z,running?3:1,.25,.05,.25,.02);
         if(stamp)level.playSound(null,x,getY(),z,FinaleRegistry.HOOF.get(),SoundSource.HOSTILE,running?1.8F:1.2F,running?.75F+random.nextFloat()*.15F:.95F);
@@ -178,7 +182,7 @@ public final class MinotaurEntity extends PathfinderMob {
     /** The bellow as it lowers its horns, with its breath steaming from its nostrils. */
     void bellow(net.minecraft.server.level.ServerLevel level,float volume){
         level.playSound(null,getX(),getEyeY(),getZ(),FinaleRegistry.BELLOW.get(),SoundSource.HOSTILE,volume,.92F+random.nextFloat()*.1F);
-        float yaw=getYRot()*Mth.DEG_TO_RAD;level.sendParticles(ParticleTypes.CLOUD,getX()-Mth.sin(yaw)*1.5,getEyeY()-.45,getZ()+Mth.cos(yaw)*1.5,8,.12,.08,.12,.03);
+        float yaw=getYRot()*Mth.DEG_TO_RAD;level.sendParticles(ParticleTypes.CLOUD,getX()-Mth.sin(yaw)*1.5*SCALE,getEyeY()-.45*SCALE,getZ()+Mth.cos(yaw)*1.5*SCALE,8,.12,.08,.12,.03);
     }
     /** The charge meets a raised shield: the shield takes it, the one behind it still takes two hearts and is thrown back. */
     private void blocked(net.minecraft.server.level.ServerLevel level,ServerPlayer player){

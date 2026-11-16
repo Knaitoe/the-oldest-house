@@ -155,6 +155,45 @@ public final class FinaleTests {
             var opening=blocks.get(FinaleArchitecture.base(origin).offset(0,y,z));
             helper.assertTrue(opening==null||opening.isAir(),"the passage through the shaft wall really reaches the cell chamber");
         }
+        // 0.4.653: the cell's gate, the passage's two doorways and the causeway are five wide, the gate and doorways seven high
+        // (over the horns, which MinotaurVisualProof measures), for a creature half again its old size; the cell's walls stand
+        // a block higher, and the body it walks out in clears the way from the middle of its cell to the foot of the stair.
+        var b=FinaleArchitecture.base(origin);int half=FinaleArchitecture.GATE_HALF,high=FinaleArchitecture.GATE_HIGH,arena=FinaleArchitecture.ARENA;
+        var last=route.get(route.size()-1);int lx=last.getX()-b.getX(),lz=last.getZ()-b.getZ();
+        for(int x=-half;x<=half;x++){
+            for(int z:new int[]{30,34}){
+                for(int y=arena;y<arena+high;y++){var at=blocks.get(b.offset(x,y,z));helper.assertTrue(at==null||at.isAir(),"each doorway of the passage is five wide and seven high: "+x+","+(y-arena)+","+z);}
+                helper.assertTrue(blocks.get(b.offset(x,arena+high,z))!=null&&!blocks.get(b.offset(x,arena+high,z)).isAir(),"a lintel stands over each doorway: "+x+","+z);
+            }
+            for(int y=arena;y<arena+high;y++)helper.assertTrue(blocks.get(b.offset(x,y,59)).is(Blocks.IRON_BARS),"the cell's gate is bars five wide and seven high: "+x+","+(y-arena));
+            helper.assertTrue(blocks.get(b.offset(x,arena+high,59)).is(Blocks.CRACKED_DEEPSLATE_BRICKS),"the cell's wall closes over its gate");
+            for(int z=lz;z<=32;z++)helper.assertTrue(blocks.get(b.offset(x,arena-1,z))!=null&&!blocks.get(b.offset(x,arena-1,z)).isAir(),"the causeway to the chamber is five wide at "+x+","+z);
+        }
+        for(int x=-half;x<=lx;x++)for(int z=lz-1;z<=lz-1+2*half;z++)helper.assertTrue(blocks.get(b.offset(x,arena-1,z))!=null&&!blocks.get(b.offset(x,arena-1,z)).isAir(),"the causeway from the stair is five wide at "+x+","+z);
+        for(int x:new int[]{-half-1,half+1})helper.assertTrue(blocks.get(b.offset(x,arena,59)).is(Blocks.CRACKED_DEEPSLATE_BRICKS),"the cell's wall stands either side of its gate");
+        int cellHigh=FinaleArchitecture.CELL_HIGH;helper.assertTrue(cellHigh>high,"the cell's walls stand higher than its gate");
+        for(int x:new int[]{-6,6})for(int z=59;z<=69;z++){var top=blocks.get(b.offset(x,arena+cellHigh-1,z));
+            helper.assertTrue(top!=null&&!top.isAir(),"the cell's walls stand "+cellHigh+" high at "+x+","+z);}
+        for(int x=-6;x<=6;x++)helper.assertTrue(blocks.get(b.offset(x,arena+cellHigh-1,59))!=null&&!blocks.get(b.offset(x,arena+cellHigh-1,59)).isAir(),"the cell's front stands "+cellHigh+" high at "+x);
+        int rail=lx-FinaleArchitecture.STAIR_HALF_WIDTH-1;
+        for(int z=lz-1;z<=lz;z++)for(int y=arena;y<=arena+1;y++){var gap=blocks.get(b.offset(rail,y,z));
+            helper.assertTrue(gap==null||gap.isAir(),"the inner rail opens where the causeway leaves the last treads: "+z+" / "+(y-arena));}
+        net.minecraft.world.level.block.state.BlockState overRiser=blocks.get(b.offset(rail,arena+1,lz+1)),riserString=blocks.get(b.offset(rail,arena,lz+1)),railEnd=blocks.get(b.offset(rail,arena+1,lz+2));
+        helper.assertTrue(overRiser==null||overRiser.isAir(),"the inner rail opens over the first riser too: "+overRiser);
+        helper.assertTrue(riserString!=null&&!riserString.isAir(),"the string still stands under the first riser, as its step");
+        helper.assertTrue(railEnd!=null&&railEnd.is(StairWell.BALUSTRADE.get())&&!railEnd.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.NORTH)
+                &&railEnd.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.SOUTH),"the rail above the riser ends at its post: "+railEnd);
+        // From the middle of its cell down the causeway on the causeway's floor; then, broader than the two treads level with the
+        // causeway, it turns onto the stair up the first riser beside them, to where its climb begins.
+        double wide=1.8*MinotaurEntity.SCALE,tall=3.7*MinotaurEntity.SCALE,riser=rail-wide/2;
+        var way=new ArrayList<Vec3>();for(double z=64.5;z>=lz+.5;z-=.5)way.add(new Vec3(.5,arena,z));
+        for(double x=.5;x<riser;x+=.5)way.add(new Vec3(x,arena,lz+.5));
+        for(double x=riser;x<=lx+.5+.6*MinotaurEntity.SCALE;x+=.5)way.add(new Vec3(x,arena+1,lz+.5));
+        for(var at:way)for(int x=(int)Math.floor(at.x-wide/2);x<=(int)Math.floor(at.x+wide/2);x++)for(int z=(int)Math.floor(at.z-wide/2);z<=(int)Math.floor(at.z+wide/2);z++)
+            for(int y=(int)at.y;y<=(int)Math.floor(at.y+tall);y++){
+                var state=blocks.get(b.offset(x,y,z));
+                helper.assertTrue(state==null||state.isAir()||z==59&&state.is(Blocks.IRON_BARS),"the creature's body clears its way out at "+at+" (block "+x+","+(y-arena)+","+z+": "+state+")");
+            }
         for(int n:new int[]{12,48,100,180}){
             var at=route.get(n);var next=route.get(n+1);boolean alongX=next.getX()!=at.getX();
             for(int lateral=-4;lateral<=4;lateral++){

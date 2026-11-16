@@ -82,8 +82,8 @@ From 0.4.596 (company on the stair):
 ## Next
 
 - **0.4.653, the Minotaur bigger.** About half again his height (0.4.584 made him 3.1 blocks to the eyes), with the cell's
-  gate and the passage to it widened and raised to five blocks by six to let him through (the owner: "You can adjust the
-  width of the cell gate and corridor too").
+  gate and the passage to it widened and raised to let him through (the owner: "You can adjust the width of the cell gate and
+  corridor too"). As built: five blocks wide and seven high, so his horns clear them (docs/MINOTAUR_SIZE_0_4_653.md).
 - **0.4.654 and after, someone for every story.** A figure on the stair for each of the nineteen stories that has nobody
   there yet, each standing in for that story's people as 0.4.596's figures do.
 

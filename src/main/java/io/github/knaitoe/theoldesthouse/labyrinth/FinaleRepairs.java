@@ -147,7 +147,7 @@ public final class FinaleRepairs {
         boolean broken=world.getBoolean("MinotaurWounded")||world.getBoolean("Ended");
         for(int x=-17;x<=17;x++)for(int z=30;z<=69;z++)for(int y=FinaleArchitecture.ARENA;y<=FinaleArchitecture.ARENA+13;y++){
             boolean boundary=x==-17||x==17||z==30||z==69||y==FinaleArchitecture.ARENA+13;
-            if(!boundary||z==30&&Math.abs(x)<=1&&y<FinaleArchitecture.ARENA+4
+            if(!boundary||z==30&&Math.abs(x)<=FinaleArchitecture.GATE_HALF&&y<FinaleArchitecture.ARENA+FinaleArchitecture.GATE_HIGH
                     ||Math.abs(x)==17&&(z==36||z==37)&&y<FinaleArchitecture.ARENA+3
                     ||broken&&x==-17&&z>=63&&z<=67&&y<FinaleArchitecture.ARENA+4)continue;
             var at=b.offset(x,y,z);if(level.getBlockState(at).isAir())level.setBlock(at,wall,F);
