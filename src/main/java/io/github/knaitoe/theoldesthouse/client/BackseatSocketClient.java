@@ -31,6 +31,13 @@ public final class BackseatSocketClient {
     private static double windowTravel;
     private static float revealYaw,revealPitch;
     private static float firstWind;private static double firstPull;
+    /**
+     * Run 1682: the frames this client has drawn, and how many it drew in each of the last forty ticks. A client that has only just
+     * reconnected draws a frame every few ticks while its world compiles, and a driver's whole ride is under four seconds, so a
+     * driver does not turn to the mirror (which starts the ride) until this client is drawing steadily.
+     */
+    private static int frames,framesAtTick;private static final int[] DRAWN=new int[40];private static int drawnAt;
+    private static boolean steady(){int sum=0;for(int n:DRAWN)sum+=n;return sum>=16;}
     private static final Set<String> CAPTURES=new HashSet<>();
     private static final Set<String> HEARD=java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final List<net.minecraft.client.resources.sounds.SoundInstance> RADIOS=new java.util.concurrent.CopyOnWriteArrayList<>();
@@ -65,7 +72,8 @@ public final class BackseatSocketClient {
         var custom=mc.player.getInventory().getItem(8).get(DataComponents.CUSTOM_DATA);if(custom==null)return;var tag=custom.copyTag();int next=tag.getInt("BackseatStep");if(next==0)return;
         stop(mc);if(mc.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen)return;
         if(next!=phase){phase=next;age=0;clicked=-100;leg=0;looked=false;}age++;
-        if(age%100==0)TheOldestHouse.LOGGER.info("BACKSEAT CLIENT {} phase={} feet={} vehicle={} screen={} sounds={}",role(),phase,mc.player.position(),mc.player.getVehicle(),mc.screen==null?"none":mc.screen.getClass().getSimpleName(),HEARD);
+        DRAWN[drawnAt=(drawnAt+1)%DRAWN.length]=frames-framesAtTick;framesAtTick=frames;
+        if(age%100==0)TheOldestHouse.LOGGER.info("BACKSEAT CLIENT {} phase={} feet={} vehicle={} screen={} sounds={} frames={} steady={}",role(),phase,mc.player.position(),mc.player.getVehicle(),mc.screen==null?"none":mc.screen.getClass().getSimpleName(),HEARD,frames,steady());
         var road=tag.contains("Road")?BlockPos.of(tag.getLong("Road")):null;var at=road==null?null:road.offset(BackseatRooms.CAR);var car=at==null?null:car(mc,at);
         if(phase==1){
             if(mc.level.dimension().equals(HouseDimensions.INTERIOR)){click(mc,BlockPos.of(tag.getLong("Source")).getCenter(),true);return;}
@@ -108,6 +116,8 @@ public final class BackseatSocketClient {
             if(driver){
                 if(returned(mc)&&age>30)endView(mc,"house-return");
                 else if(car!=null&&mc.player.getVehicle() instanceof BackseatSeat){
+                    // The turn to the mirror starts the ride: not before this client can take the ride's frames (twenty seconds at most).
+                    if(!looked&&!steady()&&age<400)return;
                     if(!looked){look(mc,at.getCenter().add(BackseatCarMesh.MIRROR).add(0,-.5,0));revealYaw=mc.player.getYRot();revealPitch=mc.player.getXRot();looked=true;}
                     if(car.phase==BackseatCarBlock.Car.REVEAL){
                         if(!CAPTURES.contains(role()+"-reveal")&&car.travel>3)capture("reveal",false);
@@ -135,7 +145,7 @@ public final class BackseatSocketClient {
         return pull>firstPull+.025&&wind>firstWind+.1;
     }
     @SubscribeEvent public static void frame(RenderFrameEvent.Post e)throws Exception{
-        if(!BackseatSocketProof.enabled()||shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(BackseatSocketProof.folder());
+        if(!BackseatSocketProof.enabled())return;frames++;if(shot==null)return;var mc=Minecraft.getInstance();Files.createDirectories(BackseatSocketProof.folder());
         if(shot.contains("-side-window-")){
             if(Math.abs(net.minecraft.util.Mth.wrapDegrees(mc.gameRenderer.getMainCamera().getYRot()-(role().equals("A")?90:-90)))>1)return;
             require(mc.player.getVehicle() instanceof BackseatSeat,"the window frames use the original moving driver's seat");
