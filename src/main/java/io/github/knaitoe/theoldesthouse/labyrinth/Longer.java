@@ -35,7 +35,7 @@ public final class Longer {
         switch(kind){
             // The work order on its spike and the table are the first paper's and the account's: the House's own reading answers them.
             case ORDER,TABLE->{return false;}
-            case LAMP->{boolean on=stage!=1;l.setBlock(at,st.setValue(LongerBlock.STAGE,on?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.4F,on?1.4F:1.1F);cue(p,on?LongerTexts.LAMP_ON:LongerTexts.LAMP_OFF);}
+            case LAMP->{if(LongerBench.lamp(p,b,at,st,own))return true;boolean on=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,on?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.4F,on?1.4F:1.1F);cue(p,on?LongerTexts.LAMP_ON:LongerTexts.LAMP_OFF);}
             case RADIO->{
                 if(stage==2){cue(p,LongerTexts.BENCH_RADIO);return true;}
                 boolean on=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,on?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.4F,.8F);

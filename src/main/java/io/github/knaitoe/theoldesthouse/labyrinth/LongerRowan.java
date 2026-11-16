@@ -69,6 +69,8 @@ public final class LongerRowan {
     public record Spot(double x,double y,double z,float look,int gesture){public Vec3 at(BlockPos b){return new Vec3(b.getX()+x,b.getY()+y,b.getZ()+z);}}
     /** In the mended chair, facing the bench (west). */
     public static final Spot BENCH=new Spot(LongerSite.CHAIR.getX()+.5,0,LongerSite.CHAIR.getZ()+.5,90,WORK);
+    /** In the chair with the tool put down (LongerBench, once the workbench chapter is over). */
+    public static final Spot REST_AT_BENCH=new Spot(BENCH.x(),0,BENCH.z(),90,LongerBench.REST);
     /** In front of the shelf of waiting sets, facing it (east). */
     public static final Spot SHELF_SPOT=new Spot(5.68,0,-12.4,-90,SHELF);
     /** Behind the counter, facing the shop door (north). */
@@ -92,14 +94,14 @@ public final class LongerRowan {
     static final class Shop {UUID id;int phase=-1;int leg=-1,via=0,hold=0;long nextErrand=-1,nextHum=-1,nextTune=-1,lastTick=-1,spokenAt=-100000;}
     private static final Map<BlockPos,Shop> SHOPS=new HashMap<>();
     static Shop shop(BlockPos b){return SHOPS.computeIfAbsent(b.immutable(),k->new Shop());}
-    public static void clearAll(){SHOPS.clear();}
+    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()-7,b.getY()-1,b.getZ()-19,b.getX()+8,b.getY()+LongerSite.ROOF+4,b.getZ()+1);}
     private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
 
     /** A reader arrives in their copy: the copy is kept ticking, and their Rowan is decided now if not already. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);
+        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);
     }
     /** Rowan at this copy, if their body is here. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b){
@@ -119,7 +121,7 @@ public final class LongerRowan {
         s.id=a.getUUID();s.leg=-1;
     }
     /** Nobody at this copy: for a shop built again from nothing, and for tests. */
-    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);}
+    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);}
 
     /** Readers in this copy of the place. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
@@ -137,10 +139,17 @@ public final class LongerRowan {
         ensure(l,b);var a=find(l,b);if(a==null)return;
         if(s.nextErrand<0){s.nextErrand=now+SIT_LEAST+l.random.nextInt(SIT_MORE);s.nextHum=now+40;s.nextTune=now+100;}
         if(s.leg<0){
-            // At the bench: humming now and then, and the radio tuned through its static between.
-            settle(a,BENCH);
-            if(now>=s.nextHum){l.playSound(null,a.getX(),a.getY()+1,a.getZ(),LongerRegistry.HUM.get(),SoundSource.NEUTRAL,.55F,1);s.nextHum=now+HUM_EVERY+l.random.nextInt(HUM_EVERY);}
-            if(now>=s.nextTune){var r=LongerSite.RADIO;l.playSound(null,b.getX()+r.getX()+.5,b.getY()+r.getY()+.5,b.getZ()+r.getZ()+.5,LongerRegistry.TUNING.get(),SoundSource.BLOCKS,.5F,1);s.nextTune=now+TUNE_EVERY+l.random.nextInt(TUNE_EVERY);}
+            // At the bench, while they work at it: humming now and then, and, while its back is off, the radio tuned through its static
+            // between. Once the work is put down (LongerBench) neither: the set is off and nobody is concentrating.
+            boolean working=a.gesture()==WORK||a.gesture()==LongerBench.HURRY;
+            if(working&&now>=s.nextHum){l.playSound(null,a.getX(),a.getY()+1,a.getZ(),LongerRegistry.HUM.get(),SoundSource.NEUTRAL,.55F,1);s.nextHum=now+HUM_EVERY+l.random.nextInt(HUM_EVERY);}
+            var radio=l.getBlockState(b.offset(LongerSite.RADIO));
+            if(now>=s.nextTune&&LongerBlock.is(radio,LongerBlock.Kind.RADIO)&&radio.getValue(LongerBlock.STAGE)==2){var r=LongerSite.RADIO;l.playSound(null,b.getX()+r.getX()+.5,b.getY()+r.getY()+.5,b.getZ()+r.getZ()+.5,LongerRegistry.TUNING.get(),SoundSource.BLOCKS,.5F,1);s.nextTune=now+TUNE_EVERY+l.random.nextInt(TUNE_EVERY);}
+        }
+        // The workbench chapter has Rowan while it runs: no errands in the middle of it (LongerBench).
+        if(LongerBench.tick(l,b,a,here,s.leg<0))return;
+        if(s.leg<0){
+            settle(a,LongerBench.rested(l,b)?REST_AT_BENCH:BENCH);
             if(now>=s.nextErrand&&now-s.spokenAt>SPOKEN_QUIET&&!inPanel(here)){s.leg=0;s.via=0;s.hold=0;a.gesture(WALK);}
             else{turnHead(a,BENCH.look(),here);return;}
         }
@@ -177,7 +186,7 @@ public final class LongerRowan {
     private static void settle(LiteraryActor a,Spot to){
         if(a.gesture()!=to.gesture())a.gesture(to.gesture());
         var at=new Vec3(a.getX(),a.getY(),a.getZ());
-        if(to==BENCH&&at.distanceToSqr(new Vec3(Math.floor(at.x)+.5,at.y,Math.floor(at.z)+.5))>.0001)a.setPos(Math.floor(at.x)+.5,at.y,Math.floor(at.z)+.5);
+        if(to.x()==BENCH.x()&&to.z()==BENCH.z()&&at.distanceToSqr(new Vec3(Math.floor(at.x)+.5,at.y,Math.floor(at.z)+.5))>.0001)a.setPos(Math.floor(at.x)+.5,at.y,Math.floor(at.z)+.5);
         float body=Mth.approachDegrees(a.getYRot(),to.look(),TURN);a.setYRot(body);a.setYBodyRot(body);
     }
     /**
@@ -196,6 +205,10 @@ public final class LongerRowan {
         a.walkAnimation.update((float)stepLen*4,.4F);a.setDeltaMovement(Vec3.ZERO);
         return false;
     }
+    /** Kept in the chair, doing this, the head toward a reader near: for the workbench chapter (LongerBench). */
+    static void hold(LiteraryActor a,int gesture,List<ServerPlayer> here){hold(a,gesture,here,BENCH.look());}
+    /** The same, turned in the chair to this yaw. */
+    static void hold(LiteraryActor a,int gesture,List<ServerPlayer> here,float look){settle(a,new Spot(BENCH.x(),0,BENCH.z(),look,gesture));turnHead(a,look,here);}
     /** The body kept to this yaw; the head toward a reader near who can be seen, no more than HEAD_TURN off it, a little at a time. */
     private static void turnHead(LiteraryActor a,float rest,List<ServerPlayer> here){
         ServerPlayer near=null;double best=NEAR*NEAR;
@@ -212,12 +225,14 @@ public final class LongerRowan {
         if(!is(a))return;var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;
         if(a.saying()&&Talk.key(p).equals(TALK))return;
         var s=shop(b);s.spokenAt=p.serverLevel().getGameTime();
+        // 0.4.623: at the bench the evening's first chapter answers (LongerBench); it says what it says in the panel itself.
+        if(LongerBench.talk(p,a,own,s.leg<0))return;
         boolean first=!own.getBoolean(MET);
         if(first){own.putBoolean(MET,true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
         Talk.begin(p,TALK,LongerTexts.ROWAN);
         int where=s.leg<0?-1:s.hold>0?s.leg:-2;
         String line=switch(where){
-            case -1->first?LongerTexts.ROWAN_BENCH_FIRST:LongerTexts.ROWAN_BENCH;case 0->LongerTexts.ROWAN_SHELF;case 1->LongerTexts.ROWAN_COUNTER;default->LongerTexts.ROWAN_WALKING;};
+            case -1->LongerTexts.ROWAN_AFTER;case 0->LongerTexts.ROWAN_SHELF;case 1->LongerTexts.ROWAN_COUNTER;default->LongerTexts.ROWAN_WALKING;};
         Talk.line(p,LongerTexts.ROWAN,line);a.say(LongerTexts.ROWAN,line);a.speaks(line);
         Talk.end(p);
     }

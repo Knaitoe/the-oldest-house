@@ -247,7 +247,7 @@ public final class LiteraryRenderers {
          * Walking is the ordinary walk.
          */
         private void longer(int gesture,float age,boolean speaking){
-            final int WORK=1,SHELF=2,COUNTER=3;
+            final int WORK=1,SHELF=2,COUNTER=3,HURRY=4,STOOP=5,SHOW=6,REST=7;
             switch(gesture){
                 case WORK->{float r=net.minecraft.util.Mth.sin(age*.31F),q=net.minecraft.util.Mth.cos(age*.23F);
                     rightArm.xRot=-1.02F+r*.06F;rightArm.yRot=-.22F+q*.03F;rightArm.zRot=0;leftArm.xRot=-.98F-q*.05F;leftArm.yRot=.26F;leftArm.zRot=0;
@@ -257,6 +257,24 @@ public final class LiteraryRenderers {
                     if(!speaking){head.xRot-=.12F;head.zRot+=.1F;}}
                 case COUNTER->{rightArm.xRot=-.72F;rightArm.yRot=-.2F;rightArm.zRot=0;leftArm.xRot=-.72F;leftArm.yRot=.2F;leftArm.zRot=0;
                     body.xRot+=.12F;rightLeg.xRot=leftLeg.xRot=0;if(!speaking)head.xRot-=.18F;}
+                // 0.4.623, the workbench chapter (labyrinth.LongerBench). Hurrying, while a reader holds the panel: the screwdriver hand
+                // quick and small, the other flat on the case, the head down close to it.
+                case HURRY->{float r=net.minecraft.util.Mth.sin(age*.95F),q=net.minecraft.util.Mth.cos(age*1.3F);
+                    rightArm.xRot=-1.1F+r*.1F;rightArm.yRot=-.28F+q*.06F;rightArm.zRot=0;leftArm.xRot=-1.05F;leftArm.yRot=.34F;leftArm.zRot=0;
+                    if(!speaking)head.xRot+=.48F;}
+                // Stooping for the screw on the floor: bent from the hips, which stay over the feet, the knees a little bent, one hand
+                // down to the boards and the other on a knee, looking at the floor.
+                case STOOP->{
+                    // Vanilla's crouch, taken further: the body tipped forward from the shoulders with the hips pushed back over the
+                    // heels (the legs' tops move back with them), so the parts stay joined as they do when a player crouches.
+                    body.xRot=.66F;body.y=3.9F;head.y=5.2F;head.xRot=.75F;
+                    rightArm.y=leftArm.y=6.3F;rightLeg.z=leftLeg.z=7.2F;rightLeg.y=leftLeg.y=12.6F;rightLeg.xRot=leftLeg.xRot=0;rightLeg.yRot=leftLeg.yRot=0;
+                    rightArm.xRot=-.62F;rightArm.yRot=.05F;rightArm.zRot=.06F;leftArm.xRot=-.28F;leftArm.yRot=.12F;leftArm.zRot=-.1F;}
+                // Turned to the reader in the chair, holding the route out on its paper in one hand, the other on a knee.
+                case SHOW->{rightArm.xRot=-1.32F;rightArm.yRot=-.18F;rightArm.zRot=0;leftArm.xRot=-.55F;leftArm.yRot=.1F;leftArm.zRot=-.05F;}
+                // The tool put down: hands in the lap, sitting back.
+                case REST->{float b=net.minecraft.util.Mth.sin(age*.05F)*.02F;rightArm.xRot=-.62F+b;rightArm.yRot=.22F;rightArm.zRot=.05F;leftArm.xRot=-.62F+b;leftArm.yRot=-.22F;leftArm.zRot=-.05F;
+                    body.xRot-=.05F;}
                 default->{}
             }
         }

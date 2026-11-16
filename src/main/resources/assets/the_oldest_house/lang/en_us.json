@@ -1965,5 +1965,6 @@
   "block.the_oldest_house.longer_facade_lit": "Lit Window",
   "block.the_oldest_house.longer_facade_dark": "Dark Window",
   "subtitles.the_oldest_house.longer.hum": "Someone hums",
-  "subtitles.the_oldest_house.longer.tuning": "A radio is tuned"
+  "subtitles.the_oldest_house.longer.tuning": "A radio is tuned",
+  "subtitles.the_oldest_house.longer.burst": "A radio bursts and pops"
 }

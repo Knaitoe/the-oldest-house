@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
@@ -185,13 +186,13 @@ public final class LongerTests {
             // A hand on Rowan: where they have got to, in the panel, over their head; nothing in chat.
             var a=rowan(h,p);f.at(p,P,-3.5,0,-11.5);told(p);
             LiteraryVignettes.talk(p,a);
-            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_BENCH_FIRST),"the first time: "+Talk.lines(p));
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ASK_HOLD)&&Talk.replies(p).contains(LongerTexts.HOLD_IT),"the first hand at the bench: the workbench chapter's ask: "+Talk.lines(p)+" "+Talk.replies(p));
             h.assertTrue(f.own(p,P).getBoolean(LongerRowan.MET),"the reader has met Rowan");
             Talk.close(p);
         }).thenIdle(60).thenExecute(()->{
             var a=rowan(h,p);LiteraryVignettes.talk(p,a);
-            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_BENCH),"after: "+Talk.lines(p));
-            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.ROWAN_BENCH)||t.contains(LongerTexts.ROWAN_BENCH_FIRST)),"nothing Rowan says goes to chat");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ASK_HOLD)&&Talk.replies(p).contains(LongerTexts.HOLD_IT),"a hand again: the same question, still waiting: "+Talk.lines(p));
+            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.ASK_HOLD)),"nothing Rowan says goes to chat");
             Talk.close(p);done();h.succeed();
         });
     }
@@ -253,6 +254,143 @@ public final class LongerTests {
             h.assertTrue(a.blockPosition().equals(b.offset(LongerSite.CHAIR))&&a.gesture()==LongerRowan.WORK&&ActorSeat.of(a)!=null,"back in the chair at work");
             h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-LongerRowan.BENCH.look()))<1,"turned back to the bench: "+a.getYRot());
             h.assertTrue(worst[0]<=LongerRowan.PACE+.01,"no step longer than a walking pace: "+worst[0]);
+            done();h.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.623, chapter 1, the workbench
+    private static CompoundTag bench(LiteraryTests.Fixture f,ServerPlayer p){return f.own(p,P);}
+    private static int stage(LiteraryTests.Fixture f,ServerPlayer p){return LongerBench.stage(f.own(p,P));}
+    private static boolean heard(ServerPlayer p,net.minecraft.sounds.SoundEvent sound){NativeTestPlayers.flush(p);for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==sound)return true;return false;}
+
+    /**
+     * A reader near the chair is asked to hold the panel, holds it (within reach, looking at the radio), and Rowan thanks them. The set
+     * is switched on, bursts, and the panel opens on its own: "That sounded expensive." One question; the route on its paper in Rowan's
+     * hand; the stairs, word for word; the crossed-out turn; the tool put down. The one act kept is the panel held.
+     */
+    @GameTest(template="empty",batch="longer_bench_hold",timeoutTicks=2400)
+    public static void theReaderHoldsThePanelTheSetBurstsAndRowanShowsTheirRoute(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_bench_holder",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{f.at(p,P,-3.6,0,-12.6);told(p);NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);})
+        .thenWaitUntil(()->h.assertTrue(stage(f,p)==LongerBench.ASK,"near the chair a while, the reader is asked: "+stage(f,p)))
+        .thenExecute(()->{
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ASK_HOLD),"\"Could you hold that side a second?\" "+Talk.lines(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.HOLD_IT,LongerTexts.WATCH,LongerTexts.NOT_NOW)),"hold it, watch, or not now: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.HOLD_IT),"hold it");
+            h.assertTrue(stage(f,p)==LongerBench.HOLDING&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.HOLD_WHERE),"where to hold it: "+Talk.lines(p));
+            Talk.close(p);
+            // Within reach of the radio, looking at it.
+            var b=LiteraryVignettes.base(p,P);f.at(p,P,-4.1,0,-11.8);
+            p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,net.minecraft.world.phys.Vec3.atCenterOf(b.offset(LongerSite.RADIO)));
+        })
+        .thenWaitUntil(()->h.assertTrue(stage(f,p)>=LongerBench.FINISHING,"held long enough: "+stage(f,p)))
+        .thenExecute(()->{
+            var a=rowan(h,p);
+            h.assertTrue(LongerBench.act(bench(f,p)).equals(LongerBench.HELD_PANEL),"the one act kept is the panel held: "+LongerBench.act(bench(f,p)));
+            h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(LongerTexts.THANKS),"\"There. Thank you.\"");
+            h.assertTrue(LongerBench.screwOnFloor(l,LiteraryVignettes.base(p,P))==null,"held, no screw rolls");
+        })
+        .thenWaitUntil(()->h.assertTrue(stage(f,p)==LongerBench.TALK,"the burst, then the panel: "+stage(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(heard(p,LongerRegistry.BURST.get()),"the set bursts");
+            h.assertTrue(LongerBlock.stage(l.getBlockState(b.offset(LongerSite.RADIO)))==0,"the set is off, its back on");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.EXPENSIVE)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.STANDING),"\"That sounded expensive.\" "+Talk.lines(p));
+            h.assertTrue(Talk.replies(p).equals(LongerTexts.QUESTIONS),"the four ways to answer: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.QUESTIONS.get(1)),"what's wrong with it");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ANSWERS.get(1)),"the answer: "+Talk.lines(p));
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ON_PAPER+": "+LongerTexts.ROUTE)&&a.getMainHandItem().is(net.minecraft.world.item.Items.PAPER)&&a.gesture()==LongerBench.SHOW,"the route on its paper, held out: "+a.gesture());
+            h.assertTrue(!Talk.replies(p).contains(LongerTexts.QUESTIONS.get(1))&&Talk.replies(p).contains(LongerTexts.DOUBT)&&Talk.replies(p).contains(LongerTexts.LEAVE),"each question once; the stairs; leave it: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.DOUBT)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.STAIRS),"\"I said I knew where the stairs were.\"");
+            h.assertTrue(Talk.choose(p,LongerTexts.THREE)&&Talk.lines(p).contains("you: "+LongerTexts.THREE)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.RIGHT),"\"You drew them in three places.\" \"And one of those was right.\" "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.WHICH)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.WHICH_ANSWER),"the crossed-out turn");
+            h.assertTrue(Talk.choose(p,LongerTexts.LEAVE),"leave it there");
+            h.assertTrue(stage(f,p)==LongerBench.DONE&&a.getMainHandItem().isEmpty()&&a.gesture()==LongerBench.REST,"the paper put away, the tool down: "+a.gesture());
+            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.EXPENSIVE)||t.contains(LongerTexts.ROUTE)),"nothing in chat");
+            Talk.close(p);
+        }).thenIdle(30).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.gesture()==LongerBench.REST&&LongerBench.rested(l,b),"resting in the chair");
+            LiteraryVignettes.talk(p,a);
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_AFTER),"after the chapter: "+Talk.lines(p));
+            Talk.close(p);done();h.succeed();
+        });
+    }
+
+    /**
+     * Watched, not held: the last screw goes off the bench and rolls across the floor, a real screw. A hand on the lamp while Rowan works
+     * turns it onto the radio, and that is the act kept: the first thing done, not the last. The reader picks the screw up and hands it
+     * back; Rowan says so and finishes. A screw taken out of the shop does not leave with the reader.
+     */
+    @GameTest(template="empty",batch="longer_bench_screw",timeoutTicks=1600)
+    public static void theScrewRollsTheLampIsTurnedAndTheScrewIsHandedBack(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_bench_screw",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{
+            f.at(p,P,-3.6,0,-12.6);LiteraryVignettes.talk(p,rowan(h,p));
+            h.assertTrue(stage(f,p)==LongerBench.ASK,"a hand on Rowan at the bench asks");
+            h.assertTrue(Talk.choose(p,LongerTexts.WATCH),"watch");Talk.close(p);
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(stage(f,p)==LongerBench.ALONE&&LongerBench.screwOnFloor(l,b)!=null,"the screw goes off the bench");
+            int lamp=LongerBlock.stage(l.getBlockState(b.offset(LongerSite.LAMP)));
+            f.click(p,P,LongerSite.LAMP);
+            h.assertTrue(LongerBlock.stage(l.getBlockState(b.offset(LongerSite.LAMP)))==2&&lamp!=2,"the lamp turned onto the radio");
+            h.assertTrue(LongerBench.act(bench(f,p)).equals(LongerBench.MOVED_LAMP),"the lamp moved is kept: "+LongerBench.act(bench(f,p)));
+            h.assertTrue(l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,b.offset(LongerSite.LAMP))>=11,"still lit");
+        })
+        .thenWaitUntil(()->{var e=LongerBench.screwOnFloor(l,LiteraryVignettes.base(p,P));h.assertTrue(e!=null&&e.onGround()&&e.getDeltaMovement().horizontalDistanceSqr()<1e-4,"the screw comes to rest on the floor");})
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var e=LongerBench.screwOnFloor(l,b);var at=e.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(at.y<.2&&at.x>-5&&LongerSite.inShop(at),"on the shop floor, off the bench: "+at);
+            h.assertTrue(LongerBench.isScrew(e.getItem())&&e.getItem().getHoverName().getString().equals(LongerTexts.SCREW),"a small screw");
+            // Picked up, as a hand does.
+            p.getInventory().add(e.getItem().copy());e.discard();
+            LiteraryVignettes.talk(p,rowan(h,p));
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.SCREW_BACK),"handed back: "+Talk.lines(p));
+            boolean kept=false;for(var s:p.getInventory().items)kept|=LongerBench.isScrew(s);
+            h.assertTrue(!kept,"the screw goes back to Rowan");
+            h.assertTrue(LongerBench.act(bench(f,p)).equals(LongerBench.MOVED_LAMP),"the first act stays the one kept, not the last");
+            h.assertTrue(stage(f,p)==LongerBench.FINISHING,"Rowan finishes");
+            Talk.close(p);
+            // Another screw in a pocket outside the shop goes.
+            p.getInventory().add(LongerBench.screw());
+        })
+        .thenWaitUntil(()->h.assertTrue(stage(f,p)==LongerBench.TALK,"the burst and the panel"))
+        .thenExecute(()->{f.at(p,P,0,0,-40);})
+        .thenWaitUntil(()->{boolean kept=false;for(var s:p.getInventory().items)kept|=LongerBench.isScrew(s);h.assertTrue(!kept,"out of the shop, the shop's screw is not in the reader's pocket");})
+        .thenExecute(()->{Talk.close(p);done();h.succeed();});
+    }
+
+    /**
+     * Not now: Rowan does it one-handed, the screw rolls, and nobody picks it up. In time Rowan gets out of the chair, walks to it, stoops
+     * for it and walks back; nothing they walk through is solid. No act is kept that the reader did not do.
+     */
+    @GameTest(template="empty",batch="longer_bench_fetch",timeoutTicks=2000)
+    public static void leftOnTheFloorTheScrewIsFetchedByRowanOnTheirOwnFeet(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_bench_fetch",P);var l=f.level(P);var stooped=new boolean[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{
+            f.at(p,P,-0.5,0,-13.5);LiteraryVignettes.talk(p,rowan(h,p));
+            h.assertTrue(Talk.choose(p,LongerTexts.NOT_NOW),"not right now");
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ONE_HANDED),"\"I've done it one-handed before.\"");
+            Talk.close(p);
+        })
+        .thenWaitUntil(()->{var e=LongerBench.screwOnFloor(l,LiteraryVignettes.base(p,P));h.assertTrue(e!=null&&e.onGround()&&e.getDeltaMovement().horizontalDistanceSqr()<1e-4,"at rest on the floor");})
+        .thenExecute(()->LongerBench.screwWaited(LiteraryVignettes.base(p,P),LongerBench.FETCH_AFTER))
+        .thenWaitUntil(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            if(LongerBench.fetching(b)>=0){var body=a.getBoundingBox().deflate(.05);if(LongerBench.fetching(b)!=1&&a.position().distanceTo(LongerRowan.BENCH.at(b))>.8)h.assertTrue(l.noCollision(body),"Rowan walks through nothing solid: "+a.position().subtract(b.getX(),b.getY(),b.getZ()));}
+            if(LongerBench.fetching(b)==1&&a.gesture()==LongerBench.STOOP)stooped[0]=true;
+            h.assertTrue(stage(f,p)==LongerBench.FINISHING,"fetched and back: fetch "+LongerBench.fetching(b)+" at "+a.position().subtract(b.getX(),b.getY(),b.getZ()));
+        })
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(stooped[0],"they stooped for it");
+            h.assertTrue(LongerBench.screwOnFloor(l,b)==null,"the screw is off the floor");
+            h.assertTrue(a.position().distanceTo(LongerRowan.BENCH.at(b))<.05,"back in the chair");
+            h.assertTrue(LongerBench.act(bench(f,p)).isEmpty(),"nothing the reader did not do: "+LongerBench.act(bench(f,p)));
+            h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(LongerTexts.THERE),"\"There.\" and no thanks for nothing");
             done();h.succeed();
         });
     }

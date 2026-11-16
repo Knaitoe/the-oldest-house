@@ -48,11 +48,39 @@ public final class LongerTexts {
      * evening's conversation begins (the next slice): at the bench, the first time and after; at the shelf; at the counter; walking.
      */
     public static final String ROWAN="Rowan",
-        ROWAN_BENCH_FIRST="Sorry. One minute. I nearly have it.",
         ROWAN_BENCH="Nearly. Really, this time.",
         ROWAN_SHELF="I had a valve this size. I know I had one.",
         ROWAN_COUNTER="Nobody has come in all night. I still look.",
         ROWAN_WALKING="Hold on. I'm only going to look at something.";
+    /**
+     * 0.4.623, chapter 1, the workbench (LongerBench). The proposal's own lines are kept word for word: "Could you hold that side a
+     * second?", "There. Thank you.", "That sounded expensive.", "I said I knew where the stairs were.", "You drew them in three places.",
+     * "And one of those was right." The rest are new and flagged for the owner in docs/A_LITTLE_LONGER_0_4_623.md.
+     */
+    public static final String ASK_HOLD="Could you hold that side a second?",
+        HOLD_IT="Hold the side of the radio",WATCH="Watch",NOT_NOW="Not right now.",
+        ONE_HANDED="Fine. I've done it one-handed before.",
+        HOLD_WHERE="The left side. Flat, like that.",HOLD_REMIND="Just the left side. Flat.",
+        HOLD_CUE="You hold the back panel flat against the case.",
+        THANKS="There. Thank you.",THERE="There.",
+        SCREW="Small screw",SCREW_GONE="No. No, no.",
+        SCREW_BACK="That's the one. I'd have been on my knees for an hour.",
+        SCREW_SPARE="Never mind. There's another in the tray.",
+        LAMP_BETTER="Better. Leave it there.",LAMP_TURNED="You turn the lamp onto the radio.",
+        EXPENSIVE="That sounded expensive.",STANDING="Sorry. You've been standing there.",
+        ROUTE_TRIED="I've tried every door on that side. Here.",
+        ON_PAPER="The paper",ROUTE="In pencil: back door. Corridor. Left at the second door, crossed out. Stairs? Stairs? Stairs.",
+        DOUBT="Are you sure about the stairs?",STAIRS="I said I knew where the stairs were.",
+        THREE="You drew them in three places.",RIGHT="And one of those was right.",
+        WHICH="Which turn didn't work?",WHICH_ANSWER="The one with the line through it. It went back to here.",
+        LEAVE="Leave it there",
+        ROWAN_AFTER="I'm leaving it alone tonight. It can think about what it did.";
+    /** The reader's four first questions, and Rowan's answers, in order. */
+    public static final java.util.List<String> QUESTIONS=java.util.List.of("Where is this?","What's wrong with it?","It's going well, then.","I'm only passing through."),
+        ANSWERS=java.util.List.of("My shop. It was on Carver Street until about a week ago. Now it's on whatever this is.",
+            "It picks something up late at night and loses it again. I'd like to know what.",
+            "It's going exactly as well as it sounded.",
+            "Everybody is. I've tried most of the doors.");
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: the unfinished work order on the spike over the bench, in Rowan's pencil. */
     public static ItemStack source(){
