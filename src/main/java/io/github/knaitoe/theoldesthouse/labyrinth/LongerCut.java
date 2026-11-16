@@ -32,6 +32,8 @@ public final class LongerCut {
     private LongerCut(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.LITTLE_LONGER;
     public static final String STAGE="Cut0629";
+    /** 0.4.631: the radio was playing when the cut stopped it. */
+    public static final String STOPPED="Stopped0631";
     public static final int NONE=0,TOASTER=1,CUTTING=2,DONE=3;
     /** Ticks: after the choice before Rowan goes to the toaster; the cut's beats; a step of the receding strip. */
     public static final int AFTER=300,EDGE=20,WAIT=40,STEP=14,STEPS=7,CLOSE=WAIT+STEP*STEPS+20;
@@ -72,7 +74,10 @@ public final class LongerCut {
             }
             case TOASTER->{
                 if(a.position().distanceTo(TOASTER_SPOT.at(b))>.25){LongerRowan.step(a,TOASTER_SPOT.at(b));return true;}
-                LongerKettle.place(a,b,TOASTER_SPOT);a.gesture(LongerKettle.KETTLE);w.at=now;stage(p,own,CUTTING);
+                LongerKettle.place(a,b,TOASTER_SPOT);a.gesture(LongerKettle.KETTLE);w.at=now;
+                // 0.4.631: whether the radio was playing to be stopped, for the account.
+                var radio=l.getBlockState(b.offset(LongerSite.FLAT_RADIO));own.putBoolean(STOPPED,LongerBlock.is(radio,LongerBlock.Kind.RADIO)&&radio.getValue(LongerBlock.STAGE)>0);
+                stage(p,own,CUTTING);
                 silence(l,b,here);return true;
             }
             case CUTTING->{cutting(l,b,a,here,p,own,w,now);return true;}
@@ -83,11 +88,12 @@ public final class LongerCut {
     /** The radio stops in the middle of the phrase: off, and the tune already playing cut for everyone in the place. */
     static void silence(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var at=b.offset(LongerSite.FLAT_RADIO);var s=l.getBlockState(at);
+        boolean on=LongerBlock.is(s,LongerBlock.Kind.RADIO)&&s.getValue(LongerBlock.STAGE)>0;
         if(LongerBlock.is(s,LongerBlock.Kind.RADIO))l.setBlock(at,s.setValue(LongerBlock.STAGE,0),3);
         for(var q:here){
             q.connection.send(new ClientboundStopSoundPacket(LongerRegistry.TUNE.getId(),null));
             q.connection.send(new ClientboundStopSoundPacket(LongerRegistry.TUNE_LOW.getId(),null));
-            Longer.cue(q,LongerTexts.RADIO_STOPS);
+            if(on)Longer.cue(q,LongerTexts.RADIO_STOPS);
         }
     }
 
