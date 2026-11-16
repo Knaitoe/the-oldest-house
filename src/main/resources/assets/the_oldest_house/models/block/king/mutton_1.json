@@ -188,16 +188,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            6.5,
+            0.0,
+            12,
+            3.25
+          ]
         },
         "south": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            4,
+            0.0,
+            9.5,
+            3.25
+          ]
         },
         "east": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            5,
+            0.0,
+            11,
+            3.25
+          ]
         },
         "west": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            5,
+            0.0,
+            11,
+            3.25
+          ]
         },
         "up": {
           "texture": "#roast"
@@ -220,16 +244,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            7.25,
+            13.5,
+            11.25,
+            14.25
+          ]
         },
         "south": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            4.75,
+            13.5,
+            8.75,
+            14.25
+          ]
         },
         "east": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            5.75,
+            13.5,
+            10.25,
+            14.25
+          ]
         },
         "west": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            5.75,
+            13.5,
+            10.25,
+            14.25
+          ]
         },
         "up": {
           "texture": "#roast"
@@ -252,16 +300,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            4,
+            0.0,
+            6.5,
+            2.0
+          ]
         },
         "south": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            9.5,
+            0.0,
+            12,
+            2.0
+          ]
         },
         "east": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            6.25,
+            0.0,
+            9.75,
+            2.0
+          ]
         },
         "west": {
-          "texture": "#roast"
+          "texture": "#roast",
+          "uv": [
+            6.25,
+            0.0,
+            9.75,
+            2.0
+          ]
         },
         "up": {
           "texture": "#roast"

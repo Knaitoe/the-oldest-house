@@ -13,6 +13,7 @@ materials and kinds are not its own.
 from pathlib import Path
 import argparse
 import json
+import math
 import random
 import re
 import flicker
@@ -615,6 +616,45 @@ def crown_jewel():
     return im
 
 
+def crown_pencil():
+    # 0.4.649: the crown drawn: pencil, a soft dark line that is a little lighter where the lead skipped.
+    im = new(base='#3a3632', seed=6913, spread=5)
+    for x, y in ((2, 5), (9, 2), (13, 10), (5, 13)):
+        dot(im, x, y, '#5a554e')
+    return im
+
+
+def nightcap():
+    # 0.4.649: the King's night-cap, off his head: soft wool lying in folds down its length (the cloth of his cap as he is painted,
+    # tools/paint_character_skins.py).
+    im = new(base='#a8302b', seed=6914, spread=3)
+    for x in (2, 6, 10, 14):
+        for y in range(16):
+            if (x + y) % 5:
+                dot(im, x - (1 if y > 9 else 0), y, '#8e2622')
+    for x, y in ((4, 3), (8, 9), (12, 5), (1, 12)):
+        dot(im, x, y, '#b83a34')
+    return im
+
+
+def nightcap_band():
+    # Its turned-up band: a brighter roll with a light upper edge and a shadow under it.
+    im = new(base='#c23d36', seed=6915, spread=3)
+    fill(im, 0, 0, 16, 1, '#d2524a'); fill(im, 0, 15, 16, 16, '#8c2823')
+    for x in range(1, 16, 4):
+        dot(im, x, 7, '#b0342e')
+    return im
+
+
+def tassel():
+    # The tassel at its tip: pale wool, strands hanging.
+    im = new(base='#e4dfd2', seed=6916, spread=3)
+    for x in (1, 4, 7, 10, 13):
+        fill(im, x, 3, x + 1, 16, '#c6c0b0')
+    fill(im, 0, 0, 16, 3, '#d2ccbc')
+    return im
+
+
 CARD_FACES = ['two', 'three', 'four', 'five', 'six', 'eight', 'knave', 'queen', 'king']
 CARD_PAPER, CARD_EDGE = '#efe8d8', '#8a8070'
 HEART, SPADE, GOLD = '#b8323a', '#2a2a30', '#d8b04a'
@@ -711,7 +751,8 @@ def textures():
     t = {'marble': marble(), 'gilt': gilt(), 'glass': glass(), 'grate': grate(), 'fire': fire(), 'rug': rug(), 'ivory': ivory(),
          'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned(),
          'peg': peg(), 'tabletop': tabletop(), 'bottle': bottle(), 'cake': cake(), 'leather': leather(), 'wheel': wheel(),
-         'stalk': stalk(), 'cap': cap(), 'gills': gills(), **cards(), **{k: f() for k, f in FEAST.items()}}
+         'stalk': stalk(), 'cap': cap(), 'gills': gills(), **cards(), **{k: f() for k, f in FEAST.items()},
+         'nightcap': nightcap(), 'nightcap_band': nightcap_band(), 'tassel': tassel()}
     for i, k in enumerate(FEAST_RULED):
         t[k + '_ruled'] = ruled(t[k], 6950 + i)
     out.update({f'block/king/{k}.png': v for k, v in t.items()})
@@ -719,6 +760,8 @@ def textures():
     out.update({'item/king/bottle.png': bottle_item(), 'item/king/cake.png': cake_item()})
     # 0.4.648: the crown's gold and its stones.
     out.update({'item/king/crown_gold.png': crown_gold(), 'item/king/crown_jewel.png': crown_jewel()})
+    # 0.4.649: the pencil the crown is drawn in outside the country.
+    out['item/king/crown_pencil.png'] = crown_pencil()
     return out
 
 
@@ -748,6 +791,37 @@ def cake_item():
 
 
 # ------------------------------------------------------------------------------------------------ models
+def default_uv(f, lo, hi):
+    """The mapping the game gives a face that names none (BlockElement.uvsByFace): the part's own place in the block."""
+    if f == 'down':
+        return [lo[0], 16 - hi[2], hi[0], 16 - lo[2]]
+    if f == 'up':
+        return [lo[0], lo[2], hi[0], hi[2]]
+    if f == 'north':
+        return [16 - hi[0], 16 - hi[1], 16 - lo[0], 16 - lo[1]]
+    if f == 'south':
+        return [lo[0], 16 - hi[1], hi[0], 16 - lo[1]]
+    if f == 'west':
+        return [lo[2], 16 - hi[1], hi[2], 16 - lo[1]]
+    return [16 - hi[2], 16 - hi[1], 16 - lo[2], 16 - lo[1]]
+
+
+def within(a, b):
+    """0.4.649: one span of a face's mapping, kept on the texture. A part that reaches past its block (a chair's back, a candle, a
+    crown's points) would otherwise take its picture from whatever lies beside its own in the game's sheet. The span is slid back by
+    whole textures where that brings it on; a span lying across the texture's edge starts at the edge; one longer than the texture is
+    fitted to it."""
+    lo, hi = min(a, b), max(a, b)
+    if lo >= -1e-6 and hi <= 16 + 1e-6:
+        return a, b
+    if hi - lo > 16:
+        return (0, 16) if a < b else (16, 0)
+    shift = -16 * math.floor(lo / 16)
+    if hi + shift > 16 + 1e-6:
+        shift = -lo
+    return a + shift, b + shift
+
+
 def element(lo, hi, textures, uv=None, rot=None):
     faces = {}
     for f in ('north', 'south', 'east', 'west', 'up', 'down'):
@@ -757,6 +831,11 @@ def element(lo, hi, textures, uv=None, rot=None):
         faces[f] = {'texture': '#' + name}
         if uv and f in uv:
             faces[f]['uv'] = uv[f]
+        else:
+            d = default_uv(f, lo, hi)
+            (u0, u1), (v0, v1) = within(d[0], d[2]), within(d[1], d[3])
+            if [u0, v0, u1, v1] != d:
+                faces[f]['uv'] = [round(c, 4) for c in (u0, v0, u1, v1)]
     e = {'from': lo, 'to': hi, 'faces': faces}
     if rot:
         e['rotation'] = rot
@@ -924,6 +1003,15 @@ def fitting_models():
                   element([3.5, 11, 13.5], [12.5, 21, 14.5], {'all': 'velvet'}), element([2, 21, 12.75], [14, 23, 15.25], {'all': 'mahogany'}),
                   element([2.25, 23, 13.5], [3.25, 24, 14.5], {'all': 'brass'}), element([12.75, 23, 13.5], [13.75, 24, 14.5], {'all': 'brass'})]
         m[f'feast_chair_{stage}'] = model(chair, {k: tx[k] for k in ('mahogany', 'velvet', 'brass')}, tx['velvet'])
+    # 0.4.649: the King's night-cap, hung on a bough after he has woken (the country come back to). It hangs by its band from a
+    # twig of the bough above, limp, its length sagging a little to one side and the tassel at the bottom.
+    m['nightcap_0'] = model([element([7.25, 14.5, 7.25], [8.75, 16, 8.75], {'all': 'twig'}),
+                             element([5, 12, 5], [11, 14.5, 11], {'all': 'band'}),
+                             element([5.5, 8, 5.5], [10.5, 12, 10.5], {'all': 'wool'}),
+                             element([6.5, 4.5, 6], [10, 8, 9.5], {'all': 'wool'}),
+                             element([7.5, 1.5, 6.5], [9.5, 4.5, 8.5], {'all': 'wool'}),
+                             element([7.75, 0, 6.75], [9.25, 1.5, 8.25], {'all': 'tassel'})],
+                            {'twig': NS + 'block/king_bark_ruled', 'band': 'nightcap_band', 'wool': 'nightcap', 'tassel': 'tassel'}, 'wool')
     return m
 
 
@@ -944,16 +1032,63 @@ def crown_model():
         els.append(element(lo, hi, {'all': j}))
     return {'parent': 'minecraft:block/block', 'textures': {'gold': NS + 'item/king/crown_gold', 'jewel': NS + 'item/king/crown_jewel',
             'particle': NS + 'item/king/crown_gold'}, 'elements': els,
-            'display': {'gui': {'rotation': [30, 225, 0], 'translation': [0, -2.5, 0], 'scale': [0.85, 0.85, 0.85]},
+            # 0.4.649: outside the King's country, and unwatched, the crown is its own drawing (client.KingCrownClient).
+            'overrides': [{'predicate': {NS + 'drawn': 1}, 'model': NS + 'item/king_crown_drawn'}],
+            'display': CROWN_DISPLAY}
+
+
+def crown_drawn_model():
+    """0.4.649: the crown drawn in outline: the same crown, every edge a pencil line and nothing filled. The band's two rims and its
+    four corners; each point's outline standing on the upper rim; the three stones as small squares. A line is four tenths of a unit
+    thick, a pencil's width on a head."""
+    t = .4; lo, hi = 1.1, 14.9; p = 'pencil'
+    def bar(a, b):
+        return element([min(a[i], b[i]) for i in range(3)], [max(a[i], b[i]) for i in range(3)], {'all': p})
+    els = []
+    # The band's rims: lower and upper, right round.
+    for y in (13, 16 - t):
+        els += [bar([lo, y, lo], [hi, y + t, lo + t]), bar([lo, y, hi - t], [hi, y + t, hi]),
+                bar([lo, y, lo + t], [lo + t, y + t, hi - t]), bar([hi - t, y, lo + t], [hi, y + t, hi - t])]
+    # Its four corners, between the rims.
+    for x in (lo, hi - t):
+        for z in (lo, hi - t):
+            els.append(bar([x, 13 + t, z], [x + t, 16 - t, z + t]))
+    # The corner points: three uprights at the corner and a line across the top of each outer face.
+    for cx, cz in ((lo, lo), (hi, lo), (lo, hi), (hi, hi)):
+        sx, sz = (1 if cx == lo else -1), (1 if cz == lo else -1); top = 18.2; w = 1.2
+        x0, z0 = cx, cz; x1, z1 = cx + sx * w, cz + sz * w
+        def post(x, z):
+            return bar([x, 16, z], [x + sx * t, top, z + sz * t])
+        els += [post(x0, z0), post(x1 - sx * t, z0), post(x0, z1 - sz * t),
+                bar([x0, top - t, z0], [x1, top, z0 + sz * t]), bar([x0, top - t, z0], [x0 + sx * t, top, z1])]
+    # The taller points in the middle of each side: two uprights and a line across the top, on the outer face.
+    top = 19.5
+    for z in (lo, hi - t):
+        els += [bar([7.2, 16, z], [7.2 + t, top, z + t]), bar([8.8 - t, 16, z], [8.8, top, z + t]), bar([7.2, top - t, z], [8.8, top, z + t])]
+    for x in (lo, hi - t):
+        els += [bar([x, 16, 7.2], [x + t, top, 7.2 + t]), bar([x, 16, 8.8 - t], [x + t, top, 8.8]), bar([x, top - t, 7.2], [x + t, top, 8.8])]
+    # The stones: a small square on the band, at the front and at each side, standing a little proud of it.
+    j = .25
+    def stone(axis, at):
+        out = []
+        for a, b, c, d in ((7.3, 13.8, 8.7, 13.8 + j), (7.3, 15.2 - j, 8.7, 15.2), (7.3, 13.8 + j, 7.3 + j, 15.2 - j), (8.7 - j, 13.8 + j, 8.7, 15.2 - j)):
+            out.append(bar([a, b, at], [c, d, at + .3]) if axis == 'z' else bar([at, b, a], [at + .3, d, c]))
+        return out
+    els += stone('z', .8) + stone('x', .8) + stone('x', 14.9)
+    return {'parent': 'minecraft:block/block', 'textures': {'pencil': NS + 'item/king/crown_pencil', 'particle': NS + 'item/king/crown_pencil'},
+            'elements': els, 'display': CROWN_DISPLAY}
+
+
+CROWN_DISPLAY = {'gui': {'rotation': [30, 225, 0], 'translation': [0, -2.5, 0], 'scale': [0.85, 0.85, 0.85]},
                         'ground': {'rotation': [0, 0, 0], 'translation': [0, -1, 0], 'scale': [0.4, 0.4, 0.4]},
                         'fixed': {'rotation': [0, 0, 0], 'translation': [0, -3, 0], 'scale': [0.7, 0.7, 0.7]},
                         'thirdperson_righthand': {'rotation': [75, 45, 0], 'translation': [0, -1, 0], 'scale': [0.4, 0.4, 0.4]},
                         'firstperson_righthand': {'rotation': [0, 45, 0], 'translation': [0, -2, 0], 'scale': [0.45, 0.45, 0.45]},
-                        'firstperson_lefthand': {'rotation': [0, 225, 0], 'translation': [0, -2, 0], 'scale': [0.45, 0.45, 0.45]}}}
+                        'firstperson_lefthand': {'rotation': [0, 225, 0], 'translation': [0, -2, 0], 'scale': [0.45, 0.45, 0.45]}}
 
 
 KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle', 'peg', 'glass_table', 'seat', 'wheel',
-         'stalk', 'cap', 'feast_table', 'mutton', 'pudding', 'candles', 'feast_chair']
+         'stalk', 'cap', 'feast_table', 'mutton', 'pudding', 'candles', 'feast_chair', 'nightcap']
 STAGES = {'mantel': 3, 'glass': 6, 'window': 2, 'problem': 2, 'feast_table': 2, 'mutton': 2, 'pudding': 2, 'candles': 2, 'feast_chair': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 6
@@ -999,6 +1134,8 @@ def files():
         out[f'models/item/king_{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/king/{item}'}}
     # 0.4.648: the crown, a thing in the round, worn on the head.
     out['models/item/king_crown.json'] = crown_model()
+    # 0.4.649: and drawn in outline, as it is outside the country.
+    out['models/item/king_crown_drawn.json'] = crown_drawn_model()
     # 0.4.642: the brook's verge is never drawn (KingVergeBlock); its model only names what breaking it would scatter.
     out['models/block/king_verge.json'] = {'textures': {'particle': NS + 'block/king_brook'}}
     out['blockstates/king_verge.json'] = {'variants': {'': {'model': NS + 'block/king_verge'}}}
@@ -1032,7 +1169,7 @@ def main():
             assert f'{kind}_{stage}' in models, (kind, stage)
     for key, obj in models.items():
         for tex in obj['textures'].values():
-            assert f'block/king/{tex.split("king/")[1]}.png' in images, (key, tex)
+            assert tex[len(NS):] + '.png' in images, (key, tex)
     # Every country material's ruled twin is its own picture, ruled: never drawn by hand.
     mats_drawn = materials()
     for k in COUNTRY:

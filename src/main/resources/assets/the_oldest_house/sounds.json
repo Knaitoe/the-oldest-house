@@ -6545,5 +6545,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.king.crowned"
+  },
+  "king.crown_fills": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:king/crown_fills",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.king.crown_fills"
   }
 }

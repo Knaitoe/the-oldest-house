@@ -34,7 +34,8 @@ public final class KingQueenLines {
     @SubscribeEvent public static void draw(RenderLevelStageEvent e){
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)return;
         var mc=Minecraft.getInstance();var p=mc.player;var level=mc.level;
-        if(p==null||level==null||!KingCrownItem.crowned(p))return;
+        // 0.4.649: only a crown that is filled in; a crown that is only drawn (the country come back to) gives nobody a queen's move.
+        if(p==null||level==null||!KingCrownItem.crowned(p)||KingCrownItem.drawn(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD)))return;
         LiteraryActor king=null;double best=COUNTRY*COUNTRY;
         for(var en:level.entitiesForRendering())if(en instanceof LiteraryActor a&&a.role()==LiteraryActor.STRANGER&&a.phase()==King.PHASE){double d=a.distanceToSqr(p);if(d<best){best=d;king=a;}}
         if(king==null)return;

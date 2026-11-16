@@ -70,6 +70,8 @@ public final class KingSleep {
         // now, who stood there crowned when he woke, and whether a last song has filled the country out to its edges.
         int introduced,feastShown=-1;boolean filledOut;
         final java.util.Set<UUID> checking=new java.util.HashSet<>(),stood=new java.util.HashSet<>();
+        // 0.4.649: what the country stands as (KingAfter: a dream going on, or what an ending left), and when that was last asked.
+        int after;long afterAt;
         final java.util.Set<UUID> knightFellFor=new java.util.HashSet<>(),knightRaisedBy=new java.util.HashSet<>(),knightMet=new java.util.HashSet<>(),knightAskedOf=new java.util.HashSet<>(),sawKnightGo=new java.util.HashSet<>(),leftKnight=new java.util.HashSet<>();
     }
     /**
@@ -83,7 +85,13 @@ public final class KingSleep {
     static Sleep get(BlockPos b){return SLEEPS.computeIfAbsent(b.asLong(),k->new Sleep());}
 
     /** How deep he sleeps now: two stirs to each depth, and awake once the breathing has stopped and the lines have come. */
-    public static int level(BlockPos b){var s=get(b);return s.awake?AWAKE:s.filledOut?FULL:Math.min(BARELY,s.stirs/2);}
+    public static int level(BlockPos b){var s=get(b);return s.after==KingAfter.WOKE?AWAKE:s.after==KingAfter.SLEPT?FULL:s.awake?AWAKE:s.filledOut?FULL:Math.min(BARELY,s.stirs/2);}
+    /** 0.4.649: what the country stands as: a dream going on, or the aftermath an ending left (KingAfter). */
+    public static int after(BlockPos b){return get(b).after;}
+    /** 0.4.649: whether nothing in the country is breathing: he is waking, or he woke and it is what that left. */
+    public static boolean silent(BlockPos b){var s=get(b);return s.wakingAt>=0||s.after==KingAfter.WOKE;}
+    /** 0.4.649: how a waking that has just ended is to end for this reader, until their own tick has written it down. */
+    static @Nullable String comingTo(UUID reader){return COMING_TO.get(reader);}
     public static int stirs(BlockPos b){return get(b).stirs;}
     /** Whether his breathing has stopped: he is waking. */
     public static boolean waking(BlockPos b){return get(b).wakingAt>=0;}
@@ -96,6 +104,9 @@ public final class KingSleep {
         var s=get(b);long now=l.getGameTime();
         if(s.seen>=0&&now-s.seen>FORGOTTEN)reset(l,b);
         s=get(b);s.seen=now;
+        // 0.4.649: a country whose every reader has had their ending stands as what that left, and nothing of the dream goes on.
+        if(KingAfter.tick(l,b))return;
+        s=get(b);
         // He is made once his tree's ground is loaded, which may be after the reader arrived in the drawing-room.
         var king=King.find(l,b);if(king==null){King.ensure(l,b);king=King.find(l,b);}
         if(king!=null){
@@ -119,6 +130,8 @@ public final class KingSleep {
     static void reader(ServerPlayer p,BlockPos b,CompoundTag own,int state){
         if(settle(p,b,own))return;
         var s=get(b);
+        // 0.4.649: in the country come back to, nothing counts a reader, stirs him or crowns them.
+        if(s.after!=KingAfter.NONE){KingAfter.reader(p,b,own,s.after);return;}
         if(s.sawBattle.contains(p.getUUID()))own.putBoolean("KingSawBattle",true);
         // 0.4.644: what this dream remembers of them goes into their own record from their own tick: running with the Queen, the ride,
         // and every square whose peg has counted them (stood on while somebody, of the dream or another reader, was looking at them).
@@ -187,7 +200,7 @@ public final class KingSleep {
 
     /** He stirs: a grumble and a turn in his sleep; every second stir the country draws in to the next depth; the sixth wakes him. */
     public static void stir(ServerLevel l,BlockPos b,@Nullable ServerPlayer by,@Nullable CompoundTag own,int times){
-        var s=get(b);if(s.wakingAt>=0||times<=0)return;
+        var s=get(b);if(s.wakingAt>=0||times<=0||s.after!=KingAfter.NONE)return;
         int before=level(b);s.stirs+=times;s.turn=s.turn>0?-14:14;
         if(own!=null)own.putInt(STIRRED,own.getInt(STIRRED)+times);
         var at=Vec3.atCenterOf(b.offset(KingSite.KING));l.playSound(null,at.x,at.y,at.z,KingRegistry.STIR.get(),SoundSource.AMBIENT,1.4F,.9F+l.random.nextFloat()*.15F);
@@ -225,7 +238,7 @@ public final class KingSleep {
 
     /** The breathing stops in the middle of a breath: the first silence since the glass. */
     public static void wake(ServerLevel l,BlockPos b,@Nullable ServerPlayer namer,boolean tooSoon){
-        var s=get(b);if(s.wakingAt>=0)return;
+        var s=get(b);if(s.wakingAt>=0||s.after!=KingAfter.NONE)return;
         s.wakingAt=l.getGameTime();s.tooSoon=tooSoon;s.namer=namer==null?null:namer.getUUID();
         for(var p:readers(l,b)){
             p.connection.send(new ClientboundStopSoundPacket(KingRegistry.BREATH_IN.getId(),SoundSource.AMBIENT));
@@ -253,7 +266,7 @@ public final class KingSleep {
             own.putBoolean("KingWokeTooSoon",true);KingBreath.leave(p);
             VignetteGate.failed(p);King.cue(p,KingTexts.WENT_OUT);LabyrinthDoors.sendBack(p,20,40,30);
         }else{
-            own.putString(ENDING,how);LiteraryVignettes.ready(p,PLACE,own,how);
+            own.putString(ENDING,how);own.putInt(KingAfter.ENDED_ON,own.getInt("Visit"));LiteraryVignettes.ready(p,PLACE,own,how);
             comeTo(p,b);King.cue(p,KingTexts.CAME_TO);
         }
         return true;
@@ -266,7 +279,7 @@ public final class KingSleep {
     static boolean walkedOff(ServerPlayer p,BlockPos b,CompoundTag own){
         // 0.4.648: only after check, and with the crown off: to leave him his sleep a reader has to stop being a Queen.
         if(!own.getBoolean(MET)||!own.getBoolean(HEARD)||!own.getBoolean(CHECKED)||KingCrownItem.crowned(p)||own.getBoolean("Ready")||waking(b))return false;
-        var d=LabyrinthData.get(p.server);own.putString(ENDING,"left_him_his_sleep");
+        var d=LabyrinthData.get(p.server);own.putString(ENDING,"left_him_his_sleep");own.putInt(KingAfter.ENDED_ON,own.getInt("Visit"));
         LiteraryVignettes.ready(p,PLACE,own,"left_him_his_sleep");LiteraryVignettes.save(d,p.getUUID(),PLACE,own);
         HousePackets.send(p,new HouseFadePayload(4,30,20));comeTo(p,b);King.cue(p,KingTexts.LEFT_HIM);
         return true;
@@ -281,7 +294,10 @@ public final class KingSleep {
 
     /** A fresh dream: deep asleep, the rattle under his tree, the brothers in the wood. */
     static void reset(ServerLevel l,BlockPos b){
+        int was=get(b).after;
         SLEEPS.remove(b.asLong());get(b).seen=l.getGameTime();
+        // 0.4.649: what the country now stands as is decided before the land is redrawn, so that it is drawn once.
+        get(b).after=KingAfter.mode(l,b,was);
         KingBreath.redraw(l,b);
         if(l.isLoaded(b.offset(KingSite.RATTLE))&&!KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE))KingSite.rattle(l,b);
         var king=King.find(l,b);if(king!=null)King.lie(king,b.offset(KingSite.KING),180);
@@ -290,6 +306,8 @@ public final class KingSleep {
         KingCourt.reset(l,b);
         KingForest.reset(l,b);
         KingFeast.reset(l,b);
+        // 0.4.649: the country come back to is cleared of the dream and dressed; a dream again has its people and no night-cap hung.
+        if(fresh.after!=KingAfter.NONE)KingAfter.dress(l,b,fresh);else if(was!=KingAfter.NONE)KingAfter.undress(l,b);
     }
     /** For tests: forget the dream at this country. */
     public static void forget(BlockPos b){SLEEPS.remove(b.asLong());}

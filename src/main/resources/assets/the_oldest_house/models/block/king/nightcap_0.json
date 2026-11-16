@@ -1,0 +1,205 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "twig": "the_oldest_house:block/king_bark_ruled",
+    "band": "the_oldest_house:block/king/nightcap_band",
+    "wool": "the_oldest_house:block/king/nightcap",
+    "tassel": "the_oldest_house:block/king/tassel",
+    "particle": "the_oldest_house:block/king/nightcap"
+  },
+  "elements": [
+    {
+      "from": [
+        7.25,
+        14.5,
+        7.25
+      ],
+      "to": [
+        8.75,
+        16,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#twig"
+        },
+        "south": {
+          "texture": "#twig"
+        },
+        "east": {
+          "texture": "#twig"
+        },
+        "west": {
+          "texture": "#twig"
+        },
+        "up": {
+          "texture": "#twig"
+        },
+        "down": {
+          "texture": "#twig"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        12,
+        5
+      ],
+      "to": [
+        11,
+        14.5,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#band"
+        },
+        "south": {
+          "texture": "#band"
+        },
+        "east": {
+          "texture": "#band"
+        },
+        "west": {
+          "texture": "#band"
+        },
+        "up": {
+          "texture": "#band"
+        },
+        "down": {
+          "texture": "#band"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        8,
+        5.5
+      ],
+      "to": [
+        10.5,
+        12,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wool"
+        },
+        "south": {
+          "texture": "#wool"
+        },
+        "east": {
+          "texture": "#wool"
+        },
+        "west": {
+          "texture": "#wool"
+        },
+        "up": {
+          "texture": "#wool"
+        },
+        "down": {
+          "texture": "#wool"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        4.5,
+        6
+      ],
+      "to": [
+        10,
+        8,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wool"
+        },
+        "south": {
+          "texture": "#wool"
+        },
+        "east": {
+          "texture": "#wool"
+        },
+        "west": {
+          "texture": "#wool"
+        },
+        "up": {
+          "texture": "#wool"
+        },
+        "down": {
+          "texture": "#wool"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        1.5,
+        6.5
+      ],
+      "to": [
+        9.5,
+        4.5,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wool"
+        },
+        "south": {
+          "texture": "#wool"
+        },
+        "east": {
+          "texture": "#wool"
+        },
+        "west": {
+          "texture": "#wool"
+        },
+        "up": {
+          "texture": "#wool"
+        },
+        "down": {
+          "texture": "#wool"
+        }
+      }
+    },
+    {
+      "from": [
+        7.75,
+        0,
+        6.75
+      ],
+      "to": [
+        9.25,
+        1.5,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tassel"
+        },
+        "south": {
+          "texture": "#tassel"
+        },
+        "east": {
+          "texture": "#tassel"
+        },
+        "west": {
+          "texture": "#tassel"
+        },
+        "up": {
+          "texture": "#tassel"
+        },
+        "down": {
+          "texture": "#tassel"
+        }
+      }
+    }
+  ]
+}

@@ -18,6 +18,8 @@ looked at before the next is built on them.
 
 The Witness pool grows by one when part 3 makes the story finishable, not before.
 
+All nine parts are built, 0.4.641 to 0.4.649, each with its own slice doc (docs/SLEEPING_KING_0_4_641.md to docs/SLEEPING_KING_0_4_649.md).
+
 ## Part 1: the place, as built
 
 - `LabyrinthPlace.SLEEPING_KING` ("a_sort_of_thing", one long visit, outside), its builder, the literary tables (the miniature, the

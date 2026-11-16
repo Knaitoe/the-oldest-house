@@ -255,7 +255,9 @@ public final class KingTests {
         .thenExecute(()->{
             h.assertTrue("said_his_whole_name".equals(f.own(p,P).getString(KingSleep.ENDING)),"the reader who said it said his whole name: "+f.own(p,P).getString(KingSleep.ENDING));
             h.assertTrue(KingSite.inRoom(p.position().subtract(b.getX(),b.getY(),b.getZ())),"and comes to in the drawing-room: "+p.position());
-            h.assertTrue(KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE)&&KingSleep.level(b)==KingSleep.DEEP,"a fresh dream: the rattle back, and him deep asleep");
+            // 0.4.649: both readers have had their ending, so the country is not a fresh dream but what the waking left (KingAfter).
+            h.assertTrue(KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE)&&KingAfter.of(b)==KingAfter.WOKE&&KingSleep.level(b)==KingSleep.AWAKE&&King.find(l,b)==null&&KingAfter.capAt(l,b)!=null,
+                "the country stands as what the waking left: the rattle lying under the tree, nobody under it, his night-cap on a bough: "+KingAfter.of(b)+" level "+KingSleep.level(b));
             f.source(p,P);f.read(p,P,LiteraryRooms.ending(P));
             h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.SLEEPING_KING),"reading the account on the armchair resolves the story");
             KingBreath.leave(p);KingBreath.leave(q);done();h.succeed();
@@ -708,6 +710,180 @@ public final class KingTests {
             for(var who:new ServerPlayer[]{p,q})KingBreath.leave(who);done();h.succeed();
         });
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.649, part 9: afterwards
+    private static void into(ServerPlayer who,ServerLevel l,BlockPos b,double x,double z){who.teleportTo(l,b.getX()+x,b.getY(),b.getZ()+z,180,0);who.setDeltaMovement(Vec3.ZERO);who.setOnGround(true);}
+    private static void ended(LiteraryTests.Fixture f,ServerPlayer who,String how){
+        var own=f.own(who,P);own.putString(KingSleep.ENDING,how);own.putBoolean("Ready",true);own.putBoolean("Completed",true);
+        own.putInt(KingAfter.ENDED_ON,own.getInt("Visit"));own.putInt("Visit",own.getInt("Visit")+1);LiteraryVignettes.save(f.data(),who.getUUID(),P,own);
+    }
+    private static void turn(LiteraryTests.Fixture f,BlockPos b,ServerPlayer... readers){
+        for(var who:readers){var own=f.own(who,P);KingBreath.reader(who,b,own);LiteraryVignettes.save(f.data(),who.getUUID(),P,own);}
+    }
+    private static boolean filledGround(ServerLevel l,BlockPos at){var st=l.getBlockState(at);return KingRegistry.isCountry(st)&&!KingRegistry.ruled(st);}
+
+    /**
+     * 0.4.649, the country come back to after he woke. A reader whose ending woke him, back in it alone on a later visit, finds all of
+     * it ruled, to the top of his own tree; nothing breathing; nobody under the tree and none of the dream's people; his night-cap hung
+     * under a bough. They are a thing in the house and a line everywhere on the country, beside where he lay too. It counts as a return
+     * once and says what is there; a hand on the night-cap says what it is. A reader who has had no ending coming into it makes it a
+     * dream again for both, and when they have gone it is as it was. The Witness line and the leaf follow the ending.
+     */
+    @GameTest(template="empty",batch="king_after_woke",timeoutTicks=2400)
+    public static void theCountryComeBackToAfterHeWoke(GameTestHelper h){
+        var f=place(h);var p=f.player("king_back_woke",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);KingKeepsake.forget();
+        var ground=b.offset(KingSite.KING).below();var treeTop=b.offset(KingSite.TREE).above(9);
+        int[] breath={0};ServerPlayer[] other={null};
+        h.startSequence().thenExecute(()->into(p,l,b,KingSite.COME_TO.x,KingSite.COME_TO.z))
+        .thenWaitUntil(()->{turn(f,b,p);
+            h.assertTrue(King.find(l,b)!=null&&KingBrothers.find(l,b,KingBrothers.DUM)!=null&&KingAfter.of(b)==KingAfter.NONE&&filledGround(l,ground)&&l.getBlockState(treeTop).is(KingRegistry.material("bough")),
+                "first a dream: he is asleep under his tree, the brothers in the wood, his square and his tree filled: "+l.getBlockState(ground)+" "+l.getBlockState(treeTop));})
+        .thenExecute(()->{
+            h.assertTrue(Aftermath.PLACES.contains(P)&&KingAfter.left(f.own(p,P))==KingAfter.NONE&&KingTexts.leftHim(f.own(p,P)).isEmpty(),"the country is among the rooms that come back; a reader with no ending has left him neither way");
+            ended(f,p,"said_his_whole_name");
+        })
+        .thenWaitUntil(()->{turn(f,b,p);h.assertTrue(KingAfter.of(b)==KingAfter.WOKE,"alone in it with their ending had, the country stands as what the waking left: "+KingAfter.of(b));})
+        .thenExecute(()->{
+            h.assertTrue(KingSleep.level(b)==KingSleep.AWAKE&&KingBreath.shownLevel(b)==KingSleep.AWAKE&&KingSleep.silent(b)&&!KingSleep.waking(b),"all of it is ruled, and nothing in it breathes: level "+KingSleep.level(b)+" shown "+KingBreath.shownLevel(b));
+            h.assertTrue(KingRegistry.ruled(l.getBlockState(ground))&&l.getBlockState(treeTop).is(KingRegistry.material("bough_ruled")),"his own square is ruled, and his tree to its top: "+l.getBlockState(ground)+" "+l.getBlockState(treeTop));
+            h.assertTrue(King.find(l,b)==null&&KingBrothers.find(l,b,KingBrothers.DUM)==null&&KingBrothers.find(l,b,KingBrothers.DEE)==null&&KingFeast.find(l,b,KingFeast.HEARTS_KING)==null,
+                "nobody is under the tree, and none of the dream's people are in it");
+            var cap=KingAfter.capAt(l,b);
+            h.assertTrue(cap!=null&&l.getBlockState(cap.above()).is(KingRegistry.material("bough_ruled"))&&cap.getY()-b.getY()==KingAfter.CAP_Y,"his night-cap hangs under a bough of his tree: "+cap);
+            breath[0]=KingBreath.phase(b);
+        })
+        .thenExecuteFor(30,()->turn(f,b,p))
+        .thenExecute(()->{
+            h.assertTrue(KingBreath.phase(b)==breath[0],"the breath does not go on: "+breath[0]+" then "+KingBreath.phase(b));
+            h.assertTrue(KingBreath.of(p)==KingBreath.THING,"in the house the reader is a thing: "+KingBreath.of(p));
+            into(p,l,b,.5,KingSite.NEAR-2);turn(f,b,p);
+            h.assertTrue(KingBreath.of(p)==KingBreath.LINE,"on the first square, a line: "+KingBreath.of(p));
+            beside(p,l,b);p.setOnGround(true);turn(f,b,p);
+            h.assertTrue(KingBreath.of(p)==KingBreath.LINE&&KingSleep.stirs(b)==0,"and a line beside where he lay: "+KingBreath.of(p));
+            var said=told(p);var own=f.own(p,P);
+            h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1&&own.getBoolean(KingAfter.SEEN)&&said.contains(KingTexts.AFTER_WOKE),"it counts as one return, and says what is there: "+Aftermath.returns(f.data(),p.getUUID(),P)+" "+said);
+            var capRel=KingAfter.capAt(l,b).subtract(b);
+            h.assertTrue(King.click(p,b,capRel,own)&&told(p).contains(KingTexts.NIGHTCAP),"a hand on the night-cap says what it is");
+            h.assertTrue(KingTexts.witness("said_his_whole_name").equals("I woke the King, and came to in the drawing-room with his country gone.")&&KingTexts.witness("stood_until_he_woke").equals(KingTexts.witness("said_his_whole_name"))
+                &&KingTexts.witness("there_when_he_woke").contains("when he woke")&&KingTexts.witness("left_him_his_sleep").equals("I left the King asleep and walked out of his country as a line.")
+                &&KingTexts.witness("").equals(WitnessAccount.Story.SLEEPING_KING.text),"the Witness account keeps the line of the reader's own ending");
+            var facts=StaircaseAccount.facts(p,new net.minecraft.nbt.CompoundTag());
+            h.assertTrue(facts.stream().anyMatch(x->x.kind().id().equals("ruled")&&x.value().equals("awake")),"the reader's own book can tell of the ruled country, and that he was woken: "+facts.stream().map(x->x.kind().id()+"="+x.value()).toList());
+            // Somebody who has had no ending comes in.
+            other[0]=f.player("king_back_new",P);into(other[0],l,b,2.5,-5.5);into(p,l,b,KingSite.COME_TO.x,KingSite.COME_TO.z);
+        })
+        .thenWaitUntil(()->{turn(f,b,p,other[0]);
+            h.assertTrue(KingAfter.of(b)==KingAfter.NONE&&King.find(l,b)!=null&&KingAfter.capAt(l,b)==null&&filledGround(l,ground)&&KingBrothers.find(l,b,KingBrothers.DUM)!=null,
+                "with a reader in it who has had no ending it is a dream again: he sleeps under his tree, the night-cap is on his head and the brothers are back: "+KingAfter.of(b)+" king "+King.find(l,b)+" cap "+KingAfter.capAt(l,b));})
+        .thenExecute(()->f.leave(other[0]))
+        .thenWaitUntil(()->{turn(f,b,p);h.assertTrue(KingAfter.of(b)==KingAfter.WOKE&&King.find(l,b)==null&&KingAfter.capAt(l,b)!=null&&KingRegistry.ruled(l.getBlockState(ground)),"and when they have gone it is as it was");})
+        .thenExecute(()->{h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"still the one return, on the one visit");KingBreath.leave(p);KingBreath.leave(other[0]);done();h.succeed();});
+    }
+
+    /**
+     * 0.4.649, the country he sleeps on in. A reader who left him his sleep, back in it alone, finds all of it filled, the far ranks
+     * too and the feast with nobody at it; him asleep under his tree and his breath going on; none of the dream's people. They are a
+     * line everywhere on it, beside him on the in-breath as well, and nothing they do stirs him. If he woke after they had gone, it is
+     * the ruled country they come back to.
+     */
+    @GameTest(template="empty",batch="king_after_slept",timeoutTicks=2400)
+    public static void theCountryHeSleepsOnIn(GameTestHelper h){
+        var f=place(h);var p=f.player("king_back_slept",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);KingKeepsake.forget();
+        var far=b.offset(12,-1,KingSite.rankNear(8)-4);var table=b.offset(0,0,KingSite.FEAST_NEAR);
+        int[] breath={0};
+        h.startSequence().thenExecute(()->into(p,l,b,KingSite.COME_TO.x,KingSite.COME_TO.z))
+        .thenWaitUntil(()->{turn(f,b,p);h.assertTrue(King.find(l,b)!=null&&KingFeast.find(l,b,KingFeast.HEARTS_KING)!=null&&KingRegistry.ruled(l.getBlockState(far))&&KingBlock.feast(l.getBlockState(table))&&!KingBlock.filled(l.getBlockState(table)),
+            "first a dream: the eighth rank ruled, the feast drawn and its guests pencilled in their chairs: "+l.getBlockState(far)+" "+l.getBlockState(table));})
+        .thenExecute(()->ended(f,p,"left_him_his_sleep"))
+        .thenWaitUntil(()->{turn(f,b,p);h.assertTrue(KingAfter.of(b)==KingAfter.SLEPT,"alone in it, having left him his sleep, the country stands as he sleeps on in it: "+KingAfter.of(b));})
+        .thenExecute(()->{
+            h.assertTrue(KingSleep.level(b)==KingSleep.FULL&&KingBreath.shownLevel(b)==KingSleep.FULL&&!KingSleep.silent(b),"all of it is filled, and he is breathing: level "+KingSleep.level(b));
+            h.assertTrue(filledGround(l,far)&&KingBlock.filled(l.getBlockState(table)),"the eighth rank is filled, and the feast with it: "+l.getBlockState(far)+" "+l.getBlockState(table));
+            var king=King.find(l,b);
+            h.assertTrue(king!=null&&king.getPose()==Pose.SLEEPING&&KingAfter.capAt(l,b)==null,"he is asleep under his tree, his night-cap on his head");
+            h.assertTrue(KingBrothers.find(l,b,KingBrothers.DUM)==null&&KingFeast.find(l,b,KingFeast.HEARTS_KING)==null,"none of the dream's people are in it, and nobody is at the feast");
+            breath[0]=KingBreath.phase(b);
+        })
+        .thenExecuteFor(30,()->turn(f,b,p))
+        .thenExecute(()->{
+            h.assertTrue(KingBreath.phase(b)!=breath[0],"the breath goes on: "+breath[0]+" then "+KingBreath.phase(b));
+            KingBreath.set(l,b,10);beside(p,l,b);p.setOnGround(true);p.setSprinting(true);turn(f,b,p);
+            h.assertTrue(KingBreath.in(b)&&KingBreath.of(p)==KingBreath.LINE&&KingSleep.stirs(b)==0,"beside him on the in-breath a reader is still a line, and running there does not stir him: "+KingBreath.of(p)+" stirs "+KingSleep.stirs(b));
+            p.setSprinting(false);
+            var said=told(p);
+            h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1&&said.contains(KingTexts.AFTER_SLEPT),"it counts as one return, and says what is there: "+said);
+            var facts=StaircaseAccount.facts(p,new net.minecraft.nbt.CompoundTag());
+            h.assertTrue(facts.stream().anyMatch(x->x.kind().id().equals("ruled")&&x.value().equals("asleep")),"the reader's own book tells that the King was left asleep: "+facts.stream().map(x->x.kind().id()+"="+x.value()).toList());
+            // He woke after they had gone.
+            var own=f.own(p,P);own.putBoolean("KingWokeAfter",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+        })
+        .thenWaitUntil(()->{turn(f,b,p);h.assertTrue(KingAfter.of(b)==KingAfter.WOKE&&King.find(l,b)==null&&KingAfter.capAt(l,b)!=null&&KingRegistry.ruled(l.getBlockState(far))&&!KingBlock.filled(l.getBlockState(table)),
+            "if he woke after they had gone it is the ruled country: nobody under the tree, the night-cap on a bough, the feast drawn: "+KingAfter.of(b));})
+        .thenExecute(()->{KingBreath.leave(p);done();h.succeed();});
+    }
+
+    /**
+     * 0.4.649, the keepsake. In the King's country while his dream goes on a crown is filled in, worn or carried. Out of it, it is only
+     * drawn, and its wearer is told so once. Another reader's look fills it in: the wearer hears it and is told once what that means;
+     * the look gone, it holds a second and is drawn again. One of the House's people looking does the same; one asleep does not, nor one
+     * who is only another reader's to see. Another reader's crown on a head fills for nobody.
+     */
+    @GameTest(template="empty",batch="king_keepsake",timeoutTicks=2400)
+    public static void theCrownOutOfHisCountry(GameTestHelper h){
+        var f=place(h);var p=f.player("king_keeper",P);var q=f.player("king_looker",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);KingKeepsake.forget();
+        var head=net.minecraft.world.entity.EquipmentSlot.HEAD;
+        java.util.function.Supplier<net.minecraft.world.item.ItemStack> worn=()->p.getItemBySlot(head);
+        java.util.function.BiConsumer<net.minecraft.world.entity.Entity,Vec3> face=(who,at)->{var to=at.subtract(who.getEyePosition());float yaw=(float)(Math.toDegrees(Math.atan2(to.z,to.x))-90),pitch=(float)-Math.toDegrees(Math.atan2(to.y,Math.hypot(to.x,to.z)));
+            who.setYRot(yaw);who.setXRot(pitch);who.setYHeadRot(yaw);who.setYBodyRot(yaw);who.yRotO=yaw;who.xRotO=pitch;};
+        LiteraryActor[] person={null};
+        h.startSequence().thenExecute(()->{
+            into(p,l,b,KingSite.COME_TO.x,KingSite.COME_TO.z);into(q,l,b,2.5,-4.5);
+            p.setItemSlot(head,KingCrownItem.of(p.getUUID()));p.getInventory().setItem(9,KingCrownItem.of(q.getUUID()));
+            turn(f,b,p,q);KingKeepsake.see(p);
+            h.assertTrue(KingAfter.of(b)==KingAfter.NONE&&!KingCrownItem.drawn(worn.get())&&!KingCrownItem.drawn(p.getInventory().getItem(9)),"in his country, his dream going on, a crown is filled in, worn or carried");
+            f.leave(p);KingKeepsake.see(p);
+            h.assertTrue(KingCrownItem.drawn(worn.get())&&KingCrownItem.drawn(p.getInventory().getItem(9))&&KingCrownItem.crowned(p),"out of it the crown is only drawn, worn or carried, and is still its wearer's own");
+            h.assertTrue(told(p).contains(KingTexts.CROWN_ONLY_DRAWN),"and its wearer is told so");
+            f.arrive(p,P);into(p,l,b,KingSite.COME_TO.x,KingSite.COME_TO.z);KingKeepsake.see(p);f.leave(p);KingKeepsake.see(p);
+            h.assertTrue(KingCrownItem.drawn(worn.get())&&!told(p).contains(KingTexts.CROWN_ONLY_DRAWN),"once: filled in his country and drawn again out of it, it is not said twice");
+            // Back in the country, come back to by two readers who have both had their endings: no dream, so a crown is as it is anywhere.
+            f.arrive(p,P);into(p,l,b,KingSite.COME_TO.x,KingSite.COME_TO.z);ended(f,p,"said_his_whole_name");ended(f,q,"there_when_he_woke");
+        })
+        .thenWaitUntil(()->{turn(f,b,p,q);h.assertTrue(KingAfter.of(b)==KingAfter.WOKE,"the country stands as its aftermath for the two of them: "+KingAfter.of(b));})
+        .thenExecute(()->{
+            face.accept(q,q.getEyePosition().add(0,0,10));
+            KingKeepsake.see(p);h.assertTrue(!KingKeepsake.watched(p)&&KingCrownItem.drawn(worn.get()),"in the country come back to, with nobody looking, the crown is only drawn");
+            told(p);
+            face.accept(q,p.getBoundingBox().getCenter());KingKeepsake.see(p);
+            h.assertTrue(KingKeepsake.watched(p)&&!KingCrownItem.drawn(worn.get()),"another reader's look fills it in");
+            NativeTestPlayers.flush(p);var sent=NativeTestPlayers.packets(p);
+            h.assertTrue(sent.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==KingRegistry.CROWN_FILLS.get()),"its wearer hears it fill in");
+            h.assertTrue(sent.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket c&&c.content().getString().equals(KingTexts.CROWN_FILLED_IN)),"and is told what that means");
+            face.accept(q,q.getEyePosition().add(0,0,10));KingKeepsake.see(p);
+            h.assertTrue(!KingKeepsake.watched(p)&&!KingCrownItem.drawn(worn.get()),"the look gone, it holds a moment");
+        })
+        .thenIdle(KingKeepsake.LINGER+6)
+        .thenExecute(()->{
+            KingKeepsake.see(p);h.assertTrue(KingCrownItem.drawn(worn.get()),"and is drawn again");
+            // One of the House's people: somebody from another story, standing in the room and looking at the wearer.
+            var a=LiteraryRegistry.ACTOR.get().create(l);a.bind(LabyrinthPlace.MASQUE,null);a.appearance(LiteraryActor.STRANGER,KingBrothers.DUM);
+            a.moveTo(b.getX()+1.5,b.getY(),b.getZ()-6.5,0,0);l.addFreshEntity(a);person[0]=a;
+            face.accept(a,p.getBoundingBox().getCenter());KingKeepsake.see(p);
+            h.assertTrue(KingKeepsake.watched(p)&&!KingCrownItem.drawn(worn.get()),"one of the House's people looking fills it in");
+            h.assertTrue(!told(p).contains(KingTexts.CROWN_FILLED_IN),"its meaning is told once");
+            a.setSleepingPos(a.blockPosition());a.setPose(Pose.SLEEPING);
+            h.assertTrue(!KingKeepsake.watched(p),"somebody asleep is not looking");
+            a.clearSleepingPos();a.setPose(Pose.STANDING);a.bind(LabyrinthPlace.MASQUE,q.getUUID());face.accept(a,p.getBoundingBox().getCenter());
+            h.assertTrue(!KingKeepsake.watched(p),"nor is somebody who is only another reader's to see");
+            a.bind(LabyrinthPlace.MASQUE,p.getUUID());
+            h.assertTrue(KingKeepsake.watched(p),"somebody who is this reader's own to see is");
+            a.discard();
+            // Another reader's crown on this head is only a crown.
+            p.setItemSlot(head,KingCrownItem.of(q.getUUID()));face.accept(q,p.getBoundingBox().getCenter());KingKeepsake.see(p);
+            h.assertTrue(KingKeepsake.watched(p)&&KingCrownItem.drawn(worn.get())&&!KingCrownItem.crowned(p),"another reader's crown on a head fills for nobody's look");
+            KingBreath.leave(p);KingBreath.leave(q);done();h.succeed();
+        });
+    }
+
     private static String pages(net.minecraft.world.item.ItemStack book){
         var c=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(c==null)return "";
         var out=new StringBuilder();for(var page:c.pages())out.append(page.raw().getString()).append(' ');return out.toString();
