@@ -152,7 +152,7 @@ public final class LongerKettle {
             case PAUSE->{
                 LongerRowan.hold(a,LongerBench.REST,here);
                 // The pause: nothing to say into it. Then the offer, in the same panel if it is still open, or at the next hand if not.
-                if(now-w.at>=QUIET){stage(p,own,STAY_ASK);if(Talk.key(p).equals(LongerRowan.TALK)){line(p,a,LongerTexts.STAY_FOR);askStay(p);}}
+                if(now-w.at>=QUIET){stage(p,own,STAY_ASK);if(Talk.key(p).equals(LongerRowan.TALK)){line(p,a,LongerSelf.stayFor(p));askStay(p);}}
                 return true;
             }
             case UP->{walkTick(l,b,p,a,own,w,now,here);return true;}
@@ -369,13 +369,13 @@ public final class LongerKettle {
                 if(declined==1){
                     // The offer made once more, and then let be.
                     own.putInt(DECLINED,2);stage(p,own,STAY_ASK);w.reader=p.getUUID();
-                    Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.STILL_THERE);line(p,a,LongerTexts.STAY_FOR);askStay(p);return true;
+                    Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.STILL_THERE);line(p,a,LongerSelf.stayFor(p));askStay(p);return true;
                 }
                 return false;
             }
             case OFFER->{if(!Talk.resume(p,LongerRowan.TALK)){Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.MAKING_TEA);askPart(p);}return true;}
             case PAUSE->{return true;}
-            case STAY_ASK->{if(!Talk.resume(p,LongerRowan.TALK)){Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.STAY_FOR);askStay(p);}return true;}
+            case STAY_ASK->{if(!Talk.resume(p,LongerRowan.TALK)){Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerSelf.stayFor(p));askStay(p);}return true;}
             case UP,BOIL,POURED->{Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);line(p,a,LongerTexts.KETTLE_ON);Talk.end(p);return true;}
             case SEATED,TOASTING->{
                 Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);

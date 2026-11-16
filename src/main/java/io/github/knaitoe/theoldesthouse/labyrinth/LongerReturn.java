@@ -82,6 +82,8 @@ public final class LongerReturn {
 
     private static void start(ServerPlayer p,LiteraryActor a,CompoundTag own){
         stage(p,own,ASKED);Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);
+        // 0.4.632: the one practical callback, for a settled HAIR read (LongerSelf).
+        var cloth=LongerSelf.cloth(p,own);if(cloth!=null){Longer.cue(p,LongerTexts.CLOTH_CUE);line(p,a,cloth);save(p,own);}
         if(alreadyAsked(own)){line(p,a,LongerTexts.MAKE_SOMETHING_UP);Talk.line(p,"",LongerTexts.NO_R);line(p,a,LongerTexts.GOOD_DONT_GO);}
         else{line(p,a,LongerTexts.RADIO_AGAIN);Talk.line(p,"",LongerTexts.IS_THERE);line(p,a,LongerTexts.DONT_GO_YET);}
         Talk.ask(p,Talk.reply(LongerTexts.DONT_WANT_EITHER,r->answer(r,DIRECT)),Talk.reply(LongerTexts.JUST_SAID,r->answer(r,TEASE)),

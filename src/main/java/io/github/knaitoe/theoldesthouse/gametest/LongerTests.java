@@ -1092,4 +1092,30 @@ public final class LongerTests {
         .thenIdle(40)
         .thenExecute(()->{h.assertTrue(rowan(h,p)==null,"Rowan is not made again");Talk.close(p);done();h.succeed();});
     }
+
+    /**
+     * 0.4.632, personhood (LongerSelf). Unread and tentative reads get the lines as written; a settled SELF gives Rowan's first request
+     * an address, a settled HOME changes the first question about staying, a settled HAIR gives one dry tea towel after the roof, once.
+     * The account says the towel was handed over only if it was.
+     */
+    @GameTest(template="empty",batch="longer_self",timeoutTicks=400)
+    public static void personhoodOnlyFromSettledReads(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_self",P);
+        h.startSequence().thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(LongerSelf.askHold(p).equals(LongerTexts.ASK_HOLD)&&LongerSelf.stayFor(p).equals(LongerTexts.STAY_FOR)&&LongerSelf.cloth(p,own)==null,"unread: the lines as written");
+            HouseRead.signal(p,HouseRead.Trait.SELF,"FEM",false);HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",false);HouseRead.signal(p,HouseRead.Trait.HAIR,"WRAPPED",false);
+            h.assertTrue(LongerSelf.askHold(p).equals(LongerTexts.ASK_HOLD)&&LongerSelf.stayFor(p).equals(LongerTexts.STAY_FOR)&&LongerSelf.cloth(p,own)==null,"tentative: still as written");
+            HouseRead.signal(p,HouseRead.Trait.SELF,"FEM",true);HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",true);HouseRead.signal(p,HouseRead.Trait.HAIR,"WRAPPED",true);
+            h.assertTrue(LongerSelf.askHold(p).equals(LongerTexts.ASK_HOLD_FEM),"a settled SELF read gives the address: "+LongerSelf.askHold(p));
+            h.assertTrue(LongerSelf.stayFor(p).equals(LongerTexts.STAY_DANGER),"a settled HOME read changes the first question: "+LongerSelf.stayFor(p));
+            h.assertTrue(LongerTexts.CLOTH_WRAPPED.equals(LongerSelf.cloth(p,own)),"a settled HAIR read: the towel, in its own words");
+            h.assertTrue(LongerSelf.cloth(p,own)==null,"once");
+            own.putInt(LongerBench.STAGE,LongerBench.DONE);
+            h.assertTrue(text(LongerTexts.account("x",own)).contains("Rowan handed me a dry tea towel"),"the account has the towel");
+            own.remove(LongerSelf.CLOTH);
+            h.assertFalse(text(LongerTexts.account("x",own)).contains("tea towel"),"and not without it");
+            done();h.succeed();
+        });
+    }
 }
