@@ -236,6 +236,8 @@ public final class LodgingPeople {
         if(!is(a))return;var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;var l=p.serverLevel();
         int who=who(a);
         if(failed(who)){LodgingHouse.cue(p,LodgingTexts.failed(who));return;}
+        // 0.4.620: to a reader who has finished the house, nobody in it has anything to ask (LodgingAfter).
+        if(LodgingAfter.quiet(own)){LodgingHouse.cue(p,LodgingAfter.NOTHING);return;}
         if(a.saying()&&Talk.key(p).equals(TALK+who))return;
         // 0.4.605: Daniel is spoken to from his room, through the open hatch, or crouched at his door; not through a shut door.
         if(who==DANIEL&&!LodgingKey.free(p.server,b)&&!LodgingDaniel.reach(p,b))return;

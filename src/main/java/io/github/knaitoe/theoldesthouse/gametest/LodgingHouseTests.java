@@ -1822,6 +1822,39 @@ public final class LodgingHouseTests {
             .thenSucceed();
     }
     @AfterBatch(batch="lodging_self") public static void selfDone(ServerLevel l){done();}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.620: aftermath
+    @GameTest(template="empty",batch="lodging_after",timeoutTicks=3000)
+    public static void aFinishedReaderComesBackOnceToTheHouseAsItEndedAndNobodyAsksAnything(GameTestHelper h){
+        var f=house(h);var p=f.player("lodging_after_a",P);var q=f.player("lodging_after_b",P);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        f.chunks.hold(l,LodgingPeople.area(b));LodgingStory.hold(b,true);final LiteraryActor[] who=new LiteraryActor[LodgingPeople.COUNT];
+        h.startSequence()
+            .thenWaitUntil(()->{h.assertTrue(f.chunks.ready(),"the house is resident");LodgingPeople.ensure(l,b);
+                for(int i=0;i<LodgingPeople.COUNT;i++){who[i]=LodgingPeople.find(l,b,i);h.assertTrue(who[i]!=null,"waiting for number "+i);}})
+            .thenExecute(()->{
+                at(l,b,LodgingStory.AFTER,who);var data=LabyrinthData.get(s);int k=SceneInstances.copyAt(s,P,b);
+                h.assertTrue(Aftermath.PLACES.contains(P)&&Aftermath.limit(P)==1,"the lodging house comes back once");
+                // The house ended with the first reader in it, who read their account; the second was never there.
+                var house=LodgingStory.house(s,b);house.putInt(LodgingEnd.ENDED,LodgingEnd.SEVERED);
+                var party=new net.minecraft.nbt.ListTag();party.add(net.minecraft.nbt.StringTag.valueOf(p.getUUID().toString()));house.put(LodgingEnd.PARTY,party);LodgingStory.save(s,b,house);
+                var a=own(p);a.putBoolean("Completed",true);a.remove(Aftermath.COUNT);a.remove(Aftermath.AT);a.remove(LodgingAfter.SEEN);LiteraryVignettes.save(data,p.getUUID(),P,a);
+                var c=own(q);c.remove("Completed");LiteraryVignettes.save(data,q.getUUID(),P,c);
+                h.assertTrue(!LodgingHouse.dealable(data,p.getUUID())&&LodgingHouse.dealable(data,q.getUUID()),"the story is no longer dealt to the reader who finished it, and still is to the other");
+                h.assertTrue(LodgingEnd.ofParty(s,k,p.getUUID())&&!LodgingEnd.ofParty(s,k,q.getUUID()),"the ended house is the first reader's to come back to, not the second's");
+                // Coming back: the end's line, counted once.
+                f.at(p,P,.5,0,-3.5);var mine=own(p);LodgingHouse.arrive(p,b,mine);LiteraryVignettes.save(data,p.getUUID(),P,mine);
+                h.assertTrue(own(p).getBoolean(LodgingAfter.SEEN)&&Aftermath.returns(data,p.getUUID(),P)==1,"counted as the one return");
+                h.assertTrue(!Aftermath.canDeal(data,p.getUUID(),P),"and not offered again");
+                h.assertTrue(LodgingAfter.line(LodgingEnd.SEVERED).contains("bench in the hall is empty")&&!LodgingAfter.line(LodgingEnd.RETURNED).equals(LodgingAfter.line(LodgingEnd.NEITHER)),"a line for each end");
+                // Nobody asks the finished reader anything.
+                LodgingStory.hold(b,false);
+                LodgingPeople.talk(p,who[LodgingPeople.RAE],own(p));
+                h.assertTrue(Talk.lines(p).stream().noneMatch(x->x.startsWith("Rae:")),"Rae has nothing to ask: "+Talk.lines(p));
+                house=LodgingStory.house(s,b);house.remove(LodgingEnd.ENDED);house.remove(LodgingEnd.PARTY);LodgingStory.save(s,b,house);
+            })
+            .thenSucceed();
+    }
+    @AfterBatch(batch="lodging_after") public static void afterDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete") public static void completeDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_complete_held") public static void completeHeldDone(ServerLevel l){done();}
     @AfterBatch(batch="lodging_return") public static void returnDone(ServerLevel l){done();}

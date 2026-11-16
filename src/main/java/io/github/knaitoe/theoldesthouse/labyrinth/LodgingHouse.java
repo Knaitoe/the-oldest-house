@@ -30,7 +30,7 @@ public final class LodgingHouse {
 
     /** 0.4.618: dealt to anybody who has not read their own account of it. */
     public static boolean dealable(LabyrinthData d,UUID reader){return !LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);LodgingParty.arrive(p,b,own);LodgingSelf.arrive(p,own);}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LodgingPeople.ensure(p.serverLevel(),b);LodgingParty.arrive(p,b,own);LodgingSelf.arrive(p,own);LodgingAfter.arrive(p,b,own);}
     /** Everybody reading in this house. */
     static java.util.List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new java.util.ArrayList<ServerPlayer>();
