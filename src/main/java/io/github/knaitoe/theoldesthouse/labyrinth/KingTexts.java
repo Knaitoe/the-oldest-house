@@ -66,6 +66,31 @@ public final class KingTexts {
         WENT_OUT="He woke, and the country went out with you in it.",
         CAME_TO="The fire, the glass and the armchair. There is a book on the armchair.",
         LEFT_HIM="The last of the board let go. The drawing-room came round you, and behind the glass he is still breathing.";
+    // ------------------------------------------------------------------------------------------------ 0.4.644, part 4
+    // Every line below is new in 0.4.644 and flagged in docs/SLEEPING_KING_0_4_644.md.
+    public static final String QUEEN_NAME="the Queen",GUARD_NAME="the Guard";
+    public static final String QUEEN_FASTER="Faster! Faster! Don't try to talk.",
+        QUEEN_DONT_TALK="Here, you see, it takes all the running you can do to keep in the same place.",
+        QUEEN_LETS_GO="Here you are what you are counted as. Stand on the peg.",
+        GUARD_TICKET="Ticket. Every thing on this train has a ticket.",
+        GUARD_SECOND="Travelling the wrong way.",
+        GUARD_THIRD="A thing ought to know which way it is going, even if it doesn't know its own name.";
+    public static final String QUEEN_LET_GO="She let go, and the hands in front of you were drawn flat.",
+        QUEEN_HAND="She is too busy to be held by the hand just now.",
+        GUARD_HAND="He looks through his glass at the hand, and then at you, and does not take it.",
+        COUNTED="Counted. Somebody is taking notice.",
+        PEG="A peg, driven in at the near edge of the square.",
+        TABLE_THROUGH="The hand goes down through the glass top and finds nothing to lift.",
+        TABLE_TAKE="A little bottle and a very small cake, one for each hand.",
+        TABLE_TAKEN="The table has nothing more on it for you.",
+        SWALLOW="Less, for a while.",
+        BITE="More, for a while.",
+        DRAUGHT_NOTHING="Nothing happens. It is only something to drink, out here.",
+        GOT_UP="The Guard lowers his glass, and the seat is only a seat.",
+        JUMPED="The train took the brook at a jump. The road is under your feet on the far side.",
+        WHEEL="A carriage wheel, standing in the grass.";
+
+    static String words(int n){return switch(n){case 2->"two";case 3->"three";case 4->"four";case 5->"five";case 6->"six";case 7->"seven";default->String.valueOf(n);};}
     /** When he turns over and the filled land draws in to the next depth of his sleep. */
     public static String drewIn(int level){return level>=2?"He turned over again, and the filled land drew in to his own square.":"He turned over in his sleep, and the filled land drew in toward him.";}
 
@@ -85,6 +110,12 @@ public final class KingTexts {
         var out=new ArrayList<String>();
         out.add("There was a drawing-room with a fire in it, and a glass over the fire, and the same room on the other side of the glass. "
             +"Beyond it the country lay in squares, and an old man was asleep under a tree.");
+        // 0.4.644: the hill, the table and the railway, as each reader went by them.
+        if(own.getBoolean("KingQueenRan"))out.add("A queen in a long gown took me by the hand on the second square and ran with me as fast as we could go, and we were in the same place at the end of it. Then she let go and told me to stand on the peg.");
+        int counted=Integer.bitCount(own.getInt("KingCounted"));
+        if(counted>0)out.add(counted==1?"I stood on one peg, and it counted me.":"I stood on "+words(counted)+" pegs, and each of them counted me.");
+        if(own.getInt("KingSwallows")>0||own.getInt("KingBites")>0)out.add(own.getInt("KingSwallows")>0&&own.getInt("KingBites")>0?"There was a bottle and a cake on a glass table. I had some of each.":own.getInt("KingSwallows")>0?"There was a bottle on a glass table, and I drank from it.":"There was a cake on a glass table, and I ate some of it.");
+        if(own.getBoolean("KingRode"))out.add("I sat in a railway carriage in a field while a guard looked at me through three glasses, and the train took the brook at a jump.");
         if(own.getBoolean("KingHeard"))out.add("Two brothers in the wood took me to see him. They said he was dreaming, and that I was only a sort of thing in his dream. "
             +"The two of them had a longer name for the King.");
         if(own.getBoolean("KingRattle"))out.add("One of them had left a rattle under his tree. I went in to it between his breaths and picked it up, and after that there was nothing for them to fight about.");

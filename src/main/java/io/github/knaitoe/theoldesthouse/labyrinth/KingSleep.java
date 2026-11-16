@@ -45,12 +45,15 @@ public final class KingSleep {
     static final int LINES_AT=30,ENDS_AT=90;
     /** A country nobody has been in for this long is a fresh dream when somebody comes back. */
     static final int FORGOTTEN=200;
-    public static final String MET="KingMet",HEARD="KingHeard",ENDING="KingEnding",STIRRED="KingStirred";
+    public static final String MET="KingMet",HEARD="KingHeard",ENDING="KingEnding",STIRRED="KingStirred",COUNTED="KingCounted";
 
     static final class Sleep{
         int stirs;long seen=-1;long wakingAt=-1;boolean awake;boolean tooSoon;@Nullable UUID namer;int turn;
         // The brothers (KingBrothers).
         int battle;long battleAt;boolean rattleTaken;@Nullable UUID rattleBy;final java.util.Set<UUID> sawBattle=new java.util.HashSet<>();
+        // 0.4.644: the Queen (KingQueen) and the Guard's ride (KingGuard); who has run with her and who has ridden, in this dream.
+        int queen;@Nullable UUID queenWith;long queenAt;final java.util.Set<UUID> ran=new java.util.HashSet<>();
+        @Nullable UUID rider;long rideAt;@Nullable BlockPos riderSeat;final java.util.Set<UUID> ridden=new java.util.HashSet<>();
     }
     /**
      * How the waking ended for each reader who was in the country, kept until that reader's own tick settles it. The waking ends inside
@@ -78,6 +81,8 @@ public final class KingSleep {
             else{king.setPose(Pose.STANDING);king.clearSleepingPos();var to=nearest(l,b,king.position());if(to!=null)face(king,to.position());}
         }
         KingBrothers.tick(l,b,s);
+        KingQueen.tick(l,b,s);
+        KingGuard.tick(l,b,s);
         if(s.wakingAt<0)return;
         long t=now-s.wakingAt;
         if(t>=LINES_AT&&!s.awake){s.awake=true;KingBreath.redraw(l,b);for(var p:readers(l,b))King.cue(p,s.tooSoon?KingTexts.LINES_TOO_SOON:KingTexts.LINES);}
@@ -88,7 +93,14 @@ public final class KingSleep {
     static void reader(ServerPlayer p,BlockPos b,CompoundTag own,int state){
         if(settle(p,b,own))return;
         var s=get(b);
-        if(s.sawBattle.contains(p.getUUID()))own.putBoolean("KingSawBattle",true);var r=p.position().subtract(b.getX(),b.getY(),b.getZ());boolean beside=KingBreath.beside(r);
+        if(s.sawBattle.contains(p.getUUID()))own.putBoolean("KingSawBattle",true);
+        // 0.4.644: what this dream remembers of them goes into their own record from their own tick: running with the Queen, the ride,
+        // and every square whose peg has counted them (stood on while somebody, of the dream or another reader, was looking at them).
+        if(s.ran.contains(p.getUUID()))own.putBoolean(KingQueen.RAN,true);
+        if(s.ridden.contains(p.getUUID()))own.putBoolean(KingGuard.RODE,true);
+        for(int r=2;r<=KingSite.RANKS;r++)if(KingQueen.onPeg(p,b,r)&&(own.getInt(COUNTED)&1<<r)==0&&(KingBreath.lookedAtByTheDream(p,b)||KingBreath.noticed(p,b))){
+            own.putInt(COUNTED,own.getInt(COUNTED)|1<<r);King.cue(p,KingTexts.COUNTED);}
+        var r=p.position().subtract(b.getX(),b.getY(),b.getZ());boolean beside=KingBreath.beside(r);
         if(beside&&state>=KingBreath.THING&&!own.getBoolean(MET))own.putBoolean(MET,true);
         double moved=own.contains("KingLastX")?Math.hypot(r.x-own.getDouble("KingLastX"),r.z-own.getDouble("KingLastZ")):0;
         own.putDouble("KingLastX",r.x);own.putDouble("KingLastZ",r.z);
@@ -185,6 +197,7 @@ public final class KingSleep {
         if(l.isLoaded(b.offset(KingSite.RATTLE))&&!KingBlock.is(l.getBlockState(b.offset(KingSite.RATTLE)),KingBlock.Kind.RATTLE))KingSite.rattle(l,b);
         var king=King.find(l,b);if(king!=null)King.lie(king,b.offset(KingSite.KING),180);
         KingBrothers.reset(l,b);
+        var fresh=get(b);KingQueen.reset(l,b,fresh);KingGuard.reset(fresh);
     }
     /** For tests: forget the dream at this country. */
     public static void forget(BlockPos b){SLEEPS.remove(b.asLong());}

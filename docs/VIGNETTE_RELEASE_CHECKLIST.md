@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.644 (docs/SLEEPING_KING_0_4_644.md): is the Queen's run, each peg counted, the bottle and cake taken and the ride each reader's own; does the Queen take one hand at a time and the Guard one rider at a time, and does a second reader wait rather than share; do the bottle and cake leave with the reader and do nothing outside the country; and does a fresh dream put the Queen and Guard back.
+
 November 16 candidate 0.4.643 (docs/SLEEPING_KING_0_4_643.md): is each ending a reader's own (the namer, the others there, the one who walked off), is a too-soon waking a failure for everyone in the country and for nobody outside it, does a fresh dream put back the rattle, the brothers and his sleep, and is the Witness pool derived (91 / 69) with the account advancement generated?
 
 November 16 candidate 0.4.642 (docs/SLEEPING_KING_0_4_642.md): does every state hold only the reader it belongs to (hedge and verge collision read from that reader alone, the client's copy lapsing when they leave), does a rooted reader come free on the out-breath and on leaving the country, and is a reader put back rather than lost when they go off the board?

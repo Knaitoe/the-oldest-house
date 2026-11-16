@@ -2012,5 +2012,9 @@
   "subtitles.the_oldest_house.king.stir": "The King stirs in his sleep",
   "subtitles.the_oldest_house.king.crow": "Great wings pass over",
   "advancements.the_oldest_house.account.a_sort_of_thing.title": "A sort of thing",
-  "advancements.the_oldest_house.account.a_sort_of_thing.description": "I crossed a country drawn in squares to an old man asleep under a tree, and two brothers told me what I was in his dream."
+  "advancements.the_oldest_house.account.a_sort_of_thing.description": "I crossed a country drawn in squares to an old man asleep under a tree, and two brothers told me what I was in his dream.",
+  "item.the_oldest_house.king_bottle": "A Little Bottle",
+  "item.the_oldest_house.king_cake": "A Very Small Cake",
+  "subtitles.the_oldest_house.king.train": "A train gets up steam",
+  "subtitles.the_oldest_house.king.whistle": "A train whistles"
 }

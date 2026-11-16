@@ -16,12 +16,13 @@ import net.minecraft.world.phys.shapes.*;
  * <p>
  * Stages: the chimney-piece's left jamb (0), the fire between (1), the right jamb (2); the looking-glass over it, three across and two
  * high (0-2 the lower row, 3-5 the upper); the tall window's lower (0) and upper (1) halves. 0.4.643: the brothers' rattle (RATTLE)
- * lies on the King's square.
+ * lies on the King's square. 0.4.644: the Queen's pegs (PEG), one on every square past its crossing; the glass table on the hill with
+ * the bottle and the cake on it (GLASS_TABLE); the railway carriage's seats (SEAT, sat in) and its wheels (WHEEL).
  */
 public final class KingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<KingBlock> CODEC=simpleCodec(KingBlock::new);
     public enum Kind implements StringRepresentable {
-        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE;
+        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -32,6 +33,9 @@ public final class KingBlock extends HorizontalDirectionalBlock {
     public static boolean is(BlockState s,Kind kind){return s.is(KingRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
     public static Kind kind(BlockState s){return s.is(KingRegistry.FITTING.get())?s.getValue(KIND):null;}
     public static int stage(BlockState s){return s.is(KingRegistry.FITTING.get())?s.getValue(STAGE):-1;}
+    /** 0.4.644: a carriage seat is sat in (HouseSitting), seven pixels up, facing the way it faces. */
+    public static boolean seat(BlockState s){return is(s,Kind.SEAT);}
+    public static final double SEAT_HEIGHT=7/16.;
     /** The fire in the grate gives the room its light. */
     public static int light(BlockState s){return s.getValue(KIND)==Kind.MANTEL&&s.getValue(STAGE)==1?13:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -49,10 +53,14 @@ public final class KingBlock extends HorizontalDirectionalBlock {
             case ARMCHAIR->Shapes.or(Block.box(1,0,1,15,7,15),box(f,1,7,11,15,20,15));
             case WINDOW->box(f,0,0,6,16,16,10);
             case RATTLE->Block.box(1,0,4,15,5,12);
+            case PEG->Block.box(6,0,6,10,7,10);
+            case GLASS_TABLE->Shapes.or(Block.box(2,11,2,14,12,14),Block.box(3,0,3,13,11,13));
+            case SEAT->Shapes.or(Block.box(0,0,2,16,7,14),box(f,0,7,12,16,22,16));
+            case WHEEL->box(f,0,0,5,16,16,11);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE->Shapes.empty();default->getShape(s,l,p,c);};
+        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE,PEG->Shapes.empty();default->getShape(s,l,p,c);};
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}

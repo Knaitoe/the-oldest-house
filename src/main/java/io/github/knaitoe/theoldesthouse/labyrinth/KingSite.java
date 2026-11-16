@@ -56,6 +56,23 @@ public final class KingSite {
     public static final BlockPos RATTLE=new BlockPos(13,0,-88),DUM=new BlockPos(10,0,-90),DEE=new BlockPos(10,0,-91);
 
     /** The z the rank (1 to 8) begins at, nearest the house, and the last z it covers. */
+    /**
+     * 0.4.644, part 4. The hill on the second square, in its west file; the Queen waits on the road at its foot and, once she has let
+     * go of a reader, stands at the far side of the field looking back at the peg. The glass table with the bottle and the cake stands
+     * by the road. On the third square, in the east file, the railway carriage: its door faces the hedge's gap, two seats face each
+     * other inside, and a reader whose ride is over is put down on the road at the near edge of the fourth square.
+     */
+    public static final BlockPos HILL=new BlockPos(-17,0,-55),QUEEN=new BlockPos(-3,0,-51),QUEEN_FAR=new BlockPos(2,0,-62),GLASS_TABLE=new BlockPos(5,0,-54);
+    public static final int HILL_RADIUS=7,HILL_HEIGHT=3;
+    public static final int CAR_WEST=11,CAR_EAST=22,CAR_NORTH=-74,CAR_SOUTH=-70;
+    public static final BlockPos CAR_DOOR=new BlockPos(11,0,-72),GUARD=new BlockPos(16,0,-72);
+    public static final BlockPos[] SEATS={new BlockPos(13,0,-71),new BlockPos(13,0,-72),new BlockPos(13,0,-73),new BlockPos(20,0,-71),new BlockPos(20,0,-72),new BlockPos(20,0,-73)};
+    public static final net.minecraft.world.phys.Vec3 RIDE_OUT=new net.minecraft.world.phys.Vec3(1.5,0,-85.5);
+    /** The Queen's peg on a square (2 to 8): beside the road, just past the crossing. */
+    public static BlockPos peg(int rank){return new BlockPos(2,0,rankNear(rank)-1);}
+    /** The hill's height over a column, 0 off it. */
+    public static int hill(int x,int z){double d=Math.hypot(x-HILL.getX(),z-HILL.getZ());return d>=HILL_RADIUS?0:(int)Math.round(HILL_HEIGHT*(1-d/HILL_RADIUS)+.25);}
+    public static boolean inCarriage(net.minecraft.world.phys.Vec3 r){return r.x>=CAR_WEST&&r.x<CAR_EAST+1&&r.z>=CAR_NORTH&&r.z<CAR_SOUTH+1&&r.y>=-.5&&r.y<4;}
     public static int rankNear(int r){return NEAR-(r-1)*PITCH;}
     public static int rankFar(int r){return rankNear(r)-SQUARE+1;}
     /** The rank a z lies in, 0 if in a brook or off the board. */
@@ -165,6 +182,43 @@ public final class KingSite {
         board(l,b);
         wood(l,b);
         rattle(l,b);
+        hillside(l,b);
+        carriage(l,b);
+        // 0.4.644: a peg on every square from the second, and the glass table by the road on the hill's square.
+        for(int r=2;r<=RANKS;r++)set(l,b,peg(r),KingBlock.of(KingBlock.Kind.PEG,Direction.NORTH));
+        set(l,b,GLASS_TABLE,KingBlock.of(KingBlock.Kind.GLASS_TABLE,Direction.WEST));
+    }
+
+    /** 0.4.644: the hill, turf over soil, raised in the same drawing as the land round it, so it breathes with it. */
+    static void hillside(ServerLevel l,BlockPos b){
+        for(int x=HILL.getX()-HILL_RADIUS;x<=HILL.getX()+HILL_RADIUS;x++)for(int z=HILL.getZ()-HILL_RADIUS;z<=HILL.getZ()+HILL_RADIUS;z++){
+            int h=hill(x,z);if(h<=0||file(x)!=1)continue;boolean r=ruled(x,z);
+            var top=l.getBlockState(b.offset(x,-1,z));
+            for(int y=-1;y<h-1;y++)set(l,b,x,y,z,KingRegistry.country("soil",r));
+            set(l,b,x,h-1,z,top.isAir()?KingRegistry.country(light(2,1)?"turf_light":"turf_dark",r):top);
+        }
+    }
+
+    /**
+     * 0.4.644: the railway carriage, one compartment on its wheels in the field: panelled walls with a window each side, a roof, a door
+     * at its west end, and two seats facing each other across it.
+     */
+    static void carriage(ServerLevel l,BlockPos b){
+        var panel=mat("panel");var floor=mat("floorboards");var roof=mat("ceiling");
+        box(l,b,CAR_WEST,-1,CAR_NORTH,CAR_EAST,-1,CAR_SOUTH,floor);
+        for(int y=0;y<=2;y++){
+            for(int x=CAR_WEST;x<=CAR_EAST;x++){set(l,b,x,y,CAR_NORTH,panel);set(l,b,x,y,CAR_SOUTH,panel);}
+            for(int z=CAR_NORTH;z<=CAR_SOUTH;z++){set(l,b,CAR_WEST,y,z,panel);set(l,b,CAR_EAST,y,z,panel);}
+        }
+        box(l,b,CAR_WEST+1,0,CAR_NORTH+1,CAR_EAST-1,2,CAR_SOUTH-1,AIR);
+        box(l,b,CAR_WEST,3,CAR_NORTH,CAR_EAST,3,CAR_SOUTH,roof);
+        set(l,b,CAR_DOOR,AIR);set(l,b,CAR_DOOR.above(),AIR);
+        for(int x:new int[]{15,18}){
+            set(l,b,x,1,CAR_NORTH,fit(KingBlock.Kind.WINDOW,Direction.SOUTH,0));set(l,b,x,2,CAR_NORTH,fit(KingBlock.Kind.WINDOW,Direction.SOUTH,1));
+            set(l,b,x,1,CAR_SOUTH,fit(KingBlock.Kind.WINDOW,Direction.NORTH,0));set(l,b,x,2,CAR_SOUTH,fit(KingBlock.Kind.WINDOW,Direction.NORTH,1));
+        }
+        for(var seat:SEATS)set(l,b,seat,fit(KingBlock.Kind.SEAT,seat.getX()<GUARD.getX()?Direction.EAST:Direction.WEST));
+        for(int x:new int[]{CAR_WEST+2,CAR_EAST-2})for(int z:new int[]{CAR_NORTH-1,CAR_SOUTH+1})set(l,b,x,0,z,fit(KingBlock.Kind.WHEEL,Direction.NORTH));
     }
     /** 0.4.643: the brothers' rattle lying on his square. */
     public static void rattle(ServerLevel l,BlockPos b){set(l,b,RATTLE,KingBlock.of(KingBlock.Kind.RATTLE,Direction.NORTH));}

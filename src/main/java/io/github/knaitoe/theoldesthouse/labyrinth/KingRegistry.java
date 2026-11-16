@@ -17,12 +17,17 @@ import net.neoforged.neoforge.registries.*;
 public final class KingRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    /** 0.4.644: the bottle and the cake from the glass table on the hill. */
+    public static final net.neoforged.neoforge.registries.DeferredItem<KingDraughtItem> BOTTLE=ITEMS.register("king_bottle",()->new KingDraughtItem(false)),CAKE=ITEMS.register("king_cake",()->new KingDraughtItem(true));
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** His breath, in and out (tools/generate_king_audio.py), and a sort of thing's soft feet. */
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> BREATH_IN=sound("king.breath_in"),BREATH_OUT=sound("king.breath_out"),SOFT_STEP=sound("king.soft_step"),
         /** 0.4.643: he stirs in his sleep; the crow over the wood. */
-        STIR=sound("king.stir"),CROW=sound("king.crow");
+        STIR=sound("king.stir"),CROW=sound("king.crow"),
+        // 0.4.644: the train starting and its whistle before the jump.
+        TRAIN=sound("king.train"),WHISTLE=sound("king.whistle");
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     /** The country's materials; every one has its ruled twin, named with "_ruled". */
     public static final List<String> COUNTRY=List.of("turf_light","turf_dark","soil","hedge","brook","bridge","path","bark","bough");
@@ -60,5 +65,5 @@ public final class KingRegistry {
     public static final DeferredBlock<KingVergeBlock> VERGE=BLOCKS.registerBlock("king_verge",KingVergeBlock::new,BlockBehaviour.Properties.of().noOcclusion().strength(-1,3600000).noLootTable().isSuffocating((s,l,p)->false).isViewBlocking((s,l,p)->false));
     public static final DeferredBlock<KingBlock> FITTING=BLOCKS.registerBlock("king_fitting",KingBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion().lightLevel(KingBlock::light));
     private KingRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }

@@ -88,12 +88,17 @@ public final class KingBreath {
         // 0.4.643: off the board, a reader who has been to him and heard the brothers leaves him his sleep; anybody else is put back.
         if(state==NOWHERE){if(KingSleep.walkedOff(p,b,own))return;back(p,b,own);state=SORT;}
         STATES.put(p.getUUID(),state);own.putInt("KingState",state);
-        root(p,state==TOO_MUCH);
+        root(p,state==TOO_MUCH||KingQueen.holding(p,b));
         KingSleep.reader(p,b,own,state);
         tell(l,b);
     }
     /** A reader leaves the country: their whole self again. */
-    public static void leave(ServerPlayer p){if(STATES.remove(p.getUUID())!=null)root(p,false);}
+    public static void leave(ServerPlayer p){
+        if(STATES.remove(p.getUUID())!=null)root(p,false);
+        // 0.4.644: whatever was swallowed wears off, and the bottle and the cake stay in the country.
+        SWALLOWED.remove(p.getUUID());
+        var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(KingDraughtItem.is(inv.getItem(i)))inv.setItem(i,net.minecraft.world.item.ItemStack.EMPTY);
+    }
 
     // ------------------------------------------------------------------------------------------------ the sum
     static int sum(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -101,7 +106,15 @@ public final class KingBreath {
         if(!KingSite.inside(r)||r.y<-2.5)return NOWHERE;
         int land=land(p,b,own);
         int state=land;
-        if(state<THING&&noticed(p,b))state++;
+        // Notice, one step up and no further than a thing: another reader's look, a look from one of the dream's people, or this
+        // square's peg having counted them (0.4.644).
+        if(state<THING&&(noticed(p,b)||lookedAtByTheDream(p,b)||counted(own,KingSite.rank((int)Math.floor(r.z)))))state++;
+        // 0.4.644: what they have swallowed, one step either way, for its twenty seconds; cake past a thing only on a thing.
+        var swallowed=SWALLOWED.get(p.getUUID());
+        if(swallowed!=null){if(p.level().getGameTime()>=swallowed.until)SWALLOWED.remove(p.getUUID());else state=swallowed.more?Math.min(TOO_MUCH,state+1):Math.max(NOWHERE,state-1);}
+        // Held by the Queen's hand or under the Guard's glass, they are a thing.
+        if(KingQueen.holding(p,b)||KingGuard.holding(p,b))state=Math.max(state,THING);
+        if(state==NOWHERE)return NOWHERE;
         if(beside(r)&&in(b))state=Math.min(TOO_MUCH,state+1);
         // The last square that counted them: where they last stood as a thing on the ground.
         if(state>=THING&&p.onGround()){own.putDouble("KingBackX",r.x);own.putDouble("KingBackY",r.y);own.putDouble("KingBackZ",r.z);}
@@ -130,6 +143,24 @@ public final class KingBreath {
         }
         return false;
     }
+    /** 0.4.644: looked at by one of the dream's people (the Queen, the Guard, the brothers), with nothing between them. */
+    static boolean lookedAtByTheDream(ServerPlayer p,BlockPos b){
+        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a))){
+            if(!a.isAlive())continue;
+            var eye=a.getEyePosition();var to=p.getBoundingBox().getCenter().subtract(eye);double d=to.length();if(d<1e-3)return true;
+            var view=Vec3.directionFromRotation(a.getXRot(),a.getYHeadRot());
+            if(view.dot(to.scale(1/d))<Math.cos(Math.toRadians(25)))continue;
+            var hit=a.level().clip(new ClipContext(eye,p.getBoundingBox().getCenter(),ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,a));
+            if(hit.getType()==HitResult.Type.MISS||hit.getLocation().distanceTo(eye)>=d-.6)return true;
+        }
+        return false;
+    }
+    /** 0.4.644: whether this square's peg has counted them. */
+    static boolean counted(CompoundTag own,int rank){return rank>=2&&(own.getInt(KingSleep.COUNTED)&1<<rank)!=0;}
+    /** 0.4.644: a swallow from the bottle (less) or a bite of the cake (more), until a game time. */
+    record Swallowed(boolean more,long until){}
+    static final Map<UUID,Swallowed> SWALLOWED=new ConcurrentHashMap<>();
+    public static void swallow(ServerPlayer p,boolean more,long until){SWALLOWED.put(p.getUUID(),new Swallowed(more,until));}
     public static boolean looksAt(Player q,Entity p){
         var eye=q.getEyePosition();var to=p.getBoundingBox().getCenter().subtract(eye);double d=to.length();if(d<1e-3)return true;
         if(q.getViewVector(1).dot(to.scale(1/d))<Math.cos(Math.toRadians(25)))return false;

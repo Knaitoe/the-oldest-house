@@ -19,6 +19,8 @@ ROWS = {
     # 0.4.643: he stirs; and the crow whose shadow ends the brothers' battle.
     'stir': ('The King stirs in his sleep', 48),
     'crow': ('Great wings pass over', 96),
+    'train': ('A train gets up steam', 48),
+    'whistle': ('A train whistles', 96),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -118,7 +120,34 @@ def crow():
     return wings + cry
 
 
-MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow}
+def train():
+    # 0.4.644: a small engine getting up steam and pulling away: chuffs coming faster, the carriage's wheels on the joints under them.
+    n = seconds(6.0)
+    t = times(n)
+    hiss = band(rng.standard_normal(n), 300, 3200)
+    gaps = .7 - .45 * np.clip(t / 5.5, 0, 1)
+    phase = np.cumsum(1 / gaps) / RATE
+    chuff = np.clip(np.sin(2 * np.pi * phase), 0, 1) ** 6
+    steam = hiss * chuff * np.clip(t / .4, 0, 1)
+    clack = np.zeros(n)
+    for k in range(int(5.5 / .45)):
+        at = .6 + k * .45 * (1 - k / 30)
+        clack += np.exp(-((t - at) / .012) ** 2) * band(rng.standard_normal(n), 80, 900) * .6
+    rumble = band(rng.standard_normal(n), 30, 120) * .35 * np.clip(t / 2, 0, 1)
+    return steam + clack + rumble
+
+
+def whistle():
+    # Its whistle, two notes a little apart, held, then the fall at the end as the steam is shut off.
+    n = seconds(2.4)
+    t = times(n)
+    f = 740 - 60 * np.clip((t - 1.9) / .4, 0, 1)
+    tone = .55 * np.sin(2 * np.pi * np.cumsum(f) / RATE) + .45 * np.sin(2 * np.pi * np.cumsum(f * 1.19) / RATE)
+    breath = band(rng.standard_normal(n), 900, 4000) * .18
+    return (tone + breath) * envelope(t, .08, .35)
+
+
+MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle}
 
 
 def main():
