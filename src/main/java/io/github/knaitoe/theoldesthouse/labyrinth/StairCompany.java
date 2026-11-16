@@ -112,11 +112,12 @@ public final class StairCompany {
     /**
      * Stories on the owner's list whose figure is not one of the cast's bodies (the lake's people, the elk, the cousin, the hotel's
      * and the table's, the girl from the wardrobe, the ones drawn as blocks or in a mirror), or is one that is only ever drawn seated
-     * or swimming (Mr. Harrigan, the swimmer), and the lodging house's people, drawn by their own renderer (the ones already inside). Nobody stands on the stair for these yet.
+     * or swimming (Mr. Harrigan, the swimmer), and the lodging house's people, drawn by their own renderer (the ones already inside), and Rowan, whose body is
+     * whichever of two the reader was given (a little longer, 0.4.630). Nobody stands on the stair for these yet.
      */
     public static final Set<Story> NOT_YET=EnumSet.of(Story.CLAP,Story.HARRIGAN,Story.DROWNED_TOWN,Story.PRESERVED_CAVE,Story.SHALLOWS,Story.GOATMAN,
             Story.SEANCE,Story.HOTEL,Story.ELK_LOT,Story.ELK_FAN,Story.BACKSEAT,Story.DARE_IN_THE_DARK,Story.WORK_PRINT,Story.LEFT_RIGHT,Story.DEAD_AIR,
-            Story.LAST_SWIMMER,Story.ONES_INSIDE);
+            Story.LAST_SWIMMER,Story.ONES_INSIDE,Story.LITTLE_LONGER);
     /** The Mother of Strays is not to be changed, so she is not made to stand here. */
     public static final Set<Story> LEFT_OUT=EnumSet.of(Story.MOTHER);
     /** Stories in which nobody is seen. */

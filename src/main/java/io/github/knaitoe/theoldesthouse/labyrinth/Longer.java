@@ -19,13 +19,15 @@ public final class Longer {
     private Longer(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.LITTLE_LONGER;
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt in this slice. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /** 0.4.630: dealt until the reader has read their account of it. */
+    public static boolean dealable(LabyrinthData d,UUID reader){return !LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     /** 0.4.622: Rowan is decided for this reader and made in their chair (LongerRowan). */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LongerRowan.arrive(p,b,own);}
 
     /** A hand on something of the shop's or the flat's. True if it was theirs to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        // 0.4.630: the room afterward answers first (LongerAfter).
+        if(LongerAfter.click(p,b,rel,own))return true;
         var l=p.serverLevel();var at=b.offset(rel);var st=l.getBlockState(at);
         // The shop's front door: locked, the street through its glass.
         if(rel.getX()==LongerSite.FRONT_DOOR.getX()&&rel.getZ()==LongerSite.FRONT_DOOR.getZ()&&rel.getY()>=0&&rel.getY()<=1&&st.getBlock() instanceof net.minecraft.world.level.block.DoorBlock){
@@ -62,7 +64,10 @@ public final class Longer {
     }
     /** A reader sits in one of the place's seats: the seat says what it is, as a hand on anything else here would. */
     public static void sat(net.minecraft.world.entity.player.Player player,net.minecraft.world.level.block.state.BlockState st){
-        if(player instanceof ServerPlayer p&&LongerBlock.seat(st)){var line=line(st.getValue(LongerBlock.KIND));if(line!=null)cue(p,line);}
+        if(player instanceof ServerPlayer p&&LongerBlock.seat(st)){
+            // 0.4.630: Rowan's chair in the room afterward says how it was left, once (LongerAfter).
+            if(LongerCut.gone(LongerKettle.own(p))&&!LongerKettle.own(p).getBoolean(LongerAfter.SAT)){LongerAfter.sat(p,st);if(LongerKettle.own(p).getBoolean(LongerAfter.SAT))return;}
+            var line=line(st.getValue(LongerBlock.KIND));if(line!=null)cue(p,line);}
     }
     /** For a case: what a hand on this kind says, as the house would answer it. */
     public static String line(LongerBlock.Kind kind){

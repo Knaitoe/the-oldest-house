@@ -95,7 +95,7 @@ public final class LongerRowan {
     static final class Shop {UUID id;int phase=-1;int leg=-1,via=0,hold=0;long nextErrand=-1,nextHum=-1,nextTune=-1,lastTick=-1,spokenAt=-100000;}
     private static final Map<BlockPos,Shop> SHOPS=new HashMap<>();
     static Shop shop(BlockPos b){return SHOPS.computeIfAbsent(b.immutable(),k->new Shop());}
-    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();LongerRadio.clearAll();LongerRoof.clearAll();LongerReturn.clearAll();LongerTomorrow.clearAll();LongerCut.clearAll();}
+    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();LongerRadio.clearAll();LongerRoof.clearAll();LongerReturn.clearAll();LongerTomorrow.clearAll();LongerCut.clearAll();LongerAfter.clearAll();}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()-7,b.getY()-1,b.getZ()-19,b.getX()+8,b.getY()+LongerSite.ROOF+4,b.getZ()+1);}
     private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
@@ -122,7 +122,7 @@ public final class LongerRowan {
         s.id=a.getUUID();s.leg=-1;
     }
     /** Nobody at this copy: for a shop built again from nothing, and for tests. */
-    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);LongerRadio.forget(b);LongerRoof.forget(b);LongerReturn.forget(b);LongerTomorrow.forget(b);LongerCut.forget(b);}
+    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);LongerRadio.forget(b);LongerRoof.forget(b);LongerReturn.forget(b);LongerTomorrow.forget(b);LongerCut.forget(b);LongerAfter.forget(b);}
 
     /** Readers in this copy of the place. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
@@ -140,7 +140,8 @@ public final class LongerRowan {
         ensure(l,b);var a=find(l,b);
         // 0.4.625: the kitchen radio's tune while it is on (LongerRadio), whoever switched it.
         LongerRadio.tune(l,b,a);
-        if(a==null)return;
+        // 0.4.630: the room afterward has no Rowan in it (LongerAfter).
+        if(a==null){LongerAfter.tick(l,b,here);return;}
         if(s.nextErrand<0){s.nextErrand=now+SIT_LEAST+l.random.nextInt(SIT_MORE);s.nextHum=now+40;s.nextTune=now+100;}
         if(s.leg<0){
             // At the bench, while they work at it: humming now and then, and, while its back is off, the radio tuned through its static

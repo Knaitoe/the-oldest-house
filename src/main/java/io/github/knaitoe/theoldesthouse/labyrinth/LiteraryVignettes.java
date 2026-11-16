@@ -252,6 +252,8 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.STATE_ROUTE&&StateRouteBlock.is(p.serverLevel().getBlockState(e.getPos()),StateRouteBlock.Kind.CHAIN)){handled=StateRoute.call(p);}
         // 0.4.204: the balloon tag on the porch rail has the reader's own name on it, in the child's hand.
         else if(place==LabyrinthPlace.POLAROID_TRAIL&&rel.equals(PolaroidSite.TAG1)){open(p,place,own,"Source",PolaroidTexts.tag(1,p.getGameProfile().getName()),e.getPos());handled=true;}
+        // 0.4.630: in A Little Longer's room afterward the list may be put down on the account's table, so the room answers before the account.
+        else if(place==LabyrinthPlace.LITTLE_LONGER&&LongerAfter.click(p,b,rel,own)){handled=true;}
         else if(rel.equals(LiteraryRooms.source(place))&&!oldLot||oldLot&&rel.equals(ElkLot.OLD_SOURCE)||SceneReview.readingAlias(p.serverLevel(),b,place,rel)){open(p,place,own,"Source",SceneHuntReview.sourceBook(p.serverLevel(),b,place),e.getPos());handled=true;}
         else if((oldLot?rel.equals(ElkLot.OLD_ENDING):place==LabyrinthPlace.TUNNEL_PERIPHERY?rel.equals(TunnelPassage.account(p.serverLevel(),b)):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
         else switch(place){

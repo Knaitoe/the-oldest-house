@@ -24,8 +24,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  0.4.508, Bike night (a source with no first paper, so not among the literary places counted here): 87 / 66 / 63.
  0.4.541, the Pell house: 88 / 66 / 64.
  * 0.4.618, The Ones Already Inside: 89 / 67 / 65.
+ * 0.4.630, A Little Longer: 90 / 68 / 66.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=89,REQUIRED=67,LITERARY=65;
+    static final int SOURCES=90,REQUIRED=68,LITERARY=66;
 }
