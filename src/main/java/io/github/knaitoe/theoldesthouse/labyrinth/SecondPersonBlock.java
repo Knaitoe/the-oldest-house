@@ -26,7 +26,9 @@ public final class SecondPersonBlock extends HorizontalDirectionalBlock {
         /** 0.4.369, winter: Iris's sewing tin, the train ticket in its envelope, the sleeve she never finished. */
         TIN,TICKET,SLEEVE,
         /** 0.4.633, spring: the application on the mat, face up (0) or turned face down (1). */
-        APPLICATION;
+        APPLICATION,
+        /** 0.4.636, E4: two cups on the kitchen table, one at each chair; stage 1, theirs drunk and the reader's still full. */
+        CUPS;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -62,6 +64,7 @@ public final class SecondPersonBlock extends HorizontalDirectionalBlock {
             case TICKET->Block.box(3,0,4,14,1,12);
             case SLEEVE->stage==2?Block.box(3,0,2,13,1,14):Block.box(2,0,2,14,1,14);
             case APPLICATION->Block.box(2,0,2,14,1,14);
+            case CUPS->Block.box(2,0,4.5,14,5,11.5);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

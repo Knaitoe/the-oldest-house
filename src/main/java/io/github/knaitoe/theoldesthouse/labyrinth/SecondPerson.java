@@ -128,6 +128,7 @@ public final class SecondPerson {
         if(s==AUTUMN)return switch(st){case IRIS_VISIT->11400;case ROUTINE->12100;case EVENING->13600;case PHOTO->14200;case CALL->15000;case STAY->16000;default->17500;};
         if(s==WINTER)return switch(st){case W_FUNERAL->sub(own)>=2?18000:12700;case W_MORNING->23500;case W_DAY->4500;case W_EVENING->13400;case W_NIGHT->18500;default->2000;};
         if(s==SecondPersonGone.GONE)return SecondPersonGone.hour(own);
+        if(s==SecondPersonCups.TWO_CUPS)return SecondPersonCups.hour(own);
         if(s==SPRING)return switch(st){case SecondPersonSigned.S_SIGNED->SecondPersonSigned.hour(own);case SecondPersonSpring.S_AGENT->2600;case SecondPersonSpring.S_DECIDE->6000;case SecondPersonSpring.S_POST->8200;default->11400;};
         return 900;
     }
@@ -258,6 +259,7 @@ public final class SecondPerson {
             default->{return seat(ARMCHAIR,WEST);}
         }
         if(s==SecondPersonGone.GONE)return SecondPersonGone.residentMark(own);
+        if(s==SecondPersonCups.TWO_CUPS)return SecondPersonCups.residentMark(own);
         if(s==SPRING)return step(own)==SecondPersonSigned.S_SIGNED?SecondPersonSigned.residentMark(own):SecondPersonSpring.residentMark(own);
         // The last morning.
         boolean stays=own.getString("Decision").equals("stay");
@@ -426,7 +428,7 @@ public final class SecondPerson {
         ringing(l,f,p,own,resident);
         cupboard(l,f,p,own,r);
         int s=seasonOf(own);
-        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING){if(step(own)==SecondPersonSigned.S_SIGNED)SecondPersonSigned.day(l,f,p,own,r,resident,sam);else SecondPersonSpring.spring(l,f,p,own,resident,agent);}else if(s==SecondPersonGone.GONE)SecondPersonGone.night(l,f,p,own,r,resident);else morning(l,f,p,own,r,resident);
+        if(s==SUMMER)summer(l,f,p,own,r,resident);else if(s==AUTUMN)autumn(l,f,p,own,r,resident,iris,sam);else if(s==WINTER)winter(l,f,p,own,resident);else if(s==SPRING){if(step(own)==SecondPersonSigned.S_SIGNED)SecondPersonSigned.day(l,f,p,own,r,resident,sam);else SecondPersonSpring.spring(l,f,p,own,resident,agent);}else if(s==SecondPersonGone.GONE)SecondPersonGone.night(l,f,p,own,r,resident);else if(s==SecondPersonCups.TWO_CUPS)SecondPersonCups.evening(l,f,p,own,r,resident);else morning(l,f,p,own,r,resident);
     }
 
     static void summer(ServerLevel l,Flat f,ServerPlayer p,CompoundTag own,Vec3 r,@Nullable LiteraryActor a){
@@ -878,6 +880,8 @@ public final class SecondPerson {
         if(s!=MORNING&&s!=SecondPersonGone.GONE&&!SecondPersonSigned.signed(own)&&SecondPersonGone.frightened(own)){
             if(s==SPRING)SecondPersonSpring.application(l,b,false);
             SecondPersonGone.begin(l,f,p,own);}
+        // 0.4.636, E4: known gently by the spring, the last cupboard opens onto the last evening, and two cups.
+        else if(s==SPRING&&!SecondPersonSigned.signed(own)&&SecondPersonCups.known(own)){SecondPersonSpring.application(l,b,false);SecondPersonCups.begin(l,f,p,own);}
         else if(s==SUMMER){own.putInt("Season",AUTUMN);go(own,IRIS_VISIT);season(l,b,1);
             // What was never found stays lost; what the reader put where it lives stays where they put it.
             cue(p,SecondPersonStory.first(SecondPersonStory.whileAway(own,1)));SecondPersonStory.turned(own,"You let the summer go by in the cupboard.");}
@@ -997,6 +1001,8 @@ public final class SecondPerson {
             say(f,res,word.equals("YES")?"...Yes.":"Then who are you?");SecondPersonStory.turned(own,"They asked if you were them. You wrote "+word+".");}
         // 0.4.633: the word that answers "Is this you?" in the spring is read at once, and kept.
         else if(SecondPersonSpring.asking(own)){SecondPersonSpring.answered(f,res,own,word);own.putBoolean("WordSeen_"+surface,true);own.putInt("Wipe_"+surface,own.getInt("Clock")+200);}
+        // 0.4.636: the word that answers their one question on the last evening.
+        else if(SecondPersonCups.asking(own)){SecondPersonCups.answered(own,word);own.putBoolean("WordSeen_"+surface,true);own.putInt("Wipe_"+surface,own.getInt("Clock")+200);}
         var display=EntityType.TEXT_DISPLAY.create(l);
         if(display!=null){var tag=new CompoundTag();display.saveWithoutId(tag);tag.putString("text",Component.Serializer.toJson(Component.literal(word),p.registryAccess()));tag.putString("billboard","fixed");tag.putInt("background",0);tag.putInt("text_opacity",120);
             display.load(tag);boolean mirror=surface.equals("mirror");
