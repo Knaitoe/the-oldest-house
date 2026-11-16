@@ -78,6 +78,9 @@ public final class KingSleep {
     /** Whether his breathing has stopped: he is waking. */
     public static boolean waking(BlockPos b){return get(b).wakingAt>=0;}
 
+    /** 0.4.648: every country with a reader in it goes on once a server tick (KingBreath.advance), between its readers' own parts. */
+    @SubscribeEvent public static void serverTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){KingBreath.tickAll(e.getServer());}
+
     // ------------------------------------------------------------------------------------------------ once a tick, while anybody is there
     static void tick(ServerLevel l,BlockPos b){
         var s=get(b);long now=l.getGameTime();

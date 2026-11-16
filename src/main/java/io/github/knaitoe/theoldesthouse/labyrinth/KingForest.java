@@ -34,6 +34,8 @@ public final class KingForest {
     public static final int FILLED=1,FALLEN=2,MOVING=4;
     /** Ticks nobody looks at him (riding, with a reader on the square) before he falls; ticks of being looked at to get him up again. */
     public static final int THINS=60,GETS_UP=40;
+    /** Game ticks a reader who has the song crouches still before they sing it. */
+    static final int STILL=12;
     /** How fast he rides beside a reader, and out along the turn. */
     static final double PACE=.2,OUT_PACE=.12;
     /** Keys in each reader's own record. */
@@ -153,16 +155,18 @@ public final class KingForest {
         if(own.getInt(TURN)==0&&s.sawKnightGo.contains(p.getUUID()))own.putInt(TURN,WATCHED);
         if(own.getInt(TURN)==0&&s.leftKnight.contains(p.getUUID()))own.putInt(TURN,WENT_ON);
         // A reader who has heard his song sings it, crouching still: heard by everybody near, no oftener than every twenty seconds.
+        // 0.4.648: by game time, a little over half a second (a reader's own part comes only every quarter second).
         if(own.getBoolean(SONG)&&p.isShiftKeyDown()&&p.getDeltaMovement().horizontalDistanceSqr()<1e-4){
-            int still=own.getInt("KingStill")+1;own.putInt("KingStill",still);
-            if(still==12&&(!own.contains(SANG)||now-own.getLong(SANG)>=400)){
+            if(!own.contains("KingStillFrom"))own.putLong("KingStillFrom",now);
+            if(now-own.getLong("KingStillFrom")>=STILL&&!own.getBoolean("KingStillSang")&&(!own.contains(SANG)||now-own.getLong(SANG)>=400)){
+                own.putBoolean("KingStillSang",true);
                 own.putLong(SANG,now);own.putBoolean("KingSang",true);
                 l.playSound(null,p.getX(),p.getY(),p.getZ(),KingRegistry.KNIGHT_SONG.get(),SoundSource.PLAYERS,.7F,1.05F);
                 King.cue(p,KingTexts.SANG);
                 // Sung beside him, it settles him, once a dream.
                 if(KingBreath.beside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&KingSleep.settleBySong(l,b))own.putBoolean(SANG_TO_HIM,true);
             }
-        }else own.putInt("KingStill",0);
+        }else{own.remove("KingStillFrom");own.remove("KingStillSang");}
     }
 
     // ------------------------------------------------------------------------------------------------ talking to him
