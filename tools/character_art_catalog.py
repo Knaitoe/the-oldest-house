@@ -63,7 +63,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -182,4 +182,7 @@ def entries():
     # And (0.4.606) Dan and Daniel with the glass's cut and the pin's prick on their hands, on their own phases; their marks pick the sheet.
     for name,phase in (('dan_cut',201),('dan_prick',201),('daniel_cut',203),('daniel_prick',203)):
         rows.append({'name':'literary_lodging_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # A Little Longer (0.4.622): Rowan, the woman and the man, on stranger phases two hundred and ten and two hundred and eleven.
+    for phase,name in enumerate(('woman','man'),210):
+        rows.append({'name':'literary_longer_rowan_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     return rows

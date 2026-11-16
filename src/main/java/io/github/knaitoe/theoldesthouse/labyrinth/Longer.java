@@ -21,7 +21,8 @@ public final class Longer {
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     /** Not dealt in this slice. */
     public static boolean dealable(LabyrinthData d,UUID reader){return false;}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){}
+    /** 0.4.622: Rowan is decided for this reader and made in their chair (LongerRowan). */
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){LongerRowan.arrive(p,b,own);}
 
     /** A hand on something of the shop's or the flat's. True if it was theirs to answer. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
