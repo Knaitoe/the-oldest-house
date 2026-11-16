@@ -163,8 +163,11 @@ public final class KingForest {
                 own.putLong(SANG,now);own.putBoolean("KingSang",true);
                 l.playSound(null,p.getX(),p.getY(),p.getZ(),KingRegistry.KNIGHT_SONG.get(),SoundSource.PLAYERS,.7F,1.05F);
                 King.cue(p,KingTexts.SANG);
-                // Sung beside him, it settles him, once a dream.
-                if(KingBreath.beside(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&KingSleep.settleBySong(l,b))own.putBoolean(SANG_TO_HIM,true);
+                // Sung beside him, it settles him, once a dream. 0.4.648: sung by a reader in check who has taken the crown off, it is the
+                // last song: he settles all the way, and the country fills out to its edges behind them as they go.
+                boolean beside=KingBreath.beside(p.position().subtract(b.getX(),b.getY(),b.getZ()));
+                if(beside&&own.getBoolean(KingSleep.CHECKED)&&!KingCrownItem.crowned(p)&&KingSleep.lastSong(l,b)){own.putBoolean(KingSleep.LAST_SONG,true);own.putBoolean(SANG_TO_HIM,true);}
+                else if(beside&&KingSleep.settleBySong(l,b))own.putBoolean(SANG_TO_HIM,true);
             }
         }else{own.remove("KingStillFrom");own.remove("KingStillSang");}
     }

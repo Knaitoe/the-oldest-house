@@ -503,6 +503,118 @@ def pane():
 # upper eight (a block texture is square). Pale face, a darker edge, the corners cut round; the index at two corners; the pips set as on
 # a real card; the court cards a figure from the waist, crowned, drawn again upside down below the middle.
 CARD_W, CARD_H = 11, 24
+# ------------------------------------------------------------------------------------------------ the feast (0.4.648)
+def cloth(hem=True):
+    # The tablecloth: white damask, a small diamond woven into it that only shows as the light catches it, and a hemmed edge. The
+    # weave is kept within a few tones of the cloth, so that drawn (its ruled twin) the cloth is clean paper with one line for its hem.
+    im = new(base='#ece6d6', seed=6901, spread=1)
+    for y in range(16):
+        for x in range(16):
+            if (abs((x % 8) - 4) + abs((y % 8) - 4)) == 3:
+                dot(im, x, y, '#e5dfce')
+    if hem:
+        fill(im, 0, 14, 16, 15, '#c8c0aa')
+    return im
+
+
+def linen():
+    # The same cloth where it lies on the board: no hem across the middle of the table.
+    return cloth(hem=False)
+
+
+def roast():
+    # The leg of mutton: a browned crust scored across in two long cuts, the fat gone gold where it caught along the upper edge of
+    # each. The cuts run the whole way across, so that drawn they are two clean lines and not a scatter of marks.
+    im = new(base='#8a4e2a', seed=6902, spread=3)
+    for y in (5, 11):
+        fill(im, 0, y, 16, y + 1, '#643218'); fill(im, 0, y - 1, 16, y, '#a8683a')
+    for x, y in ((3, 2), (10, 8), (6, 14)):
+        fill(im, x, y, x + 3, y + 1, '#96582f')
+    return im
+
+
+def plate():
+    # A pewter dish: a dull grey with its rim a shade lighter and a ring where the well begins.
+    im = new(base='#a8a8a0', seed=6903, spread=2)
+    frame(im, 0, 0, 16, 16, '#c4c4bc'); frame(im, 2, 2, 14, 14, '#909088')
+    return im
+
+
+def pudding():
+    # The pudding's sides: dark and close, currants and peel in it.
+    im = new(base='#4a2a22', seed=6904, spread=4)
+    for x, y in ((2, 3), (7, 2), (12, 4), (4, 8), (10, 9), (14, 12), (1, 13), (7, 13)):
+        dot(im, x, y, '#2a1610'); dot(im, x + 1, y, '#6a3a26')
+    # The sauce run down from the top, further in some places than others.
+    for x in range(16):
+        fill(im, x, 0, x + 1, 1 + (x * 7 % 4), '#efe8d8')
+    return im
+
+
+def sauce():
+    # Its top: white sauce poured over, a little pooled.
+    im = new(base='#efe8d8', seed=6905, spread=2)
+    for x, y in ((4, 5), (10, 9), (7, 12)):
+        dot(im, x, y, '#ded4be')
+    return im
+
+
+def holly():
+    # A sprig of holly stuck in the top: two dark leaves and a few berries.
+    im = new(base='#2e5a2a', seed=6906, spread=3)
+    for x, y in ((6, 6), (9, 7), (7, 9)):
+        fill(im, x, y, x + 2, y + 2, '#b0221c')
+    return im
+
+
+def candle():
+    # A tallow candle: off-white, a drip run down one side.
+    im = new(base='#efe6cc', seed=6907, spread=2)
+    fill(im, 11, 0, 13, 7, '#e2d6b6'); dot(im, 12, 7, '#e2d6b6')
+    return im
+
+
+def flame():
+    # The flame: a small upright tongue, white at its root, yellow, its tip orange, on nothing.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        half = [0, 0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 3, 3, 2][y]
+        for x in range(8 - half, 8 + half):
+            dot(im, x, y, '#f8b040' if y < 5 else '#fce88a' if y < 12 else '#fffbe8')
+    return im
+
+
+def brass():
+    # The candlestick's brass: smooth, a bright line down it where the light catches and a darker one where it turns away.
+    im = new(base='#c09238', seed=6908, spread=2)
+    fill(im, 4, 0, 6, 16, '#e0b85a'); fill(im, 11, 0, 12, 16, '#9a7228')
+    return im
+
+
+FEAST = {'cloth': cloth, 'linen': linen, 'brass': brass, 'roast': roast, 'plate': plate, 'pudding': pudding, 'sauce': sauce, 'holly': holly, 'candle': candle,
+         'flame': flame}
+# What the drawn feast (stage 0) is drawn with: each of its materials' ruled twin, made from the filled picture by the same rule as the
+# country's blocks.
+FEAST_RULED = ['cloth', 'roast', 'plate', 'pudding', 'sauce', 'holly', 'candle', 'flame', 'mahogany', 'velvet', 'brass', 'ivory', 'linen']
+
+
+def crown_gold():
+    # 0.4.648: the crown. Gold, worked: a raised line along its band, a bright edge where it catches the light.
+    im = new(base='#d8a830', seed=6911, spread=3)
+    fill(im, 0, 0, 16, 1, '#f4d470'); fill(im, 0, 7, 16, 8, '#b08418')
+    for x in range(0, 16, 3):
+        dot(im, x, 4, '#f0c850')
+    return im
+
+
+def crown_jewel():
+    # Its stones: a deep red, a pale point of light in each.
+    im = new(base='#9a1418', seed=6912, spread=4)
+    for x, y in ((3, 3), (11, 5), (6, 11), (13, 13)):
+        dot(im, x, y, '#f2a0a0')
+    return im
+
+
 CARD_FACES = ['two', 'three', 'four', 'five', 'six', 'eight', 'knave', 'queen', 'king']
 CARD_PAPER, CARD_EDGE = '#efe8d8', '#8a8070'
 HEART, SPADE, GOLD = '#b8323a', '#2a2a30', '#d8b04a'
@@ -599,10 +711,14 @@ def textures():
     t = {'marble': marble(), 'gilt': gilt(), 'glass': glass(), 'grate': grate(), 'fire': fire(), 'rug': rug(), 'ivory': ivory(),
          'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned(),
          'peg': peg(), 'tabletop': tabletop(), 'bottle': bottle(), 'cake': cake(), 'leather': leather(), 'wheel': wheel(),
-         'stalk': stalk(), 'cap': cap(), 'gills': gills(), **cards()}
+         'stalk': stalk(), 'cap': cap(), 'gills': gills(), **cards(), **{k: f() for k, f in FEAST.items()}}
+    for i, k in enumerate(FEAST_RULED):
+        t[k + '_ruled'] = ruled(t[k], 6950 + i)
     out.update({f'block/king/{k}.png': v for k, v in t.items()})
     # 0.4.644: the bottle and the cake in the hand.
     out.update({'item/king/bottle.png': bottle_item(), 'item/king/cake.png': cake_item()})
+    # 0.4.648: the crown's gold and its stones.
+    out.update({'item/king/crown_gold.png': crown_gold(), 'item/king/crown_jewel.png': crown_jewel()})
     return out
 
 
@@ -762,12 +878,83 @@ def fitting_models():
                       element([7.5, 0, 7], [8.5, 16, 9], {'all': 's'}),
                       element([2, 2 if stage == 0 else 0, 7.5], [14, 16 if stage == 0 else 14, 8.5], {'north': 'p', 'south': 'p'})]
         m[f'window_{stage}'] = model(els, {'s': 'sash', 'p': 'pane'}, 'sash')
+    # 0.4.648: the feast, drawn (0: every material its ruled twin) and filled (1). Each piece of the table is its clothed board with the
+    # cloth's drape hanging on the side it faces and one leg under it there; a dish piece has its dish on the board.
+    for stage in range(2):
+        r = '_ruled' if stage == 0 else ''
+        tx = {k: k + r for k in FEAST_RULED}
+        # The board is under the cloth without its hem; the drape's faces are cut from the cloth's lower rows, so its hem runs along
+        # the drape's bottom edge.
+        table = [element([0, 12, 0], [16, 14, 16], {'all': 'linen'}),
+                 element([0, 6, 0], [16, 12, 1], {'all': 'cloth'},
+                         uv={'north': [0, 9, 16, 15], 'south': [0, 9, 16, 15], 'east': [0, 9, 1, 15], 'west': [0, 9, 1, 15],
+                             'up': [0, 0, 16, 1], 'down': [0, 0, 16, 1]}),
+                 element([7, 0, 1.5], [9, 12, 3.5], {'all': 'mahogany'})]
+        laid = ('cloth', 'linen', 'mahogany')
+        m[f'feast_table_{stage}'] = model(table, {k: tx[k] for k in laid}, tx['linen'])
+        # The mutton on its dish, the knuckle of bone out of one end.
+        m[f'mutton_{stage}'] = model(table + [
+            element([2.5, 14, 3.5], [14.5, 14.5, 12.5], {'all': 'plate'}),
+            # The fat end, rounded over its top; the shank narrowing from it; the knuckle of bone out of the shank's end.
+            element([4, 14.5, 5], [9.5, 17.75, 11], {'all': 'roast'}), element([4.75, 17.75, 5.75], [8.75, 18.5, 10.25], {'all': 'roast'}),
+            element([9.5, 14.5, 6.25], [12, 16.5, 9.75], {'all': 'roast'}), element([12, 15, 7.25], [14, 16, 8.75], {'all': 'ivory'})],
+            {k: tx[k] for k in laid + ('plate', 'roast', 'ivory')}, tx['roast'])
+        # The pudding on its dish: a round of it, the sauce poured over its top, a sprig of holly stuck in.
+        m[f'pudding_{stage}'] = model(table + [
+            element([4, 14, 4], [12, 14.5, 12], {'all': 'plate'}),
+            element([5, 14.5, 5], [11, 18, 11], {'north': 'pudding', 'south': 'pudding', 'east': 'pudding', 'west': 'pudding', 'up': 'sauce', 'down': 'pudding'}),
+            element([6, 18, 6], [10, 19.25, 10], {'north': 'sauce', 'south': 'sauce', 'east': 'sauce', 'west': 'sauce', 'up': 'sauce', 'down': 'pudding'}),
+            element([7.5, 19.25, 7.5], [8.5, 20.25, 8.5], {'all': 'holly'}),
+            element([6.25, 19.25, 7.75], [9.75, 19.6, 8.25], {'all': 'holly'})],
+            {k: tx[k] for k in laid + ('plate', 'pudding', 'sauce', 'holly')}, tx['pudding'])
+        # A pair of candles on one brass stand: its foot, its stem, the arm across and a cup at each end, a candle in each, lit.
+        candles = table + [
+            element([5, 14, 6], [11, 15, 10], {'all': 'brass'}), element([7.5, 15, 7.5], [8.5, 21, 8.5], {'all': 'brass'}),
+            element([3.5, 21, 7.5], [12.5, 22, 8.5], {'all': 'brass'})]
+        for x in (3.5, 10.5):
+            candles += [element([x, 22, 7], [x + 2, 23, 9], {'all': 'brass'}), element([x + .25, 23, 7.25], [x + 1.75, 28, 8.75], {'all': 'candle'}),
+                        element([x + 1, 28, 7.5], [x + 1, 30.5, 8.5], {'east': 'flame', 'west': 'flame'}, uv={'east': [6, 0, 10, 16], 'west': [6, 0, 10, 16]}),
+                        element([x + .5, 28, 8], [x + 1.5, 30.5, 8], {'north': 'flame', 'south': 'flame'}, uv={'north': [6, 0, 10, 16], 'south': [6, 0, 10, 16]})]
+        m[f'candles_{stage}'] = model(candles, {k: tx[k] for k in laid + ('brass', 'candle', 'flame')}, tx['candle'])
+        # A high-backed chair: four legs, a framed seat with its cushion, two posts and a velvet panel between, a rail across the
+        # top and a brass knob on each post. Its back comes to a sitter's ears, so that from behind there is a head over every chair.
+        chair = [element([x, 0, z], [x + 1.5, 7, z + 1.5], {'all': 'mahogany'}) for x in (2, 12.5) for z in (2, 12.5)]
+        chair += [element([2, 7, 2], [14, 8, 14], {'all': 'mahogany'}), element([2.5, 8, 2.5], [13.5, 9, 13], {'all': 'velvet'}),
+                  element([2, 9, 13], [3.5, 23, 15], {'all': 'mahogany'}), element([12.5, 9, 13], [14, 23, 15], {'all': 'mahogany'}),
+                  element([3.5, 11, 13.5], [12.5, 21, 14.5], {'all': 'velvet'}), element([2, 21, 12.75], [14, 23, 15.25], {'all': 'mahogany'}),
+                  element([2.25, 23, 13.5], [3.25, 24, 14.5], {'all': 'brass'}), element([12.75, 23, 13.5], [13.75, 24, 14.5], {'all': 'brass'})]
+        m[f'feast_chair_{stage}'] = model(chair, {k: tx[k] for k in ('mahogany', 'velvet', 'brass')}, tx['velvet'])
     return m
 
 
+def crown_model():
+    """0.4.648: the crown, worn. Drawn round the wearer's head as the game draws whatever is worn there: the model's sixteen units make
+    ten pixels, centred on the head, so the head fills 1.6 to 14.4 and its top is at 14.4. A band round the top of the head, eight points
+    standing up from it (one at each corner, a taller one in the middle of each side), a stone set in the band at the front and at each
+    side."""
+    g, j = 'gold', 'jewel'
+    els = [element([1.1, 13, 1.1], [14.9, 16, 1.7], {'all': g}), element([1.1, 13, 14.3], [14.9, 16, 14.9], {'all': g}),
+           element([1.1, 13, 1.7], [1.7, 16, 14.3], {'all': g}), element([14.3, 13, 1.7], [14.9, 16, 14.3], {'all': g})]
+    # The points: one at each corner and one in the middle of each side, the middle ones taller.
+    for x, z, tall in ((1.1, 1.1, 2.2), (13.7, 1.1, 2.2), (1.1, 13.7, 2.2), (13.7, 13.7, 2.2)):
+        els.append(element([x, 16, z], [x + 1.2, 16 + tall, z + 1.2], {'all': g}))
+    for lo, hi in (([7.2, 16, 1.1], [8.8, 19.5, 1.7]), ([7.2, 16, 14.3], [8.8, 19.5, 14.9]), ([1.1, 16, 7.2], [1.7, 19.5, 8.8]), ([14.3, 16, 7.2], [14.9, 19.5, 8.8])):
+        els.append(element(lo, hi, {'all': g}))
+    for lo, hi in (([7.3, 13.8, 0.8], [8.7, 15.2, 1.1]), ([0.8, 13.8, 7.3], [1.1, 15.2, 8.7]), ([14.9, 13.8, 7.3], [15.2, 15.2, 8.7])):
+        els.append(element(lo, hi, {'all': j}))
+    return {'parent': 'minecraft:block/block', 'textures': {'gold': NS + 'item/king/crown_gold', 'jewel': NS + 'item/king/crown_jewel',
+            'particle': NS + 'item/king/crown_gold'}, 'elements': els,
+            'display': {'gui': {'rotation': [30, 225, 0], 'translation': [0, -2.5, 0], 'scale': [0.85, 0.85, 0.85]},
+                        'ground': {'rotation': [0, 0, 0], 'translation': [0, -1, 0], 'scale': [0.4, 0.4, 0.4]},
+                        'fixed': {'rotation': [0, 0, 0], 'translation': [0, -3, 0], 'scale': [0.7, 0.7, 0.7]},
+                        'thirdperson_righthand': {'rotation': [75, 45, 0], 'translation': [0, -1, 0], 'scale': [0.4, 0.4, 0.4]},
+                        'firstperson_righthand': {'rotation': [0, 45, 0], 'translation': [0, -2, 0], 'scale': [0.45, 0.45, 0.45]},
+                        'firstperson_lefthand': {'rotation': [0, 225, 0], 'translation': [0, -2, 0], 'scale': [0.45, 0.45, 0.45]}}}
+
+
 KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle', 'peg', 'glass_table', 'seat', 'wheel',
-         'stalk', 'cap']
-STAGES = {'mantel': 3, 'glass': 6, 'window': 2, 'problem': 2}
+         'stalk', 'cap', 'feast_table', 'mutton', 'pudding', 'candles', 'feast_chair']
+STAGES = {'mantel': 3, 'glass': 6, 'window': 2, 'problem': 2, 'feast_table': 2, 'mutton': 2, 'pudding': 2, 'candles': 2, 'feast_chair': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 6
 NAMES = {'king_fitting': 'Drawing-Room Things', 'king_turf_light': 'Light Square', 'king_turf_dark': 'Dark Square', 'king_soil': 'Soil',
@@ -775,7 +962,7 @@ NAMES = {'king_fitting': 'Drawing-Room Things', 'king_turf_light': 'Light Square
          'king_bough': 'Bough', 'king_wallpaper': 'Trellis Paper', 'king_panel': 'Dado Panel', 'king_floorboards': 'Drawing-Room Floor',
          'king_ceiling': 'Drawing-Room Ceiling', 'king_chimney': 'Chimney Stone', 'king_hearth': 'Hearth',
          'king_verge': "Brook's Edge", 'king_drawn_bridge': 'Drawn Bridge', 'king_card': 'One of the Pack'}
-ITEM_NAMES = {'king_bottle': 'A Little Bottle', 'king_cake': 'A Very Small Cake'}
+ITEM_NAMES = {'king_bottle': 'A Little Bottle', 'king_cake': 'A Very Small Cake', 'king_crown': 'A Crown'}
 for k in list(COUNTRY):
     NAMES[f'king_{k}_ruled'] = NAMES[f'king_{k}'] + ', Ruled'
 
@@ -810,6 +997,8 @@ def files():
     # 0.4.644: the bottle and the cake, held.
     for item in ('bottle', 'cake'):
         out[f'models/item/king_{item}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/king/{item}'}}
+    # 0.4.648: the crown, a thing in the round, worn on the head.
+    out['models/item/king_crown.json'] = crown_model()
     # 0.4.642: the brook's verge is never drawn (KingVergeBlock); its model only names what breaking it would scatter.
     out['models/block/king_verge.json'] = {'textures': {'particle': NS + 'block/king_brook'}}
     out['blockstates/king_verge.json'] = {'variants': {'': {'model': NS + 'block/king_verge'}}}

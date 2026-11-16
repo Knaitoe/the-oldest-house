@@ -165,6 +165,69 @@ public final class KingTexts {
         SETTLED="He settled in his sleep, and breathed easier.",
         SETTLED_OUT="He settled in his sleep, and the filled land went out again from him.";
 
+    // ------------------------------------------------------------------------------------------------ 0.4.648, part 8
+    // Every line below is new in 0.4.648 and flagged to the owner in docs/SLEEPING_KING_0_4_648.md.
+    public static final String FEAST_FIRST="A long table on the eighth square, laid for a feast, and only drawn. Somebody is drawn at every place but one.",
+        GUEST_DRAWN="Only a drawing of somebody in a chair. Looked at a while, they fill in.",
+        FEAST_DRAWN="Only drawn: an outline on paper. Looked at a while, it fills in.",
+        NOT_CUT="It has been introduced, and is somebody now. It is not to be cut.",
+        NOT_SAT_ON="It has been introduced, and is somebody now. It is not to be sat on.",
+        TABLE_SOMEBODY="The table has been introduced, and is somebody now. Nothing is to be put on it or taken off it.",
+        CROWN_CAME="Something came down out of the air and settled on the head: a crown, real, and heavy.",
+        CHECK="Crowned, beside him: too much of a thing on every breath, and his in-breaths will stir him. Check.",
+        PAWN_NO_MOVE="A pawn has no move here.",
+        UNCROWNED="The crown is off. Only a thing again, and free to walk on the out-breath.",
+        LAST_SONG_HEARD="He settled all the way, and the filled land went out from him to the edges of the country.";
+    /** What each guest says as they are introduced and fill in. */
+    public static String introduced(int phase){
+        return switch(phase){
+            case KingFeast.QUEEN->"There you are. Here you're what you're counted as. Stand at the head of the table.";
+            case KingFeast.GUARD->"No tickets at a table. Everybody here is somebody now.";
+            case KingFeast.KNIGHT->"I came round the long way. Somebody looked, so here I am.";
+            case KingFeast.HERALD->"Introduced! Everything at this table has been introduced to everything else.";
+            case KingFeast.HEARTS_KING->"We're all somebodies at this table. You looked at us, and that does it.";
+            default->"Nothing that's been introduced is cut. Remember that.";
+        };
+    }
+    /**
+     * 0.4.648 (owner: "you can gender the reader based on the presentation flag from the personhood vignettes"): what the Queen says
+     * at the crowning. A reader the House has read as a woman is a queen and one read as a man a king; one read as both is either;
+     * anybody unread, uncertain or unseen is only crowned (HouseRead.address). Whichever they are, they move as a queen does.
+     */
+    public static String queenCrowned(net.minecraft.server.level.ServerPlayer reader){
+        return HouseRead.address(reader,
+            "There. Now you're crowned, and the crowned go as far as the board goes, any way at all. Look at your feet.",
+            "There. Now you're a king, and a king new-made goes as a queen goes: as far as the board goes, any way at all. Look at your feet.",
+            "There. Now you're a queen, and a queen goes as far as the board goes, any way at all. Look at your feet.",
+            "There. Now you're crowned, king or queen as you please, and you go as far as the board goes, any way at all. Look at your feet.");
+    }
+    /** The eight lines, told once to a crowned reader off the peg, in the same word the Queen used for them. */
+    public static String linesHint(net.minecraft.server.level.ServerPlayer reader){
+        return "Eight ruled lines run out from the feet across the country. Along them no hedge or brook stops "
+            +HouseRead.address(reader,"anybody crowned","a king crowned here","a queen","anybody crowned")+". One of them ends by his tree.";
+    }
+    /** What each guest says to a hand on them once they are filled in. */
+    public static String atTable(int phase){
+        return switch(phase){
+            case KingFeast.QUEEN->"At the head of the table. Stand there, and be counted.";
+            case KingFeast.GUARD->"I'd look at you through my glasses, but you've been looked at enough.";
+            case KingFeast.KNIGHT->"Keep an eye on me. I sit up better watched.";
+            case KingFeast.HERALD->"Every name at this table has been read out. Yours was read first.";
+            case KingFeast.HEARTS_KING->"Sit down? There's nowhere to sit that hasn't been introduced.";
+            default->"Cut nothing, and nobody. It's very rude.";
+        };
+    }
+    /** The feast's things, as each is introduced and fills in. */
+    public static String introducedThing(int what){
+        return switch(what){
+            case KingFeast.TABLE->"The cloth fills in, and the long table under it, laid for company.";
+            case KingFeast.MUTTON->"A leg of mutton fills in on its dish, and bows a little.";
+            case KingFeast.PUDDING->"A pudding fills in on its plate. It has been introduced now, and nobody will cut it.";
+            case KingFeast.CANDLES->"The candles fill in, and are lit. The light from them is real.";
+            default->"The chair at the foot of the table fills in. Nobody is in it.";
+        };
+    }
+
     static String words(int n){return switch(n){case 2->"two";case 3->"three";case 4->"four";case 5->"five";case 6->"six";case 7->"seven";default->String.valueOf(n);};}
     /** When he turns over and the filled land draws in to the next depth of his sleep. */
     public static String drewIn(int level){return level>=2?"He turned over again, and the filled land drew in to his own square.":"He turned over in his sleep, and the filled land drew in toward him.";}
@@ -225,10 +288,23 @@ public final class KingTexts {
                 default->{}
             }
         }
+        // 0.4.648: the feast, the crown, check and the last song.
+        if(own.getBoolean(KingFeast.SAT_DOWN)){
+            int n=own.getInt(KingFeast.INTRODUCED);
+            out.add(n==0?"On the eighth square a feast was laid, all of it drawn. I did not look at any of it long enough to fill it in."
+                :"On the eighth square a feast was laid, all of it drawn, and whatever I looked at was introduced, and filled in, and was somebody after that."
+                    +(n>=8?" By the end the table was full of somebodies.":""));
+        }
+        if(own.getBoolean(KingFeast.CROWNED))out.add("At the head of the table I was counted, and a crown came down on me. After that no hedge or brook stopped me.");
+        if(own.getBoolean(KingSleep.CHECKED))out.add("Beside him, crowned, I was too much of a thing, and every in-breath stirred him.");
+        if(own.getBoolean(KingSleep.LAST_SONG))out.add("I took the crown off and sang him the Knight's song, and the country filled in behind me to its edges.");
         out.add(switch(own.getString("KingEnding")){
             case "said_his_whole_name"->"I said the whole of his name. He opened his eyes. One of us went out.";
-            case "there_when_he_woke"->"Somebody else said the whole of his name. He opened his eyes, and the country went over to lines with me in it.";
-            case "left_him_his_sleep"->"I left him his sleep. I walked until I was a line. He is still breathing behind me, or I am."
+            case "stood_until_he_woke"->"I stood there crowned until his breathing woke him. He opened his eyes. One of us went out.";
+            case "there_when_he_woke"->own.getBoolean("KingWokeStanding")?"Somebody stood beside him crowned until his breathing woke him. He opened his eyes, and the country went over to lines with me in it."
+                :"Somebody else said the whole of his name. He opened his eyes, and the country went over to lines with me in it.";
+            case "left_him_his_sleep"->(own.getBoolean(KingSleep.CHECKED)&&!own.getBoolean(KingSleep.LAST_SONG)?"I took the crown off and left him his sleep.":"I left him his sleep.")
+                +" I walked until I was a line. He is still breathing behind me, or I am."
                 +(own.getBoolean("KingWokeAfter")?" He woke after I had gone. I was not there to see it.":"");
             default->"I do not know how it ended. I was not there for that.";
         });

@@ -26,6 +26,9 @@ ROWS = {
     # 0.4.647: the Knight coming off his horse in his armour; and his song, eight bars, sung by him or by a reader who has heard it.
     'knight_fall': ('Armour clatters to the ground', 32),
     'knight_song': ('Someone sings the Knight\'s song', 32),
+    # 0.4.648: a thing at the feast introduced and filled in; and the crown coming down on a reader.
+    'introduced': ('Something at the table fills in', 24),
+    'crowned': ('A crown comes down', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -189,6 +192,40 @@ def knight_fall():
     return out + grit
 
 
+def introduced():
+    # 0.4.648: a pencil shading something in, quick strokes over a second, and as the last one lifts a small clear note, like a glass
+    # touched with a nail: the thing is there.
+    n = seconds(1.6)
+    t = times(n)
+    out = np.zeros(n)
+    lead = band(rng.standard_normal(n), 1500, 6000)
+    for k in range(14):
+        at = .04 + k * .065 + rng.random() * .02
+        out += lead * np.exp(-((t - at) / .018) ** 2) * (.25 + .3 * np.sin(np.pi * k / 14))
+    ring = np.zeros(n)
+    for ratio, part in ((1, 1), (2.76, .3), (5.4, .12)):
+        ring += part * np.sin(2 * np.pi * 1568 * ratio * np.clip(t - .98, 0, None))
+    out += ring * np.exp(-np.clip(t - .98, 0, None) / .35) * (t >= .98) * .45
+    return out
+
+
+def crowned():
+    # 0.4.648: a crown coming down out of the air: a short rush falling in pitch, then a band of gold settling, one low ring with two
+    # small clinks of its points after, and a soft weight.
+    n = seconds(2.0)
+    t = times(n)
+    rush = band(rng.standard_normal(n), 400, 3200) * np.exp(-((t - .28) / .16) ** 2) * .4
+    out = rush
+    land = .5
+    for at, f0, gain, decay in ((land, 660, .9, .55), (land + .07, 1990, .3, .12), (land + .16, 2350, .22, .1)):
+        bell = np.zeros(n)
+        for ratio, part in ((1, 1), (2.0, .35), (2.92, .2), (4.16, .1)):
+            bell += part * np.sin(2 * np.pi * f0 * ratio * np.clip(t - at, 0, None))
+        out = out + bell * np.exp(-np.clip(t - at, 0, None) / decay) * (t >= at) * gain
+    weight = band(rng.standard_normal(n), 60, 300) * np.exp(-np.clip(t - land, 0, None) / .05) * (t >= land) * .6
+    return out + weight
+
+
 # The Knight's song: eight bars in a lilting six-eight, one note to a syllable or held, a falling tune that lifts once and comes home.
 # (MIDI note, eighths.) Original.
 SONG = [
@@ -234,7 +271,7 @@ def knight_song():
 
 
 MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle, 'cards': cards,
-          'knight_fall': knight_fall, 'knight_song': knight_song}
+          'knight_fall': knight_fall, 'knight_song': knight_song, 'introduced': introduced, 'crowned': crowned}
 
 
 def main():

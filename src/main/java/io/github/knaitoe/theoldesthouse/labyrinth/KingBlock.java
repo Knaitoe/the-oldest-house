@@ -18,12 +18,15 @@ import net.minecraft.world.phys.shapes.*;
  * high (0-2 the lower row, 3-5 the upper); the tall window's lower (0) and upper (1) halves. 0.4.643: the brothers' rattle (RATTLE)
  * lies on the King's square. 0.4.644: the Queen's pegs (PEG), one on every square past its crossing; the glass table on the hill with
  * the bottle and the cake on it (GLASS_TABLE); the railway carriage's seats (SEAT, sat in) and its wheels (WHEEL); the mushroom's stalk (STALK)
- * and cap (CAP, 0.4.645).
+ * and cap (CAP, 0.4.645). 0.4.648: the feast on the eighth square, every piece of it drawn (stage 0) until it has been looked at and
+ * introduced, then filled (stage 1): the long table under its cloth (FEAST_TABLE, its drape to the side it faces), the same with a leg of
+ * mutton (MUTTON), a pudding (PUDDING) or a pair of candles (CANDLES) on it, and the high-backed chairs round it (FEAST_CHAIR, facing the
+ * table). Nothing at the feast can be climbed on or sat in.
  */
 public final class KingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<KingBlock> CODEC=simpleCodec(KingBlock::new);
     public enum Kind implements StringRepresentable {
-        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL,STALK,CAP;
+        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL,STALK,CAP,FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -39,8 +42,13 @@ public final class KingBlock extends HorizontalDirectionalBlock {
     public static final double SEAT_HEIGHT=7/16.;
     /** 0.4.645: the top of the mushroom's cap, where the Caterpillar sits (KingCaterpillar). */
     public static final double CAP_TOP=15/16.;
-    /** The fire in the grate gives the room its light. */
-    public static int light(BlockState s){return s.getValue(KIND)==Kind.MANTEL&&s.getValue(STAGE)==1?13:0;}
+    /** The fire in the grate gives the room its light; 0.4.648: the feast's candles once they are filled in, and not before. */
+    public static int light(BlockState s){return s.getValue(KIND)==Kind.MANTEL&&s.getValue(STAGE)==1?13:s.getValue(KIND)==Kind.CANDLES&&s.getValue(STAGE)==1?11:0;}
+    /** 0.4.648: whether a block is a piece of the feast, and whether it has been filled in. */
+    public static boolean feast(BlockState s){var k=kind(s);return k==Kind.FEAST_TABLE||k==Kind.MUTTON||k==Kind.PUDDING||k==Kind.CANDLES||k==Kind.FEAST_CHAIR;}
+    public static boolean filled(BlockState s){return feast(s)&&s.getValue(STAGE)==1;}
+    /** The table's board, a hand above a reader's knee. */
+    private static final VoxelShape BOARD=Block.box(0,12,0,16,14,16);
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}
@@ -63,12 +71,23 @@ public final class KingBlock extends HorizontalDirectionalBlock {
             // 0.4.645: the mushroom's stalk, and its cap on the block above, broad and flat on top.
             case STALK->Block.box(5,0,5,11,16,11);
             case CAP->Shapes.or(Block.box(5,0,5,11,10,11),Block.box(0,10,0,16,15,16));
+            // 0.4.648: the feast. A table piece is its board with its drape and one leg on the side it faces; a dish stands on it.
+            case FEAST_TABLE->Shapes.or(BOARD,box(f,0,6,0,16,12,1),box(f,7,0,1.5,9,12,3.5));
+            case MUTTON->Shapes.or(BOARD,box(f,0,6,0,16,12,1),box(f,2.5,14,3.5,14.5,18.5,12.5));
+            case PUDDING->Shapes.or(BOARD,box(f,0,6,0,16,12,1),box(f,5,14,5,11,20,11));
+            case CANDLES->Shapes.or(BOARD,box(f,0,6,0,16,12,1),box(f,3.5,14,6,12.5,30,10));
+            case FEAST_CHAIR->Shapes.or(Block.box(2,0,2,14,9,14),box(f,2,9,13,14,23,15));
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
-        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE,PEG->Shapes.empty();default->getShape(s,l,p,c);};
+        return switch(s.getValue(KIND)){case RUG,CHESSMEN,PROBLEM,RATTLE,PEG->Shapes.empty();
+            // 0.4.648: nothing at the feast can be stood on or sat in; a body walks round it.
+            case FEAST_TABLE,MUTTON,PUDDING,CANDLES,FEAST_CHAIR->Block.box(0,0,0,16,24,16);
+            default->getShape(s,l,p,c);};
     }
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
+    /** 0.4.648: a look goes over the feast's table at what it holds, not into the wall that keeps bodies off it. */
+    @Override protected VoxelShape getVisualShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return feast(s)?getShape(s,l,p,c):super.getVisualShape(s,l,p,c);}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
 }

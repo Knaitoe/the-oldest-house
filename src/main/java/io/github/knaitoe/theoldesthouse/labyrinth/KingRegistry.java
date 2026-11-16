@@ -20,6 +20,8 @@ public final class KingRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     /** 0.4.644: the bottle and the cake from the glass table on the hill. */
     public static final net.neoforged.neoforge.registries.DeferredItem<KingDraughtItem> BOTTLE=ITEMS.register("king_bottle",()->new KingDraughtItem(false)),CAKE=ITEMS.register("king_cake",()->new KingDraughtItem(true));
+    /** 0.4.648: the crown that comes down on the eighth square (KingCrownItem). */
+    public static final net.neoforged.neoforge.registries.DeferredItem<KingCrownItem> CROWN=ITEMS.register("king_crown",KingCrownItem::new);
     private static final DeferredRegister<net.minecraft.sounds.SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** His breath, in and out (tools/generate_king_audio.py), and a sort of thing's soft feet. */
@@ -31,7 +33,9 @@ public final class KingRegistry {
         // 0.4.646: the court's pack going up and coming down as cards.
         CARDS=sound("king.cards"),
         // 0.4.647: the Knight falling off his horse, and his song.
-        KNIGHT_FALL=sound("king.knight_fall"),KNIGHT_SONG=sound("king.knight_song");
+        KNIGHT_FALL=sound("king.knight_fall"),KNIGHT_SONG=sound("king.knight_song"),
+        // 0.4.648: a guest at the feast filling in as it is introduced, and the crown coming down.
+        INTRODUCED=sound("king.introduced"),CROWNED=sound("king.crowned");
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     /** The country's materials; every one has its ruled twin, named with "_ruled". */
     public static final List<String> COUNTRY=List.of("turf_light","turf_dark","soil","hedge","brook","bridge","path","bark","bough");

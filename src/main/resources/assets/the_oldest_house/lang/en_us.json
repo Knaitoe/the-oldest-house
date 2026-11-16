@@ -2021,5 +2021,8 @@
   "subtitles.the_oldest_house.king.cards": "A pack of cards flies up and falls",
   "block.the_oldest_house.king_card": "One of the Pack",
   "subtitles.the_oldest_house.king.knight_fall": "Armour clatters to the ground",
-  "subtitles.the_oldest_house.king.knight_song": "Someone sings the Knight's song"
+  "subtitles.the_oldest_house.king.knight_song": "Someone sings the Knight's song",
+  "item.the_oldest_house.king_crown": "A Crown",
+  "subtitles.the_oldest_house.king.introduced": "Something at the table fills in",
+  "subtitles.the_oldest_house.king.crowned": "A crown comes down"
 }
