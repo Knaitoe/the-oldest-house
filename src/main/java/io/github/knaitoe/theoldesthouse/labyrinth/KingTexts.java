@@ -27,6 +27,8 @@ public final class KingTexts {
         WINDOW_DRAWING="Rain has been on this glass. Beyond it the garden is the ordinary sort.",
         KING="An old man asleep under the tree, in a heap, in a long robe and a tall night-cap with a tassel. He is snoring.",
         RULED="Here the ground is only drawn: an outline on paper, and a little hatching where the shadow would be.";
+    /** 0.4.642: a line who goes off the country is nowhere, and is put back on the last square that counted them. */
+    public static final String NOWHERE="The ground comes back underfoot, on a square stood on before.";
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: the chess problem on the little table, printed the wrong way round. Behind the glass it reads. */
     public static ItemStack source(){

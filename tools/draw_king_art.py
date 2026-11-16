@@ -485,7 +485,8 @@ MAX_STAGE = 6
 NAMES = {'king_fitting': 'Drawing-Room Things', 'king_turf_light': 'Light Square', 'king_turf_dark': 'Dark Square', 'king_soil': 'Soil',
          'king_hedge': 'Box Hedge', 'king_brook': 'Brook', 'king_bridge': 'Footbridge', 'king_path': 'Gravel Road', 'king_bark': 'Old Bark',
          'king_bough': 'Bough', 'king_wallpaper': 'Trellis Paper', 'king_panel': 'Dado Panel', 'king_floorboards': 'Drawing-Room Floor',
-         'king_ceiling': 'Drawing-Room Ceiling', 'king_chimney': 'Chimney Stone', 'king_hearth': 'Hearth'}
+         'king_ceiling': 'Drawing-Room Ceiling', 'king_chimney': 'Chimney Stone', 'king_hearth': 'Hearth',
+         'king_verge': "Brook's Edge"}
 for k in list(COUNTRY):
     NAMES[f'king_{k}_ruled'] = NAMES[f'king_{k}'] + ', Ruled'
 
@@ -517,6 +518,9 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/king_fitting.json'] = {'variants': variants}
+    # 0.4.642: the brook's verge is never drawn (KingVergeBlock); its model only names what breaking it would scatter.
+    out['models/block/king_verge.json'] = {'textures': {'particle': NS + 'block/king_brook'}}
+    out['blockstates/king_verge.json'] = {'variants': {'': {'model': NS + 'block/king_verge'}}}
     return out
 
 

@@ -135,4 +135,79 @@ public final class KingTests {
             done();h.succeed();
         });
     }
+
+    /**
+     * 0.4.642, his breath and how much of a thing a reader is. Filled land makes a thing, held by the hedges and stopped at the brooks'
+     * verge; ruled land makes a line, which goes through both; another reader who is a thing looking at a line makes it a sort of
+     * thing; beside him on his in-breath a reader is too much of a thing and rooted, and free again on the out-breath; off the country
+     * altogether a reader is nowhere and is put back. The in-breath moves the fill's edge a block out, and every block whose drawing
+     * changes goes over to its twin and back.
+     */
+    @GameTest(template="empty",batch="king_breath",timeoutTicks=1600)
+    public static void hisBreathAndHowMuchOfAThingAReaderIs(GameTestHelper h){
+        var f=place(h);var p=f.player("king_breather",P);var q=f.player("king_watcher",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            var own=new net.minecraft.nbt.CompoundTag();var theirs=new net.minecraft.nbt.CompoundTag();
+            // Out-breath: the land shows its resting drawing.
+            KingBreath.set(l,b,KingBreath.IN+10);
+            h.assertTrue(KingBreath.shown(b)==0,"on the out-breath the land shows its resting drawing");
+            // A thing on filled land: the hedge is a wall, the brook's verge a wall.
+            int filledZ=KingSite.rankNear(4)-4;
+            p.teleportTo(l,b.getX()-15.5,b.getY(),b.getZ()+filledZ+.5,0,0);q.teleportTo(l,b.getX()+60.5,b.getY(),b.getZ()-4.5,0,0);
+            KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.THING,"filled land makes a thing, got "+own.getInt("KingState"));
+            var hedge=b.offset(-9,0,filledZ);var hs=l.getBlockState(hedge);
+            h.assertTrue(hs.getBlock() instanceof KingHedgeBlock,"the file's hedge is a hedge that knows who meets it");
+            h.assertFalse(hs.getCollisionShape(l,hedge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"a hedge is a wall to a thing");
+            var verge=b.offset(-16,0,KingSite.rankFar(4)-1);
+            h.assertTrue(l.getBlockState(verge).is(KingRegistry.VERGE.get()),"the brook beyond the rank has its verge");
+            h.assertFalse(l.getBlockState(b.offset(0,0,KingSite.rankFar(4)-1)).is(KingRegistry.VERGE.get()),"but not over the bridge");
+            h.assertTrue(l.getBlockState(verge).getCollisionShape(l,verge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).max(net.minecraft.core.Direction.Axis.Y)>1.25,"a thing cannot jump the verge");
+            // A line on ruled land: the hedge and the verge are nothing to it.
+            int ruledZ=KingSite.rankNear(1)-4;
+            p.teleportTo(l,b.getX()-15.5,b.getY(),b.getZ()+ruledZ+.5,0,0);
+            KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.LINE,"ruled land makes a line, got "+own.getInt("KingState"));
+            var ruledHedge=b.offset(-9,0,ruledZ);
+            h.assertTrue(l.getBlockState(ruledHedge).getCollisionShape(l,ruledHedge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"a line goes through a hedge");
+            h.assertTrue(l.getBlockState(verge).getCollisionShape(l,verge,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"and through the verge");
+            // Looked at by a reader who is a thing, the line is a sort of thing.
+            q.teleportTo(l,b.getX()-15.5,b.getY(),b.getZ()+KingSite.rankNear(3)-4.5,180,0);
+            KingBreath.reader(q,b,theirs);
+            h.assertTrue(theirs.getInt("KingState")>=KingBreath.SORT,"the watcher stands on filled land");
+            q.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,p.getBoundingBox().getCenter());
+            KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.SORT,"being looked at makes the line a sort of thing, got "+own.getInt("KingState"));
+            // Beside him: too much of a thing on the in-breath, rooted; a thing again on the out-breath.
+            q.teleportTo(l,b.getX()+60.5,b.getY(),b.getZ()-4.5,0,0);
+            var king=b.offset(KingSite.KING);
+            p.teleportTo(l,king.getX()-2.5,b.getY(),king.getZ()+.5,0,0);
+            KingBreath.set(l,b,10);
+            KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.TOO_MUCH,"beside him on his in-breath a reader is too much of a thing, got "+own.getInt("KingState"));
+            var speed=p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+            h.assertTrue(speed.getValue()<1e-6,"and rooted where they stand");
+            KingBreath.set(l,b,KingBreath.IN+10);
+            KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")==KingBreath.THING&&speed.getValue()>.01,"and free on the out-breath");
+            // The in-breath moves the fill's edge: every breathing column shows its in-breath drawing, and back.
+            var cells=KingSite.breathing();h.assertTrue(cells.length>40,"the fill's edge has columns to move, "+cells.length);
+            KingBreath.set(l,b,10);
+            int match=0,moved=0;
+            for(long cell:cells){int x=net.minecraft.core.BlockPos.getX(cell),z=net.minecraft.core.BlockPos.getZ(cell);var st=l.getBlockState(b.offset(x,-2,z));
+                if(!KingRegistry.isCountry(st))continue;moved++;if(KingRegistry.ruled(st)==KingSite.ruled(x,z,1))match++;}
+            h.assertTrue(moved>0&&match==moved,"on the in-breath every moved column is drawn as the in-breath draws it ("+match+"/"+moved+")");
+            KingBreath.set(l,b,KingBreath.IN+1);
+            match=0;
+            for(long cell:cells){int x=net.minecraft.core.BlockPos.getX(cell),z=net.minecraft.core.BlockPos.getZ(cell);var st=l.getBlockState(b.offset(x,-2,z));
+                if(KingRegistry.isCountry(st)&&KingRegistry.ruled(st)==KingSite.ruled(x,z,0))match++;}
+            h.assertTrue(match==moved,"and back on the out-breath ("+match+"/"+moved+")");
+            // Off the country altogether: nowhere, and put back.
+            p.teleportTo(l,b.getX()+KingSite.COUNTRY+6.5,b.getY(),b.getZ()-40.5,0,0);
+            KingBreath.reader(p,b,own);
+            h.assertTrue(KingSite.inside(p.position().subtract(b.getX(),b.getY(),b.getZ())),"a reader who is nowhere is put back in the country");
+            KingBreath.leave(p);KingBreath.leave(q);
+            done();h.succeed();
+        });
+    }
 }

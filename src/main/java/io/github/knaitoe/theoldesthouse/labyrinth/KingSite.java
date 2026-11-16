@@ -66,10 +66,30 @@ public final class KingSite {
         return 0;
     }
     /** Whether the block at (x,z) is drawn ruled: certain outside the band, by a fixed hash within it. */
-    public static boolean ruled(int x,int z){
-        double r=ruledness(z);if(Math.abs(x)>EAST+1)r=Math.max(r,Mth.clamp((Math.abs(x)-EAST-1)/8.0,0,1));
+    public static boolean ruled(int x,int z){return ruled(x,z,0);}
+    /**
+     * 0.4.642: how ruled the land at (x,z) is with the fill's edge moved {@code shift} blocks out (his in-breath moves it one, KingBreath):
+     * toward the house on the near side of the wood and toward the far ranks beyond it, so the filled land grows both ways.
+     */
+    public static double ruledness(int x,int z,int shift){
+        double r=shift==0?ruledness(z):z>rankFar(4)?ruledness(z-shift):ruledness(z+shift);
+        if(Math.abs(x)>EAST+1)r=Math.max(r,Mth.clamp((Math.abs(x)-EAST-1)/8.0,0,1));
+        return r;
+    }
+    public static boolean ruled(int x,int z,int shift){
+        double r=ruledness(x,z,shift);
         // Within the band the land goes over in clumps of four blocks, not one block at a time.
         if(r<=0)return false;if(r>=1)return true;return hash(x>>1,z>>1)<r;
+    }
+    private static long[] breathing;
+    /** Every column (x, z, as BlockPos longs at y 0) whose drawing changes between the out-breath and the in-breath. */
+    public static synchronized long[] breathing(){
+        if(breathing==null){
+            var cells=new java.util.ArrayList<Long>();
+            for(int x=-COUNTRY;x<=COUNTRY;x++)for(int z=rankFar(RANKS)-8;z<=0;z++)if(ruled(x,z,0)!=ruled(x,z,1))cells.add(BlockPos.asLong(x,0,z));
+            breathing=cells.stream().mapToLong(Long::longValue).toArray();
+        }
+        return breathing;
     }
     static double hash(int x,int z){long h=x*341873128712L+z*132897987541L;h^=h>>>29;h*=0xBF58476D1CE4E5B9L;h^=h>>>32;return (h&0xFFFFFF)/(double)0x1000000;}
 
@@ -195,6 +215,8 @@ public final class KingSite {
                 boolean ruled=ruled(x,z);
                 set(l,b,x,-2,z,KingRegistry.country("brook",ruled));set(l,b,x,-1,z,AIR);
                 if(x==-1||x==0)set(l,b,x,-1,z,KingRegistry.country("bridge",ruled));
+                // 0.4.642: the verge over the brook, never seen: a wall to a thing, wading to a sort of thing, nothing to a line.
+                else set(l,b,x,0,z,KingRegistry.VERGE.get().defaultBlockState());
             }
         }
     }
