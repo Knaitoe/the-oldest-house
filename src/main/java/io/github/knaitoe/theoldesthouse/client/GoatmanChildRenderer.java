@@ -34,7 +34,8 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
     @Override public void render(GoatmanChild e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){
         // Preserve night lighting, but let the brief window silhouette catch the trailer's
         // warm spill instead of disappearing into the unlit exterior. Both disguises use it.
-        if(e.stalkingAppearance()&&!e.indoors())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),net.minecraft.client.renderer.LightTexture.sky(light));
+        // On the great staircase (0.4.655) there is no trailer to spill any light: it stands in the stair's own dark, its eyes lit.
+        if(e.stalkingAppearance()&&!e.indoors()&&!StairStandIns.drawing())light=net.minecraft.client.renderer.LightTexture.pack(Math.max(7,net.minecraft.client.renderer.LightTexture.block(light)),net.minecraft.client.renderer.LightTexture.sky(light));
         if(e.monsterAppearance()){stalker.render(e,yaw,partial,poses,buffers,light);return;}
         float old=e.yBodyRot,previous=e.yBodyRotO;
         if(e.showsHeldItems()&&!e.enteringWindow()&&!e.crawling()&&!e.stalkingAppearance()&&e.tell(GoatmanVignette.FACE)&&Minecraft.getInstance().player!=null){

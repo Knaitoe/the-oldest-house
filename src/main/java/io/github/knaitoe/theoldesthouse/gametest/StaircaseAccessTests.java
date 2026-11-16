@@ -381,7 +381,7 @@ public final class StaircaseAccessTests {
             at.accept(corners[2]+6);StairCompany.down(p,f.origin,record);
             h.assertTrue(StairCompany.people(p).isEmpty()&&StairCompany.shape(p)==null&&StairCompany.sightings(f.origin,0).isEmpty(),"a reader with no story heard has nobody on the stair");
             // Five stories heard: three have someone to stand for them, in the order they ended.
-            hear(f,p,WitnessAccount.Story.PLAIN,WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.MASQUE,WitnessAccount.Story.CLAP,WitnessAccount.Story.PELL_HOUSE);
+            hear(f,p,WitnessAccount.Story.PLAIN,WitnessAccount.Story.FLOORBOARDS,WitnessAccount.Story.MASQUE,WitnessAccount.Story.MOTHER,WitnessAccount.Story.PELL_HOUSE);
             hear(f,peer,WitnessAccount.Story.USHER);
             var people=StairCompany.people(p);
             h.assertTrue(people.size()==3&&people.get(0).name().equals("the boy, crouched")&&people.get(1).name().equals("the red figure")&&people.get(2).name().equals("June"),"a reader's people are those of the stories they heard, in order: "+people.stream().map(StairCompany.Figure::name).toList());
@@ -573,6 +573,62 @@ public final class StaircaseAccessTests {
                             "on their feet with a standing body's height, so a look at the head is a look at them: "+figure.name()+" ("+a.getBbHeight()+" high, eyes at "+a.getEyeHeight()+")");
                 }
                 h.assertTrue(k==5,"the five stories given someone in 0.4.654 each have a figure on their feet: "+k);
+                f.finished=true;h.succeed();
+            }finally{if(f.finished){for(var a:bodies)a.discard();f.close();ACTIVE.remove(f);}}
+        });
+    }
+    /**
+     * 0.4.655: eight more stories' people are their own stories' creatures. Each stands on the stair as one of the cast's bodies in the
+     * stand-in's role, at its creature's own size; the cousin wears the face the reader's own night gave it.
+     */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=600)
+    public static void theStoriesOwnCreaturesStandOnTheStairAtTheirOwnSize(GameTestHelper h){
+        var f=new Fixture(h,655000);ACTIVE.add(f);int y=FinaleArchitecture.TOP-30;
+        f.chunks.hold(f.level,new AABB(f.base.getX()-14,y-2,f.base.getZ()-8,f.base.getX()+15,y+6,f.base.getZ()+9));
+        h.onEachTick(()->{
+            if(f.finished||!f.chunks.ready())return;
+            var bodies=new ArrayList<LiteraryActor>();
+            try{
+                var counted=f.player(h,"counted_right");var other=f.player(h,"none_kept");
+                var creatures=new ArrayList<StairCompany.Figure>();int[] kinds=new int[StairStandIn.KINDS];var theirs=EnumSet.noneOf(WitnessAccount.Story.class);
+                for(var figure:StairCompany.FIGURES)if(figure.role()==LiteraryActor.STAND_IN){creatures.add(figure);kinds[StairStandIn.kind(figure.phase())]++;theirs.addAll(List.of(figure.stories()));}
+                for(int k=0;k<StairStandIn.KINDS;k++)h.assertTrue(kinds[k]==1,"each creature stands for one row of the list: kind "+k+" stands for "+kinds[k]);
+                h.assertTrue(theirs.equals(EnumSet.of(WitnessAccount.Story.CLAP,WitnessAccount.Story.DROWNED_TOWN,WitnessAccount.Story.PRESERVED_CAVE,WitnessAccount.Story.SHALLOWS,
+                        WitnessAccount.Story.GOATMAN,WitnessAccount.Story.SEANCE,WitnessAccount.Story.HOTEL,WitnessAccount.Story.ELK_LOT,WitnessAccount.Story.ELK_FAN)),
+                        "the creatures stand for the stories whose people were some other kind of body than the cast's: "+theirs);
+                h.assertTrue(StairCompany.NOT_YET.equals(EnumSet.of(WitnessAccount.Story.BACKSEAT,WitnessAccount.Story.DARE_IN_THE_DARK,WitnessAccount.Story.WORK_PRINT,
+                        WitnessAccount.Story.LEFT_RIGHT,WitnessAccount.Story.DEAD_AIR)),"only the five drawn as blocks or in a mirror have nobody yet: "+StairCompany.NOT_YET);
+                // The cousin: the face the one too many wore the night the reader counted right; for a reader with none kept, one of the
+                // faces the cousins are dealt, the same one each time, and nothing written by asking.
+                StairCompany.Figure cousin=null;for(var figure:creatures)if(figure.from(WitnessAccount.Story.GOATMAN))cousin=figure;
+                h.assertTrue(cousin!=null&&cousin.dressed()!=null,"the cousin is dressed for each reader");
+                var all=f.data().state(GoatmanVignette.ID);var players=all.getCompound("Players");var own=new CompoundTag();own.putInt(GoatmanVignette.EXTRA_FACE,6);
+                players.put(counted.getUUID().toString(),own);all.put("Players",players);f.data().setState(GoatmanVignette.ID,all);
+                h.assertTrue(cousin.phaseFor(counted)==StairStandIn.phase(StairStandIn.COUSIN,6),"a reader who counted right is shown the face the one too many wore that night");
+                int guess=cousin.phaseFor(other);
+                h.assertTrue(StairStandIn.kind(guess)==StairStandIn.COUSIN&&java.util.stream.IntStream.of(StairStandIn.COUSIN_FACES).anyMatch(face->face==StairStandIn.dress(guess))&&cousin.phaseFor(other)==guess,
+                        "a reader with none kept is shown one of the faces the cousins are dealt, the same one each time: "+StairStandIn.dress(guess));
+                h.assertTrue(!GoatmanVignette.personal(f.data(),other.getUUID()).contains(GoatmanVignette.EXTRA_FACE),"and nothing is written into their record by asking");
+                // Each body is its creature's own size: the hunting witch low, the cousin a child's, the elk broad, the girl from the
+                // wardrobe small, and the preacher, the girl before the lake, the mother and the bartender a person's.
+                h.assertTrue(StairStandIn.size(StairStandIn.phase(StairStandIn.STACEY,0)).height()<1&&Math.abs(StairStandIn.size(StairStandIn.phase(StairStandIn.COUSIN,6)).height()-1.8F*.7F)<1e-3
+                        &&StairStandIn.size(StairStandIn.phase(StairStandIn.ELK,0)).width()>1.2F&&StairStandIn.size(StairStandIn.phase(StairStandIn.GIRL,0)).height()<1.5F,"the creatures' bodies are their own stories'");
+                for(int kind:new int[]{StairStandIn.PREACHER,StairStandIn.BEFORE_THE_LAKE,StairStandIn.MOTHER,StairStandIn.BARTENDER})
+                    h.assertTrue(StairStandIn.size(StairStandIn.phase(kind,0)).height()>=1.75F,"a person's height: kind "+kind);
+                // Set down, each is that size, its reader's alone, and nobody to push, hurt or talk to.
+                int n=0;
+                for(var figure:creatures){
+                    var at=new Vec3(f.base.getX()-10.5+n*3,y,f.base.getZ()+.5);n++;
+                    var a=StairCompany.spawn(f.level,counted,figure,at,0);
+                    h.assertTrue(a!=null,"set down: "+figure.name());bodies.add(a);
+                    var size=StairStandIn.size(figure.phaseFor(counted));
+                    h.assertTrue(a.role()==LiteraryActor.STAND_IN&&a.phase()==figure.phaseFor(counted),"it stands as its row says, in its reader's dress: "+figure.name());
+                    h.assertTrue(Math.abs(a.getBbHeight()-size.height())<1e-4&&Math.abs(a.getBbWidth()-size.width())<1e-4&&Math.abs(a.getEyeHeight()-size.eyeHeight())<1e-4&&Math.abs(figure.height()-size.height())<1e-4,
+                            "its body is its creature's own size, set down or not yet: "+figure.name()+" ("+a.getBbWidth()+" by "+a.getBbHeight()+", eyes at "+a.getEyeHeight()+")");
+                    h.assertTrue(a.owner().filter(counted.getUUID()::equals).isPresent()&&a.broadcastToPlayer(counted)&&!a.broadcastToPlayer(other)&&!a.shouldBeSaved()&&!a.isPushable()
+                            &&!a.hurt(counted.damageSources().playerAttack(counted),8)&&a.isAlive()&&!a.addresses()&&!a.crawling()&&!a.reaching(),"its reader's alone, nobody to push, hurt or talk to, and drawn as its creature only: "+figure.name());
+                }
+                h.assertTrue(n==8,"eight creatures stand on the stair: "+n);
                 f.finished=true;h.succeed();
             }finally{if(f.finished){for(var a:bodies)a.discard();f.close();ACTIVE.remove(f);}}
         });

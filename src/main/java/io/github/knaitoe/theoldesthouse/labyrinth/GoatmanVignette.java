@@ -195,6 +195,8 @@ public final class GoatmanVignette {
     public static CompoundTag run(ServerPlayer p){return run(LabyrinthData.get(p.server),copy(p));}
     /** Which trailer this reader is in, else the one they keep, else the original. */
     public static int copy(ServerPlayer p){return SceneInstances.of(p,LabyrinthPlace.GOATMAN);}
+    /** 0.4.655: in a reader's own record, the face the one too many wore in the night they counted right. */
+    public static final String EXTRA_FACE="ExtraFace0655";
     public static CompoundTag personal(LabyrinthData d,UUID id){return d.state(ID).getCompound("Players").getCompound(id.toString()).copy();}
     static void saveRun(LabyrinthData d,CompoundTag r){String room=room(r.getInt(COPY));CompoundTag all=d.state(room);all.put("Run",r);d.setState(room,all);}
     static void savePersonal(LabyrinthData d,UUID id,CompoundTag p){CompoundTag all=d.state(ID),players=all.getCompound("Players");players.put(id.toString(),p);all.put("Players",players);d.setState(ID,all);}
@@ -1160,6 +1162,8 @@ public final class GoatmanVignette {
             if(right&&whole){
                 if(p.isSleeping())GoatmanBedtime.wake(p);
                 CompoundTag personal=personal(d,p.getUUID());personal.putBoolean("Finished",true);
+                // 0.4.655: the face the one too many wore in this reader's night, for its figure on the great staircase (StairCompany).
+                personal.putInt(EXTRA_FACE,skin);
                 // 0.4.150: who else sat the night out, and whether this reader had taken a cousin's place, for the account.
                 var with=new ListTag();for(var other:enrolled){var theirs=cohort.getCompound(other.getUUID().toString());if(other!=p&&theirs.getBoolean("Active")&&!theirs.getBoolean("Failed"))with.add(StringTag.valueOf(other.getGameProfile().getName()));}
                 personal.put("With0150",with);personal.putBoolean("StoodIn0150",own.contains(PLAYS));personal.putBoolean("Gas0150",byReader(r)&&r.getUUID(GAS).equals(p.getUUID()));personal.putBoolean("Drafted0150",true);

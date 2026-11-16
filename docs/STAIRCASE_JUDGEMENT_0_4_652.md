@@ -86,7 +86,8 @@ From 0.4.596 (company on the stair):
   corridor too"). As built: five blocks wide and seven high, so his horns clear them (docs/MINOTAUR_SIZE_0_4_653.md).
 - **0.4.654 and after, someone for every story.** A figure on the stair for each of the nineteen stories that has nobody
   there yet, each standing in for that story's people as 0.4.596's figures do. 0.4.654 gave five of them someone: the
-  stories whose people are the cast's own bodies (docs/STAIR_STAND_INS_0_4_654.md). The other fourteen come next.
+  stories whose people are the cast's own bodies (docs/STAIR_STAND_INS_0_4_654.md). 0.4.655 gave nine more someone, each
+  drawn by its own story's renderer (docs/STAIR_STAND_INS_0_4_655.md). The last five, drawn as blocks or in a mirror, come next.
 
 ## Checked
 

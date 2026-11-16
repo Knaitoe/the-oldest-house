@@ -35,7 +35,9 @@ public final class GoatmanChild extends PathfinderMob {
     public GoatmanChild(EntityType<? extends GoatmanChild> type,Level level){
         super(type,level);setNoAi(true);setNoGravity(true);setPersistenceRequired();setSilent(true);
     }
-    public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.SCALE,.7).add(Attributes.MOVEMENT_SPEED,0);}
+    /** A cousin's size, of its kind's body: the children are drawn and sized at seven tenths of it. */
+    public static final double SIZE=.7;
+    public static AttributeSupplier.Builder attributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,20).add(Attributes.SCALE,SIZE).add(Attributes.MOVEMENT_SPEED,0);}
     @Override protected void defineSynchedData(SynchedEntityData.Builder b){
         super.defineSynchedData(b);b.define(SCURRY,false);b.define(SKIN,0);b.define(TELLS,0);b.define(VIEWER,Optional.empty());b.define(WALK,0F);b.define(SPEED,0F);b.define(SEATED,false);b.define(HEAVE,false);b.define(COWER,false);b.define(DISGUISE,-1);b.define(FEAR,0);b.define(FEAR_STAGE,0);b.define(WINDOW_ENTRY,-1F);b.define(CRAWLING,false);b.define(INDOORS,false);
     }
