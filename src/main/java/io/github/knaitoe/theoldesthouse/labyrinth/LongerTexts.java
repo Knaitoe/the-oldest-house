@@ -184,6 +184,10 @@ public final class LongerTexts {
         TOOK_GOOD="You take the good cup. The tea in it has gone cold.",TOOK_ROWANS="You take Rowan's cup, the one with the crack.",
         LEFT_CUPS="You leave the cups where they are.",SCRAP_DOWN="You put the list down on the table, the writing up.",
         CUP_GOOD="The good cup",CUP_ROWANS="Rowan's cup";
+    /** 0.4.631, leaving early and coming back (LongerEarly); flagged in docs/A_LITTLE_LONGER_0_4_631.md. */
+    public static final String EARLY_ASK="You're going? Do you want company?",EARLY_WITH="Come with me.",EARLY_BACK="I'll come back.",EARLY_ALONE="No. Goodnight.",
+        EARLY_WITH_R="Give me a minute. I'll get my coat and pull the toaster's plug out.",EARLY_BACK_R="I'll be here.",EARLY_ALONE_R="Goodnight, then.",
+        BACK_BENCH="You came back. I was about to stop for a cup of tea.",BACK_TEA="There you are. I thought you'd gone for good.",BACK_ROOF="You came back. I didn't know if you would.";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),
@@ -209,6 +213,7 @@ public final class LongerTexts {
         var out=new ArrayList<String>();
         String act=switch(own.getString(LongerBench.ACT)){case LongerBench.HELD_PANEL->" I held the back panel for them.";case LongerBench.RETURNED_SCREW->" I found the screw that had gone under the bench.";
             case LongerBench.MOVED_LAMP->" I moved the lamp so they could see.";case LongerBench.WAITED_AT_DOOR->" I waited at the door before I went in.";default->"";};
+        int backAt=own.contains(LongerEarly.BACK_AT)?own.getInt(LongerEarly.BACK_AT):-1;String back="I went out for a while and came back.";
         out.add("There was a radio repair shop with a flat over it, and rain on every window. Rowan was at the bench, trying to make a table radio hold a station."+act);
         var kettle=new StringBuilder("Upstairs Rowan put the kettle on and made toast.");
         switch(own.getString(LongerKettle.TOAST)){
@@ -219,12 +224,15 @@ public final class LongerTexts {
             default->{}
         }
         if(own.getBoolean(LongerKettle.CUP))kettle.append(" Rowan gave me the cup without the crack.");
-        out.add(kettle.toString());
+        // 0.4.631: only if the tea was had (an evening left after the bench never got there).
+        if(backAt==1)out.add(back);
+        if(LongerKettle.stage(own)==LongerKettle.DONE||!own.getString(LongerKettle.TOAST).isEmpty())out.add(kettle.toString());
         String radio=switch(own.getString(LongerRadio.MOOD)){case LongerRadio.ENJOYED->"The kitchen radio played a tune, and I said to leave it on.";
             case LongerRadio.TURN_DOWN->"The kitchen radio played a tune, and I asked for it to be turned down.";
             case LongerRadio.WORRIED->"The kitchen radio played a tune, and I said something might hear it.";default->"";};
         if(!radio.isEmpty()){radio+=switch(own.getString(LongerRadio.REPAIR)){case LongerRadio.SAME->" Afterwards I said I had wanted it on too.";
             case LongerRadio.DANGER->" Afterwards I said the doors were still real.";case LongerRadio.QUIETER->" Afterwards we kept it on, quieter.";default->"";};out.add(radio);}
+        if(backAt==2||backAt==3)out.add(back);
         if(own.getInt(LongerRoof.STAGE)>0){
             var roof=new StringBuilder("We went up to the roof. Rowan showed me the sky between two buildings.");
             if(own.getBoolean(LongerRoof.SAT))roof.append(" I sat beside them.");
@@ -242,12 +250,14 @@ public final class LongerTexts {
             }
             out.add(roof.toString());
         }
+        if(backAt==4)out.add(back);
         switch(own.getString(LongerReturn.ORDINARY)){
             case LongerReturn.CUPS->out.add("Back inside, Rowan washed the cups and I dried.");
             case LongerReturn.TOAST->out.add("Back inside, we argued about how bad the toast had been.");
             case LongerReturn.SAT->out.add("Back inside, we sat down for a while.");
             default->{}
         }
+        if(backAt==5)out.add(back);
         String food=own.getString(LongerTomorrow.LIST);
         if(!food.isEmpty()){
             var list=new StringBuilder("We made a list for breakfast. I put down "+food.toLowerCase(java.util.Locale.ROOT)+". Rowan put \""+LongerTomorrow.rowanAdds(food)+"\" under it.");
@@ -256,7 +266,8 @@ public final class LongerTexts {
                 case LongerTomorrow.COMPANIONS->" I said we were friends on the road.";default->"";});
             out.add(list.toString());
         }
-        out.add("Rowan went to unplug the toaster. The radio stopped halfway through the tune. The wall by the toaster went back further than walls do, and Rowan went with it, the toaster and the end of the worktop too. Rowan said wait.");
+        if(LongerEarly.WITH.equals(own.getString(LongerEarly.EARLY)))out.add("I said I was going, and Rowan said they would come with me.");
+        out.add("Rowan went to unplug the toaster."+(own.getBoolean(LongerCut.STOPPED)?" The radio stopped halfway through the tune.":"")+" The wall by the toaster went back further than walls do, and Rowan went with it, the toaster and the end of the worktop too. Rowan said wait.");
         String after=own.getBoolean(LongerAfter.RADIO_OFF)?"I turned the radio off. ":"";
         String cup=own.getString(LongerAfter.CUP);
         if(!cup.isEmpty())after+=food.isEmpty()?"I brought one of the cups back.":"We had made a list for breakfast. I brought one of the cups back.";

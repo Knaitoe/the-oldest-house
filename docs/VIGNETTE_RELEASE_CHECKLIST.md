@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 16 candidate 0.4.631 (docs/A_LITTLE_LONGER_0_4_631.md): leaving and resuming. Does a shorter evening invent nothing it did not play? Is a reader who comes back met, once, by the same person in the same body? Does a restart undo nothing before or after the ending?
+
 November 16 candidate 0.4.630 (docs/A_LITTLE_LONGER_0_4_630.md): a story that ends with nothing happening. Is the reader left room to move and act without being thrown out or scared? Does the account follow only what that reader did, and end on what they did afterward? Is the story dealt until it is finished, and only then struck off?
 
 November 16 candidate 0.4.621 (docs/A_LITTLE_LONGER_0_4_621.md): a place built ahead of its story. Is it never dealt and no Witness source until it can be finished? Does every door and fitting answer, and can nobody fall from the roof?

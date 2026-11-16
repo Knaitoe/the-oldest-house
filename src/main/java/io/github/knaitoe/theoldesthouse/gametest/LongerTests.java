@@ -1034,4 +1034,62 @@ public final class LongerTests {
             Talk.close(p);done();h.succeed();
         });
     }
+
+    /**
+     * 0.4.631, leaving early and coming back (LongerEarly). After the tea a reader goes and comes back: a restart in between keeps the
+     * same Rowan in the same body; Rowan greets them back once, for how far the evening had got. Going out by the corridor, they are
+     * asked once whether they want company; "Come with me" puts Rowan in the coat at the hook, and then the same cut as anybody's. The
+     * account tells only what happened: the bench, the tea, the going and coming back, the going together and the wall; no roof, no list,
+     * and no radio stopping, because it was not on.
+     */
+    @GameTest(template="empty",batch="longer_early",timeoutTicks=3000)
+    public static void leavingEarlyComingBackAndTheSameCut(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_early",P);var l=f.level(P);
+        java.util.UUID[] first=new java.util.UUID[1];int[] cast=new int[1];
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{
+            first[0]=rowan(h,p).getUUID();cast[0]=f.own(p,P).getInt(LongerRowan.CAST);
+            teaDone(f,p,"YES");
+            // Gone, and the server started again while they were away: nothing kept in memory.
+            f.leave(p);LongerRowan.clearAll();
+            f.arrive(p,P);
+        })
+        .thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is there again"))
+        .thenExecute(()->{
+            h.assertTrue(rowan(h,p).getUUID().equals(first[0]),"the same Rowan, not a second one");
+            h.assertTrue(f.own(p,P).getInt(LongerRowan.CAST)==cast[0],"in the same body");
+            h.assertTrue(LongerKettle.stage(f.own(p,P))==LongerKettle.DONE,"the tea still had");
+            f.at(p,P,3.5,6,-14.5);
+        })
+        .thenWaitUntil(()->h.assertTrue(Talk.lines(p).stream().anyMatch(s->s.contains(LongerTexts.BACK_TEA)),"greeted back: "+Talk.lines(p)))
+        .thenExecute(()->{
+            h.assertTrue(f.own(p,P).getInt(LongerEarly.RETURNS)==1&&f.own(p,P).getInt(LongerEarly.BACK_AT)==2,"the return kept, and where the evening had got to");
+            Talk.close(p);
+            f.at(p,P,.5,0,-3);
+        })
+        .thenWaitUntil(()->h.assertTrue(Talk.replies(p).contains(LongerTexts.EARLY_WITH),"asked once at the corridor: "+Talk.replies(p)))
+        .thenExecute(()->{
+            h.assertTrue(Talk.replies(p).contains(LongerTexts.EARLY_BACK)&&Talk.replies(p).contains(LongerTexts.EARLY_ALONE),"or to go alone: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.EARLY_WITH),"come with me");
+            h.assertTrue(LongerEarly.WITH.equals(f.own(p,P).getString(LongerEarly.EARLY)),"going together");
+        })
+        .thenWaitUntil(()->{var a=rowan(h,p);var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(a!=null&&a.position().distanceTo(LongerTomorrow.HOOK_SPOT.at(b))<.3&&a.phase()>=LongerRowan.FIRST+LongerRowan.COAT,"Rowan at the hook in the coat");})
+        .thenIdle(5).thenExecute(()->{Talk.close(p);LongerCut.waited(LiteraryVignettes.base(p,P),LongerCut.AFTER);})
+        .thenWaitUntil(()->h.assertTrue(cut(f,p)==LongerCut.DONE,"the same cut: "+cut(f,p)))
+        .thenExecute(()->{
+            var own=f.own(p,P);var account=text(LongerTexts.account("x",own));
+            h.assertTrue(account.contains("I went out for a while and came back."),"the coming back: "+account);
+            h.assertTrue(account.contains("I said I was going, and Rowan said they would come with me."),"the going together: "+account);
+            h.assertTrue(account.contains("Rowan said wait."),"the wall: "+account);
+            h.assertFalse(account.contains("roof")||account.contains("list")||account.contains("radio stopped"),"nothing that did not happen: "+account);
+            h.assertTrue(account.endsWith("The kettle was still warm when I went."),"no list to end on: "+account);
+            h.assertTrue("left_before_tomorrow".equals(LongerAfter.outcome(own)),"the outcome: "+LongerAfter.outcome(own));
+            // The server again, after the cut: the room stays as it is after, and Rowan is not made.
+            var b=LiteraryVignettes.base(p,P);LongerRowan.clearAll();LongerRowan.arrive(p,b,f.own(p,P));
+            h.assertTrue(LongerAfter.is(b)&&LongerCut.gone(f.own(p,P)),"the room afterward is kept");
+        })
+        .thenIdle(40)
+        .thenExecute(()->{h.assertTrue(rowan(h,p)==null,"Rowan is not made again");Talk.close(p);done();h.succeed();});
+    }
 }
