@@ -378,4 +378,58 @@ public final class KingTests {
             KingBreath.leave(p);done();h.succeed();
         });
     }
+
+    /** A hand on the mushroom's cap from where the reader stands (the fixture's click would move them in front of it). */
+    private static void capClick(ServerPlayer p,BlockPos at){
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock(p,net.minecraft.world.InteractionHand.MAIN_HAND,at,new net.minecraft.world.phys.BlockHitResult(at.getCenter(),net.minecraft.core.Direction.UP,at,false)));
+    }
+
+    /**
+     * 0.4.645, "Who are you?". The Caterpillar sits on the mushroom's cap and asks; the answers are what the reader is, with words gone
+     * from them on the out-breath. A piece from the west side of the cap fills (or gives) a cake, from the east side a bottle. The
+     * bridge past the fifth square is only drawn: a thing goes through it and is set back on the bank; less than a thing walks over.
+     */
+    @GameTest(template="empty",batch="king_mushroom",timeoutTicks=1600)
+    public static void theCaterpillarTheMushroomAndTheDrawnBridge(GameTestHelper h){
+        var f=place(h);var p=f.player("king_who",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var cap=KingSite.MUSHROOM.above();var m=b.offset(KingSite.MUSHROOM);
+        h.startSequence().thenExecute(()->p.teleportTo(l,m.getX()-1.5,b.getY(),m.getZ()+.5,-90,0))
+        .thenWaitUntil(()->h.assertTrue(KingCaterpillar.find(l,b)!=null,"the Caterpillar is on the mushroom"))
+        .thenExecute(()->{
+            var c=KingCaterpillar.find(l,b);
+            h.assertTrue(c.getY()>m.getY()+1.8&&io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat.of(c)!=null,"it sits on the cap: "+c.position());
+            // "Who are you?": what the reader is, whole on the in-breath and with words gone on the out-breath.
+            h.assertTrue(KingCaterpillar.answer(KingBreath.THING,false).equals(KingTexts.R_A_THING),"a thing says it is a thing");
+            var dropped=KingCaterpillar.answer(KingBreath.THING,true);
+            h.assertTrue(dropped.contains("...")&&dropped.startsWith("A")&&!dropped.equals(KingTexts.R_A_THING),"on the out-breath words drop out: "+dropped);
+            KingCaterpillar.talk(p,c,f.own(p,P));KingCaterpillar.you(p);
+            h.assertTrue(f.own(p,P).getBoolean("KingAsked"),"asked, and answered");
+            // The mushroom: the west side more (a cake), the east side less (a bottle); going back fills them again.
+            capClick(p,b.offset(cap));
+            var cake=p.getInventory().items.stream().filter(KingDraughtItem::is).toList();
+            h.assertTrue(cake.size()==1&&((KingDraughtItem)cake.get(0).getItem()).more(),"from the west side, a cake");
+            cake.get(0).setDamageValue(2);capClick(p,b.offset(cap));
+            var again=p.getInventory().items.stream().filter(KingDraughtItem::is).toList();
+            h.assertTrue(again.size()==1&&again.get(0).getDamageValue()==0,"going back fills the cake again, and gives no second");
+            p.teleportTo(l,m.getX()+2.5,b.getY(),m.getZ()+.5,90,0);capClick(p,b.offset(cap));
+            h.assertTrue(p.getInventory().items.stream().anyMatch(i->KingDraughtItem.is(i)&&!((KingDraughtItem)i.getItem()).more()),"from the east side, a bottle");
+            // The drawn bridge: no floor to a thing, a floor to anything less.
+            var drawn=b.offset(-1,-1,KingSite.rankFar(5)-1);
+            h.assertTrue(l.getBlockState(drawn).is(KingRegistry.DRAWN_BRIDGE.get()),"the road crosses the brook on a drawn bridge");
+            KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
+            h.assertTrue(l.getBlockState(drawn).getCollisionShape(l,drawn,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"a drawing will not bear a thing");
+            KingBreath.STATES.put(p.getUUID(),KingBreath.SORT);
+            h.assertFalse(l.getBlockState(drawn).getCollisionShape(l,drawn,net.minecraft.world.phys.shapes.CollisionContext.of(p)).isEmpty(),"it bears a sort of thing");
+            // A thing that went through is in the brook, and is set back on the near bank.
+            var own=f.own(p,P);
+            p.teleportTo(l,b.getX()-.5,b.getY()-1,b.getZ()+KingSite.rankFar(5)-1.5,180,0);KingBreath.reader(p,b,own);
+            var at=p.position().subtract(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(own.getBoolean("KingFellThrough")&&at.distanceTo(KingSite.BANK)<1,"set back on the bank: "+at);
+            // Less than a thing (a swallow from the bottle), standing on it: over as a drawing.
+            KingBreath.swallow(p,false,l.getGameTime()+KingDraughtItem.LASTS);
+            p.teleportTo(l,b.getX()-.5,b.getY(),b.getZ()+KingSite.rankFar(5)-1.5,180,0);p.setOnGround(true);KingBreath.reader(p,b,own);
+            h.assertTrue(own.getInt("KingState")<KingBreath.THING&&own.getBoolean("KingDrawnCrossed"),"over the drawn bridge as less than a thing: "+own.getInt("KingState"));
+            KingBreath.leave(p);done();h.succeed();
+        });
+    }
 }

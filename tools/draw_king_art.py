@@ -417,6 +417,33 @@ def wheel():
     return im
 
 
+def stalk():
+    # 0.4.645: the mushroom's stalk, pale and fibrous, its streaks running up it, a ring of skirt a third of the way down.
+    im = new(base='#e6dcc4', seed=6871, spread=3)
+    for x in (2, 6, 9, 13):
+        fill(im, x, 0, x + 1, 16, '#d2c6aa')
+    fill(im, 0, 4, 16, 6, '#d8ccb0'); fill(im, 0, 6, 16, 7, '#c4b694')
+    return im
+
+
+def cap():
+    # The mushroom's cap from above and at its edge: a broad brown dome gone flat, paler blotches on it, a darker rim.
+    im = new(base='#9a6a42', seed=6881, spread=4)
+    for x, y in ((3, 3), (10, 2), (6, 8), (12, 10), (2, 12), (8, 13)):
+        fill(im, x, y, x + 2, y + 2, '#b8885a'); dot(im, x, y, '#c89c6c')
+    frame(im, 0, 0, 16, 16, '#7a5232')
+    return im
+
+
+def gills():
+    # Under the cap: the gills, fine lines running out from the stalk to the rim.
+    im = new(base='#d8c8a8', seed=6891, spread=2)
+    for i in range(16):
+        dot(im, i, i, '#b8a684'); dot(im, 15 - i, i, '#b8a684')
+        dot(im, 7, i, '#b8a684'); dot(im, i, 7, '#b8a684')
+    return im
+
+
 def ivory():
     return new(base='#e6dcc4', seed=6761, spread=3)
 
@@ -475,7 +502,8 @@ def textures():
     out = {f'block/king_{k}.png': v for k, v in materials().items()}
     t = {'marble': marble(), 'gilt': gilt(), 'glass': glass(), 'grate': grate(), 'fire': fire(), 'rug': rug(), 'ivory': ivory(),
          'redwood': redwood(), 'mahogany': mahogany(), 'problem': problem(), 'velvet': velvet(), 'sash': sash(), 'pane': pane(), 'rattle': rattle(), 'turned': turned(),
-         'peg': peg(), 'tabletop': tabletop(), 'bottle': bottle(), 'cake': cake(), 'leather': leather(), 'wheel': wheel()}
+         'peg': peg(), 'tabletop': tabletop(), 'bottle': bottle(), 'cake': cake(), 'leather': leather(), 'wheel': wheel(),
+         'stalk': stalk(), 'cap': cap(), 'gills': gills()}
     out.update({f'block/king/{k}.png': v for k, v in t.items()})
     # 0.4.644: the bottle and the cake in the hand.
     out.update({'item/king/bottle.png': bottle_item(), 'item/king/cake.png': cake_item()})
@@ -610,6 +638,13 @@ def fitting_models():
     # A carriage wheel, upright under the body, its hub standing out from it.
     m['wheel_0'] = model([element([0, 0, 7], [16, 16, 9], {'north': 'h', 'south': 'h'}), element([6.5, 6.5, 5], [9.5, 9.5, 11], {'all': 'i'})],
                          {'h': 'wheel', 'i': 'ivory'}, 'wheel')
+    # 0.4.645: the mushroom: its stalk, and above it the rest of the stalk under a broad cap, flat on top where the Caterpillar sits,
+    # the gills underneath. The cap overhangs its block on every side.
+    m['stalk_0'] = model([element([5, 0, 5], [11, 16, 11], {'all': 's'})], {'s': 'stalk'}, 'stalk')
+    m['cap_0'] = model([element([5, 0, 5], [11, 10, 11], {'all': 's'}),
+                        element([-6, 10, -6], [22, 15, 22], {'up': 'c', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'down': 'g'},
+                                uv={f: [0, 0, 16, 16] for f in ('up', 'down')} | {f: [0, 0, 16, 3] for f in ('north', 'south', 'east', 'west')})],
+                       {'s': 'stalk', 'c': 'cap', 'g': 'gills'}, 'cap')
     for stage in range(2):
         rail = [element([0, 0, 6], [16, 2, 10], {'all': 's'})] if stage == 0 else [element([0, 14, 6], [16, 16, 10], {'all': 's'})]
         els = rail + [element([0, 0, 6.5], [2, 16, 9.5], {'all': 's'}), element([14, 0, 6.5], [16, 16, 9.5], {'all': 's'}),
@@ -619,7 +654,8 @@ def fitting_models():
     return m
 
 
-KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle', 'peg', 'glass_table', 'seat', 'wheel']
+KINDS = ['mantel', 'glass', 'rug', 'chessmen', 'table', 'problem', 'armchair', 'window', 'rattle', 'peg', 'glass_table', 'seat', 'wheel',
+         'stalk', 'cap']
 STAGES = {'mantel': 3, 'glass': 6, 'window': 2, 'problem': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 6
@@ -627,7 +663,7 @@ NAMES = {'king_fitting': 'Drawing-Room Things', 'king_turf_light': 'Light Square
          'king_hedge': 'Box Hedge', 'king_brook': 'Brook', 'king_bridge': 'Footbridge', 'king_path': 'Gravel Road', 'king_bark': 'Old Bark',
          'king_bough': 'Bough', 'king_wallpaper': 'Trellis Paper', 'king_panel': 'Dado Panel', 'king_floorboards': 'Drawing-Room Floor',
          'king_ceiling': 'Drawing-Room Ceiling', 'king_chimney': 'Chimney Stone', 'king_hearth': 'Hearth',
-         'king_verge': "Brook's Edge"}
+         'king_verge': "Brook's Edge", 'king_drawn_bridge': 'Drawn Bridge'}
 ITEM_NAMES = {'king_bottle': 'A Little Bottle', 'king_cake': 'A Very Small Cake'}
 for k in list(COUNTRY):
     NAMES[f'king_{k}_ruled'] = NAMES[f'king_{k}'] + ', Ruled'
@@ -666,6 +702,9 @@ def files():
     # 0.4.642: the brook's verge is never drawn (KingVergeBlock); its model only names what breaking it would scatter.
     out['models/block/king_verge.json'] = {'textures': {'particle': NS + 'block/king_brook'}}
     out['blockstates/king_verge.json'] = {'variants': {'': {'model': NS + 'block/king_verge'}}}
+    # 0.4.645: the drawn bridge is the footbridge's ruled drawing, and nothing else (KingDrawnBridgeBlock).
+    out['models/block/king_drawn_bridge.json'] = {'parent': 'minecraft:block/cube_all', 'textures': {'all': NS + 'block/king_bridge_ruled'}}
+    out['blockstates/king_drawn_bridge.json'] = {'variants': {'': {'model': NS + 'block/king_drawn_bridge'}}}
     return out
 
 

@@ -39,6 +39,8 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         if(LodgingThing.seat(state))return new ActorSeat(LodgingThing.seatHeight(state),state.getValue(LodgingThing.FACING));
         // 0.4.622: Rowan's mended chair at the bench, and the flat's seats.
         if(LongerBlock.seat(state))return new ActorSeat(state.getValue(LongerBlock.KIND).seatHeight(),state.getValue(LongerBlock.FACING));
+        // 0.4.645: the Caterpillar on the mushroom's cap, sat on its top (where it stands, so the seat is at its feet).
+        if(a.role()==LiteraryActor.STRANGER&&a.phase()==KingCaterpillar.PHASE&&KingBlock.is(state,KingBlock.Kind.CAP))return new ActorSeat(0,null);
         // Roderick's chair (0.4.182), its seat nine pixels up.
         if(UsherBlock.is(state,UsherBlock.Kind.CHAIR))return new ActorSeat(9,state.getValue(UsherBlock.FACING));
         // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.

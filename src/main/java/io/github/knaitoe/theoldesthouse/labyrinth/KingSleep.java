@@ -45,7 +45,7 @@ public final class KingSleep {
     static final int LINES_AT=30,ENDS_AT=90;
     /** A country nobody has been in for this long is a fresh dream when somebody comes back. */
     static final int FORGOTTEN=200;
-    public static final String MET="KingMet",HEARD="KingHeard",ENDING="KingEnding",STIRRED="KingStirred",COUNTED="KingCounted";
+    public static final String MET="KingMet",HEARD="KingHeard",ENDING="KingEnding",STIRRED="KingStirred",COUNTED="KingCounted",FELL="KingFellThrough",CROSSED="KingDrawnCrossed";
 
     static final class Sleep{
         int stirs;long seen=-1;long wakingAt=-1;boolean awake;boolean tooSoon;@Nullable UUID namer;int turn;
@@ -83,6 +83,7 @@ public final class KingSleep {
         KingBrothers.tick(l,b,s);
         KingQueen.tick(l,b,s);
         KingGuard.tick(l,b,s);
+        KingCaterpillar.tick(l,b);
         if(s.wakingAt<0)return;
         long t=now-s.wakingAt;
         if(t>=LINES_AT&&!s.awake){s.awake=true;KingBreath.redraw(l,b);for(var p:readers(l,b))King.cue(p,s.tooSoon?KingTexts.LINES_TOO_SOON:KingTexts.LINES);}
@@ -101,6 +102,15 @@ public final class KingSleep {
         for(int r=2;r<=KingSite.RANKS;r++)if(KingQueen.onPeg(p,b,r)&&(own.getInt(COUNTED)&1<<r)==0&&(KingBreath.lookedAtByTheDream(p,b)||KingBreath.noticed(p,b))){
             own.putInt(COUNTED,own.getInt(COUNTED)|1<<r);King.cue(p,KingTexts.COUNTED);}
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());boolean beside=KingBreath.beside(r);
+        // 0.4.645: the drawn bridge. A thing that has gone through it into the brook is set back on the near bank, unhurt; anything
+        // less that is standing on it has gone over as less than a thing.
+        if(KingSite.onDrawnBridge(r)){
+            if(r.y<-.4){
+                p.teleportTo(p.serverLevel(),b.getX()+KingSite.BANK.x,b.getY()+KingSite.BANK.y,b.getZ()+KingSite.BANK.z,180,p.getXRot());p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);p.fallDistance=0;
+                own.putBoolean(FELL,true);King.cue(p,KingTexts.FELL_THROUGH);return;
+            }
+            if(state<KingBreath.THING&&p.onGround()&&!own.getBoolean(CROSSED)){own.putBoolean(CROSSED,true);King.cue(p,KingTexts.DRAWN_CROSSED);}
+        }
         if(beside&&state>=KingBreath.THING&&!own.getBoolean(MET))own.putBoolean(MET,true);
         double moved=own.contains("KingLastX")?Math.hypot(r.x-own.getDouble("KingLastX"),r.z-own.getDouble("KingLastZ")):0;
         own.putDouble("KingLastX",r.x);own.putDouble("KingLastZ",r.z);

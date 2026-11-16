@@ -194,6 +194,8 @@ LOOKS = {
     # 0.4.644: the Queen on the hill, a chess queen in a long gown with a crown; and the Guard on the train, in uniform under a paper cap.
     'literary_king_queen': Look('#e6bea4','#3a2a24','long','#a8302b','#7e221f','dress','#d8b04a',eyes='#3e3630',age=1,mark='king_queen',sleeve=11),
     'literary_king_guard': Look('#d8a888','#6a6058','close','#3a3e4a','#2e323c','uniform','#c9a84a',eyes='#4a4a44',age=2,beard='moustache',mark='king_guard',sleeve=11),
+    # 0.4.645: the Caterpillar on the mushroom, an old man in a long coat ringed round in segments like its namesake, a full beard.
+    'literary_king_caterpillar': Look('#d2b896','#3e4630','close','#5f8a3c','#47692c','coat','#9cc064',eyes='#2c2c24',age=3,beard='full',mark='king_caterpillar',sleeve=11),
     # 0.4.633, spring: the letting agent with the clipboard, in a suit off the peg, collar open, hair cut short for work.
     'literary_flat_agent': Look('#c4906e','#5a3a24','short','#2e3a52','#262c38','suit','#e8e4dc',eyes='#4a5a62'),
     # Speak Up (0.4.327): the four at the table. Joan, grey and sure, answers for the guest; Pat in a knit and glasses contradicts her;
@@ -1572,6 +1574,17 @@ def paint(look):
                 d.rectangle((0,3,15,5),fill=rgb(gold));d.line((0,3,15,3),fill=shade(gold,24));d.line((0,5,15,5),fill=shade(gold,-38))
                 if side=='front':d.rectangle((7,3,8,4),fill=rgb(stone));d.point((7,3),fill=shade(stone,44))
             put(box,art)
+    if look.mark=='king_caterpillar':
+        # 0.4.645: the coat ringed round in segments: a darker band every three pixels down the body and both arms, and a row of
+        # small round buttons down the front, one to each segment.
+        for part in (net(16,16,8,12,4),net(40,16,4,12,4),net(32,48,4,12,4)):
+            for side,box in part.items():
+                if side in ('top','bottom'):continue
+                w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S);art=Image.new('RGBA',(w,h));d=ImageDraw.Draw(art)
+                for y in range(5,h-1,6):d.line((0,y,w-1,y),fill=shade(look.cloth,-30));d.line((0,y+1,w-1,y+1),fill=shade(look.cloth,10))
+                if part[side]==net(16,16,8,12,4)['front']:
+                    for y in range(2,h-2,6):d.rectangle((w//2-1,y,w//2,y+1),fill=rgb(look.accent))
+                im.paste(art,(round(box[0]*S),round(box[1]*S)),art)
     if look.mark=='king_guard':
         # 0.4.644: the Guard's peaked cap of folded white paper on the hat layer, its folds showing, a black peak at the front; brass
         # buttons and a ticket punch on a cord on the coat front.

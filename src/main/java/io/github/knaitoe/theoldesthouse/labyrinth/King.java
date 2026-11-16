@@ -35,7 +35,7 @@ public final class King {
     public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}
-    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);}
+    public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){ensure(p.serverLevel(),b);KingBrothers.ensure(p.serverLevel(),b,KingSleep.get(b));KingQueen.ensure(p.serverLevel(),b);KingGuard.ensure(p.serverLevel(),b);KingCaterpillar.ensure(p.serverLevel(),b);}
 
     /**
      * 0.4.643: a hand on the King. A line's hand goes into him; before the brothers have said his name he is only an old man asleep;
@@ -124,6 +124,18 @@ public final class King {
             }
             case SEAT->io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,at);
             case WHEEL->cue(p,KingTexts.WHEEL);
+            // 0.4.645: the mushroom. The side a reader stands on is the side they break from: the west side more, the east side
+            // less. A piece fills the bottle or the cake again (or gives one, if they have none of that side's).
+            case STALK->cue(p,KingTexts.STALK);
+            case CAP->{
+                boolean more=p.getX()<at.getX()+.5;
+                var inv=p.getInventory();boolean had=false;
+                for(int i=0;i<inv.getContainerSize();i++){var it=inv.getItem(i);if(KingDraughtItem.is(it)&&((KingDraughtItem)it.getItem()).more()==more){it.setDamageValue(0);had=true;}}
+                if(!had)inv.placeItemBackInInventory(KingDraughtItem.own(more));
+                own.putInt("KingMushroom",own.getInt("KingMushroom")+1);
+                l.playSound(null,at,SoundEvents.CROP_BREAK,SoundSource.BLOCKS,.6F,1.3F);
+                cue(p,more?KingTexts.MUSHROOM_MORE:KingTexts.MUSHROOM_LESS);
+            }
         }
         return true;
     }

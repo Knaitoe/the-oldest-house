@@ -145,7 +145,7 @@ public final class KingBreath {
     }
     /** 0.4.644: looked at by one of the dream's people (the Queen, the Guard, the brothers), with nothing between them. */
     static boolean lookedAtByTheDream(ServerPlayer p,BlockPos b){
-        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a))){
+        for(var a:p.serverLevel().getEntitiesOfClass(LiteraryActor.class,p.getBoundingBox().inflate(32),a->KingQueen.is(a)||KingGuard.is(a)||KingBrothers.is(a)||KingCaterpillar.is(a))){
             if(!a.isAlive())continue;
             var eye=a.getEyePosition();var to=p.getBoundingBox().getCenter().subtract(eye);double d=to.length();if(d<1e-3)return true;
             var view=Vec3.directionFromRotation(a.getXRot(),a.getYHeadRot());

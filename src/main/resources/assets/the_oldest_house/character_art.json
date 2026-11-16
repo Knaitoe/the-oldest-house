@@ -1552,6 +1552,14 @@
     "phase": 221
   },
   {
+    "name": "literary_king_caterpillar",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 222
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

@@ -17,12 +17,13 @@ import net.minecraft.world.phys.shapes.*;
  * Stages: the chimney-piece's left jamb (0), the fire between (1), the right jamb (2); the looking-glass over it, three across and two
  * high (0-2 the lower row, 3-5 the upper); the tall window's lower (0) and upper (1) halves. 0.4.643: the brothers' rattle (RATTLE)
  * lies on the King's square. 0.4.644: the Queen's pegs (PEG), one on every square past its crossing; the glass table on the hill with
- * the bottle and the cake on it (GLASS_TABLE); the railway carriage's seats (SEAT, sat in) and its wheels (WHEEL).
+ * the bottle and the cake on it (GLASS_TABLE); the railway carriage's seats (SEAT, sat in) and its wheels (WHEEL); the mushroom's stalk (STALK)
+ * and cap (CAP, 0.4.645).
  */
 public final class KingBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<KingBlock> CODEC=simpleCodec(KingBlock::new);
     public enum Kind implements StringRepresentable {
-        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL;
+        MANTEL,GLASS,RUG,CHESSMEN,TABLE,PROBLEM,ARMCHAIR,WINDOW,RATTLE,PEG,GLASS_TABLE,SEAT,WHEEL,STALK,CAP;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -36,6 +37,8 @@ public final class KingBlock extends HorizontalDirectionalBlock {
     /** 0.4.644: a carriage seat is sat in (HouseSitting), seven pixels up, facing the way it faces. */
     public static boolean seat(BlockState s){return is(s,Kind.SEAT);}
     public static final double SEAT_HEIGHT=7/16.;
+    /** 0.4.645: the top of the mushroom's cap, where the Caterpillar sits (KingCaterpillar). */
+    public static final double CAP_TOP=15/16.;
     /** The fire in the grate gives the room its light. */
     public static int light(BlockState s){return s.getValue(KIND)==Kind.MANTEL&&s.getValue(STAGE)==1?13:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -57,6 +60,9 @@ public final class KingBlock extends HorizontalDirectionalBlock {
             case GLASS_TABLE->Shapes.or(Block.box(2,11,2,14,12,14),Block.box(3,0,3,13,11,13));
             case SEAT->Shapes.or(Block.box(0,0,2,16,7,14),box(f,0,7,12,16,22,16));
             case WHEEL->box(f,0,0,5,16,16,11);
+            // 0.4.645: the mushroom's stalk, and its cap on the block above, broad and flat on top.
+            case STALK->Block.box(5,0,5,11,16,11);
+            case CAP->Shapes.or(Block.box(5,0,5,11,10,11),Block.box(0,10,0,16,15,16));
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){

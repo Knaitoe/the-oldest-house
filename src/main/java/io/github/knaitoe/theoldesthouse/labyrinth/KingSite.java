@@ -68,6 +68,15 @@ public final class KingSite {
     public static final BlockPos CAR_DOOR=new BlockPos(11,0,-72),GUARD=new BlockPos(16,0,-72);
     public static final BlockPos[] SEATS={new BlockPos(13,0,-71),new BlockPos(13,0,-72),new BlockPos(13,0,-73),new BlockPos(20,0,-71),new BlockPos(20,0,-72),new BlockPos(20,0,-73)};
     public static final net.minecraft.world.phys.Vec3 RIDE_OUT=new net.minecraft.world.phys.Vec3(1.5,0,-85.5);
+    /**
+     * 0.4.645, "Who are you?": the mushroom in the west file at the far edge of the fifth square, where the fill gives out, with the
+     * Caterpillar on its cap; and the drawn bridge that carries the road over the brook beyond, and the bank on the near side of it
+     * where a thing that has gone through is set back.
+     */
+    public static final BlockPos MUSHROOM=new BlockPos(-16,0,-114);
+    public static final net.minecraft.world.phys.Vec3 BANK=new net.minecraft.world.phys.Vec3(0,0,-116.5);
+    /** The drawn bridge's two rows (the brook beyond the fifth rank), across the road at x -1 and 0. */
+    public static boolean onDrawnBridge(Vec3 r){int z=(int)Math.floor(r.z);return r.x>=-1.4&&r.x<1.4&&(z==rankFar(5)-1||z==rankFar(5)-2);}
     /** The Queen's peg on a square (2 to 8): beside the road, just past the crossing. */
     public static BlockPos peg(int rank){return new BlockPos(2,0,rankNear(rank)-1);}
     /** The hill's height over a column, 0 off it. */
@@ -184,6 +193,8 @@ public final class KingSite {
         rattle(l,b);
         hillside(l,b);
         carriage(l,b);
+        mushroom(l,b);
+        drawnBridge(l,b);
         // 0.4.644: a peg on every square from the second, and the glass table by the road on the hill's square.
         for(int r=2;r<=RANKS;r++)set(l,b,peg(r),KingBlock.of(KingBlock.Kind.PEG,Direction.NORTH));
         set(l,b,GLASS_TABLE,KingBlock.of(KingBlock.Kind.GLASS_TABLE,Direction.WEST));
@@ -219,6 +230,15 @@ public final class KingSite {
         }
         for(var seat:SEATS)set(l,b,seat,fit(KingBlock.Kind.SEAT,seat.getX()<GUARD.getX()?Direction.EAST:Direction.WEST));
         for(int x:new int[]{CAR_WEST+2,CAR_EAST-2})for(int z:new int[]{CAR_NORTH-1,CAR_SOUTH+1})set(l,b,x,0,z,fit(KingBlock.Kind.WHEEL,Direction.NORTH));
+    }
+    /** 0.4.645: the mushroom, its stalk and its broad cap a block up. */
+    static void mushroom(ServerLevel l,BlockPos b){
+        set(l,b,MUSHROOM,fit(KingBlock.Kind.STALK,Direction.NORTH));set(l,b,MUSHROOM.above(),fit(KingBlock.Kind.CAP,Direction.NORTH));
+        for(int y=2;y<=4;y++)set(l,b,MUSHROOM.above(y),AIR);
+    }
+    /** 0.4.645: the footbridge beyond the fifth square is only drawn (KingDrawnBridgeBlock). */
+    static void drawnBridge(ServerLevel l,BlockPos b){
+        for(int z=rankFar(5)-2;z<=rankFar(5)-1;z++)for(int x=-1;x<=0;x++)set(l,b,x,-1,z,KingRegistry.DRAWN_BRIDGE.get().defaultBlockState());
     }
     /** 0.4.643: the brothers' rattle lying on his square. */
     public static void rattle(ServerLevel l,BlockPos b){set(l,b,RATTLE,KingBlock.of(KingBlock.Kind.RATTLE,Direction.NORTH));}
