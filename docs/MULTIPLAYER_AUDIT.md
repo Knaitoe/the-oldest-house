@@ -179,6 +179,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.635, Second Person: E3.** Frightened out is read from that reader's own record; the night they leave is staged in that reader's copy only.
 - **0.4.636, Second Person: E4.** Known gently is read from that reader's own record; the cups, the talk and the question are staged in that reader's copy only, and the answer is that reader's word.
 - **0.4.637, Second Person: aftermath.** Whether a visit is the aftermath is read from that reader's own record; the flat is that reader's own copy, so the aftermath is staged for them alone, and the dust is sent to them only.
+- **0.4.640, Second Person: who comes for supper.** The guest comes from that reader's own snapshot, in their own copy of the flat.
 - **0.4.639, Second Person: why they are here.** Read from that reader's own snapshot; the chair is on their own copy's landing only.
 - **0.4.638, Second Person: the other homes.** The voices come from that reader's own snapshot of home; each reader's flat is their own copy, so one reader's caller is never heard in another's.
 - **0.4.631, A Little Longer: leaving early and coming back.** The question, the reunion and the early going are each reader's own, in their own copy, from their own record.

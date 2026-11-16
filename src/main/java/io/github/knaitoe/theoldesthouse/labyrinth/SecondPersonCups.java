@@ -60,14 +60,16 @@ public final class SecondPersonCups {
     static long hour(CompoundTag own){return 13200;}
 
     /** What they tell the reader across the table, from the year as it was. */
-    static List<String> talk(CompoundTag own){
+    public static List<String> talk(CompoundTag own){
         var out=new ArrayList<String>(OPENING);
         if(own.getBoolean("SleeveFinished"))out.add("I finished Iris's sleeve. It's the wrong length. I don't care.");
         else if(own.getBoolean("IrisKnocked"))out.add("Iris knew. She said I had company. I thought she meant a cat.");
         else out.add("Iris used to say this flat was never empty.");
         out.add(switch(SecondPersonStory.home(own)){case "HAVEN"->"I rang home on Sunday. I said I was all right. I think I meant it.";case "DANGER"->"I changed the number. Nobody rings now, and I like it.";
             case "RUNAWAY"->"I wrote to Lou. I haven't posted it. I will.";default->"I rang back, in the end. We talked for an hour about nothing.";});
-        out.add(own.getBoolean("SamStayed")?"Sam comes at the weekends now. Sam always comes.":"Sam asked after you. I said you were fine. I don't know why I said that.");
+        String g=SecondPersonStory.guest(own);
+        out.add(SecondPersonStory.friend(own)?own.getBoolean("SamStayed")?"Marcus is on lates this week. We hardly see each other. I like knowing he's in.":"Marcus found a room in the end. He rings on Sundays."
+            :own.getBoolean("SamStayed")?g+" comes at the weekends now. "+g+" always comes.":g+" asked after you. I said you were fine. I don't know why I said that.");
         out.add(switch(own.getString("Seen")){
             case "still"->"You stood still for me, that night in the glass. I've thought about it a lot.";
             case "touch_kind"->"That night you put your hand on me. It was cold. It was kind.";
@@ -130,7 +132,7 @@ public final class SecondPersonCups {
     }
 
     static void account(StringBuilder b,CompoundTag own){
-        b.append("On the last evening of the year they set out two cups, and talked to you across the kitchen table: about Iris, about the phone, about Sam, about the face in the glass.");
+        b.append("On the last evening of the year they set out two cups, and talked to you across the kitchen table: about Iris, about the phone, about "+SecondPersonStory.guest(own)+", about the face in the glass.");
         b.append(" They asked if you would be here when they woke up.");
         String w=own.getString("CupsAnswer");
         b.append(w.isEmpty()?" You did not answer, and they said that was all right.":" You wrote "+w+" on the glass.");

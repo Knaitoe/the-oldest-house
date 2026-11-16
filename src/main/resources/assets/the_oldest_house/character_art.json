@@ -1488,6 +1488,30 @@
     "phase": 77
   },
   {
+    "name": "literary_flat_dev",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 214
+  },
+  {
+    "name": "literary_flat_hannah",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 215
+  },
+  {
+    "name": "literary_flat_marcus",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 216
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

@@ -135,7 +135,7 @@ public final class SecondPersonSpring {
     static void decide(Flat f,ServerPlayer p,CompoundTag own,@Nullable LiteraryActor a){
         int dt=dt(own),sub=sub(own);
         if(sub==0){
-            if(dt==60)say(f,a,SecondPersonSpringTexts.thinking(going(own)));
+            if(dt==60)say(f,a,SecondPersonSpringTexts.thinking(going(own),SecondPersonStory.guest(own)));
             if(dt==260)say(f,a,SecondPersonSpringTexts.OR_STAY);
             int laid=own.getInt("LaidAt");
             boolean noticed=laid>0&&own.getInt("Clock")-laid>=NOTICE;
@@ -148,7 +148,7 @@ public final class SecondPersonSpring {
         }
         if(dt==100){
             boolean stays=SecondPersonStory.stays(own);own.putString("Decision",stays?"stay":"go");own.putString("Going",stays?"":going(own));
-            say(f,a,stays?SecondPersonSpringTexts.STAYING:SecondPersonSpringTexts.decided(going(own)));
+            say(f,a,stays?SecondPersonSpringTexts.STAYING:SecondPersonSpringTexts.decided(going(own),SecondPersonStory.guest(own)));
         }
         if(dt>=240)go(own,S_POST);
     }

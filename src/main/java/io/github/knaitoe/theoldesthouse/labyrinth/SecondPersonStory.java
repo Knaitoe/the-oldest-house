@@ -22,6 +22,12 @@ public final class SecondPersonStory {
     static boolean haven(CompoundTag own){return own.getCompound("Snap").getString("Home").equals("HAVEN");}
     /** 0.4.638: the home the House read, when it read one: HAVEN, DANGER or RUNAWAY; otherwise empty, and the caller is an old friend. */
     public static String home(CompoundTag own){String h=own.getCompound("Snap").getString("Home");return h.equals("HAVEN")||h.equals("DANGER")||h.equals("RUNAWAY")?h:"";}
+    /** 0.4.640: who comes for supper in autumn, from the House's settled read of who the reader is drawn to (DRAWN_TO). Someone from
+     *  work for MEN (Dev) or WOMEN (Hannah); Marcus, a friend who needs somewhere to live, for NO_ONE; Sam for BOTH or no settled
+     *  read, with what they are to each other left open. */
+    public static String guest(CompoundTag own){return switch(own.getCompound("Snap").getString("DrawnTo")){case "MEN"->"Dev";case "WOMEN"->"Hannah";case "NO_ONE"->"Marcus";default->"Sam";};}
+    public static boolean friend(CompoundTag own){return guest(own).equals("Marcus");}
+    public static int guestPhase(CompoundTag own){return switch(guest(own)){case "Dev"->SecondPerson.DEV;case "Hannah"->SecondPerson.HANNAH;case "Marcus"->SecondPerson.MARCUS;default->SecondPerson.SAM;};}
     /** 0.4.639: why the House read they have come to live alone here (AGE): DIGITAL, TRANSITIONAL, ANALOG, or nothing. */
     public static String age(CompoundTag own){String a=own.getCompound("Snap").getString("Age");return a.equals("DIGITAL")||a.equals("TRANSITIONAL")||a.equals("ANALOG")?a:"";}
     public static boolean ageSettled(CompoundTag own){return !age(own).isEmpty()&&own.getCompound("Snap").getBoolean("AgeSettled");}
@@ -327,9 +333,11 @@ public final class SecondPersonStory {
         b.append(switch(own.getString("Night")){case "doorway"->"The first night you stood in their doorway, and they said \"...hello?\" into the dark.";case "tap"->"The first night you ran the kitchen tap, and they got up and turned it off, and stood a long time at the sink.";
             case "armchair"->"The first night you sat in the armchair in the dark, and they never knew.";case "shut"->"The first night you shut their door on them, and they slept.";default->"The first night you left them alone, and they slept at last, near dawn.";}).append("\n\n");
         // Sam and the evening.
-        b.append(switch(own.getString("Evening")){case "helped"->"When Sam came for supper you lit the lamp and straightened the cloth. ";case "interfered"->"When Sam came for supper you made yourself felt, and Sam laughed and said the flat was haunted. ";
-            case "seen"->"When Sam came for supper you stood in the dark window behind their chair, and Sam saw somebody standing there, and the evening ended. ";case "alone"->"When Sam came for supper you went into the bedroom and shut the door on yourself. ";default->"When Sam came for supper you let the evening be. ";});
-        if(!own.getString("Evening").equals("seen"))b.append(own.getBoolean("SamStayed")?"Sam stayed.":"Sam went home.");
+        // 0.4.640: the guest by the House's read; Marcus comes about the spare room.
+        String g=guest(own),came=friend(own)?"When Marcus came round about the spare room":"When "+g+" came for supper";
+        b.append(switch(own.getString("Evening")){case "helped"->came+" you lit the lamp and straightened the cloth. ";case "interfered"->came+" you made yourself felt, and "+g+" laughed and said the flat was haunted. ";
+            case "seen"->came+" you stood in the dark window behind their chair, and "+g+" saw somebody standing there, and the evening ended. ";case "alone"->came+" you went into the bedroom and shut the door on yourself. ";default->came+" you let the evening be. ";});
+        if(!own.getString("Evening").equals("seen"))b.append(SecondPersonStory.friend(own)?own.getBoolean("SamStayed")?"Marcus moved in.":"Marcus found somewhere else.":own.getBoolean("SamStayed")?g+" stayed.":g+" went home.");
         b.append("\n\n");
         // Iris.
         if(own.getBoolean("IrisKnocked"))b.append(own.getBoolean("IrisTold")?"You knocked on Iris's wall, and she knocked back, and later she told them: \"You've got company. I don't mind it.\"":"You knocked on Iris's wall, and she knocked back.");

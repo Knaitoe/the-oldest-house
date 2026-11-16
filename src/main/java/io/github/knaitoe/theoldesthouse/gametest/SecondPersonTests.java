@@ -528,4 +528,31 @@ public final class SecondPersonTests {
             .thenSucceed();
     }
     @AfterBatch(batch="second_age") public static void ageDone(ServerLevel l){close();}
+
+    private static CompoundTag drawn(String to){var own=new CompoundTag();var snap=new CompoundTag();snap.putString("DrawnTo",to);own.put("Snap",snap);return own;}
+    /**
+     * 0.4.640: who comes for supper. A settled read of the reader as drawn to men brings Dev, to women Hannah, to no one Marcus (a friend
+     * who needs somewhere to live, with his own evening, question and ending); both, or no settled read, keep Sam. Each has their own
+     * stranger phase and the account names them.
+     */
+    @GameTest(template="empty",batch="second_guests",timeoutTicks=200)
+    public static void whoComesForSupper(GameTestHelper h){
+        var want=java.util.Map.of("MEN","Dev","WOMEN","Hannah","NO_ONE","Marcus","BOTH","Sam","","Sam");
+        var phases=new java.util.HashSet<Integer>();
+        for(var e:want.entrySet()){var own=drawn(e.getKey());
+            h.assertTrue(SecondPersonStory.guest(own).equals(e.getValue()),e.getKey()+" brings "+e.getValue()+", not "+SecondPersonStory.guest(own));
+            h.assertTrue(SecondPerson.guest(SecondPersonStory.guestPhase(own)),"their phase is a guest's");phases.add(SecondPersonStory.guestPhase(own));
+            own.putString("Evening","helped");own.putBoolean("SamStayed",true);
+            var b=new StringBuilder(SecondPersonStory.account(own));
+            h.assertTrue(b.toString().contains(e.getValue()),"the account names "+e.getValue()+": "+b);
+            if(!e.getValue().equals("Sam"))h.assertFalse(b.toString().contains("Sam"),"and nobody else: "+b);}
+        h.assertTrue(phases.size()==4,"four guests, four faces: "+phases);
+        h.assertTrue(SecondPersonStory.friend(drawn("NO_ONE"))&&!SecondPersonStory.friend(drawn("MEN")),"only Marcus has come about the room");
+        var marcus=drawn("NO_ONE");marcus.putString("Evening","helped");marcus.putBoolean("SamStayed",true);var b=new StringBuilder(SecondPersonStory.account(marcus));
+        h.assertTrue(b.toString().contains("Marcus moved in.")&&b.toString().contains("about the spare room"),"Marcus moved in: "+b);
+        h.assertTrue(SecondPersonSpringTexts.decided("sam","Hannah").equals("I'm going to Hannah's.")&&SecondPersonSpringTexts.thinking("sam","Marcus").contains("The two of us"),"spring knows who");
+        h.assertTrue(SecondPersonCups.talk(marcus).stream().anyMatch(t->t.contains("Marcus")),"the two cups know who");
+        h.succeed();
+    }
+    @AfterBatch(batch="second_guests") public static void guestsDone(ServerLevel l){close();}
 }

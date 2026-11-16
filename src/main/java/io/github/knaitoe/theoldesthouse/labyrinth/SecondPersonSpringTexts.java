@@ -15,6 +15,9 @@ public final class SecondPersonSpringTexts {
     public static final String AGENT_UP="It'll go up in the summer. Everything does. I'll send it over.";
     public static final String AGENT_THANKS="Thanks. End of the week, then.";
     // Deciding.
+    /** 0.4.640: the guest by the House's read; Marcus, who moved in, would look for somewhere bigger with them. */
+    public static String thinking(String going,String guest){return going.equals("sam")?guest.equals("Marcus")?"Marcus says we could find somewhere bigger. The two of us.":guest+"'s got a spare room. "+guest+"'s got a garden.":thinking(going);}
+    public static String decided(String going,String guest){return going.equals("sam")?guest.equals("Marcus")?"Marcus and me are going to look for somewhere.":"I'm going to "+guest+"'s.":decided(going);}
     public static String thinking(String going){return switch(going){
         case "sam"->"Sam's got a spare room. Sam's got a garden.";
         case "home"->"I could go home. They'd have the back room ready by Friday.";
