@@ -133,6 +133,12 @@ public final class KingTests {
             h.assertTrue(text.contains(".sevom nevele ni niw dna ,yalp ot etihW"),"the problem, printed backwards");
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the paper says nothing of what anybody is: "+word);
             h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            // Run 1683: a reader standing by his tree, near enough that his own tick runs. The game's rule that gets up a sleeper
+            // with no bed under him is not his: he sleeps on, as the dream has him, and is not stood up between its ticks.
+            var by=f.player("king_by_tree",P);by.teleportTo(l,b.getX()+KingSite.KING.getX()+.5,b.getY()+KingSite.KING.getY(),b.getZ()+KingSite.KING.getZ()+3.5,180,0);
+        }).thenIdle(10).thenExecute(()->{
+            var k=King.find(l,b);
+            h.assertTrue(k!=null&&k.hasPose(Pose.SLEEPING)&&k.isSleeping(),"with a reader by his tree, so that his own tick runs, he sleeps on: "+k+" "+(k==null?"":k.getPose()));
             done();h.succeed();
         });
     }
