@@ -33,6 +33,16 @@ public final class LongerRegistry {
     private static DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> sound(String id){return SOUNDS.register(id,()->net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** 0.4.622 (tools/generate_longer_audio.py): Rowan's five notes, hummed at the bench; a valve set's dial turned through the band. */
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> HUM=sound("longer.hum"),TUNING=sound("longer.tuning"),BURST=sound("longer.burst");
+    /** 0.4.624 (tools/generate_longer_audio.py): the kettle coming to the boil and clicking off; tea poured; the toaster's spring. */
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> KETTLE=sound("longer.kettle"),POUR=sound("longer.pour"),TOASTER=sound("longer.toaster");
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    private static net.minecraft.world.food.FoodProperties food(int n,float sat){return new net.minecraft.world.food.FoodProperties.Builder().nutrition(n).saturationModifier(sat).alwaysEdible().build();}
+    /** 0.4.624, the kettle chapter: the cup without the crack, drunk (not eaten); the two slices, one of them burnt. Drawn by tools/draw_longer_art.py. */
+    public static final DeferredItem<net.minecraft.world.item.Item> TEA=ITEMS.register("longer_tea",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1).food(food(1,.2F))){
+        @Override public net.minecraft.world.item.UseAnim getUseAnimation(net.minecraft.world.item.ItemStack s){return net.minecraft.world.item.UseAnim.DRINK;}
+        @Override public net.minecraft.sounds.SoundEvent getEatingSound(){return net.minecraft.sounds.SoundEvents.GENERIC_DRINK;}});
+    public static final DeferredItem<net.minecraft.world.item.Item> TOAST=ITEMS.register("longer_toast",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1).food(food(3,.4F))));
+    public static final DeferredItem<net.minecraft.world.item.Item> BURNT_TOAST=ITEMS.register("longer_burnt_toast",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1).food(food(2,.2F))));
     private LongerRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }

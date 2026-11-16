@@ -1966,5 +1966,13 @@
   "block.the_oldest_house.longer_facade_dark": "Dark Window",
   "subtitles.the_oldest_house.longer.hum": "Someone hums",
   "subtitles.the_oldest_house.longer.tuning": "A radio is tuned",
-  "subtitles.the_oldest_house.longer.burst": "A radio bursts and pops"
+  "subtitles.the_oldest_house.longer.burst": "A radio bursts and pops",
+  "item.the_oldest_house.longer_tea": "Tea",
+  "item.the_oldest_house.longer_toast": "Toast",
+  "item.the_oldest_house.longer_burnt_toast": "Burnt Toast",
+  "subtitles.the_oldest_house.longer.kettle": "A kettle boils and clicks off",
+  "subtitles.the_oldest_house.longer.pour": "Tea is poured",
+  "subtitles.the_oldest_house.longer.toaster": "A toaster pops up",
+  "subtitles.the_oldest_house.longer.tune": "A tune plays on the radio",
+  "subtitles.the_oldest_house.longer.tune_low": "A tune plays quietly on the radio"
 }

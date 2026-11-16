@@ -75,6 +75,38 @@ public final class LongerTexts {
         WHICH="Which turn didn't work?",WHICH_ANSWER="The one with the line through it. It went back to here.",
         LEAVE="Leave it there",
         ROWAN_AFTER="I'm leaving it alone tonight. It can think about what it did.";
+    /**
+     * 0.4.624, chapter 2, the kettle (LongerKettle). The proposal's own lines word for word: "I'm making tea.", "Is that part of the
+     * repair?" (the reader's), "No.", "You could stay for it.", "You don't have to be polite.", "I'm being brave." (the reader's),
+     * "That's worse." The rest are new and flagged for the owner in docs/A_LITTLE_LONGER_0_4_624.md.
+     */
+    public static final String MAKING_TEA="I'm making tea.",PART="Is that part of the repair?",NO="No.",SAY_NOTHING="Say nothing",
+        STAY_FOR="You could stay for it.",YES="I'd like that.",ONE_CUP="One cup.",KEEP_GOING="I should keep going.",
+        GO_ON="All right. It's the same door you came in by.",STILL_THERE="Kettle's still there.",
+        POURED="The one without the crack's yours.",TOOK_CUP="You take the cup without the crack.",
+        NOTICED_LINE="This is the good chair. I know. I'm not getting up.",
+        GOOD_TAKEN="You found the good one. That's fine. That's completely fine.",
+        OPPOSITE="Is it cold by the window? Pull the chair in. It's warmer this side.",
+        STAND_SIT="You can sit. That chair doesn't bite. This one does, a bit.",
+        HELPING="Two slices. The left side burns, so watch it.",
+        TOAST_ASK="Push the toaster down, would you? It's the only thing in this flat I can cook.",
+        HEAT="It's fine. The heat's perfectly manageable.",RESCUED_LINE="Show-off.",
+        TEASE="Perfectly manageable.",TEASED_LINE="It was until it wasn't.",
+        OFFER="Give them the good slice",OFFERED_LINE="Then you've got the burnt one. I won't stop you.",
+        BRAVE_ASK="I'll have the burnt one.",POLITE="You don't have to be polite.",BRAVE_LINE="I'm being brave.",WORSE="That's worse.",
+        TOASTER_DOWN_NOW="The lever goes down on two slices. The elements tick.",
+        ONE_BURNT="The toaster throws up two slices. The left one is black down one side.",
+        KETTLE_ON="Kettle's on. Sit down somewhere.",
+        ROWAN_KETTLE_AFTER="Sit as long as you like. I'm not going anywhere. I've checked.",
+        Q_MUSIC="Music, or quiet? I never know which people want.",A_MUSIC="Music. Quiet in here and I start listening for things.",
+        Q_PLAN="Do you like having a plan?",A_PLAN="I have a list. I don't do what's on it.",
+        Q_FIRST="First thing you'd do, out there?",A_FIRST="Find out what day it is.",
+        ROWAN_TEA="Drink it while it's hot. It won't be, for long.";
+    /** The reader's answers to Rowan's three questions, in order of the questions. */
+    public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
+        java.util.List.of("Music.","Quiet.","Whatever you'd have on."),
+        java.util.List.of("Yes.","Not really.","Depends whose."),
+        java.util.List.of("Eat something that isn't toast.","Sleep.","I don't know yet."));
     /** The reader's four first questions, and Rowan's answers, in order. */
     public static final java.util.List<String> QUESTIONS=java.util.List.of("Where is this?","What's wrong with it?","It's going well, then.","I'm only passing through."),
         ANSWERS=java.util.List.of("My shop. It was on Carver Street until about a week ago. Now it's on whatever this is.",
