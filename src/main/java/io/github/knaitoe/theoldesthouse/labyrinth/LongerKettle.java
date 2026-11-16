@@ -50,7 +50,7 @@ public final class LongerKettle {
     private LongerKettle(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.LITTLE_LONGER;
     /** The reader's record: the chapter's stage, whether the offer was let go, what they said to it, how the toast went, the three answers. */
-    public static final String STAGE="Kettle0624",DECLINED="Declined0624",STAY="Stay0624",TOAST="Toast0624",CUP="TookCup0624",NOTICED="Noticed0624",
+    public static final String SAID_NOTHING="Quiet0624",STAGE="Kettle0624",DECLINED="Declined0624",STAY="Stay0624",TOAST="Toast0624",CUP="TookCup0624",NOTICED="Noticed0624",
         MUSIC="Music0624",PLAN="Plan0624",FIRST="First0624";
     public static final int NONE=0,OFFER=1,PAUSE=2,STAY_ASK=3,UP=4,BOIL=5,POURED=6,SEATED=7,TOASTING=8,TOAST_ASK=9,NOW=10,DONE=11;
     public static final String RESCUED="RESCUED",TEASED="TEASED",OFFERED="OFFERED",BRAVE="BRAVE",UNTOASTED="UNTOASTED";
@@ -75,7 +75,7 @@ public final class LongerKettle {
     private static final Vec3 BY_ARMCHAIR=new Vec3(.5,6,-15.5),BY_KITCHEN_CHAIR=new Vec3(2.5,6,-15.5);
 
     /** One copy's chapter: which reader it is for, Rowan's walk, and its clocks. */
-    static final class Work {UUID reader;int near;long at=-1,boilAt=-1,toastAt=-1;int leg=-1,via;boolean rescued,cupsTaken,inKitchenChair;}
+    static final class Work {UUID reader;int near;long doneAt=-1,at=-1,boilAt=-1,toastAt=-1;int leg=-1,via;boolean rescued,cupsTaken,inKitchenChair;}
     private static final Map<BlockPos,Work> WORK=new HashMap<>();
     static Work work(BlockPos b){return WORK.computeIfAbsent(b.immutable(),k->new Work());}
     public static void clearAll(){WORK.clear();}
@@ -119,9 +119,9 @@ public final class LongerKettle {
             else{a.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);a.setItemInHand(InteractionHand.OFF_HAND,ItemStack.EMPTY);}
         }
     }
-    private static void place(LiteraryActor a,BlockPos b,LongerRowan.Spot s){var at=s.at(b);a.setPos(at.x,at.y,at.z);a.setYRot(s.look());a.setYBodyRot(s.look());a.setYHeadRot(s.look());}
+    static void place(LiteraryActor a,BlockPos b,LongerRowan.Spot s){var at=s.at(b);a.setPos(at.x,at.y,at.z);a.setYRot(s.look());a.setYBodyRot(s.look());a.setYHeadRot(s.look());}
     /** Kept where they are, doing this, turned this way; the head toward a reader near. */
-    private static void keep(LiteraryActor a,BlockPos b,LongerRowan.Spot s,List<ServerPlayer> here){
+    static void keep(LiteraryActor a,BlockPos b,LongerRowan.Spot s,List<ServerPlayer> here){
         var at=s.at(b);if(a.position().distanceToSqr(at)>1e-4)a.setPos(at.x,at.y,at.z);
         if(a.gesture()!=s.gesture())a.gesture(s.gesture());
         float body=Mth.approachDegrees(a.getYRot(),s.look(),LongerRowan.TURN);a.setYRot(body);a.setYBodyRot(body);
@@ -168,6 +168,9 @@ public final class LongerKettle {
             case TOAST_ASK,NOW->{keep(a,b,seat(own),here);return true;}
             case DONE->{
                 if(!a.getMainHandItem().is(LongerRegistry.TEA.get()))a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(LongerRegistry.TEA.get()));
+                // 0.4.625: then the radio chapter (LongerRadio), which has Rowan from here on.
+                if(w.doneAt<0)w.doneAt=now;
+                if(LongerRadio.tick(l,b,a,here,p,own,w.doneAt))return true;
                 keep(a,b,seat(own),here);return true;}
             default->{return false;}
         }
@@ -183,7 +186,7 @@ public final class LongerKettle {
     private static void askPart(ServerPlayer p){Talk.ask(p,Talk.reply(LongerTexts.PART,r->pause(r,true)),Talk.act(LongerTexts.SAY_NOTHING,r->pause(r,false)));}
     private static void pause(ServerPlayer p,boolean asked){
         var b=base(p);var a=rowan(p);if(b==null||a==null)return;var own=own(p);if(stage(own)!=OFFER)return;
-        if(asked)line(p,a,LongerTexts.NO);
+        if(asked)line(p,a,LongerTexts.NO);else own.putBoolean(SAID_NOTHING,true);
         work(b).at=p.serverLevel().getGameTime();stage(p,own,PAUSE);Talk.end(p);
     }
     private static void askStay(ServerPlayer p){
@@ -349,7 +352,7 @@ public final class LongerKettle {
         var a=rowan(p);var own=own(p);if(a==null||stage(own)!=NOW||own.contains(KEYS[i]))return;
         own.putInt(KEYS[i],choice);save(p,own);line(p,a,answer(i));
         if(i<2)ask(p,a,i+1,false);
-        else{stage(p,own,DONE);Talk.end(p);}
+        else{stage(p,own,DONE);Talk.end(p);var b=base(p);if(b!=null)work(b).doneAt=p.serverLevel().getGameTime();}
     }
 
     // ------------------------------------------------------------------------------------------------ a hand on Rowan
@@ -382,6 +385,7 @@ public final class LongerKettle {
             }
             case TOAST_ASK,NOW->{Talk.resume(p,LongerRowan.TALK);return true;}
             case DONE->{
+                if((own.getBoolean("Kitchen0624")||own.getBoolean(NOTICED))&&LongerRadio.talk(p,a,own))return true;
                 Talk.begin(p,LongerRowan.TALK,LongerTexts.ROWAN);
                 if(!own.getBoolean("Kitchen0624")&&!own.getBoolean(NOTICED)){own.putBoolean(NOTICED,true);save(p,own);line(p,a,LongerTexts.NOTICED_LINE);}
                 else line(p,a,LongerTexts.ROWAN_KETTLE_AFTER);
@@ -397,6 +401,8 @@ public final class LongerKettle {
     // ------------------------------------------------------------------------------------------------ for cases
     /** Rowan's leg of the walk or errand this chapter. */
     public static int leg(BlockPos b){return work(b).leg;}
+    /** For cases: the tea finished this long ago. */
+    public static void doneWaited(BlockPos b,long ticks){work(b).doneAt-=ticks;}
     /** The kettle's clock, as if this many ticks had passed. */
     public static void boiled(BlockPos b,long ticks){var w=work(b);w.boilAt-=ticks;}
     /** The toaster's clock, as if this many ticks had passed. */

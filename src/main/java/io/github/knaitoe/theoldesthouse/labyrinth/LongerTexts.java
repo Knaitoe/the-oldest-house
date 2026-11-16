@@ -18,8 +18,8 @@ public final class LongerTexts {
     public static final String LAMP_ON="The lamp comes on. Its shade has been mended with tape, carefully.",
         LAMP_OFF="The lamp goes off. The bulb ticks as it cools.",
         BENCH_RADIO="A table set with its back off. Somebody has been in it with a screwdriver tonight; the screws are in a saucer, all but one.",
-        FLAT_RADIO_ON="The kitchen radio clicks and warms up into a hiss that never finds a station.",
-        FLAT_RADIO_OFF="The hiss stops.",
+        FLAT_RADIO_ON="The kitchen radio clicks and warms up, and a tune comes through, clear as anything.",
+        FLAT_RADIO_OFF="The tune stops in the middle of itself.",
         TRAYS="Parts trays, every compartment labelled in the same pencil: valves, knobs, grub screws, \"odd\".",
         CHAIR="The chair's front leg has been mended twice: once with a splint, once with a better splint.",
         SHELF="Sets waiting their turn, each with a tag tied to the dial. Most of the tags give a day of the week and nothing else.",
@@ -102,6 +102,25 @@ public final class LongerTexts {
         Q_PLAN="Do you like having a plan?",A_PLAN="I have a list. I don't do what's on it.",
         Q_FIRST="First thing you'd do, out there?",A_FIRST="Find out what day it is.",
         ROWAN_TEA="Drink it while it's hot. It won't be, for long.";
+    /**
+     * 0.4.625, chapter 3, the radio (LongerRadio). The proposal's own lines word for word: "We should be listening for the doors." and
+     * "They keep changing." and "What did?" and "Why?" (the reader's), "We have been listening for the doors.", "I know.", "That came out
+     * badly.", "I wanted a minute where it was just a broken radio.", "When you finish that, come outside with me.", "Because I want to
+     * show you something.", "And because you keep finding reasons to stand up." The rest are new and flagged in
+     * docs/A_LITTLE_LONGER_0_4_625.md.
+     */
+    public static final String PUT_IT_ON="Put the radio on, would you? That one works. I fixed it in March.",
+        LEAVE_IT_ON="Leave it on?",LEAVE_IT="Leave it on.",SUITS="It suits you, having it on.",TURN_IT_DOWN="Could we turn it down?",
+        HEARD="Something could hear that.",GOOD="Good.",IT_DOES="It does, doesn't it.",
+        LISTENING="We should be listening for the doors.",HAVE_BEEN="We have been listening for the doors.",CHANGING="They keep changing.",
+        I_KNOW="I know.",SHARP="Then you listen. I'll do the cups.",
+        NOT_MUSIC="It's not about the music.",WHY_MATTER="Why does it matter so much?",LET_PASS="Let it pass",SORRY="Sorry. I didn't mean to spoil it.",
+        BADLY="That came out badly.",WHAT_DID="What did?",BROKEN_RADIO="I wanted a minute where it was just a broken radio.",
+        WANTED_TOO="I wanted that too.",STILL_REAL="The doors are still real.",JUST_QUIETER="Keep it on. Just quieter.",
+        BOTH_DID="Then we both did.",QUIETER_THEN="I know they are. Quieter, then. Not off.",LIVE_WITH="I can live with quieter.",
+        COME_OUTSIDE="When you finish that, come outside with me.",WHY="Why?",SHOW_YOU="Because I want to show you something.",
+        STAND_UP="And because you keep finding reasons to stand up.",BRING_CUP="Bring your cup. Come and sit outside with me a while.",
+        GO_WITH="Go with them",IN_A_MINUTE="In a minute.",UP_THERE="I'll be up there.",ROOF_WAIT="It's up here. Come and look.";
     /** The reader's answers to Rowan's three questions, in order of the questions. */
     public static final java.util.List<java.util.List<String>> ANSWERS_NOW=java.util.List.of(
         java.util.List.of("Music.","Quiet.","Whatever you'd have on."),

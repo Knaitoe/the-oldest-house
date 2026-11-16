@@ -35,6 +35,8 @@ public final class LongerRegistry {
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> HUM=sound("longer.hum"),TUNING=sound("longer.tuning"),BURST=sound("longer.burst");
     /** 0.4.624 (tools/generate_longer_audio.py): the kettle coming to the boil and clicking off; tea poured; the toaster's spring. */
     public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> KETTLE=sound("longer.kettle"),POUR=sound("longer.pour"),TOASTER=sound("longer.toaster");
+    /** 0.4.625 (tools/generate_longer_audio.py): the kitchen radio's tune, whole and turned down. */
+    public static final DeferredHolder<net.minecraft.sounds.SoundEvent,net.minecraft.sounds.SoundEvent> TUNE=sound("longer.tune"),TUNE_LOW=sound("longer.tune_low");
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static net.minecraft.world.food.FoodProperties food(int n,float sat){return new net.minecraft.world.food.FoodProperties.Builder().nutrition(n).saturationModifier(sat).alwaysEdible().build();}
     /** 0.4.624, the kettle chapter: the cup without the crack, drunk (not eaten); the two slices, one of them burnt. Drawn by tools/draw_longer_art.py. */

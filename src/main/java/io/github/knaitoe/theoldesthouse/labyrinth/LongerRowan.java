@@ -94,14 +94,14 @@ public final class LongerRowan {
     static final class Shop {UUID id;int phase=-1;int leg=-1,via=0,hold=0;long nextErrand=-1,nextHum=-1,nextTune=-1,lastTick=-1,spokenAt=-100000;}
     private static final Map<BlockPos,Shop> SHOPS=new HashMap<>();
     static Shop shop(BlockPos b){return SHOPS.computeIfAbsent(b.immutable(),k->new Shop());}
-    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();}
+    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();LongerRadio.clearAll();}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()-7,b.getY()-1,b.getZ()-19,b.getX()+8,b.getY()+LongerSite.ROOF+4,b.getZ()+1);}
     private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
 
     /** A reader arrives in their copy: the copy is kept ticking, and their Rowan is decided now if not already. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);LongerKettle.arrive(p,b,own);
+        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);LongerKettle.arrive(p,b,own);LongerRadio.arrive(p,b,own);
     }
     /** Rowan at this copy, if their body is here. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b){
@@ -121,7 +121,7 @@ public final class LongerRowan {
         s.id=a.getUUID();s.leg=-1;
     }
     /** Nobody at this copy: for a shop built again from nothing, and for tests. */
-    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);}
+    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);LongerRadio.forget(b);}
 
     /** Readers in this copy of the place. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
@@ -136,7 +136,10 @@ public final class LongerRowan {
     /** Once a tick for the copy, however many readers are in it. */
     public static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var s=shop(b);long now=l.getGameTime();if(s.lastTick==now)return;s.lastTick=now;
-        ensure(l,b);var a=find(l,b);if(a==null)return;
+        ensure(l,b);var a=find(l,b);
+        // 0.4.625: the kitchen radio's tune while it is on (LongerRadio), whoever switched it.
+        LongerRadio.tune(l,b,a);
+        if(a==null)return;
         if(s.nextErrand<0){s.nextErrand=now+SIT_LEAST+l.random.nextInt(SIT_MORE);s.nextHum=now+40;s.nextTune=now+100;}
         if(s.leg<0){
             // At the bench, while they work at it: humming now and then, and, while its back is off, the radio tuned through its static

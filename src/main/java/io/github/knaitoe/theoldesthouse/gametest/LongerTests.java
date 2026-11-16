@@ -561,4 +561,122 @@ public final class LongerTests {
             Talk.close(p);p.stopRiding();done();h.succeed();
         }));
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.625, chapter 3, the radio
+    private static int radio(LiteraryTests.Fixture f,ServerPlayer p){return LongerRadio.stage(f.own(p,P));}
+    /** The tea as drunk: the bench and the kettle finished, the good chair noticed, and how the reader stayed. */
+    private static void teaDone(LiteraryTests.Fixture f,ServerPlayer p,String stay){
+        var own=f.own(p,P);own.putInt(LongerBench.STAGE,LongerBench.DONE);own.putInt(LongerKettle.STAGE,LongerKettle.DONE);own.putBoolean(LongerKettle.NOTICED,true);own.putString(LongerKettle.STAY,stay);
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+    }
+    private static boolean heardAny(ServerPlayer p,net.minecraft.sounds.SoundEvent... sounds){NativeTestPlayers.flush(p);for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s)for(var x:sounds)if(s.getSound().value()==x)return true;return false;}
+    private static boolean on(ServerLevel l,BlockPos b){return LongerBlock.stage(l.getBlockState(b.offset(LongerSite.FLAT_RADIO)))==1;}
+
+    /**
+     * After the tea Rowan asks for the radio; the reader puts it on and the tune plays (heard). Worried that something could hear it: the
+     * disagreement word for word, Rowan's sharper answer, and Rowan away to the sink, through nothing solid. The reader lets it pass; Rowan
+     * repairs it ("That came out badly." "What did?" "I wanted a minute where it was just a broken radio."). Quieter: the tune goes on,
+     * turned down. Back in the chair, Rowan asks the reader outside plainly, and walks up the roof stair, through the stair house door,
+     * to the bench under the awning, on their own feet.
+     */
+    @GameTest(template="empty",batch="longer_radio_quarrel",timeoutTicks=3600)
+    public static void theRadioPlaysTheyDisagreeRowanRepairsItAndAsksTheReaderOutside(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_radio_quarrel",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{teaDone(f,p,"YES");f.at(p,P,2.5,6,-14.5);})
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);h.assertTrue(rowan(h,p).position().distanceTo(LongerKettle.ARMCHAIR_SPOT.at(b))<.05,"Rowan in the good chair");})
+        .thenExecute(()->LongerKettle.doneWaited(LiteraryVignettes.base(p,P),LongerRadio.ASK_AFTER))
+        .thenWaitUntil(()->h.assertTrue(radio(f,p)==LongerRadio.ASK_ON,"the ask: "+radio(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.PUT_IT_ON),"\"Put the radio on, would you?\" "+Talk.lines(p));
+            Talk.close(p);NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);
+            f.click(p,P,LongerSite.FLAT_RADIO);
+            h.assertTrue(on(l,b),"the radio on");
+        })
+        .thenWaitUntil(()->h.assertTrue(radio(f,p)==LongerRadio.LEAVE_ASK,"\"Leave it on?\" "+radio(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(heardAny(p,LongerRegistry.TUNE.get(),LongerRegistry.TUNE_LOW.get()),"the tune, heard (the quiet take while Rowan is still talking)");
+            h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.LEAVE_IT,LongerTexts.SUITS,LongerTexts.TURN_IT_DOWN,LongerTexts.HEARD)),"four ways: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.HEARD),"something could hear that");
+            var lines=Talk.lines(p);
+            int a=lines.indexOf("you: "+LongerTexts.LISTENING),c=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.HAVE_BEEN),d=lines.indexOf("you: "+LongerTexts.CHANGING),e=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.I_KNOW),s=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.SHARP);
+            h.assertTrue(a>=0&&c>a&&d>c&&e>d&&s>e,"the disagreement word for word, in order: "+lines);
+            h.assertTrue(radio(f,p)==LongerRadio.PUSHED&&f.own(p,P).getBoolean(LongerRadio.DISAGREED),"kept");
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(LongerRadio.leg(b)==1&&rowan(h,p).gesture()==LongerRadio.BUSY,"to the sink: "+rowan(h,p).position().subtract(b.getX(),b.getY(),b.getZ()));})
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerRadio.SINK_SPOT.at(b))<.05&&a.gesture()==LongerRadio.BUSY,"at the sink, busy with the cup");
+            h.assertTrue(Talk.choose(p,LongerTexts.LET_PASS)&&radio(f,p)==LongerRadio.PASSING,"let it pass");
+            LongerRadio.waited(b,LongerRadio.QUIET_PASS);
+        })
+        .thenWaitUntil(()->h.assertTrue(radio(f,p)==LongerRadio.REPAIR_ASK,"Rowan's repair: "+radio(f,p)))
+        .thenExecute(()->{
+            var lines=Talk.lines(p);
+            int a=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.BADLY),c=lines.indexOf("you: "+LongerTexts.WHAT_DID),d=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.BROKEN_RADIO);
+            h.assertTrue(a>=0&&c>a&&d>c,"the repair word for word: "+lines);
+            h.assertTrue(Talk.choose(p,LongerTexts.JUST_QUIETER)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.LIVE_WITH),"quieter");
+            h.assertTrue(LongerRadio.low(LiteraryVignettes.base(p,P))&&on(l,LiteraryVignettes.base(p,P)),"the tune kept, turned down");
+            h.assertTrue(f.own(p,P).getString(LongerRadio.REPAIR).equals(LongerRadio.QUIETER),"kept");
+            Talk.close(p);NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(rowan(h,p).position().distanceTo(LongerKettle.ARMCHAIR_SPOT.at(b))<.05,"back in the chair");})
+        .thenWaitUntil(()->h.assertTrue(heard(p,LongerRegistry.TUNE_LOW.get()),"the quiet take"))
+        .thenExecute(()->LongerRadio.waited(LiteraryVignettes.base(p,P),LongerRadio.INVITE_AFTER))
+        .thenWaitUntil(()->h.assertTrue(radio(f,p)==LongerRadio.INVITE_ASK,"the invitation: "+radio(f,p)))
+        .thenExecute(()->{
+            var lines=Talk.lines(p);
+            h.assertTrue(lines.contains(LongerTexts.ROWAN+": "+LongerTexts.COME_OUTSIDE)&&lines.contains("you: "+LongerTexts.WHY)&&lines.contains(LongerTexts.ROWAN+": "+LongerTexts.SHOW_YOU),"\"When you finish that, come outside with me.\" "+lines);
+            h.assertTrue(!lines.contains(LongerTexts.ROWAN+": "+LongerTexts.STAND_UP)&&f.own(p,P).getString(LongerRadio.INVITE).equals(LongerRadio.INVITE_DIRECT),"plainly, not flirting");
+            h.assertTrue(Talk.choose(p,LongerTexts.GO_WITH)&&radio(f,p)==LongerRadio.UP,"go with them");
+            Talk.close(p);
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(radio(f,p)==LongerRadio.ROOF,"up to the roof: "+rowan(h,p).position().subtract(b.getX(),b.getY(),b.getZ()));})
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerRadio.BENCH_SPOT.at(b))<.05&&io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat.of(a)!=null,"sat on the bench under the awning");
+            var door=l.getBlockState(b.offset(LongerSite.ROOF_DOOR));
+            h.assertTrue(door.getValue(DoorBlock.OPEN),"the stair house door left open behind them");
+            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.BROKEN_RADIO)),"nothing in chat");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * Nobody puts it on: Rowan gets up, walks to the worktop, switches it on and sits again. The reader says it suits them (a flirt, kept);
+     * no disagreement. Rowan asks them outside and adds "And because you keep finding reasons to stand up." In a minute: Rowan goes anyway.
+     * A reader who came for one cup is asked quietly instead.
+     */
+    @GameTest(template="empty",batch="longer_radio_flirt",timeoutTicks=3000)
+    public static void rowanPutsTheRadioOnAndAsksAFlirtingReaderOutsideInKind(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_radio_flirt",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{teaDone(f,p,"YES");f.at(p,P,2.5,6,-14.5);})
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);h.assertTrue(rowan(h,p).position().distanceTo(LongerKettle.ARMCHAIR_SPOT.at(b))<.05,"Rowan in the good chair");})
+        .thenExecute(()->LongerKettle.doneWaited(LiteraryVignettes.base(p,P),LongerRadio.ASK_AFTER))
+        .thenWaitUntil(()->h.assertTrue(radio(f,p)==LongerRadio.ASK_ON,"the ask"))
+        .thenExecute(()->{Talk.close(p);LongerRadio.waited(LiteraryVignettes.base(p,P),LongerRadio.SELF_AFTER);})
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(radio(f,p)==LongerRadio.LEAVE_ASK&&on(l,b),"Rowan puts it on: leg "+LongerRadio.leg(b));})
+        .thenExecute(()->{
+            h.assertTrue(Talk.choose(p,LongerTexts.SUITS)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.IT_DOES),"\"It does, doesn't it.\"");
+            h.assertTrue(f.own(p,P).getBoolean(LongerRadio.FLIRT)&&!f.own(p,P).getBoolean(LongerRadio.DISAGREED)&&radio(f,p)==LongerRadio.TO_INVITE,"a flirt kept, no disagreement");
+            Talk.close(p);
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(rowan(h,p).position().distanceTo(LongerKettle.ARMCHAIR_SPOT.at(b))<.05,"back in the chair");})
+        .thenExecute(()->LongerRadio.waited(LiteraryVignettes.base(p,P),LongerRadio.INVITE_AFTER))
+        .thenWaitUntil(()->h.assertTrue(radio(f,p)==LongerRadio.INVITE_ASK,"the invitation"))
+        .thenExecute(()->{
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.STAND_UP),"\"And because you keep finding reasons to stand up.\" "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.IN_A_MINUTE)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.UP_THERE)&&radio(f,p)==LongerRadio.UP,"in a minute: Rowan goes anyway");
+            Talk.close(p);
+            // One cup instead: asked quietly.
+            var own=f.own(p,P);own.remove(LongerRadio.FLIRT);own.putString(LongerKettle.STAY,"ONE_CUP");
+            h.assertTrue(LongerRadio.inviteKind(own).equals(LongerRadio.INVITE_QUIET),"one cup: the quiet invitation");
+            own.putString(LongerKettle.STAY,"YES");own.putBoolean(LongerKettle.SAID_NOTHING,true);
+            h.assertTrue(LongerRadio.inviteKind(own).equals(LongerRadio.INVITE_QUIET),"said nothing to the kettle: the quiet invitation");
+            done();h.succeed();
+        });
+    }
 }

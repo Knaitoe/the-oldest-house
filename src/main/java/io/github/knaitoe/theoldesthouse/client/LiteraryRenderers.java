@@ -289,6 +289,11 @@ public final class LiteraryRenderers {
                 case 11->{float c=(age%140)/140F;float sip=c<.09F?net.minecraft.util.Mth.sin(c/.09F*net.minecraft.util.Mth.PI):0;
                     rightArm.xRot=-.95F-.95F*sip;rightArm.yRot=-.3F+.28F*sip;rightArm.zRot=0;leftArm.xRot=-.58F;leftArm.yRot=.18F;leftArm.zRot=-.05F;
                     if(!speaking)head.xRot+=.1F-.32F*sip;}
+                // 0.4.625, the radio chapter (labyrinth.LongerRadio): at the sink with their cup, both hands down in the basin, scrubbing
+                // round it, the shoulders a little hunched to the job, the head down: busy with something that does not need doing.
+                case 12->{float r=net.minecraft.util.Mth.sin(age*.42F),q=net.minecraft.util.Mth.cos(age*.42F);
+                    rightArm.xRot=-.78F+r*.07F;rightArm.yRot=-.34F+q*.08F;rightArm.zRot=0;leftArm.xRot=-.72F;leftArm.yRot=.38F;leftArm.zRot=0;
+                    body.xRot+=.1F;if(!speaking)head.xRot+=.42F;}
                 default->{}
             }
         }
