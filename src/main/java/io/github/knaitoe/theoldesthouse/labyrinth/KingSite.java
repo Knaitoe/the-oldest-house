@@ -94,6 +94,19 @@ public final class KingSite {
     /** Whether a reader has got past the court's guard, toward the brook. */
     public static boolean pastCourt(Vec3 r){return r.z<GUARD_ROW-.4&&r.z>=rankFar(6)-3&&file((int)Math.floor(r.x))==2;}
 
+    /**
+     * 0.4.647, the forest on the seventh square. The Knight waits on his horse a little east of the road beside the square's peg and rides
+     * with the readers to the last brook, a pace east of the road ({@link #KNIGHT_LANE}). The road turns there: a side path leaves it
+     * eastward along the square's far edge ({@link #TURN_Z}), through the hedge, into the east file and in among a stand of trees that hides
+     * its end ({@link #TURN_END}).
+     */
+    public static final BlockPos KNIGHT_WAIT=new BlockPos(4,0,-141);
+    public static final double KNIGHT_LANE=3.5;
+    public static final int TURN_Z=-151;
+    public static final net.minecraft.world.phys.Vec3 TURN_END=new net.minecraft.world.phys.Vec3(19.5,0,-150.5);
+    /** Whether a place is on the turn's path (the two rows of it, from the road to its end among the trees). */
+    public static boolean onTurn(int x,int z){return (z==TURN_Z||z==TURN_Z-1)&&x>=1&&x<=(int)TURN_END.x+1;}
+
     public static BlockPos peg(int rank){return new BlockPos(2,0,rankNear(rank)-1);}
     /** The hill's height over a column, 0 off it. */
     public static int hill(int x,int z){double d=Math.hypot(x-HILL.getX(),z-HILL.getZ());return d>=HILL_RADIUS?0:(int)Math.round(HILL_HEIGHT*(1-d/HILL_RADIUS)+.25);}
@@ -213,6 +226,7 @@ public final class KingSite {
         drawnBridge(l,b);
         court(l,b);
         tree(l,b,CAT_TREE.getX(),CAT_TREE.getZ(),6,2);
+        forest(l,b);
         // 0.4.644: a peg on every square from the second, and the glass table by the road on the hill's square.
         for(int r=2;r<=RANKS;r++)set(l,b,peg(r),KingBlock.of(KingBlock.Kind.PEG,Direction.NORTH));
         set(l,b,GLASS_TABLE,KingBlock.of(KingBlock.Kind.GLASS_TABLE,Direction.WEST));
@@ -385,6 +399,39 @@ public final class KingSite {
         tree(l,b,TREE.getX(),TREE.getZ(),7,4);
         // The trunk is two thick at his tree.
         for(int y=0;y<5;y++){set(l,b,TREE.getX()+1,y,TREE.getZ(),KingRegistry.country("bark",false));}
+    }
+    // ------------------------------------------------------------------------------------------------ 0.4.647: the forest on the seventh rank
+    /**
+     * Trees over the whole seventh rank, closer set than the wood's and kept off the road, the Knight's lane, the hedge gaps, the peg and
+     * the turn's path; the turn itself, through the hedge and along the far edge of the square; and a stand of trees east of x 14 round
+     * its end, close enough that a rider who goes in among them is out of sight from the road.
+     */
+    static void forest(ServerLevel l,BlockPos b){
+        int near=rankNear(7),far=rankFar(7);
+        for(int x=WEST+2;x<=EAST-2;x+=4)for(int z=near-2;z>=far+2;z-=4){
+            int dx=(int)(hash(x,z)*3)-1,dz=(int)(hash(z,x)*3)-1,tx=x+dx,tz=z+dz;
+            if(!forestTree(tx,tz))continue;
+            tree(l,b,tx,tz,4+(int)(hash(tx,tz)*2),2);
+        }
+        // The turn: the hedge opened where the path goes through it, and the path laid along the far edge of the square to the stand.
+        for(int z=TURN_Z-1;z<=TURN_Z;z++)for(int x=1;x<=(int)TURN_END.x+1;x++){
+            for(int y=0;y<=6;y++)set(l,b,x,y,z,AIR);
+            set(l,b,x,-1,z,KingRegistry.country("path",ruled(x,z)));
+        }
+        // The stand round the turn's end: trees on both sides of the path and beyond its end, and boughs low enough to close it over.
+        int[][] stand={{14,-148},{16,-147},{18,-148},{20,-147},{22,-149},{23,-151},{21,-153},{18,-153},{15,-153},{17,-145}};
+        for(var t:stand)tree(l,b,t[0],t[1],5,2);
+    }
+    /** Whether the forest may set a tree's trunk at (x,z) (its boughs reach two blocks round it). */
+    static boolean forestTree(int x,int z){
+        if(rank(z)!=7||file(x)==0)return false;
+        if(x>=-3&&x<=6)return false; // the road and the Knight's lane, and two blocks either side of them
+        int hedge=Math.min(Math.abs(x+9),Math.abs(x-8));
+        if(hedge<=1)return false; // a trunk against the hedge
+        if(hedge<=3&&Math.abs(z-(rankNear(7)-7.5))<=4)return false; // the hedge gaps
+        if(z<=TURN_Z+3&&x>=1&&x<=13)return false; // the turn's path, short of the stand
+        if(x>=13&&z<=TURN_Z+4&&z>=TURN_Z-4)return false; // the stand is set by hand
+        return true;
     }
     static void tree(ServerLevel l,BlockPos b,int x,int z,int height,int spread){
         boolean ruled=ruled(x,z);var bark=KingRegistry.country("bark",ruled);var bough=KingRegistry.country("bough",ruled);

@@ -92,6 +92,7 @@ jobs:
           python3 tools/draw_lodging_things.py --check
           python3 tools/draw_longer_art.py --check
           python3 tools/draw_king_art.py --check
+          python3 tools/draw_king_horse.py --check
           python3 tools/generate_longer_audio.py --check
           python3 tools/generate_king_audio.py --check
           python3 tools/draw_pell_tapes.py --check

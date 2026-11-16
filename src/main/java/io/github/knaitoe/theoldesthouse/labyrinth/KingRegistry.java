@@ -29,7 +29,9 @@ public final class KingRegistry {
         // 0.4.644: the train starting and its whistle before the jump.
         TRAIN=sound("king.train"),WHISTLE=sound("king.whistle"),
         // 0.4.646: the court's pack going up and coming down as cards.
-        CARDS=sound("king.cards");
+        CARDS=sound("king.cards"),
+        // 0.4.647: the Knight falling off his horse, and his song.
+        KNIGHT_FALL=sound("king.knight_fall"),KNIGHT_SONG=sound("king.knight_song");
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     /** The country's materials; every one has its ruled twin, named with "_ruled". */
     public static final List<String> COUNTRY=List.of("turf_light","turf_dark","soil","hedge","brook","bridge","path","bark","bough");

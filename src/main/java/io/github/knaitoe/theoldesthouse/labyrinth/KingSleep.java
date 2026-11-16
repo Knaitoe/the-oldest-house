@@ -57,6 +57,12 @@ public final class KingSleep {
         // 0.4.646: the court of cards (KingCourt): whether the pack has come down and who said what it was, until when the Cat is over
         // the court, and until when the herald has his scroll up.
         boolean courtFallen;long catUntil;long heraldReadsUntil;final java.util.Set<UUID> fellBy=new java.util.HashSet<>();
+        // 0.4.647: the Knight (KingForest): how long unseen and seen, his falls, the turn (asked when, riding out from when, whether he
+        // thinned on the way, gone), and who he fell for, who was asked, who watched him round and who went on.
+        int knightUnseen,knightSeen,knightFalls;long knightAsked,knightRideFrom;boolean knightThinned,knightGone;
+        // 0.4.647: whether the Knight's song, sung beside him, has settled him in this dream (it does once).
+        boolean songSettled;
+        final java.util.Set<UUID> knightFellFor=new java.util.HashSet<>(),knightRaisedBy=new java.util.HashSet<>(),knightMet=new java.util.HashSet<>(),knightAskedOf=new java.util.HashSet<>(),sawKnightGo=new java.util.HashSet<>(),leftKnight=new java.util.HashSet<>();
     }
     /**
      * How the waking ended for each reader who was in the country, kept until that reader's own tick settles it. The waking ends inside
@@ -88,6 +94,7 @@ public final class KingSleep {
         KingGuard.tick(l,b,s);
         KingCaterpillar.tick(l,b);
         KingCourt.tick(l,b,s);
+        KingForest.tick(l,b,s);
         if(s.wakingAt<0)return;
         long t=now-s.wakingAt;
         if(t>=LINES_AT&&!s.awake){s.awake=true;KingBreath.redraw(l,b);for(var p:readers(l,b))King.cue(p,s.tooSoon?KingTexts.LINES_TOO_SOON:KingTexts.LINES);}
@@ -103,7 +110,8 @@ public final class KingSleep {
         // and every square whose peg has counted them (stood on while somebody, of the dream or another reader, was looking at them).
         if(s.ran.contains(p.getUUID()))own.putBoolean(KingQueen.RAN,true);
         if(s.ridden.contains(p.getUUID()))own.putBoolean(KingGuard.RODE,true);
-        for(int r=2;r<=KingSite.RANKS;r++)if(KingQueen.onPeg(p,b,r)&&(own.getInt(COUNTED)&1<<r)==0&&(KingBreath.lookedAtByTheDream(p,b)||KingBreath.noticed(p,b))){
+        // 0.4.647: the seventh square's peg (the forest's, where a reader is a line) counts only a thing: looked at, and fed.
+        for(int r=2;r<=KingSite.RANKS;r++)if(KingQueen.onPeg(p,b,r)&&(own.getInt(COUNTED)&1<<r)==0&&(r!=7||state>=KingBreath.THING)&&(KingBreath.lookedAtByTheDream(p,b)||KingBreath.noticed(p,b))){
             own.putInt(COUNTED,own.getInt(COUNTED)|1<<r);King.cue(p,KingTexts.COUNTED);}
         var r=p.position().subtract(b.getX(),b.getY(),b.getZ());boolean beside=KingBreath.beside(r);
         // 0.4.645: the drawn bridge. A thing that has gone through it into the brook is set back on the near bank, unhurt; anything
@@ -117,6 +125,8 @@ public final class KingSleep {
         }
         // 0.4.646: the court of cards: the summons, the sentence, and the way past the guard.
         KingCourt.reader(p,b,own,state);
+        // 0.4.647: the forest: the Knight's falls and his turn, and the song sung.
+        KingForest.reader(p,b,own,state);
         if(beside&&state>=KingBreath.THING&&!own.getBoolean(MET))own.putBoolean(MET,true);
         double moved=own.contains("KingLastX")?Math.hypot(r.x-own.getDouble("KingLastX"),r.z-own.getDouble("KingLastZ")):0;
         own.putDouble("KingLastX",r.x);own.putDouble("KingLastZ",r.z);
@@ -151,6 +161,18 @@ public final class KingSleep {
         if(after!=before)KingBreath.redraw(l,b);
         String line=after!=before?KingTexts.drewIn(after):KingTexts.STIRRED;
         for(var p:readers(l,b))King.cue(p,line);
+    }
+
+    /**
+     * 0.4.647: the Knight's song, sung beside him, settles him by four stirs, once a dream (the proposal: he does not settle by himself).
+     * The filled land goes out again from him as far as his depth comes back. True if it settled him.
+     */
+    public static boolean settleBySong(ServerLevel l,BlockPos b){
+        var s=get(b);if(s.awake||s.wakingAt>=0||s.songSettled)return false;
+        s.songSettled=true;int before=level(b);s.stirs=Math.max(0,s.stirs-4);int after=level(b);
+        if(after!=before)KingBreath.redraw(l,b);
+        for(var p:readers(l,b))King.cue(p,after!=before?KingTexts.SETTLED_OUT:KingTexts.SETTLED);
+        return true;
     }
 
     /** The breathing stops in the middle of a breath: the first silence since the glass. */
@@ -215,6 +237,7 @@ public final class KingSleep {
         KingBrothers.reset(l,b);
         var fresh=get(b);KingQueen.reset(l,b,fresh);KingGuard.reset(fresh);
         KingCourt.reset(l,b);
+        KingForest.reset(l,b);
     }
     /** For tests: forget the dream at this country. */
     public static void forget(BlockPos b){SLEEPS.remove(b.asLong());}

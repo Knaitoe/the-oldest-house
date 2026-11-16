@@ -23,6 +23,9 @@ ROWS = {
     'whistle': ('A train whistles', 96),
     # 0.4.646: the court's pack going up and coming down.
     'cards': ('A pack of cards flies up and falls', 64),
+    # 0.4.647: the Knight coming off his horse in his armour; and his song, eight bars, sung by him or by a reader who has heard it.
+    'knight_fall': ('Armour clatters to the ground', 32),
+    'knight_song': ('Someone sings the Knight\'s song', 32),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -169,7 +172,69 @@ def cards():
     return out + rush
 
 
-MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle, 'cards': cards}
+def knight_fall():
+    # 0.4.647: plate coming down on turf: a heavy thump, a cluster of short metallic clanks at inharmonic ratios (a helmet, a
+    # greave, a gauntlet), and a few small rattles settling after.
+    n = seconds(1.8)
+    t = times(n)
+    out = np.zeros(n)
+    thud = band(rng.standard_normal(n), 40, 260)
+    out += thud * np.exp(-np.clip(t - .06, 0, None) / .09) * (t >= .06) * 1.4
+    for at, f0, gain in ((.05, 820, .9), (.11, 1310, .6), (.19, 610, .7), (.33, 1720, .35), (.52, 990, .25), (.81, 1460, .15), (1.12, 1180, .08)):
+        bell = np.zeros(n)
+        for ratio, part in ((1, 1), (2.32, .5), (3.97, .3), (5.41, .18)):
+            bell += part * np.sin(2 * np.pi * f0 * ratio * np.clip(t - at, 0, None))
+        out += bell * np.exp(-np.clip(t - at, 0, None) / .07) * (t >= at) * gain
+    grit = band(rng.standard_normal(n), 2000, 7000) * np.exp(-((t - .12) / .08) ** 2) * .3
+    return out + grit
+
+
+# The Knight's song: eight bars in a lilting six-eight, one note to a syllable or held, a falling tune that lifts once and comes home.
+# (MIDI note, eighths.) Original.
+SONG = [
+    (62, 2), (66, 1), (69, 2), (69, 1),
+    (71, 2), (69, 1), (66, 3),
+    (67, 2), (64, 1), (67, 2), (71, 1),
+    (69, 6),
+    (74, 2), (73, 1), (71, 2), (69, 1),
+    (67, 2), (66, 1), (64, 3),
+    (66, 2), (69, 1), (67, 2), (64, 1),
+    (62, 6),
+]
+EIGHTH = .25
+
+
+def knight_song():
+    # An old man's voice, half sung and half hummed: a buzzing source (a few harmonics, falling off), shaped by two vowel resonances,
+    # a slow, slightly uneven vibrato, each note leaning in and easing off, with a breath between the phrases.
+    total = sum(e for _, e in SONG) * EIGHTH + .6
+    n = seconds(total)
+    t = times(n)
+    out = np.zeros(n)
+    at = .2
+    for k, (note, eighths) in enumerate(SONG):
+        length = eighths * EIGHTH
+        f = 440 * 2 ** ((note - 69) / 12)
+        local = t - at
+        inside = (local >= 0) & (local < length + .08)
+        lt = np.clip(local, 0, None)
+        vib = 1 + .006 * np.sin(2 * np.pi * (5.1 + .3 * np.sin(k)) * lt) * np.clip(lt / .25, 0, 1)
+        phase = 2 * np.pi * np.cumsum(np.where(inside, f * vib, 0)) / RATE
+        voice = np.zeros(n)
+        for h in range(1, 9):
+            # Vowel resonances near 600 and 1100 Hz lift the harmonics that fall near them.
+            fh = f * h
+            weight = (1 / h) * (1 + 1.6 * np.exp(-((fh - 600) / 220) ** 2) + 1.1 * np.exp(-((fh - 1100) / 300) ** 2))
+            voice += weight * np.sin(h * phase)
+        shape = np.clip(lt / .05, 0, 1) * np.clip((length + .08 - lt) / .12, 0, 1) * (1 - .25 * np.clip(lt / max(length, .1), 0, 1))
+        out += voice * shape * inside
+        at += length
+    breath = band(rng.standard_normal(n), 300, 3000) * .015
+    return out + breath
+
+
+MAKERS = {'breath_in': breath_in, 'breath_out': breath_out, 'soft_step': soft_step, 'stir': stir, 'crow': crow, 'train': train, 'whistle': whistle, 'cards': cards,
+          'knight_fall': knight_fall, 'knight_song': knight_song}
 
 
 def main():

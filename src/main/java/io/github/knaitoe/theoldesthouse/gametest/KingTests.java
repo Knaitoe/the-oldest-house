@@ -517,6 +517,89 @@ public final class KingTests {
             h.assertTrue(KingCardBlock.standing(l.getBlockState(b.offset(0,0,KingSite.GUARD_ROW))),"a fresh dream stands the pack up again");})
         .thenExecute(()->{for(var who:new ServerPlayer[]{r,t})KingBreath.leave(who);done();h.succeed();});
     }
+    /**
+     * 0.4.647, the forest on the seventh square. The Knight waits on his horse by the peg, a drawing until he is looked at; looked at,
+     * he fills in and looks back, and that look counts. On the peg a reader he looks at is a sort of thing, and a bite of cake makes
+     * them a thing there, and counted. Let alone, he thins and falls off his horse into the path, and lies there until somebody looks
+     * at him long enough to get him up. He sings if asked, and a reader who has heard him sings it afterwards, crouching still; he keeps
+     * a cake for a reader who has none. At the last brook he asks to be watched to the turn: watched the whole way he goes round it
+     * filled in; let go, he is a drawing before he gets there. The accounts say which.
+     */
+    @GameTest(template="empty",batch="king_forest",timeoutTicks=2400)
+    public static void theKnightTheForestAndTheTurn(GameTestHelper h){
+        var f=place(h);var p=f.player("king_forest_rider",P);var q=f.player("king_forest_walker",P);
+        var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var owns=new java.util.HashMap<java.util.UUID,net.minecraft.nbt.CompoundTag>();
+        java.util.function.Function<ServerPlayer,net.minecraft.nbt.CompoundTag> mine=w->owns.computeIfAbsent(w.getUUID(),u->f.own(w,P));
+        java.util.function.BiConsumer<ServerPlayer,double[]> at=(who,xz)->{who.teleportTo(l,b.getX()+xz[0],b.getY(),b.getZ()+xz[1],180,0);who.setOnGround(true);};
+        Runnable tick=()->{for(var who:new ServerPlayer[]{p,q})KingBreath.reader(who,b,mine.apply(who));};
+        java.util.function.BiConsumer<ServerPlayer,LiteraryActor> look=(who,k)->who.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,k.getBoundingBox().getCenter());
+        java.util.function.Consumer<ServerPlayer> away=who->who.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new net.minecraft.world.phys.Vec3(b.getX()-60,who.getEyeY(),who.getZ()));
+        var peg=KingSite.peg(7);double[] onPeg={peg.getX()+.5,peg.getZ()+.5},far={-30.5,-60.5},brook={.5,KingSite.TURN_Z+.2};
+        h.startSequence().thenExecute(()->{at.accept(q,far);at.accept(p,onPeg);away.accept(p);})
+        .thenWaitUntil(()->{tick.run();h.assertTrue(KingForest.find(l,b)!=null,"the Knight is waiting on the seventh square");})
+        .thenExecute(()->{
+            var k=KingForest.find(l,b);
+            h.assertTrue(!KingForest.filled(k)&&!KingForest.fallen(k),"nobody looking: a drawing, on his horse");
+            // Looked at, he fills in and looks back; on the peg that makes a line a sort of thing, which the peg does not count here.
+            look.accept(p,k);tick.run();
+        })
+        .thenWaitUntil(()->{var k=KingForest.find(l,b);look.accept(p,k);tick.run();
+            h.assertTrue(KingForest.filled(k)&&KingBreath.lookedAtByTheDream(p,b),"looked at, he fills in and looks back: filled "+KingForest.filled(k));})
+        .thenExecute(()->{
+            var own=mine.apply(p);var k=KingForest.find(l,b);look.accept(p,k);tick.run();
+            h.assertTrue(own.getInt("KingState")==KingBreath.SORT&&(own.getInt(KingSleep.COUNTED)&1<<7)==0,"a line he looks at is a sort of thing, and not counted: "+own.getInt("KingState"));
+            // A bite of cake does the rest.
+            KingBreath.swallow(p,true,l.getGameTime()+KingDraughtItem.LASTS);look.accept(p,k);tick.run();
+            h.assertTrue(own.getInt("KingState")==KingBreath.THING&&(own.getInt(KingSleep.COUNTED)&1<<7)!=0,"looked at and fed, a thing, and counted: "+own.getInt("KingState"));
+            KingBreath.swallow(p,true,l.getGameTime());away.accept(p);
+        })
+        // Let alone, he thins and comes off his horse.
+        .thenWaitUntil(()->{away.accept(p);tick.run();var k=KingForest.find(l,b);h.assertTrue(k!=null&&KingForest.fallen(k)&&!KingForest.filled(k),"left unwatched, he falls off as a drawing");})
+        .thenExecute(()->{tick.run();h.assertTrue(mine.apply(p).getBoolean(KingForest.FELL)&&KingForest.falls(b)==1,"the reader saw him fall: "+KingForest.falls(b));})
+        // Looked at long enough, he gets up.
+        .thenWaitUntil(()->{var k=KingForest.find(l,b);look.accept(p,k);tick.run();h.assertTrue(!KingForest.fallen(k),"looked at long enough, he gets up");})
+        .thenExecute(()->{
+            tick.run();h.assertTrue(mine.apply(p).getBoolean(KingForest.RAISED),"the reader got him up");
+            // His song, and a cake from his saddle.
+            KingForest.sing(p);
+            h.assertTrue(f.own(p,P).getBoolean(KingForest.SONG),"asked, he sings, and the reader has it");
+            p.getInventory().items.removeIf(KingDraughtItem::is);
+            KingForest.cake(p);
+            h.assertTrue(p.getInventory().items.stream().anyMatch(st->st.getItem() instanceof KingDraughtItem d&&d.more())&&f.own(p,P).getBoolean(KingForest.KNIGHT_CAKE),"he gives a cake to a reader who has none");
+            // Crouching still, a reader who has heard it sings it; beside the King, it settles him by four stirs.
+            KingSleep.stir(l,b,null,null,2);
+            h.assertTrue(KingSleep.stirs(b)==2&&KingSleep.level(b)==1,"stirred twice, he sleeps a depth lighter");
+            at.accept(p,new double[]{KingSite.KING.getX()+1.5,KingSite.KING.getZ()+.5});
+            var own=mine.apply(p);own.putBoolean(KingForest.SONG,true);
+            p.setShiftKeyDown(true);p.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            for(int i=0;i<12;i++)KingBreath.reader(p,b,own);
+            p.setShiftKeyDown(false);
+            h.assertTrue(own.getBoolean("KingSang")&&own.getBoolean(KingForest.SANG_TO_HIM),"crouching still beside him, the reader sings his song");
+            h.assertTrue(KingSleep.stirs(b)==0&&KingSleep.level(b)==0,"the song settles him: "+KingSleep.stirs(b));
+            // On to the last brook, keeping an eye on him.
+            at.accept(p,brook);
+        })
+        .thenWaitUntil(()->{var k=KingForest.find(l,b);look.accept(p,k);tick.run();h.assertTrue(KingForest.asked(b),"at the last brook he asks to be watched to the turn");})
+        .thenWaitUntil(()->{var k=KingForest.find(l,b);if(k!=null)look.accept(p,k);tick.run();h.assertTrue(KingForest.gone(b),"watched, he rides out round the turn");})
+        .thenExecute(()->{
+            tick.run();var own=mine.apply(p);
+            h.assertTrue(own.getInt(KingForest.TURN)==KingForest.WATCHED&&KingForest.find(l,b)==null,"the reader watched him round the turn: "+own.getInt(KingForest.TURN));
+            h.assertTrue(pages(KingTexts.account("p",own)).contains("went round it filled in"),"the account says so");
+            // A fresh dream: the second reader goes on without watching him.
+            KingBreath.leave(p);at.accept(p,far);KingSleep.forget(b);at.accept(q,onPeg);
+        })
+        .thenWaitUntil(()->{tick.run();var k=KingForest.find(l,b);h.assertTrue(k!=null,"a fresh dream has him back at the peg");})
+        .thenExecute(()->{var k=KingForest.find(l,b);k.moveTo(b.getX()+KingSite.KNIGHT_LANE,b.getY(),b.getZ()+KingSite.TURN_Z+3,180,0);at.accept(q,brook);})
+        .thenWaitUntil(()->{var k=KingForest.find(l,b);look.accept(q,k);tick.run();h.assertTrue(KingForest.asked(b),"he asks the second reader");})
+        .thenWaitUntil(()->{away.accept(q);tick.run();h.assertTrue(KingForest.gone(b),"let go, he rides out anyway");})
+        .thenExecute(()->{
+            tick.run();var own=mine.apply(q);
+            h.assertTrue(own.getInt(KingForest.TURN)==KingForest.WENT_ON,"the second reader went on: "+own.getInt(KingForest.TURN));
+            h.assertTrue(pages(KingTexts.account("q",own)).contains("a drawing before he got there"),"the account says he was a drawing before the turn");
+            for(var who:new ServerPlayer[]{p,q})KingBreath.leave(who);done();h.succeed();
+        });
+    }
     private static String pages(net.minecraft.world.item.ItemStack book){
         var c=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);if(c==null)return "";
         var out=new StringBuilder();for(var page:c.pages())out.append(page.raw().getString()).append(' ');return out.toString();
