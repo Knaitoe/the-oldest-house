@@ -834,6 +834,8 @@ public final class PellTexts {
         case "ones_already_inside"->"I knew which of the two men was the first one. I told the house it was the other.";
         // 0.4.638 (run 1672: the forged lines missed A Little Longer).
         case "a_little_longer"->"I turned the dial off their station when they weren't looking.";
+        // 0.4.645 (run 1680: the forged lines missed A sort of thing).
+        case "a_sort_of_thing"->"I shook the King to see if he would wake.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */
