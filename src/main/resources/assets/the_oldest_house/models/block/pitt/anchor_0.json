@@ -59,16 +59,40 @@
           "texture": "#b"
         },
         "east": {
-          "texture": "#b"
+          "texture": "#b",
+          "uv": [
+            0,
+            6,
+            3,
+            10
+          ]
         },
         "west": {
-          "texture": "#b"
+          "texture": "#b",
+          "uv": [
+            13,
+            6,
+            16,
+            10
+          ]
         },
         "up": {
-          "texture": "#b"
+          "texture": "#b",
+          "uv": [
+            6,
+            13,
+            10,
+            16
+          ]
         },
         "down": {
-          "texture": "#b"
+          "texture": "#b",
+          "uv": [
+            6,
+            0,
+            10,
+            3
+          ]
         }
       }
     }

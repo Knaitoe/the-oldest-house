@@ -278,16 +278,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#case"
+          "texture": "#case",
+          "uv": [
+            1,
+            9,
+            15,
+            16
+          ]
         },
         "south": {
-          "texture": "#case"
+          "texture": "#case",
+          "uv": [
+            1,
+            9,
+            15,
+            16
+          ]
         },
         "east": {
-          "texture": "#case"
+          "texture": "#case",
+          "uv": [
+            2,
+            9,
+            4,
+            16
+          ]
         },
         "west": {
-          "texture": "#case"
+          "texture": "#case",
+          "uv": [
+            12,
+            9,
+            14,
+            16
+          ]
         },
         "up": {
           "texture": "#case"
@@ -310,16 +334,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#rim"
+          "texture": "#rim",
+          "uv": [
+            1,
+            10,
+            15,
+            11
+          ]
         },
         "south": {
-          "texture": "#rim"
+          "texture": "#rim",
+          "uv": [
+            1,
+            10,
+            15,
+            11
+          ]
         },
         "east": {
-          "texture": "#rim"
+          "texture": "#rim",
+          "uv": [
+            2,
+            10,
+            4,
+            11
+          ]
         },
         "west": {
-          "texture": "#rim"
+          "texture": "#rim",
+          "uv": [
+            12,
+            10,
+            14,
+            11
+          ]
         },
         "up": {
           "texture": "#rim"
@@ -506,27 +554,27 @@
           "texture": "#rim",
           "uv": [
             1,
-            -6,
+            10,
             15,
-            -5
+            11
           ]
         },
         "east": {
           "texture": "#rim",
           "uv": [
             4,
-            -6,
+            10,
             3.98,
-            -5
+            11
           ]
         },
         "west": {
           "texture": "#rim",
           "uv": [
             12.02,
-            -6,
+            10,
             12,
-            -5
+            11
           ]
         },
         "up": {
@@ -557,27 +605,27 @@
           "texture": "#rim",
           "uv": [
             1,
-            -6,
+            10,
             15,
-            -5
+            11
           ]
         },
         "east": {
           "texture": "#rim",
           "uv": [
             2.02,
-            -6,
+            10,
             2,
-            -5
+            11
           ]
         },
         "west": {
           "texture": "#rim",
           "uv": [
             14,
-            -6,
+            10,
             13.98,
-            -5
+            11
           ]
         },
         "up": {
@@ -608,9 +656,9 @@
           "texture": "#rim",
           "uv": [
             2,
-            -6,
+            10,
             4,
-            -5
+            11
           ]
         },
         "up": {
@@ -626,18 +674,18 @@
           "texture": "#rim",
           "uv": [
             15,
-            -6,
+            10,
             14.98,
-            -5
+            11
           ]
         },
         "north": {
           "texture": "#rim",
           "uv": [
             1.02,
-            -6,
+            10,
             1,
-            -5
+            11
           ]
         }
       }
@@ -659,9 +707,9 @@
           "texture": "#rim",
           "uv": [
             12,
-            -6,
+            10,
             14,
-            -5
+            11
           ]
         },
         "up": {
@@ -677,18 +725,18 @@
           "texture": "#rim",
           "uv": [
             1.02,
-            -6,
+            10,
             1,
-            -5
+            11
           ]
         },
         "north": {
           "texture": "#rim",
           "uv": [
             15,
-            -6,
+            10,
             14.98,
-            -5
+            11
           ]
         }
       }

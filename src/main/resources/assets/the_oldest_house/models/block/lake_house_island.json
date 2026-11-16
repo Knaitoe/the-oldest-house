@@ -233,16 +233,40 @@
           "texture": "#brass"
         },
         "east": {
-          "texture": "#brass"
+          "texture": "#brass",
+          "uv": [
+            0,
+            9,
+            1,
+            10
+          ]
         },
         "west": {
-          "texture": "#brass"
+          "texture": "#brass",
+          "uv": [
+            15,
+            9,
+            16,
+            10
+          ]
         },
         "up": {
-          "texture": "#brass"
+          "texture": "#brass",
+          "uv": [
+            7,
+            15,
+            9,
+            16
+          ]
         },
         "down": {
-          "texture": "#brass"
+          "texture": "#brass",
+          "uv": [
+            7,
+            0,
+            9,
+            1
+          ]
         }
       }
     }

@@ -20,16 +20,40 @@
       ],
       "faces": {
         "north": {
-          "texture": "#wood"
+          "texture": "#wood",
+          "uv": [
+            3,
+            12,
+            13,
+            14
+          ]
         },
         "south": {
-          "texture": "#wood"
+          "texture": "#wood",
+          "uv": [
+            3,
+            12,
+            13,
+            14
+          ]
         },
         "east": {
-          "texture": "#wood"
+          "texture": "#wood",
+          "uv": [
+            3,
+            12,
+            13,
+            14
+          ]
         },
         "west": {
-          "texture": "#wood"
+          "texture": "#wood",
+          "uv": [
+            3,
+            12,
+            13,
+            14
+          ]
         },
         "up": {
           "texture": "#wood"

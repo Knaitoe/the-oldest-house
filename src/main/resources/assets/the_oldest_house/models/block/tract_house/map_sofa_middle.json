@@ -85,22 +85,226 @@
    ],
    "faces": {
     "north": {
-     "texture": "#plaid"
+     "texture": "#plaid",
+     "uv": [
+      0,
+      0,
+      16,
+      14
+     ]
     },
     "south": {
-     "texture": "#plaid"
+     "texture": "#plaid",
+     "uv": [
+      0,
+      0,
+      16,
+      14
+     ]
     },
     "east": {
-     "texture": "#plaid"
+     "texture": "#plaid",
+     "uv": [
+      0,
+      0,
+      4,
+      14
+     ]
     },
     "west": {
-     "texture": "#plaid"
+     "texture": "#plaid",
+     "uv": [
+      12,
+      0,
+      16,
+      14
+     ]
     },
     "up": {
      "texture": "#plaid"
     },
     "down": {
      "texture": "#plaid"
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    16,
+    3,
+    12
+   ],
+   "to": [
+    16.02,
+    17,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#plaid",
+     "uv": [
+      0,
+      0,
+      4,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#plaid",
+     "uv": [
+      16,
+      12,
+      15.98,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#plaid",
+     "uv": [
+      16,
+      0,
+      15.98,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    -0.02,
+    3,
+    12
+   ],
+   "to": [
+    0,
+    17,
+    16
+   ],
+   "faces": {
+    "west": {
+     "texture": "#plaid",
+     "uv": [
+      12,
+      0,
+      16,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#plaid",
+     "uv": [
+      0.02,
+      12,
+      0,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#plaid",
+     "uv": [
+      0.02,
+      0,
+      0,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    16,
+    3,
+    15
+   ],
+   "to": [
+    16.02,
+    3,
+    16
+   ],
+   "faces": {
+    "down": {
+     "texture": "#plaid",
+     "uv": [
+      16,
+      0,
+      15.98,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    16,
+    8,
+    12
+   ],
+   "to": [
+    16.02,
+    17,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plaid",
+     "uv": [
+      0.02,
+      0,
+      0,
+      9
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    -0.02,
+    3,
+    15
+   ],
+   "to": [
+    0,
+    3,
+    16
+   ],
+   "faces": {
+    "down": {
+     "texture": "#plaid",
+     "uv": [
+      0.02,
+      0,
+      0,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+   "from": [
+    -0.02,
+    8,
+    12
+   ],
+   "to": [
+    0,
+    17,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#plaid",
+     "uv": [
+      16,
+      0,
+      15.98,
+      9
+     ]
     }
    }
   }

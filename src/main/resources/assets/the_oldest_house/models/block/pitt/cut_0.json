@@ -59,16 +59,40 @@
           "texture": "#c"
         },
         "east": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            0,
+            13,
+            6,
+            14
+          ]
         },
         "west": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            10,
+            13,
+            16,
+            14
+          ]
         },
         "up": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            7,
+            10,
+            9,
+            16
+          ]
         },
         "down": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            9,
+            6
+          ]
         }
       }
     },
@@ -91,16 +115,40 @@
           "texture": "#c"
         },
         "east": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            6,
+            13,
+            7,
+            14
+          ]
         },
         "west": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            9,
+            13,
+            10,
+            14
+          ]
         },
         "up": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            6,
+            9,
+            10,
+            10
+          ]
         },
         "down": {
-          "texture": "#c"
+          "texture": "#c",
+          "uv": [
+            6,
+            6,
+            10,
+            7
+          ]
         }
       }
     }
