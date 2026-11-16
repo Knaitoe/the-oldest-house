@@ -275,6 +275,20 @@ public final class LiteraryRenderers {
                 // The tool put down: hands in the lap, sitting back.
                 case REST->{float b=net.minecraft.util.Mth.sin(age*.05F)*.02F;rightArm.xRot=-.62F+b;rightArm.yRot=.22F;rightArm.zRot=.05F;leftArm.xRot=-.62F+b;leftArm.yRot=-.22F;leftArm.zRot=-.05F;
                     body.xRot-=.05F;}
+                // 0.4.624, the kettle chapter (labyrinth.LongerKettle). At the kettle, standing: the right hand forward on its handle and
+                // switch, the left at the side, the head down to it.
+                case 8->{rightArm.xRot=-1.18F;rightArm.yRot=-.08F;rightArm.zRot=0;leftArm.xRot=.06F;leftArm.yRot=0;leftArm.zRot=-.05F;if(!speaking)head.xRot+=.32F;}
+                // Carrying the two cups: both hands in front at the waist, close together, the cups held between them.
+                case 9->{rightArm.xRot=-.82F;rightArm.yRot=-.32F;rightArm.zRot=0;leftArm.xRot=-.82F;leftArm.yRot=.36F;leftArm.zRot=0;if(!speaking)head.xRot+=.18F;}
+                // Pouring: the right hand lifting the kettle off its base and tipping it, slowly, toward the cups; the left steadying
+                // the lid; the head bent to watch the cups fill.
+                case 10->{float tip=net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.sin(age*.06F)*.5F+.5F,0,1);
+                    rightArm.xRot=-1.3F-.12F*tip;rightArm.yRot=-.12F;rightArm.zRot=-.18F-.22F*tip;leftArm.xRot=-1.42F;leftArm.yRot=.42F;leftArm.zRot=0;if(!speaking)head.xRot+=.4F;}
+                // Sat with the cup: held in the right hand above the lap, raised to drink every few seconds (the head tipping back a
+                // little to it); the left hand on the knee, or holding the toast when there is some.
+                case 11->{float c=(age%140)/140F;float sip=c<.09F?net.minecraft.util.Mth.sin(c/.09F*net.minecraft.util.Mth.PI):0;
+                    rightArm.xRot=-.95F-.95F*sip;rightArm.yRot=-.3F+.28F*sip;rightArm.zRot=0;leftArm.xRot=-.58F;leftArm.yRot=.18F;leftArm.zRot=-.05F;
+                    if(!speaking)head.xRot+=.1F-.32F*sip;}
                 default->{}
             }
         }

@@ -40,14 +40,14 @@ public final class Longer {
                 if(stage==2){cue(p,LongerTexts.BENCH_RADIO);return true;}
                 boolean on=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,on?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.4F,.8F);
                 cue(p,on?LongerTexts.FLAT_RADIO_ON:LongerTexts.FLAT_RADIO_OFF);}
-            case TOASTER->{boolean down=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,down?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.5F,down?.7F:1.6F);cue(p,down?LongerTexts.TOASTER_DOWN:LongerTexts.TOASTER_UP);}
+            case TOASTER->{if(LongerKettle.toaster(p,b,at,st,own))return true;boolean down=stage==0;l.setBlock(at,st.setValue(LongerBlock.STAGE,down?1:0),3);l.playSound(null,at,SoundEvents.LEVER_CLICK,SoundSource.BLOCKS,.5F,down?.7F:1.6F);cue(p,down?LongerTexts.TOASTER_DOWN:LongerTexts.TOASTER_UP);}
             case WINDOW->cue(p,LongerSite.inFlat(p.position().subtract(b.getX(),b.getY(),b.getZ()))?LongerTexts.FLAT_WINDOW:LongerTexts.WINDOW);
             case WORKBENCH,TRAYS->cue(p,LongerTexts.TRAYS);
             case CHAIR->cue(p,LongerTexts.CHAIR);
             case SHELF->cue(p,LongerTexts.SHELF);
             case COUNTER->cue(p,LongerTexts.COUNTER);
             case KETTLE->cue(p,LongerTexts.KETTLE);
-            case CUPS->cue(p,LongerTexts.CUPS);
+            case CUPS->{if(!LongerKettle.cups(p,b,at,st,own))cue(p,LongerTexts.CUPS);}
             case ARMCHAIR->cue(p,LongerTexts.ARMCHAIR);
             case KITCHEN_CHAIR->cue(p,LongerTexts.KITCHEN_CHAIR);
             case HOOK->cue(p,LongerTexts.HOOK);

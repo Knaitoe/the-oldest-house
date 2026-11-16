@@ -766,6 +766,65 @@ def files():
     return out
 
 
+# ------------------------------------------------------------------------------------------------ items (0.4.624, the kettle chapter)
+ITEM_NAMES = {'longer_tea': 'Tea', 'longer_toast': 'Toast', 'longer_burnt_toast': 'Burnt Toast'}
+
+
+def item_textures():
+    """The cup without the crack, a little from above, tea in it, its handle and a wisp of steam; two slices of toast, one burnt."""
+    def blank():
+        return Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    t = blank()
+    cup, cup_s, cup_d = (226, 214, 190, 255), (186, 170, 146, 255), (140, 124, 104, 255)
+    tea, tea_l = (122, 72, 38, 255), (156, 98, 52, 255)
+    for x in range(4, 12):
+        for y in range(8, 15):
+            t.putpixel((x, y), cup_s if x >= 10 else cup)
+    for x in range(5, 11):
+        t.putpixel((x, 15), cup_d)
+    for x in range(4, 12):
+        t.putpixel((x, 7), cup_d)
+        t.putpixel((x, 14), cup_s)
+    for x in range(5, 11):
+        t.putpixel((x, 8), tea)
+    for x in range(6, 9):
+        t.putpixel((x, 8), tea_l)
+    for y in range(9, 13):
+        t.putpixel((12, y), cup_s)
+    for xy in ((13, 10), (13, 11)):
+        t.putpixel(xy, cup_s)
+    for xy in ((12, 9), (12, 12)):
+        t.putpixel(xy, cup_d)
+    for xy in ((7, 5), (8, 4), (7, 3), (8, 2), (9, 5), (10, 4)):
+        t.putpixel(xy, (235, 235, 235, 120))
+
+    def toast(burnt):
+        im = blank()
+        crust = (52, 34, 24, 255) if burnt else (160, 96, 40, 255)
+        crust2 = (30, 20, 14, 255) if burnt else (122, 70, 30, 255)
+        face = (84, 58, 40, 255) if burnt else (222, 170, 96, 255)
+        face2 = (64, 44, 30, 255) if burnt else (204, 148, 78, 255)
+        for x in range(3, 13):
+            for y in range(3, 14):
+                if y == 3 and x in (3, 12):
+                    continue
+                im.putpixel((x, y), face if 3 < x < 12 and 4 < y < 13 else crust)
+        for x in (4, 11):
+            im.putpixel((x, 3), crust)
+        for x in range(5, 11):
+            im.putpixel((x, 2), crust)
+        for x in range(3, 13):
+            im.putpixel((x, 13), crust2)
+        r = random.Random(3 if burnt else 7)
+        for _ in range(14):
+            im.putpixel((r.randint(5, 10), r.randint(5, 11)), face2)
+        if burnt:
+            for xy in ((6, 6), (9, 8), (7, 10), (10, 11), (5, 9)):
+                im.putpixel(xy, (22, 16, 12, 255))
+        return im
+    return {'item/longer_tea.png': t, 'item/longer_toast.png': toast(False), 'item/longer_burnt_toast.png': toast(True)}
+
+
 def main():
     check = argparse.ArgumentParser()
     check.add_argument('--check', action='store_true')
@@ -774,6 +833,8 @@ def main():
     assert mats == list(materials()), ('the game lists other materials', mats)
     assert kinds == KINDS, ('the game lists other kinds', kinds)
     images, data = textures(), files()
+    images.update(item_textures())
+    data.update({f'models/item/{k}.json': {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/{k}'}} for k in ITEM_NAMES})
     models = fitting_models()
     for kind in KINDS:
         for stage in range(STAGES.get(kind, 1)):
@@ -800,7 +861,7 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True); path.write_text(flicker.dumps(obj, indent=2) + '\n')
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
-    for key, name in {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}.items():
+    for key, name in {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEM_NAMES.items()}}.items():
         if check:
             assert lang.get(key) == name, key
         else:

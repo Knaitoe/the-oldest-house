@@ -94,14 +94,14 @@ public final class LongerRowan {
     static final class Shop {UUID id;int phase=-1;int leg=-1,via=0,hold=0;long nextErrand=-1,nextHum=-1,nextTune=-1,lastTick=-1,spokenAt=-100000;}
     private static final Map<BlockPos,Shop> SHOPS=new HashMap<>();
     static Shop shop(BlockPos b){return SHOPS.computeIfAbsent(b.immutable(),k->new Shop());}
-    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();}
+    public static void clearAll(){SHOPS.clear();LongerBench.clearAll();LongerKettle.clearAll();}
 
     public static AABB area(BlockPos b){return new AABB(b.getX()-7,b.getY()-1,b.getZ()-19,b.getX()+8,b.getY()+LongerSite.ROOF+4,b.getZ()+1);}
     private static boolean live(ServerLevel l,Vec3 at){var cell=BlockPos.containing(at);return l.isLoaded(cell)&&l.areEntitiesLoaded(ChunkPos.asLong(cell));}
 
     /** A reader arrives in their copy: the copy is kept ticking, and their Rowan is decided now if not already. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);
+        if(b==null)return;var s=shop(b);s.phase=castFor(p,own);ensure(p.serverLevel(),b);LongerBench.arrive(p,b,own);LongerKettle.arrive(p,b,own);
     }
     /** Rowan at this copy, if their body is here. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b){
@@ -121,7 +121,7 @@ public final class LongerRowan {
         s.id=a.getUUID();s.leg=-1;
     }
     /** Nobody at this copy: for a shop built again from nothing, and for tests. */
-    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);}
+    public static void reset(ServerLevel l,BlockPos b){for(var old:l.getEntitiesOfClass(LiteraryActor.class,area(b),LongerRowan::is))old.discard();SHOPS.remove(b);LongerBench.forget(b);LongerKettle.forget(b);}
 
     /** Readers in this copy of the place. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
@@ -148,6 +148,8 @@ public final class LongerRowan {
         }
         // The workbench chapter has Rowan while it runs: no errands in the middle of it (LongerBench).
         if(LongerBench.tick(l,b,a,here,s.leg<0))return;
+        // 0.4.624: then the kettle chapter, which keeps Rowan from the offer on, and upstairs once the tea is made (LongerKettle).
+        if(LongerKettle.tick(l,b,a,here,s.leg<0))return;
         if(s.leg<0){
             settle(a,LongerBench.rested(l,b)?REST_AT_BENCH:BENCH);
             if(now>=s.nextErrand&&now-s.spokenAt>SPOKEN_QUIET&&!inPanel(here)){s.leg=0;s.via=0;s.hold=0;a.gesture(WALK);}
@@ -201,7 +203,8 @@ public final class LongerRowan {
         // Turning on the spot first when the way bends sharply, as a body does; then walking.
         if(Math.abs(Mth.wrapDegrees(want-body))>45){a.walkAnimation.update(0,.4F);return false;}
         double stepLen=Math.min(PACE,len);
-        a.setPos(at.x+d.x/len*stepLen,target.y,at.z+d.z/len*stepLen);
+        // 0.4.624: the height eased along the way with the distance walked, so the back stair is climbed tread by tread, not stepped onto.
+        a.setPos(at.x+d.x/len*stepLen,at.y+(target.y-at.y)*stepLen/len,at.z+d.z/len*stepLen);
         a.walkAnimation.update((float)stepLen*4,.4F);a.setDeltaMovement(Vec3.ZERO);
         return false;
     }
@@ -209,6 +212,8 @@ public final class LongerRowan {
     static void hold(LiteraryActor a,int gesture,List<ServerPlayer> here){hold(a,gesture,here,BENCH.look());}
     /** The same, turned in the chair to this yaw. */
     static void hold(LiteraryActor a,int gesture,List<ServerPlayer> here,float look){settle(a,new Spot(BENCH.x(),0,BENCH.z(),look,gesture));turnHead(a,look,here);}
+    /** The head toward a reader near, the body as it is: for the kettle chapter (LongerKettle). */
+    static void lookAt(LiteraryActor a,List<ServerPlayer> here){turnHead(a,a.getYRot(),here);}
     /** The body kept to this yaw; the head toward a reader near who can be seen, no more than HEAD_TURN off it, a little at a time. */
     private static void turnHead(LiteraryActor a,float rest,List<ServerPlayer> here){
         ServerPlayer near=null;double best=NEAR*NEAR;
@@ -227,6 +232,7 @@ public final class LongerRowan {
         var s=shop(b);s.spokenAt=p.serverLevel().getGameTime();
         // 0.4.623: at the bench the evening's first chapter answers (LongerBench); it says what it says in the panel itself.
         if(LongerBench.talk(p,a,own,s.leg<0))return;
+        if(LongerKettle.talk(p,a,own,s.leg<0))return;
         boolean first=!own.getBoolean(MET);
         if(first){own.putBoolean(MET,true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
         Talk.begin(p,TALK,LongerTexts.ROWAN);

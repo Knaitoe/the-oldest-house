@@ -266,7 +266,7 @@ public final class LongerTests {
     /**
      * A reader near the chair is asked to hold the panel, holds it (within reach, looking at the radio), and Rowan thanks them. The set
      * is switched on, bursts, and the panel opens on its own: "That sounded expensive." One question; the route on its paper in Rowan's
-     * hand; the stairs, word for word; the crossed-out turn; the tool put down. The one act kept is the panel held.
+     * hand; the stairs, word for word; the crossed-out turn; the tool put down. The one act kept is the panel held. A hand on Rowan after that is the next chapter's.
      */
     @GameTest(template="empty",batch="longer_bench_hold",timeoutTicks=2400)
     public static void theReaderHoldsThePanelTheSetBurstsAndRowanShowsTheirRoute(GameTestHelper h){
@@ -313,7 +313,8 @@ public final class LongerTests {
             var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
             h.assertTrue(a.gesture()==LongerBench.REST&&LongerBench.rested(l,b),"resting in the chair");
             LiteraryVignettes.talk(p,a);
-            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.ROWAN_AFTER),"after the chapter: "+Talk.lines(p));
+            // 0.4.624: after the chapter, the next one: the kettle (LongerKettle).
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.MAKING_TEA),"after the chapter, the tea: "+Talk.lines(p));
             Talk.close(p);done();h.succeed();
         });
     }
@@ -393,5 +394,171 @@ public final class LongerTests {
             h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(LongerTexts.THERE),"\"There.\" and no thanks for nothing");
             done();h.succeed();
         });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.624, chapter 2, the kettle
+    private static int kettle(LiteraryTests.Fixture f,ServerPlayer p){return LongerKettle.stage(f.own(p,P));}
+    /** The bench chapter as finished, for a case that starts at the kettle. */
+    private static void benchDone(LiteraryTests.Fixture f,ServerPlayer p){var own=f.own(p,P);own.putInt(LongerBench.STAGE,LongerBench.DONE);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);}
+    private static boolean holds(ServerPlayer p,net.minecraft.world.item.Item item){for(var s:p.getInventory().items)if(s.is(item))return true;return false;}
+    /** Rowan, walking the chapter's ways: never inside anything solid, except where they sit. */
+    private static void clearWalk(GameTestHelper h,ServerLevel l,BlockPos b,LiteraryActor a){
+        var r=a.position().subtract(b.getX(),b.getY(),b.getZ());
+        if(LongerRowan.cast(a.phase())&&io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat.of(a)==null&&a.position().distanceTo(LongerRowan.BENCH.at(b))>.8)
+            h.assertTrue(l.noCollision(a.getBoundingBox().deflate(.12)),"Rowan walks through nothing solid: "+r);
+    }
+    /** Through the offer and up the stair to the kettle, and the kettle boiled: the cups are poured. */
+    private static void toPoured(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer p,ServerLevel l,java.util.function.Consumer<net.minecraft.gametest.framework.GameTestSequence> then){
+        var seq=h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{benchDone(f,p);f.at(p,P,-3.6,0,-12.6);LiteraryVignettes.talk(p,rowan(h,p));
+            h.assertTrue(Talk.choose(p,LongerTexts.SAY_NOTHING),"say nothing");LongerKettle.waited(LiteraryVignettes.base(p,P),LongerKettle.QUIET);})
+        .thenWaitUntil(()->h.assertTrue(kettle(f,p)==LongerKettle.STAY_ASK,"the pause, then the offer: "+kettle(f,p)))
+        .thenExecute(()->{h.assertTrue(Talk.choose(p,LongerTexts.YES),"I'd like that");Talk.close(p);})
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(kettle(f,p)>=LongerKettle.BOIL,"up the stair to the kettle: "+rowan(h,p).position().subtract(b.getX(),b.getY(),b.getZ()));})
+        .thenExecute(()->LongerKettle.boiled(LiteraryVignettes.base(p,P),60))
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(kettle(f,p)>=LongerKettle.POURED,"boiled and poured: leg "+LongerKettle.leg(b));});
+        then.accept(seq);
+    }
+
+    /**
+     * The tool down, a hand on Rowan: "I'm making tea." The reader asks whether that is part of the repair: "No." A pause with nothing to
+     * say into it; then "You could stay for it." Going on is let be; the offer comes once more on a later hand ("Kettle's still there.").
+     * One cup: Rowan walks up the back stair on their own feet, through nothing solid, the kettle boils (heard) and clicks off, the cups
+     * are fetched from the table and poured (heard), and the whole one is left there. Rowan sits in the good chair, seated. A hand on the
+     * cups is a real cup of tea; the first hand on Rowan in the good chair: "This is the good chair. I know. I'm not getting up."
+     */
+    @GameTest(template="empty",batch="longer_kettle_offer",timeoutTicks=3600)
+    public static void rowanMakesTeaTheReaderStaysForItAndRowanKeepsTheGoodChair(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_kettle_offer",P);var l=f.level(P);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(rowan(h,p)!=null,"Rowan is made"))
+        .thenExecute(()->{
+            benchDone(f,p);f.at(p,P,-3.6,0,-12.6);LiteraryVignettes.talk(p,rowan(h,p));
+            h.assertTrue(kettle(f,p)==LongerKettle.OFFER&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.MAKING_TEA),"\"I'm making tea.\" "+Talk.lines(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.PART,LongerTexts.SAY_NOTHING)),"ask, or say nothing: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.PART)&&Talk.lines(p).contains("you: "+LongerTexts.PART)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.NO),"\"No.\"");
+            h.assertTrue(kettle(f,p)==LongerKettle.PAUSE&&Talk.replies(p).isEmpty(),"a pause, nothing to say into it");
+            LongerKettle.waited(LiteraryVignettes.base(p,P),LongerKettle.QUIET);
+        })
+        .thenWaitUntil(()->h.assertTrue(kettle(f,p)==LongerKettle.STAY_ASK,"then the offer: "+kettle(f,p)))
+        .thenExecute(()->{
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.STAY_FOR),"\"You could stay for it.\" "+Talk.lines(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.YES,LongerTexts.ONE_CUP,LongerTexts.KEEP_GOING)),"stay, one cup, or go on: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.KEEP_GOING)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.GO_ON),"let go");
+            h.assertTrue(kettle(f,p)==LongerKettle.NONE&&f.own(p,P).getInt(LongerKettle.DECLINED)==1,"nothing more asked");
+            Talk.close(p);
+            LiteraryVignettes.talk(p,rowan(h,p));
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.STILL_THERE)&&Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.STAY_FOR),"once more: "+Talk.lines(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.ONE_CUP)&&kettle(f,p)==LongerKettle.UP&&f.own(p,P).getString(LongerKettle.STAY).equals("ONE_CUP"),"one cup");
+            Talk.close(p);NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);
+            f.at(p,P,3.5,6,-14.5);
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(kettle(f,p)>=LongerKettle.BOIL,"up the stair: "+rowan(h,p).position().subtract(b.getX(),b.getY(),b.getZ()));})
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerKettle.KETTLE_SPOT.at(b))<.1,"at the kettle, upstairs");
+            h.assertTrue(LongerBlock.stage(l.getBlockState(b.offset(LongerSite.KETTLE)))==1&&heard(p,LongerRegistry.KETTLE.get()),"the kettle on, heard");
+        })
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(LongerKettle.leg(b)>=3,"to the table for the cups: "+LongerKettle.leg(b));})
+        .thenExecute(()->{var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(l.getBlockState(b.offset(LongerSite.CUPS)).isAir()&&rowan(h,p).getMainHandItem().is(LongerRegistry.TEA.get()),"the cups taken up from the table");
+            LongerKettle.boiled(b,LongerKettle.BOILED);})
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(kettle(f,p)>=LongerKettle.POURED,"poured and set down: leg "+LongerKettle.leg(b));})
+        .thenExecute(()->{var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(heard(p,LongerRegistry.POUR.get()),"poured, heard");
+            h.assertTrue(LongerBlock.stage(l.getBlockState(b.offset(LongerSite.CUPS)))==2,"the whole cup left at the table; the cracked one Rowan's");
+            h.assertTrue(LongerBlock.stage(l.getBlockState(b.offset(LongerSite.KETTLE)))==0,"the kettle off");})
+        .thenWaitUntil(()->{var b=LiteraryVignettes.base(p,P);clearWalk(h,l,b,rowan(h,p));h.assertTrue(kettle(f,p)>=LongerKettle.SEATED,"to the good chair: "+rowan(h,p).position().subtract(b.getX(),b.getY(),b.getZ()));})
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerKettle.ARMCHAIR_SPOT.at(b))<.05&&io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat.of(a)!=null,"sat in the good chair");
+            h.assertTrue(a.gesture()==LongerKettle.CUP_HELD&&a.getMainHandItem().is(LongerRegistry.TEA.get()),"with their cup");
+            f.click(p,P,LongerSite.CUPS);
+            h.assertTrue(holds(p,LongerRegistry.TEA.get())&&l.getBlockState(b.offset(LongerSite.CUPS)).isAir()&&f.own(p,P).getBoolean(LongerKettle.CUP),"a real cup of tea");
+            f.at(p,P,2.5,6,-14.5);LiteraryVignettes.talk(p,a);
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.NOTICED_LINE),"\"This is the good chair.\" "+Talk.lines(p));
+            h.assertTrue(told(p).stream().noneMatch(t->t.contains(LongerTexts.MAKING_TEA)||t.contains(LongerTexts.NOTICED_LINE)),"nothing in chat");
+            Talk.close(p);done();h.succeed();
+        });
+    }
+
+    /**
+     * The toast, standing: Rowan says the chair doesn't bite and asks for the toaster. Down; Rowan's word on the heat; it scorches,
+     * pops (heard), and one slice is burnt. "I'll have the burnt one." "You don't have to be polite." "I'm being brave." "That's worse."
+     * The burnt slice is the reader's, the good one Rowan's. Then three questions about now, each answered by Rowan too; then done, and
+     * Rowan stays in the chair.
+     */
+    @GameTest(template="empty",batch="longer_kettle_toast",timeoutTicks=3600)
+    public static void theToastBurnsTheReaderIsBraveAndRowanAsksAboutNow(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_kettle_toast",P);var l=f.level(P);
+        toPoured(h,f,p,l,seq->seq.thenExecute(()->f.at(p,P,3.5,6,-14.5))
+        .thenWaitUntil(()->h.assertTrue(kettle(f,p)==LongerKettle.SEATED,"seated"))
+        .thenWaitUntil(()->{var a=rowan(h,p);h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(LongerTexts.TOAST_ASK),"the remark, then the toaster: "+(a.getCustomName()==null?"":a.getCustomName().getString()));})
+        .thenExecute(()->{
+            f.click(p,P,LongerSite.TOASTER);var b=LiteraryVignettes.base(p,P);
+            h.assertTrue(kettle(f,p)==LongerKettle.TOASTING&&LongerBlock.stage(l.getBlockState(b.offset(LongerSite.TOASTER)))==1,"the toaster down");
+            NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);
+            LongerKettle.toasted(b,LongerKettle.HEAT_AT-1);
+        })
+        .thenWaitUntil(()->{var a=rowan(h,p);h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(LongerTexts.HEAT),"\"The heat's perfectly manageable.\"");})
+        .thenExecute(()->LongerKettle.toasted(LiteraryVignettes.base(p,P),LongerKettle.POP-LongerKettle.HEAT_AT-45))
+        .thenWaitUntil(()->h.assertTrue(kettle(f,p)==LongerKettle.TOAST_ASK,"up: "+kettle(f,p)))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(heard(p,LongerRegistry.TOASTER.get())&&LongerBlock.stage(l.getBlockState(b.offset(LongerSite.TOASTER)))==0,"the spring, heard; the lever up");
+            h.assertTrue(Talk.replies(p).equals(List.of(LongerTexts.TEASE,LongerTexts.OFFER,LongerTexts.BRAVE_ASK)),"tease, give, or be brave: "+Talk.replies(p));
+            h.assertTrue(Talk.choose(p,LongerTexts.BRAVE_ASK),"I'll have the burnt one");
+            var lines=Talk.lines(p);
+            int polite=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.POLITE),brave=lines.indexOf("you: "+LongerTexts.BRAVE_LINE),worse=lines.indexOf(LongerTexts.ROWAN+": "+LongerTexts.WORSE);
+            h.assertTrue(polite>=0&&brave>polite&&worse>brave,"polite, brave, worse, in order: "+lines);
+            h.assertTrue(holds(p,LongerRegistry.BURNT_TOAST.get())&&!holds(p,LongerRegistry.TOAST.get())&&a.getOffhandItem().is(LongerRegistry.TOAST.get()),"the burnt slice the reader's, the good one Rowan's");
+            h.assertTrue(f.own(p,P).getString(LongerKettle.TOAST).equals(LongerKettle.BRAVE),"kept: brave");
+            for(int i=0;i<3;i++){
+                h.assertTrue(Talk.replies(p).equals(LongerTexts.ANSWERS_NOW.get(i)),"question "+i+": "+Talk.replies(p));
+                h.assertTrue(Talk.choose(p,LongerTexts.ANSWERS_NOW.get(i).get(1)),"answered");
+            }
+            lines=Talk.lines(p);
+            for(var said:List.of(LongerTexts.Q_MUSIC,LongerTexts.A_MUSIC,LongerTexts.Q_PLAN,LongerTexts.A_PLAN,LongerTexts.Q_FIRST,LongerTexts.A_FIRST))h.assertTrue(lines.contains(LongerTexts.ROWAN+": "+said),"Rowan asks and answers: "+said);
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt(LongerKettle.MUSIC)==1&&own.getInt(LongerKettle.PLAN)==1&&own.getInt(LongerKettle.FIRST)==1&&kettle(f,p)==LongerKettle.DONE,"the answers kept; done");
+            Talk.close(p);
+        })
+        .thenIdle(20).thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerKettle.ARMCHAIR_SPOT.at(b))<.05,"Rowan stays in the good chair");
+            f.at(p,P,1.5,6,-15.2);LiteraryVignettes.talk(p,a);
+            h.assertTrue(Talk.lines(p).stream().anyMatch(x->x.endsWith(LongerTexts.ROWAN_KETTLE_AFTER)||x.endsWith(LongerTexts.NOTICED_LINE)),"after the tea: "+Talk.lines(p));
+            Talk.close(p);done();h.succeed();
+        }));
+    }
+
+    /**
+     * The good chair taken first: a reader sat in the armchair keeps it, and Rowan takes the kitchen chair and says that is fine. The
+     * toaster popped by hand before it scorches: two good slices, "Show-off."
+     */
+    @GameTest(template="empty",batch="longer_kettle_chair",timeoutTicks=3600)
+    public static void aReaderInTheGoodChairKeepsItAndRescuesTheToast(GameTestHelper h){
+        var f=shop(h);var p=f.player("longer_kettle_chair",P);var l=f.level(P);
+        toPoured(h,f,p,l,seq->seq.thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);
+            f.at(p,P,.5,6,-15.2);
+            h.assertTrue(io.github.knaitoe.theoldesthouse.house.HouseSitting.sit(p,b.offset(LongerSite.ARMCHAIR))&&p.isPassenger(),"the reader sits in the good chair");
+        })
+        .thenWaitUntil(()->h.assertTrue(kettle(f,p)==LongerKettle.SEATED,"seated"))
+        .thenExecute(()->{
+            var b=LiteraryVignettes.base(p,P);var a=rowan(h,p);
+            h.assertTrue(a.position().distanceTo(LongerKettle.KITCHEN_SPOT.at(b))<.05&&io.github.knaitoe.theoldesthouse.labyrinth.ActorSeat.of(a)!=null,"Rowan in the kitchen chair");
+            h.assertTrue(f.own(p,P).getBoolean("Kitchen0624"),"kept");
+        })
+        .thenWaitUntil(()->{var a=rowan(h,p);h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(LongerTexts.TOAST_ASK),"fine; then the toaster");})
+        .thenExecute(()->{
+            f.click(p,P,LongerSite.TOASTER);
+            h.assertTrue(kettle(f,p)==LongerKettle.TOASTING,"down");
+            f.click(p,P,LongerSite.TOASTER);
+            h.assertTrue(kettle(f,p)==LongerKettle.NOW&&f.own(p,P).getString(LongerKettle.TOAST).equals(LongerKettle.RESCUED),"popped in time: "+kettle(f,p));
+            h.assertTrue(Talk.lines(p).contains(LongerTexts.ROWAN+": "+LongerTexts.RESCUED_LINE),"\"Show-off.\"");
+            h.assertTrue(holds(p,LongerRegistry.TOAST.get())&&!holds(p,LongerRegistry.BURNT_TOAST.get()),"a good slice");
+            h.assertTrue(Talk.replies(p).equals(LongerTexts.ANSWERS_NOW.get(0)),"then now: "+Talk.replies(p));
+            Talk.close(p);p.stopRiding();done();h.succeed();
+        }));
     }
 }
