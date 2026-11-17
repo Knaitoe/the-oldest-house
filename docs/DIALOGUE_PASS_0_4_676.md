@@ -87,7 +87,7 @@ Each line below is given as it was and as it is now. No line's meaning or speake
 
 - `ClosingHallTexts`
   - was: "KAREN: You want to know who came out last. Nobody came out last. "
-  - now: "KAREN: You want to know who came out last. "
+  - now: "KAREN: You want to know who came out last. Nobody did. " (0.4.677: the pass first cut the answer along with the echo; the answer is what the line is for, since the reader went back and the hall shut on them, so it is kept in two words)
 - `ClosingHallTexts`
   - was: "Chad lets go of you at the hole. "Not after you. Not in there." He won't follow you in."
   - now: "Chad lets go of you at the hole. "I'm not going in there.""
