@@ -6887,5 +6887,50 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.fallow.debris"
+  },
+  "fallow.settle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/settle",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.settle"
+  },
+  "fallow.wick": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/wick",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.wick"
+  },
+  "fallow.match": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/match",
+        "attenuation_distance": 8
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.match"
+  },
+  "fallow.dig": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/dig",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.dig"
+  },
+  "fallow.give": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/give",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.give"
   }
 }

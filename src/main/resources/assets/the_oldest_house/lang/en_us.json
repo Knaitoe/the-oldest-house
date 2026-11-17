@@ -2128,5 +2128,10 @@
   "subtitles.the_oldest_house.fallow.canopy": "Sheet metal comes down with a crash",
   "subtitles.the_oldest_house.fallow.collapse": "A building falls in",
   "subtitles.the_oldest_house.fallow.debris": "Rubble lands on the doors overhead",
-  "block.the_oldest_house.fallow_shadow": "Shadow"
+  "block.the_oldest_house.fallow_shadow": "Shadow",
+  "subtitles.the_oldest_house.fallow.settle": "The cellar creaks and settles",
+  "subtitles.the_oldest_house.fallow.wick": "A lantern wick is turned",
+  "subtitles.the_oldest_house.fallow.match": "A match is struck",
+  "subtitles.the_oldest_house.fallow.dig": "Rubble is dug at overhead",
+  "subtitles.the_oldest_house.fallow.give": "The cellar doors give"
 }

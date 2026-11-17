@@ -153,6 +153,11 @@ public final class FallowRuin {
         dust(l,b,new Vec3(-13,1,-9.5),3,4);
         sound(l,b,new BlockPos(-13,1,-9),FallowRegistry.DEBRIS.get(),1.5F,1F);
     }
+    /** 0.4.681: in the buried days, a length of the doors a head on the steps kept clear when the fall came down is covered once nobody
+     * is under it (FallowBuried). */
+    static void recover(ServerLevel l,BlockPos b){
+        for(int z=WELL_S;z>=WELL_N;z--){cover(l,b,WELL_W,z,Direction.NORTH);cover(l,b,WELL_E,z,Direction.SOUTH);}
+    }
     /** A leaf of the cellar doors, shut or thrown back, with the fall of the store on it; its curb on its own side. */
     private static void cover(ServerLevel l,BlockPos b,int x,int z,Direction facing){
         var p=b.offset(x,0,z);if(!l.isLoaded(p))return;var s=l.getBlockState(p);
@@ -189,6 +194,24 @@ public final class FallowRuin {
         float stride=(float)Math.min(1,Math.hypot(p.getX()-p.xo,p.getZ()-p.zo)/.28);
         float phase=(float)(l.getGameTime()*.45%(Math.PI*2));
         sh.cast(p.getUUID(),p.getGameProfile().getName(),body,p.yBodyRot,stride,phase,p.isCrouching());
+        return best;
+    }
+
+    /** 0.4.681: one of the station's people out in front of it at the light (Boyd at the rig's door): their shadow on the nearest solid
+     * column nobody's has taken, as a reader's is, in a plain body, an arm up if they were reaching. */
+    static int shadow(ServerLevel l,BlockPos b,LiteraryActor a,Vec3 r,String name,boolean reach){
+        if(r.z>=STORE_N||r.x<STORE_W-.5||r.x>GARAGE_E+1.5)return NO_SHADOW;
+        int best=NO_SHADOW;double near=Double.MAX_VALUE;
+        for(int x:WALL){
+            var at=b.offset(x,0,STORE_N-1);
+            if(!l.isLoaded(at)||!l.getBlockState(at).isAir())continue;
+            double d=Math.abs(x+.5-r.x);if(d<near){near=d;best=x;}
+        }
+        if(best==NO_SHADOW)return NO_SHADOW;
+        var at=b.offset(best,0,STORE_N-1);
+        BuildBlocks.set(l,at,FallowShadowBlock.facing(Direction.NORTH),Block.UPDATE_CLIENTS);
+        if(!(l.getBlockEntity(at) instanceof FallowShadowBlock.Shadow sh))return NO_SHADOW;
+        sh.castOf(a.getUUID(),name,a.yBodyRot,reach);
         return best;
     }
 

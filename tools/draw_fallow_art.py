@@ -1681,6 +1681,14 @@ def crock():
 
 
 def lantern_glass(lit):
+    # 0.4.681: turned low (2), the glass holds only a small flame low on the wick, and the light round it is a dim amber.
+    if lit == 2:
+        im = new('#9c8458', 73132, 2)
+        fill(im, 7, 9, 9, 13, '#e8cc84')
+        dot(im, 7, 9, '#c4a466'); dot(im, 8, 8, '#f6e2a6'); dot(im, 8, 12, '#fff0c0')
+        for y in range(16):
+            dot(im, 0, y, '#3a3632'); dot(im, 15, y, '#3a3632')
+        return im
     im = new('#f8e0a0' if lit else '#8a8a7e', 73130 + lit, 2)
     if lit:
         fill(im, 6, 6, 10, 12, '#fff4c8')
@@ -2524,7 +2532,7 @@ def cot_model(stage):
 
 
 def crock_model(stage):
-    t = {'k': 'crock', 'w': 'post_wood', 't': 'tin', 'g': 'lantern_lit' if stage == 1 else 'lantern_dark'}
+    t = {'k': 'crock', 'w': 'post_wood', 't': 'tin', 'g': {1: 'lantern_lit', 3: 'lantern_low'}.get(stage, 'lantern_dark')}
     if stage == 0:
         return model([element([4, 0, 4], [12, 10, 12], {'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k', 'down': 'k'}),
                       element([3.5, 1, 4.5], [12.5, 9, 11.5], {'north': 'k', 'south': 'k', 'east': 'k', 'west': 'k'}),
@@ -2536,6 +2544,8 @@ def crock_model(stage):
          element([5, 10, 5], [11, 11.5, 11], {'all': 't'})]
     if stage == 1:
         glow(e[2:3], 15)
+    elif stage == 3:
+        glow(e[2:3], 8)
     return model(e, t, 'tin')
 
 
@@ -2661,6 +2671,7 @@ def fitting_models():
         m[f'cellar_{s}'] = cellar_model(s, False); m[f'cellar_open_{s}'] = cellar_model(s, True)
     for s in range(4):
         m[f'bean_{s}'] = bean_model(s)
+    m['crock_3'] = crock_model(3)
     return m
 
 
@@ -2672,6 +2683,14 @@ def bean_model(stage):
     side = {k: [5, 9, 11, 15] for k in ('north', 'south', 'east', 'west', 'down')}
     e = [element([5, 0, 5], [11, 5.5, 11], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'down': 'c', 'up': 's'}, uv={**side, 'up': [5, 5, 11, 11]}),
          element([4.75, 5, 4.75], [11.25, 6, 11.25], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c'}, uv={k: [5, 9, 11, 10] for k in ('north', 'south', 'east', 'west')})]
+    if stage == 3:
+        # 0.4.681: grown long and thin in the cellar's dark, it leans toward the way its block faces (the steps, below): its two sheets
+        # stand square across each other and both tip that way from the soil, as a seedling leans to a crack of light.
+        e.append(element([2, 5.5, 8], [14, 5.5 + h, 8], {'north': 'b', 'south': 'b'}, uv={'north': [2, 16 - h, 14, 16], 'south': [2, 16 - h, 14, 16]},
+                         rotation={'angle': -22.5, 'axis': 'x', 'origin': [8, 5.5, 8]}))
+        e.append(element([8, 5.5, 2], [8, 5.5 + h, 14], {'east': 'b', 'west': 'b'}, uv={'east': [2, 16 - h, 14, 16], 'west': [2, 16 - h, 14, 16]},
+                         rotation={'angle': -22.5, 'axis': 'x', 'origin': [8, 5.5, 8]}))
+        return model(e, t, 'bean_cup')
     for angle in (45, -45):
         e.append(element([2, 5.5, 8], [14, 5.5 + h, 8], {'north': 'b', 'south': 'b'}, uv={'north': [2, 16 - h, 14, 16], 'south': [2, 16 - h, 14, 16]},
                          rotation={'angle': angle, 'axis': 'y', 'origin': [8, 8, 8]}))
@@ -2704,7 +2723,7 @@ def textures():
         'post_wood': post_wood(), 'clothes': clothes(), 'line_rope': line_rope(), 'barrel': barrel(), 'ash': ash(),
         'field_fence': field_fence(), 'cellar_door': cellar_door(), 'cellar_under': cellar_under(), 'curb_concrete': curb_concrete(),
         'jars': jars(), 'tins': tins(), 'cot_canvas': cot_canvas(), 'blanket': blanket(), 'crock': crock(),
-        'lantern_lit': lantern_glass(1), 'lantern_dark': lantern_glass(0), 'tin': tin(), 'farm_window': farm_window(),
+        'lantern_lit': lantern_glass(1), 'lantern_dark': lantern_glass(0), 'lantern_low': lantern_glass(2), 'tin': tin(), 'farm_window': farm_window(),
         'porch_paint': porch_paint(), 'mailbox': mailbox(), 'mailbox_front': mailbox_front(), 'flag': flag(), 'rig_paint': rig_paint(),
         'rig_door': rig_door(), 'rig_cab_side': rig_cab_side(), 'windshield': windshield(), 'grille': grille(),
         'tyre_tread': tyre_tread(), 'hub': hub(), 'headlight': headlight(), 'sleeper_side': sleeper_side(), 'box_doors': box_doors(),
@@ -2731,7 +2750,7 @@ KINDS = ['counter', 'note', 'stool', 'backshelf', 'tv', 'cooler', 'gondola', 'ma
          'rig', 'box', 'bean', 'rubble']
 STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 4, 'signband': 4, 'pump': 4, 'island': 2,
           'canopy': 7, 'sign': 3, 'pole': 5, 'wheat': 4, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
-          'cot': 2, 'crock': 3, 'farm': 4, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
+          'cot': 2, 'crock': 4, 'farm': 4, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
 ITEM_ART = {'milk': milk_carton, 'soda': soda_bottle, 'coffee': coffee_cup}
 ITEM_NAMES = {'fallow_milk': 'Quart of Milk', 'fallow_soda': 'Bottle of Pop', 'fallow_coffee': 'Cup of Coffee', 'fallow_bean_cup': 'Bean in a Cup'}
 # The bean's cup held in a hand: its block model, turned and sized as vanilla holds a block, a little larger since the cup is small.
