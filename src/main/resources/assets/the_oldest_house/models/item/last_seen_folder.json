@@ -1,0 +1,68 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "the_oldest_house:item/last_seen_folder"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/last_seen_folder_0"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "the_oldest_house:item/last_seen_folder_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "the_oldest_house:item/last_seen_folder_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "the_oldest_house:item/last_seen_folder_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "the_oldest_house:item/last_seen_folder_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "the_oldest_house:item/last_seen_folder_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "the_oldest_house:item/last_seen_folder_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "the_oldest_house:item/last_seen_folder_7"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "the_oldest_house:item/last_seen_folder_8"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "the_oldest_house:item/last_seen_folder_9"
+    }
+  ]
+}

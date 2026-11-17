@@ -10,8 +10,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * 0.4.667, Last Seen, part 1 (docs/LAST_SEEN_0_4_667.md): what the office's and the park's things say to a hand, the three's own lines,
  * and the typed card on the counter, the first paper. The ten children's names, and where and on what day each was last seen, are set
- * here once: the posters show them now, and their folders and their coming back follow in part 2. Every line is new in this release and
- * is flagged to the owner in docs/LAST_SEEN_0_4_667.md.
+ * here once: the posters show them, and so do their folders. Every line is flagged to the owner in its part's doc.
+ * <p>0.4.668, part 2 (docs/LAST_SEEN_0_4_668.md): the folders, the shelves' letters, the day's pile, Nora's rule, Luz at the door, and
+ * the first of them at the fountain.
  */
 public final class LastSeenTexts {
     private LastSeenTexts(){}
@@ -80,8 +81,8 @@ public final class LastSeenTexts {
     /** The three's lines: the first time, then the second each time after. */
     public static String line(int who,int heard){
         return switch(who){
-            case LastSeen.NORA->heard==0?"We keep them all. Nobody has ever asked us to throw one out."
-                :"The folders don't leave the archive. You can sit at the table with one, if you want.";
+            case LastSeen.NORA->heard==0?RULE:heard==1?CHORE:heard%2==0?"We keep them all. Nobody has ever asked us to throw one out."
+                :"You can sit at the table with one, if you want. Nobody minds.";
             case LastSeen.PATRICIA->heard==0?"If you've come about someone, sit down and I'll take the details. If you've come to look, ask Nora."
                 :"Everything you need to know is on the card. I typed it.";
             default->heard==0?"It's quiet in the mornings. People come in the afternoon, after work."
@@ -98,6 +99,34 @@ public final class LastSeenTexts {
             "Folders do not leave the archive. If you want to see one, ask at the desk, and someone will sit with you while you look.",
             "Nobody here will tell you to wait. We know you are already waiting."));
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.668, the archive and the first one
+    /** A folder, by the child whose it is. */
+    public static String folderName(int child){return CHILDREN[child]+"'s folder";}
+    /** What the folder says when it is held open: its file number, the form's heading, the fields, and Nora's note in pencil. */
+    public static String file(int child){return String.format("FILE %04d",1000+(child*389+217)%8999);}
+    public static final String FORM="MISSING PERSONS: MINORS",NAME_FIELD="NAME",WHERE_FIELD="LAST SEEN",DAY_FIELD="ON",NOTE="Folder stays open.";
+    /** The shelves are filed by the first letter of the name on each spine. */
+    public static String spines(char letter){return "Folders, spine out. The names on these spines all begin with "+letter+".";}
+    public static String wrongBay(char letter){return "The names on these spines all begin with "+letter+".";}
+    public static String shelved(char letter){return "It goes back with the other "+letter+" names, spine out.";}
+    public static String taken(int child,char letter){return folderName(child)+", with the other "+letter+" names.";}
+    public static String fromPile(int child){return "A folder from the day's pile: "+CHILDREN[child]+".";}
+    public static final String ONE_AT_A_TIME="One folder off the shelves at a time.",BACK_ON_SHELF="The folder is back on its shelf.",
+        PILE_DONE="The day's pile is done. The table is bare.";
+    /** Nora's rule, then the chore, then what she says while the morning goes on. */
+    public static final String RULE="Every one of them has a folder. A folder stays open.",
+        CHORE="The day's folders are on the table. They go back where their names say.",
+        LEAVING="Most of the ones in here weren't taken. They went. Nobody ever asks what from.",
+        NORA_WAITS="Go on. I'll stay here.",NORA_FIND="You've seen her face. Find hers.",NORA_AFTER="Put it back where it goes. It stays open.";
+    /** Patricia, to a reader the House reads as young. */
+    public static final String PATRICIA_YOUNG="Are you here with someone?";
+    /** Luz at the front door, and her call. */
+    public static final String LUZ_CALL="There's a girl at the fountain.",LUZ_NORA="Nora.";
+    /** The first of them, at the fountain. */
+    public static final String AT_RIM="She stands at the fountain's rim, facing the office. She does not blink.",
+        COLD="Her hand is as cold as the fountain's stone.",NOT_HERS="She looks at the face on it, and then away.",
+        WAITING="I was waiting where they told me to.",GIVES_BACK="She gives the folder back.";
+
     /** The account. Nothing asks for it until part 5; it says only what anybody could see of the place. */
     public static ItemStack account(String name,CompoundTag own){
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LAST_SEEN),name,pages(

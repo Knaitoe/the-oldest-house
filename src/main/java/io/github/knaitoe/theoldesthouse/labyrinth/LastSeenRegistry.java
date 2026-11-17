@@ -12,12 +12,15 @@ import net.neoforged.neoforge.registries.*;
 
 /**
  * 0.4.667, Last Seen (docs/LAST_SEEN_0_4_667.md): the park's and the office's materials, their fittings and their sounds. Drawn by
- * tools/draw_last_seen_art.py; heard from tools/generate_last_seen_audio.py.
+ * tools/draw_last_seen_art.py; heard from tools/generate_last_seen_audio.py. 0.4.668 (docs/LAST_SEEN_0_4_668.md): the folder.
  */
 public final class LastSeenRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    /** 0.4.668: a child's folder, carried out of the archive (LastSeenFolder). */
+    public static final DeferredItem<LastSeenFolder> FOLDER=ITEMS.registerItem("last_seen_folder",LastSeenFolder::new,new net.minecraft.world.item.Item.Properties().stacksTo(1));
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /**
@@ -38,5 +41,5 @@ public final class LastSeenRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> TRAFFIC=sound("last_seen.traffic"),PIGEONS=sound("last_seen.pigeons"),PAPER=sound("last_seen.paper"),
         TYPEWRITER=sound("last_seen.typewriter");
     private LastSeenRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }
