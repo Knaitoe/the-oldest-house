@@ -6941,5 +6941,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.fallow.ash_wind"
+  },
+  "fallow.rig": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/rig",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.rig"
   }
 }

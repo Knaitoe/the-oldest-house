@@ -167,7 +167,7 @@ public final class ExplorationPassTests {
         String ready=accountText(data,id);
         h.assertTrue(WitnessAccount.ready(data,id)&&ready.contains("The account holds together")
                 &&ready.contains("Crouch and open the bars"),"the original derived quota and real kinds still govern the final passage");
-        h.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&needed==WitnessPool.REQUIRED,"six personally resolvable uncanny sources retain the derived seventy-five-percent quota");h.succeed();
+        h.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&needed==WitnessPool.REQUIRED,"the pool and its derived, capped quota are the pinned ones");h.succeed();
     }
     @GameTest(template="empty")
     public static void tomKeepsOneFiniteOriginalWhenItsReaderStoresOrTradesTheLighter(GameTestHelper h){

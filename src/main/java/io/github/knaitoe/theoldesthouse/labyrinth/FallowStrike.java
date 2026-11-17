@@ -81,6 +81,10 @@ public final class FallowStrike {
          * changed, which face he has, and whether Opal has been taken down out of his sight. */
         final Set<UUID> outside=new HashSet<>(),back=new HashSet<>();final Map<UUID,Set<Integer>> shadowsFound=new HashMap<>();
         boolean planted,looked,hid;int satAt=-1,kneelAt=-1,plantedAt,ring,road,roadAt,face;@Nullable BlockPos bean;
+        /** 0.4.684, the steps (FallowSteps): where he is at the cellar and since when; who he has asked and who has answered; whether
+         * someone kept her on the steps; whether she is out in the field, and where the green comes up round her there; whether the rig
+         * has turned over; who took her down out of his sight. */
+        int steps,stepsAt,taker=-1;boolean kept,inField,rig;final Set<UUID> asked=new HashSet<>(),answered=new HashSet<>();@Nullable BlockPos greenAt;
         int since(int tick){return toneAt<0?-1:tick-toneAt;}
     }
 
@@ -379,6 +383,8 @@ public final class FallowStrike {
                 own.putString("AtLight",below?"cellar":"outside");own.putInt("Strikes",own.getInt("Strikes")+1);
                 // 0.4.683: which afternoon's light it was, so that only its own readers are dealt the station afterward.
                 own.putInt("Afternoon",s.id);
+                // 0.4.684: what they told the man and where they stood belong to one afternoon.
+                for(var k:new String[]{"OnSteps","StepsAfternoon","RoadAnswer","RoadAfternoon","RoadEnd"})own.remove(k);
                 own.putDouble("LightX",r.x);own.putDouble("LightY",r.y);own.putDouble("LightZ",r.z);own.putFloat("LightYaw",p.getYRot());
                 if(p.getUUID().equals(st.heldBy))own.putBoolean("HeldDoors",true);
                 // 0.4.680: out in front of the station, their shadow left on its front.
@@ -409,8 +415,10 @@ public final class FallowStrike {
     /** A word with one of them during the four minutes; false before the tone, when the afternoon's own lines answer. */
     static boolean talk(ServerPlayer p,LiteraryActor a,@Nullable Fallow.Site s,int who,CompoundTag own){
         if(s==null||s.strike.toneAt<0)return false;
-        // 0.4.683: the man on the road does not answer yet.
-        if(who==Fallow.STRANGER){FallowRoad.talk(p,s);return true;}
+        // 0.4.683: the man on the road does not answer yet; 0.4.684: at the cellar doors he asks after the girl (FallowSteps).
+        if(who==Fallow.STRANGER){if(!FallowSteps.talk(p,s,a))FallowRoad.talk(p,s);return true;}
+        // 0.4.684: the girl out in the field.
+        if(who==Fallow.GIRL&&FallowSteps.opal(p,s,a))return true;
         var st=s.strike;int t=st.since(s.tick);
         String line=FallowBuried.talk(p,p.serverLevel(),s,who,own);
         if(line!=null){a.sayTo(p,FallowTexts.NAMES[who],line);a.speaks(line);return true;}

@@ -383,10 +383,89 @@ public final class FallowTexts {
             "The cellar out back is for weather. If the weather turns, go down and pull the doors to. Don't wait on me.",
             "Phone is for emergencies. Road maps are free if you buy gas."));
     }
-    /** The account. Nothing asks for it until a later part; it says only what anybody could see of the place. */
+    // ------------------------------------------------------------------------------------------------ 0.4.684: what he asks
+    /** At the cellar doors (FallowSteps): his question and the ride he offers, in the panel and over his head. */
+    public static final String WHERE_IS_SHE="Folks ought to stick together. Where's the little one?",
+        RIDE="That big fella's rig will run. I'll carry the lot of you to town, the little one too.";
+    /** The answers a reader may give him, and what he says to them. */
+    public static final String NOBODY_DOWN_THERE="There's nobody down there.",DOWN_THE_STEPS="She's down the steps.",
+        IS_THAT_RIGHT="Is that right.",OBLIGED="Obliged.";
+    /** The rig that should not run. */
+    public static final String RIG_TURNS="Out on the forecourt, the rig's engine turns over and catches.";
+    /** A reader on the steps: he smiles at them, and goes. */
+    public static final String HE_SMILES="He looks at you on the steps, and smiles.",FIND_HER_ANYWAY="Have it your way. I'll find her anyway.",
+        WALKS_BACK="He turns from the steps and walks back toward the road.";
+    /** Nobody on the steps: down he goes, and she is not there. */
+    public static final String GOES_DOWN="He goes down the cellar steps.",FAYE_GONE="She was right here. She was right here by me.",
+        OTIS_GONE="She went right past me. I never saw her go.",
+        AT_THE_FENCE="He stands at the yard's fence, looking out at the girl in the field.";
+    /** Gone. */
+    public static final String ROAD_EMPTY="The road is empty as far as the ash lets you see.",FENCE_EMPTY="Nobody is at the fence now.";
+    /** The girl, out in the field. */
+    public static final String CAME_UP_FOR_ME="It came up for me.";
+
+    /** 0.4.684: the account, in the keeper's ledger under the counter, its edges singed. Written from what this reader did that afternoon
+     * and after, and from nothing they did not. */
     public static ItemStack account(String name,CompoundTag own){
-        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.FALLOW),name,pages(
-            "There was a gas station on a two-lane road, a store and a garage under one roof, in wheat that ran to the edge of sight. A car was up on the lift. "
-                +"Across the road stood a farmhouse, and out in the wheat were two fenced squares with lights in them."));
+        var parts=new ArrayList<String>();
+        // The afternoon.
+        var a=new StringBuilder("There was a gas station on a two-lane road, a store and a garage under one roof, in wheat that ran to the edge of sight.");
+        String chore=own.getString("Chore");
+        if(chore.equals(Fallow.TILL))a.append(" The keeper had me mind his till while he was under a car.");
+        else if(chore.equals(Fallow.GIRL_CHORE))a.append(" The keeper had me keep a girl company while her mother saw about their car. She had a bean in a paper cup.");
+        if(own.getBoolean("Answered"))a.append(" A man bought a soda and asked me the time, and I told him. He walked off into the wheat.");
+        else if(own.getBoolean("Silent"))a.append(" A man bought a soda and asked me the time. I didn't tell him. He walked off into the wheat.");
+        else a.append(" A man bought a soda and walked off into the wheat.");
+        parts.add(a.toString());
+        // The light.
+        var b=new StringBuilder("The radio gave a long tone, and out in the wheat the ground opened.");
+        boolean below="cellar".equals(own.getString("AtLight"));
+        if(own.getBoolean("BroughtFaye"))b.append(" I brought the girl's mother to the cellar by the hand.");
+        if(own.getBoolean("HeldDoors"))b.append(" I held the cellar doors.");
+        if(below){
+            b.append(" I was under the ground when the light came.");
+            int days=own.getInt("Days");
+            if(days>0)b.append(" We were down there ").append(days==1?"a day":count(days)+" days").append(" by the lantern.");
+            if(own.getBoolean("DugOut"))b.append(" We dug our way up the steps a stroke at a time.");
+        }else if(own.contains("AtLight")){
+            b.append(" I was out in it when the light came, and I woke at the House's door.");
+            if(own.getBoolean("CameBack"))b.append(" I went back. The store had no roof.");
+        }
+        parts.add(b.toString());
+        // After.
+        var c=new StringBuilder();
+        if(own.getBoolean("FoundShadow"))c.append("My shadow was on the store's front, where I had stood. ");
+        if(own.getInt("OthersShadows")>0)c.append(own.getInt("OthersShadows")==1?"Somebody else's was beside it. ":"Other people's were beside it. ");
+        if(own.getBoolean("SawGreen"))c.append("The girl put her bean in the ground in the yard, and sat with it, and the ground came up round her. ");
+        int faces=own.getInt("SawFaces");
+        if(faces!=0){
+            c.append("A man came walking down the road out of the ash, from where the pads had been.");
+            var worn=new ArrayList<String>();
+            if((faces&1<<FallowRoad.KEEPER_FACE)!=0)worn.add("Harlan's");
+            if((faces&1<<FallowRoad.BOYD_FACE)!=0)worn.add("Boyd's");
+            if((faces&1<<FallowRoad.OTIS_FACE)!=0)worn.add("Otis's");
+            if((faces&1<<FallowRoad.VIEWER)!=0)worn.add("mine");
+            if(!worn.isEmpty())c.append(" Each time I looked at him again he had another face: ").append(joined(worn)).append(".");
+            else c.append(" It was the man who had bought the soda.");
+        }
+        if(c.length()>0)parts.add(c.toString().trim());
+        // What I told him, and what came of it.
+        var d=new StringBuilder();
+        int answer=own.getInt("RoadAnswer");
+        if(answer!=0)d.append("At the cellar doors he asked me where the little one was. ").append(switch(answer){
+            case FallowSteps.LIED->"I told him there was nobody down there.";case FallowSteps.TOLD->"I told him she was down the steps.";default->"I said nothing.";});
+        int end=own.getInt("RoadEnd");
+        if(end==1)d.append(own.getBoolean("OnSteps")?" I stood on the steps. He smiled at me, said he would find her anyway, and walked back up the road."
+            :" Somebody was standing on the steps. He smiled, said he would find her anyway, and walked back up the road.");
+        else if(end==2)d.append(" Nobody stood on the steps, and he went down them. She was not there. She was out past the fence, sitting in the field, and the wheat was coming up round her. He stood at the fence and looked at her.");
+        if(d.length()>0)parts.add(d.toString().trim());
+        parts.add(end==1?"She was still down the steps when I left. He had said he would find her.":end==2?"When I looked again he was gone from the fence. She was still out there, and it was still coming up."
+            :"I did not see how it ended.");
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.FALLOW),name,pages(parts.toArray(String[]::new)));
+    }
+    private static String count(int n){String[] words={"one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"};return n>=1&&n<=12?words[n-1]:Integer.toString(n);}
+    private static String joined(List<String> items){
+        if(items.size()<2)return items.isEmpty()?"":items.get(0);
+        return String.join(", ",items.subList(0,items.size()-1))+(items.size()>2?",":"")+" and "+items.get(items.size()-1);
     }
 }

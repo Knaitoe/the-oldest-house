@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -957,7 +958,10 @@ public final class FallowTests {
             h.assertTrue(f.own(q,P).getInt("SawFaces")==0&&!f.own(q,P).getBoolean("CameBack"),"the one who never looked keeps none of it, and never went out to come back");
             // Beside him (a word reaches six blocks), and spoken to.
             f.at(p,P,-16.5,0,-6.5);told(p);LiteraryVignettes.talk(p,man);
-            h.assertTrue(told(p).contains(FallowTexts.LOOKS_PAST),"spoken to, he looks past them at the doors");
+            // 0.4.684: spoken to, he asks after the girl; said nothing, he looks past them at the doors.
+            h.assertTrue(Talk.waiting(p,FallowSteps.ASK_TALK)&&said(man).equals(FallowTexts.WHERE_IS_SHE),"spoken to, he asks after the girl: "+said(man));
+            Talk.choose(p,FallowTexts.SAY_NOTHING);
+            h.assertTrue(told(p).contains(FallowTexts.LOOKS_PAST)&&f.own(p,P).getInt("RoadAnswer")==FallowSteps.SILENT,"said nothing, he looks past them at the doors");
             for(var x:new ServerPlayer[]{p,q})x.setGameMode(GameType.SPECTATOR);
         })
         .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"once both have gone, the afternoon is over"))
@@ -968,6 +972,165 @@ public final class FallowTests {
             h.assertTrue(l.getBlockState(b.offset(field)).equals(FallowSite.wheatAt(field.getX(),field.getZ())),"and the field stands as it was sown");
             h.assertTrue(Fallow.find(l,b,Fallow.STRANGER)==null,"and the man is gone off the road");
         })
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.684: what he asks
+    /** Readers below at the light, dug out, the bean in the ground, and the man brought down the road unseen to stand at the doors. */
+    private static GameTestSequence toTheMan(GameTestHelper h,LiteraryTests.Fixture f,ServerPlayer... readers){
+        var l=f.level(P);var b=f.base(P);
+        var door=new BlockPos(FallowSite.WELL_E,0,FallowSite.WELL_S);var step=new BlockPos(-14,-2,-10);
+        return h.startSequence().thenIdle(5).thenExecute(()->{
+            for(int i=0;i<readers.length;i++){f.at(readers[i],P,2.5+i,0,-2.5);f.data().pushReturn(readers[i].getUUID(),new LabyrinthData.Waypoint(l.dimension(),Vec3.atBottomCenterOf(b.offset(0,0,24)),0F,false));}
+        }).thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)!=null&&Fallow.find(l,b,Fallow.GIRL)!=null&&Fallow.find(l,b,Fallow.DRIVER)!=null,"the afternoon is on"))
+        .thenExecute(()->{l.setBlock(b.offset(Fallow.BEAN_AT),FallowBlock.of(FallowBlock.Kind.BEAN,Direction.WEST,0),3);FallowStrike.begin(b);})
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=1,"the tone comes on"))
+        .thenExecute(()->FallowStrike.skip(b,FallowStrike.GO-1))
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.otis(b)==FallowStrike.OTIS_BELOW,"Otis carries Opal down: "+FallowStrike.otis(b)))
+        .thenExecute(()->{for(int i=0;i<readers.length;i++)f.at(readers[i],P,-12.5+i,-3,-13.5);FallowStrike.skip(b,FallowStrike.LIGHT-2);})
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=FallowStrike.LIGHT+2,"the light"))
+        .thenExecute(()->FallowBuried.skip(b,FallowBuried.DAY*FallowBuried.COOL_DAY+20))
+        .thenWaitUntil(()->h.assertTrue(FallowBuried.day(b)==FallowBuried.COOL_DAY,"the third day"))
+        .thenExecute(()->{FallowBuried.dugTo(b,FallowBuried.DIG-1);use(readers[0],b,door,step);})
+        .thenWaitUntil(()->h.assertTrue(FallowBuried.open(b),"the doors give"))
+        .thenExecute(()->{for(int i=0;i<readers.length;i++){f.at(readers[i],P,-18.5+i,0,-2.5);look(readers[i],b,new Vec3(-18.5+i,1.6,20));}})
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.bean(b)!=null,"Opal sets her bean down"))
+        .thenExecute(()->{FallowRoad.comeNow(b);})
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.road(b)==FallowRoad.WALKING,"he is on the road"))
+        .thenExecute(()->FallowRoad.hurry(b,.35))
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.road(b)==FallowRoad.STOOD,"he stands at the doors"))
+        // The first reader goes into the yard and looks at him: Otis takes Opal down the steps.
+        .thenExecute(()->{var man=Fallow.find(l,b,Fallow.STRANGER);f.at(readers[0],P,-10.5,0,-12.5);look(readers[0],b,man.position().subtract(Vec3.atLowerCornerOf(b)).add(0,1.6,0));})
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.hid(b),"seen"))
+        .thenWaitUntil(()->{var girl=Fallow.find(l,b,Fallow.GIRL);h.assertTrue(FallowSite.inCellar(girl.position().subtract(Vec3.atLowerCornerOf(b)))&&!FallowSteps.walking(b,Fallow.GIRL),"Opal down the steps");});
+    }
+    private static String pages(ServerPlayer p,LiteraryTests.Fixture f){return LiteraryTexts.ending(p.getGameProfile().getName(),P,f.own(p,P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).reduce("",(x,y)->x+" "+y).replaceAll("\\s+"," ");}
+    /** A reader near him, looking at him. */
+    private static void faceHim(LiteraryTests.Fixture f,ServerPlayer p,double x,double z){
+        var l=f.level(P);var b=f.base(P);var man=Fallow.find(l,b,Fallow.STRANGER);
+        f.at(p,P,x,0,z);look(p,b,man.position().subtract(Vec3.atLowerCornerOf(b)).add(0,1.6,0));
+    }
+
+    /** 0.4.684: one reader lies to him from the steps, the other tells him where she is; he smiles at the one on the steps, says he'll find
+     * her anyway and walks back up the road; she stays below; both stayed until he had gone, so both are ready, each with their own
+     * account; a spectator watching the road keeps him there, and earns nothing. */
+    @GameTest(template="empty",batch="fallow_steps",timeoutTicks=7000)
+    public static void theStepsKeepHer(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        f.chunks.hold(l,new AABB(b.getX()-40,b.getY()-8,b.getZ()-118,b.getX()+30,b.getY()+8,b.getZ()+1));
+        var p=f.player("fallow_steps_liar",P);var q=f.player("fallow_steps_teller",P);var r=f.player("fallow_steps_watcher",P);
+        // A spectator from the start, out on the field's edge and looking away west, so the light and the road pass it by.
+        r.setGameMode(GameType.SPECTATOR);f.at(r,P,-30.5,0,-30.5);look(r,b,new Vec3(-90,1.6,-30.5));
+        toTheMan(h,f,p,q).thenExecute(()->{
+            told(p);told(q);
+            faceHim(f,p,-14.5,-5.5);
+        })
+        .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,FallowSteps.ASK_TALK),"he asks the one near him"))
+        .thenExecute(()->{
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(said(man).equals(FallowTexts.WHERE_IS_SHE),"where's the little one: "+said(man));
+            h.assertTrue(Talk.lines(p).stream().anyMatch(x->x.contains(FallowTexts.RIDE)),"and offers a ride: "+Talk.lines(p));
+            h.assertTrue(Talk.replies(p).equals(List.of(FallowTexts.NOBODY_DOWN_THERE,FallowTexts.DOWN_THE_STEPS,FallowTexts.SAY_NOTHING)),"three answers: "+Talk.replies(p));
+            h.assertTrue(told(p).contains(FallowTexts.RIG_TURNS),"the rig turns over");
+            h.assertFalse(Talk.waiting(r),"the spectator is asked nothing");
+            Talk.choose(p,FallowTexts.NOBODY_DOWN_THERE);
+            h.assertTrue(said(man).equals(FallowTexts.IS_THAT_RIGHT)&&f.own(p,P).getInt("RoadAnswer")==FallowSteps.LIED,"the lie: "+said(man));
+            // The one who lied stands on the steps; the other comes and tells him the truth.
+            f.at(p,P,-13.5,-1,-8.5);
+            faceHim(f,q,-18.5,-6.5);
+        })
+        .thenWaitUntil(()->h.assertTrue(Talk.waiting(q,FallowSteps.ASK_TALK),"he asks the second"))
+        .thenExecute(()->{
+            Talk.choose(q,FallowTexts.DOWN_THE_STEPS);
+            h.assertTrue(said(Fallow.find(l,b,Fallow.STRANGER)).equals(FallowTexts.OBLIGED)&&f.own(q,P).getInt("RoadAnswer")==FallowSteps.TOLD,"the truth");
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.WALKS_OFF,"he comes to the steps, and somebody is on them: "+FallowSteps.steps(b)))
+        .thenExecute(()->{
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(FallowSteps.kept(b)&&said(man).equals(FallowTexts.FIND_HER_ANYWAY),"he'll find her anyway: "+said(man));
+            h.assertTrue(told(p).contains(FallowTexts.HE_SMILES)&&f.own(p,P).getBoolean("OnSteps")&&!f.own(q,P).getBoolean("OnSteps"),"he smiles at the one on the steps");
+            h.assertTrue(told(q).contains(FallowTexts.WALKS_BACK),"the other sees him go");
+            FallowRoad.hurry(b,.35);
+            for(var x:new ServerPlayer[]{p,q})look(x,b,x.position().subtract(Vec3.atLowerCornerOf(b)).add(0,1.6,30));
+            // The spectator stands on the far pad's track and watches up it, the way he goes.
+            f.at(r,P,20.5,0,-25.5);look(r,b,new Vec3(20.5,1.6,-90));
+        })
+        .thenIdle(400)
+        .thenExecute(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.WALKS_OFF&&Fallow.find(l,b,Fallow.STRANGER)!=null,"a spectator watching keeps him there: "+FallowSteps.steps(b)))
+        .thenExecute(()->look(r,b,new Vec3(-30.5,1.6,60)))
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.GONE&&Fallow.find(l,b,Fallow.STRANGER)==null,"gone up the road"))
+        .thenExecute(()->{
+            var girl=Fallow.find(l,b,Fallow.GIRL);
+            h.assertTrue(FallowSite.inCellar(girl.position().subtract(Vec3.atLowerCornerOf(b)))&&!FallowSteps.inField(b),"she is still below");
+            var own=f.own(p,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("kept_her_on_the_steps"),"the one on the steps: "+own);
+            var two=f.own(q,P);h.assertTrue(two.getBoolean("Ready")&&two.getString("Outcome").equals("told_him_where_she_was"),"the one who told: "+two);
+            h.assertTrue(!f.own(r,P).getBoolean("Ready")&&f.own(r,P).getInt("RoadAnswer")==0,"the spectator earns nothing");
+            h.assertTrue(told(q).contains(FallowTexts.ROAD_EMPTY),"the road is empty");
+            var text=pages(p,f);
+            h.assertTrue(text.contains("I told him there was nobody down there.")&&text.contains("I stood on the steps.")&&text.contains("She was still down the steps when I left."),"the liar's account: "+text);
+            h.assertFalse(text.contains("I woke at the House's door"),"and not what they did not: "+text);
+            var other=pages(q,f);
+            h.assertTrue(other.contains("I told him she was down the steps.")&&other.contains("Somebody was standing on the steps."),"the other's: "+other);
+            f.source(p,P);f.read(p,P,FallowSite.ENDING);
+            h.assertTrue(f.own(p,P).getBoolean("Completed")&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.FALLOW),"read after the note, it is theirs");
+            for(var x:new ServerPlayer[]{p,q})x.setGameMode(GameType.SPECTATOR);
+        })
+        .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"the afternoon ends"))
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    /** 0.4.684: alone, the reader says nothing and nobody stands on the steps. He goes down, and she is not there: out past the fence in
+     * the field, sitting, the wheat coming up round her. He stands at the fence looking at her, and is gone when nobody sees him. */
+    @GameTest(template="empty",batch="fallow_field",timeoutTicks=7000)
+    public static void theFieldTakesHer(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        f.chunks.hold(l,new AABB(b.getX()-45,b.getY()-8,b.getZ()-118,b.getX()+30,b.getY()+8,b.getZ()+1));
+        var p=f.player("fallow_field_alone",P);
+        toTheMan(h,f,p).thenExecute(()->{told(p);faceHim(f,p,-16.5,-4.5);})
+        .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,FallowSteps.ASK_TALK),"he asks"))
+        .thenExecute(()->{
+            Talk.choose(p,FallowTexts.SAY_NOTHING);
+            h.assertTrue(f.own(p,P).getInt("RoadAnswer")==FallowSteps.SILENT&&told(p).contains(FallowTexts.LOOKS_PAST),"nothing; he looks past them");
+            f.at(p,P,-19.5,0,-2.5);
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.DOWN,"nobody on the steps: he goes down: "+FallowSteps.steps(b)))
+        .thenExecute(()->{h.assertTrue(told(p).contains(FallowTexts.GOES_DOWN),"told");look(p,b,new Vec3(-19.5,1.6,30));})
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.inField(b),"she is gone out of the cellar"))
+        .thenExecute(()->{
+            var girl=Fallow.find(l,b,Fallow.GIRL);var r=girl.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(r.x<FallowSite.YARD_W&&girl.gesture()==Fallow.SIT,"out past the fence, sitting: "+r);
+        })
+        // At the foot of the steps he finds nobody, and Otis, who took her down, never saw her go.
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.steps(b)>=FallowSteps.UP,"he comes back up: "+FallowSteps.steps(b)))
+        .thenExecute(()->h.assertTrue(said(Fallow.find(l,b,Fallow.DRIVER)).equals(FallowTexts.OTIS_GONE),"Otis never saw her go: "+said(Fallow.find(l,b,Fallow.DRIVER))))
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.AT_FENCE,"he comes up and stands at the fence: "+FallowSteps.steps(b)))
+        .thenExecute(()->{
+            h.assertTrue(told(p).contains(FallowTexts.AT_THE_FENCE),"told");
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(man.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(new Vec3(-25.5,0,-9.5))<1.5,"at the fence: "+man.position().subtract(Vec3.atLowerCornerOf(b)));
+            look(p,b,man.position().subtract(Vec3.atLowerCornerOf(b)).add(0,1.6,0));
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.ring(b)>=3,"the ground comes up round her: "+FallowRoad.ring(b)))
+        .thenExecute(()->{
+            var girl=Fallow.find(l,b,Fallow.GIRL);var at=BlockPos.containing(girl.position().subtract(Vec3.atLowerCornerOf(b)));
+            h.assertTrue(wheatRing(l,b,at,0,1,FallowBlock.GREEN)||wheatRing(l,b,at,2,3,FallowBlock.SHOOT),"round her in the field");
+            // Over the fence and beside her (a word reaches six blocks), and spoken to.
+            f.at(p,P,-30.5,0,-12.5);LiteraryVignettes.talk(p,girl);
+            h.assertTrue(said(girl).equals(FallowTexts.CAME_UP_FOR_ME),"it came up for her: "+said(girl));
+            var man=Fallow.find(l,b,Fallow.STRANGER);look(p,b,man.position().subtract(Vec3.atLowerCornerOf(b)).add(0,1.6,0));
+        })
+        .thenIdle(FallowSteps.LOOKS)
+        .thenExecute(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.AT_FENCE,"while he is looked at, he stays"))
+        .thenExecute(()->look(p,b,new Vec3(-60,1.6,-12.5)))
+        .thenWaitUntil(()->h.assertTrue(FallowSteps.steps(b)==FallowSteps.GONE,"gone from the fence"))
+        .thenExecute(()->{
+            var own=f.own(p,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("let_him_look"),"ready: "+own);
+            h.assertTrue(told(p).contains(FallowTexts.FENCE_EMPTY),"nobody at the fence");
+            var text=pages(p,f);
+            h.assertTrue(text.contains("I said nothing.")&&text.contains("She was out past the fence")&&text.contains("it was still coming up."),"the account: "+text);
+            p.setGameMode(GameType.SPECTATOR);
+        })
+        .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"the afternoon ends"))
         .thenExecute(()->{done();h.succeed();});
     }
 }

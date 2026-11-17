@@ -8,7 +8,8 @@ and the ground shaking over the cellar. 0.4.680 adds what the light leaves: the 
 pumps, the store falling in on itself, and the fall of it landing on the cellar doors, heard from under them. 0.4.681 adds the buried
 days': the cellar's timbers creaking as they settle, the lantern's wick turned, a match struck, a stroke at the doors from under them and
 the doors giving. 0.4.682 adds the wind after the light: over a field with nothing standing in it, a low hollow wind and the dry hiss of
-ash carried along the ground.
+ash carried along the ground. 0.4.684 adds the big man's rig, which should not run: a cold diesel idling on the forecourt, a knock in each
+firing and the stack's low drone under it.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -40,6 +41,7 @@ ROWS = {
     'dig': ('Rubble is dug at overhead', 16),
     'give': ('The cellar doors give', 24),
     'ash_wind': ('Wind blows over the ash', 48),
+    'rig': ('A diesel engine idles', 32),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -413,7 +415,24 @@ def ash_wind():
     return (moan * 1.1 + whistle * .35 + grains * .5) * edge
 
 
-MAKERS = {'ash_wind': ash_wind, 'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
+def rig():
+    # Two seconds of a big diesel idling cold, so that played again every two seconds it runs on: a knock at each firing, about eleven
+    # to the second and a little uneven, each a short burst of mid noise; the stack's low drone at the firing rate under them; a faint
+    # rattle of loose sheet metal riding on the knocks. Faded in and out at the ends so the repeats join.
+    n = seconds(2.0)
+    t = times(n)
+    rate = 11.0 + .6 * np.sin(2 * np.pi * .7 * t)
+    phase = np.cumsum(rate) / RATE
+    pulse = np.exp(-((phase % 1.0) * 9.0)) * (1 + .25 * np.sin(2 * np.pi * phase * .5))
+    knock = band(rng.standard_normal(n), 180, 1400) * pulse * 1.4
+    drone = np.sin(2 * np.pi * phase) * .9 + np.sin(4 * np.pi * phase + .6) * .35
+    drone = band(drone + band(rng.standard_normal(n), 30, 90) * .4, 25, 160) * 1.6
+    rattle = band(rng.standard_normal(n), 2500, 6000) * pulse ** 3 * .25
+    edge = np.clip(t / .08, 0, 1) * np.clip((2.0 - t) / .08, 0, 1)
+    return (knock + drone + rattle) * edge
+
+
+MAKERS = {'rig': rig, 'ash_wind': ash_wind, 'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
           'tone': tone, 'lids': lids, 'launch': launch, 'siren': siren, 'blast': blast, 'rumble': rumble, 'canopy': canopy,
           'collapse': collapse, 'debris': debris, 'settle': settle, 'wick': wick, 'match': match, 'dig': dig, 'give': give}
 

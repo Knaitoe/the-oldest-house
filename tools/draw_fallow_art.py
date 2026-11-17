@@ -696,6 +696,50 @@ def counter_edge():
     return im
 
 
+def formica_scorched():
+    # The counter's top at the till end after the light: the same laminate, blistered brown in a fan from the window side (north, the
+    # top of the face) that is widest at the front edge and fades out before the block's sides, so it never stops at a seam; the pale
+    # band where hands leaned still shows at the back; the front edge black only where the fan is deepest.
+    im = formica()
+    rnd = random.Random(72325)
+    for y in range(16):
+        half = 3.6 + (9 - y) * .42
+        for x in range(16):
+            across = max(0.0, 1 - abs(x - 7.5) / half)
+            t = max(0.0, 1 - y / 9) * min(1.0, across * 1.6) * (0.75 + 0.25 * rnd.random())
+            if t > .04:
+                im.putpixel((x, y), mix(im.getpixel((x, y)), '#4a3524', min(1, t)))
+    for x in range(16):
+        edge = max(0.0, 1 - abs(x - 7.5) / 7.4)
+        if edge > .45:
+            dot(im, x, 0, '#1e1712')
+            if rnd.random() < .5:
+                dot(im, x, 1, '#2b2018')
+        elif edge > .2:
+            dot(im, x, 0, '#3a2a1c')
+    for _ in range(6):
+        x, y = rnd.randrange(4, 12), rnd.randrange(2, 7)
+        dot(im, x, y, '#8a6a48'); dot(im, x, y + 1, '#2b2018')
+    return im
+
+
+def counter_back_ledger():
+    # The staff's side at the till end: the same cubbies. In the left, the paper sacks gone brown at their tops; in the right, the cigar
+    # box gone dark, and on the cubby's floor in place of the receipt books the keeper's ledger lying flat, seen edge-on: cloth covers
+    # above and below a ruled block of pages, its spine to the left, its far corner singed black and the pages beside it browned.
+    im = counter_back()
+    fill(im, 2, 8, 6, 13, '#a88a5e'); fill(im, 2, 8, 6, 9, '#6b5238')
+    fill(im, 9, 4, 15, 13, '#2b2119')
+    fill(im, 10, 5, 14, 7, '#4a2418'); dot(im, 11, 5, '#7a6234'); dot(im, 13, 6, '#2b1a12')
+    fill(im, 9, 9, 15, 10, '#4f3428'); fill(im, 9, 12, 15, 13, '#3a2620')
+    for x in range(9, 15):
+        dot(im, x, 10, '#dccfb3' if x % 2 else '#cfc2a4'); dot(im, x, 11, '#c9bc9e' if x % 2 else '#d6c9ad')
+    for y in range(9, 13):
+        dot(im, 9, y, '#2a1a14')
+    dot(im, 13, 10, '#8a6a48'); dot(im, 13, 11, '#6e5238'); dot(im, 14, 9, '#1c1612'); dot(im, 14, 10, '#1c1612'); dot(im, 14, 11, '#3a2a1c')
+    return im
+
+
 def register():
     # A mechanical cash register: a cast body painted dark with chrome trim, the cash drawer at its foot, a crank on its side, the
     # sale flags standing in the window on top. This face is its side and back; the keys and the window have their own.
@@ -2275,6 +2319,14 @@ def counter_model(stage):
               element([3, 16, 12], [13, 18.5, 15], {'up': 'k', 'south': 'r', 'east': 'r', 'west': 'r'}),
               element([4, 22, 7], [12, 25, 9], {'north': 'w', 'south': 'w', 'east': 'r', 'west': 'r', 'up': 'r'}),
               element([13, 18, 7], [14.5, 19, 8], {'all': 'h'}), element([14, 17, 7], [15, 19, 8], {'all': 'h'})]
+    if stage == 4:
+        # 0.4.684: the till end after the light: the register still on it, the top scorched in a fan from the window side, and the
+        # keeper's ledger in the cubby under it, its pages singed at the corner.
+        t.update({'r': 'register', 'k': 'register_keys', 'w': 'register_flags', 'h': 'chrome', 't': 'formica_scorched', 'b': 'counter_back_ledger'})
+        e += [element([3, 16, 4], [13, 22, 12], {'north': 'r', 'south': 'r', 'east': 'r', 'west': 'r', 'up': 'r'}),
+              element([3, 16, 12], [13, 18.5, 15], {'up': 'k', 'south': 'r', 'east': 'r', 'west': 'r'}),
+              element([4, 22, 7], [12, 25, 9], {'north': 'w', 'south': 'w', 'east': 'r', 'west': 'r', 'up': 'r'}),
+              element([13, 18, 7], [14.5, 19, 8], {'all': 'h'}), element([14, 17, 7], [15, 19, 8], {'all': 'h'})]
     if stage == 3:
         t.update({'c': 'candy', 'w': 'wire'})
         e += [element([2, 16, 2], [14, 22, 2.5], {'north': 'c', 'south': 'c'}, uv={'north': [1, 1, 15, 15], 'south': [1, 1, 15, 15]}),
@@ -2803,7 +2855,7 @@ def box_model(stage):
 
 def fitting_models():
     m = {}
-    for s in range(4):
+    for s in range(5):
         m[f'counter_{s}'] = counter_model(s)
     m['note_0'] = note_model(); m['stool_0'] = stool_model(); m['coffee_0'] = coffee_model(); m['tube_0'] = tube_model()
     for s in range(3):
@@ -2868,6 +2920,7 @@ def textures():
         out[f'block/fallow_{name}.png'] = im
     faces = {
         'counter_front': counter_front(), 'counter_back': counter_back(), 'formica': formica(), 'counter_edge': counter_edge(),
+        'formica_scorched': formica_scorched(), 'counter_back_ledger': counter_back_ledger(),
         'register': register(), 'register_keys': register_keys(), 'register_flags': register_flags(), 'candy': candy(), 'wire': wire(),
         'note': note(), 'stool_seat': stool_seat(), 'chrome': chrome(), 'cabinet': cabinet(), 'shelf_board': shelf_board(),
         'cartons': cartons(), 'cans': cans(), 'radio': radio(), 'tv_case': tv_case(), 'tv_0': tv_screen(0), 'tv_1': tv_screen(1),
@@ -2917,7 +2970,7 @@ def textures():
 KINDS = ['counter', 'note', 'stool', 'backshelf', 'tv', 'cooler', 'gondola', 'maps', 'coffee', 'window', 'tube', 'signband', 'pump',
          'island', 'canopy', 'sign', 'pole', 'wheat', 'pad', 'lift', 'trailer', 'cellar', 'cellar_open', 'shelf', 'cot', 'crock', 'farm',
          'rig', 'box', 'bean', 'rubble']
-STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 4, 'signband': 4, 'pump': 4, 'island': 2,
+STAGES = {'counter': 5, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 4, 'signband': 4, 'pump': 4, 'island': 2,
           'canopy': 7, 'sign': 3, 'pole': 7, 'wheat': 6, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
           'cot': 2, 'crock': 4, 'farm': 8, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
 ITEM_ART = {'milk': milk_carton, 'soda': soda_bottle, 'coffee': coffee_cup}

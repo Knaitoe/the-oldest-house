@@ -88,6 +88,8 @@ public final class FallowRoad {
         plant(l,s,here);
         green(l,s,here);
         road(l,s,here);
+        // 0.4.684: what he asks at the doors, and the steps.
+        FallowSteps.tick(l,s,here);
     }
 
     // ------------------------------------------------------------------------------------------------ the shadows
@@ -174,12 +176,13 @@ public final class FallowRoad {
     static void green(ServerLevel l,Fallow.Site s,List<ServerPlayer> here){
         var st=s.strike;
         if(!st.planted||st.ring>=GROW_MAX+GREEN_AFTER)return;
+        // 0.4.684: round her bean; or, once she is out past the fence, round wherever she sits.
+        var c=st.greenAt!=null?st.greenAt:st.bean;
         var girl=Fallow.find(l,s.base,Fallow.GIRL);
-        if(girl==null||girl.gesture()!=Fallow.SIT||girl.position().distanceToSqr(Vec3.atCenterOf(s.base.offset(st.bean)))>4)return;
+        if(girl==null||girl.gesture()!=Fallow.SIT||girl.position().distanceToSqr(Vec3.atCenterOf(s.base.offset(c)))>4)return;
         int due=(s.tick-st.plantedAt)/GROW_RING;
         if(due<=st.ring)return;
         int r=++st.ring;
-        var c=st.bean;
         for(int x=c.getX()-r;x<=c.getX()+r;x++)for(int z=c.getZ()-r;z<=c.getZ()+r;z++){
             double d=Math.hypot(x-c.getX(),z-c.getZ());
             if(r<=GROW_MAX&&d>r-1&&d<=r)shoot(l,s.base,x,z);
@@ -288,6 +291,8 @@ public final class FallowRoad {
     public static int road(BlockPos b){var s=Fallow.afternoon(b);return s==null?-1:s.strike.road;}
     public static int face(BlockPos b){var s=Fallow.afternoon(b);return s==null?-1:s.strike.face;}
     public static boolean hid(BlockPos b){var s=Fallow.afternoon(b);return s!=null&&s.strike.hid;}
+    /** He is made on the road now, as if the bean had been in the ground long enough, so that a test need not wait for him. */
+    public static void comeNow(BlockPos b){var s=Fallow.afternoon(b);if(s!=null&&s.strike.planted)s.strike.plantedAt=Math.min(s.strike.plantedAt,s.tick-COMES_AFTER);}
     /** His walk made quicker, so that a test need not wait the whole road. */
     public static void hurry(BlockPos b,double pace){var s=Fallow.afternoon(b);if(s!=null)s.speed.put(Fallow.STRANGER,pace);}
 
@@ -301,7 +306,7 @@ public final class FallowRoad {
     static void hide(ServerLevel l,Fallow.Site s){
         var st=s.strike;st.hid=true;
         var girl=Fallow.find(l,s.base,Fallow.GIRL);if(girl==null)return;
-        int who=(st.stood&1<<Fallow.WOMAN)!=0?Fallow.WOMAN:Fallow.DRIVER;
+        int who=(st.stood&1<<Fallow.WOMAN)!=0?Fallow.WOMAN:Fallow.DRIVER;st.taker=who;
         var taker=Fallow.find(l,s.base,who);
         girl.gesture(0);
         Fallow.send(s,Fallow.GIRL,FallowStrike.toCellar(girl.position().subtract(Vec3.atLowerCornerOf(s.base)),FallowStrike.OPAL_BELOW));s.speed.put(Fallow.GIRL,.1);

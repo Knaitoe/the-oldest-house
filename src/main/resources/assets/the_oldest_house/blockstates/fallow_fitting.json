@@ -13,7 +13,7 @@
       "model": "the_oldest_house:block/fallow/counter_3"
     },
     "facing=north,kind=counter,stage=4": {
-      "model": "the_oldest_house:block/fallow/counter_0"
+      "model": "the_oldest_house:block/fallow/counter_4"
     },
     "facing=north,kind=counter,stage=5": {
       "model": "the_oldest_house:block/fallow/counter_0"
@@ -41,7 +41,7 @@
       "y": 90
     },
     "facing=east,kind=counter,stage=4": {
-      "model": "the_oldest_house:block/fallow/counter_0",
+      "model": "the_oldest_house:block/fallow/counter_4",
       "y": 90
     },
     "facing=east,kind=counter,stage=5": {
@@ -73,7 +73,7 @@
       "y": 180
     },
     "facing=south,kind=counter,stage=4": {
-      "model": "the_oldest_house:block/fallow/counter_0",
+      "model": "the_oldest_house:block/fallow/counter_4",
       "y": 180
     },
     "facing=south,kind=counter,stage=5": {
@@ -105,7 +105,7 @@
       "y": 270
     },
     "facing=west,kind=counter,stage=4": {
-      "model": "the_oldest_house:block/fallow/counter_0",
+      "model": "the_oldest_house:block/fallow/counter_4",
       "y": 270
     },
     "facing=west,kind=counter,stage=5": {
