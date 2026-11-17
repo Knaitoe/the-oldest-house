@@ -377,6 +377,15 @@ LOOKS = {
     'literary_lastseen_nora': Look('#d2b098','#b8b4ac','bun','#6a5a4a','#3a3a40','cardigan','#c8b89a',eyes='#5a6066',age=2,glasses=True,sleeve=10,shoes='#3a302a'),
     'literary_lastseen_patricia': Look('#cfa286','#6a2e1e','short','#c8bcae','#3a3a44','shirt','#e8e0d4',eyes='#4a3e30',age=1,sleeve=10,shoes='#2a2626'),
     'literary_lastseen_luz': Look('#c9967a','#1e1a18','long','#5a6a5a','#2e3440','knit','#8a9a8a',eyes='#3a2e26',sleeve=10,shoes='#3a3434'),
+    # 0.4.669, Last Seen part 3: the four who come to the park on the second day. Mr. Ocampo from the city, in a grey suit with the
+    # city's card on a lanyard over his tie; Tomás's grandmother, white hair in a bun, a heather cardigan buttoned to the neck; Daiana's
+    # father in a work jacket, a day's stubble; Joel's mother in a long wool coat with a pale scarf, her hair the way his is.
+    'literary_lastseen_ocampo': Look('#d0a88c','#3a3230','part','#5c6066','#4c5056','suit','#2e3442',eyes='#4a4036',age=1,beard='moustache',sleeve=10,mark='city_lanyard'),
+    'literary_lastseen_gran': Look('#c99474','#d0cac0','bun','#6e5e66','#3e3a3c','cardigan','#cdbcae',eyes='#4a3e32',age=2,sleeve=10),
+    'literary_lastseen_father': Look('#c08e6e','#262020','close','#4a5248','#2e3036','jacket','#8a8a7c',eyes='#3a2e26',age=1,beard='stubble',sleeve=10),
+    'literary_lastseen_mother': Look('#8e5e42','#1a1614','coils','#6e4a3a','#2e3038','coat','#ddd0ba',eyes='#2a2018',age=1,sleeve=10),
+    # Tomás with the coat his grandmother brings put round his shoulders: his own sheet, the coat over it (lastseen_coat).
+    'literary_lastseen_tomas_coat': Look('#c8946e','#3a2a1e','messy','#7ab0d8','#26282e','jersey','#f0f0ea',eyes='#3a2e26',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_tomas_coat',jersey=10,shoes='#e4e2dc'),
     'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
     # in old coats; and Benny on the far stool.
@@ -1203,6 +1212,12 @@ def cloth_face(size,look,side='front'):
         if look.style=='uniform':
             for y in (10,15,20):d.rectangle((mid-3,y,mid-2,y+1),fill=a);d.rectangle((mid+2,y,mid+3,y+1),fill=a)
         if look.style=='apron':d.rectangle((2,h-10,w-3,h-1),fill=a);d.line((4,h-7,w-5,h-7),fill=shade(a,-25))
+        if look.mark=='city_lanyard':
+            # 0.4.669: the city's card on its lanyard, over the tie: the cord from either side of the collar, the card's white face, the
+            # band of its printed heading and his photograph in its corner.
+            cord='#2e4a7a';d.line((mid-4,1,mid-2,12),fill=cord);d.line((mid+3,1,mid+1,12),fill=cord)
+            d.rectangle((mid-3,12,mid+2,17),fill='#eceae2');d.line((mid-3,12,mid+2,12),fill=cord)
+            d.rectangle((mid-2,14,mid-1,16),fill='#b89a80');d.line((mid,14,mid+1,14),fill='#8a8a86');d.line((mid,16,mid+1,16),fill='#a8a8a2')
     elif look.style=='cleric':
         d.rectangle((mid-3,1,mid+2,2),fill='#262d2b');d.rectangle((mid-1,1,mid,2),fill='#e6debf')
         d.line((mid,4,mid,h-3),fill=lo)
@@ -1438,6 +1453,39 @@ def costume_marks(d,look,w,h):
     if 'flowers' in c:
         for x,y in ((2,4),(9,7),(5,12),(12,15),(3,19),(10,21)):
             if x<w and y<h:d.point((x,y),fill='#efe0a8');d.point((min(w-1,x+1),y),fill='#e8a8b8')
+
+
+def lastseen_coat(im):
+    """0.4.669, Last Seen: the coat Tomás's grandmother puts round his shoulders, over his own sheet. A child's duffel coat in a dark
+    wool: down the torso's sides and back to the hem, open at the front so his jersey shows between its two edges with their toggles,
+    the hood fallen back between the shoulders with its lining at the rim, and over the tops of his arms to the elbow."""
+    wool='#33405a'
+    def paste(box,draw):
+        x0,y0,x1,y1=[round(v*S) for v in box];w,h=x1-x0,y1-y0
+        art=im.crop((x0,y0,x1,y1));d=ImageDraw.Draw(art);draw(d,w,h,art);im.paste(art,(x0,y0))
+    torso=net(16,16,8,12,4)
+    def side(d,w,h,art):
+        art.paste(panel((w,h),wool,'cloth','right'),(0,0));d.line((0,h-2,w-1,h-2),fill=shade(wool,-24))
+    def back(d,w,h,art):
+        art.paste(panel((w,h),wool,'cloth','back'),(0,0))
+        # the hood, fallen back: its rim of lining, its shape down the shoulder blades, the seam up its middle
+        d.polygon([(2,0),(w-3,0),(w-4,8),(w//2,10),(w//2-1,10),(3,8)],fill=shade(wool,-12));d.line((2,0,w-3,0),fill='#7a3a34')
+        d.line((w//2,1,w//2,9),fill=shade(wool,-26));d.line((0,h-2,w-1,h-2),fill=shade(wool,-24))
+    def front(d,w,h,art):
+        for x0 in (0,w-3):
+            d.rectangle((x0,0,x0+2,h-1),fill=rgb(wool));d.line((x0,h-2,x0+2,h-2),fill=shade(wool,-24))
+        d.line((2,0,2,h-1),fill=shade(wool,-28));d.line((w-3,0,w-3,h-1),fill=shade(wool,-28))
+        for y in (5,10,15):
+            d.point((1,y),fill='#d8c8a0');d.point((w-2,y),fill='#d8c8a0');d.point((2,y),fill='#5a4a36');d.point((w-3,y),fill='#5a4a36')
+    def top(d,w,h,art):
+        art.paste(panel((w,h),wool,'cloth','top'),(0,0));d.line((0,h-1,w-1,h-1),fill=shade(wool,-12))
+    for name,fn in (('right',side),('left',side),('back',back),('front',front),('top',top)):paste(torso[name],fn)
+    for arm in (net(40,16,4,12,4),net(32,48,4,12,4)):
+        def sleeve(d,w,h,art):
+            d.rectangle((0,0,w-1,13),fill=rgb(wool));d.line((0,0,0,13),fill=shade(wool,-10));d.line((w-1,0,w-1,13),fill=shade(wool,-10))
+            d.line((0,13,w-1,13),fill=shade(wool,-26));d.line((0,1,w-1,1),fill=shade(wool,10))
+        for name in ('right','front','left','back'):paste(arm[name],sleeve)
+        paste(arm['top'],top)
 
 
 def paint(look):
@@ -1872,7 +1920,7 @@ def paint(look):
     d=ImageDraw.Draw(im)
     d.rectangle((0,0,8*S-1,8*S-1),fill=rgb(look.under if look.under else look.skin if look.sleeve<=6 else look.cloth))
     d.rectangle((24*S,0,32*S-1,8*S-1),fill=rgb(look.pants))
-    for leg in (net(0,16,4,12,4),net(16,48,4,12,4)):
+    for li,leg in enumerate((net(0,16,4,12,4),net(16,48,4,12,4))):
         for side,box in leg.items():
             w,h=round((box[2]-box[0])*S),round((box[3]-box[1])*S)
             art=panel((w,h),look.pants,'pants',side);d=ImageDraw.Draw(art)
@@ -1923,6 +1971,13 @@ def paint(look):
                         k=h//2-1
                         for x,y in ((1,k),(2,k),(2,k+1),(3,k+1),(1,k+2),(2,k+4)):d.point((x,y),fill='#6e573c')
                         for x,y in ((3,k),(1,k+1),(3,k+2)):d.point((x,y),fill='#957d5a')
+                        if look.mark=='lastseen_lautaro' and li==0:
+                            # 0.4.669: "One knee is scraped, and it is still wet." The trouser torn open at his right knee, the graze
+                            # under it raw, and one bright point where it is still wet.
+                            k=h//2-2;d.rectangle((2,k,w-3,k+3),fill=rgb(look.skin))
+                            d.line((1,k,w-2,k),fill=shade(look.pants,30));d.line((2,k+4,w-3,k+4),fill=shade(look.pants,22))
+                            for x,y in ((3,k+1),(4,k+1),(3,k+2),(4,k+2),(5,k+2)):d.point((x,y),fill='#a8504a')
+                            d.point((4,k+1),fill='#7e3430');d.point((3,k+1),fill='#e6b2a8')
                     if look.rips and side=='front':
                         # Out at the knee: the skin through it, and the threads still across.
                         k=h//2-2;d.rectangle((2,k,w-3,k+2),fill=rgb(look.skin));d.line((1,k,w-2,k),fill=shade(look.pants,34));d.point((3,k+1),fill=shade(look.pants,30));d.line((2,k+3,w-3,k+3),fill=shade(look.pants,22))
@@ -2094,6 +2149,7 @@ def paint(look):
             d.rectangle((x,y,x+S-1,y+2*S-1),fill='#a7b9aa');d.point((x,y),fill='#d5dfc5')
         d.line((21*S,21*S,23*S,24*S,25*S,22*S,26*S,21*S),fill='#434e44',width=S)
         d.line((20*S,24*S,21*S,27*S),fill='#454f43',width=S)
+    if look.mark=='lastseen_tomas_coat':lastseen_coat(im)
     if look.mark=='bent_injury':
         d=ImageDraw.Draw(im)
         # Unused right-pants overlay: the independent broken-neck mesh has its own native UV island.

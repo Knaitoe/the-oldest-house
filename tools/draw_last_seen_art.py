@@ -973,6 +973,115 @@ def fascia():
 
 
 # ------------------------------------------------------------------------------------------------ models
+GALV = '#b3b8bc'
+
+
+def fence_mesh():
+    """The city's fence (0.4.669): welded wire on a galvanised frame, a square of it every four pixels (a quarter of a block), the
+    welds catching the light where the wires cross, dull where the rain has run down them. Everything between the wires is clear."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(77690)
+    for y in range(16):
+        for x in range(16):
+            vertical, level = x % 4 == 1, y % 4 == 3
+            if vertical and level:
+                im.putpixel((x, y), rgb('#d6dadd') + (255,))
+            elif vertical:
+                im.putpixel((x, y), shade(GALV, rnd.choice((0, 0, -6, 4))))
+            elif level:
+                im.putpixel((x, y), shade(GALV, -18 + rnd.choice((0, -4, 3))))
+    # the rain's runs down two wires, and a bloom of white rust at one weld
+    for y in range(4, 13):
+        dot(im, 9, y, shade(GALV, -26))
+    dot(im, 5, 11, '#e4e2d6'); dot(im, 13, 7, '#9a9c96')
+    return im
+
+
+def fence_tube():
+    im = new(GALV, 77691, 2)
+    for y in range(16):
+        dot(im, 0, y, shade(GALV, -28)); dot(im, 1, y, shade(GALV, -12)); dot(im, 6, y, '#dfe2e4'); dot(im, 15, y, shade(GALV, -34))
+    for y in (5, 12):
+        for x in range(16):
+            darken(im, x, y, -8)
+    return im
+
+
+def fence_foot():
+    # A precast foot: rough grey concrete, cast with two holes the frame's legs stand in, chipped on its corners and scuffed by boots.
+    im = new('#8e8d87', 77692, 5)
+    rnd = random.Random(77693)
+    for _ in range(22):
+        dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(('#a4a39c', '#74736d', '#6a6964')))
+    for x0 in (3, 10):
+        fill(im, x0, 6, x0 + 3, 10, '#3e3d3a'); fill(im, x0, 6, x0 + 3, 7, '#2a2a28')
+    for x in range(16):
+        dot(im, x, 0, '#a8a7a0'); dot(im, x, 15, '#64635e')
+    dot(im, 0, 0, '#6e6d68'); dot(im, 15, 0, '#6e6d68')
+    return im
+
+
+def notice():
+    """The city's notice (0.4.669), taped round a lamp post. It is six pixels wide and eight high, at cols 5..10, rows 5..12, so it
+    keeps the post's own pixel size. Two lines of heavy type across the top, the smaller print under them, and the city's stamp in
+    the foot's corner; the paper has taken the damp and gone soft at one corner."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 5, 5, 11, 13, '#ece9df')
+    dot(im, 10, 12, '#d6d0c0'); dot(im, 5, 12, '#e2ddd0'); dot(im, 10, 5, '#f6f4ee')
+    # a margin of a pixel each side; the heading a full bar and a shorter one under it, then three lines of print and the stamp
+    for x in range(6, 10):
+        dot(im, x, 6, '#262422')
+    for x in range(6, 9):
+        dot(im, x, 7, '#3c3a37')
+    for x, y in ((6, 9), (7, 9), (8, 9), (9, 9), (6, 10), (7, 10), (8, 10), (6, 11), (7, 11)):
+        dot(im, x, y, '#9a978f' if y == 10 else '#8a877f')
+    dot(im, 9, 11, '#56688c'); dot(im, 9, 12, '#6a7a9a'); dot(im, 8, 12, '#8494b0')
+    return im
+
+
+def tape():
+    # Packing tape gone a little yellow, the light catching its edge, a crease where it was pulled round.
+    im = new('#d8d0b2', 77694, 2)
+    for x in range(16):
+        dot(im, x, 0, '#f0e8cc'); dot(im, x, 15, '#b8b090')
+    for y in range(16):
+        dot(im, 7, y, '#c4bc9e')
+    return im
+
+
+def coat_icon():
+    """The coat Tomás's grandmother brings (0.4.669): a child's duffel coat in a dark wool, held up by its shoulders. Its hood falls
+    back between them, the toggles run down its front on their loops, the sleeves hang a little short, and one pocket is turned out."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    wool = '#33405a'
+    body = [(5, 3), (10, 3), (12, 5), (12, 14), (3, 14), (3, 5)]
+    from PIL import ImageDraw
+    d = ImageDraw.Draw(im)
+    d.polygon(body, fill=rgb(wool))
+    # the sleeves, out to either side and down
+    d.polygon([(3, 5), (1, 7), (0, 12), (2, 12), (3, 9)], fill=shade(wool, -10))
+    d.polygon([(12, 5), (14, 7), (15, 12), (13, 12), (12, 9)], fill=shade(wool, -18))
+    dot(im, 0, 12, '#c8bca0'); dot(im, 1, 12, '#c8bca0'); dot(im, 14, 12, '#c8bca0'); dot(im, 15, 12, '#c8bca0')
+    # the hood, fallen back, its lining showing
+    fill(im, 6, 1, 10, 4, shade(wool, -8)); fill(im, 7, 2, 9, 4, '#7a3a34'); dot(im, 6, 1, (0, 0, 0, 0)); dot(im, 9, 1, (0, 0, 0, 0))
+    # down the front: the opening, and the toggles on their loops
+    for y in range(4, 14):
+        dot(im, 7, y, shade(wool, -30))
+    for y in (6, 9, 12):
+        dot(im, 6, y, '#d8c8a0'); dot(im, 8, y, '#5a4a36')
+    # its lit shoulder, its shaded side, the hem
+    for x in range(5, 10):
+        dot(im, x, 3, shade(wool, 18))
+    for y in range(5, 14):
+        dot(im, 11, y, shade(wool, -22)); dot(im, 3, y, shade(wool, 8))
+    for x in range(3, 12):
+        dot(im, x, 13, shade(wool, -26))
+    # a patch pocket, its flap, and the other turned out
+    fill(im, 4, 9, 6, 11, shade(wool, -6)); dot(im, 4, 9, shade(wool, 12)); dot(im, 5, 9, shade(wool, 12))
+    dot(im, 9, 11, '#b8ac90'); dot(im, 10, 11, '#a89c80')
+    return im
+
+
 def element(lo, hi, textures, uv=None, rotation=None):
     faces = {}
     keys = ['north', 'south', 'east', 'west', 'up', 'down']
@@ -1107,7 +1216,57 @@ def lamp_post_model(stage):
              element([6, 11, 6], [10, 13, 10], {'all': 'i'})]
         if stage == 2:
             glow(e[1:2], 15)
+    if stage == 4:
+        # 0.4.669: the shaft with the city's notice taped round it, on its north face; tape round the post above and below the sheet.
+        t = {**t, 'n': 'notice', 'p': 'tape'}
+        e = [element([6.5, 0, 6.5], [9.5, 16, 9.5], {'all': 'i'}),
+             element([5, 5, 6.2], [11, 13, 6.5], {'north': 'n', 'east': 'n', 'west': 'n', 'up': 'n', 'down': 'n'},
+                     uv={'north': [5, 5, 11, 13], 'east': [5, 11, 5.3, 13], 'west': [10.7, 11, 11, 13], 'up': [5, 5, 11, 5.3],
+                         'down': [5, 12.7, 11, 13]})]
+        for y0 in (12.4, 4.8):
+            # across the sheet's face, and on round the post
+            e.append(element([5.4, y0, 6.1], [10.6, y0 + .8, 6.2], {'north': 'p', 'up': 'p', 'down': 'p'}))
+            e.append(element([6.4, y0, 6.4], [9.6, y0 + .8, 9.6], {'south': 'p', 'east': 'p', 'west': 'p'}))
     return model(e, t, 'lamp_iron')
+
+
+def fence_model(stage):
+    """The city's fence (0.4.669), two blocks high: a lower and an upper half of each panel. Stages 0 and 1 are a panel's first
+    block, with the frame's upright and its precast foot at the joint with the panel before (straddling the cell's west edge as
+    the model faces); 4 and 5 are its second block, mesh only, so each panel is two blocks wide. 2 and 3 are a corner: a post on
+    its own foot with half a panel running off it to the east and half to the south, turned with the block to fit each corner."""
+    t = {'m': 'fence_mesh', 'u': 'fence_tube', 'f': 'fence_foot'}
+    low, top = stage in (0, 2, 4), stage in (1, 3, 5)
+    corner = stage in (2, 3)
+    e = []
+    def run(x0, x1, z=8.0, along_z=False):
+        # one stretch of mesh with its rail, along x at z or along z at x
+        y0, y1 = (2, 16) if low else (0, 13)
+        if along_z:
+            e.append(element([z - .25, y0, x0], [z + .25, y1, x1], {'east': 'm', 'west': 'm'}))
+            ry = (2, 3) if low else (13, 14.5)
+            e.append(element([z - .75, ry[0], x0], [z + .75, ry[1], x1], {'up': 'u', 'down': 'u', 'east': 'u', 'west': 'u'}))
+        else:
+            e.append(element([x0, y0, z - .25], [x1, y1, z + .25], {'north': 'm', 'south': 'm'}))
+            ry = (2, 3) if low else (13, 14.5)
+            e.append(element([x0, ry[0], z - .75], [x1, ry[1], z + .75], {'up': 'u', 'down': 'u', 'north': 'u', 'south': 'u'}))
+    if corner:
+        run(8, 16); run(8, 16, along_z=True)
+        e.append(element([7, 0 if top else 1, 7], [9, 14.5 if top else 16, 9], {'all': 'u'}))
+        if top:
+            e.append(element([6.5, 10, 6.5], [9.5, 12, 9.5], {'all': 'f'}))
+        else:
+            e.append(element([4, 0, 5], [12, 2.5, 11], {'all': 'f'}))
+    else:
+        run(0, 16)
+        if stage in (0, 1):
+            e.append(element([-.75, 0 if top else 1, 7.25], [.75, 14.5 if top else 16, 8.75], {'all': 'u'}))
+            if top:
+                # the clamp that holds the two frames together near their tops
+                e.append(element([-1.5, 10, 6.5], [1.5, 12, 9.5], {'all': 'f'}))
+            else:
+                e.append(element([-4, 0, 5], [4, 2.5, 11], {'all': 'f'}))
+    return model(e, t, 'fence_tube')
 
 
 def bench_model(stage):
@@ -1269,8 +1428,12 @@ def fitting_models():
     for s in range(len(SHUTTER_FACES)):
         m[f'shutter_{s}'] = shutter_model(s)
     for s in range(4):
-        m[f'lamp_post_{s}'] = lamp_post_model(s); m[f'fountain_{s}'] = fountain_model(s); m[f'trunk_{s}'] = trunk_model(s)
+        m[f'fountain_{s}'] = fountain_model(s); m[f'trunk_{s}'] = trunk_model(s)
         m[f'shelter_{s}'] = shelter_model(s)
+    for s in range(5):
+        m[f'lamp_post_{s}'] = lamp_post_model(s)
+    for s in range(6):
+        m[f'fence_{s}'] = fence_model(s)
     for s in range(5):
         m[f'bandstand_{s}'] = bandstand_model(s)
     for s in range(8):
@@ -1433,6 +1596,7 @@ def textures():
         'perforated': perforated(), 'shutter': shutter_face(0), 'shutter_lit': shutter_face(1), 'shutter_low': shutter_face(0, 'low'),
         'shutter_top': shutter_face(0, 'top'), 'shutter_low_lit': shutter_face(1, 'low'), 'shutter_top_lit': shutter_face(1, 'top'),
         'sill': sill(), 'fascia': fascia(),
+        'fence_mesh': fence_mesh(), 'fence_tube': fence_tube(), 'fence_foot': fence_foot(), 'notice': notice(), 'tape': tape(),
     }
     from paint_character_skins import LOOKS
     for i in range(16):
@@ -1444,13 +1608,14 @@ def textures():
     for i in range(10):
         out[f'item/last_seen_folder_{i}.png'] = folder_icon(face_of(LOOKS[f'literary_lastseen_{CHILDREN[i]}']))
     out['gui/last_seen_folder.png'] = folder_card()
+    out['item/last_seen_coat.png'] = coat_icon()
     return out
 
 
 KINDS = ['counter', 'card', 'chair', 'shelf', 'poster', 'poster_b', 'table', 'desk', 'louvre', 'tube', 'railing', 'gate', 'lamp_post', 'bench',
-         'fountain', 'kiosk', 'trunk', 'leaves', 'play', 'bandstand', 'shelter', 'shutter']
-STAGES = {'counter': 2, 'shelf': 5, 'poster': 8, 'poster_b': 8, 'table': 3, 'desk': 3, 'railing': 2, 'gate': 3, 'lamp_post': 4, 'bench': 3,
-          'fountain': 4, 'kiosk': 2, 'trunk': 4, 'leaves': 3, 'play': 8, 'bandstand': 5, 'shelter': 4, 'shutter': 6}
+         'fountain', 'kiosk', 'trunk', 'leaves', 'play', 'bandstand', 'shelter', 'shutter', 'fence']
+STAGES = {'counter': 2, 'shelf': 5, 'poster': 8, 'poster_b': 8, 'table': 3, 'desk': 3, 'railing': 2, 'gate': 3, 'lamp_post': 5, 'bench': 3,
+          'fountain': 4, 'kiosk': 2, 'trunk': 4, 'leaves': 3, 'play': 8, 'bandstand': 5, 'shelter': 4, 'shutter': 6, 'fence': 6}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'last_seen_fitting': 'Park Fitting', 'last_seen_paving': 'Park Paving', 'last_seen_curb': 'Curbstone', 'last_seen_earth': 'Trodden Earth',
@@ -1483,6 +1648,7 @@ def files():
                                                               for i in range(10)]}
     for i in range(10):
         out[f'models/item/last_seen_folder_{i}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/last_seen_folder_{i}'}}
+    out['models/item/last_seen_coat.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/last_seen_coat'}}
     return out
 
 
@@ -1523,6 +1689,11 @@ def main():
     assert len(set(icons)) == 10, 'two folders show the same face'
     card = images['gui/last_seen_folder.png']
     assert card.getpixel((40, 100))[3] == 255 and card.getpixel((4, 0))[3] == 0 and card.getpixel((5, 190))[3] == 255, 'the folder card and its clip'
+    # The city's fence is mesh: more of each block is clear than wire. The notice is drawn where its element looks for it.
+    mesh = images['block/last_seen/fence_mesh.png']
+    assert 0.25 < sum(mesh.getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) / 256 < 0.5
+    sheet = images['block/last_seen/notice.png']
+    assert all(sheet.getpixel((x, y))[3] == 255 for x in range(5, 11) for y in range(5, 13)) and sheet.getpixel((4, 4))[3] == 0
 
     for rel, im in images.items():
         path = base / 'textures' / rel
@@ -1542,6 +1713,7 @@ def main():
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
     wanted['item.the_oldest_house.last_seen_folder'] = 'Folder'
+    wanted['item.the_oldest_house.last_seen_coat'] = 'Coat'
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key

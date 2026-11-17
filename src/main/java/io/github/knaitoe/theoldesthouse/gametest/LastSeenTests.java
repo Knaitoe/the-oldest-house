@@ -396,4 +396,170 @@ public final class LastSeenTests {
         }).thenWaitUntil(()->h.assertTrue(LastSeen.holding(b)<0&&carried(q,LastSeen.ROCIO)==1,"she gives it back to them too"))
         .thenExecute(()->{done();h.succeed();});
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.669: the second day
+    /** A reader who matched the first of them comes back to the second day: their own count says so before the morning starts. */
+    private static void secondDay(LiteraryTests.Fixture f,ServerPlayer p){var o=f.own(p,P);o.putInt("Days",1);LiteraryVignettes.save(f.data(),p.getUUID(),P,o);}
+    /** The park's hour each time it was sent. */
+    private static List<Long> hours(List<Object> sent){
+        var out=new ArrayList<Long>();
+        for(var packet:sent)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.LastSeenTimePayload time)out.add(time.time());
+        return out;
+    }
+    private static Vec3 spot(BlockPos b,int c){return Vec3.atLowerCornerOf(b).add(LastSeen.SPOT[c]);}
+    /** A reader on the path, south of a spot and turned south, away from where the visitors come in. */
+    private static void south(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){f.at(p,P,rel.x,0,rel.z+4);p.setYRot(0);p.setYHeadRot(0);p.setXRot(0);}
+    private static float yaw(LiteraryActor a){return net.minecraft.util.Mth.wrapDegrees(a.getYRot());}
+    private static boolean facing(LiteraryActor a,float yaw){return Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-yaw))<6;}
+
+    /**
+     * One reader through the second day, from the first of them to dusk. Eight of the ten are in the park at child scale, each at their
+     * own spot facing their own way; the last two never come. The table is bare and the front door open. Four are matched by their own
+     * folders: each takes it, looks at it, says the one thing that is theirs, and gives it back; the fourth makes it the reader's second
+     * day. A reader who comes near is told how they stand. Something to eat is held and not eaten; an empty hand is cold. Nora's day-two
+     * lines, Patricia's phone, Luz's count. Tomás's grandmother brings his coat and puts it round him; Luz has seen her come. Daiana's
+     * father takes her out of the park by the wrist and brings her back to the gate. The city's fence goes up round the playground, a
+     * panel at a time, with corners turned to fit; its notices go onto every lamp post, facing the path; Lautaro puts his hands to the
+     * mesh. Mr. Ocampo tells Nora to close the files, and Nora's answer is that they stay open. At dusk every one of them faces the avenue,
+     * and the park's hour has gone from morning to dusk.
+     */
+    @GameTest(template="empty",batch="last_seen_day_two",timeoutTicks=9000)
+    public static void theSecondDayAndItsFamilies(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_day_two_reader",P);secondDay(f,p);var l=f.level(P);var b=f.base(P);
+        int[] four={LastSeen.TOMAS,LastSeen.MICAELA,LastSeen.BRIAN,LastSeen.ABRIL};
+        var seq=h.startSequence().thenIdle(2).thenExecute(()->archive(f,p))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==2&&LastSeen.stage(b)==LastSeen.PARK&&java.util.Arrays.stream(LastSeen.EIGHT).allMatch(c->LastSeen.kid(l,b,c)!=null),"the second day: the eight are in the park"))
+        .thenExecute(()->{
+            for(int c:LastSeen.EIGHT){
+                var k=LastSeen.kid(l,b,c);
+                h.assertTrue(Math.abs(k.getScale()-.68)<.01&&k.position().distanceToSqr(spot(b,c))<.3&&facing(k,LastSeen.FACES[c]),"each at a child's height, at their own spot, facing their own way: "+LastSeenTexts.CHILDREN[c]+" "+k.position()+" "+yaw(k));
+            }
+            h.assertTrue(LastSeen.kid(l,b,8)==null&&LastSeen.kid(l,b,9)==null,"the last two never come");
+            h.assertTrue(stage(l,b,LastSeen.PILE_AT)==0&&l.getBlockState(b.offset(LastSeenSite.FRONT_DOOR)).getValue(DoorBlock.OPEN),"the table is bare and the front door open");
+            var hours=hours(sent(p));h.assertTrue(!hours.isEmpty()&&hours.get(hours.size()-1)>=LastSeen.MORNING_TIME,"the park's hour is sent: "+hours);
+            // Nora, Patricia and Luz on the second day.
+            var nora=LastSeen.find(l,b,LastSeen.NORA);var patricia=LastSeen.find(l,b,LastSeen.PATRICIA);var luz=LastSeen.find(l,b,LastSeen.LUZ);
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.RULE),"her rule first: "+said(nora));
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_EIGHT),"then that there are eight of them: "+said(nora));
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_EACH),"and to take each one their own: "+said(nora));
+            talk(f,p,patricia);h.assertTrue(said(patricia).equals(LastSeenTexts.PATRICIA_PHONE),"Patricia and the phone: "+said(patricia));
+            talk(f,p,luz);h.assertTrue(said(luz).equals(LastSeenTexts.LUZ_COUNTED),"Luz counted them from the door: "+said(luz));
+            // One of the two who never come: Nora says so.
+            archive(f,p);bayOf(p,b,8);h.assertTrue(held(p)==8,"Yanina's folder, from its bay");
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_NOT_BACK),"that one hasn't come back: "+said(nora));
+            archive(f,p);bayOf(p,b,8);h.assertTrue(p.getMainHandItem().isEmpty(),"back on its shelf");
+            told(p);
+        });
+        for(int i=0;i<four.length;i++){
+            final int c=four[i],n=i+1;
+            seq=seq.thenExecute(()->{
+                archive(f,p);bayOf(p,b,c);h.assertTrue(held(p)==c,"their own folder: "+LastSeenTexts.CHILDREN[c]);
+                var k=LastSeen.kid(l,b,c);talk(f,p,k);
+                h.assertTrue(LastSeen.holding(b,c)&&LastSeen.child(k.getMainHandItem())==c,"they take it into their own hand: "+LastSeenTexts.CHILDREN[c]);
+                h.assertTrue(Integer.bitCount(f.own(p,P).getInt("Second"))==n,"counted on the second day");
+            }).thenIdle(LastSeen.LOOK+2).thenExecute(()->{
+                var k=LastSeen.kid(l,b,c);
+                h.assertTrue(said(k).equals(LastSeenTexts.oneThing(c,false)),"the one thing that is theirs: "+said(k));
+                h.assertTrue(told(p).contains(LastSeenTexts.near(c)),"a reader near is told how they stand: "+LastSeenTexts.CHILDREN[c]);
+            }).thenWaitUntil(()->h.assertTrue(!LastSeen.holding(b,c)&&carried(p,c)==1,"given back"))
+            .thenExecute(()->{archive(f,p);bayOf(p,b,c);h.assertTrue(LastSeen.out(b,c)==null,"and put back where it goes");});
+        }
+        seq.thenExecute(()->{
+            h.assertTrue(f.own(p,P).getInt("Days")>=2,"four matched on the second day make it the reader's own");
+            // Something to eat, held and not eaten; and a second offered is not taken.
+            var joel=LastSeen.kid(l,b,LastSeen.JOEL);
+            p.setItemInHand(InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD,2));talk(f,p,joel);
+            h.assertTrue(joel.getOffhandItem().is(net.minecraft.world.item.Items.BREAD)&&p.getMainHandItem().getCount()==1&&told(p).contains(LastSeenTexts.fed(LastSeen.JOEL)),"Joel holds it and does not eat");
+            talk(f,p,joel);h.assertTrue(p.getMainHandItem().getCount()==1&&told(p).contains(LastSeenTexts.stillHolding(LastSeen.JOEL)),"and is still holding the first");
+            p.setItemInHand(InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+            talk(f,p,LastSeen.kid(l,b,LastSeen.BRIAN));h.assertTrue(told(p).contains(LastSeenTexts.cold(LastSeen.BRIAN,false)),"an empty hand: cold");
+            // The grandmother: the reader stands south of Tomás, turned away from where she comes in.
+            south(f,p,LastSeen.SPOT[LastSeen.TOMAS]);LastSeen.at(b,LastSeen.GRAN_AT);
+        }).thenWaitUntil(()->h.assertTrue((LastSeen.kid(l,b,LastSeen.TOMAS).marks()&LastSeen.COAT_MARK)!=0,"Tomás's grandmother puts his coat round him"))
+        .thenExecute(()->{
+            var gran=LastSeen.family(l,b,LastSeen.GRAN);var tomas=LastSeen.kid(l,b,LastSeen.TOMAS);
+            h.assertTrue(gran!=null&&gran.distanceTo(tomas)<2.5&&gran.getMainHandItem().isEmpty(),"she is beside him, her hands empty now");
+            h.assertTrue(told(p).contains(LastSeenTexts.COAT_ON),"the reader near sees it");
+            h.assertTrue("lastseen_tomas_coat".equals(LastSeen.dressed(tomas.phase(),tomas.marks())),"and he is drawn in it");
+            talk(f,p,gran);h.assertTrue(said(gran).equals(LastSeenTexts.family(LastSeen.GRAN,0)),"she says why she brought it: "+said(gran));
+            talk(f,p,tomas);h.assertTrue(told(p).contains(LastSeenTexts.cold(LastSeen.TOMAS,true)),"under the coat, his hand just as cold");
+            var luz=LastSeen.find(l,b,LastSeen.LUZ);talk(f,p,luz);h.assertTrue(said(luz).equals(LastSeenTexts.LUZ_COAT),"Luz saw her come in: "+said(luz));
+            // Mr. Ocampo, the city's fence and Daiana's father all come in this stretch of the afternoon; the reader is in the archive.
+            archive(f,p);told(p);LastSeen.at(b,LastSeen.OCAMPO_AT);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.ocampoDone(b),"Mr. Ocampo comes to Nora's desk"))
+        .thenExecute(()->{
+            var nora=LastSeen.find(l,b,LastSeen.NORA);var ocampo=LastSeen.family(l,b,LastSeen.OCAMPO);
+            h.assertTrue(ocampo!=null&&said(ocampo).equals(LastSeenTexts.OCAMPO_CLOSE)&&said(nora).equals(LastSeenTexts.NORA_OPEN),"close them, all of them; they stay open: "+(ocampo==null?null:said(ocampo))+" / "+said(nora));
+            h.assertTrue(ocampo.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(-9.4,0,-4.6))<.5,"at her desk: "+ocampo.position());
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_CLOSED),"and to the reader after: "+said(nora));
+            archive(f,p);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.fenced(b),"the city's fence goes up round the playground: "+LastSeen.fenceLeft(b)))
+        .thenWaitUntil(()->h.assertTrue(LastSeenSite.LAMPS.stream().allMatch(lamp->fitting(l,b,lamp,LastSeenBlock.Kind.LAMP_POST)&&stage(l,b,lamp)==LastSeenBlock.NOTICE),"a notice on every lamp post"))
+        .thenExecute(()->{
+            for(var lamp:LastSeenSite.LAMPS)h.assertTrue(l.getBlockState(b.offset(lamp)).getValue(LastSeenBlock.FACING)==LastSeenSite.noticeFacing(lamp),"each notice faces its path: "+lamp);
+            var nw=l.getBlockState(b.offset(5,0,-39));var row=l.getBlockState(b.offset(7,1,-39));var mid=l.getBlockState(b.offset(6,0,-39));var se=l.getBlockState(b.offset(21,0,-21));var col=l.getBlockState(b.offset(5,0,-37));
+            h.assertTrue(nw.getValue(LastSeenBlock.STAGE)==LastSeenBlock.CORNER&&nw.getValue(LastSeenBlock.FACING)==Direction.NORTH,"a corner post turned to its two sides");
+            h.assertTrue(se.getValue(LastSeenBlock.STAGE)==LastSeenBlock.CORNER&&se.getValue(LastSeenBlock.FACING)==Direction.SOUTH,"and the opposite corner turned the other way");
+            h.assertTrue(row.getValue(LastSeenBlock.STAGE)==LastSeenBlock.PANEL_TOP&&mid.getValue(LastSeenBlock.STAGE)==LastSeenBlock.PANEL_MID,"panels two blocks wide, each joint with its frame and foot");
+            h.assertTrue(col.getValue(LastSeenBlock.FACING)==Direction.EAST&&col.getValue(LastSeenBlock.STAGE)==LastSeenBlock.PANEL,"the sides run the other way");
+            h.assertTrue(fitting(l,b,new BlockPos(13,0,-21),LastSeenBlock.Kind.FENCE)&&fitting(l,b,new BlockPos(13,1,-21),LastSeenBlock.Kind.FENCE),"the old gap in it closed too");
+            h.assertTrue(LastSeen.kid(l,b,LastSeen.LAUTARO).gesture()==LastSeen.MESH,"Lautaro's hands on the mesh");
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.daiana(b)>=2,"Daiana's father takes her out of the park"))
+        .thenExecute(()->{h.assertTrue(LastSeen.kid(l,b,LastSeen.DAIANA)==null,"and she is gone with him");LastSeen.at(b,LastSeen.since(b)+LastSeen.AWAY);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.daiana(b)==4,"he brings her back to the gate"))
+        .thenWaitUntil(()->{var k=LastSeen.kid(l,b,LastSeen.DAIANA);h.assertTrue(k!=null&&k.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(LastSeen.AT_GATE))<.3&&facing(k,180),"and leaves her there, facing the avenue: "+(k==null?null:k.position()));})
+        .thenExecute(()->{
+            LastSeen.at(b,LastSeen.DUSK_AT);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.stage(b)==LastSeen.DUSK,"dusk"))
+        .thenIdle(5).thenExecute(()->{
+            for(int c:LastSeen.EIGHT){var k=LastSeen.kid(l,b,c);if(k!=null&&!LastSeen.holding(b,c))h.assertTrue(facing(k,180),"every one of them faces the avenue: "+LastSeenTexts.CHILDREN[c]+" "+yaw(k));}
+            var said=told(p);h.assertTrue(said.contains(LastSeenTexts.DUSK),"the reader is told");
+        }).thenIdle(41).thenExecute(()->{
+            var hours=hours(sent(p));h.assertTrue(!hours.isEmpty()&&hours.get(hours.size()-1)>=LastSeen.DUSK_TIME-1,"the park's hour is dusk: "+hours);
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * Two readers on the second day, one who has been before and one who has not: the day is the second for both of them because one of
+     * them reached it. Each matches Brian for themselves, in turn, and each is counted for themselves; the one watching is counted as
+     * having seen it. What Brian says to a reader the House reads as having run from a home is his own line for them. Nora's day-two
+     * lines are each reader's own. Something given to one of them is given once. Both readers near Tomás are told when the coat goes on.
+     */
+    @GameTest(template="empty",batch="last_seen_day_two_together",timeoutTicks=5000)
+    public static void twoReadersOnTheSecondDay(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_day_two_a",P);var q=f.player("last_seen_day_two_b",P);secondDay(f,p);var l=f.level(P);var b=f.base(P);
+        HouseRead.signal(q,HouseRead.Trait.HOME,"RUNAWAY",false);HouseRead.signal(q,HouseRead.Trait.HOME,"RUNAWAY",true);
+        int brian=LastSeen.BRIAN;
+        h.startSequence().thenIdle(2).thenExecute(()->{archive(f,p);archive(f,q);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==2&&LastSeen.kid(l,b,brian)!=null,"the second day, for both, because one of them reached it"))
+        .thenExecute(()->{
+            var nora=LastSeen.find(l,b,LastSeen.NORA);
+            for(var r:List.of(p,q)){talk(f,r,nora);talk(f,r,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_EIGHT),"each reader hears Nora's day for themselves: "+said(nora));}
+            archive(f,p);bayOf(p,b,brian);talk(f,p,LastSeen.kid(l,b,brian));f.at(q,P,LastSeen.SPOT[brian].x+2,0,LastSeen.SPOT[brian].z+2);
+            h.assertTrue(LastSeen.holding(b,brian)&&(f.own(p,P).getInt("Second")&1<<brian)!=0&&(f.own(q,P).getInt("Second")&1<<brian)==0,"matched for the one who brought it");
+            h.assertTrue((f.own(q,P).getInt("SawMatched")&1<<brian)!=0,"seen by the other");
+        }).thenIdle(LastSeen.LOOK+2).thenExecute(()->h.assertTrue(said(LastSeen.kid(l,b,brian)).equals(LastSeenTexts.oneThing(brian,false)),"his line to the first: "+said(LastSeen.kid(l,b,brian))))
+        .thenWaitUntil(()->h.assertTrue(!LastSeen.holding(b,brian)&&carried(p,brian)==1,"given back to the first"))
+        .thenExecute(()->{
+            archive(f,p);bayOf(p,b,brian);archive(f,q);bayOf(q,b,brian);h.assertTrue(held(q)==brian,"the other takes it down in turn");
+            talk(f,q,LastSeen.kid(l,b,brian));h.assertTrue((f.own(q,P).getInt("Second")&1<<brian)!=0,"and is counted for themselves");
+        }).thenIdle(LastSeen.LOOK+2).thenExecute(()->h.assertTrue(said(LastSeen.kid(l,b,brian)).equals(LastSeenTexts.oneThing(brian,true)),"his line to one read as having run: "+said(LastSeen.kid(l,b,brian))))
+        .thenWaitUntil(()->h.assertTrue(!LastSeen.holding(b,brian)&&carried(q,brian)==1,"given back to them too"))
+        .thenExecute(()->{
+            archive(f,q);bayOf(q,b,brian);
+            h.assertTrue(f.own(q,P).getInt("Days")==0&&f.own(p,P).getInt("Days")==1,"one match is not four: neither reader's day moves on");
+            // Bread for Abril from one; the other's is not taken.
+            var abril=LastSeen.kid(l,b,LastSeen.ABRIL);
+            p.setItemInHand(InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD));q.setItemInHand(InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BREAD));
+            talk(f,p,abril);talk(f,q,abril);
+            h.assertTrue(p.getMainHandItem().isEmpty()&&q.getMainHandItem().getCount()==1&&told(q).contains(LastSeenTexts.stillHolding(LastSeen.ABRIL)),"held once, from the first");
+            q.setItemInHand(InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+            south(f,p,LastSeen.SPOT[LastSeen.TOMAS]);south(f,q,LastSeen.SPOT[LastSeen.TOMAS].add(1,0,0));told(p);told(q);LastSeen.at(b,LastSeen.GRAN_AT);
+        }).thenWaitUntil(()->h.assertTrue((LastSeen.kid(l,b,LastSeen.TOMAS).marks()&LastSeen.COAT_MARK)!=0,"the coat goes on"))
+        .thenExecute(()->{
+            h.assertTrue(told(p).contains(LastSeenTexts.COAT_ON)&&told(q).contains(LastSeenTexts.COAT_ON),"both readers near see it");
+            done();h.succeed();
+        });
+    }
 }

@@ -260,11 +260,21 @@ public final class LastSeenSite {
         }
     }
     /** Benches along the paths and round the plaza, and globe lamps on posts. */
+    /** The globe lamps along the paths and the paved front: the cell of each post's shaft, where the city's notices go (0.4.669). */
+    static final int[][] LAMP_POSTS={{PATH_X-2,-22},{PATH_X+2,-40},{PATH_X-2,-60},{PATH_X+2,-78},{-24,PATH_Z+2},{8,PATH_Z-2},{-36,PATH_Z-2},{20,PATH_Z+2},{-20,FRONT_N},{4,FRONT_N}};
+    public static final List<BlockPos> LAMPS;
+    static{var out=new ArrayList<BlockPos>();for(int[] at:LAMP_POSTS)out.add(new BlockPos(at[0],1,at[1]));LAMPS=List.copyOf(out);}
+    /** A notice on a post faces the path it stands by, so it is read from the path. */
+    public static Direction noticeFacing(BlockPos lamp){
+        if(Math.abs(lamp.getX()-PATH_X)==2)return lamp.getX()<PATH_X?Direction.EAST:Direction.WEST;
+        if(Math.abs(lamp.getZ()-PATH_Z)==2)return lamp.getZ()<PATH_Z?Direction.SOUTH:Direction.NORTH;
+        return Direction.NORTH;
+    }
     static void benchesAndLamps(ServerLevel l,BlockPos b){
         for(int z:new int[]{-29,-43,-59,-71})bench(l,b,PATH_X-2,z,Direction.EAST);
         for(int z:new int[]{-31,-45,-61,-73})bench(l,b,PATH_X+2,z,Direction.WEST);
         for(int x:new int[]{-30,-22,4,14})bench(l,b,x,PATH_Z-2,Direction.SOUTH);
-        for(int[] at:new int[][]{{PATH_X-2,-22},{PATH_X+2,-40},{PATH_X-2,-60},{PATH_X+2,-78},{-24,PATH_Z+2},{8,PATH_Z-2},{-36,PATH_Z-2},{20,PATH_Z+2},{-20,FRONT_N},{4,FRONT_N}})lamp(l,b,at[0],at[1],true);
+        for(int[] at:LAMP_POSTS)lamp(l,b,at[0],at[1],true);
     }
     static void bench(ServerLevel l,BlockPos b,int x,int z,Direction faces){
         var along=faces.getClockWise();
