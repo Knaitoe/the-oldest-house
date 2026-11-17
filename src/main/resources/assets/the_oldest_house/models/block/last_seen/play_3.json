@@ -1,0 +1,139 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/last_seen/paint_red",
+    "c": "the_oldest_house:block/last_seen/chain",
+    "r": "the_oldest_house:block/last_seen/rubber",
+    "h": "the_oldest_house:block/last_seen/chute",
+    "w": "the_oldest_house:block/last_seen/plank",
+    "b": "the_oldest_house:block/last_seen/paint_blue",
+    "i": "the_oldest_house:block/last_seen/iron",
+    "particle": "the_oldest_house:block/last_seen/paint_red"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        0
+      ],
+      "to": [
+        14,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        },
+        "down": {
+          "texture": "#h"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45
+      }
+    },
+    {
+      "from": [
+        2,
+        1,
+        0
+      ],
+      "to": [
+        3,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        },
+        "down": {
+          "texture": "#h"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45
+      }
+    },
+    {
+      "from": [
+        13,
+        1,
+        0
+      ],
+      "to": [
+        14,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        },
+        "down": {
+          "texture": "#h"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

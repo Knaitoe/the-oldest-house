@@ -43,6 +43,8 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         if(a.role()==LiteraryActor.STRANGER&&a.phase()==KingCaterpillar.PHASE&&KingBlock.is(state,KingBlock.Kind.CAP))return new ActorSeat(0,null);
         // 0.4.648: a guest at the King's feast, in a high-backed chair nine pixels up, turned across the table (the guest's own body yaw).
         if(KingBlock.is(state,KingBlock.Kind.FEAST_CHAIR))return new ActorSeat(9,null);
+        // 0.4.667: the office chairs in Last Seen, their seats ten pixels up.
+        if(LastSeenBlock.is(state,LastSeenBlock.Kind.CHAIR))return new ActorSeat(10,state.getValue(LastSeenBlock.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.
         if(UsherBlock.is(state,UsherBlock.Kind.CHAIR))return new ActorSeat(9,state.getValue(UsherBlock.FACING));
         // 0.4.444: Earl, years later, on a flattened box in the alley beside the Tipple.

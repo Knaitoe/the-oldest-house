@@ -1,0 +1,48 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/last_seen/paint_red",
+    "c": "the_oldest_house:block/last_seen/chain",
+    "r": "the_oldest_house:block/last_seen/rubber",
+    "h": "the_oldest_house:block/last_seen/chute",
+    "w": "the_oldest_house:block/last_seen/plank",
+    "b": "the_oldest_house:block/last_seen/paint_blue",
+    "i": "the_oldest_house:block/last_seen/iron",
+    "particle": "the_oldest_house:block/last_seen/paint_red"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        12,
+        6.5
+      ],
+      "to": [
+        16,
+        15,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

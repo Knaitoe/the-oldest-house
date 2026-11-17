@@ -1,0 +1,70 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "f": "the_oldest_house:block/last_seen/laminate",
+    "t": "the_oldest_house:block/last_seen/formica",
+    "e": "the_oldest_house:block/last_seen/counter_edge",
+    "k": "the_oldest_house:block/last_seen/flap",
+    "particle": "the_oldest_house:block/last_seen/laminate"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#f"
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        15,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#k"
+        }
+      }
+    }
+  ]
+}

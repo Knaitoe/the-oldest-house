@@ -1624,6 +1624,110 @@
     "phase": 242
   },
   {
+    "name": "literary_lastseen_rocio",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 243
+  },
+  {
+    "name": "literary_lastseen_tomas",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 244
+  },
+  {
+    "name": "literary_lastseen_micaela",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 245
+  },
+  {
+    "name": "literary_lastseen_brian",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 246
+  },
+  {
+    "name": "literary_lastseen_daiana",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 247
+  },
+  {
+    "name": "literary_lastseen_lautaro",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 248
+  },
+  {
+    "name": "literary_lastseen_abril",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 249
+  },
+  {
+    "name": "literary_lastseen_joel",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 250
+  },
+  {
+    "name": "literary_lastseen_yanina",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 251
+  },
+  {
+    "name": "literary_lastseen_santino",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 252
+  },
+  {
+    "name": "literary_lastseen_nora",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 253
+  },
+  {
+    "name": "literary_lastseen_patricia",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 254
+  },
+  {
+    "name": "literary_lastseen_luz",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 255
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

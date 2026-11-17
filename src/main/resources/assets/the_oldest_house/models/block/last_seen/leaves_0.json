@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "l": "the_oldest_house:block/last_seen/leaves_plane",
+    "particle": "the_oldest_house:block/last_seen/leaves_plane"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,144 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/last_seen/paint_red",
+    "c": "the_oldest_house:block/last_seen/chain",
+    "r": "the_oldest_house:block/last_seen/rubber",
+    "h": "the_oldest_house:block/last_seen/chute",
+    "w": "the_oldest_house:block/last_seen/plank",
+    "b": "the_oldest_house:block/last_seen/paint_blue",
+    "i": "the_oldest_house:block/last_seen/iron",
+    "particle": "the_oldest_house:block/last_seen/paint_red"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        5,
+        6.5
+      ],
+      "to": [
+        16,
+        6.5,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        0,
+        6.5
+      ],
+      "to": [
+        9.5,
+        5,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        6.5,
+        7.5
+      ],
+      "to": [
+        3,
+        9,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        6.5,
+        7.5
+      ],
+      "to": [
+        14,
+        9,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i"
+        },
+        "south": {
+          "texture": "#i"
+        },
+        "east": {
+          "texture": "#i"
+        },
+        "west": {
+          "texture": "#i"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

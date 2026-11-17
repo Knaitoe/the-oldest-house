@@ -1,0 +1,129 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "b": "the_oldest_house:block/last_seen/silk_bark",
+    "f": "the_oldest_house:block/last_seen/silk_foot",
+    "particle": "the_oldest_house:block/last_seen/silk_bark"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        8,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        8,
+        3
+      ],
+      "to": [
+        13,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#b",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,45 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "i": "the_oldest_house:block/last_seen/iron",
+    "l": "the_oldest_house:block/last_seen/lattice",
+    "f": "the_oldest_house:block/last_seen/fret",
+    "s": "the_oldest_house:block/last_seen/stone",
+    "particle": "the_oldest_house:block/last_seen/iron"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        8
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

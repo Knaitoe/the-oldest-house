@@ -362,6 +362,21 @@ LOOKS = {
     # mending: a ridge of healed skin with the thread's stitches still across it, on the face, round the wrists and up the arms.
     'literary_notyet_ines': Look('#c9a48a','#3a2c24','long','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4a4036',mark='notyet_ines',sleeve=4,level_eyes=True,shoes='#c09a80'),
     'literary_notyet_bram': Look('#b4876a','#5a4a3c','close','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4e4a3e',age=1,beard='stubble',mark='notyet_bram',sleeve=4,level_eyes=True,shoes='#a87e62'),
+    # 0.4.667, Last Seen (docs/LAST_SEEN_0_4_667.md): the ten who come back to the park, each in what they were last seen in, the
+    # earth still on them; and the three who keep the archive across the road.
+    'literary_lastseen_rocio': Look('#d2a07e','#2a1e18','ponytail','#ece8de','#2e3a52','smock','#ece8de',eyes='#3a2e26',sleeve=10,face_style='child',level_eyes=True,mark='lastseen_rocio',shoes='#2a2626'),
+    'literary_lastseen_tomas': Look('#c8946e','#3a2a1e','messy','#7ab0d8','#26282e','jersey','#f0f0ea',eyes='#3a2e26',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_tomas',jersey=10,shoes='#e4e2dc'),
+    'literary_lastseen_micaela': Look('#e0b896','#5a3a26','long','#d88aa0','#3a4a66','tee','#f0e6d0',eyes='#4a5a4a',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_micaela',shoes='#c8c4be'),
+    'literary_lastseen_brian': Look('#b98464','#1e1a18','close','#6a6e74','#2a2e36','hoodie','#8a8e94',eyes='#2e2620',sleeve=10,face_style='child',level_eyes=True,mark='lastseen_brian',shoes='#3a3a3e'),
+    'literary_lastseen_daiana': Look('#c99472','#2a1e18','bun','#ece8de','#4a3a3a','smock','#ece8de',eyes='#3a2e26',sleeve=10,face_style='child',level_eyes=True,mark='lastseen_daiana',shoes='#2a2626'),
+    'literary_lastseen_lautaro': Look('#deb08c','#4a3220','short','#ece8de','#2e3a52','smock','#ece8de',eyes='#4a5a62',sleeve=10,face_style='child',glasses=True,level_eyes=True,mark='lastseen_lautaro',shoes='#2a2626'),
+    'literary_lastseen_abril': Look('#d6a888','#6a4228','braids','#d8c060','#3a3a44','dress','#f0e6d0',eyes='#4a3e30',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_abril',shoes='#8a2e2a'),
+    'literary_lastseen_joel': Look('#8a5a3e','#1a1614','coils','#c84a3a','#3a4a6a','tee','#f0e6d0',eyes='#2a2018',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_joel',rips=True,shoes='#d8d6d0'),
+    'literary_lastseen_yanina': Look('#c48e6c','#2a1e18','ponytail','#6a7a5a','#3a3a44','cardigan','#d8d0b8',eyes='#3a2e26',sleeve=10,face_style='child',level_eyes=True,mark='lastseen_yanina',shoes='#4a3a30'),
+    'literary_lastseen_santino': Look('#d8aa86','#5a3a22','part','#1e1e22','#26282e','jersey','#c83a3a',eyes='#4a4036',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_santino',jersey=9,stripe='#c83a3a',shoes='#1e1e22'),
+    'literary_lastseen_nora': Look('#d2b098','#b8b4ac','bun','#6a5a4a','#3a3a40','cardigan','#c8b89a',eyes='#5a6066',age=2,glasses=True,sleeve=10,shoes='#3a302a'),
+    'literary_lastseen_patricia': Look('#cfa286','#6a2e1e','short','#c8bcae','#3a3a44','shirt','#e8e0d4',eyes='#4a3e30',age=1,sleeve=10,shoes='#2a2626'),
+    'literary_lastseen_luz': Look('#c9967a','#1e1a18','long','#5a6a5a','#2e3440','knit','#8a9a8a',eyes='#3a2e26',sleeve=10,shoes='#3a3434'),
     'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
     # in old coats; and Benny on the far stool.
@@ -916,6 +931,13 @@ def face(look):
             d.line((x+1,7,x+1,8),fill=rgb(look.eyes));d.point((x+1,8),fill='#343331')
         d.rectangle((5,12,10,15),fill=skin);d.line((6,13,9,13),fill=shade(skin,-24))
         d.point((4,10),fill=shade(skin,-7));d.point((11,10),fill=shade(skin,-7))
+    if look.mark.startswith('lastseen_') and look.face_style=='child':
+        # 0.4.667, Last Seen: the ones who come back. The face they went in, a little grey under the eyes, the irises level and
+        # looking at nothing, the mouth closed; earth dried on one cheek, as if they had lain with that side down.
+        for x in (3,10):d.line((x,9,x+2,9),fill=shade(skin,-15))
+        d.line((6,13,9,13),fill=shade(skin,-30))
+        side=12 if look.mark in ('lastseen_rocio','lastseen_brian','lastseen_abril','lastseen_santino') else 2
+        d.point((side,11),fill='#7a6246');d.point((side+1,12),fill='#86704f');d.point((side,12),fill='#6c5640')
     if look.age:
         d.line((5,3,10,3),fill=cheek)
         for x in (2,13):d.point((x,9),fill=dark)
@@ -1145,6 +1167,8 @@ def cloth_face(size,look,side='front'):
             d.line((w//2,h-7,w//2+3,h-5,w//2+1,h-3),fill=a)
         if look.mark=='movie_stripes':
             for y in range(3,h-1,4):d.line((0,y,w-1,y),fill=a);d.line((0,y+1,w-1,y+1),fill=shade(a,-14))
+        if look.style=='smock':
+            d.line((2,h-8,w-3,h-8),fill=lo);d.line((2,h-7,w-3,h-7),fill=shade(c,8));d.point((2,h-7),fill=shade(c,-34));d.point((w-3,h-7),fill=shade(c,-34))
         if look.style=='hoodie':
             # The hood, down: it lies on the shoulders, a seam along its middle; and the ribbed hem.
             mid=w//2
@@ -1196,6 +1220,16 @@ def cloth_face(size,look,side='front'):
             d.rectangle((mid-2,2,mid+1,h-1),fill=shade(look.pants,12));d.line((mid-3,2,mid-3,h-1),fill=a)
         if look.style=='cardigan':
             d.polygon([(mid-3,0),(mid,7),(mid+2,0)],fill=a)
+    elif look.style=='smock':
+        # 0.4.667: a school smock, the kind worn over the day's clothes: a rounded collar laid flat, buttons down the middle, a
+        # patch pocket on the left breast, and the hem below the waist where the legs take it on (see the legs).
+        d.polygon([(mid-5,0),(mid-1,0),(mid-1,3),(mid-3,4),(mid-5,2)],fill=shade(c,10));d.line((mid-5,2,mid-3,4,mid-1,3),fill=lo)
+        d.polygon([(mid+4,0),(mid,0),(mid,3),(mid+2,4),(mid+4,2)],fill=shade(c,10));d.line((mid+4,2,mid+2,4,mid,3),fill=lo)
+        d.line((mid,4,mid,h-1),fill=lo)
+        for y in range(6,h,5):d.point((mid-1,y),fill=shade(c,-34))
+        d.rectangle((2,7,5,11),outline=lo);d.line((2,7,5,7),fill=shade(c,-22))
+        if look.mark.startswith('lastseen_'):
+            for x,y in ((2,h-3),(3,h-2),(w-5,h-4),(w-4,h-3),(4,h-2)):d.point((x,y),fill='#8a7454')
     elif look.style in ('dress','club_dress','tank','tee','knit'):
         d.line((mid-4,0,mid-3,2,mid-1,3,mid+1,3,mid+3,1),fill=lo)
         if look.style in ('dress','club_dress'):d.line((1,h-6,w-2,h-6),fill=a);d.rectangle((mid-1,h-7,mid,h-5),fill=shade(a,20))
@@ -1881,6 +1915,14 @@ def paint(look):
                     if look.mark=='cottage_walter':d.rectangle((0,h-7,w-1,h-6),fill='#673c3a')
                     if look.mark=='cottage_bowler':d.line((2,1,2,h-7),fill=shade(look.pants,13))
                     if look.stripe and side in ('left','right'):d.rectangle((w//2-1,1,w//2,h-6),fill=rgb(look.stripe))
+                    if look.style=='smock' and side not in ('top','bottom'):
+                        # The smock comes down over the top of the legs, to just above the knee.
+                        hem=h//2-4;d.rectangle((0,0,w-1,hem),fill=rgb(look.cloth));d.line((0,hem,w-1,hem),fill=shade(look.cloth,-26))
+                    if look.mark.startswith('lastseen_') and side=='front':
+                        # Earth on the knees, dried pale at its edge, and a little down the shin.
+                        k=h//2-1
+                        for x,y in ((1,k),(2,k),(2,k+1),(3,k+1),(1,k+2),(2,k+4)):d.point((x,y),fill='#6e573c')
+                        for x,y in ((3,k),(1,k+1),(3,k+2)):d.point((x,y),fill='#957d5a')
                     if look.rips and side=='front':
                         # Out at the knee: the skin through it, and the threads still across.
                         k=h//2-2;d.rectangle((2,k,w-3,k+2),fill=rgb(look.skin));d.line((1,k,w-2,k),fill=shade(look.pants,34));d.point((3,k+1),fill=shade(look.pants,30));d.line((2,k+3,w-3,k+3),fill=shade(look.pants,22))

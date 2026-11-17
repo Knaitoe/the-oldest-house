@@ -870,13 +870,25 @@ def ones_inside(r):
     return im
 
 
+PLANE = (['a.a.a', 'aabaa', '.aba.', '..c..'], ['.a.a.', 'aabaa', 'aabaa', '..c..'], ['a..a', 'abba', '.bc.'])
+PLANE_PAL = [dict(a=0x9A8A4E, b=0xB8A866, c=0x5A4A28), dict(a=0x86783E, b=0xA69656, c=0x4E4024), dict(a=0xA88E52, b=0xC4AA6C, c=0x604A2A)]
+
+
+def last_seen(r):
+    im = canvas(1)
+    drift(im, r, [(0x8E8A80, 2), (0x7A766C, 1)], 3, body=.25, veil=180)   # the park's grit, a little of it
+    strew(im, r, [(rows, PLANE_PAL) for rows in PLANE], 4, near=.5)
+    sprite(im, 9, 2, ['aaaab', 'accab', 'accaa', 'aaaa.'], dict(a=0xE8E4D8, b=0xCFCABA, c=0x8C8A84))   # a corner torn off a poster, the photograph's edge on it
+    return im
+
+
 DRAWN = {
     'goatman': goatman, 'ted_caver': ted_caver, 'zampano_courtyard': zampano_courtyard, 'whale': whale, 'barn_well': barn_well, 'plain': plain,
     'holloway_camp': holloway_camp, 'wallpaper_nursery': wallpaper_nursery, 'hill_nursery': hill_nursery, 'miniatures': miniatures,
     'usher': usher, 'winchester': winchester, 'child_room': child_room, 'crimson_hall': crimson_hall, 'bly_route': bly_route,
     'mapping_interior': mapping_interior, 'holy_rabbit': holy_rabbit, 'elk_carcasses': elk_carcasses, 'costume_night': costume_night,
     'movie_night': movie_night, 'winter_lake': winter_lake, 'camp_blood': camp_blood, 'devils_rock': devils_rock, 'wheel': wheel,
-    'ghosts_set': ghosts_set, 'end_world_cabin': end_world_cabin, 'family_copy': family_copy, 'three_fingers': three_fingers,
+    'ghosts_set': ghosts_set, 'last_seen': last_seen, 'end_world_cabin': end_world_cabin, 'family_copy': family_copy, 'three_fingers': three_fingers,
     'borrasca': borrasca, 'painted_interior': painted_interior, 'second_waitress': second_waitress, 'layered_man': layered_man, 'silo': silo,
     'way_out': way_out, 'whistlers': whistlers, 'work_print': work_print, 'polaroid_trail': polaroid_trail, 'left_right': left_right,
     'pitt': pitt, 'closing_hall': closing_hall, 'storeroom': storeroom, 'line': line_, 'polybius': polybius, 'replacement': replacement,

@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/last_seen/gate_chained",
+    "particle": "the_oldest_house:block/last_seen/iron"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        7.5
+      ],
+      "to": [
+        16,
+        16,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}
