@@ -166,13 +166,14 @@ public final class ElkFollows {
         e.setProblem(Player.BedSleepingProblem.OTHER_PROBLEM);hint(e.getEntity(),"You can't sleep. Something is standing out in the field, waiting.");
     }
     /**
-     * In kind: one of the reader's own penned animals near where they sleep is gone in the morning, the gate left open. Never a
-     * named, leashed or tamed animal; never one outside a pen. One a morning, for as many as they have killed.
+     * In kind: one of the reader's own penned animals near their home bed (HomeBed) is gone in the morning, the gate left open. Never a
+     * named, leashed or tamed animal; never one outside a pen. One a morning, for as many as they have killed. A reader with no home of
+     * their own loses nothing, and still owes it.
      */
     public static boolean morning(ServerPlayer p){
         var own=own(p);if(own.getInt(IN_KIND)<=0)return false;
-        var l=p.server.getLevel(p.getRespawnDimension());if(l==null)return false;
-        var home=p.getRespawnPosition()!=null?p.getRespawnPosition():l.getSharedSpawnPos();
+        var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);if(home==null)return false;
+        var l=p.server.overworld();
         Animal taken=null;
         for(var a:l.getEntitiesOfClass(Animal.class,new AABB(home).inflate(32),a->a.isAlive()&&!a.hasCustomName()&&!a.isLeashed()&&!(a instanceof TamableAnimal t&&t.isTame())&&!(a instanceof AbstractHorse h&&h.isTamed())&&penned(l,a.blockPosition())))
             if(taken==null||a.distanceToSqr(Vec3.atCenterOf(home))<taken.distanceToSqr(Vec3.atCenterOf(home)))taken=a;

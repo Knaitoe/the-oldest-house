@@ -186,7 +186,7 @@ public final class OwnLight {
     @SubscribeEvent public static void homeTick(ServerTickEvent.Post e){
         var s=e.getServer();if(s.getTickCount()%40!=0)return;
         for(var p:s.getPlayerList().getPlayers()){var own=own(p);if(!own.getBoolean("Home213"))continue;
-            var bed=p.getRespawnPosition();if(bed==null||!p.level().dimension().equals(p.getRespawnDimension())||!p.blockPosition().closerThan(bed,12))continue;
+            var bed=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);if(bed==null||!p.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)||!p.blockPosition().closerThan(bed,12))continue;
             visit(p.serverLevel(),p,bed,own.getString("Note213"));own.remove("Home213");own.putString("Left213",own.getString("Note213"));save(p,own);}
     }
     public static void visit(ServerLevel l,ServerPlayer p,BlockPos bed,String note){

@@ -142,18 +142,20 @@ public final class OwnLightTests {
 
     @GameTest(template="empty",batch="own_home",timeoutTicks=600)
     public static void atHomeTheBedIsSleptInAChestTurnedRoundTheLightsOutAndANote(GameTestHelper h){
-        var f=fixture(h);var p=f.player("own_home",P);var b=f.base(P);
-        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the fork is resident"))
-            .thenExecute(()->{var bed=b.offset(-2,0,-2);var chest=b.offset(2,0,-2);var candle=b.offset(-3,0,-3);
-                f.in.setBlock(chest,Blocks.CHEST.defaultBlockState(),3);var c=(ChestBlockEntity)f.in.getBlockEntity(chest);c.setItem(0,new ItemStack(Items.APPLE));c.setItem(1,new ItemStack(Items.BREAD));
-                f.in.setBlock(candle,Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT,true),3);
+        // Their home is a bed of their own in the Overworld (HomeBed), far from every other case's ground.
+        var f=fixture(h);var p=f.player("own_home",P);var world=p.server.overworld();var home=new BlockPos(66500,80,66500);
+        h.startSequence().thenExecute(()->f.chunks.hold(world,new AABB(home).inflate(16))).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"their home is resident"))
+            .thenExecute(()->{LiteraryRooms.box(world,home,-12,0,-12,12,6,12,Blocks.AIR);LiteraryRooms.box(world,home,-12,-1,-12,12,-1,12,Blocks.STONE);
+                NovelRooms.bed(world,home,Blocks.WHITE_BED,Direction.NORTH);var bed=home.north();var chest=home.offset(4,0,0);var candle=home.offset(-3,0,-3);
+                world.setBlock(chest,Blocks.CHEST.defaultBlockState(),3);var c=(ChestBlockEntity)world.getBlockEntity(chest);c.setItem(0,new ItemStack(Items.APPLE));c.setItem(1,new ItemStack(Items.BREAD));
+                world.setBlock(candle,Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT,true),3);
                 var own=f.own(p,P);own.putBoolean("Home213",true);own.putString("Note213","Not yet.");LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
-                p.setRespawnPosition(f.in.dimension(),bed,0,true,false);at(f,p,-1.5,-1.5);})
+                p.setRespawnPosition(world.dimension(),bed,0,true,false);p.teleportTo(world,home.getX()+1.5,home.getY(),home.getZ()+.5,180,0);p.hasChangedDimension();})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("Left213").equals("Not yet."),"at their bed, it has been"))
-            .thenExecute(()->{var c=(ChestBlockEntity)f.in.getBlockEntity(b.offset(2,0,-2));int n=c.getContainerSize();
+            .thenExecute(()->{var c=(ChestBlockEntity)world.getBlockEntity(home.offset(4,0,0));int n=c.getContainerSize();
                 h.assertTrue(c.getItem(n-1).is(Items.APPLE)&&c.getItem(n-2).is(Items.BREAD)&&c.getItem(0).isEmpty(),"a chest turned round, nothing taken");
-                h.assertTrue(!f.in.getBlockState(b.offset(-3,0,-3)).getValue(CandleBlock.LIT),"the lights left burning, out");
-                var notes=f.in.getEntitiesOfClass(ItemEntity.class,new AABB(b.offset(-2,0,-2)).inflate(2),e->e.getItem().has(DataComponents.WRITTEN_BOOK_CONTENT));
+                h.assertTrue(!world.getBlockState(home.offset(-3,0,-3)).getValue(CandleBlock.LIT),"the lights left burning, out");
+                var notes=world.getEntitiesOfClass(ItemEntity.class,new AABB(home.north()).inflate(2),e->e.getItem().has(DataComponents.WRITTEN_BOOK_CONTENT));
                 h.assertTrue(!notes.isEmpty(),"and a note on the pillow");
                 var page=notes.get(0).getItem().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().get(0).raw().getString();
                 h.assertTrue(page.contains("Not yet.")&&page.contains("your own handwriting"),"in their own hand: "+page);

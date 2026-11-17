@@ -266,11 +266,11 @@ public final class StateRoute {
         p.hurt(new net.minecraft.world.damagesource.DamageSource(l.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.DAMAGE_TYPE).getHolderOrThrow(VEHICLE)),Float.MAX_VALUE);
         if(!p.isDeadOrDying())WRECKED.remove(p.getUUID());
     }
-    /** Woken at home: in their own bed, lying in it a moment first, or standing where the world put them. */
+    /** Woken at home: in their own bed (HomeBed), lying in it a moment first, or standing where the world put them. */
     @SubscribeEvent public static void respawn(PlayerEvent.PlayerRespawnEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p)||e.isEndConquered()||WRECKED.remove(p.getUUID())==null)return;
         var bed=p.getRespawnPosition();var l=p.serverLevel();
-        if(bed!=null&&p.getRespawnDimension().equals(l.dimension())){var st=l.getBlockState(bed);
+        if(bed!=null&&p.getRespawnDimension().equals(l.dimension())&&io.github.knaitoe.theoldesthouse.opening.HomeBed.isHomeBed(l,bed)){var st=l.getBlockState(bed);
             if(st.getBlock() instanceof BedBlock){var head=st.getValue(BedBlock.PART)==net.minecraft.world.level.block.state.properties.BedPart.HEAD?bed:bed.relative(st.getValue(BedBlock.FACING));
                 p.teleportTo(l,head.getX()+.5,head.getY()+.6,head.getZ()+.5,p.getYRot(),0);p.startSleeping(head);ABED_UNTIL.put(p.getUUID(),l.getGameTime()+ABED);
                 var o=own(p);o.putInt("RouteAbed",o.getInt("RouteAbed")+1);save(p,o);

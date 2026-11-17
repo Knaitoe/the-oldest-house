@@ -6,24 +6,28 @@ The opening deliberately does **not** put an impossible doorway in the player's 
 
 ## Stages
 
-`NONE → ELIGIBLE → LETTER_DELIVERED → HILLARY_ARRIVED → ENTERED`, stored per player in the `the_oldest_house:opening` data attachment (copied on death), together with `nightsSlept`, per-door use counts near the respawn point, `firstJoinDay`, `letterDay`, Hillary's UUID, saved arrival day and whether the player has entered the manor.
+`NONE → ELIGIBLE → LETTER_DELIVERED → HILLARY_ARRIVED → ENTERED`, stored per player in the `the_oldest_house:opening` data attachment (copied on death), together with `nightsSlept`, per-door use counts near the home bed, the home bed last woken in on a morning (with the day it became home and the nights slept in it), `firstJoinDay`, `letterDay`, Hillary's UUID, saved arrival day and whether the player has entered the manor.
 
 Old 0.3.0 player data containing the stage name `door_placed` migrates to `HILLARY_ARRIVED`. The obsolete entrance-door NBT in old saves is ignored.
 
 World-level `OpeningWorldData` (`the_oldest_house_opening.dat`) now stores only the player's Navidson photograph metadata. The old entrance-door and cross-dimension Hillary-return records are intentionally no longer loaded or saved.
 
+## Home
+
+The House comes only to a home: a bed of the reader's own, outside every district (`opening/HomeBed`, docs/NEIGHBOURS.md). A **home bed** is in the Overworld, is a bed (`#minecraft:beds`, when its chunk is loaded), is not in `#the_oldest_house:not_home`, and is on no neighbour's `district_land`. The reader's **home** is their respawn if that is a home bed; otherwise the home bed they last woke in on a morning, which the opening remembers; otherwise they have none, and the opening waits. Without a neighbour mod both lists are empty and a bed of their own is home as the respawn always made it. Every place the House reads home (the letter, the journal and Hillary, Navidson's photograph, the manor's site, the Red Room, the cabin, the copied homes, the Sphinx, the Lake House, the elk, Your Own Light, the storeroom, Harrigan's call, the endings, the photograph and the diary keepsakes, the guest bed and the lit window, State Route's waking) reads this home, and takes its own no-home branch when there is none.
+
 ## Timing
 
-- A **completed sleep** is a wake-up in the Overworld's post-night morning window, counted once per day.
-- A player becomes **eligible** when their respawn point is a bed in the Overworld, `nightsSlept >= minNightsSlept` (2) and `minDaysSinceJoin` (3) days have passed since they first joined.
-- A **morning** is Overworld day time in `[0, 1000)`. It is handled once per player per day, and only while the player is in the Overworld with their bed's area loaded. A player who is away, in another dimension or offline gets the step on the first morning they are home.
+- A **completed sleep** is a wake-up in the Overworld's post-night morning window, counted once per day. The opening counts it only in a home bed or one of the manor's; sleep anywhere still ends the House's night and ages it.
+- A player becomes **eligible** when they have a home, `nightsSlept >= minNightsSlept` (2) and `minDaysSinceJoin` (3) days have passed since they first joined.
+- A **morning** is Overworld day time in `[0, 1000)`. It is handled once per player per day, and only while the player is in the Overworld with their home bed's area loaded. A player who is away, in another dimension or offline gets the step on the first morning they are home.
 - The letter comes on the first morning after eligibility. Hillary arrives the next morning and spends a day at home. The House’s site search starts on the following morning; failed searches retry without delaying the letter or Hillary.
 - The opening sequence is the only automatic path that causes The Oldest House to appear. The older hidden settlement-night / appearance-roll system is retired.
 - **Perceived House age does not advance until somebody has actually entered the manor.** Ignoring the letter or Hillary can therefore never reveal the impossible threshold off-screen.
 
 ## Morning 1: the letter
 
-The doorstep is the block in front of the most-used ordinary door within `doorstepSearchRadius` (32) of the bed, on the side that can see the sky (a heightmap test, so fresh roofs count immediately), or else the side away from the bed. Fallbacks: the ordinary door nearest the bed, then the floor beside the bed.
+The doorstep is the block in front of the most-used ordinary door within `doorstepSearchRadius` (32) of the home bed, on the side that can see the sky (a heightmap test, so fresh roofs count immediately), or else the side away from the bed. Fallbacks: the ordinary door nearest the bed, then the floor beside the bed. Nothing is chosen, or set down, on a neighbour's district land. A door's use is counted only when nothing else refused the click.
 
 The book `Howdy, Neighbor` by `Will Navidson` uses the font `the_oldest_house:navidson`. The established ID references Will's opaque bitmap hand, with Minecraft's default as a fallback; a resource pack can replace `assets/the_oldest_house/font/navidson.json`. The spec's page 2 wraps to 16 lines in the default font (a book page holds 14), so it is split after "We measured twice." and the book has six pages. `OpeningTests.letterPagesFit` retains its default-width guard; the 0.4.24 client probe also checks all six pages with the actual loaded custom font.
 
@@ -82,7 +86,7 @@ Hillary remains visibly outside the front door in the Overworld. She is delibera
 
 All commands live under `/oldesthouse opening` and take an optional target player:
 
-- `status`: stage, sleeps, bed, timing, Hillary, first-entry state and last photo.
+- `status`: stage, sleeps, home bed and the remembered one, timing, Hillary, first-entry state and last photo.
 - `advance`: run the next opening step now.
 - `eligible`: skip the settling-in requirements.
 - `letter`: take the photograph and deliver Navidson's letter/snapshot immediately.

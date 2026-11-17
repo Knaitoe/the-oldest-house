@@ -52,8 +52,6 @@ public final class WitnessEnding {
             laid.setTarget(player.getUUID());laid.setUnlimitedLifetime();laid.setPickUpDelay(32767);laid.setInvulnerable(true);
             record.putUUID("LaidDown",laid.getUUID());record.putLong("LaidAt",laid.blockPosition().asLong());
         }
-        if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());
-        record.putString("BaseDimension",player.getRespawnDimension().location().toString());
         // 0.4.243: the one the reader sees behind the bars is the one who leaves. Without this the release spawned a second
         // child beside the first, which stayed in the cell watching. A wounded one left by an earlier reader goes as it is.
         UUID prisoner=world.getBoolean("MinotaurWounded")&&world.hasUUID("WoundedCreature")?world.getUUID("WoundedCreature")

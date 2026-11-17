@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -37,8 +38,10 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  *
  * Mornings are the Overworld day time crossing into dawn (the first 1000
  * ticks of a day). Each player's morning is handled once, while they are in
- * the Overworld with their bed loaded, so a player who is away or offline
- * receives the next step on the first morning they are home.
+ * the Overworld with their home bed loaded, so a player who is away or offline
+ * receives the next step on the first morning they are home. A player with no
+ * home of their own ({@link HomeBed}) waits: the House never comes to a bed
+ * somebody was given.
  */
 public final class OpeningSequence {
     /** The last tick of the morning (inclusive, so {@code /time set day} is still morning). */
@@ -53,7 +56,8 @@ public final class OpeningSequence {
         bus.addListener(OpeningSequence::onServerTick);
         bus.addListener(OpeningSequence::onPlayerLoggedIn);
         bus.addListener(OpeningSequence::onPlayerWakeUp);
-        bus.addListener(OpeningSequence::onRightClickBlock);
+        // Last, so a click something else refused is not counted as the door's use.
+        bus.addListener(EventPriority.LOWEST, OpeningSequence::onRightClickBlock);
         bus.addListener(OpeningSequence::onServerStopped);
         bus.addListener(Hillary::onEntityInteract);
         bus.addListener(Hillary::onEntityTick);
@@ -92,23 +96,39 @@ public final class OpeningSequence {
         }
     }
 
-    /** A completed sleep (at home or in the manor), once per day. */
     private static void onPlayerWakeUp(PlayerWakeUpEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && HouseDays.isMorningWake(player)) {
-            state(player).recordSleep(currentDay(player.server));
-            checkMorning(player, state(player), currentDay(player.server));
+            morningWake(player, currentDay(player.server));
         }
     }
 
-    /** Counts uses of ordinary doors near the player's respawn point. */
+    /**
+     * A completed sleep, once per day. Sleep anywhere ends the House's night, but the opening counts only a night in a home bed or in
+     * the manor's: a reader who sleeps only where they were put never settles in. A morning in a home bed makes it the home the House
+     * remembers.
+     */
+    public static void morningWake(ServerPlayer player, long day) {
+        OpeningPlayerState state = state(player);
+        BlockPos home = HomeBed.asleepAtHome(player);
+        if (home != null) {
+            state.wokeAtHome(home, day);
+        }
+        if (HomeBed.asleepAtHomeOrInManor(player)) {
+            state.recordSleep(day);
+        }
+        checkMorning(player, state, day);
+    }
+
+    /** Counts uses of ordinary doors near the player's home. */
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide()
+        if (event.isCanceled()
+                || event.getLevel().isClientSide()
                 || !(event.getEntity() instanceof ServerPlayer player)
                 || !event.getLevel().dimension().equals(Level.OVERWORLD)) {
             return;
         }
-        BlockPos respawn = player.getRespawnPosition();
-        if (respawn == null || !Level.OVERWORLD.equals(player.getRespawnDimension())) {
+        BlockPos home = HomeBed.of(player).orElse(null);
+        if (home == null) {
             return;
         }
         BlockState clicked = event.getLevel().getBlockState(event.getPos());
@@ -120,7 +140,7 @@ public final class OpeningSequence {
                 : event.getPos();
         state(player).recordDoorUse(
                 lower,
-                respawn,
+                home,
                 OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt()
         );
     }
@@ -173,7 +193,7 @@ public final class OpeningSequence {
         if (player.serverLevel() != overworld) {
             return;
         }
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
         if (HouseCalendar.timeOfDay(player.server) <= MORNING_END
                 && state.lastMorningDay() != day
                 && bed.isPresent()
@@ -236,7 +256,7 @@ public final class OpeningSequence {
             }
             OpeningPlayerState state = state(recipient);
             if (state.stage() == OpeningStage.ELIGIBLE) {
-                deliverLetter(recipient, state, Doorsteps.bedPosition(recipient).orElse(bed), day, result.pixels());
+                HomeBed.of(recipient).ifPresent(home -> deliverLetter(recipient, state, home, day, result.pixels()));
             }
         });
         if (!started && !NavidsonPhoto.isRunning(id)) {
@@ -337,9 +357,9 @@ public final class OpeningSequence {
      * would. Returns a short description of what happened.
      */
     public static String advance(ServerPlayer player) {
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
         if (bed.isEmpty()) {
-            return "no bed respawn point; sleep in a bed first";
+            return "no home bed; sleep in a bed of their own, outside every district, first";
         }
         OpeningPlayerState state = state(player);
         long day = currentDay(player.server);
@@ -406,7 +426,7 @@ public final class OpeningSequence {
                 int nights = OpeningConfig.MIN_NIGHTS_SLEPT.getAsInt();
                 int days = OpeningConfig.MIN_DAYS_SINCE_JOIN.getAsInt();
                 long since = state.firstJoinDay() < 0L ? 0L : currentDay(player.server) - state.firstJoinDay();
-                yield name + "settling in (bed " + (Doorsteps.bedPosition(player).isPresent() ? "set" : "not set")
+                yield name + "settling in (home bed " + (HomeBed.of(player).isPresent() ? "set" : "not set")
                         + ", nights slept " + Math.min(state.nightsSlept(), nights) + "/" + nights
                         + ", days since joining " + Math.min(since, days) + "/" + days
                         + "). The letter comes the morning after all three are met.";
@@ -427,7 +447,7 @@ public final class OpeningSequence {
     /** A new Hillary on the doorstep, replacing any earlier one. Returns where she is, or null. */
     @Nullable
     public static BlockPos respawnHillary(ServerPlayer player) {
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
         if (bed.isEmpty()) {
             return null;
         }

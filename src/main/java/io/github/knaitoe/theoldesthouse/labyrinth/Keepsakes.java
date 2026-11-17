@@ -293,13 +293,13 @@ public final class Keepsakes {
     // The diary's last page
     // ------------------------------------------------------------------
 
-    /** Read at night in their world: which way and how far to their bed. */
+    /** Read at night in their world: which way and how far to their home bed (HomeBed). */
     public static String diary(ServerPlayer p) {
         long time = p.serverLevel().getDayTime() % 24000L;
         if (!ownWorld(p) || time < 13000 || time >= 23000) return null;
-        var bed = p.getRespawnPosition();
+        var bed = io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);
         String line;
-        if (bed == null || !p.getRespawnDimension().equals(p.level().dimension())) line = "On the last page, under the last entry: \"I don't know the way from here.\"";
+        if (bed == null || !p.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)) line = "On the last page, under the last entry: \"I don't know the way from here.\"";
         else {
             var d = bed.getCenter().subtract(p.position());
             int blocks = (int) Math.round(Math.hypot(d.x, d.z));

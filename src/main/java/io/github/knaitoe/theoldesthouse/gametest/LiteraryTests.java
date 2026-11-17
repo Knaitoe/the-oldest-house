@@ -712,7 +712,7 @@ public final class LiteraryTests {
         var helmet=new ItemStack(Items.DIAMOND_HELMET);helmet.set(DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("The real helmet"));helmet.setDamageValue(29);
         stand.setItemSlot(EquipmentSlot.HEAD,helmet);stand.moveTo(home.getX()-2.5,home.getY(),home.getZ()-4.5);world.addFreshEntity(stand);f.extras.add(stand);
 
-        h.runAfterDelay(10,()->{p.teleportTo(world,home.getX()+.5,home.getY(),home.getZ()+11.5,180,0);p.hasChangedDimension();var door=home.offset(0,0,10);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,door,new BlockHitResult(door.getCenter(),Direction.SOUTH,door,false)));world.setDayTime(18000);p.moveTo(bed.getX()+.5,bed.getY(),bed.getZ()+1.5);p.startSleeping(bed);});
+        h.runAfterDelay(10,()->{p.teleportTo(world,home.getX()+.5,home.getY(),home.getZ()+11.5,180,0);p.hasChangedDimension();p.setRespawnPosition(world.dimension(),bed.north(),0,true,false);var door=home.offset(0,0,10);NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,door,new BlockHitResult(door.getCenter(),Direction.SOUTH,door,false)));world.setDayTime(18000);p.moveTo(bed.getX()+.5,bed.getY(),bed.getZ()+1.5);p.startSleeping(bed);});
         final boolean[] awake={false},checked={false};
         h.runAfterDelay(100,()->{p.stopSleepInBed(true,true);awake[0]=true;});
         // Capture waits for native entity sections; assertion timing must follow completion.
@@ -1225,7 +1225,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             // A pen near where they sleep: one cow inside a ring of fence with a gate.
             for(int x=6;x<=10;x++)for(int z=6;z<=10;z++)if(x==6||x==10||z==6||z==10)h.setBlock(new BlockPos(x,2,z),x==8&&z==6?Blocks.OAK_FENCE_GATE:Blocks.OAK_FENCE);
             var penned=h.spawn(EntityType.COW,new BlockPos(8,2,8));var named=h.spawn(EntityType.SHEEP,new BlockPos(8,2,9));named.setCustomName(net.minecraft.network.chat.Component.literal("Clover"));
-            p.setRespawnPosition(h.getLevel().dimension(),h.absolutePos(new BlockPos(8,2,8)),0,true,false);
+            // A reader with no home of their own (HomeBed) loses nothing in the morning, and still owes it.
+            int owed=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND);
+            h.assertTrue(!ElkFollows.morning(p)&&penned.isAlive()&&LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND)==owed&&owed>0,"with no home of their own, nothing is taken and the debt is kept");
+            var bed=h.absolutePos(new BlockPos(12,2,8));NovelRooms.bed(h.getLevel(),bed,Blocks.WHITE_BED,Direction.NORTH);
+            p.setRespawnPosition(h.getLevel().dimension(),bed.north(),0,true,false);
             h.assertTrue(ElkFollows.morning(p),"in the morning she takes one of theirs in kind");
             h.assertTrue(!penned.isAlive()&&named.isAlive()&&h.getBlockState(new BlockPos(8,2,6)).getValue(net.minecraft.world.level.block.FenceGateBlock.OPEN),"the penned cow is gone and the gate stands open; the named sheep is never taken");
             h.assertTrue(ElkFollows.morning(p)==false||LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND)>=0,"never more than there were");
