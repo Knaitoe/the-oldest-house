@@ -2115,5 +2115,11 @@
   "item.the_oldest_house.fallow_milk": "Quart of Milk",
   "item.the_oldest_house.fallow_soda": "Bottle of Pop",
   "item.the_oldest_house.fallow_coffee": "Cup of Coffee",
-  "item.the_oldest_house.fallow_bean_cup": "Bean in a Cup"
+  "item.the_oldest_house.fallow_bean_cup": "Bean in a Cup",
+  "subtitles.the_oldest_house.fallow.tone": "A long tone comes over the radio",
+  "subtitles.the_oldest_house.fallow.lids": "Heavy concrete grinds open",
+  "subtitles.the_oldest_house.fallow.launch": "A rocket roars up out of the wheat",
+  "subtitles.the_oldest_house.fallow.siren": "A siren wails far off",
+  "subtitles.the_oldest_house.fallow.blast": "A roar shakes everything",
+  "subtitles.the_oldest_house.fallow.rumble": "The ground shakes"
 }

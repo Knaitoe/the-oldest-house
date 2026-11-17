@@ -3,6 +3,8 @@
 The place has only its everyday sounds in this part: the wind going over the wheat, the insects in it, the radio on the back shelf
 playing a ball game a long way off, and the bell on the pump. Nothing in them is frightening; what the afternoon becomes comes later.
 0.4.673 adds the afternoon's: the register ringing up a sale, a wrench working under the car on the lift, coins left on the counter.
+0.4.674 adds the four minutes': the radio's two-note tone, the pads' lids grinding open, a launch, a siren a long way off, the light,
+and the ground shaking over the cellar.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -19,6 +21,12 @@ ROWS = {
     'register': ('A cash register rings up a sale', 16),
     'wrench': ('A wrench works under a car', 16),
     'coins': ('Coins are set down on a counter', 10),
+    'tone': ('A long tone comes over the radio', 16),
+    'lids': ('Heavy concrete grinds open', 32),
+    'launch': ('A rocket roars up out of the wheat', 32),
+    'siren': ('A siren wails far off', 32),
+    'blast': ('A roar shakes everything', 32),
+    'rumble': ('The ground shakes', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -171,7 +179,91 @@ def coins():
     return out
 
 
-MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins}
+def tone():
+    # A broadcast attention tone heard out of a small radio's speaker: two steady notes sounding together, a little apart in pitch so
+    # they beat, squeezed through the speaker's narrow band, with the set's hiss under it. It begins and ends clean.
+    n = seconds(4.0)
+    t = times(n)
+    notes = np.sin(2 * np.pi * 853 * t) + np.sin(2 * np.pi * 960 * t)
+    hiss = band(rng.standard_normal(n), 2000, 7000) * .05
+    edge = np.clip(t / .02, 0, 1) * np.clip((4.0 - t) / .02, 0, 1)
+    return band(notes * .5 + hiss, 280, 3400) * edge
+
+
+def lids():
+    # Two slabs of concrete dragged across their seats far off in the field: a deep grinding that catches and slips, a motor's hum under
+    # it, a heavy knock as each comes to rest against its stop.
+    n = seconds(3.4)
+    t = times(n)
+    catch = .55 + .45 * np.abs(band(rng.standard_normal(n), 3, 14)) * 6
+    grind = band(rng.standard_normal(n), 40, 420) * np.clip(catch, 0, 1.4)
+    hum = np.sin(2 * np.pi * 55 * t) * .35 + np.sin(2 * np.pi * 110 * t) * .12
+    run = np.clip(t / .3, 0, 1) * np.clip((2.9 - t) / .25, 0, 1)
+    out = (grind + hum) * run
+    x = t - 2.95
+    on = x >= 0
+    out += (band(rng.standard_normal(n), 30, 300) * 1.4 + np.sin(2 * np.pi * 48 * x) * 1.2) * np.exp(-np.clip(x, 0, None) / .12) * on
+    return out
+
+
+def launch():
+    # A rocket going up out of the ground a long way off: a roar that swells out of nothing to a steady tearing thunder, crackling, with
+    # a low rolling under it, then going away up into the sky, the high part leaving first.
+    n = seconds(8.0)
+    t = times(n)
+    swell = np.clip(t / 1.2, 0, 1) ** 2
+    away = np.clip((8.0 - t) / 5.0, 0, 1)
+    roar = band(rng.standard_normal(n), 60, 2400) * swell * away
+    high = band(rng.standard_normal(n), 1500, 6000) * swell * away ** 3 * .5
+    crackle = (rng.random(n) < .004) * rng.standard_normal(n) * 4
+    crackle = band(crackle, 400, 5000) * swell * away ** 2
+    low = band(rng.standard_normal(n), 18, 90) * 2.2 * np.clip(t / .6, 0, 1) * np.clip((8.0 - t) / 3.0, 0, 1)
+    return roar + high + crackle + low
+
+
+def siren():
+    # A civil siren a long way off across flat country: the wail climbs, holds, falls and climbs again, thinned by the distance, with a
+    # second, fainter one farther off behind it a beat out of step.
+    n = seconds(8.0)
+    t = times(n)
+
+    def wail(offset, level):
+        phase = ((t + offset) % 4.0) / 4.0
+        f = 180 + 420 * np.clip(np.where(phase < .45, phase / .45, np.where(phase < .7, 1.0, 1 - (phase - .7) / .3)), 0, 1)
+        w = np.sin(2 * np.pi * np.cumsum(f) / RATE) + .4 * np.sin(4 * np.pi * np.cumsum(f) / RATE)
+        return w * level
+
+    out = band(wail(0, 1.0) + wail(1.3, .45), 150, 1800)
+    edge = np.clip(t / .8, 0, 1) * np.clip((8.0 - t) / .8, 0, 1)
+    return out * edge
+
+
+def blast():
+    # Everything at once: a crack that is all frequencies, a pressure so low it is felt more than heard, and a roar that rolls on and on
+    # and goes down slowly into a rumble.
+    n = seconds(6.0)
+    t = times(n)
+    crack = band(rng.standard_normal(n), 200, 4500) * np.exp(-t / .05) * 1.1
+    thump = np.sin(2 * np.pi * (34 - 10 * np.clip(t, 0, 1)) * t) * np.exp(-t / .9) * 2.2
+    roar = band(rng.standard_normal(n), 22, 520) * np.exp(-t / 2.4) * 3.2
+    edge = np.clip(t / .004, 0, 1) * np.clip((6.0 - t) / .5, 0, 1)
+    return (crack + thump + roar) * edge
+
+
+def rumble():
+    # The ground shaking over a cellar: a deep heavy rolling, the timbers of the roof creaking with it, grit and small stones coming
+    # down onto the floor in little runs.
+    n = seconds(4.0)
+    t = times(n)
+    roll = band(rng.standard_normal(n), 20, 140) * 2.0 * (.7 + .3 * np.sin(2 * np.pi * .7 * t))
+    creak = band(rng.standard_normal(n), 300, 900) * (np.abs(band(rng.standard_normal(n), 1, 4)) * 8) * .12
+    grit = band((rng.random(n) < .01) * rng.standard_normal(n), 2000, 8000) * .45
+    edge = np.clip(t / .4, 0, 1) * np.clip((4.0 - t) / .8, 0, 1)
+    return (roll + creak + grit) * edge
+
+
+MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
+          'tone': tone, 'lids': lids, 'launch': launch, 'siren': siren, 'blast': blast, 'rumble': rumble}
 
 
 def main():

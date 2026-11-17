@@ -211,6 +211,50 @@ public final class FallowTexts {
         };
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.674, the four minutes
+    /** The ball game stops for the tone; under it, after a while, a voice reading. */
+    public static final String TONE="The ball game stops. A long tone comes out of the radio, two notes at once, and does not stop.",
+        TONE_VOICE="Under the tone a man's voice reads, slow: go below ground now. Stay away from windows. Do not use the telephone.",
+        RADIO_TONE="The radio on the shelf. The tone comes out of it, steady, and the voice under it reading the same three things over.",
+        LIDS="Out in the wheat, both ways, something heavy grinds and keeps grinding.",
+        LIDS_INSIDE="The floor hums. The jars on the back shelf touch each other and ring.",
+        LAUNCH="A roar comes over the wheat. Out of the haze something climbs on a column of fire, slowly, then faster, then up and gone.",
+        LAUNCH_TWO="Another, from the other side of the road.",
+        SIREN="A long way off to the east a siren starts up, and another past it, fainter.";
+    /** Boyd, laughing at the tone; Harlan, not; Otis and Opal when the ground starts to hum. */
+    public static final String BOYD_TEST="It's a test. They do that.",HARLAN_NOT_TEST="That's not the test. The test tells you it's a test.",
+        OTIS_PADS="Twenty years I've driven past those pads. Never once saw a soul out at them.",OPAL_HUM="Mama, the ground's buzzing.";
+    /** Harlan, when they go up. */
+    public static final String GOING_UP="That's ours going up. Theirs will be coming for the holes.",TO_THE_CELLAR="Everybody in the cellar. Now.";
+    /** Harlan at the cellar doors, holding them, calling, in turn; to a reader who speaks to him there; to a reader who takes the doors. */
+    public static final String[] CALLING={"Down the steps! Mind your heads at the bottom!","Faye! Leave it!","Boyd! There's room!","Come on. Come on."};
+    public static final String HARLAN_HOLDING="Get down there. I've got the doors.",
+        TAKE_DOORS="You hold them, then. Don't let them shut till everybody's down.",TAKEN_DOORS="You take the cellar doors from Harlan. He goes down the steps.",
+        THROWN_BACK="Harlan throws the doors back open.";
+    /** Harlan at the last, with the doors: shutting them over the people below and staying out; or pulling them down from below. */
+    public static final String SHUT_OVER="Keep them shut. Don't open them for anything.",SHUT_OUT="The cellar doors come down and lie shut.",
+        SHUT_BELOW="Harlan reaches up and pulls the doors down over the steps, and the dark comes in.",
+        SHUT_BY_OTIS="Otis reaches up and pulls the doors down over the steps, and the dark comes in.",
+        SHUT_AFTER="The doors come down again behind you.";
+    /** Faye at the car, which is up on the lift; to a reader who takes her by the arm; asking after Opal; finding her below. */
+    public static final String FAYE_LIFT="How do you get it down? How does it come down?",FAYE_STAYS="Everything we have is in that car.",
+        FAYE_TAKEN="You take Faye by the arm.",FAYE_WHERE="Where's Opal? Where is she?",FAYE_FOUND="There you are. There you are.";
+    /** Boyd at the rig's door, who will not go down. */
+    public static final String[] BOYD={"Otis! Where's your keys? It's not even locked!","I'm not getting in a hole in the ground.",
+        "This thing'll do sixty with the box on. We can be fifty miles off.","Go on, then. Go on down."};
+    public static final String BOYD_FAYE="Faye! Faye, come on!";
+    /** Otis going for Opal, lifting her, setting her down below. */
+    public static final String OTIS_COMING="Come here, sweetheart. Bring your bean.",OPAL_CUP="I've got it. I've got it.",
+        OTIS_HOLD="Hold on to me.",OTIS_DOWN="There. You sit right there with your bean.",OTIS_GO="Go on down. I've got her.";
+    /** In the cellar while they wait, in order, a line every so often: who says it, and what. */
+    public static final String[][] WAITING={{"Otis","How long, do you figure?"},{"Harlan","Not long."},{"Opal","It needs the sun. My bean."},
+        {"Otis","It'll keep. Beans are tough."},{"Opal","Is Boyd coming?"},{"Otis","He's coming."},{"Harlan","Keep back from the steps."},
+        {"Opal","Can I count?"},{"Otis","Go on and count."}};
+    /** Opal counting, at the last. */
+    public static final String[] COUNTING={"One.","Two.","Three.","Four.","Five.","Six.","Seven."};
+    /** In the cellar at the light; the dust after. */
+    public static final String CRACKS="Light comes in round the doors, at every crack at once.",DUST="Dust comes down out of the roof and does not stop.";
+
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: Harlan's note, propped against the register. */
     public static ItemStack source(){

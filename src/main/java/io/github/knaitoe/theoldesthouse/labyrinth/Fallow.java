@@ -61,6 +61,8 @@ public final class Fallow {
     /** How the afternoon's people hold themselves (LiteraryRenderers.fallow): working overhead under the car, reaching up or out, a cup held
      * in both hands, kneeling by the bean, pouring at the machine. */
     public static final int WORK=1,REACH=2,CUP=3,KNEEL=4,POUR=5;
+    /** 0.4.674: Otis with Opal in his arms (FallowStrike). */
+    public static final int CARRY=6;
 
     /** A reader in: the five are put at their places if they are not there, the car is up on the lift, and the afternoon is heard. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -102,6 +104,8 @@ public final class Fallow {
     /** At the cell, turned the way given; the keeper on his stool (ActorSeat lowers him onto it and keeps him there). */
     static void stand(LiteraryActor a,BlockPos at,Direction facing){
         float yaw=facing.toYRot();
+        // 0.4.674: nobody is left carried, or carrying, from a strike that is over.
+        if(a.isPassenger())a.stopRiding();a.ejectPassengers();
         a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);a.setDeltaMovement(Vec3.ZERO);
         a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
     }
@@ -129,6 +133,7 @@ public final class Fallow {
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         if(!is(a))return;
         var s=site(p,a);int who=a.phase()-FIRST;
+        if(FallowStrike.talk(p,a,s,who,own))return;
         if(who==STRANGER){
             if(s!=null&&s.stranger==ASKING&&p.distanceToSqr(a)<ASK_RANGE*ASK_RANGE){askTime(p,s,a,own);return;}
             if(s!=null&&s.stranger<ASKING){a.say(null,FallowTexts.STRANGER_GREETS);a.speaks(FallowTexts.STRANGER_GREETS);}
@@ -166,6 +171,9 @@ public final class Fallow {
         int stage=st.getValue(FallowBlock.STAGE);var kind=st.getValue(FallowBlock.KIND);
         // The cellar's doors swing back on their hinges for anyone, and shut again; they stay as they are left.
         if(kind==FallowBlock.Kind.CELLAR||kind==FallowBlock.Kind.CELLAR_OPEN){
+            // 0.4.674: while Harlan holds them in the four minutes, a hand on them near him takes them from him.
+            var site=ACTIVE.get(b.asLong());
+            if(site!=null&&FallowStrike.takeDoors(p,l,site,kind==FallowBlock.Kind.CELLAR_OPEN,own))return true;
             boolean open=kind==FallowBlock.Kind.CELLAR;
             cellarDoors(l,b,open);
             l.playSound(null,b.offset(FallowSite.WELL_W,0,FallowSite.WELL_S-1),open?net.minecraft.sounds.SoundEvents.WOODEN_TRAPDOOR_OPEN:net.minecraft.sounds.SoundEvents.WOODEN_TRAPDOOR_CLOSE,SoundSource.BLOCKS,.8F,.7F);
@@ -175,12 +183,13 @@ public final class Fallow {
         if(kind==FallowBlock.Kind.PUMP&&(stage==0||stage==2))l.playSound(null,b.offset(rel),FallowRegistry.BELL.get(),SoundSource.BLOCKS,.6F,1F);
         // 0.4.673: a reader behind the counter rings up whoever is waiting to pay, or opens the drawer on nobody.
         if(kind==FallowBlock.Kind.COUNTER&&stage==1&&FallowSite.behindCounter(p.position().subtract(Vec3.atLowerCornerOf(b)))){ring(p,l,b,own);return true;}
-        String line=FallowTexts.thing(kind,stage);
+        String line=FallowStrike.thing(ACTIVE.get(b.asLong()),kind,stage);
+        if(line==null)line=FallowTexts.thing(kind,stage);
         if(line==null)return false;
         cue(p,line);
         return true;
     }
-    /** The cellar's six lengths of door, all shut or all thrown back. */
+    /** The cellar's eight lengths of door, all shut or all thrown back. */
     public static void cellarDoors(ServerLevel l,BlockPos b,boolean open){
         for(int z=FallowSite.WELL_S;z>=FallowSite.WELL_N;z--)for(int x=FallowSite.WELL_W;x<=FallowSite.WELL_E;x++){
             var at=b.offset(x,0,z);var st=l.getBlockState(at);
@@ -202,10 +211,10 @@ public final class Fallow {
     public static final BlockPos BEAN_AT=new BlockPos(4,0,-13);
     /** Where the man comes from, along the road out of the haze, and where he goes, up the far pad's track into the wheat. */
     public static final Vec3 STRANGER_FROM=new Vec3(-50.5,0,-27.5),STRANGER_TO=new Vec3(20.5,0,-99.5);
-    /** Harlan's afternoon: on his stool, walking round, under the car. */
-    public static final int STOOL=0,WALKING=1,UNDER=2;
-    /** The bean's: in the car, Opal going for it, asking, carrying it out, set down. */
-    public static final int IN_CAR=0,FETCHING=1,ASKING_BEAN=2,CARRYING=3,SET=4;
+    /** Harlan's afternoon: on his stool, walking round, under the car; 0.4.674, the four minutes (FallowStrike has him). */
+    public static final int STOOL=0,WALKING=1,UNDER=2,STRIKE=3;
+    /** The bean's: in the car, Opal going for it, asking, carrying it out, set down; 0.4.674, taken up again in the four minutes. */
+    public static final int IN_CAR=0,FETCHING=1,ASKING_BEAN=2,CARRYING=3,SET=4,TAKEN=5;
     /** The man's: not come yet, on his way in, at the cooler, at the register, with Opal, asking the time, going, gone. */
     public static final int NOT_YET=0,COMING=1,CHOOSING=2,PAYING=3,AT_OPAL=4,ASKING=5,GOING=6,GONE=7;
     /** A customer's: walking to what they want, taking it, walking to the register, waiting, done and going back. */
@@ -222,6 +231,9 @@ public final class Fallow {
         int keeper=STOOL,carTalk,carTalkAt,bean=IN_CAR,beanAt,opalTalk,opalAt=-1000,stranger=NOT_YET,strangerAt;
         /** Who is buying (Faye, Otis, the man), how far along, since when; who has been through. */
         int customer=-1,buying,buyingAt,served;
+        /** 0.4.674: how fast each walks, when not their afternoon's pace; the four minutes. */
+        final Map<Integer,Double> speed=new HashMap<>();
+        final FallowStrike.State strike=new FallowStrike.State();
         Site(BlockPos b){base=b;}
         Vec3 world(Vec3 rel){return Vec3.atLowerCornerOf(base).add(rel);}
     }
@@ -259,6 +271,7 @@ public final class Fallow {
         var at=b.offset(BEAN_AT);
         if(l.isLoaded(at)&&FallowBlock.is(l.getBlockState(at),FallowBlock.Kind.BEAN))l.setBlock(at,Blocks.AIR.defaultBlockState(),3);
         var man=find(l,b,STRANGER);if(man!=null)man.discard();
+        FallowStrike.afresh(l,b);
     }
 
     /**
@@ -278,13 +291,14 @@ public final class Fallow {
             s.empty=0;s.tick++;
             if(s.tick%20==0){car(l,s.base);ensure(l,s.base,s);}
             afternoon(l,s,here);
+            FallowStrike.tick(l,s,here);
             var rnd=l.getRandom();var one=here.get(rnd.nextInt(here.size()));
             if(s.tick%220==40)play(l,one.blockPosition().offset(rnd.nextInt(17)-8,1,rnd.nextInt(17)-8),FallowRegistry.WIND.get(),.55F);
             if(s.tick%260==130){
                 var r=one.position().subtract(Vec3.atLowerCornerOf(s.base));
                 if(!FallowSite.inStore(r)&&!FallowSite.inCellar(r))play(l,one.blockPosition().offset(rnd.nextInt(9)-4,0,rnd.nextInt(9)-4),FallowRegistry.INSECTS.get(),.5F);
             }
-            if(s.tick%180==60&&here.stream().anyMatch(p->FallowSite.inStore(p.position().subtract(Vec3.atLowerCornerOf(s.base)))))
+            if(s.tick%180==60&&s.strike.toneAt<0&&here.stream().anyMatch(p->FallowSite.inStore(p.position().subtract(Vec3.atLowerCornerOf(s.base)))))
                 play(l,s.base.offset(FallowSite.RADIO),FallowRegistry.RADIO.get(),.4F);
         }
     }
@@ -295,14 +309,15 @@ public final class Fallow {
         if(s.tick%20==0)chores(l,s,here);
         keeper(l,s,here);
         bean(l,s,here);
-        customers(l,s,here);
+        // 0.4.674: nobody comes in to buy anything once the tone is on.
+        if(s.strike.toneAt<0)customers(l,s,here);
         stranger(l,s,here);
     }
 
     // ------------------------------------------------------------------------------------------------ the chores
     /** Harlan gives a chore to each reader near enough to hear who has none, one at a time, from wherever he is. */
     static void chores(ServerLevel l,Site s,List<ServerPlayer> here){
-        if(s.tick<CHORES||s.tick-s.toldAt<70||s.keeper==WALKING)return;
+        if(s.tick<CHORES||s.tick-s.toldAt<70||s.keeper==WALKING||s.keeper==STRIKE)return;
         var a=find(l,s.base,KEEPER);if(a==null)return;
         for(var p:here){
             if(s.chores.containsKey(p.getUUID())||p.distanceToSqr(a)>ASK_RANGE*ASK_RANGE||!a.hasLineOfSight(p))continue;
@@ -551,10 +566,12 @@ public final class Fallow {
             var a=find(l,s.base,who);if(a==null){s.routes.remove(who);continue;}
             var route=s.routes.get(who);int i=s.leg.get(who);
             if(i>=route.size()){s.routes.remove(who);s.leg.remove(who);s.stall.remove(who);continue;}
-            if(a.listening()&&who!=STRANGER)continue;
+            if(a.listening()&&who!=STRANGER&&s.strike.toneAt<0)continue;
             var target=s.world(route.get(i));var before=a.position();
+            var down=FallowStrike.steps(l,s,a,target,s.speed.getOrDefault(who,who==GIRL?.09:.11));
+            if(down!=null){if(down){s.leg.put(who,i+1);s.stall.remove(who);}continue;}
             doors(l,s,a);
-            if(SceneFootpaths.walk(a,target,who==GIRL?.09:.11)||a.position().distanceToSqr(target)<.09){s.leg.put(who,i+1);s.stall.remove(who);continue;}
+            if(SceneFootpaths.walk(a,target,s.speed.getOrDefault(who,who==GIRL?.09:.11))||a.position().distanceToSqr(target)<.09){s.leg.put(who,i+1);s.stall.remove(who);continue;}
             // Caught on something (or a reader in the way) three seconds: where nobody sees, they are simply at their next point.
             int still=a.position().distanceToSqr(before)<1.0E-4?s.stall.getOrDefault(who,0)+1:0;s.stall.put(who,still);
             if(still>=STALL&&!Drawing.seen(here,a.position())&&!Drawing.seen(here,target)){a.moveTo(target.x,target.y,target.z,a.getYRot(),0);s.leg.put(who,i+1);s.stall.remove(who);}
@@ -570,6 +587,11 @@ public final class Fallow {
     }
     static void face(LiteraryActor a,float yaw){a.setYRot(yaw);a.setYBodyRot(yaw);a.setYHeadRot(yaw);}
     static void faceTo(LiteraryActor a,Vec3 at){var d=at.subtract(a.position());face(a,(float)Math.toDegrees(Math.atan2(-d.x,d.z)));}
+    /** 0.4.674: a reader at a station whose lids have opened leaves only by the light (LiteraryVignettes.retreatLocked). */
+    public static boolean locked(ServerPlayer p){
+        if(!LiteraryVignettes.inside(p,PLACE))return false;
+        var b=LiteraryVignettes.base(p,PLACE);return b!=null&&FallowStrike.locked(ACTIVE.get(b.asLong()),p);
+    }
     static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
 }

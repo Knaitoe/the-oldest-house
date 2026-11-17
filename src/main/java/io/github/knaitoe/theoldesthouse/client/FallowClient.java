@@ -23,8 +23,10 @@ public final class FallowClient {
     /** Where the haze begins and where it is whole, in blocks: the field is 56 blocks to each side of the road, so it closes before them. */
     public static final float HAZE_NEAR=12F,HAZE_FAR=46F;
     /** Where this reader is, relative to the station's base, if they are at it. */
-    @Nullable static Vec3 here(){
-        var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||mc.player.isSpectator()||!HouseSightlineState.hasOrigin())return null;
+    @Nullable static Vec3 here(){var mc=Minecraft.getInstance();return mc.player==null||mc.player.isSpectator()?null:at();}
+    /** 0.4.674: as here(), but a spectator watching counts too (FallowStrikeClient: they see the strike, and earn nothing). */
+    @Nullable static Vec3 at(){
+        var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!HouseSightlineState.hasOrigin())return null;
         var origin=HouseSightlineState.origin();var p=LabyrinthPlaces.placeAt(origin,mc.player.blockPosition());
         if(p!=LabyrinthPlace.FALLOW||!mc.level.dimension().equals(NovelRooms.dimension(p)))return null;
         var b=LabyrinthPlaces.base(origin,p);if(b==null)return null;

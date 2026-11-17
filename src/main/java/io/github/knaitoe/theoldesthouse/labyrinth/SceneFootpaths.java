@@ -10,7 +10,9 @@ import net.minecraft.world.phys.*;
 public final class SceneFootpaths {
     private SceneFootpaths(){}
     private static final Map<LivingEntity,Route> ROUTES=new WeakHashMap<>();
-    private static final class Route {final Vec3 goal;final List<Vec3> points;int next;Route(Vec3 goal,List<Vec3> points){this.goal=goal;this.points=points;}}
+    private static final class Route {final Vec3 goal;final List<Vec3> points;int next;long retry;Route(Vec3 goal,List<Vec3> points){this.goal=goal;this.points=points;}}
+    /** How long a body that has found no way on waits before it searches again. */
+    static final int RETRY=20;
     private record Node(int x,int z,double y,double cost,double score,Node previous){}
     private static long key(int x,int z){return (long)x<<32|(z&0xffffffffL);}
     public static void face(LivingEntity body,Vec3 target,float limit){
@@ -63,7 +65,15 @@ public final class SceneFootpaths {
         // accepts clear supported cells once the original body has stood up.
         boolean embedded=body.level().getBlockCollisions(body,body.getBoundingBox().deflate(.002)).iterator().hasNext();
         if(!embedded&&!clear(body,before,target)){
-            var route=ROUTES.get(body);if(route==null||route.goal.subtract(target).horizontalDistanceSqr()>.56||route.next>=route.points.size()){route=new Route(target,find(body,target));ROUTES.put(body,route);}
+            var route=ROUTES.get(body);
+            if(route==null||route.goal.subtract(target).horizontalDistanceSqr()>.56||route.next>=route.points.size()){
+                // 0.4.674: a search that found no way on, or a route walked to its end or stuck, is not searched again for a second. The set
+                // does not change from one tick to the next, and one body searching every tick for a place it could not reach (Fallow's
+                // cellar steps, a block down) cost the server most of every tick.
+                long now=body.level().getGameTime();
+                if(route!=null&&now<route.retry&&(route.points.isEmpty()||route.next>=route.points.size()))return false;
+                route=new Route(target,find(body,target));route.retry=now+RETRY;ROUTES.put(body,route);
+            }
             if(route.next>=route.points.size())return false;next=route.points.get(route.next);if(before.distanceToSqr(next)<.035){route.next++;return false;}
         }else ROUTES.remove(body);
         var floor=feet(body,next.x,before.y,next.z);if(floor!=null)next=new Vec3(next.x,floor.y,next.z);
@@ -72,7 +82,7 @@ public final class SceneFootpaths {
         body.setOnGround(true);double dy=net.minecraft.util.Mth.clamp(d.y,-.25,.25);
         if(dy>0)body.move(MoverType.SELF,new Vec3(0,dy,0));
         body.move(MoverType.SELF,new Vec3(length>.001?d.x*Math.min(speed,length)/length:0,dy<=0?dy:0,length>.001?d.z*Math.min(speed,length)/length:0));
-        if(body.position().distanceToSqr(before)<.00001)ROUTES.remove(body);
+        if(body.position().distanceToSqr(before)<.00001){var stuck=ROUTES.get(body);if(stuck!=null)stuck.next=stuck.points.size();}
         body.walkAnimation.update((float)body.position().subtract(before).horizontalDistance()*4,.4F);body.setDeltaMovement(Vec3.ZERO);
         return body.position().subtract(target).horizontalDistanceSqr()<.025&&Math.abs(body.getY()-target.y)<.7;
     }
