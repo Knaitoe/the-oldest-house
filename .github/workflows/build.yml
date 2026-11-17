@@ -105,6 +105,7 @@ jobs:
           python3 tools/draw_calder_art.py --check
           python3 tools/draw_calder_signs.py --check
           python3 tools/draw_crossing_signs.py --check
+          python3 tools/draw_board_signs.py --check
           python3 tools/draw_calder_town_art.py --check
           python3 tools/draw_calder_graves_art.py --check
           python3 tools/draw_calder_specters_art.py --check

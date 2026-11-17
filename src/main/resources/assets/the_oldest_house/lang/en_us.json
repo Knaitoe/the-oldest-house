@@ -1244,6 +1244,7 @@
   "advancements.the_oldest_house.account.growing_things.description": "I helped a family with their Saturday chores while something came up through their yard.",
   "block.the_oldest_house.crossing_fitting": "Station Fitting",
   "block.the_oldest_house.crossing_sign": "Painted Sign",
+  "block.the_oldest_house.board_sign": "Painted Sign",
   "item.the_oldest_house.crossing_plate": "Handprint Plate",
   "item.the_oldest_house.crossing_line": "Mooring Line",
   "item.the_oldest_house.crossing_lamp": "Station Lamp",

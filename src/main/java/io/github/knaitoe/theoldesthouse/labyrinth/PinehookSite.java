@@ -185,8 +185,10 @@ public final class PinehookSite {
         set(l,b,-4,0,-43,s(Blocks.CAMPFIRE).setValue(CampfireBlock.LIT,false));
         for(int[] c:new int[][]{{-6,-43},{-2,-43}})set(l,b,c[0],0,c[1],s(Blocks.STRIPPED_SPRUCE_LOG).setValue(RotatedPillarBlock.AXIS,Direction.Axis.Z));
         set(l,b,-4,0,-45,s(Blocks.STRIPPED_SPRUCE_LOG).setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
-        // A sign at the apron.
-        LastCrossingSite.standingSign(l,b.offset(3,0,-11),new String[]{"","PINEHOOK","",""});
+        // The name at the apron, burned into a split log between two posts beside the drive (0.4.677, BoardSigns; it was the game's own
+        // sign on a post).
+        for(int y=0;y<=1;y++){set(l,b,2,y,-11,s(Blocks.STRIPPED_SPRUCE_LOG));set(l,b,7,y,-11,s(Blocks.STRIPPED_SPRUCE_LOG));}
+        BoardSigns.centred(l,b.offset(4,1,-11),BoardSigns.Sign.PINEHOOK,Direction.SOUTH);
     }
     /** The cabin: porch, living room, kitchen, hall, bathroom and bedroom; a gable roof north to south. */
     static void cabin(ServerLevel l,BlockPos b){
@@ -304,7 +306,8 @@ public final class PinehookSite {
         box(l,b,BOAT_W-1,4,BOAT_N-1,BOAT_E+1,4,BOAT_S+1,s(Blocks.DARK_OAK_SLAB));
         var door=s(Blocks.IRON_DOOR).setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HINGE,DoorHingeSide.LEFT).setValue(DoorBlock.OPEN,false);
         set(l,b,BOATHOUSE_DOOR,door.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));set(l,b,BOATHOUSE_DOOR.above(),door.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
-        NovelRooms.sign(l,b.offset(BOATHOUSE_DOOR.getX()+1,1,BOAT_S+1),Direction.SOUTH,new String[]{"PRIVATE","","NO ENTRY",""});
+        // The tin plate over the door, clear of both windows (0.4.677, BoardSigns; it was the game's own sign beside the door).
+        BoardSigns.centred(l,b.offset(BOATHOUSE_DOOR.getX(),2,BOAT_S+1),BoardSigns.Sign.PRIVATE,Direction.SOUTH);
         set(l,b,13,1,BOAT_S,s(Blocks.GLASS_PANE));set(l,b,17,1,BOAT_S,s(Blocks.GLASS_PANE));
         // Inside: the safe in the far corner, a chair, a bench, a lantern, the wall rack with the oars and the hook; the slip gate in the
         // lake wall; outside, the brace bar leaning by the door; off the dock, the slip's release rope on its piling.
@@ -326,6 +329,8 @@ public final class PinehookSite {
             if(clear(px,pz))continue;
             boolean edge=px<-24||px>22||pz>-6;
             if(edge?rnd.nextInt(3)==0:rnd.nextInt(4)!=0)continue;
+            // 0.4.677: nothing hangs over the boathouse's front, its door and its PRIVATE plate (skipped after the draws, so no other pine moves).
+            if(px>=BOAT_W-1&&px<=BOAT_E+1&&pz>BOAT_S&&pz<=BOAT_S+5){rnd.nextInt(4);continue;}
             LastCrossingSite.tree(l,b,px,pz,5+rnd.nextInt(4));
         }
     }

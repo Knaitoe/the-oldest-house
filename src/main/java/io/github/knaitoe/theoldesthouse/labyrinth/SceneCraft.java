@@ -42,7 +42,6 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.TripWireBlock;
 import net.minecraft.world.level.block.WallBannerBlock;
-import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
@@ -1478,18 +1477,6 @@ public final class SceneCraft {
     }
 
     /** A painted board on a wall, its words installed with it. */
-    private void sign(int x, int y, int z, Direction facing, String... lines) {
-        BlockPos at = p(x, y, z);
-        BlockState s = Blocks.OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, facing);
-        if (!canPut(at, s) || !s.canSurvive(l, at)) return;
-        String[] text = {"", "", "", ""};
-        for (int i = 0; i < Math.min(4, lines.length); i++) text[i] = lines[i];
-        journal.add(new Change(at.immutable(), l.getBlockState(at)));
-        NovelRooms.sign(l, at, facing, text);
-        placed.add(at.immutable());
-        changed++;
-    }
-
     /** A railing: posts joined to each other and to whatever solid stands beside them. */
     private void rail(int x, int y, int z, Block fence) {
         put(x, y, z, fence.defaultBlockState());
@@ -1600,7 +1587,7 @@ public final class SceneCraft {
                 for (int i = 1; i <= 3; i++) for (int z = cz - 2; z <= cz + 2; z++) put(door + s * i, 3, z, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
                 put(door + 2 * s, 2, cz, lantern(true));
                 put(door + s, 0, cz - 2, stairs(Blocks.SPRUCE_STAIRS, out.getOpposite()));
-                sign(door + s, 2, cz + 1, out, "CABIN " + n, "", "", "");
+                // 0.4.677: the cabin's number is a painted plate by its door, hung by the camp's own builder (LiteraryRooms.camp, BoardSigns).
                 shutters(cx - 3, cz - 8, Direction.NORTH, 2, 3, Blocks.SPRUCE_TRAPDOOR);
                 shutters(cx + 3, cz - 8, Direction.NORTH, 2, 3, Blocks.SPRUCE_TRAPDOOR);
                 for (int x : new int[]{cx - 8, cx + 8}) for (int z : new int[]{cz - 7, cz + 7})
@@ -1807,9 +1794,7 @@ public final class SceneCraft {
             put(x, 0, -42, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
             put(x, 0, -40, slab(Blocks.SPRUCE_SLAB, SlabType.BOTTOM));
         }
-        Plan post = new Plan();
-        for (int y = 0; y <= 2; y++) post.add(4, y, -10, Blocks.SPRUCE_LOG);
-        if (post.place()) sign(4, 2, -9, Direction.SOUTH, "CAMP", "Cabins 1 - 6", "Lights out", "at ten");
+        // 0.4.677: the gate's board is painted and stands on its own two posts, hung by the camp's own builder (LiteraryRooms.camp, BoardSigns).
         for (int z : new int[]{-20, -40, -60, -80})
             for (int x : new int[]{-4, 4})
                 if (!(x == 4 && z == -40)) new Plan().add(x, 0, z, Blocks.SPRUCE_FENCE).add(x, 1, z, Blocks.SPRUCE_FENCE).add(x, 2, z, lantern(false)).place();

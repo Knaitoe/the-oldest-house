@@ -455,11 +455,6 @@ public final class LastCrossingSite {
         var rnd=new Random(3740);
         for(int x=WEST+3;x<=EAST-3;x+=7){int z=-106+rnd.nextInt(4);if(x>=36&&x<=48)continue;tree(l,b,x,z,4+rnd.nextInt(3));}
     }
-    /** A sign on its own post, its words facing south. */
-    static void standingSign(ServerLevel l,BlockPos at,String[] lines){
-        BuildBlocks.set(l,at,Blocks.OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION,0),F);
-        BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign){var text=sign.getFrontText();for(int i=0;i<4;i++)text=text.setMessage(i,net.minecraft.network.chat.Component.literal(lines[i]));sign.setText(text,true);}});
-    }
     static void tree(ServerLevel l,BlockPos b,int x,int z,int h){
         for(int y=0;y<h;y++)set(l,b,x,y,z,s(Blocks.SPRUCE_LOG));
         var leaves=s(Blocks.SPRUCE_LEAVES).setValue(LeavesBlock.PERSISTENT,true);

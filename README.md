@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.676** is the dialogue pass the owner asked for on 17 November (`docs/DIALOGUE_PASS_0_4_676.md`). A hundred and sixteen lines across forty-three files lose the echo, the turned correction, the "not this but that" and the paired negative; every change is listed as it was and as it is.
+Development candidate **0.4.677** paints the short signs that were still the game's own wooden signs with words typed on them (`docs/BOARD_SIGNS_0_4_677.md`), as the Last Crossing's were in 0.4.675: Camp Blood's road end, with a new board at its gate and a numbered plate by each cabin door; the elk lot's service gate and the name on the yacht; Pinehook's name and the boathouse's PRIVATE plate; Movie Night's ticket hut; and the tags on Borrasca's graves. Each is a picture at sixteen pixels to the block, read by a hand on it.
+
+Previous: 0.4.676, the dialogue pass the owner asked for on 17 November (`docs/DIALOGUE_PASS_0_4_676.md`). A hundred and sixteen lines across forty-three files lose the echo, the turned correction, the "not this but that" and the paired negative; every change is listed as it was and as it is.
 
 Previous: 0.4.675, the owner's twelve notes of 17 November (`docs/OWNER_NOTES_0_4_675.md`).
 

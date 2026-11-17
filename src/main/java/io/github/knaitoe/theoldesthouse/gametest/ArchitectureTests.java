@@ -214,6 +214,47 @@ public final class ArchitectureTests {
             }
             TheOldestHouse.LOGGER.info("Architecture: {} frames and paintings hang in the finished scenes; falling: {}",hangings,falling);
             h.assertTrue(falling.isEmpty(),"nothing hung on a wall in a finished scene is about to fall: "+falling);
+            // 0.4.677 (the owner: "there are several signs in last crossing that could benefit from custom textures. i was hoping
+            // you'd notice that on your own"): no finished scene has the game's own wooden sign with words typed on it. The short ones
+            // are painted boards now (BoardSigns); the long notices, still the game's until they are lettered on painted plates, are
+            // the only ones let stand, and are named here so none is missed.
+            var longNotices=java.util.Set.of("SUPPLIES","I went this way.","YOUR LIGHT","ROAD CREW");
+            var archiveNames=java.util.Set.of(io.github.knaitoe.theoldesthouse.labyrinth.ArchiveReaderFiles.NAMES);
+            var gameSigns=new ArrayList<String>();var stillLong=new ArrayList<String>();
+            for(var scene:LabyrinthPlace.values()){
+                var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
+                if(base==null||r==null||!level.isLoaded(base))continue;
+                var lo=base.offset(r.minX()-1,r.minY()-1,r.minZ()-1);var hi=base.offset(r.maxX()+1,r.maxY()+2,r.maxZ()+1);
+                for(int cx=lo.getX()>>4;cx<=hi.getX()>>4;cx++)for(int cz=lo.getZ()>>4;cz<=hi.getZ()>>4;cz++){
+                    if(!level.hasChunk(cx,cz))continue;
+                    for(var be:level.getChunk(cx,cz).getBlockEntities().values()){
+                        if(!(be instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign))continue;var at=be.getBlockPos();
+                        if(at.getX()<lo.getX()||at.getX()>hi.getX()||at.getY()<lo.getY()||at.getY()>hi.getY()||at.getZ()<lo.getZ()||at.getZ()>hi.getZ())continue;
+                        var lines=new ArrayList<String>();for(int i=0;i<4;i++){var line=sign.getFrontText().getMessage(i,false).getString();if(!line.isBlank())lines.add(line);}
+                        String where=scene.id()+"@"+at.subtract(base).toShortString()+" "+lines;
+                        if(lines.stream().anyMatch(line->longNotices.contains(line)||archiveNames.contains(line)))stillLong.add(where);else gameSigns.add(where);
+                    }
+                }
+            }
+            TheOldestHouse.LOGGER.info("Architecture: the game's own signs left in the finished scenes, long notices to be lettered: {}",stillLong);
+            h.assertTrue(gameSigns.isEmpty(),"no finished scene has the game's own wooden sign with words typed on it: "+gameSigns);
+            // Every painted board stands whole, once; one on a wall has the wall behind it.
+            var boards=new java.util.EnumMap<io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign,Integer>(io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign.class);var boardAdrift=new ArrayList<String>();
+            for(var scene:LabyrinthPlace.values()){
+                var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
+                if(base==null||r==null||!level.isLoaded(base))continue;
+                for(var at:BlockPos.betweenClosed(base.offset(r.minX(),r.minY(),r.minZ()),base.offset(r.maxX(),r.maxY()+1,r.maxZ()))){
+                    var state=level.getBlockState(at);if(!io.github.knaitoe.theoldesthouse.labyrinth.BoardSignBlock.is(state))continue;
+                    var sign=io.github.knaitoe.theoldesthouse.labyrinth.BoardSignBlock.sign(state);boards.merge(sign,1,Integer::sum);
+                    var face=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.BoardSignBlock.FACING);var behind=at.relative(face.getOpposite());
+                    if(sign.mount!=io.github.knaitoe.theoldesthouse.labyrinth.BorrascaSigns.Mount.FREE&&!level.getBlockState(behind).isFaceSturdy(level,behind,face))
+                        boardAdrift.add(scene.id()+"@"+at.subtract(base).toShortString()+" "+sign+" before "+level.getBlockState(behind));
+                }
+            }
+            // (The graves' tags are built with each reader's own Drisking, not with the scenes; BorrascaTests holds them.)
+            for(var sign:io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign.values())if(!sign.name().startsWith("GRAVE_"))
+                h.assertTrue(boards.getOrDefault(sign,0)==sign.pieces(),"the "+sign+" board stands whole, once: "+boards.getOrDefault(sign,0)+" blocks of "+sign.pieces());
+            h.assertTrue(boardAdrift.isEmpty(),"every painted board on a wall has the wall behind it: "+boardAdrift);
             // 0.4.583 (the owner: a wall light that reads broken, a lamp floating over the flooded yard): every bulb in the yard is
             // held by something. It hangs from a block over it, is fixed to a wall behind it, or stands on a post that reaches the
             // ground (YardLights mounts each on what is round it once its room is built).
