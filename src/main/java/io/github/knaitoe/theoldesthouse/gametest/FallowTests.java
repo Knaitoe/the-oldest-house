@@ -197,6 +197,9 @@ public final class FallowTests {
         var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);var p=f.player("fallow_people_reader",P);var peer=f.player("fallow_people_peer",P);
         // 0.4.673: the afternoon's clock is held back, so that everyone stays at their places and says their first lines.
         h.startSequence().thenIdle(5).thenExecute(()->{Fallow.forget(b);Fallow.ensure(l,b);}).thenWaitUntil(()->{
+            // Run 1706: with the full suite loading round it, the five's entity section could come in after the one ensure above, and
+            // nothing put them there afterwards. Each look puts anyone missing at their place, as the station's own clock does.
+            Fallow.ensure(l,b);
             for(int who=0;who<Fallow.PEOPLE;who++)h.assertTrue(Fallow.find(l,b,who)!=null,"the "+who+"th is at their place");
             // 0.4.673 (the 0.4.672 release chain): the car is put up on the lift once its chunk's entities are in; with other cases
             // loading beside this one that was after the five were found, so it is waited for too.

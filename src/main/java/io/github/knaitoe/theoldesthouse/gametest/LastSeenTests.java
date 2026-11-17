@@ -137,6 +137,8 @@ public final class LastSeenTests {
             h.assertFalse(park.stream().anyMatch(c->c.getZ()<=LastSeenSite.PARK_N),"not out of the shut gate");
             LastSeen.ensure(l,b);
         }).thenWaitUntil(()->{
+            // Run 1706 (the same wait in Fallow's case): anyone whose section came in after the ensure above is put in place here.
+            LastSeen.ensure(l,b);
             for(int who=0;who<LastSeen.PEOPLE;who++)h.assertTrue(LastSeen.find(l,b,who)!=null,"the "+who+"th is at their place");
         }).thenExecute(()->{
             LastSeen.ensure(l,b);
