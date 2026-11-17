@@ -304,7 +304,7 @@ public final class KitchenVisitors {
         if(start.distanceToSqr(at(b,BEHIND[0]))>.01)path.add(at(b,BEHIND[0]));
         path.add(in);
         var chair=chair(l,b,in);
-        if(chair!=null){t.putLong("Chair",chair.subtract(b).asLong());var c=Vec3.atBottomCenterOf(chair);path.add(c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize()));path.add(c);}
+        if(chair!=null){t.putLong("Chair",chair.subtract(b).asLong());path.add(stepOut(l,b,chair));path.add(Vec3.atBottomCenterOf(chair));}
         else{t.remove("Chair");path.add(Vec3.atBottomCenterOf(b.offset(2,0,-5)));}
         WALKS.put(a.getUUID(),path);
         shared(s,t);return a;
@@ -320,15 +320,36 @@ public final class KitchenVisitors {
         for(var p:s.getPlayerList().getPlayers())if(p.isAlive()&&!p.isSpectator()&&LabyrinthDoors.placeOf(p,origin)==LabyrinthPlace.HOLLOWAY_CAMP)return true;
         return false;
     }
-    /** A free chair at the table: no one sitting in it or standing in it, the nearest the door. */
-    static @Nullable BlockPos chair(ServerLevel l,BlockPos b,Vec3 from){
-        BlockPos best=null;double bestD=Double.MAX_VALUE;var table=b.offset(FamiliarRoom.TABLE);
-        for(var at:BlockPos.betweenClosed(table.offset(-2,0,-2),table.offset(2,0,2))){
+    /**
+     * A free chair at the table: no one sitting in it or standing in it, the nearest the door. 0.4.659: the table has one chair at it
+     * now, and the kitchen's others stand against its walls; with none free at the table, a free one by a wall whose front is clear.
+     * Public for tests.
+     */
+    public static @Nullable BlockPos chair(ServerLevel l,BlockPos b,Vec3 from){
+        var table=b.offset(FamiliarRoom.TABLE);
+        var at=nearestFree(l,b,BlockPos.betweenClosed(table.offset(-2,0,-2),table.offset(2,0,2)),from);
+        return at!=null?at:nearestFree(l,b,BlockPos.betweenClosed(b.offset(-5,0,-14),b.offset(5,0,-1)),from);
+    }
+    private static @Nullable BlockPos nearestFree(ServerLevel l,BlockPos b,Iterable<BlockPos> cells,Vec3 from){
+        BlockPos best=null;double bestD=Double.MAX_VALUE;
+        for(var at:cells){
             if(!TraceBlock.is(l.getBlockState(at),TraceBlock.Kind.CHAIR))continue;var c=Vec3.atBottomCenterOf(at);
             if(!l.getEntitiesOfClass(Player.class,new AABB(at).inflate(.2,.5,.2)).isEmpty())continue;
+            var step=BlockPos.containing(stepOut(l,b,at));if(!l.getBlockState(step).getCollisionShape(l,step).isEmpty()||!l.getBlockState(step.above()).getCollisionShape(l,step.above()).isEmpty())continue;
             double d=c.distanceToSqr(from);if(d<bestD){bestD=d;best=at.immutable();}
         }
         return best;
+    }
+    /**
+     * 0.4.659: where a visitor stands to sit down in a chair and stands up out of it: behind a chair drawn up to the table, in front of
+     * one that is not (one by a wall has its back to it). A chair gone from where it was: a step back from it away from the table.
+     * Public for tests.
+     */
+    public static Vec3 stepOut(ServerLevel l,BlockPos b,BlockPos chair){
+        var c=Vec3.atBottomCenterOf(chair);var s=l.getBlockState(chair);
+        if(!TraceBlock.is(s,TraceBlock.Kind.CHAIR))return c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize());
+        var f=s.getValue(TraceBlock.FACING);var side=TraceBlock.is(l.getBlockState(chair.relative(f)),TraceBlock.Kind.TABLE)?f.getOpposite():f;
+        return c.add(side.getStepX(),0,side.getStepZ());
     }
     /** Steps toward the next point, a walking pace. Somebody just made behind the door stands there a moment first. */
     static void walk(ServerLevel l,LiteraryActor a){
@@ -338,11 +359,12 @@ public final class KitchenVisitors {
         double step=Math.min(.1,dist);float yaw=(float)Math.toDegrees(Math.atan2(-dx,dz));
         a.moveTo(at.x+dx/dist*step,to.y,at.z+dz/dist*step,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
     }
-    /** Into the chair, facing the table. */
+    /** Into the chair, facing the table; 0.4.659: or, in a chair that is not at it, the way the chair faces. */
     static void sit(ServerLevel l,BlockPos b,LiteraryActor a,CompoundTag t){
         WALKS.remove(a.getUUID());if(!t.contains("Chair"))return;var chair=b.offset(BlockPos.of(t.getLong("Chair")));
-        if(!TraceBlock.is(l.getBlockState(chair),TraceBlock.Kind.CHAIR))return;
+        var s=l.getBlockState(chair);if(!TraceBlock.is(s,TraceBlock.Kind.CHAIR))return;
         var c=Vec3.atBottomCenterOf(chair);var d=Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE)).subtract(c);float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z));
+        var f=s.getValue(TraceBlock.FACING);if(!TraceBlock.is(l.getBlockState(chair.relative(f)),TraceBlock.Kind.TABLE))yaw=f.toYRot();
         a.moveTo(c.x,c.y,c.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
     }
     /**
@@ -352,7 +374,7 @@ public final class KitchenVisitors {
     static void leave(ServerLevel l,BlockPos b,LiteraryActor a,CompoundTag t,int occ){
         var v=cast(a.phase());if(v!=null)speak(a,v.voice().leaving());
         var path=new ArrayList<Vec3>();
-        if(t.getInt("Stage")==SEATED&&t.contains("Chair")){var c=Vec3.atBottomCenterOf(b.offset(BlockPos.of(t.getLong("Chair"))));path.add(c.add(c.subtract(Vec3.atBottomCenterOf(b.offset(FamiliarRoom.TABLE))).normalize()));}
+        if(t.getInt("Stage")==SEATED&&t.contains("Chair"))path.add(stepOut(l,b,b.offset(BlockPos.of(t.getLong("Chair")))));
         path.add(at(b,IN_FRONT));path.add(at(b,BEHIND[0]));
         var aside=at(b,BEHIND[1]);if(l.noCollision(new AABB(aside.x-.3,aside.y,aside.z-.3,aside.x+.3,aside.y+1.8,aside.z+.3)))path.add(aside);
         WALKS.put(a.getUUID(),path);t.putInt("Stage",LEAVING);t.putInt("StageAt",occ);

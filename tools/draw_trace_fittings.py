@@ -204,6 +204,27 @@ def metal():
     return new(base='#55585a', seed=2347, spread=4)
 
 
+def china():
+    """0.4.659: the familiar kitchen's plain china. A plate seen from above in the top left five pixels, round at that size (its
+    four corners empty, so the table shows round it): a rim round a well, the well a shade lower toward its far side; the plate's
+    thin edge along row 7, empty at its ends as the top is at its corners; a glass from above at (8, 0) and its side below it."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rim, well, edge = '#e2ded3', '#eeeae0', '#c6c1b5'
+    for y in range(5):
+        for x in range(5):
+            if x in (0, 4) and y in (0, 4):
+                continue
+            dot(im, x, y, well if x in (1, 2, 3) and y in (1, 2, 3) else rim)
+    for x in (1, 2, 3):
+        dot(im, x, 3, shade(well, -5)[:3])
+    for x in (1, 2, 3):
+        dot(im, x, 7, edge)
+    dot(im, 8, 0, '#d4dde0')
+    for y in range(4, 6):
+        dot(im, 8, y, '#bcc6c9')
+    return im
+
+
 def wedge_item():
     """The wedge in profile: a long low triangle of worn wood, the thin edge to the left, its worn underside paler."""
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
@@ -237,7 +258,7 @@ def textures():
          'grit_0': grit(), 'grit_1': prints(grit, STONE), 'grit_2': other(grit, '#888a89'), 'grit_3': both(grit, STONE, '#888a89'),
          'grit_4': dragged(grit, ('#8b8d8c', '#7e807f')),
          'chair': wood(), 'table': wood('#6a4a30', 2349), 'table_top': wood('#74543a', 2351), 'sheet': sheet(), 'sheet_top': sheet_top(),
-         'brass': brass(), 'metal': metal(), 'wedge_side': wedge_side()}
+         'brass': brass(), 'metal': metal(), 'wedge_side': wedge_side(), 'china': china()}
     out.update({f'block/trace/{k}.png': v for k, v in t.items()})
     out['item/door_wedge.png'] = wedge_item()
     return out
@@ -274,8 +295,14 @@ def fitting_models():
                                 post(2), post(12),
                                 element([4, 15, 12.5], [12, 20, 13.5], {'all': 'w'}, {'north': [4, 1, 12, 6], 'south': [4, 1, 12, 6], 'east': [12.5, 1, 13.5, 6], 'west': [12.5, 1, 13.5, 6]})],
                          {'w': 'chair'}, 'chair')
-    m['table_0'] = model([element([x, 0, z], [x + 2, 13, z + 2], {'all': 't'}) for x in (1.5, 12.5) for z in (1.5, 12.5)]
-                         + [element([1, 13, 1], [15, 15, 15], {'all': 't', 'up': 'u'})], {'t': 'table', 'u': 'table_top'}, 'table')
+    table = ([element([x, 0, z], [x + 2, 13, z + 2], {'all': 't'}) for x in (1.5, 12.5) for z in (1.5, 12.5)]
+             + [element([1, 13, 1], [15, 15, 15], {'all': 't', 'up': 'u'})])
+    m['table_0'] = model(table, {'t': 'table', 'u': 'table_top'}, 'table')
+    # 0.4.659 (the second chair): the table laid for one at its north side (stage 1), and with a second place laid at the side
+    # opposite (2), at the next side clockwise seen from above (3), or at the next side anticlockwise (4).
+    laid = {'t': 'table', 'u': 'table_top', 'c': 'china', 'm': 'metal'}
+    for stage, turns in ((1, (0,)), (2, (0, 2)), (3, (0, 1)), (4, (0, 3))):
+        m[f'table_{stage}'] = model(table + [e for t in turns for e in setting(t)], laid, 'table')
     # Furniture under a dust sheet (0.4.240): one piece (stage 0), or a tall piece's lower block (1) and upper block (2), which meet
     # as one cloth; the hem flares a quarter pixel at the floor. Faces that reach past the block are mapped onto the texture.
     hem = element([-0.25, 0, -0.25], [16.25, 1, 16.25], {'north': 's', 'south': 's', 'east': 's', 'west': 's'},
@@ -294,8 +321,30 @@ def fitting_models():
     return m
 
 
+def setting(turn):
+    """0.4.659: one place laid at the table's north edge, turned a quarter turn clockwise (seen from above) `turn` times: a round
+    plate five pixels across between its fork and knife (the fork to the east, on the left of someone sitting at that edge), and a
+    glass beyond the plate toward the table's middle. A place keeps inside its own quarter of the top (the triangle between the
+    table's centre and that edge): where two places laid at neighbouring sides come nearest, only the plates' empty corners and the
+    ends of a knife and a fork meet, so nothing of one lies in another. Nothing has a face underneath, where it lies on the table's
+    own top."""
+    def turned(lo, hi):
+        (x1, y1, z1), (x2, y2, z2) = lo, hi
+        for _ in range(turn % 4):
+            x1, z1, x2, z2 = 16 - z2, x1, 16 - z1, x2
+        return [x1, y1, z1], [x2, y2, z2]
+    sides = ('north', 'south', 'east', 'west', 'up')
+    def piece(lo, hi, tex, up, side):
+        lo, hi = turned(lo, hi)
+        return element(lo, hi, {f: tex for f in sides}, {'up': up, **{f: side for f in sides if f != 'up'}})
+    return [piece([5.5, 15, 1.5], [10.5, 15.5, 6.5], 'c', [0, 0, 5, 5], [0, 7, 5, 8]),
+            piece([4.5, 15, 2], [5, 15.25, 4.5], 'm', [0, 0, 1, 3], [0, 0, 3, 1]),
+            piece([11, 15, 2], [11.5, 15.25, 4.5], 'm', [2, 0, 3, 3], [0, 2, 3, 3]),
+            piece([7.5, 15, 6.5], [8.5, 16.5, 7.5], 'c', [8, 0, 9, 1], [8, 4, 9, 6])]
+
+
 KINDS = ['dust', 'chair', 'table', 'sheet', 'hook', 'closer', 'grit']
-STAGES = {'dust': 5, 'grit': 5, 'sheet': 3}
+STAGES = {'dust': 5, 'grit': 5, 'sheet': 3, 'table': 5}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 5
 NAMES = {'block.the_oldest_house.trace_fitting': 'Furniture', 'block.the_oldest_house.trace_boards': 'Grey Boards',

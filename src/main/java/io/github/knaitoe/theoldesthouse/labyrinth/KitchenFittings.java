@@ -56,6 +56,12 @@ public final class KitchenFittings {
     public static final BlockPos STOVE=new BlockPos(-5,0,-11);
     public static final List<BlockPos> CUPBOARDS=List.of(new BlockPos(-5,3,-3),new BlockPos(-5,3,-4),new BlockPos(-5,3,-10),new BlockPos(-5,3,-11));
     public static final double[][] TABLE_SPOTS={{-.22,-.22},{.22,-.22},{-.22,.22},{.22,.22}};
+    /**
+     * 0.4.659: a place laid at the table (TraceBlock.places): its plate's centre, out from the table's centre toward its side, and the
+     * plate's top; the table's own top; and how large a thing set on a plate is drawn, to fit it.
+     */
+    static final double PLATE=4/16.,PLATE_TOP=15.5/16+.01,TOP=15/16.+.01;
+    static final float ON_PLATE=.3F,ON_TABLE=.5F;
     /** How long the stove takes, and how much it takes at once. */
     public static final int COOK=200,HOB=4;
     public static final String TABLE_TAG="the_oldest_house_kitchen_table",HOB_TAG="the_oldest_house_kitchen_hob";
@@ -232,14 +238,44 @@ public final class KitchenFittings {
             give(p,item(l,nearest));nearest.discard();
             l.playSound(null,t,SoundEvents.ITEM_PICKUP,SoundSource.PLAYERS,.4F,1F);return true;
         }
-        for(int i=0;i<TABLE_SPOTS.length;i++){
-            var spot=Vec3.atBottomCenterOf(t).add(TABLE_SPOTS[i][0],15/16.+.01,TABLE_SPOTS[i][1]);boolean taken=false;
+        // 0.4.659: onto the free spot nearest where the hand is: a plate laid at the table, or a corner clear of its places.
+        Vec3 to=null;double near=Double.MAX_VALUE;
+        for(var at:spots(l.getBlockState(t))){
+            var spot=Vec3.atBottomCenterOf(t).add(at);boolean taken=false;
             for(var d:lying)if(d.position().distanceToSqr(spot)<.01)taken=true;
-            if(taken)continue;
-            var put=hand.copy();hand.setCount(0);lay(l,spot,put,p.getYRot(),TABLE_TAG,.5F);
-            l.playSound(null,t,SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.4F,1.4F);return true;
+            double dd=spot.distanceToSqr(hit);if(!taken&&dd<near){near=dd;to=spot;}
         }
-        say(p,"There's no room left on the table.");return true;
+        if(to==null){say(p,"There's no room left on the table.");return true;}
+        var put=hand.copy();hand.setCount(0);lay(l,to,put,p.getYRot(),TABLE_TAG,onPlate(t,to)?ON_PLATE:ON_TABLE);
+        l.playSound(null,t,SoundEvents.WOOD_PLACE,SoundSource.BLOCKS,.4F,1.4F);return true;
+    }
+    /**
+     * 0.4.659: where things set down on the table lie, from the middle of its foot: on the plate of each place laid at it, then in
+     * its corners clear of those places (all four corners of a bare table).
+     */
+    public static List<Vec3> spots(net.minecraft.world.level.block.state.BlockState table){
+        var laid=TraceBlock.places(table);var out=new ArrayList<Vec3>();
+        for(var d:laid)out.add(new Vec3(d.getStepX()*PLATE,PLATE_TOP,d.getStepZ()*PLATE));
+        for(var c:TABLE_SPOTS){boolean clear=true;for(var d:laid)if(c[0]*d.getStepX()+c[1]*d.getStepZ()>0)clear=false;if(clear)out.add(new Vec3(c[0],TOP,c[1]));}
+        return out;
+    }
+    static boolean onPlate(BlockPos t,Vec3 spot){return spot.y-t.getY()>(PLATE_TOP+TOP)/2;}
+    /**
+     * 0.4.659: what lies on the table as it would be laid as {@code laid}: anything not on one of its spots goes to the nearest free
+     * one, keeping its turn, drawn to fit a plate or the bare top. False, and nothing moved, if there is not room for it all. With
+     * {@code dry} it only says whether there is.
+     */
+    static boolean reseat(ServerLevel l,BlockPos t,net.minecraft.world.level.block.state.BlockState laid,boolean dry){
+        var free=new ArrayList<Vec3>();for(var at:spots(laid))free.add(Vec3.atBottomCenterOf(t).add(at));
+        var astray=new ArrayList<Display.ItemDisplay>();
+        for(var d:lying(l,t)){Vec3 on=null;for(var spot:free)if(spot.distanceToSqr(d.position())<.01){on=spot;break;}if(on!=null)free.remove(on);else astray.add(d);}
+        if(astray.size()>free.size())return false;
+        if(dry)return true;
+        for(var d:astray){
+            Vec3 to=null;double near=Double.MAX_VALUE;for(var spot:free){double dd=spot.distanceToSqr(d.position());if(dd<near){near=dd;to=spot;}}
+            free.remove(to);var item=item(l,d);float yaw=d.getYRot();d.discard();lay(l,to,item,yaw,TABLE_TAG,onPlate(t,to)?ON_PLATE:ON_TABLE);
+        }
+        return true;
     }
     public static List<Display.ItemDisplay> lying(ServerLevel l,BlockPos table){return l.getEntitiesOfClass(Display.ItemDisplay.class,new AABB(table).inflate(.1,.6,.1),d->d.getTags().contains(TABLE_TAG));}
     /** The thing an item display shows, whole. */

@@ -228,6 +228,8 @@ public final class TraceRooms {
         if(place!=null){
             var data=LabyrinthData.get(p.server);var own=own(data,p.getUUID());var chairs=own.getCompound("Chairs");
             var at=new CompoundTag();at.putLong("At",to.asLong());var table=tableFacing(l,to,s.getValue(TraceBlock.FACING));if(table!=null)at.putLong("Table",table.asLong());
+            // 0.4.659: when, so the familiar kitchen's table can be laid for the chair drawn up to it last (FamiliarRoom.lay).
+            at.putLong("When",l.getGameTime());
             chairs.put(place.id(),at);own.put("Chairs",chairs);save(data,p.getUUID(),own);
         }
         return true;
