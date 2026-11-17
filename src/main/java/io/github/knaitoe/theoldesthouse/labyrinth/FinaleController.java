@@ -36,6 +36,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class FinaleController {
     private static final int FLAGS=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     public static final String GUIDE="HouseFinaleGuide";
+    /** 0.4.660: how far into the chamber a reader comes before the line about the bars, within reach of them (the gate is at 59). */
+    public static final int WARN_Z=52;
     private static final Map<UUID,Long> LAST_WORDS=new HashMap<>();
     private static final Map<UUID,Long> MISSING_CREATURES=new HashMap<>();
     private static final Map<MinecraftServer,MinotaurEntity> CAGED=new WeakHashMap<>();
@@ -144,8 +146,11 @@ public final class FinaleController {
             if(player.getY()>FinaleArchitecture.TOP-2&&Math.abs(player.getX()-b.getX())<=3
                     &&z>FinaleArchitecture.STAIR_RADIUS+2.7&&record.getBoolean("Inside")){FinaleProgress.save(player.server,player.getUUID(),record);returnFromStaircase(player);return true;}
             if(player.tickCount%40==0){ensureWitness(player.serverLevel(),origin);if(player.getY()<FinaleArchitecture.ARENA+16)ensureCaged(player.serverLevel(),origin);}
-            if(player.getY()<FinaleArchitecture.ARENA+4&&z>31&&!record.getBoolean("Warned")){
-                record.putBoolean("Warned",true);words(player,b.offset(0,FinaleArchitecture.ARENA+2,35),"Use the bars to open the cell. The stairs still lead back. The cell does not.");
+            // 0.4.660: the foot of the stair is quiet. A hush, then the creature growls once from the cell (StairFoot); the one line
+            // about the bars waits until the reader is near enough to use them (it was said on stepping off the stair).
+            if(StairFoot.tick(player,origin,record,now))FinaleProgress.save(player.server,player.getUUID(),record);
+            if(player.getY()<FinaleArchitecture.ARENA+4&&z>WARN_Z&&!record.getBoolean("Warned")){
+                record.putBoolean("Warned",true);FinaleProgress.save(player.server,player.getUUID(),record);words(player,b.offset(0,FinaleArchitecture.ARENA+2,WARN_Z+3),"Use the bars to open the cell. The stairs still lead back. The cell does not.");
             }
         }else if(phase==FinaleProgress.Phase.HOMEWARD){
             WitnessEnding.returnWeapon(player,record);StairCompany.home(player,origin);
@@ -554,6 +559,8 @@ public final class FinaleController {
         return false;
     }
     /** A kept reader leaving the game takes the door with them; it is put back when they return to the cell. */
+    /** 0.4.660: a reader who logs out at the foot of the stair starts its hush again when they come back. */
+    @SubscribeEvent public static void footLeave(PlayerEvent.PlayerLoggedOutEvent event){StairFoot.forget(event.getEntity().getUUID());}
     @SubscribeEvent public static void keptLeave(PlayerEvent.PlayerLoggedOutEvent event){
         if(!(event.getEntity() instanceof ServerPlayer player)||FinaleProgress.phase(player.server,player.getUUID())!=FinaleProgress.Phase.IMPRISONED)return;
         BlockPos origin=HouseSavedData.get(player.server).houseOrigin();ServerLevel interior=player.server.getLevel(HouseDimensions.INTERIOR);

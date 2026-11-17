@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.659** lets a reader answer the House with a chair, as the owner suggested. The House's own kitchen is laid for one now, where its one chair stands. A chair a reader draws up to another side of the table is laid for the next time nobody is there to see: a plate, a knife and fork and a cup at that place. Pulled away again, the place is cleared the same way. Nothing is said about it. `docs/SECOND_CHAIR_0_4_659.md`.
+Development candidate **0.4.660** answers the owner's question about fanfare at the foot of the great staircase: none. When a reader comes off the last tread into the chamber before the cell, the descent's score dies away and the growls that followed them down stop. After five seconds' quiet the creature growls once, from the cell, for that reader alone. The chamber's two lanterns hang at the cell's gate now, so what is lit there is the bars, and the one line about the bars waits until the reader is a few steps short of them. `docs/STAIR_FOOT_0_4_660.md`.
 
-Previous: 0.4.658 let a room remember where a reader turned back: in Ted the Caver's cave, one more torch just beyond the furthest place they reached, the House's. `docs/TURNED_BACK_0_4_658.md`.
+Previous: 0.4.659 let a reader answer the House with a chair: a chair drawn up to the House's own kitchen table is laid for, the next time nobody is there to see. `docs/SECOND_CHAIR_0_4_659.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

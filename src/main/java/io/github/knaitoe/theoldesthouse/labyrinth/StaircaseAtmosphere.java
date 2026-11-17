@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.*;
 import io.github.knaitoe.theoldesthouse.network.*;
 import java.util.*;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.*;
 import net.minecraft.nbt.CompoundTag;
@@ -31,7 +32,7 @@ public final class StaircaseAtmosphere {
         var server=e.getServer();if(server.getTickCount()%20!=0)return;
         var origin=HouseSavedData.get(server).houseOrigin();var level=server.getLevel(HouseDimensions.INTERIOR);if(origin==null||level==null)return;
         Map<Integer,List<ServerPlayer>> sections=new TreeMap<>();
-        for(var p:level.players())if(p.isAlive()&&!p.isSpectator()&&FinaleArchitecture.contains(origin,p.blockPosition())){
+        for(var p:level.players())if(hears(origin,p)){
             var phase=FinaleProgress.phase(server,p.getUUID());
             if(phase==FinaleProgress.Phase.STAIRCASE||phase==FinaleProgress.Phase.HOMEWARD)
                 sections.computeIfAbsent(Math.floorDiv(FinaleArchitecture.TOP-p.blockPosition().getY(),128),ignored->new ArrayList<>()).add(p);
@@ -63,6 +64,13 @@ public final class StaircaseAtmosphere {
             }
             for(var id:entry.getValue().stream().map(StaircaseAtmosphere::section).distinct().toList())data.setStateEntry(STATE,origin.asLong()+":"+id,clock.copy());
         }
+    }
+    /**
+     * Whether a reader is somewhere the descent's growls reach: alive, not watching, in the staircase's rooms, and (0.4.660) not at
+     * its foot, where nothing growls but the creature in its cell, once (StairFoot). Public for tests.
+     */
+    public static boolean hears(BlockPos origin,ServerPlayer p){
+        return p.isAlive()&&!p.isSpectator()&&FinaleArchitecture.contains(origin,p.blockPosition())&&!FinaleArchitecture.atFoot(origin,p.position());
     }
     private static int section(ServerPlayer p){return Math.floorDiv(FinaleArchitecture.TOP-p.blockPosition().getY(),128);}
     private static int root(Map<Integer,Integer> parents,int id){while(parents.get(id)!=id)id=parents.get(id);return id;}

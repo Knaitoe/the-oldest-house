@@ -49,6 +49,16 @@ public final class FinaleArchitecture {
                 ||(x<=32&&z>=69&&z<=122&&y>=-28&&y<=23)
                 ||StaircaseMazes.inArea(b,pos);
     }
+    /**
+     * 0.4.660: the foot of the stair, off its last tread: the chamber before the cell (the cell itself included), where the stair's
+     * dark, its score and its growls stop (StaircaseFire.off, StaircaseScore, StaircaseAtmosphere, StairFoot).
+     */
+    public static boolean atFoot(BlockPos manor,Vec3 at){
+        BlockPos b=base(manor);
+        return Math.abs(at.x-b.getX()-.5)<=17.5&&at.y>=ARENA-2&&at.y<ARENA+14&&at.z>=b.getZ()+30&&at.z<b.getZ()+70;
+    }
+    /** 0.4.660: the chamber's two lanterns, hung either side of the cell's gate, clear above the creature's horns. */
+    public static List<BlockPos> gateLamps(BlockPos manor){BlockPos b=base(manor);return List.of(b.offset(-GATE_HALF-2,ARENA+GATE_HIGH-1,57),b.offset(GATE_HALF+2,ARENA+GATE_HIGH-1,57));}
     public static BlockPos entry(BlockPos manor){return base(manor).offset(0,TOP,STAIR_RADIUS+2);}
     public static BlockPos cell(BlockPos manor) { return base(manor).offset(0, ARENA, 59); }
     public static BlockPos lectern(BlockPos manor) { return base(manor).offset(-4, ARENA, 56); }
@@ -159,7 +169,7 @@ public final class FinaleArchitecture {
         if(pos.getZ()==b.getZ()+29&&Math.abs(pos.getX()-b.getX())<=GATE_HALF&&pos.getY()>=ARENA&&pos.getY()<ARENA+GATE_HIGH)return true;
         if(pos.getZ()>=b.getZ()+35)return true;
         return pos.equals(b.offset(-10,ARENA,39))||pos.equals(lectern(manor))||pos.equals(exit(manor).above(2))
-                ||pos.equals(b.offset(0,TOP,18))||pos.equals(b.offset(-14,ARENA+4,35))||pos.equals(b.offset(14,ARENA+4,47));
+                ||pos.equals(b.offset(0,TOP,18))||gateLamps(manor).contains(pos);
     }
     public static List<Placement> plan(BlockPos manor) {
         BlockPos b=base(manor); LinkedHashMap<BlockPos,BlockState> blocks=new LinkedHashMap<>();
@@ -417,8 +427,10 @@ public final class FinaleArchitecture {
     }
     private static void lightArchitecture(ServerLevel level,BlockPos manor){
         BlockPos b=base(manor);
-        // Sparse practical light ends before the cell; chains give every fixture a real attachment.
-        for(BlockPos lamp:List.of(b.offset(0,TOP+2,30),b.offset(-14,ARENA+4,35),b.offset(14,ARENA+4,47))){
+        // Sparse practical light; chains give every fixture a real attachment. 0.4.660: the chamber's two hang at the cell's gate, so
+        // what a reader sees lit at the foot of the stair is the bars (they hung by the chamber's side walls until then).
+        var lamps=new ArrayList<BlockPos>();lamps.add(b.offset(0,TOP+2,30));lamps.addAll(gateLamps(manor));
+        for(BlockPos lamp:lamps){
             level.setBlock(lamp,Blocks.SOUL_LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true),FLAGS);
             int ceiling=lamp.getY()>TOP?TOP+4:ARENA+13;
             for(int y=lamp.getY()+1;y<ceiling;y++)level.setBlock(new BlockPos(lamp.getX(),y,lamp.getZ()),Blocks.CHAIN.defaultBlockState(),FLAGS);

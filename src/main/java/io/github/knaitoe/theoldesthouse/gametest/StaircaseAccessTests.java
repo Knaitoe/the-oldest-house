@@ -669,4 +669,64 @@ public final class StaircaseAccessTests {
             h.succeed();
         });
     }
+    /** 0.4.660: no fanfare at the foot of the stair (docs/STAIR_FOOT_0_4_660.md). The growls that followed the reader down stop there;
+     *  after a hush the creature growls once from the cell, once for each reader; the chamber's lanterns hang at the gate above the
+     *  creature's head; the line about the bars waits until the reader is near enough to use them. */
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
+    public static void theFootOfTheStairIsQuietUntilTheCellAnswers(GameTestHelper h){
+        run(h,601000,f->f.chunks.hold(f.level,new AABB(f.base.getX()-18,FinaleArchitecture.ARENA-2,f.base.getZ()+20,f.base.getX()+18,FinaleArchitecture.ARENA+14,f.base.getZ()+70)),f->{
+            var server=f.level.getServer();var b=f.base;int floor=FinaleArchitecture.ARENA;
+            Vec3 doorway=new Vec3(b.getX()+.5,floor,b.getZ()+30.5),middle=new Vec3(b.getX()+.5,floor,b.getZ()+40.5),bars=new Vec3(b.getX()+.5,floor,b.getZ()+56.5);
+            h.assertTrue(FinaleArchitecture.atFoot(f.origin,doorway)&&FinaleArchitecture.atFoot(f.origin,middle)&&FinaleArchitecture.atFoot(f.origin,FinaleArchitecture.cellSpot(f.origin)),
+                    "the chamber from the doorway off the stair to the cell is the foot");
+            h.assertFalse(FinaleArchitecture.atFoot(f.origin,new Vec3(b.getX()+.5,floor,b.getZ()+29.5))||FinaleArchitecture.atFoot(f.origin,middle.add(0,20,0))||FinaleArchitecture.atFoot(f.origin,middle.add(20,0,0)),
+                    "the stair's last steps, the well above the chamber and beyond its walls are not");
+            var first=f.player(h,"foot_first");var second=f.player(h,"foot_second");
+            for(var p:List.of(first,second)){
+                f.enter(p);FinaleProgress.phase(server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);
+                var record=FinaleProgress.player(server,p.getUUID());record.putInt("StairFires",StaircaseFire.REQUIRED);FinaleProgress.save(server,p.getUUID(),record);p.tickCount=1;
+            }
+            // The growls that followed them down.
+            var stair=Vec3.atBottomCenterOf(FinaleArchitecture.staircaseRoute(f.origin).get(400));
+            first.teleportTo(f.level,stair.x,stair.y,stair.z,0,0);
+            h.assertTrue(StaircaseAtmosphere.hears(f.origin,first),"on the stair a reader hears the descent's growls");
+            first.teleportTo(f.level,middle.x,middle.y,middle.z,0,0);
+            h.assertFalse(StaircaseAtmosphere.hears(f.origin,first),"at the foot they stop");
+            // The real tick: standing at the foot starts the hush; the line about the bars waits.
+            long t0=f.level.getGameTime();
+            FinaleController.tickPlayer(first,f.origin);
+            var record=FinaleProgress.player(server,first.getUUID());
+            h.assertTrue(StairFoot.standing(first,t0)==0&&!record.getBoolean(StairFoot.HEARD),"the finale's tick starts the hush at the foot, and nothing is heard yet");
+            h.assertFalse(record.getBoolean("Warned"),"nothing is said in the middle of the chamber");
+            // The hush, then the growl, once.
+            for(long t=t0+1;t<t0+StairFoot.HUSH;t++)h.assertFalse(StairFoot.tick(first,f.origin,record,t),"no growl before the hush is over ("+(t-t0)+" ticks)");
+            h.assertTrue(StairFoot.tick(first,f.origin,record,t0+StairFoot.HUSH)&&record.getBoolean(StairFoot.HEARD),"after the hush the cell answers");
+            for(long t=t0+StairFoot.HUSH+1;t<t0+StairFoot.HUSH*4;t+=7)h.assertFalse(StairFoot.tick(first,f.origin,record,t),"only once");
+            first.teleportTo(f.level,stair.x,stair.y,stair.z,0,0);StairFoot.tick(first,f.origin,record,t0+StairFoot.HUSH*5);
+            first.teleportTo(f.level,middle.x,middle.y,middle.z,0,0);
+            for(long t=t0+StairFoot.HUSH*5+1;t<t0+StairFoot.HUSH*7;t++)h.assertFalse(StairFoot.tick(first,f.origin,record,t),"not again after going back up and coming down");
+            // The second reader goes back up before the hush is over, and later stands away a while: each time the hush starts again.
+            second.teleportTo(f.level,middle.x,middle.y,middle.z,0,0);var other=FinaleProgress.player(server,second.getUUID());
+            for(long t=t0;t<t0+StairFoot.HUSH-10;t++)h.assertFalse(StairFoot.tick(second,f.origin,other,t),"the second reader's own hush");
+            second.teleportTo(f.level,stair.x,stair.y,stair.z,0,0);
+            h.assertFalse(StairFoot.tick(second,f.origin,other,t0+StairFoot.HUSH-9)||StairFoot.standing(second,t0+StairFoot.HUSH-9)>=0,"back on the stair, the hush is forgotten");
+            second.teleportTo(f.level,middle.x,middle.y,middle.z,0,0);long back=t0+StairFoot.HUSH;
+            for(long t=back;t<back+StairFoot.HUSH-5;t++)h.assertFalse(StairFoot.tick(second,f.origin,other,t),"coming down again takes a whole hush");
+            long gap=back+StairFoot.HUSH+30;
+            for(long t=gap;t<gap+StairFoot.HUSH;t++)h.assertFalse(StairFoot.tick(second,f.origin,other,t),"after more than a second unseen the hush starts again");
+            h.assertTrue(StairFoot.tick(second,f.origin,other,gap+StairFoot.HUSH)&&other.getBoolean(StairFoot.HEARD),"and the cell answers them too, in their own time");
+            // Near the bars, the one line.
+            first.teleportTo(f.level,bars.x,bars.y,bars.z,0,0);FinaleController.tickPlayer(first,f.origin);
+            h.assertTrue(FinaleProgress.player(server,first.getUUID()).getBoolean("Warned")&&FinaleController.WARN_Z+3<59&&59-FinaleController.WARN_Z>5,
+                    "the line about the bars comes a few steps short of them, where it is read before they can be reached");
+            // The lanterns at the gate.
+            var creature=FinaleRegistry.MINOTAUR.get().create(f.level);float tall=creature.getBbHeight();creature.discard();
+            for(var lamp:FinaleArchitecture.gateLamps(f.origin)){
+                h.assertTrue(lamp.getY()-floor>tall&&lamp.getY()<floor+13,"each gate lantern hangs above the creature's head and below the ceiling ("+(lamp.getY()-floor)+" over the floor, the creature "+tall+")");
+                h.assertTrue(Math.abs(lamp.getX()-b.getX())>FinaleArchitecture.GATE_HALF&&lamp.getZ()-b.getZ()<59&&lamp.getZ()-b.getZ()>=55,"each beside the gate, before the bars");
+            }
+            var words=new ArrayList<Entity>();for(var e:f.level.getAllEntities())if(e!=null&&e.getTags().contains("HouseFinaleWords")&&FinaleArchitecture.contains(f.origin,e.blockPosition()))words.add(e);
+            words.forEach(Entity::discard);
+        });
+    }
 }
