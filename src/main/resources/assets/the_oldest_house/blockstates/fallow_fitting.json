@@ -3010,7 +3010,7 @@
       "model": "the_oldest_house:block/fallow/crock_2"
     },
     "facing=north,kind=crock,stage=3": {
-      "model": "the_oldest_house:block/fallow/crock_0"
+      "model": "the_oldest_house:block/fallow/crock_3"
     },
     "facing=north,kind=crock,stage=4": {
       "model": "the_oldest_house:block/fallow/crock_0"
@@ -3037,7 +3037,7 @@
       "y": 90
     },
     "facing=east,kind=crock,stage=3": {
-      "model": "the_oldest_house:block/fallow/crock_0",
+      "model": "the_oldest_house:block/fallow/crock_3",
       "y": 90
     },
     "facing=east,kind=crock,stage=4": {
@@ -3069,7 +3069,7 @@
       "y": 180
     },
     "facing=south,kind=crock,stage=3": {
-      "model": "the_oldest_house:block/fallow/crock_0",
+      "model": "the_oldest_house:block/fallow/crock_3",
       "y": 180
     },
     "facing=south,kind=crock,stage=4": {
@@ -3101,7 +3101,7 @@
       "y": 270
     },
     "facing=west,kind=crock,stage=3": {
-      "model": "the_oldest_house:block/fallow/crock_0",
+      "model": "the_oldest_house:block/fallow/crock_3",
       "y": 270
     },
     "facing=west,kind=crock,stage=4": {

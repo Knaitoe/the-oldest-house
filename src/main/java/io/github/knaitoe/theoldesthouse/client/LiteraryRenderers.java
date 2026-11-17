@@ -612,6 +612,8 @@ public final class LiteraryRenderers {
             // An actor placed in a chair sits in it: hips on the seat, legs forward. 0.4.527: the model is drawn at the actor's scale,
             // so a child's hips are lowered by the seat's height over that scale; a full-sized drop sank them into the seat.
             var chair=seat(a);if(chair!=null){sit(chair.seatHeight(),a.getScale());if(chair.facing()!=null){float front=chair.facing().toYRot();head.yRot=net.minecraft.util.Mth.wrapDegrees(front+net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(a.yBodyRot+yaw-front),-LiteraryActor.HEAD_TURN,LiteraryActor.HEAD_TURN)-a.yBodyRot)*net.minecraft.util.Mth.DEG_TO_RAD;}hat.copyFrom(head);}
+            // 0.4.681: sat on the cellar's floor in Fallow's buried days; after the seat has lowered them and put the legs out.
+            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Fallow.cast(a.phase()))fallowSat(a.gesture(),age,a.getId());
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.cast(a.phase()))lodging(a.gesture(),age,a.speaking()>0);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.LongerRowan.cast(a.phase()))longer(a.gesture(),age,a.speaking()>0);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.KingBrothers.cast(a.phase()))brothers(a.gesture(),age,a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.KingBrothers.DUM,a.speaking()>0);
@@ -1110,6 +1112,31 @@ public final class LiteraryRenderers {
                     rightArm.xRot=-1.25F;rightArm.yRot=-.2F;rightArm.zRot=.35F+tip;leftArm.xRot=-.95F;leftArm.yRot=.35F;leftArm.zRot=0;head.xRot=.35F;
                 }
                 default->{}
+            }
+            hat.copyFrom(head);
+        }
+        /**
+         * 0.4.681, Fallow's buried days (labyrinth.FallowBuried): sat on the cellar's floor, the legs out in front and the hands on the
+         * thighs, the head a little down, breathing; and dozing there at night, slumped,
+         * the arms folded in the lap and the head down on the chest, tipped to one side. Each breathes on their own count.
+         */
+        void fallowSat(int gesture,float age,int id){
+            if(gesture!=io.github.knaitoe.theoldesthouse.labyrinth.Fallow.SIT&&gesture!=io.github.knaitoe.theoldesthouse.labyrinth.Fallow.DOZE)return;
+            float breath=net.minecraft.util.Mth.sin((age+id*13)*.07F);
+            // The legs are one piece each, so on a floor they lie flat out in front, and the hips sit a thigh's half-thickness up (two
+            // pixels of the model's own) so the backs of the legs rest on the boards rather than through them, at any scale.
+            float lift=leftLeg.y-22;for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg})part.y-=lift;
+            leftLeg.xRot=rightLeg.xRot=-(float)Math.PI/2;leftLeg.yRot=-.18F;rightLeg.yRot=.18F;
+            if(gesture==io.github.knaitoe.theoldesthouse.labyrinth.Fallow.SIT){
+                body.xRot=.05F+breath*.01F;
+                // The hands down on the thighs.
+                rightArm.xRot=leftArm.xRot=-.62F;rightArm.yRot=-.12F;leftArm.yRot=.12F;rightArm.zRot=.06F;leftArm.zRot=-.06F;
+                head.xRot=.18F+breath*.02F;head.zRot=0;
+            }else{
+                // The torso hangs from the neck in this model, so a slump is the head and arms come forward rather than the torso tipped.
+                body.xRot=.1F+breath*.012F;head.z-=1.2F;rightArm.z-=.6F;leftArm.z-=.6F;
+                rightArm.xRot=-.7F;leftArm.xRot=-.62F;rightArm.yRot=-.62F;leftArm.yRot=.58F;rightArm.zRot=leftArm.zRot=0;
+                head.xRot=.72F+breath*.03F;head.yRot=0;head.zRot=(id&1)==0?.16F:-.16F;
             }
             hat.copyFrom(head);
         }

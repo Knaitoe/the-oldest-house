@@ -5,7 +5,9 @@ playing a ball game a long way off, and the bell on the pump. Nothing in them is
 0.4.673 adds the afternoon's: the register ringing up a sale, a wrench working under the car on the lift, coins left on the counter.
 0.4.674 adds the four minutes': the radio's two-note tone, the pads' lids grinding open, a launch, a siren a long way off, the light,
 and the ground shaking over the cellar. 0.4.680 adds what the light leaves: the canopy's sheets and columns coming down over the
-pumps, the store falling in on itself, and the fall of it landing on the cellar doors, heard from under them.
+pumps, the store falling in on itself, and the fall of it landing on the cellar doors, heard from under them. 0.4.681 adds the buried
+days': the cellar's timbers creaking as they settle, the lantern's wick turned, a match struck, a stroke at the doors from under them and
+the doors giving.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -31,6 +33,11 @@ ROWS = {
     'canopy': ('Sheet metal comes down with a crash', 32),
     'collapse': ('A building falls in', 32),
     'debris': ('Rubble lands on the doors overhead', 16),
+    'settle': ('The cellar creaks and settles', 16),
+    'wick': ('A lantern wick is turned', 8),
+    'match': ('A match is struck', 8),
+    'dig': ('Rubble is dug at overhead', 16),
+    'give': ('The cellar doors give', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -316,9 +323,83 @@ def debris():
     return (out + pour) * edge
 
 
+def settle():
+    # 0.4.681, below in the buried days: the roof's timbers taking the weight on them, a long low creak that bends as it goes, a second
+    # shorter one answering, and a run of dirt sifting down out of the planks onto the floor.
+    n = seconds(3.2)
+    t = times(n)
+    out = np.zeros(n)
+    for at, length, f0, f1, level in ((.1, 1.4, 96, 74, 1.0), (1.7, .7, 128, 110, .6)):
+        x = t - at
+        on = (x >= 0) & (x < length)
+        f = f0 + (f1 - f0) * np.clip(x / length, 0, 1)
+        phase = 2 * np.pi * np.cumsum(f) / RATE
+        grain = 1 + .5 * band(rng.standard_normal(n), 20, 60) * 6
+        env = np.sin(np.pi * np.clip(x / length, 0, 1)) * on
+        out += (np.sin(phase) + .35 * np.sin(2 * phase) + .2 * np.sin(3.1 * phase)) * grain * env * level * .5
+    out += band(rng.standard_normal(n), 300, 1200) * np.abs(band(rng.standard_normal(n), 3, 14)) * 4 * .25 * np.clip((t - .3) / .2, 0, 1) * np.exp(-np.clip(t - .3, 0, None) / 1.2)
+    sift = band((rng.random(n) < .02) * rng.standard_normal(n), 2500, 9000) * .5 * np.clip((t - 1.2) / .4, 0, 1) * np.clip((3.2 - t) / 1.0, 0, 1)
+    edge = np.clip(t / .05, 0, 1) * np.clip((3.2 - t) / .3, 0, 1)
+    return (out + sift) * edge
+
+
+def wick():
+    # The lantern's wick turned: four small clicks of its toothed wheel against the burner's tin, close together, and the faint tick of
+    # the chimney settling after.
+    n = seconds(.7)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((.02, 1.0), (.11, .8), (.19, .9), (.28, .6), (.52, .25)):
+        x = t - at
+        out += band(rng.standard_normal(n), 2500, 8000) * np.exp(-np.clip(x, 0, None) / .006) * level * (x >= 0)
+        out += np.sin(2 * np.pi * 3100 * x) * np.exp(-np.clip(x, 0, None) / .01) * level * .3 * (x >= 0)
+    return out * np.clip((.7 - t) / .1, 0, 1)
+
+
+def match():
+    # A match struck: its head dragged across the striker, a rasp that catches into a hiss of flame, and the flame steadying.
+    n = seconds(1.4)
+    t = times(n)
+    rasp = band(rng.standard_normal(n), 1500, 7000) * (np.abs(band(rng.standard_normal(n), 30, 80)) * 8) * (t < .18) * np.clip(t / .02, 0, 1)
+    x = t - .17
+    flare = band(rng.standard_normal(n), 400, 5000) * np.exp(-np.clip(x, 0, None) / .14) * 1.6 * (x >= 0)
+    burn = band(rng.standard_normal(n), 150, 1500) * .35 * np.clip(x / .1, 0, 1) * (x >= 0) * np.clip((1.4 - t) / .5, 0, 1)
+    return rasp + flare + burn
+
+
+def dig():
+    # A stroke at the doors from under them: a shoulder or both hands driven up against the boards, a dull wooden thud, the fall on
+    # them grinding as it shifts, and grit pattering down into the well after.
+    n = seconds(1.6)
+    t = times(n)
+    thud = (band(rng.standard_normal(n), 45, 300) * 1.6 + np.sin(2 * np.pi * 92 * t) * .7) * np.exp(-t / .07)
+    grind = band(rng.standard_normal(n), 120, 1800) * np.abs(band(rng.standard_normal(n), 4, 20)) * 6 * .35 * np.clip((t - .05) / .08, 0, 1) * np.exp(-np.clip(t - .1, 0, None) / .35)
+    grit = band((rng.random(n) < .015) * rng.standard_normal(n), 2500, 9000) * .6 * np.clip((t - .15) / .1, 0, 1) * np.clip((1.6 - t) / .7, 0, 1)
+    edge = np.clip(t / .003, 0, 1) * np.clip((1.6 - t) / .2, 0, 1)
+    return (thud + grind + grit) * edge
+
+
+def give():
+    # The doors giving: the leaves heaved up under the last of the fall with a long groan of wood, the rubble sliding off them in a roar
+    # that thins, the leaves slamming back over onto the yard, and a little more coming down after.
+    n = seconds(3.6)
+    t = times(n)
+    f = 70 + 40 * np.clip(t / 1.1, 0, 1)
+    phase = 2 * np.pi * np.cumsum(f) / RATE
+    groan = (np.sin(phase) + .4 * np.sin(2.03 * phase)) * np.clip(t / .3, 0, 1) * (t < 1.2) * np.clip((1.2 - t) / .2, 0, 1) * .6
+    slide = band(rng.standard_normal(n), 80, 3200) * np.clip((t - .8) / .3, 0, 1) * np.exp(-np.clip(t - 1.1, 0, None) / .7) * 1.4
+    x = t - 1.55
+    slam = (band(rng.standard_normal(n), 40, 900) * 1.8 + np.sin(2 * np.pi * 64 * x) * .8) * np.exp(-np.clip(x, 0, None) / .1) * (x >= 0)
+    y = t - 1.95
+    slam2 = (band(rng.standard_normal(n), 40, 900) * 1.2 + np.sin(2 * np.pi * 71 * y) * .6) * np.exp(-np.clip(y, 0, None) / .09) * (y >= 0)
+    after = band((rng.random(n) < .01) * rng.standard_normal(n), 1500, 8000) * .5 * np.clip((t - 2.0) / .2, 0, 1) * np.clip((3.6 - t) / 1.0, 0, 1)
+    edge = np.clip(t / .01, 0, 1) * np.clip((3.6 - t) / .3, 0, 1)
+    return (groan + slide + slam + slam2 + after) * edge
+
+
 MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
           'tone': tone, 'lids': lids, 'launch': launch, 'siren': siren, 'blast': blast, 'rumble': rumble, 'canopy': canopy,
-          'collapse': collapse, 'debris': debris}
+          'collapse': collapse, 'debris': debris, 'settle': settle, 'wick': wick, 'match': match, 'dig': dig, 'give': give}
 
 
 def main():

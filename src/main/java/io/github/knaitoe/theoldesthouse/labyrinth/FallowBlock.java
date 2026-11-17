@@ -34,7 +34,7 @@ import net.minecraft.world.phys.shapes.*;
  * a clothesline post (4) and its lines (5), a barrel (6), the yard's wire fence (7). CELLAR: the cellar doors shut, two flat leaves on a low
  * concrete curb, the left leaf's three lengths from the south end (0-2) and the right's (3-5); CELLAR_OPEN the same, thrown back over
  * the curb onto the yard. SHELF: a cellar shelf of jars (0)
- * or tins (1). COT: its head (0) and foot (1). CROCK: the water crock (0), the lantern lit (1) and dark (2).</li>
+ * or tins (1). COT: its head (0) and foot (1). CROCK: the water crock (0), the lantern lit (1) and dark (2); 0.4.681, turned low (3).</li>
  * <li>Across the road. FARM: a farmhouse window (0), a porch post (1), the porch rail (2), the mailbox on its post (3).</li>
  * <li>The rig. RIG: a slice of the cab, each drawn whole across both its cells: the hood (0, 1), the cab (2, 3), the sleeper (4, 5),
  * the roof over the cab and sleeper (6), and the other half of a slice, which only stands in the way (7). BOX: the trailer's two axles
@@ -43,7 +43,8 @@ import net.minecraft.world.phys.shapes.*;
  * cup (2), grown long and thin in the dark (3). Nothing stands in its way.</li>
  * <li>0.4.680, RUBBLE: what the light leaves of the station. A low spread of the store (0), a heap of it (1), the shut cellar doors with
  * the store come down on them (2), a joist fallen across a spread (3), a sheet of the canopy's deck down on the forecourt, buckled (4),
- * another leaning on what caught it (5), a column of the canopy lying down (6), a fallen run of the store's wall (7).</li>
+ * another leaning on what caught it (5), a column of the canopy lying down (6), a fallen run of the store's wall (7). 0.4.681: the fall
+ * over the doors (2) lets no light through.</li>
  * </ul>
  */
 public final class FallowBlock extends HorizontalDirectionalBlock {
@@ -62,6 +63,8 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     public static final int RIPE=0,BOWED=1,STUBBLE=2,ASH=3;
     /** A window's halves, whole and blown in. */
     public static final int PANE_LOW=0,PANE_HIGH=1,BLOWN_LOW=2,BLOWN_HIGH=3;
+    /** 0.4.681: the lantern's stages (CROCK): lit, dark, and turned low (FallowBuried). */
+    public static final int LANTERN_LIT=1,LANTERN_DARK=2,LANTERN_LOW=3;
     /** Rubble's stages. */
     public static final int SPREAD=0,HEAP=1,ON_DOORS=2,JOIST=3,SHEET=4,LEANING=5,COLUMN=6,WALL=7;
     public FallowBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.COUNTER).setValue(STAGE,0));}
@@ -75,7 +78,7 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
         int stage=s.getValue(STAGE);
         return switch(s.getValue(KIND)){
             case TUBE->14;case CANOPY->stage==1?14:0;case COOLER->stage>=1?9:0;case PUMP->stage==1||stage==3?6:0;case TV->stage==PICTURE||stage==CARD?5:0;
-            case PAD->stage==4?12:0;case CROCK->stage==1?12:0;
+            case PAD->stage==4?12:0;case CROCK->stage==LANTERN_LIT?12:stage==LANTERN_LOW?6:0;
             default->0;
         };
     }
@@ -139,6 +142,10 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     }
     @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos p){
         var k=s.getValue(KIND);int stage=s.getValue(STAGE);
-        return !(k==Kind.COUNTER&&stage!=2||k==Kind.RIG||k==Kind.BOX||k==Kind.TRAILER&&stage==0||k==Kind.FARM&&stage==0||k==Kind.PAD&&(stage==5||stage==6)||k==Kind.CANOPY&&stage<4||k==Kind.CELLAR);
+        return !(k==Kind.COUNTER&&stage!=2||k==Kind.RIG||k==Kind.BOX||k==Kind.TRAILER&&stage==0||k==Kind.FARM&&stage==0||k==Kind.PAD&&(stage==5||stage==6)||k==Kind.CANOPY&&stage<4||k==Kind.CELLAR||buries(s));
     }
+    /** 0.4.681: the store come down across the cellar doors lets no light through: below, in the buried days, there is only the lantern
+     * until a length of the doors is dug clear. */
+    @Override protected int getLightBlock(BlockState s,BlockGetter l,BlockPos p){return buries(s)?15:super.getLightBlock(s,l,p);}
+    static boolean buries(BlockState s){return s.getValue(KIND)==Kind.RUBBLE&&s.getValue(STAGE)==ON_DOORS;}
 }

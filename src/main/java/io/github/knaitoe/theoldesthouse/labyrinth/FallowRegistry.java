@@ -59,6 +59,9 @@ public final class FallowRegistry {
         SIREN=sound("fallow.siren"),BLAST=sound("fallow.blast"),RUMBLE=sound("fallow.rumble");
     /** 0.4.680, what the light leaves: the canopy coming down, the store falling in, the fall of it landing on the cellar doors. */
     public static final DeferredHolder<SoundEvent,SoundEvent> CANOPY=sound("fallow.canopy"),COLLAPSE=sound("fallow.collapse"),DEBRIS=sound("fallow.debris");
+    /** 0.4.681, the buried days: the cellar settling, the lantern's wick turned, a match struck, a stroke at the doors, the doors giving. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SETTLE=sound("fallow.settle"),WICK=sound("fallow.wick"),MATCH=sound("fallow.match"),
+        DIG=sound("fallow.dig"),GIVE=sound("fallow.give");
     /**
      * 0.4.673: what the afternoon's people carry, never a reader: Opal's bean in its cup (drawn from its block's model), the quart of milk
      * Faye buys, the bottle of pop the stranger buys and the cup of coffee Otis pours.

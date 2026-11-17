@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * 0.4.672, Fallow, part 1 (docs/FALLOW_0_4_672.md): what the station's, the yard's, the road's and the field's things say to a hand, the
  * five people's own lines, and Harlan's note by the register, the first paper. Every line is new in this release and is flagged to the owner
- * in docs/FALLOW_0_4_672.md.
+ * in docs/FALLOW_0_4_672.md; each later part's in its own doc (0.4.681's, the buried days, in docs/FALLOW_0_4_681.md).
  */
 public final class FallowTexts {
     private FallowTexts(){}
@@ -269,6 +269,85 @@ public final class FallowTexts {
     public static final String RUIN_CANOPY="Out toward the road, sheet metal comes down on concrete and goes on ringing.",
         RUIN_STORE="Nearer, a roof gives, and everything under it goes with it.",
         RUIN_DOORS="Something heavy lands across the doors overhead. The light at their cracks is gone.";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.681, buried
+    /** The ground still, below; the roof to a hand before the light and on each day after; the doors, too hot to dig at, from below and
+     * from the yard; the first stroke from each side; a length of the doors clear, half of them, and the doors giving; coming up. */
+    public static final String STILL="The shaking stops. Overhead, something goes on burning.",
+        CEILING_BEFORE="The cellar's roof: planks on timbers, with the yard's earth over them.";
+    public static final String[] CEILING={"The timbers overhead are hot. Something up there is still burning.",
+        "The timbers are warm, but a hand can stay on them now.",
+        "The timbers are cool. Whatever was burning up there has burned itself out."};
+    public static final String HOT_DOORS="Heat comes down through the boards of the doors. Whatever lies on them is still burning.",
+        HOT_HEAP="Heat comes off the heap over the cellar doors. Under it, something is still burning.",
+        DIG_FIRST="You set your shoulder to the doors and heave. Dirt sifts down, and something overhead shifts.",
+        DIG_FIRST_ABOVE="You drag at the fall over the cellar doors. A piece of it comes away in your hands.",
+        CRACK="Between two boards over the steps, a crack of daylight.",
+        HALF="Half the doors are clear. Ash sifts down between the boards.",
+        GIVE="The doors give and go back over on their hinges. Ash comes down the steps on the air.",
+        GIVE_ABOVE="The cellar doors heave up out of the fall and go back over on their hinges.",
+        CAME_UP="Up the steps and out. Ash is coming down out of a sky with no sun in it, and lying on everything.";
+    /** A hand on the lantern: turned down, put out, lit again; dry; guttering; gone out. */
+    public static final String LANTERN_LOW="You turn the wick down. The light draws in to the lantern's glass.",
+        LANTERN_DOUSED="You turn the wick down until the flame goes out.",
+        LANTERN_LIT="You strike a match from the jar on the shelf and light the wick.",
+        LANTERN_DRY="The lantern is dry. There is no oil left in it.",
+        LANTERN_GUTTERS="The lantern gutters. Its flame shrinks and jumps.",
+        LANTERN_GONE="The lantern goes out. There is no more oil.";
+    /** Each morning below, from the second. */
+    public static final String[] MORNING={"A second morning, by Otis's watch.","A third morning, by Otis's watch.","A fourth morning, by Otis's watch.",
+        "Another morning, by Otis's watch."};
+    /** Her bean, grown in the dark, seen when the light comes back; what she says of it then, by how far it has grown. */
+    public static final String BEAN_GREW="In the lantern's light, Opal's bean is taller than it was. It has grown in the dark.";
+    public static final String[] BEAN_BELOW={"It needs the sun. There isn't any.","It grew. In the dark, it grew.","Look how tall. It doesn't even need the sun.",
+        "It's leaning at the doors."};
+    /** The crock and the shelves, by the day. */
+    public static final String[] CROCK_DAYS={"The crock of water, near full. The dipper hangs back on its side.",
+        "The crock, down a hand's width. Nobody takes more than the dipper holds.",
+        "The crock, half gone. A line is scratched on its side at the level each morning."};
+    public static final String[] SHELF_DAYS={"Jars of peaches, beans and tomatoes. A jar of peaches is open and going round.",
+        "Two jars are gone from the shelf. The empties stand back in their places, lids on.",
+        "The shelf is thinner. The dates on the lids go back eleven summers."};
+    /** Otis: putting the lantern out for the night, lighting it in the morning (or not), to a reader who lights it at night; digging with
+     * them, beginning alone; the doors giving; up, looking out at it. */
+    public static final String OTIS_NIGHT="Let's put it out a while. Save the oil for when we need to see.",OTIS_MORNING="Morning. Near enough, by my watch.",
+        OTIS_MORNING_DARK="Morning, by my watch. For what that's worth down here.",OTIS_LEAVE_IT="Let it be dark a while. We'll want that oil.",
+        OTIS_DIG="It's cooled up there. Shoulders to the doors: push when I push.",OTIS_ALONE="I'll make a start. Spell me when you've a mind to.",
+        OTIS_GIVE="There. Up we go, slow. Mind the edges.",OTIS_LOOKS="Well. There it is.";
+    /** Up in the yard: Opal by the steps with her bean, Faye calling toward the rig, Harlan at what is left of his store. */
+    public static final String OPAL_UP="It needs the sun. There isn't any.",FAYE_UP_LINE="Boyd? Boyd!",HARLAN_UP_LINE="That was a good store.";
+    /** Otis's question on the second day, the reader's two answers, and what he says to each. What he says to an answer follows the House's
+     * read of the reader's home: somebody to get back to, somewhere not to go back to, nowhere at all, or nothing read. */
+    public static final String HOME_ASK="Anybody waiting on you, back home?",TELL_HIM="Tell him.",HOME_QUIET="That's all right. You don't have to say.";
+    public static String homeAnswer(String read){
+        return switch(read){
+            case "HAVEN"->"Then you've got somewhere to get back to. Hold on to that down here.";
+            case "DANGER"->"Some places you don't hurry back to. Nobody here's going to make you.";
+            case "RUNAWAY"->"Nowhere at all? Well. You're with us now, for what that's worth.";
+            default->"Fair enough. You don't owe me the whole of it.";
+        };
+    }
+    /** Below by day, a line every so often, by the day (the last again after): who, what, and when it is said (Faye below or not, Harlan
+     * below, the bean grown). */
+    public static final String[][][] BELOW_TALK={
+        {{"Otis","That's the store burning up there. We sit tight till it cools.",""},{"Harlan","Peaches on the second shelf. Mind the jars, they're all there is.","harlan"},
+            {"Faye","Boyd got into the rig. That rig's steel all round.","faye"},{"Opal","Is Mama still in the car?","nofaye"},{"Otis","We'll go and see, when we're out.","nofaye"},
+            {"Opal","It's too dark for my bean.",""}},
+        {{"Harlan","Second day. I keep wanting to go up and open the store.","harlan"},{"Faye","My sister will have called the highway patrol by now.","faye"},
+            {"Opal","I gave it some of my water. Only a little.","grown"},{"Otis","I've a sister up in Duluth. She'll be watching the road.",""}},
+        {{"Harlan","Built this cellar for twisters. Never thought it'd see anything else.","harlan"},{"Opal","When we get out, can I put it in the ground?",""},
+            {"Otis","First thing, sweetheart.",""},{"Faye","Whatever's up there, we go up together.","faye"}}};
+    /** A word with one of them below: Otis before the roof is cool and after; Opal by how far her bean has grown; Harlan; Faye. */
+    public static final String[] OTIS_WAIT={"We dig when it cools. Not before.","Save your strength. You'll want it for the doors."};
+    public static final String OTIS_PUSH="Push when I push.";
+    public static final String[] OPAL_BELOW={"It's too dark down here for it.","It's growing anyway. Look.","It's taller than the cup now.",
+        "It's leaning at the doors. It wants out too."};
+    public static final String[] HARLAN_BELOW={"There's water in the crock. A dipper each, morning and night.","I should have checked the oil in that lantern. I always meant to."};
+    public static final String[] FAYE_BELOW={"Did you see him get into the rig? Did you see?","He'll be in the rig. He'll be all right in the rig."};
+    /** A word with one of them once the doors have given. */
+    public static String upTalk(int who){
+        return switch(who){case Fallow.DRIVER->"Easy on the steps.";case Fallow.GIRL->"It needs the sun.";case Fallow.WOMAN->"Boyd?";default->"Mind the glass.";};
+    }
 
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: Harlan's note, propped against the register. */

@@ -60,7 +60,10 @@ public final class FallowShadowRenderer implements BlockEntityRenderer<FallowSha
     @SubscribeEvent public static void register(EntityRenderersEvent.RegisterRenderers e){e.registerBlockEntityRenderer(FallowRegistry.SHADOW_ENTITY.get(),FallowShadowRenderer::new);}
     @Override public int getViewDistance(){return 96;}
 
+    /** 0.4.681: the plain body a person's shadow is cut from (Boyd's, FallowBuried.light): only its outline is ever drawn. */
+    private static final PlayerSkin PLAIN=new PlayerSkin(DefaultPlayerSkin.getDefaultTexture(),null,null,null,PlayerSkin.Model.WIDE,true);
     static PlayerSkin skin(FallowShadowBlock.Shadow s){
+        if(s.person)return PLAIN;
         if(s.body!=null){var kept=HouseBodyClient.kept(s.reader,s.body);if(kept!=null)return kept;}
         var conn=Minecraft.getInstance().getConnection();var info=conn==null?null:conn.getPlayerInfo(s.reader);
         return info!=null?info.getSkin():DefaultPlayerSkin.get(s.reader);
@@ -125,6 +128,8 @@ public final class FallowShadowRenderer implements BlockEntityRenderer<FallowSha
         m.rightLeg.xRot=Mth.cos(ph)*.55F*sw;m.leftLeg.xRot=Mth.cos(ph+pi)*.55F*sw;
         m.rightArm.xRot=Mth.cos(ph+pi)*.45F*sw;m.leftArm.xRot=Mth.cos(ph)*.45F*sw;
         m.rightArm.zRot=.06F;m.leftArm.zRot=-.06F;
+        // 0.4.681: a person caught reaching for something (Boyd at the rig's door): the arm up and a little out, the head back.
+        if(s.reach){m.rightArm.xRot=-2.6F;m.rightArm.yRot=0;m.rightArm.zRot=.35F;m.head.xRot=-.3F;}
         if(s.crouched){
             m.body.xRot=.5F;m.rightArm.xRot+=.4F;m.leftArm.xRot+=.4F;
             m.rightLeg.z+=4F;m.leftLeg.z+=4F;m.rightLeg.y+=.2F;m.leftLeg.y+=.2F;

@@ -45,20 +45,28 @@ public final class FallowShadowBlock extends HorizontalDirectionalBlock implemen
     public static final class Shadow extends BlockEntity {
         public @Nullable UUID reader;public String name="";public @Nullable HouseBodies.Body body;
         public float yaw,stride,phase;public boolean crouched;
+        /** 0.4.681: one of the station's people rather than a reader (FallowBuried.light), drawn in a plain body; their arm up if they
+         * were reaching for something when the light came. */
+        public boolean person,reach;
         public Shadow(BlockPos pos,BlockState s){super(FallowRegistry.SHADOW_ENTITY.get(),pos,s);}
         void cast(UUID reader,String name,@Nullable HouseBodies.Body body,float yaw,float stride,float phase,boolean crouched){
             this.reader=reader;this.name=name;this.body=body;this.yaw=yaw;this.stride=stride;this.phase=phase;this.crouched=crouched;
             setChanged();if(level!=null&&!level.isClientSide)level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),Block.UPDATE_CLIENTS);
         }
+        void castOf(UUID who,String name,float yaw,boolean reach){
+            this.person=true;this.reach=reach;cast(who,name,null,yaw,0,0,false);
+        }
         @Override protected void saveAdditional(CompoundTag t,HolderLookup.Provider r){
             super.saveAdditional(t,r);if(reader==null)return;
             t.putUUID("Reader",reader);t.putString("Name",name);t.putFloat("Yaw",yaw);t.putFloat("Stride",stride);t.putFloat("Phase",phase);t.putBoolean("Crouched",crouched);
             if(body!=null)t.putIntArray("Body",new int[]{body.age(),body.presentation(),body.cut(),body.tone(),body.hair(),body.face()});
+            if(person)t.putBoolean("Person",true);if(reach)t.putBoolean("Reach",true);
         }
         @Override protected void loadAdditional(CompoundTag t,HolderLookup.Provider r){
             super.loadAdditional(t,r);reader=t.hasUUID("Reader")?t.getUUID("Reader"):null;name=t.getString("Name");
             yaw=t.getFloat("Yaw");stride=t.getFloat("Stride");phase=t.getFloat("Phase");crouched=t.getBoolean("Crouched");
             var b=t.getIntArray("Body");body=b.length==6?new HouseBodies.Body(b[0],b[1],b[2],b[3],b[4],b[5]):null;
+            person=t.getBoolean("Person");reach=t.getBoolean("Reach");
         }
         @Override public CompoundTag getUpdateTag(HolderLookup.Provider r){return saveWithoutMetadata(r);}
         @Override public Packet<ClientGamePacketListener> getUpdatePacket(){return ClientboundBlockEntityDataPacket.create(this);}

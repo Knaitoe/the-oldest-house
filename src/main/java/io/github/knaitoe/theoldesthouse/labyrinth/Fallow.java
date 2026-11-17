@@ -57,12 +57,20 @@ public final class Fallow {
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     /** 0.4.673: dealt once a reader has come this many crossings down, after Last Seen's eight and before Not Yet's twelve. */
     public static final int DEPTH=10;
-    public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH;}
+    public static boolean dealable(LabyrinthData d,UUID reader){
+        if(d.returnDepth(reader)<DEPTH)return false;
+        // 0.4.681: a station the light has had is dealt only to readers who were there when it came.
+        for(var s:ACTIVE.values())if(s.strike.toneAt>=0&&s.strike.since(s.tick)>=FallowStrike.LIGHT&&LiteraryVignettes.personal(d,reader,PLACE).getString("AtLight").isEmpty())return false;
+        return true;
+    }
     /** How the afternoon's people hold themselves (LiteraryRenderers.fallow): working overhead under the car, reaching up or out, a cup held
      * in both hands, kneeling by the bean, pouring at the machine. */
     public static final int WORK=1,REACH=2,CUP=3,KNEEL=4,POUR=5;
     /** 0.4.674: Otis with Opal in his arms (FallowStrike). */
     public static final int CARRY=6;
+    /** 0.4.681, below in the buried days (FallowBuried): sat on the cellar's floor, the hands on the knees; and dozing there at night,
+     * the head down and the arms folded. */
+    public static final int SIT=7,DOZE=8;
 
     /** A reader in: the five are put at their places if they are not there, the car is up on the lift, and the afternoon is heard. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -162,6 +170,10 @@ public final class Fallow {
     /** A hand on something of the station's. True if it was theirs to answer. The note is the first paper: the House's own reading answers it. */
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
+        // 0.4.681: below in the buried days, the lantern, the roof, the crock, the shelves and the doors over the steps have their own say.
+        var buried=ACTIVE.get(b.asLong());
+        if(buried!=null&&FallowBuried.click(p,l,buried,rel,st,own))return true;
+        if(FallowBuried.roof(rel,st)){cue(p,FallowTexts.CEILING_BEFORE);return true;}
         if(st.getBlock() instanceof DoorBlock){
             var lower=st.getValue(DoorBlock.HALF)==net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER?rel.below():rel;
             if(lower.equals(FallowSite.TRAILER_DOOR)){cue(p,FallowTexts.TRAILER_DOOR);return true;}
@@ -285,7 +297,8 @@ public final class Fallow {
         for(var it=ACTIVE.values().iterator();it.hasNext();){
             var s=it.next();var here=readers(l,s.base);
             if(here.isEmpty()){
-                if(++s.empty>=EMPTY_FORGET){var c=car(l,s.base);if(c!=null)c.discard();afresh(l,s.base);it.remove();}
+                // 0.4.681: a station buried with readers' days still running is kept a while, for a reader below who has stepped out of the game.
+                if(++s.empty>=(FallowBuried.holding(s)?FallowBuried.GRACE:EMPTY_FORGET)){var c=car(l,s.base);if(c!=null)c.discard();afresh(l,s.base);it.remove();}
                 continue;
             }
             s.empty=0;s.tick++;

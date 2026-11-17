@@ -35,8 +35,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>At the light, each reader keeps where they were (AtLight: outside or cellar) and what they did (HeldDoors, BroughtFaye). A reader
  * out in it is whited out and, a moment later, back out by the House's door: the House's faint, not a death. A reader below sees it
- * come in round the doors, the ground shakes and the dust comes down, and after a while the dark takes them too. What comes after is
- * the next half's (shadows on the wall, the station falling in) and the fourth part's (buried). Spectators see it and earn nothing.
+ * come in round the doors, the ground shakes and the dust comes down. What comes after is the next half's (shadows on the wall, the
+ * station falling in, FallowRuin) and, for the readers below, the fourth part's buried days (FallowBuried). Spectators see it and earn
+ * nothing.
  */
 public final class FallowStrike {
     private FallowStrike(){}
@@ -62,6 +63,13 @@ public final class FallowStrike {
         int goneAt=-1,toneAt=-1,slid,harlan,faye,otis,boyd,liftAt,calls,callAt,talk,talkAt=-1,count,boydAt,openedAt=-1,fayeStill;
         /** 0.4.680: which parts of the station the light has had this afternoon (FallowRuin). */
         int ruined;
+        /** 0.4.681, the buried days (FallowBuried): which of the five are below and which the light found out in it; the lantern's oil,
+         * how long it has stood dark, whether it has guttered or her bean grown unseen; the day's talk; Otis's question and his digging;
+         * the strokes, the lengths cleared, each reader's last stroke; the doors given; who came up and stood; the readers who were below
+         * and who have come up out of it. */
+        boolean lightDone,began,guttered,grew,digging,open;
+        int below,lost,oil,dark,kneel,dayTalk,dayTalkAt=-1,askedAt=-10000,dugAt=-10000,dug,cleared,leaveIt=-1,openAt,cameUp,stood,beanStage,otisSaid;
+        final Map<UUID,Integer> struck=new HashMap<>();final Set<UUID> buried=new HashSet<>(),out=new HashSet<>();
         boolean padsWhole,shut;@Nullable UUID led,heldBy;
         final Set<UUID> done=new HashSet<>();final Map<UUID,Integer> faint=new HashMap<>();
         int since(int tick){return toneAt<0?-1:tick-toneAt;}
@@ -130,10 +138,12 @@ public final class FallowStrike {
         if(t==LAUNCH_A+30){var h=Fallow.find(l,s.base,Fallow.KEEPER);if(h!=null){h.say("Harlan",FallowTexts.GOING_UP);h.speaks(FallowTexts.GOING_UP);}}
         if(t==LAUNCH_B+80||t>LAUNCH_B+80&&t<LIGHT&&(t-LAUNCH_B-80)%360==0)for(var p:here){toward(p,p.position().add(60,4,-10),FallowRegistry.SIREN.get(),.9F,1F);if(t==LAUNCH_B+80)Fallow.cue(p,FallowTexts.SIREN);}
         if(t==GO)go(l,s);
-        if(t>GO&&t<=LIGHT+BELOW_FAINT){harlan(l,s,here,t);otis(l,s,t);faye(l,s,here,t);boyd(l,s,t);}
+        // 0.4.681: their four minutes end at the light; who is below then has the buried days (FallowBuried).
+        if(t>GO&&t<LIGHT){harlan(l,s,here,t);otis(l,s,t);faye(l,s,here,t);boyd(l,s,t);}
         if(t>=GO)below(l,s,here,t);
         if(t>=SHUT)doors(l,s,here,t);
         if(t>=LIGHT){light(l,s,here,t);FallowRuin.tick(l,s,here,t-LIGHT);}
+        if(t>=LIGHT+FallowBuried.SETTLE)FallowBuried.tick(l,s,here,t-LIGHT-FallowBuried.SETTLE);
     }
     /** The tone: the television to its card, the people at the station laid off their afternoon. */
     static void begin(ServerLevel l,Fallow.Site s,List<ServerPlayer> here){
@@ -343,10 +353,12 @@ public final class FallowStrike {
     /** A body (its feet at r, its width .6, its height 1.8) reaching up into where the shut leaves lie, over the well; beside the well,
      * where Harlan stands holding them, is not under them. */
     static boolean upper(Vec3 r){return r.x>FallowSite.WELL_W-.3&&r.x<FallowSite.WELL_E+1.3&&r.z<FallowSite.WELL_S+1.3&&r.z>FallowSite.WELL_N-.3&&r.y>-1.8&&r.y<.57;}
-    /** The light: each reader keeps where it found them; out in it, the faint a moment after; below, the shaking, the dust and then the dark. */
+    /** The light: each reader keeps where it found them; out in it, the faint a moment after; below, the shaking and the dust, and then the
+     * buried days. */
     static void light(ServerLevel l,Fallow.Site s,List<ServerPlayer> here,int t){
         var st=s.strike;
         if(t==LIGHT)tv(l,s.base,FallowBlock.DARK);
+        FallowBuried.light(l,s);
         for(var p:here){
             if(st.done.contains(p.getUUID()))continue;
             st.done.add(p.getUUID());
@@ -363,7 +375,8 @@ public final class FallowStrike {
             }
             heard(p,FallowRegistry.BLAST.get(),below?.55F:1F);
             if(below){heard(p,FallowRegistry.RUMBLE.get(),1F);Fallow.cue(p,FallowTexts.CRACKS);}
-            st.faint.put(p.getUUID(),s.tick+(below?BELOW_FAINT:OUT_FAINT));
+            // 0.4.681: a reader below stays below, for the buried days; one out in it faints.
+            if(!below)st.faint.put(p.getUUID(),s.tick+OUT_FAINT);
         }
         if(t>LIGHT&&t<LIGHT+BELOW_FAINT){
             for(var p:here){
@@ -384,7 +397,8 @@ public final class FallowStrike {
     static boolean talk(ServerPlayer p,LiteraryActor a,@Nullable Fallow.Site s,int who,CompoundTag own){
         if(s==null||s.strike.toneAt<0)return false;
         var st=s.strike;int t=st.since(s.tick);
-        String line;
+        String line=FallowBuried.talk(p,p.serverLevel(),s,who,own);
+        if(line!=null){a.sayTo(p,FallowTexts.NAMES[who],line);a.speaks(line);return true;}
         switch(who){
             case Fallow.KEEPER->line=st.harlan==HOLDING?FallowTexts.HARLAN_HOLDING:st.harlan==BELOW?FallowTexts.WAITING[1][1]:t<GO?FallowTexts.HARLAN_NOT_TEST:FallowTexts.TO_THE_CELLAR;
             case Fallow.WOMAN->{
@@ -420,8 +434,9 @@ public final class FallowStrike {
     }
 
     // ------------------------------------------------------------------------------------------------ helpers
-    /** Committed: from the lids until the light has had them, nobody leaves by the House's door. */
-    static boolean locked(@Nullable Fallow.Site s,ServerPlayer p){return s!=null&&s.strike.toneAt>=0&&s.strike.since(s.tick)>=LIDS;}
+    /** Committed: from the lids until the light has had them, nobody leaves by the House's door. 0.4.681: after it, a reader below is
+     * under the fallen station until it is dug out, and anyone who comes back to it may leave by the House's door as before. */
+    static boolean locked(@Nullable Fallow.Site s,ServerPlayer p){return s!=null&&s.strike.toneAt>=0&&s.strike.since(s.tick)>=LIDS&&s.strike.since(s.tick)<LIGHT+OUT_FAINT;}
     /** The station back as it was for a fresh afternoon: the television's picture, the lids on their seats, the doors down. */
     static void afresh(ServerLevel l,BlockPos b){
         tv(l,b,FallowBlock.PICTURE);
