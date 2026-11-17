@@ -2072,5 +2072,7 @@
   "subtitles.the_oldest_house.last_seen.rattle": "Someone tries the back door",
   "subtitles.the_oldest_house.last_seen.climb": "Someone climbs the railing",
   "item.the_oldest_house.last_seen_flashlight": "Flashlight",
-  "item.the_oldest_house.last_seen_stick": "Length of Wood"
+  "item.the_oldest_house.last_seen_stick": "Length of Wood",
+  "advancements.the_oldest_house.account.last_seen.title": "Last seen",
+  "advancements.the_oldest_house.account.last_seen.description": "Children came back to a park the way they were the day they went, and I took each one the folder with their face in it."
 }

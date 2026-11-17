@@ -49,6 +49,10 @@ public final class LiteraryVignettes {
     static Set<String> readers(LabyrinthData d,LabyrinthPlace place){var keys=new HashSet<>(d.state(state(place)).getAllKeys());keys.removeIf(k->k.startsWith("World"));return keys;}
     public static CompoundTag personal(LabyrinthData d,UUID p,LabyrinthPlace place){return d.stateEntry(state(place),p.toString());}
     public static void save(LabyrinthData d,UUID p,LabyrinthPlace place,CompoundTag own){d.setStateEntry(state(place),p.toString(),own);}
+    /** 0.4.671: every reader with a record of their own for a place, here or not, however they came to it. */
+    public static Set<UUID> keepers(LabyrinthData d,LabyrinthPlace place){
+        var out=new HashSet<UUID>();for(var key:d.stateKeys(state(place))){try{out.add(UUID.fromString(key));}catch(IllegalArgumentException ignored){}}return out;
+    }
     /**
      * 0.4.568 (run 1599): saves what a handler changed in the copy of the reader's record it was handed ({@code before} is that copy as
      * it was handed over), laid key by key over the record as it stands now. A handler may write the record through reads of its own as
@@ -265,6 +269,8 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.LITTLE_LONGER&&LongerAfter.click(p,b,rel,own)){handled=true;}
         // 0.4.666: Not Yet's account is in the drawer under the reader's own cot, not at a place of the ward's; its cots answer first.
         else if(place==LabyrinthPlace.NOT_YET&&NotYet.cotClick(p,b,rel,own,e.getPos())){handled=true;}
+        // 0.4.671: Last Seen's account is under the reader's own folder in Nora's drawer; the drawer answers before the account.
+        else if(place==LabyrinthPlace.LAST_SEEN&&LastSeen.drawer(p,b,rel,own)){handled=true;}
         else if(rel.equals(LiteraryRooms.source(place))&&!oldLot||oldLot&&rel.equals(ElkLot.OLD_SOURCE)||SceneReview.readingAlias(p.serverLevel(),b,place,rel)){open(p,place,own,"Source",SceneHuntReview.sourceBook(p.serverLevel(),b,place),e.getPos());handled=true;}
         else if((oldLot?rel.equals(ElkLot.OLD_ENDING):place==LabyrinthPlace.TUNNEL_PERIPHERY?rel.equals(TunnelPassage.account(p.serverLevel(),b)):rel.equals(LiteraryRooms.ending(place)))&&own.getBoolean("Ready")){open(p,place,own,"Ending",LiteraryTexts.ending(p,place,own),e.getPos());handled=true;}
         else switch(place){
@@ -387,7 +393,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else if(CalderPeople.is(actor))CalderPeople.talk(p,actor);else if(!BikeNightSpecters.is(actor))BikeNightGus.talk(p,actor);}
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
         else if(place==LabyrinthPlace.NOT_YET){if(NotYet.is(actor))NotYet.talk(p,actor,own);}
-        else if(place==LabyrinthPlace.LAST_SEEN){if(LastSeen.is(actor))LastSeen.talk(p,actor,own);}
+        else if(place==LabyrinthPlace.LAST_SEEN){if(LastSeen.is(actor))LastSeen.talk(p,actor,own);else if(LastSeen.corner(actor))LastSeen.cornerHand(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);
         else if(place==LabyrinthPlace.TALL_GRASS)TallGrass.talk(p,actor);
         else if(place==LabyrinthPlace.GROWING_THINGS)GrowingThings.talk(p,actor);

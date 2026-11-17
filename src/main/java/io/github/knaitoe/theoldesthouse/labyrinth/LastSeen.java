@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
+import io.github.knaitoe.theoldesthouse.network.LastSeenDrawerPayload;
 import io.github.knaitoe.theoldesthouse.network.LastSeenFolderPayload;
 import io.github.knaitoe.theoldesthouse.network.LastSeenTimePayload;
 import java.text.Normalizer;
@@ -125,6 +126,10 @@ public final class LastSeen {
      * ticks the dark takes to fall before it shows; how long the door is tried; how often the men speak while they wait. The hour runs from
      * nightfall toward the small hours, then to first light.
      */
+    /** 0.4.671: the day after the night (docs/LAST_SEEN_0_4_671.md), its fixed mid-morning hour, and when the Corner's girl may come. */
+    public static final int AFTER=4,GIRL_AT=200;
+    public static final long AFTER_TIME=4000;
+    public static final Vec3 NACHO_AT=new Vec3(14.5,0,-97.5);
     public static final int NIGHT=3,MEN_AT=200,OVER_AT=3000,DAWN_AT=4800,DAWN_DARK=25,TRY_WAIT=100,LINE_EVERY=360;
     public static final long NIGHT_TIME=13800,LATE_TIME=21800,DAWN_TIME=23300;
     /** How many matched on the second day count it. */
@@ -183,6 +188,8 @@ public final class LastSeen {
         boolean chained,over,kept,dawn;int dawnAt=-1,triedAt=-1;
         /** At dawn, the folders lying open on the long table, by the table cell they lie on. */
         final Map<Integer,List<Integer>> open=new HashMap<>();
+        /** 0.4.671, the day after: the girl with one arm at the fountain and her brother across the avenue; 0 not come, 1 there, 2 gone. */
+        UUID romina,nacho;int corner;
         Day(BlockPos b,long id){base=b;this.id=id;Arrays.fill(held,-1);}
     }
     static final Map<Long,Day> DAYS=new HashMap<>();
@@ -215,7 +222,9 @@ public final class LastSeen {
     /** The second day, past the morning; and dusk. */
     static boolean late(BlockPos b){var d=day(b);return d!=null&&d.number>=2;}
     /** 0.4.670: the night, and its morning. */
-    static boolean night(BlockPos b){var d=day(b);return d!=null&&d.number>=NIGHT;}
+    static boolean night(BlockPos b){var d=day(b);return d!=null&&d.number==NIGHT;}
+    /** 0.4.671: the day after. */
+    static boolean after(BlockPos b){var d=day(b);return d!=null&&d.number>=AFTER;}
     static boolean dusk(BlockPos b){var d=day(b);return d!=null&&d.dusk;}
     public static int since(BlockPos b){var d=day(b);return d==null?0:d.since;}
     public static void at(BlockPos b,int since){var d=day(b);if(d!=null&&d.number>=2)d.since=Math.max(d.since,since);}
@@ -230,7 +239,7 @@ public final class LastSeen {
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     static Vec3 world(BlockPos b,Vec3 r){return new Vec3(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z);}
     /** 0.4.669: the furthest day a reader has reached: the second, once they have matched the first of them. */
-    static int reached(CompoundTag own){int days=own.getInt("Days");return days>=2?NIGHT:days>=1?2:1;}
+    static int reached(CompoundTag own){int days=own.getInt("Days");return days>=3?AFTER:days>=2?NIGHT:days>=1?2:1;}
 
     /** A reader in: the morning is started if nobody is there, the office's three are put at their places, and the morning is heard. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -244,6 +253,7 @@ public final class LastSeen {
     }
     /** The park's hour: the morning; on the second day, through the afternoon to dusk. */
     static long time(Day d){
+        if(d.number>=AFTER)return AFTER_TIME;
         if(d.number>=NIGHT)return d.dawn?Math.min(DAWN_TIME+(d.since-d.dawnAt)*2L,23950L):NIGHT_TIME+(long)((LATE_TIME-NIGHT_TIME)*Math.min(1D,d.since/(double)DAWN_AT));
         return d.number<2?MORNING_TIME:MORNING_TIME+(long)((DUSK_TIME-MORNING_TIME)*Math.min(1D,d.since/(double)DUSK_AT));
     }
@@ -264,7 +274,7 @@ public final class LastSeen {
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;
             var a=find(l,b,who);
             // 0.4.670: at night only Nora stays; Patricia and Luz have gone home.
-            if(d!=null&&d.number>=NIGHT&&!d.fresh&&who!=NORA){if(a!=null)a.discard();continue;}
+            if(d!=null&&d.number==NIGHT&&!d.fresh&&who!=NORA){if(a!=null)a.discard();continue;}
             if(a==null){
                 a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
                 a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
@@ -302,8 +312,13 @@ public final class LastSeen {
         if(!office(a.phase()))return;
         int who=a.phase()-FIRST,heard=own.getInt("Heard"+who);
         String line;
+        // 0.4.671: the three on the day after.
+        if(d!=null&&d.number>=AFTER){
+            line=who==NORA?(own.getBoolean("Drawer")?LastSeenTexts.NORA_OPEN_AFTER:LastSeenTexts.NORA_DRAWER):who==PATRICIA?LastSeenTexts.PATRICIA_AFTER:LastSeenTexts.LUZ_AFTER;
+            own.putInt("Heard"+who,heard+1);a.say(LastSeenTexts.NAMES[who],line);a.speaks(line);return;
+        }
         // 0.4.670: Nora at night, by where the night has got to.
-        if(who==NORA&&d!=null&&d.number>=NIGHT){
+        if(who==NORA&&d!=null&&d.number==NIGHT){
             line=d.dawn?LastSeenTexts.NORA_DAWN:d.over?LastSeenTexts.NORA_DOOR:d.chained?(heard%2==0?LastSeenTexts.NORA_BRING:LastSeenTexts.NORA_SHELF):LastSeenTexts.NORA_STAY;
             own.putInt("Heard"+who,heard+1);a.say(LastSeenTexts.NAMES[who],line);a.speaks(line);return;
         }
@@ -401,7 +416,7 @@ public final class LastSeen {
         if(st.getBlock() instanceof DoorBlock&&rel.getZ()==LastSeenSite.HOUSE_FRONT&&rel.getX()!=LastSeenSite.ONWARD.getX()){cue(p,LastSeenTexts.HOUSE_DOOR);return true;}
         // 0.4.670: at night the front desk's door is locked; Patricia locked it when she went home. The archive's back door is not.
         var dn=day(b);
-        if(st.getBlock() instanceof DoorBlock&&dn!=null&&dn.number>=NIGHT&&!dn.dawn&&rel.getX()==LastSeenSite.FRONT_DOOR.getX()&&rel.getZ()==LastSeenSite.FRONT_DOOR.getZ()){cue(p,LastSeenTexts.FRONT_LOCKED);return true;}
+        if(st.getBlock() instanceof DoorBlock&&dn!=null&&dn.number==NIGHT&&!dn.dawn&&rel.getX()==LastSeenSite.FRONT_DOOR.getX()&&rel.getZ()==LastSeenSite.FRONT_DOOR.getZ()){cue(p,LastSeenTexts.FRONT_LOCKED);return true;}
         if(dn!=null&&LastSeenBlock.is(st,LastSeenBlock.Kind.TABLE)&&st.getValue(LastSeenBlock.STAGE)>=3){
             var on=dn.open.get(rel.getX());
             if(on!=null&&!on.isEmpty()){int look=own.getInt("TableLook");int c=on.get(look%on.size());own.putInt("TableLook",look+1);cue(p,LastSeenTexts.tableOpen(c));show(p,c);return true;}
@@ -427,12 +442,12 @@ public final class LastSeen {
             case POSTER->LastSeenTexts.poster(stage);
             case POSTER_B->LastSeenTexts.poster(8+stage);
             case TABLE->stage==1?LastSeenTexts.PILE:stage==2?(late(b)?LastSeenTexts.LAMP_LATE:LastSeenTexts.LAMP):LastSeenTexts.TABLE;
-            case DESK->stage==LastSeenBlock.DRAWN?LastSeenTexts.DESK_OPEN:LastSeenTexts.DESK;
+            case DESK->stage==LastSeenBlock.DRAWN?LastSeenTexts.DESK_OPEN:stage==LastSeenBlock.UNLOCKED?LastSeenTexts.DESK_UNLOCKED:LastSeenTexts.DESK;
             case LOUVRE->LastSeenTexts.LOUVRE;
             case TUBE->LastSeenTexts.TUBE;
             case RAILING->stage==1?LastSeenTexts.POST:LastSeenTexts.RAILING;
             case GATE->stage==LastSeenBlock.CHAINED?LastSeenTexts.GATE_CHAINED:LastSeenTexts.GATE_OPEN;
-            case LAMP_POST->stage==LastSeenBlock.NOTICE?LastSeenTexts.NOTICE:stage==LastSeenBlock.DARK?LastSeenTexts.LAMP_DARK:dusk(b)?LastSeenTexts.LAMP_POST_DUSK:LastSeenTexts.LAMP_POST;
+            case LAMP_POST->stage==LastSeenBlock.NOTICE?LastSeenTexts.NOTICE:stage==LastSeenBlock.TORN?LastSeenTexts.NOTICE_TORN:stage==LastSeenBlock.DARK?(after(b)?LastSeenTexts.LAMP_AFTER:LastSeenTexts.LAMP_DARK):dusk(b)?LastSeenTexts.LAMP_POST_DUSK:LastSeenTexts.LAMP_POST;
             case BENCH->LastSeenTexts.BENCH;
             case FOUNTAIN->stage>=2?LastSeenTexts.BOWL:LastSeenTexts.FOUNTAIN;
             case KIOSK->LastSeenTexts.KIOSK;
@@ -442,7 +457,7 @@ public final class LastSeen {
             case BANDSTAND->LastSeenTexts.BANDSTAND;
             case SHELTER->stage==2?LastSeenTexts.STOP:LastSeenTexts.SHELTER;
             case SHUTTER->LastSeenTexts.SHUTTER;
-            case FENCE->LastSeenTexts.FENCE;
+            case FENCE->stage>=LastSeenBlock.FALLEN?LastSeenTexts.FENCE_DOWN:LastSeenTexts.FENCE;
         };
         if(line==null)return false;
         cue(p,line);
@@ -495,7 +510,7 @@ public final class LastSeen {
         int who=a.phase()-CHILDREN_FIRST;var b=LiteraryVignettes.base(p,PLACE);var d=day(b);var l=p.serverLevel();
         var hand=p.getMainHandItem();int c=child(hand);
         if(d!=null&&d.givers.containsKey(who))return;
-        if(d!=null&&d.number>=NIGHT&&nightHand(p,d,a,who,own,hand))return;
+        if(d!=null&&d.number==NIGHT&&nightHand(p,d,a,who,own,hand))return;
         if(d!=null&&c==who&&live(d,hand)&&(who!=DAIANA||d.daiana==0||d.daiana==4)){
             hand.setCount(0);d.givers.put(c,p.getUUID());d.held[c]=0;
             a.setItemInHand(InteractionHand.MAIN_HAND,folder(d,c));
@@ -572,7 +587,19 @@ public final class LastSeen {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,area(d.base),x->x.role()==LiteraryActor.STRANGER&&(child(x.phase())||other(x.phase()))))a.discard();
         d.stage=MORNING;d.since=0;d.up=0;d.step=0;Arrays.fill(d.kids,null);d.givers.clear();Arrays.fill(d.held,-1);
         for(var p:here)d.number=Math.max(d.number,reached(own(p)));
-        if(d.number>=NIGHT){
+        if(d.number>=AFTER){
+            // 0.4.671, the day after: by day and empty. The gate and the front door open, the lamps out, the fence lying flat and the notices
+            // torn; the folders of the ones gone in the nights of whoever is here open on the long table; Nora's drawer unlocked.
+            table(l,d,0);door(l,d,true);door(l,d,LastSeenSite.BACK_DOOR,false);d.stage=PARK;
+            LastSeenSite.gate(l,d.base,LastSeenBlock.OPEN);globes(l,d,false);
+            for(var cell:fenceCells())fall(l,d,cell);
+            for(var lamp:LastSeenSite.LAMPS){var at=d.base.offset(lamp);if(LastSeenBlock.is(l.getBlockState(at),LastSeenBlock.Kind.LAMP_POST))l.setBlock(at,LastSeenBlock.of(LastSeenBlock.Kind.LAMP_POST,LastSeenSite.noticeFacing(lamp),LastSeenBlock.TORN),3);}
+            int gone=0;for(var p:here)gone|=own(p).getInt("Gone");
+            d.open.clear();int i=0;
+            for(int c:EIGHT)if((gone&1<<c)!=0){int x=TABLE_E-i%(TABLE_E-TABLE_W);d.open.computeIfAbsent(x,k->new ArrayList<>()).add(c);gap(l,d,c);i++;}
+            for(var e:d.open.entrySet())tableCell(l,d,e.getKey(),e.getValue().size()>1?4:3);
+            desk(l,d,LastSeenBlock.UNLOCKED);
+        }else if(d.number>=NIGHT){
             // The night: the table bare, the front door shut, the fence and the notices up already; the eight at their places facing the
             // avenue, Tomás in his coat, Daiana at the gate. Patricia and Luz have gone home.
             table(l,d,0);door(l,d,false);d.stage=DUSK;d.dusk=true;d.coat=true;d.daiana=4;d.meshed=true;
@@ -598,7 +625,7 @@ public final class LastSeen {
         for(int who=0;who<PEOPLE;who++){var o=find(l,d.base,who);if(o!=null)sit(l,o,d.base.offset(SEATS[who]));}
         for(var cell:fenceCells())for(int y=0;y<=1;y++){var at=d.base.offset(cell).above(y);if(LastSeenBlock.is(l.getBlockState(at),LastSeenBlock.Kind.FENCE))l.setBlock(at,d.under.getOrDefault(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()),3);}
         d.under.clear();
-        for(var lamp:LastSeenSite.LAMPS){var at=d.base.offset(lamp);var st=l.getBlockState(at);if(LastSeenBlock.is(st,LastSeenBlock.Kind.LAMP_POST)&&st.getValue(LastSeenBlock.STAGE)==LastSeenBlock.NOTICE)l.setBlock(at,LastSeenBlock.of(LastSeenBlock.Kind.LAMP_POST,Direction.NORTH,LastSeenBlock.SHAFT),3);}
+        for(var lamp:LastSeenSite.LAMPS){var at=d.base.offset(lamp);var st=l.getBlockState(at);if(LastSeenBlock.is(st,LastSeenBlock.Kind.LAMP_POST)&&(st.getValue(LastSeenBlock.STAGE)==LastSeenBlock.NOTICE||st.getValue(LastSeenBlock.STAGE)==LastSeenBlock.TORN))l.setBlock(at,LastSeenBlock.of(LastSeenBlock.Kind.LAMP_POST,Direction.NORTH,LastSeenBlock.SHAFT),3);}
         // 0.4.670: the night's men and lights gone, the lamps lit, the gates shut and unchained, the long table as it was, the back door shut.
         for(var id:d.men){var a=actor(l,id);if(a!=null)a.discard();}
         for(int i=0;i<d.beams.length;i++)unbeam(l,d,i);
@@ -606,6 +633,9 @@ public final class LastSeen {
         var gate=l.getBlockState(d.base.offset(LastSeenSite.GATE_W));if(LastSeenBlock.is(gate,LastSeenBlock.Kind.GATE)&&gate.getValue(LastSeenBlock.STAGE)!=LastSeenBlock.SHUT)LastSeenSite.gate(l,d.base,LastSeenBlock.SHUT);
         for(int x=TABLE_W;x<=TABLE_E;x++)tableCell(l,d,x,x==LAMP_X?2:x==PILE_AT.getX()?1:0);
         door(l,d,LastSeenSite.BACK_DOOR,false);
+        // 0.4.671: the drawer locked again, the girl and her brother gone.
+        desk(l,d,LastSeenBlock.LOCKED);
+        for(var id:new UUID[]{d.romina,d.nacho}){var a=actor(l,id);if(a!=null)a.discard();}
     }
     static void door(ServerLevel l,Day d,boolean open){door(l,d,LastSeenSite.FRONT_DOOR,open);}
     static void door(ServerLevel l,Day d,BlockPos rel,boolean open){
@@ -663,7 +693,7 @@ public final class LastSeen {
             var a=actor(l,d.kids[c]);if(a==null)continue;
             for(var r:here){
                 if(r.distanceToSqr(a)>=8*8)continue;
-                if(d.number>=NIGHT){if(d.near.add(r.getUUID().getLeastSignificantBits()*31+c))cue(r,LastSeenTexts.nearNight(c));continue;}
+                if(d.number==NIGHT){if(d.near.add(r.getUUID().getLeastSignificantBits()*31+c))cue(r,LastSeenTexts.nearNight(c));continue;}
                 if(c==ROCIO&&d.sawRim.add(r.getUUID())){cue(r,LastSeenTexts.AT_RIM);var o=own(r);o.putBoolean("SawFirst",true);save(r,o);continue;}
                 if(c!=ROCIO&&d.near.add(r.getUUID().getLeastSignificantBits()*31+c)){cue(r,LastSeenTexts.near(c));var o=own(r);o.putInt("Saw",o.getInt("Saw")|1<<c);save(r,o);}
             }
@@ -938,7 +968,7 @@ public final class LastSeen {
     /** A reader who has taken one of them by the hand, or kept the back door, until morning: they do not go back out the way they came. */
     public static boolean locked(ServerPlayer p){
         if(!LiteraryVignettes.inside(p,PLACE))return false;
-        var d=day(LiteraryVignettes.base(p,PLACE));if(d==null||d.number<NIGHT||d.dawn)return false;
+        var d=day(LiteraryVignettes.base(p,PLACE));if(d==null||d.number!=NIGHT||d.dawn)return false;
         return own(p).getLong("Committed3")==d.id;
     }
     /** A reader keeping the back door: inside the archive, against it. */
@@ -967,7 +997,7 @@ public final class LastSeen {
         if(!hand.isEmpty()||d.over)return false;
         if(d.led.containsValue(p.getUUID())){cue(p,LastSeenTexts.HAND_FULL);return true;}
         d.led.put(who,p.getUUID());a.gesture(LED);
-        if(own.getLong("LedNight")!=d.id){own.putLong("LedNight",d.id);own.putInt("LedIn",0);}
+        if(own.getLong("LedNight")!=d.id){own.putLong("LedNight",d.id);own.putInt("LedIn",0);own.putInt("Took",0);}
         own.putLong("Committed3",d.id);own.putInt("Took",own.getInt("Took")|1<<who);
         cue(p,LastSeenTexts.takeHand(who));
         return true;
@@ -1175,6 +1205,8 @@ public final class LastSeen {
                 o.putInt("Days",Math.max(3,o.getInt("Days")));
                 o.putInt("Brought",o.getLong("LedNight")==d.id?o.getInt("LedIn"):0);o.putBoolean("KeptDoor",o.getLong("KeptNight")==d.id);
                 o.putInt("TookHand",o.getLong("LedNight")==d.id?o.getInt("Took"):0);o.putInt("Gone",gone.stream().mapToInt(c->1<<c).sum());
+                // 0.4.671: from tonight there is a folder with this reader's face in it, in Nora's drawer.
+                file(r,o);
             }
             save(r,o);
             var rel=r.position().subtract(Vec3.atLowerCornerOf(d.base));
@@ -1218,6 +1250,112 @@ public final class LastSeen {
     }
 
     /** Everyone in the scene: inside its railing, in the office or on the avenue. */
+    // ------------------------------------------------------------------------------------------------ 0.4.671, after
+    /** Nora's desk, its drawer locked, unlocked or pulled out. */
+    static void desk(ServerLevel l,Day d,int stage){var at=d.base.offset(LastSeenSite.DESK);var st=l.getBlockState(at);if(LastSeenBlock.is(st,LastSeenBlock.Kind.DESK)&&st.getValue(LastSeenBlock.STAGE)!=stage)l.setBlock(at,st.setValue(LastSeenBlock.STAGE,stage),3);}
+    /** One cell of the city's fence lying flat: put up first if it is not there, so what grew under it is kept, then pushed over, its upper
+     * half gone and what was there before put back. */
+    static void fall(ServerLevel l,Day d,BlockPos cell){
+        var at=d.base.offset(cell);var low=l.getBlockState(at);
+        if(!LastSeenBlock.is(low,LastSeenBlock.Kind.FENCE)){if(raise(l,d,cell)!=1)return;low=l.getBlockState(at);}
+        int stage=low.getValue(LastSeenBlock.STAGE);if(stage>=LastSeenBlock.FALLEN)return;
+        l.setBlock(at,low.setValue(LastSeenBlock.STAGE,stage==LastSeenBlock.PANEL_MID?LastSeenBlock.FALLEN_MID:LastSeenBlock.FALLEN),3);
+        var up=at.above();if(LastSeenBlock.is(l.getBlockState(up),LastSeenBlock.Kind.FENCE))l.setBlock(up,d.under.getOrDefault(up,Blocks.AIR.defaultBlockState()),3);
+    }
+    /** What the drawer keeps of a reader who has had the night: their name, the House's read of their years and their home, and the day
+     * and hour the House first took them in, by its own count. Asked again each time, so the read is the latest. */
+    static void file(ServerPlayer p,CompoundTag own){
+        own.putString("FolderName",p.getGameProfile().getName());own.putBoolean("Minor",young(p));
+        own.putString("HomeRead",HouseRead.category(p,HouseRead.Trait.HOME).map(c->c.value()).orElse(""));
+        var st=io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p);
+        own.putString("TakenOn",LastSeenTexts.takenOn(st.enteredDay(),st.enteredTime()));
+    }
+    /** A reader's folder as the drawer shows it. */
+    static LastSeenDrawerPayload.Folder folder(UUID reader,CompoundTag own){
+        return new LastSeenDrawerPayload.Folder(reader,own.getBoolean("Minor")?LastSeenTexts.FORM:LastSeenTexts.FORM_PLAIN,LastSeenTexts.file(reader),
+            own.getString("FolderName"),own.getString("TakenOn").isEmpty()?LastSeenTexts.UNKNOWN_DAY:own.getString("TakenOn"),LastSeenTexts.note(own.getString("HomeRead")));
+    }
+    /**
+     * A hand on Nora's desk on the day after. The drawer comes out: the reader's own folder first, if they have had the night, then the
+     * folders of everyone else who has. The first time, Nora says whose it is, and the reader is ready; with the drawer open, their next hand
+     * on it takes out the account under it. Each visit the folder comes first. A reader who has not had the night is shown the others' and
+     * told there is none of theirs; nothing counts for them. Spectators open nothing.
+     */
+    public static boolean drawer(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
+        if(!rel.equals(LastSeenSite.DESK)||p.isSpectator())return false;
+        var d=day(b);if(d==null||d.number<AFTER)return false;
+        if(own.getBoolean("Ready")&&own.getInt("DrawerVisit")==own.getInt("Visits"))return false;
+        var l=p.serverLevel();var data=LabyrinthData.get(p.server);
+        boolean mine=own.getInt("Days")>=3;
+        var folders=new ArrayList<LastSeenDrawerPayload.Folder>();
+        if(mine){file(p,own);folders.add(folder(p.getUUID(),own));}
+        var others=new ArrayList<CompoundTag>();var ids=new HashMap<CompoundTag,UUID>();
+        for(var id:LiteraryVignettes.keepers(data,PLACE)){if(id.equals(p.getUUID()))continue;var o=LiteraryVignettes.personal(data,id,PLACE);if(o.getInt("Days")>=3&&o.contains("FolderName")){others.add(o);ids.put(o,id);}}
+        others.sort(Comparator.comparing(o->o.getString("FolderName")));
+        var names=new net.minecraft.nbt.ListTag();
+        for(var o:others){if(folders.size()>=64)break;folders.add(folder(ids.get(o),o));names.add(net.minecraft.nbt.StringTag.valueOf(o.getString("FolderName")));}
+        desk(l,d,LastSeenBlock.DRAWN);
+        l.playSound(null,b.offset(LastSeenSite.DESK),SoundEvents.CHISELED_BOOKSHELF_PICKUP,SoundSource.BLOCKS,.5F,.8F);
+        if(!folders.isEmpty())HousePackets.send(p,new LastSeenDrawerPayload(folders));
+        if(!mine){cue(p,LastSeenTexts.NO_FOLDER);return true;}
+        cue(p,LastSeenTexts.DRAWER);
+        own.putInt("DrawerVisit",own.getInt("Visits"));own.put("Others",names);
+        if(!own.getBoolean("Drawer")){own.putBoolean("Drawer",true);var nora=find(l,b,NORA);if(nora!=null)speak(l,b,nora,LastSeenTexts.NAMES[NORA],LastSeenTexts.NORA_YOURS);}
+        LiteraryVignettes.ready(p,PLACE,own,"found_their_own_folder");
+        return true;
+    }
+    /** The day after, every tick: each reader told once what the morning is; the Corner's girl. */
+    static void after(ServerLevel l,Day d,List<ServerPlayer> here){
+        if(d.tick%20==0)for(var r:here){var o=own(r);if(o.getLong("AfterSeen")!=d.id){o.putLong("AfterSeen",d.id);save(r,o);
+            cue(r,LastSeenSite.inOffice(r.position().subtract(Vec3.atLowerCornerOf(d.base)))?LastSeenTexts.AFTER_OFFICE:LastSeenTexts.AFTER);}}
+        corner(l,d,here);
+    }
+    /** A reader who finished The House on the Corner and has not yet seen her. */
+    static boolean waitsForHer(LabyrinthData data,ServerPlayer r){return WitnessAccount.has(data,r.getUUID(),WitnessAccount.Story.CORNER_HOUSE)&&!own(r).getBoolean("SawRomina");}
+    /**
+     * Once, to readers who finished The House on the Corner, and without a word: the first moment nobody sees, the girl with one arm stands
+     * at the fountain where the first of them stood, facing the avenue, and her brother, grown, stands on the far pavement across it, facing
+     * the park. Every such reader who sees her is marked as having seen her; once none is left who has not, they are gone the first moment
+     * nobody sees. She does not come again that day.
+     */
+    static void corner(ServerLevel l,Day d,List<ServerPlayer> here){
+        if(d.corner>=2||d.since<GIRL_AT||d.tick%5!=0)return;
+        var data=LabyrinthData.get(l.getServer());
+        var girlAt=world(d.base,RIM);var brotherAt=world(d.base,NACHO_AT);
+        if(d.corner==0){
+            if(here.stream().noneMatch(r->waitsForHer(data,r)))return;
+            for(var at:List.of(girlAt,brotherAt)){var c=BlockPos.containing(at);if(!l.isLoaded(c)||!l.areEntitiesLoaded(ChunkPos.asLong(c)))return;}
+            if(Drawing.seen(here,girlAt)||Drawing.seen(here,brotherAt))return;
+            var girl=makeCorner(l,Corner.ROMINA,girlAt,180F);if(girl==null)return;
+            var man=makeCorner(l,Corner.NACHO_GROWN,brotherAt,0F);if(man==null){girl.discard();return;}
+            d.romina=girl.getUUID();d.nacho=man.getUUID();d.corner=1;return;
+        }
+        var girl=actor(l,d.romina);var man=actor(l,d.nacho);
+        if(girl==null){if(man!=null)man.discard();d.corner=2;return;}
+        for(var r:here)if(waitsForHer(data,r)&&Drawing.seen(List.of(r),girl.position())){var o=own(r);o.putBoolean("SawRomina",true);save(r,o);}
+        if(here.stream().anyMatch(r->waitsForHer(data,r)))return;
+        if(Drawing.seen(here,girl.position())||man!=null&&Drawing.seen(here,man.position()))return;
+        girl.discard();if(man!=null)man.discard();d.corner=2;
+    }
+    static @Nullable LiteraryActor makeCorner(ServerLevel l,int phase,Vec3 at,float yaw){
+        var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
+        a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,phase);a.moveTo(at.x,at.y,at.z,yaw,0);turn(a,yaw);a.setDeltaMovement(Vec3.ZERO);
+        return l.addFreshEntity(a)?a:null;
+    }
+    /** The Corner's two, here on the day after. */
+    public static boolean corner(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&(a.phase()==Corner.ROMINA||a.phase()==Corner.NACHO_GROWN)&&a.scene().equals(PLACE.id());}
+    /** A hand on her: she says nothing, and turns her head to the reader, who has seen her. On him: he stays where he is. */
+    public static void cornerHand(ServerPlayer p,LiteraryActor a,CompoundTag own){
+        if(a.phase()!=Corner.ROMINA){cue(p,LastSeenTexts.NACHO_ACROSS);return;}
+        float yaw=toward(a.position(),p.position());a.setYHeadRot(yaw);
+        cue(p,LastSeenTexts.ROMINA_TURNS);
+        if(WitnessAccount.has(LabyrinthData.get(p.server),p.getUUID(),WitnessAccount.Story.CORNER_HOUSE)){own.putBoolean("SawRomina",true);own.putBoolean("RominaTurned",true);}
+    }
+    /** For checks: whether the Corner's girl is at the fountain, and the day's own record. */
+    public static boolean romina(BlockPos b){var d=day(b);return d!=null&&d.corner==1;}
+    /** For checks: the Corner's girl, or her brother, while they are here. */
+    public static @Nullable LiteraryActor cornerActor(ServerLevel l,BlockPos b,boolean girl){var d=day(b);return d==null?null:actor(l,girl?d.romina:d.nacho);}
+
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new ArrayList<ServerPlayer>();
         for(var p:l.players()){
@@ -1247,14 +1385,14 @@ public final class LastSeen {
             if(d.fresh){if(!loaded(l,d))continue;d.fresh=false;start(l,d,here);}
             d.tick++;d.since++;
             walk(l,d,here);
-            if(d.number<2)morning(l,d,here);else if(d.number>=NIGHT)night(l,d,here);else secondDay(l,d,here);
+            if(d.number<2)morning(l,d,here);else if(d.number>=AFTER)after(l,d,here);else if(d.number>=NIGHT)night(l,d,here);else secondDay(l,d,here);
             holding(l,d);
             if(d.tick%5==0)watchers(l,d,here);
             if(d.tick%40==0)for(var r:here)HousePackets.send(r,new LastSeenTimePayload(time(d)));
             var rnd=l.getRandom();
             // 0.4.670: at night a car only now and then, and no pigeons.
-            if(d.tick%(d.number>=NIGHT?960:240)==60)play(l,d.base.offset(-8+rnd.nextInt(34)-17,1,LastSeenSite.ROAD_S-3),LastSeenRegistry.TRAFFIC.get(),.6F);
-            if(d.tick%300==150&&d.number<NIGHT)play(l,d.base.offset(LastSeenSite.PATH_X+rnd.nextInt(9)-4,0,LastSeenSite.PATH_Z+rnd.nextInt(30)-15),LastSeenRegistry.PIGEONS.get(),.5F);
+            if(d.tick%(d.number==NIGHT?960:240)==60)play(l,d.base.offset(-8+rnd.nextInt(34)-17,1,LastSeenSite.ROAD_S-3),LastSeenRegistry.TRAFFIC.get(),.6F);
+            if(d.tick%300==150&&d.number!=NIGHT)play(l,d.base.offset(LastSeenSite.PATH_X+rnd.nextInt(9)-4,0,LastSeenSite.PATH_Z+rnd.nextInt(30)-15),LastSeenRegistry.PIGEONS.get(),.5F);
             if(d.tick%180==90&&here.stream().anyMatch(p->LastSeenSite.inOffice(p.position().subtract(Vec3.atLowerCornerOf(d.base)))))
                 play(l,d.base.offset(LastSeenSite.DESK).above(),LastSeenRegistry.TYPEWRITER.get(),.45F);
         }

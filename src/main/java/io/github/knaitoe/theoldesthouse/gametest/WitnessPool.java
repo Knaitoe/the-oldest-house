@@ -27,8 +27,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  * 0.4.630, A Little Longer: 90 / 68 / 66.
  * 0.4.643, A sort of thing: 91 / 69 / 67.
  * 0.4.666, Not yet: 92 / 69 / 68.
+ * 0.4.671, Last seen: 93 / 70 / 69.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=92,REQUIRED=69,LITERARY=68;
+    static final int SOURCES=93,REQUIRED=70,LITERARY=69;
 }
