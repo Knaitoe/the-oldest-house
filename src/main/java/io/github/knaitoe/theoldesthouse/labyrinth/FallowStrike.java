@@ -76,6 +76,11 @@ public final class FallowStrike {
          * gone down and the farmhouse burnt. And before the light of a fresh afternoon, which tiles are known to be standing again, and
          * whether all the rest is. */
         final java.util.BitSet ash=new java.util.BitSet(),clean=new java.util.BitSet();boolean cratered,polesDown,farmGone,cleanOutside;
+        /** 0.4.683, the road (FallowRoad): who the light found out in it and who of them is back; the shadows each reader has found;
+         * Opal's bean in the yard and how far the green has come; the man on the road, whether he has been seen since his face last
+         * changed, which face he has, and whether Opal has been taken down out of his sight. */
+        final Set<UUID> outside=new HashSet<>(),back=new HashSet<>();final Map<UUID,Set<Integer>> shadowsFound=new HashMap<>();
+        boolean planted,looked,hid;int satAt=-1,kneelAt=-1,plantedAt,ring,road,roadAt,face;@Nullable BlockPos bean;
         int since(int tick){return toneAt<0?-1:tick-toneAt;}
     }
 
@@ -148,6 +153,8 @@ public final class FallowStrike {
         if(t>=SHUT)doors(l,s,here,t);
         if(t>=LIGHT){light(l,s,here,t);FallowRuin.tick(l,s,here,t-LIGHT);FallowAsh.tick(l,s,t-LIGHT);}
         if(t>=LIGHT+FallowBuried.SETTLE)FallowBuried.tick(l,s,here,t-LIGHT-FallowBuried.SETTLE);
+        // 0.4.683: the road.
+        if(t>=LIGHT)FallowRoad.tick(l,s,here,t-LIGHT);
     }
     /** The tone: the television to its card, the people at the station laid off their afternoon. */
     static void begin(ServerLevel l,Fallow.Site s,List<ServerPlayer> here){
@@ -370,6 +377,8 @@ public final class FallowStrike {
             if(t<=LIGHT+1){
                 var own=Fallow.own(p);
                 own.putString("AtLight",below?"cellar":"outside");own.putInt("Strikes",own.getInt("Strikes")+1);
+                // 0.4.683: which afternoon's light it was, so that only its own readers are dealt the station afterward.
+                own.putInt("Afternoon",s.id);
                 own.putDouble("LightX",r.x);own.putDouble("LightY",r.y);own.putDouble("LightZ",r.z);own.putFloat("LightYaw",p.getYRot());
                 if(p.getUUID().equals(st.heldBy))own.putBoolean("HeldDoors",true);
                 // 0.4.680: out in front of the station, their shadow left on its front.
@@ -380,7 +389,7 @@ public final class FallowStrike {
             heard(p,FallowRegistry.BLAST.get(),below?.55F:1F);
             if(below){heard(p,FallowRegistry.RUMBLE.get(),1F);Fallow.cue(p,FallowTexts.CRACKS);}
             // 0.4.681: a reader below stays below, for the buried days; one out in it faints.
-            if(!below)st.faint.put(p.getUUID(),s.tick+OUT_FAINT);
+            if(!below){st.faint.put(p.getUUID(),s.tick+OUT_FAINT);st.outside.add(p.getUUID());}
         }
         if(t>LIGHT&&t<LIGHT+BELOW_FAINT){
             for(var p:here){
@@ -400,6 +409,8 @@ public final class FallowStrike {
     /** A word with one of them during the four minutes; false before the tone, when the afternoon's own lines answer. */
     static boolean talk(ServerPlayer p,LiteraryActor a,@Nullable Fallow.Site s,int who,CompoundTag own){
         if(s==null||s.strike.toneAt<0)return false;
+        // 0.4.683: the man on the road does not answer yet.
+        if(who==Fallow.STRANGER){FallowRoad.talk(p,s);return true;}
         var st=s.strike;int t=st.since(s.tick);
         String line=FallowBuried.talk(p,p.serverLevel(),s,who,own);
         if(line!=null){a.sayTo(p,FallowTexts.NAMES[who],line);a.speaks(line);return true;}
@@ -447,6 +458,8 @@ public final class FallowStrike {
         FallowSite.lid(l,b,FallowSite.PAD_A,0);FallowSite.lid(l,b,FallowSite.PAD_B,0);
         // 0.4.680: a station the light has had is built again first, so the doors below are the doors as built.
         FallowRuin.mend(l,b);
+        // 0.4.683: and the girl's bean taken up out of the yard.
+        FallowRoad.afresh(l,b);
         if(l.isLoaded(b.offset(FallowSite.WELL_W,0,FallowSite.WELL_S))&&Fallow.cellarOpen(l,b))Fallow.cellarDoors(l,b,false);
     }
     static void tv(ServerLevel l,BlockPos b,int stage){

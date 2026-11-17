@@ -2053,10 +2053,10 @@
       "model": "the_oldest_house:block/fallow/wheat_3"
     },
     "facing=north,kind=wheat,stage=4": {
-      "model": "the_oldest_house:block/fallow/wheat_0"
+      "model": "the_oldest_house:block/fallow/wheat_4"
     },
     "facing=north,kind=wheat,stage=5": {
-      "model": "the_oldest_house:block/fallow/wheat_0"
+      "model": "the_oldest_house:block/fallow/wheat_5"
     },
     "facing=north,kind=wheat,stage=6": {
       "model": "the_oldest_house:block/fallow/wheat_0"
@@ -2081,11 +2081,11 @@
       "y": 90
     },
     "facing=east,kind=wheat,stage=4": {
-      "model": "the_oldest_house:block/fallow/wheat_0",
+      "model": "the_oldest_house:block/fallow/wheat_4",
       "y": 90
     },
     "facing=east,kind=wheat,stage=5": {
-      "model": "the_oldest_house:block/fallow/wheat_0",
+      "model": "the_oldest_house:block/fallow/wheat_5",
       "y": 90
     },
     "facing=east,kind=wheat,stage=6": {
@@ -2113,11 +2113,11 @@
       "y": 180
     },
     "facing=south,kind=wheat,stage=4": {
-      "model": "the_oldest_house:block/fallow/wheat_0",
+      "model": "the_oldest_house:block/fallow/wheat_4",
       "y": 180
     },
     "facing=south,kind=wheat,stage=5": {
-      "model": "the_oldest_house:block/fallow/wheat_0",
+      "model": "the_oldest_house:block/fallow/wheat_5",
       "y": 180
     },
     "facing=south,kind=wheat,stage=6": {
@@ -2145,11 +2145,11 @@
       "y": 270
     },
     "facing=west,kind=wheat,stage=4": {
-      "model": "the_oldest_house:block/fallow/wheat_0",
+      "model": "the_oldest_house:block/fallow/wheat_4",
       "y": 270
     },
     "facing=west,kind=wheat,stage=5": {
-      "model": "the_oldest_house:block/fallow/wheat_0",
+      "model": "the_oldest_house:block/fallow/wheat_5",
       "y": 270
     },
     "facing=west,kind=wheat,stage=6": {

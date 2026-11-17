@@ -393,7 +393,7 @@ public final class FallowBuried {
             switch(who){
                 case Fallow.DRIVER->{Fallow.faceTo(a,s.world(new Vec3(12.5,0,-20.5)));say(a,"Otis",FallowTexts.OTIS_LOOKS);}
                 case Fallow.GIRL->{
-                    Fallow.faceTo(a,s.world(new Vec3(-13.5,0,-8.5)));a.gesture(Fallow.SIT);
+                    Fallow.faceTo(a,s.world(new Vec3(-13.5,0,-8.5)));a.gesture(Fallow.SIT);st.satAt=s.tick;
                     // The bean comes up with her, in her hands; the cup is set down in the ash by the steps in the fifth part.
                     a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(FallowRegistry.BEAN_CUP.get()));
                     var bs=l.getBlockState(s.base.offset(BEAN_BELOW));if(FallowBlock.is(bs,FallowBlock.Kind.BEAN)){st.beanStage=bs.getValue(FallowBlock.STAGE);l.setBlock(s.base.offset(BEAN_BELOW),Blocks.AIR.defaultBlockState(),3);}

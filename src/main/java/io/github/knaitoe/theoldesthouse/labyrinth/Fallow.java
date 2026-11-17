@@ -54,13 +54,20 @@ public final class Fallow {
     public static boolean child(int phase){return phase==FIRST+GIRL;}
     public static String skin(int phase){return SKINS[phase-FIRST];}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
+    /** 0.4.683: the man on the road in a face that is not his (FallowRoad): the keeper's, the big man's or the driver's skin; null when
+     * he has his own, or the viewer's (drawn on the player's model, LookoutRenderers.Double). */
+    public static @Nullable String dressed(int phase,int marks){
+        return phase==FIRST+STRANGER&&marks>=FallowRoad.KEEPER_FACE&&marks<FallowRoad.VIEWER?skin(FIRST+FallowRoad.faceOf(marks)):null;
+    }
+    /** 0.4.683: the man on the road with the face of whoever looks at him. */
+    public static boolean viewersFace(LiteraryActor a){return is(a)&&a.phase()==FIRST+STRANGER&&a.marks()==FallowRoad.VIEWER;}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     /** 0.4.673: dealt once a reader has come this many crossings down, after Last Seen's eight and before Not Yet's twelve. */
     public static final int DEPTH=10;
     public static boolean dealable(LabyrinthData d,UUID reader){
         if(d.returnDepth(reader)<DEPTH)return false;
-        // 0.4.681: a station the light has had is dealt only to readers who were there when it came.
-        for(var s:ACTIVE.values())if(s.strike.toneAt>=0&&s.strike.since(s.tick)>=FallowStrike.LIGHT&&LiteraryVignettes.personal(d,reader,PLACE).getString("AtLight").isEmpty())return false;
+        // 0.4.681: a station the light has had is dealt only to readers who were there when it came; 0.4.683: when this afternoon's came.
+        for(var s:ACTIVE.values())if(s.strike.toneAt>=0&&s.strike.since(s.tick)>=FallowStrike.LIGHT&&LiteraryVignettes.personal(d,reader,PLACE).getInt("Afternoon")!=s.id)return false;
         return true;
     }
     /** How the afternoon's people hold themselves (LiteraryRenderers.fallow): working overhead under the car, reaching up or out, a cup held
@@ -173,6 +180,8 @@ public final class Fallow {
         // 0.4.681: below in the buried days, the lantern, the roof, the crock, the shelves and the doors over the steps have their own say.
         var buried=ACTIVE.get(b.asLong());
         if(buried!=null&&FallowBuried.click(p,l,buried,rel,st,own))return true;
+        // 0.4.683: a hand on the store's front where a shadow lies.
+        if(buried!=null&&FallowRoad.touched(p,buried,rel,own))return true;
         if(FallowBuried.roof(rel,st)){cue(p,FallowTexts.CEILING_BEFORE);return true;}
         if(st.getBlock() instanceof DoorBlock){
             var lower=st.getValue(DoorBlock.HALF)==net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER?rel.below():rel;
@@ -235,6 +244,8 @@ public final class Fallow {
     public static final String TILL="till",GIRL_CHORE="girl";
     static final class Site{
         final BlockPos base;int tick,empty;
+        /** 0.4.683: this afternoon's own mark, kept by every reader its light finds (FallowStrike.light). */
+        final int id=1+java.util.concurrent.ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE-1);
         /** Whoever the afternoon has sent somewhere, so that nobody puts them back at their place. */
         final Set<Integer> away=new HashSet<>();
         final Map<Integer,List<Vec3>> routes=new HashMap<>();final Map<Integer,Integer> leg=new HashMap<>(),stall=new HashMap<>();
@@ -249,7 +260,7 @@ public final class Fallow {
         Site(BlockPos b){base=b;}
         Vec3 world(Vec3 rel){return Vec3.atLowerCornerOf(base).add(rel);}
     }
-    static final int EMPTY_FORGET=100;
+    public static final int EMPTY_FORGET=100;
     /** Everyone in the scene, store, yard, cellar, road and wheat alike. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new ArrayList<ServerPlayer>();
@@ -264,6 +275,8 @@ public final class Fallow {
     /** For tests: the afternoon at this base, if one is running. */
     public static @Nullable Site afternoon(BlockPos b){return ACTIVE.get(b.asLong());}
     public static int clock(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.tick;}
+    /** 0.4.683: the afternoon's own mark (Site.id), 0 when there is none. */
+    public static int mark(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?0:s.id;}
     /** For tests: set the afternoon's clock on, as if that much of it had gone by. */
     public static void skipTo(BlockPos b,int tick){var s=ACTIVE.get(b.asLong());if(s!=null)s.tick=Math.max(s.tick,tick);}
     public static int keeper(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.keeper;}
@@ -298,11 +311,13 @@ public final class Fallow {
             var s=it.next();var here=readers(l,s.base);
             if(here.isEmpty()){
                 // 0.4.681: a station buried with readers' days still running is kept a while, for a reader below who has stepped out of the game.
-                if(++s.empty>=(FallowBuried.holding(s)?FallowBuried.GRACE:EMPTY_FORGET)){var c=car(l,s.base);if(c!=null)c.discard();afresh(l,s.base);it.remove();}
+                // 0.4.683: and a station held for whoever the light found out in it and has not come back (FallowRoad.RETURN_HOLD).
+                int keep=EMPTY_FORGET;if(FallowBuried.holding(s))keep=Math.max(keep,FallowBuried.GRACE);if(FallowRoad.waiting(s))keep=Math.max(keep,FallowRoad.RETURN_HOLD);
+                if(++s.empty>=keep){var c=car(l,s.base);if(c!=null)c.discard();afresh(l,s.base);it.remove();}
                 continue;
             }
             s.empty=0;s.tick++;
-            if(s.tick%20==0){FallowRuin.leftover(l,s,here);FallowAsh.leftover(l,s,l.players().stream().filter(p->FallowSite.inScene(FallowStrike.rel(s,p))).toList());car(l,s.base);ensure(l,s.base,s);}
+            if(s.tick%20==0){FallowRuin.leftover(l,s,here);if(s.strike.toneAt<0)FallowRoad.afresh(l,s.base,here);FallowAsh.leftover(l,s,l.players().stream().filter(p->FallowSite.inScene(FallowStrike.rel(s,p))).toList());car(l,s.base);ensure(l,s.base,s);}
             afternoon(l,s,here);
             FallowStrike.tick(l,s,here);
             var rnd=l.getRandom();var one=here.get(rnd.nextInt(here.size()));

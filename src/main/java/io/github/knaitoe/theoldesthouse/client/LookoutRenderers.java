@@ -61,8 +61,10 @@ public final class LookoutRenderers {
         public DoubleModel(ModelPart part,boolean slim){super(part,slim);}
         @Override public void setupAnim(LiteraryActor a,float walk,float amount,float age,float yaw,float pitch){
             // 0.4.213: walking beside a reader (gesture 2), it walks as they do; in the tower it stands still.
-            boolean walks=a.gesture()==2;crouching=a.phase()==1;super.setupAnim(a,walks?walk:0,walks?amount:0,age,yaw,pitch);
-            if(a.gesture()==1){rightArm.xRot=-1.72F;leftArm.xRot=-1.72F;rightArm.yRot=-.42F;leftArm.yRot=.42F;rightArm.zRot=0;leftArm.zRot=0;head.xRot=0;
+            // 0.4.683: the man on the road at Fallow, in the viewer's own body, walks as he goes and holds nothing up.
+            boolean fallow=io.github.knaitoe.theoldesthouse.labyrinth.Fallow.is(a);
+            boolean walks=a.gesture()==2||fallow;crouching=a.phase()==1;super.setupAnim(a,walks?walk:0,walks?amount:0,age,yaw,pitch);
+            if(a.gesture()==1&&!fallow){rightArm.xRot=-1.72F;leftArm.xRot=-1.72F;rightArm.yRot=-.42F;leftArm.yRot=.42F;rightArm.zRot=0;leftArm.zRot=0;head.xRot=0;
                 rightSleeve.copyFrom(rightArm);leftSleeve.copyFrom(leftArm);hat.copyFrom(head);}
         }
     }
