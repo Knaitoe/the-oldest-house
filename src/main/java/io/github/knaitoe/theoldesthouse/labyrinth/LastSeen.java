@@ -28,11 +28,16 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
@@ -69,13 +74,17 @@ public final class LastSeen {
     private static final String[] CHILD_SKINS={"lastseen_rocio","lastseen_tomas","lastseen_micaela","lastseen_brian","lastseen_daiana","lastseen_lautaro","lastseen_abril","lastseen_joel","lastseen_yanina","lastseen_santino"};
     private static final String[] SKINS={"lastseen_nora","lastseen_patricia","lastseen_luz"};
     private static final String[] OTHER_SKINS={"lastseen_ocampo","lastseen_gran","lastseen_father","lastseen_mother"};
+    /** 0.4.670: the three men from the avenue, on the phases after the families. */
+    public static final int MEN_FIRST=260,MEN=3;
+    private static final String[] MEN_SKINS={"lastseen_man_a","lastseen_man_b","lastseen_man_c"};
     private static final BlockPos[] SEATS={LastSeenSite.NORA_AT,LastSeenSite.PATRICIA_AT,LastSeenSite.LUZ_AT};
-    public static boolean cast(int phase){return phase>=CHILDREN_FIRST&&phase<OTHERS_FIRST+OTHERS;}
+    public static boolean cast(int phase){return phase>=CHILDREN_FIRST&&phase<MEN_FIRST+MEN;}
+    public static boolean man(int phase){return phase>=MEN_FIRST&&phase<MEN_FIRST+MEN;}
     public static boolean office(int phase){return phase>=FIRST&&phase<FIRST+PEOPLE;}
     public static boolean other(int phase){return phase>=OTHERS_FIRST&&phase<OTHERS_FIRST+OTHERS;}
     /** One of the ten, at child scale. */
     public static boolean child(int phase){return phase>=CHILDREN_FIRST&&phase<CHILDREN_FIRST+CHILDREN;}
-    public static String skin(int phase){return phase>=OTHERS_FIRST?OTHER_SKINS[phase-OTHERS_FIRST]:phase>=FIRST?SKINS[phase-FIRST]:CHILD_SKINS[phase-CHILDREN_FIRST];}
+    public static String skin(int phase){return phase>=MEN_FIRST?MEN_SKINS[phase-MEN_FIRST]:phase>=OTHERS_FIRST?OTHER_SKINS[phase-OTHERS_FIRST]:phase>=FIRST?SKINS[phase-FIRST]:CHILD_SKINS[phase-CHILDREN_FIRST];}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     /** The House deals the place from depth eight, now that there is something to do in it. */
@@ -111,12 +120,21 @@ public final class LastSeen {
     public static final int MOTHER_AT_TICK=200,GRAN_AT=400,FATHER_AT=1000,AWAY=1200,CITY_AT=2000,OCAMPO_AT=2600,DUSK_AT=4800;
     /** The hour in the park: nine in the morning, and on the second day the sun going down to dusk by DUSK_AT. */
     public static final long MORNING_TIME=3000,DUSK_TIME=12300;
+    /**
+     * 0.4.670, the night (docs/LAST_SEEN_0_4_670.md): the third day; the men in from the avenue's ends; over the railing; dawn, and the few
+     * ticks the dark takes to fall before it shows; how long the door is tried; how often the men speak while they wait. The hour runs from
+     * nightfall toward the small hours, then to first light.
+     */
+    public static final int NIGHT=3,MEN_AT=200,OVER_AT=3000,DAWN_AT=4800,DAWN_DARK=25,TRY_WAIT=100,LINE_EVERY=360;
+    public static final long NIGHT_TIME=13800,LATE_TIME=21800,DAWN_TIME=23300;
     /** How many matched on the second day count it. */
     public static final int FOUR=4;
     /** The mark on Tomás's body once his grandmother has put his coat round him (LiteraryActor.marks). */
     public static final int COAT_MARK=1;
     /** Poses (LiteraryActor.gesture): a wrist held and drawn along; holding a child's wrist; both hands up on the wire; a coat carried. */
     public static final int LED=1,LEADING=2,MESH=3,CARRY=4;
+    /** 0.4.670: a man's flashlight held out ahead of him, and swept. */
+    public static final int FLASH=5;
     static final UUID PILE_HOLDER=new UUID(0L,0L);
     /** Luz's walk to the front door; Nora's from her desk, through the partition and out to the head of the path. */
     static final List<Vec3> LUZ_ROUTE=List.of(new Vec3(3.5,0,-10.5),new Vec3(1.5,0,-12.6)),
@@ -149,7 +167,7 @@ public final class LastSeen {
         /** Who of the office's three are up out of their chairs (a bit each). */
         int up;
         /** Walks under way, keyed: the office's three by their number, the others from 100, the children from 200. */
-        final Map<Integer,List<Vec3>> routes=new HashMap<>();final Map<Integer,Integer> leg=new HashMap<>();
+        final Map<Integer,List<Vec3>> routes=new HashMap<>();final Map<Integer,Integer> leg=new HashMap<>(),stall=new HashMap<>();
         final Set<UUID> sawRim=new HashSet<>();
         /** 0.4.669: the families and the city's man; what each is doing; Daiana away with her father, or back at the gate. */
         final UUID[] others=new UUID[OTHERS];final int[] beat=new int[OTHERS];final int[] beatAt=new int[OTHERS];
@@ -157,6 +175,14 @@ public final class LastSeen {
         final ArrayDeque<BlockPos> fence=new ArrayDeque<>();final ArrayDeque<BlockPos> notices=new ArrayDeque<>();boolean meshed;
         /** What the fence went up over (a tuft of grass, a flower), to be put back when the day is put back. */
         final Map<BlockPos,net.minecraft.world.level.block.state.BlockState> under=new HashMap<>();
+        /** 0.4.670, the night: the three men and what they are doing; their flashlights' lit cells (the last is the one along the shelves);
+         * which of the eight each reader has by the hand; who stands at their shelf in the archive, and who was in the park when the men
+         * came; the door tried, and whether it held; dawn. */
+        final UUID[] men=new UUID[MEN];final BlockPos[] beams=new BlockPos[MEN+1];int menBeat,menAt,said;
+        final Map<Integer,UUID> led=new HashMap<>();int inside,taken;
+        boolean chained,over,kept,dawn;int dawnAt=-1,triedAt=-1;
+        /** At dawn, the folders lying open on the long table, by the table cell they lie on. */
+        final Map<Integer,List<Integer>> open=new HashMap<>();
         Day(BlockPos b,long id){base=b;this.id=id;Arrays.fill(held,-1);}
     }
     static final Map<Long,Day> DAYS=new HashMap<>();
@@ -188,16 +214,23 @@ public final class LastSeen {
     /** 0.4.669, for a test or a look at the place: the second day's clock moved on to at least this tick. */
     /** The second day, past the morning; and dusk. */
     static boolean late(BlockPos b){var d=day(b);return d!=null&&d.number>=2;}
+    /** 0.4.670: the night, and its morning. */
+    static boolean night(BlockPos b){var d=day(b);return d!=null&&d.number>=NIGHT;}
     static boolean dusk(BlockPos b){var d=day(b);return d!=null&&d.dusk;}
     public static int since(BlockPos b){var d=day(b);return d==null?0:d.since;}
-    public static void at(BlockPos b,int since){var d=day(b);if(d!=null&&d.number==2)d.since=Math.max(d.since,since);}
+    public static void at(BlockPos b,int since){var d=day(b);if(d!=null&&d.number>=2)d.since=Math.max(d.since,since);}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
+    /** 0.4.670: the flashlights' light is taken out of the world before it is saved. */
+    @SubscribeEvent public static void stopping(ServerStoppingEvent e){
+        var l=e.getServer().getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        for(var d:DAYS.values())for(int i=0;i<d.beams.length;i++)unbeam(l,d,i);
+    }
 
     static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
     static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
     static Vec3 world(BlockPos b,Vec3 r){return new Vec3(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z);}
     /** 0.4.669: the furthest day a reader has reached: the second, once they have matched the first of them. */
-    static int reached(CompoundTag own){return own.getInt("Days")>=1?2:1;}
+    static int reached(CompoundTag own){int days=own.getInt("Days");return days>=2?NIGHT:days>=1?2:1;}
 
     /** A reader in: the morning is started if nobody is there, the office's three are put at their places, and the morning is heard. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -210,7 +243,10 @@ public final class LastSeen {
         l.playSound(null,b.offset(0,1,-14),LastSeenRegistry.TRAFFIC.get(),SoundSource.AMBIENT,.35F,1F);
     }
     /** The park's hour: the morning; on the second day, through the afternoon to dusk. */
-    static long time(Day d){return d.number<2?MORNING_TIME:MORNING_TIME+(long)((DUSK_TIME-MORNING_TIME)*Math.min(1D,d.since/(double)DUSK_AT));}
+    static long time(Day d){
+        if(d.number>=NIGHT)return d.dawn?Math.min(DAWN_TIME+(d.since-d.dawnAt)*2L,23950L):NIGHT_TIME+(long)((LATE_TIME-NIGHT_TIME)*Math.min(1D,d.since/(double)DAWN_AT));
+        return d.number<2?MORNING_TIME:MORNING_TIME+(long)((DUSK_TIME-MORNING_TIME)*Math.min(1D,d.since/(double)DUSK_AT));
+    }
 
     // ------------------------------------------------------------------------------------------------ the office's three
     static AABB area(BlockPos b){return new AABB(b.offset(LastSeenSite.WEST,-4,LastSeenSite.NORTH)).minmax(new AABB(b.offset(LastSeenSite.EAST,16,1)));}
@@ -227,6 +263,8 @@ public final class LastSeen {
             var at=b.offset(SEATS[who]);
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;
             var a=find(l,b,who);
+            // 0.4.670: at night only Nora stays; Patricia and Luz have gone home.
+            if(d!=null&&d.number>=NIGHT&&!d.fresh&&who!=NORA){if(a!=null)a.discard();continue;}
             if(a==null){
                 a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
                 a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
@@ -260,9 +298,15 @@ public final class LastSeen {
             String line=LastSeenTexts.family(who,heard);own.putInt("Family"+who,heard+1);
             a.say(LastSeenTexts.FAMILY_NAMES[who],line);a.speaks(line);return;
         }
+        if(man(a.phase())){cue(p,LastSeenTexts.MAN_TALK);return;}
         if(!office(a.phase()))return;
         int who=a.phase()-FIRST,heard=own.getInt("Heard"+who);
         String line;
+        // 0.4.670: Nora at night, by where the night has got to.
+        if(who==NORA&&d!=null&&d.number>=NIGHT){
+            line=d.dawn?LastSeenTexts.NORA_DAWN:d.over?LastSeenTexts.NORA_DOOR:d.chained?(heard%2==0?LastSeenTexts.NORA_BRING:LastSeenTexts.NORA_SHELF):LastSeenTexts.NORA_STAY;
+            own.putInt("Heard"+who,heard+1);a.say(LastSeenTexts.NAMES[who],line);a.speaks(line);return;
+        }
         int c=child(p.getMainHandItem());
         if(who==NORA&&d!=null&&d.number>=2&&c>=EIGHT.length&&live(d,p.getMainHandItem()))line=LastSeenTexts.NORA_NOT_BACK;
         else if(who==NORA&&d!=null&&d.number>=2&&own.getBoolean("Rule")&&!own.getBoolean("Leaving")&&heard>=2&&left(p)){line=LastSeenTexts.LEAVING;own.putBoolean("Leaving",true);}
@@ -355,6 +399,13 @@ public final class LastSeen {
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         // The houses across the avenue keep their doors locked; only the way on opens (OnwardPlacements sets that one).
         if(st.getBlock() instanceof DoorBlock&&rel.getZ()==LastSeenSite.HOUSE_FRONT&&rel.getX()!=LastSeenSite.ONWARD.getX()){cue(p,LastSeenTexts.HOUSE_DOOR);return true;}
+        // 0.4.670: at night the front desk's door is locked; Patricia locked it when she went home. The archive's back door is not.
+        var dn=day(b);
+        if(st.getBlock() instanceof DoorBlock&&dn!=null&&dn.number>=NIGHT&&!dn.dawn&&rel.getX()==LastSeenSite.FRONT_DOOR.getX()&&rel.getZ()==LastSeenSite.FRONT_DOOR.getZ()){cue(p,LastSeenTexts.FRONT_LOCKED);return true;}
+        if(dn!=null&&LastSeenBlock.is(st,LastSeenBlock.Kind.TABLE)&&st.getValue(LastSeenBlock.STAGE)>=3){
+            var on=dn.open.get(rel.getX());
+            if(on!=null&&!on.isEmpty()){int look=own.getInt("TableLook");int c=on.get(look%on.size());own.putInt("TableLook",look+1);cue(p,LastSeenTexts.tableOpen(c));show(p,c);return true;}
+        }
         if(!LastSeenBlock.is(st))return false;
         // The park's gate is shut but not locked: a hand swings both leaves open, and they stay open for everyone.
         if(st.getValue(LastSeenBlock.KIND)==LastSeenBlock.Kind.GATE&&st.getValue(LastSeenBlock.STAGE)==LastSeenBlock.SHUT){
@@ -444,6 +495,7 @@ public final class LastSeen {
         int who=a.phase()-CHILDREN_FIRST;var b=LiteraryVignettes.base(p,PLACE);var d=day(b);var l=p.serverLevel();
         var hand=p.getMainHandItem();int c=child(hand);
         if(d!=null&&d.givers.containsKey(who))return;
+        if(d!=null&&d.number>=NIGHT&&nightHand(p,d,a,who,own,hand))return;
         if(d!=null&&c==who&&live(d,hand)&&(who!=DAIANA||d.daiana==0||d.daiana==4)){
             hand.setCount(0);d.givers.put(c,p.getUUID());d.held[c]=0;
             a.setItemInHand(InteractionHand.MAIN_HAND,folder(d,c));
@@ -520,7 +572,13 @@ public final class LastSeen {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,area(d.base),x->x.role()==LiteraryActor.STRANGER&&(child(x.phase())||other(x.phase()))))a.discard();
         d.stage=MORNING;d.since=0;d.up=0;d.step=0;Arrays.fill(d.kids,null);d.givers.clear();Arrays.fill(d.held,-1);
         for(var p:here)d.number=Math.max(d.number,reached(own(p)));
-        if(d.number>=2){
+        if(d.number>=NIGHT){
+            // The night: the table bare, the front door shut, the fence and the notices up already; the eight at their places facing the
+            // avenue, Tomás in his coat, Daiana at the gate. Patricia and Luz have gone home.
+            table(l,d,0);door(l,d,false);d.stage=DUSK;d.dusk=true;d.coat=true;d.daiana=4;d.meshed=true;
+            for(var cell:fenceCells())raise(l,d,cell);
+            for(var lamp:LastSeenSite.LAMPS){var at=d.base.offset(lamp);if(LastSeenBlock.is(l.getBlockState(at),LastSeenBlock.Kind.LAMP_POST))l.setBlock(at,LastSeenBlock.of(LastSeenBlock.Kind.LAMP_POST,LastSeenSite.noticeFacing(lamp),LastSeenBlock.NOTICE),3);}
+        }else if(d.number>=2){
             table(l,d,0);door(l,d,true);d.stage=PARK;
             d.fence.addAll(fenceCells());d.notices.addAll(LastSeenSite.LAMPS);
         }else{
@@ -541,27 +599,41 @@ public final class LastSeen {
         for(var cell:fenceCells())for(int y=0;y<=1;y++){var at=d.base.offset(cell).above(y);if(LastSeenBlock.is(l.getBlockState(at),LastSeenBlock.Kind.FENCE))l.setBlock(at,d.under.getOrDefault(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState()),3);}
         d.under.clear();
         for(var lamp:LastSeenSite.LAMPS){var at=d.base.offset(lamp);var st=l.getBlockState(at);if(LastSeenBlock.is(st,LastSeenBlock.Kind.LAMP_POST)&&st.getValue(LastSeenBlock.STAGE)==LastSeenBlock.NOTICE)l.setBlock(at,LastSeenBlock.of(LastSeenBlock.Kind.LAMP_POST,Direction.NORTH,LastSeenBlock.SHAFT),3);}
+        // 0.4.670: the night's men and lights gone, the lamps lit, the gates shut and unchained, the long table as it was, the back door shut.
+        for(var id:d.men){var a=actor(l,id);if(a!=null)a.discard();}
+        for(int i=0;i<d.beams.length;i++)unbeam(l,d,i);
+        globes(l,d,true);
+        var gate=l.getBlockState(d.base.offset(LastSeenSite.GATE_W));if(LastSeenBlock.is(gate,LastSeenBlock.Kind.GATE)&&gate.getValue(LastSeenBlock.STAGE)!=LastSeenBlock.SHUT)LastSeenSite.gate(l,d.base,LastSeenBlock.SHUT);
+        for(int x=TABLE_W;x<=TABLE_E;x++)tableCell(l,d,x,x==LAMP_X?2:x==PILE_AT.getX()?1:0);
+        door(l,d,LastSeenSite.BACK_DOOR,false);
     }
-    static void door(ServerLevel l,Day d,boolean open){
-        var at=d.base.offset(LastSeenSite.FRONT_DOOR);var st=l.getBlockState(at);
+    static void door(ServerLevel l,Day d,boolean open){door(l,d,LastSeenSite.FRONT_DOOR,open);}
+    static void door(ServerLevel l,Day d,BlockPos rel,boolean open){
+        var at=d.base.offset(rel);var st=l.getBlockState(at);
         if(st.getBlock() instanceof DoorBlock door&&st.getValue(DoorBlock.OPEN)!=open){door.setOpen(null,l,st,at,open);}
     }
     /** Whoever is walking: the office's three by number, the others from 100, the children from 200. */
-    @Nullable static LiteraryActor walker(ServerLevel l,Day d,int key){return key<100?find(l,d.base,key):key<200?actor(l,d.others[key-100]):actor(l,d.kids[key-200]);}
-    static void walk(ServerLevel l,Day d){
+    @Nullable static LiteraryActor walker(ServerLevel l,Day d,int key){return key<100?find(l,d.base,key):key<200?actor(l,d.others[key-100]):key<300?actor(l,d.kids[key-200]):actor(l,d.men[key-300]);}
+    /** Ticks a walker may stand caught on something before, where nobody sees, they are simply at their next point. */
+    static final int STALL=60;
+    static void walk(ServerLevel l,Day d,List<ServerPlayer> here){
         for(var key:List.copyOf(d.routes.keySet())){
-            var a=walker(l,d,key);if(a==null){d.routes.remove(key);d.leg.remove(key);continue;}
+            var a=walker(l,d,key);if(a==null){d.routes.remove(key);d.leg.remove(key);d.stall.remove(key);continue;}
             var route=d.routes.get(key);int i=d.leg.get(key);
-            if(i>=route.size()){d.routes.remove(key);d.leg.remove(key);continue;}
+            if(i>=route.size()){d.routes.remove(key);d.leg.remove(key);d.stall.remove(key);continue;}
             // Spoken to on the way, they stop to answer, as the Drawing's villagers do, then go on.
             if(a.listening())continue;
             // The gate is opened by whoever comes to it shut.
             if(key>=100&&key<200)gateFor(l,d,a);
-            var target=world(d.base,route.get(i));
-            if(SceneFootpaths.walk(a,target,key<100?.11:.12)||a.position().distanceToSqr(target)<.09)d.leg.put(key,i+1);
+            var target=world(d.base,route.get(i));var before=a.position();
+            if(SceneFootpaths.walk(a,target,key<100?.11:key>=300?.13:.12)||a.position().distanceToSqr(target)<.09){d.leg.put(key,i+1);d.stall.remove(key);continue;}
+            // 0.4.670: one caught on a bench or a post (or a reader in the way) for three seconds goes on to the next point the first
+            // moment neither it nor where they stand can be seen.
+            int still=a.position().distanceToSqr(before)<1.0E-4?d.stall.getOrDefault(key,0)+1:0;d.stall.put(key,still);
+            if(still>=STALL&&!Drawing.seen(here,a.position())&&!Drawing.seen(here,target)){a.moveTo(target.x,target.y,target.z,a.getYRot(),0);d.leg.put(key,i+1);d.stall.remove(key);}
         }
     }
-    static void send(Day d,int key,List<Vec3> route){if(key<100)d.up|=1<<key;d.routes.put(key,new ArrayList<>(route));d.leg.put(key,0);}
+    static void send(Day d,int key,List<Vec3> route){if(key<100)d.up|=1<<key;d.routes.put(key,new ArrayList<>(route));d.leg.put(key,0);d.stall.remove(key);}
     static boolean busy(Day d,int key){return d.routes.containsKey(key);}
     /** The pile shelved (none of its folders off the shelves), or the morning gone on long enough: she is at the fountain. */
     static void morning(ServerLevel l,Day d,List<ServerPlayer> here){
@@ -591,6 +663,7 @@ public final class LastSeen {
             var a=actor(l,d.kids[c]);if(a==null)continue;
             for(var r:here){
                 if(r.distanceToSqr(a)>=8*8)continue;
+                if(d.number>=NIGHT){if(d.near.add(r.getUUID().getLeastSignificantBits()*31+c))cue(r,LastSeenTexts.nearNight(c));continue;}
                 if(c==ROCIO&&d.sawRim.add(r.getUUID())){cue(r,LastSeenTexts.AT_RIM);var o=own(r);o.putBoolean("SawFirst",true);save(r,o);continue;}
                 if(c!=ROCIO&&d.near.add(r.getUUID().getLeastSignificantBits()*31+c)){cue(r,LastSeenTexts.near(c));var o=own(r);o.putInt("Saw",o.getInt("Saw")|1<<c);save(r,o);}
             }
@@ -772,23 +845,32 @@ public final class LastSeen {
         return st.isAir()||st.canBeReplaced()||st.getCollisionShape(l,at).isEmpty()&&!st.hasBlockEntity()&&!(st.getBlock() instanceof LastSeenBlock);
     }
     static boolean ringed(Vec3 r){return r.x>5&&r.x<22&&r.z>-39&&r.z<-20;}
+    /** One cell of the fence put up: 1 if it went up, 0 if something built there leaves it out (a post, a bench: the fence meets it), -1 if
+     * someone is standing in it (not one standing at its edge, as Lautaro stands at the old gap) and it must wait. */
+    static int raise(ServerLevel l,Day d,BlockPos cell){
+        var at=d.base.offset(cell);var low=l.getBlockState(at);var high=l.getBlockState(at.above());
+        if(LastSeenBlock.is(low,LastSeenBlock.Kind.FENCE))return 0;
+        if(!free(l,at,low)||!free(l,at.above(),high)){TheOldestHouse.LOGGER.debug("Last Seen: the fence leaves out {} ({})",cell,low);return 0;}
+        if(!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).expandTowards(0,1,0).deflate(.3,0,.3)).isEmpty())return -1;
+        if(!low.isAir())d.under.put(at.immutable(),low);
+        if(!high.isAir())d.under.put(at.above().immutable(),high);
+        l.setBlock(at,fence(cell,false),3);l.setBlock(at.above(),fence(cell,true),3);
+        if(cell.getX()==13&&cell.getZ()==-21)d.meshed=true;
+        return 1;
+    }
     /** The city: the fence goes up a panel at a time, and the notices onto the lamp posts, only where nobody sees, and never round a reader. */
     static void city(ServerLevel l,Day d,List<ServerPlayer> here){
         if(d.since<CITY_AT)return;
         if(d.tick%4==0&&!d.fence.isEmpty()&&here.stream().noneMatch(p->ringed(p.position().subtract(Vec3.atLowerCornerOf(d.base))))){
             for(int tries=Math.min(4,d.fence.size());tries>0;tries--){
                 var cell=d.fence.pollFirst();var at=d.base.offset(cell);
-                var low=l.getBlockState(at);var high=l.getBlockState(at.above());
-                if(LastSeenBlock.is(low,LastSeenBlock.Kind.FENCE))continue;
-                // Something built there (a post, a bench): the fence meets it and that cell is left out.
-                if(!free(l,at,low)||!free(l,at.above(),high)){TheOldestHouse.LOGGER.debug("Last Seen: the fence leaves out {} ({})",cell,low);continue;}
-                // Someone standing in it (not one standing at its edge, as Lautaro stands at the old gap), or a reader looking: later.
-                if(!l.getEntitiesOfClass(LivingEntity.class,new AABB(at).expandTowards(0,1,0).deflate(.3,0,.3)).isEmpty()||Drawing.seen(here,Vec3.atBottomCenterOf(at))){d.fence.addLast(cell);continue;}
-                if(!low.isAir())d.under.put(at.immutable(),low);
-                if(!high.isAir())d.under.put(at.above().immutable(),high);
-                l.setBlock(at,fence(cell,false),3);l.setBlock(at.above(),fence(cell,true),3);
+                if(LastSeenBlock.is(l.getBlockState(at),LastSeenBlock.Kind.FENCE))continue;
+                // A reader looking: later.
+                if(Drawing.seen(here,Vec3.atBottomCenterOf(at))){d.fence.addLast(cell);continue;}
+                int up=raise(l,d,cell);
+                if(up<0){d.fence.addLast(cell);continue;}
+                if(up==0)continue;
                 if(l.getRandom().nextInt(3)==0)l.playSound(null,at,SoundEvents.CHAIN_PLACE,SoundSource.BLOCKS,.5F,.7F);
-                if(cell.getX()==13&&cell.getZ()==-21)d.meshed=true;
                 break;
             }
         }
@@ -813,6 +895,326 @@ public final class LastSeen {
             case 6->{if(!busy(d,key)&&gone(l,d,OCAMPO,here))d.beat[OCAMPO]=7;}
             default->{}
         }
+    }
+
+
+    // ------------------------------------------------------------------------------------------------ 0.4.670, the night
+    /** The long table's cells, the lamp's, and where the men come over the railing, walk to and stand at the office. */
+    public static final int TABLE_W=-19,TABLE_E=-14,LAMP_X=-19;
+    static final Vec3[] MEN_FROM={new Vec3(-38.5,0,-91.5),new Vec3(22.5,0,-91.5),new Vec3(-38.5,0,-93.5),new Vec3(22.5,0,-93.5)};
+    static final Vec3[] MEN_GATHER={new Vec3(-12.5,0,-86.8),new Vec3(-8.0,0,-87.3),new Vec3(-3.5,0,-86.8)};
+    static final Vec3[] MEN_OVER={new Vec3(-12.5,0,-83.5),new Vec3(-8.0,0,-82.6),new Vec3(-3.5,0,-83.5)};
+    static final Vec3[] MEN_DOOR={new Vec3(-15.5,0,-15.3),new Vec3(-18.5,0,-15.7),new Vec3(-12.5,0,-15.7)};
+    /** Where the back door is kept from: just inside it. */
+    public static final Vec3 KEEP=new Vec3(-15.5,0,-12.5);
+    /** A man's way from the railing to the office by the path, a little to one side of the others (never so far out as the benches
+     * and lamp posts beside it); and back. */
+    static List<Vec3> menIn(int i){
+        double o=(i-1)*.6;var out=new ArrayList<Vec3>();out.add(new Vec3(-8.0+o,0,-80.5));
+        for(var v:DOWN_PATH)out.add(new Vec3(v.x+o,0,v.z));
+        out.add(new Vec3(-8.0+o,0,-20.5));out.add(new Vec3(-12.0+o,0,-17.0));out.add(MEN_DOOR[i]);return out;
+    }
+    static List<Vec3> menOut(int i){var in=menIn(i);var out=reversed(in.subList(0,in.size()-1));out.add(MEN_OVER[i]);return out;}
+
+    /** For checks: who has a child by the hand; who stands at their shelf; the men; the night's turns. */
+    public static @Nullable UUID led(BlockPos b,int child){var d=day(b);return d==null?null:d.led.get(child);}
+    public static boolean inside(BlockPos b,int child){var d=day(b);return d!=null&&(d.inside&1<<child)!=0;}
+    public static @Nullable LiteraryActor man(ServerLevel l,BlockPos b,int i){var d=day(b);return d==null?null:actor(l,d.men[i]);}
+    public static int menBeat(BlockPos b){var d=day(b);return d==null?-1:d.menBeat;}
+    public static boolean chained(BlockPos b){var d=day(b);return d!=null&&d.chained;}
+    public static boolean over(BlockPos b){var d=day(b);return d!=null&&d.over;}
+    public static boolean dawn(BlockPos b){var d=day(b);return d!=null&&d.dawn;}
+    public static boolean tried(BlockPos b){var d=day(b);return d!=null&&d.triedAt>=0;}
+    /** For checks: how far along his way a man is, or -1 when he is not walking. */
+    public static int leg(BlockPos b,int man){var d=day(b);if(d==null)return -2;var at=d.leg.get(300+man);return at==null?-1:at;}
+    public static boolean held(BlockPos b){var d=day(b);return d!=null&&d.kept;}
+    public static List<Integer> openOn(BlockPos b,int x){var d=day(b);return d==null?List.of():d.open.getOrDefault(x,List.of());}
+
+    /** For a look at the place: one of the eight already in the archive, standing at their shelf. */
+    public static void bringIn(ServerLevel l,BlockPos b,int c){
+        var d=day(b);if(d==null)return;var a=actor(l,d.kids[c]);if(a==null)return;
+        d.led.remove(c);var at=shelfFront(d,c);float yaw=shelfYaw(c);a.moveTo(at.x,at.y,at.z,yaw,0);turn(a,yaw);a.gesture(0);d.inside|=1<<c;
+    }
+    /** A reader who has taken one of them by the hand, or kept the back door, until morning: they do not go back out the way they came. */
+    public static boolean locked(ServerPlayer p){
+        if(!LiteraryVignettes.inside(p,PLACE))return false;
+        var d=day(LiteraryVignettes.base(p,PLACE));if(d==null||d.number<NIGHT||d.dawn)return false;
+        return own(p).getLong("Committed3")==d.id;
+    }
+    /** A reader keeping the back door: inside the archive, against it. */
+    static boolean keeping(ServerPlayer p,BlockPos b){var r=p.position().subtract(Vec3.atLowerCornerOf(b));return LastSeenSite.inArchive(r)&&new Vec3(r.x,0,r.z).distanceToSqr(KEEP)<2.6*2.6;}
+    static boolean doorOpen(ServerLevel l,Day d){var st=l.getBlockState(d.base.offset(LastSeenSite.BACK_DOOR));return st.getBlock() instanceof DoorBlock&&st.getValue(DoorBlock.OPEN);}
+    /** Standing at their own folder: the cell in front of its bay, facing it. */
+    static Vec3 shelfFront(Day d,int c){
+        var s=LastSeenSite.SHELVES.get(bayFor(c));
+        var front=s.getX()==LastSeenSite.OFFICE_W+1?s.east():s.getZ()==LastSeenSite.OFFICE_S-1?s.north():s.south();
+        return world(d.base,new Vec3(front.getX()+.5,0,front.getZ()+.5));
+    }
+    public static Vec3 shelfFront(BlockPos b,int c){var d=day(b);return d==null?Vec3.ZERO:shelfFront(d,c);}
+    public static float shelfYaw(int c){var s=LastSeenSite.SHELVES.get(bayFor(c));return s.getX()==LastSeenSite.OFFICE_W+1?90F:s.getZ()==LastSeenSite.OFFICE_S-1?0F:180F;}
+
+    /**
+     * A hand held out to one of the eight at night. Empty-handed, before the men come: the child takes it, and from then until morning the
+     * reader does not go back out the way they came. Again: let go. Holding something else, or after the men, it is the day's answer.
+     */
+    static boolean nightHand(ServerPlayer p,Day d,LiteraryActor a,int who,CompoundTag own,ItemStack hand){
+        if((d.inside&1<<who)!=0){cue(p,LastSeenTexts.atFolder(who));return true;}
+        var holder=d.led.get(who);
+        if(holder!=null){
+            if(holder.equals(p.getUUID()))letGo(p.serverLevel(),d,who,p);else cue(p,LastSeenTexts.heldOther(who));
+            return true;
+        }
+        if(!hand.isEmpty()||d.over)return false;
+        if(d.led.containsValue(p.getUUID())){cue(p,LastSeenTexts.HAND_FULL);return true;}
+        d.led.put(who,p.getUUID());a.gesture(LED);
+        if(own.getLong("LedNight")!=d.id){own.putLong("LedNight",d.id);own.putInt("LedIn",0);}
+        own.putLong("Committed3",d.id);own.putInt("Took",own.getInt("Took")|1<<who);
+        cue(p,LastSeenTexts.takeHand(who));
+        return true;
+    }
+    static void letGo(ServerLevel l,Day d,int c,@Nullable ServerPlayer p){
+        if(d.led.remove(c)==null)return;var a=actor(l,d.kids[c]);if(a!=null)a.gesture(0);
+        if(p!=null)cue(p,LastSeenTexts.letGo(c));
+    }
+
+    static void night(ServerLevel l,Day d,List<ServerPlayer> here){
+        leading(l,d,here);
+        nightKids(l,d,here);
+        men(l,d,here);
+        if(!d.over&&d.menBeat>=3&&d.since>=OVER_AT)over(l,d,here);
+        if(d.over&&!d.dawn&&d.dawnAt<0&&d.since>=DAWN_AT&&(d.menBeat>=7||d.since>=DAWN_AT+400)){
+            d.dawnAt=d.since;for(var r:here)HousePackets.send(r,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(DAWN_DARK,30,60));
+        }
+        if(!d.dawn&&d.dawnAt>=0&&d.since-d.dawnAt>=DAWN_DARK)dawn(l,d,here);
+        // Readers keeping the door once the men are over, told once a night; keeping it commits them, as taking a hand does.
+        if(d.over&&d.triedAt<0&&d.tick%10==0)for(var r:here)if(keeping(r,d.base)){var o=own(r);if(o.getLong("KeepCue")!=d.id){o.putLong("KeepCue",d.id);o.putLong("Committed3",d.id);save(r,o);cue(r,LastSeenTexts.KEEP);}}
+        beams(l,d);
+    }
+    /** Each reader's child by the hand: a step behind and to the left, holding on. Crouching, going too far ahead or leaving lets go. In the
+     * archive the child lets go and goes to stand at their folder. */
+    static void leading(ServerLevel l,Day d,List<ServerPlayer> here){
+        for(var e:List.copyOf(d.led.entrySet())){
+            int c=e.getKey();var a=actor(l,d.kids[c]);var p=l.getServer().getPlayerList().getPlayer(e.getValue());
+            if(a==null){d.led.remove(c);continue;}
+            if(p==null||!here.contains(p)||p.isShiftKeyDown()||p.distanceTo(a)>6){letGo(l,d,c,p);continue;}
+            if(LastSeenSite.inArchive(a.position().subtract(Vec3.atLowerCornerOf(d.base)))){
+                d.led.remove(c);d.inside|=1<<c;a.gesture(0);
+                var o=own(p);o.putInt("LedIn",o.getInt("LedIn")|1<<c);save(p,o);
+                cue(p,LastSeenTexts.atShelf(c));continue;
+            }
+            double yaw=Math.toRadians(p.getYRot());var forward=new Vec3(-Math.sin(yaw),0,Math.cos(yaw));var left=new Vec3(forward.z,0,-forward.x);
+            var at=p.position().subtract(forward.scale(.8)).add(left.scale(.42));
+            if(a.position().distanceToSqr(at)>.01)SceneFootpaths.step(a,at,.34);
+            turn(a,toward(a.position(),p.position()));
+        }
+    }
+    /** The eight at night: at their places facing the avenue; at their shelves once they are in; gone once the men are over. */
+    static void nightKids(ServerLevel l,Day d,List<ServerPlayer> here){
+        for(int c:EIGHT){
+            int bit=1<<c;
+            if((d.taken&bit)!=0){var a=actor(l,d.kids[c]);if(a==null||!Drawing.seen(here,a.position())){if(a!=null)a.discard();d.kids[c]=null;d.taken&=~bit;}continue;}
+            if(d.led.containsKey(c))continue;
+            if((d.inside&bit)!=0){
+                var a=actor(l,d.kids[c]);if(a==null)continue;var at=shelfFront(d,c);
+                if(a.position().distanceToSqr(at)>.04)SceneFootpaths.walk(a,at,.1);else{turn(a,shelfYaw(c));a.setDeltaMovement(Vec3.ZERO);}
+                continue;
+            }
+            if(d.over||d.dawn)continue;
+            if(!makeKid(l,d,c,here))continue;
+            var a=actor(l,d.kids[c]);if(a==null||d.givers.containsKey(c))continue;
+            var at=world(d.base,spot(d,c));
+            if(a.position().distanceToSqr(at)>.16)SceneFootpaths.walk(a,at,.08);
+            else{turn(a,facing(d,c));a.setDeltaMovement(Vec3.ZERO);a.gesture(0);}
+        }
+    }
+    /** One of the men, made at an end of the avenue where nobody sees, with his flashlight, and a length of wood if he carries one. */
+    static @Nullable LiteraryActor makeMan(ServerLevel l,Day d,int i,List<ServerPlayer> here){
+        var have=actor(l,d.men[i]);if(have!=null)return have;
+        for(int k=0;k<MEN_FROM.length;k++){
+            var from=MEN_FROM[(i+k)%MEN_FROM.length];var at=world(d.base,from);var cell=BlockPos.containing(at);
+            if(!l.isLoaded(cell)||!l.areEntitiesLoaded(ChunkPos.asLong(cell))||Drawing.seen(here,at))continue;
+            var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
+            a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,MEN_FIRST+i);
+            float yaw=from.x<0?-90F:90F;a.moveTo(at.x,at.y,at.z,yaw,0);turn(a,yaw);a.setDeltaMovement(Vec3.ZERO);
+            a.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(LastSeenRegistry.FLASHLIGHT.get()));
+            if(i!=1)a.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(LastSeenRegistry.STICK.get()));
+            a.gesture(FLASH);
+            if(!l.addFreshEntity(a))return null;
+            d.men[i]=a.getUUID();play(l,cell,LastSeenRegistry.SWITCH.get(),.5F);
+            return a;
+        }
+        return null;
+    }
+    /**
+     * The men: in from the ends of the avenue to the park's gate, which they chain; talking low while they wait; over the railing when it is
+     * time, across the park to the office, the back door tried; and away again.
+     */
+    static void men(ServerLevel l,Day d,List<ServerPlayer> here){
+        switch(d.menBeat){
+            case 0->{
+                if(d.since<MEN_AT)return;
+                boolean all=true;
+                for(int i=0;i<MEN;i++){if(actor(l,d.men[i])!=null)continue;if(makeMan(l,d,i,here)!=null)send(d,300+i,List.of(MEN_GATHER[i]));else all=false;}
+                if(all)d.menBeat=1;
+            }
+            case 1->{
+                for(int i=0;i<MEN;i++)if(busy(d,300+i))return;
+                for(var id:d.men){var a=actor(l,id);if(a!=null)turn(a,0F);}
+                // The gate chained from the avenue side, the children inside.
+                d.chained=true;LastSeenSite.gate(l,d.base,LastSeenBlock.CHAINED);
+                play(l,d.base.offset(LastSeenSite.GATE_W),LastSeenRegistry.CHAIN.get(),.9F);
+                for(var r:here){var rel=r.position().subtract(Vec3.atLowerCornerOf(d.base));if(!LastSeenSite.inOffice(rel))cue(r,LastSeenTexts.CHAINED);}
+                var nora=find(l,d.base,NORA);
+                if(nora!=null)for(var r:here)if(LastSeenSite.inOffice(r.position().subtract(Vec3.atLowerCornerOf(d.base)))){speak(l,d.base,nora,LastSeenTexts.NAMES[NORA],LastSeenTexts.NORA_CHAINED);break;}
+                var first=actor(l,d.men[0]);if(first!=null)speak(l,d.base,first,null,LastSeenTexts.MEN_LINES[0]);
+                d.said=1;d.menBeat=2;d.menAt=d.since;
+            }
+            case 2->{
+                for(var id:d.men){var a=actor(l,id);if(a!=null&&!a.listening())turn(a,0F);}
+                if(d.said<LastSeenTexts.MEN_LINES.length&&d.since-d.menAt>=LINE_EVERY*d.said){
+                    var a=actor(l,d.men[d.said%MEN]);
+                    if(a!=null){speak(l,d.base,a,null,LastSeenTexts.MEN_LINES[d.said]);play(l,a.blockPosition(),LastSeenRegistry.VOICES.get(),.6F);}
+                    d.said++;
+                }
+                if(d.since>=OVER_AT-20)d.menBeat=3;
+            }
+            case 4->{
+                if(busy(d,300))return;
+                var a=actor(l,d.men[0]);if(a!=null)turn(a,0F);
+                for(int i=1;i<MEN;i++){var m=actor(l,d.men[i]);if(m!=null&&!busy(d,300+i))turn(m,0F);}
+                tryDoor(l,d,here);
+            }
+            case 5->{
+                int t=d.since-d.triedAt;var a=actor(l,d.men[0]);
+                if(t==40&&a!=null)speak(l,d.base,a,null,d.kept?LastSeenTexts.MAN_LOCKED:LastSeenTexts.MAN_PAPER);
+                if(t<TRY_WAIT)return;
+                if(!d.kept)door(l,d,LastSeenSite.BACK_DOOR,false);
+                for(int i=0;i<MEN;i++)send(d,300+i,menOut(i));
+                d.menBeat=6;
+            }
+            case 6->{
+                boolean all=true;
+                for(int i=0;i<MEN;i++){
+                    if(d.men[i]==null)continue;
+                    if(busy(d,300+i)){all=false;continue;}
+                    var a=actor(l,d.men[i]);if(a==null||!Drawing.seen(here,a.position())){if(a!=null)a.discard();d.men[i]=null;}else all=false;
+                }
+                if(all)d.menBeat=7;
+            }
+            default->{}
+        }
+    }
+    /**
+     * The men come over the railing. The park's lamps go out; a reader out in the park or on the avenue sees nothing for a moment; and none
+     * of the eight still out there is where they were. Whoever is in the place now was there when the men came.
+     */
+    static void over(ServerLevel l,Day d,List<ServerPlayer> here){
+        d.over=true;d.menBeat=4;
+        globes(l,d,false);
+        var out=new ArrayList<ServerPlayer>();var in=new ArrayList<ServerPlayer>();
+        for(var r:here){var rel=r.position().subtract(Vec3.atLowerCornerOf(d.base));(LastSeenSite.inOffice(rel)?in:out).add(r);}
+        for(var r:out)HousePackets.send(r,new io.github.knaitoe.theoldesthouse.network.HouseFadePayload(8,30,50));
+        for(int i=0;i<MEN;i++){
+            var a=actor(l,d.men[i]);if(a==null)continue;
+            var at=world(d.base,MEN_OVER[i]);a.moveTo(at.x,at.y,at.z,0F,0);turn(a,0F);
+            play(l,BlockPos.containing(at),LastSeenRegistry.CLIMB.get(),.8F);
+            send(d,300+i,menIn(i));
+        }
+        // Whoever was leading one of them out there has an empty hand.
+        for(var e:List.copyOf(d.led.entrySet())){var p=l.getServer().getPlayerList().getPlayer(e.getValue());d.led.remove(e.getKey());if(p!=null)cue(p,LastSeenTexts.EMPTY_HAND);}
+        for(int c:EIGHT){
+            if((d.inside&1<<c)!=0)continue;
+            var a=actor(l,d.kids[c]);if(a==null)continue;
+            if(!Drawing.seen(in,a.position())){a.discard();d.kids[c]=null;}else d.taken|=1<<c;
+        }
+        for(var r:here){
+            var o=own(r);o.putLong("NightOver",d.id);save(r,o);
+            cue(r,in.contains(r)?LastSeenTexts.OVER_OFFICE:LastSeenTexts.OVER_PARK);
+        }
+    }
+    /** One of them tries the back door. Kept shut from inside, it holds; otherwise it opens, and his light goes along the shelves. */
+    static void tryDoor(ServerLevel l,Day d,List<ServerPlayer> here){
+        var at=d.base.offset(LastSeenSite.BACK_DOOR);
+        play(l,at,LastSeenRegistry.RATTLE.get(),.9F);
+        boolean shut=!doorOpen(l,d);var keepers=new ArrayList<ServerPlayer>();for(var r:here)if(keeping(r,d.base))keepers.add(r);
+        d.kept=shut&&!keepers.isEmpty();
+        if(!d.kept&&shut)door(l,d,LastSeenSite.BACK_DOOR,true);
+        for(var r:here){
+            if(keepers.contains(r)&&d.kept){var o=own(r);o.putLong("KeptNight",d.id);save(r,o);cue(r,LastSeenTexts.KEPT);continue;}
+            var rel=r.position().subtract(Vec3.atLowerCornerOf(d.base));
+            if(LastSeenSite.inOffice(rel))cue(r,d.kept?LastSeenTexts.TRY_HELD:LastSeenTexts.TRY_OPEN);
+        }
+        d.triedAt=d.since;d.menBeat=5;
+    }
+    /**
+     * Dawn, while everyone's eyes are shut for a moment: the ones at their shelves are gone, and each of their folders lies open on the long
+     * table at its first page, a gap on its shelf. The men are gone, the gate is open again, and the light comes up. A reader who was here
+     * when the men came and is still here has been through the night.
+     */
+    static void dawn(ServerLevel l,Day d,List<ServerPlayer> here){
+        d.dawn=true;
+        for(var id:d.men){var a=actor(l,id);if(a!=null)a.discard();}Arrays.fill(d.men,null);d.menBeat=7;
+        d.routes.keySet().removeIf(k->k>=300);d.leg.keySet().removeIf(k->k>=300);d.stall.keySet().removeIf(k->k>=300);
+        for(int i=0;i<d.beams.length;i++)unbeam(l,d,i);
+        var gone=new ArrayList<Integer>();
+        for(int c:EIGHT){
+            var a=actor(l,d.kids[c]);if(a!=null)a.discard();d.kids[c]=null;
+            if((d.inside&1<<c)!=0)gone.add(c);
+        }
+        d.taken=0;d.led.clear();
+        d.open.clear();
+        for(int i=0;i<gone.size();i++){int x=TABLE_E-i%(TABLE_E-TABLE_W);d.open.computeIfAbsent(x,k->new ArrayList<>()).add(gone.get(i));gap(l,d,gone.get(i));}
+        for(var e:d.open.entrySet())tableCell(l,d,e.getKey(),e.getValue().size()>1?4:3);
+        door(l,d,LastSeenSite.BACK_DOOR,false);
+        LastSeenSite.gate(l,d.base,LastSeenBlock.OPEN);
+        for(var r:here){
+            HousePackets.send(r,new LastSeenTimePayload(time(d)));
+            var o=own(r);o.putLong("NightDawn",d.id);
+            boolean counted=o.getLong("NightOver")==d.id&&o.getInt("Days")>=2;
+            if(counted){
+                o.putInt("Days",Math.max(3,o.getInt("Days")));
+                o.putInt("Brought",o.getLong("LedNight")==d.id?o.getInt("LedIn"):0);o.putBoolean("KeptDoor",o.getLong("KeptNight")==d.id);
+                o.putInt("TookHand",o.getLong("LedNight")==d.id?o.getInt("Took"):0);o.putInt("Gone",gone.stream().mapToInt(c->1<<c).sum());
+            }
+            save(r,o);
+            var rel=r.position().subtract(Vec3.atLowerCornerOf(d.base));
+            cue(r,LastSeenSite.inOffice(rel)?(gone.isEmpty()?LastSeenTexts.DAWN_EMPTY:LastSeenTexts.DAWN_TABLE):LastSeenTexts.DAWN);
+        }
+    }
+    /** The park's lamps, all together. */
+    static void globes(ServerLevel l,Day d,boolean lit){
+        for(var lamp:LastSeenSite.LAMPS){var at=d.base.offset(lamp.getX(),3,lamp.getZ());var st=l.getBlockState(at);if(LastSeenBlock.is(st,LastSeenBlock.Kind.LAMP_POST)&&st.getValue(LastSeenBlock.STAGE)!=(lit?LastSeenBlock.LIT:LastSeenBlock.DARK))l.setBlock(at,st.setValue(LastSeenBlock.STAGE,lit?LastSeenBlock.LIT:LastSeenBlock.DARK),3);}
+    }
+    static void tableCell(ServerLevel l,Day d,int x,int stage){var at=d.base.offset(x,0,PILE_AT.getZ());var st=l.getBlockState(at);if(LastSeenBlock.is(st,LastSeenBlock.Kind.TABLE)&&st.getValue(LastSeenBlock.STAGE)!=stage)l.setBlock(at,st.setValue(LastSeenBlock.STAGE,stage),3);}
+
+    /** Each man's flashlight: a lit cell where its beam lands, swept ahead of him, and a faint dust along it; at the office, two of them on
+     * the archive's louvres; and while the back door stands open, one light going along the shelves. */
+    static void beams(ServerLevel l,Day d){
+        for(int i=0;i<MEN;i++){
+            var a=actor(l,d.men[i]);
+            if(a==null||d.dawn){unbeam(l,d,i);continue;}
+            var eye=a.position().add(0,1.45,0);Vec3 end;
+            if(d.menBeat>=4&&d.menBeat<6&&i>0&&!busy(d,300+i))end=Vec3.atCenterOf(d.base.offset(i==1?-20:-11,1,LastSeenSite.OFFICE_N)).add(0,0,-.55);
+            else if(d.menBeat>=4&&d.menBeat<6&&i==0&&!busy(d,300))end=Vec3.atCenterOf(d.base.offset(LastSeenSite.BACK_DOOR).above()).add(0,0,-.55);
+            else{double sweep=Math.sin((l.getGameTime()+i*41)*.04)*.6;double yaw=Math.toRadians(a.getYRot())+sweep;end=eye.add(-Math.sin(yaw)*14,-1.3,Math.cos(yaw)*14);}
+            var hit=l.clip(new ClipContext(eye,end,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,a));
+            var cell=hit.getType()==HitResult.Type.BLOCK?hit.getBlockPos().relative(hit.getDirection()):BlockPos.containing(end);
+            light(l,d,i,cell);
+            if(l.getGameTime()%4==i){var to=hit.getLocation();var dust=new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(1F,.96F,.8F),.6F);for(int k=1;k<=5;k++){var at=eye.lerp(to,k/6.0);l.sendParticles(dust,at.x,at.y,at.z,1,0,0,0,0);}}
+        }
+        if(d.menBeat==5&&d.triedAt>=0&&!d.kept&&d.since-d.triedAt<TRY_WAIT-10){int t=d.since-d.triedAt;light(l,d,MEN,d.base.offset(-10-Math.min(12,t/6),1,-10));}
+        else unbeam(l,d,MEN);
+    }
+    static void light(ServerLevel l,Day d,int i,BlockPos cell){
+        if(cell.equals(d.beams[i]))return;
+        unbeam(l,d,i);
+        var st=l.getBlockState(cell);
+        if(st.isAir()||st.is(Blocks.LIGHT)){if(st.isAir())l.setBlock(cell,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,11),Block.UPDATE_CLIENTS);d.beams[i]=cell.immutable();}
+    }
+    static void unbeam(ServerLevel l,Day d,int i){
+        var old=d.beams[i];if(old==null)return;d.beams[i]=null;
+        for(var other:d.beams)if(old.equals(other))return;
+        if(l.isLoaded(old)&&l.getBlockState(old).is(Blocks.LIGHT))l.setBlock(old,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);
     }
 
     /** Everyone in the scene: inside its railing, in the office or on the avenue. */
@@ -844,14 +1246,15 @@ public final class LastSeen {
             d.empty=0;
             if(d.fresh){if(!loaded(l,d))continue;d.fresh=false;start(l,d,here);}
             d.tick++;d.since++;
-            walk(l,d);
-            if(d.number<2)morning(l,d,here);else secondDay(l,d,here);
+            walk(l,d,here);
+            if(d.number<2)morning(l,d,here);else if(d.number>=NIGHT)night(l,d,here);else secondDay(l,d,here);
             holding(l,d);
             if(d.tick%5==0)watchers(l,d,here);
             if(d.tick%40==0)for(var r:here)HousePackets.send(r,new LastSeenTimePayload(time(d)));
             var rnd=l.getRandom();
-            if(d.tick%240==60)play(l,d.base.offset(-8+rnd.nextInt(34)-17,1,LastSeenSite.ROAD_S-3),LastSeenRegistry.TRAFFIC.get(),.6F);
-            if(d.tick%300==150)play(l,d.base.offset(LastSeenSite.PATH_X+rnd.nextInt(9)-4,0,LastSeenSite.PATH_Z+rnd.nextInt(30)-15),LastSeenRegistry.PIGEONS.get(),.5F);
+            // 0.4.670: at night a car only now and then, and no pigeons.
+            if(d.tick%(d.number>=NIGHT?960:240)==60)play(l,d.base.offset(-8+rnd.nextInt(34)-17,1,LastSeenSite.ROAD_S-3),LastSeenRegistry.TRAFFIC.get(),.6F);
+            if(d.tick%300==150&&d.number<NIGHT)play(l,d.base.offset(LastSeenSite.PATH_X+rnd.nextInt(9)-4,0,LastSeenSite.PATH_Z+rnd.nextInt(30)-15),LastSeenRegistry.PIGEONS.get(),.5F);
             if(d.tick%180==90&&here.stream().anyMatch(p->LastSeenSite.inOffice(p.position().subtract(Vec3.atLowerCornerOf(d.base)))))
                 play(l,d.base.offset(LastSeenSite.DESK).above(),LastSeenRegistry.TYPEWRITER.get(),.45F);
         }

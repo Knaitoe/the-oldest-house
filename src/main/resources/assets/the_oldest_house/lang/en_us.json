@@ -2065,5 +2065,12 @@
   "block.the_oldest_house.last_seen_road_line": "Road Marking",
   "block.the_oldest_house.last_seen_crossing": "Crossing Stripe",
   "item.the_oldest_house.last_seen_folder": "Folder",
-  "item.the_oldest_house.last_seen_coat": "Coat"
+  "item.the_oldest_house.last_seen_coat": "Coat",
+  "subtitles.the_oldest_house.last_seen.chain": "A chain is wound round the gates",
+  "subtitles.the_oldest_house.last_seen.switch": "A flashlight clicks on",
+  "subtitles.the_oldest_house.last_seen.voices": "Men talk low on the avenue",
+  "subtitles.the_oldest_house.last_seen.rattle": "Someone tries the back door",
+  "subtitles.the_oldest_house.last_seen.climb": "Someone climbs the railing",
+  "item.the_oldest_house.last_seen_flashlight": "Flashlight",
+  "item.the_oldest_house.last_seen_stick": "Length of Wood"
 }

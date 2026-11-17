@@ -562,4 +562,157 @@ public final class LastSeenTests {
             done();h.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.670: the night
+    /** A reader who has had both days comes back to the night. */
+    private static void nightOf(LiteraryTests.Fixture f,ServerPlayer p,int days){var o=f.own(p,P);o.putInt("Days",days);LiteraryVignettes.save(f.data(),p.getUUID(),P,o);}
+    /** A route walked at a walking pace, a little each tick, the reader turned the way they go. */
+    private static List<Vec3> pace(Vec3... points){
+        var out=new ArrayList<Vec3>();
+        for(int i=1;i<points.length;i++){var a=points[i-1];var c=points[i];int n=Math.max(1,(int)Math.ceil(a.distanceTo(c)/.24));for(int k=1;k<=n;k++)out.add(a.lerp(c,k/(double)n));}
+        return out;
+    }
+    private static void step(LiteraryTests.Fixture f,ServerPlayer p,List<Vec3> route,int[] i){
+        if(i[0]>=route.size())return;
+        var at=route.get(i[0]);var next=route.get(Math.min(route.size()-1,i[0]+1));i[0]++;
+        f.at(p,P,at.x,0,at.z);
+        if(next.distanceToSqr(at)>1e-4){float yaw=(float)(net.minecraft.util.Mth.atan2(next.z-at.z,next.x-at.x)*net.minecraft.util.Mth.RAD_TO_DEG)-90F;p.setYRot(yaw);p.setYHeadRot(yaw);}
+        p.setXRot(0);
+    }
+    private static int lights(ServerLevel l,BlockPos b){
+        int n=0;for(var at:BlockPos.betweenClosed(b.offset(-40,0,-99),b.offset(24,4,-14)))if(l.getBlockState(at).is(net.minecraft.world.level.block.Blocks.LIGHT))n++;return n;
+    }
+    private static void shut(ServerLevel l,BlockPos b,BlockPos door){var at=b.offset(door);l.setBlock(at,l.getBlockState(at).setValue(DoorBlock.OPEN,false),2);l.setBlock(at.above(),l.getBlockState(at.above()).setValue(DoorBlock.OPEN,false),2);}
+    private static boolean doorOpen(ServerLevel l,BlockPos b,BlockPos door){return l.getBlockState(b.offset(door)).getValue(DoorBlock.OPEN);}
+
+    /**
+     * One reader through the night. It is the third day for a reader who has had both. Only Nora is in the office; the front door is
+     * locked and says so; the city's fence and notices are up from the start; the eight stand facing the avenue. Nora's night lines. The
+     * reader takes Lautaro's hand with an empty one: from then until morning they do not go back out the way they came. They walk him
+     * from the playground to the archive by the back door, he following a step behind; inside he lets go and goes to stand at his own
+     * folder, facing it. Three men come in from the avenue's ends, flashlights lit and a length of wood in two of their hands, and chain
+     * the gates; the gate says it is chained; their lights fall where they point. The reader keeps the back door. The men come over the
+     * railing: the lamps go out, every child still in the park is gone, and the reader was there. One tries the back door; it holds. At
+     * dawn Lautaro is gone too, his folder lies open on the long table at its first page, a gap on its shelf; the gate is open; the hour
+     * is first light; the night is the reader's own, with what they brought and that they kept the door; and they may leave again.
+     */
+    @GameTest(template="empty",batch="last_seen_night",timeoutTicks=7000)
+    public static void theNightAndTheDoor(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_night_reader",P);nightOf(f,p,2);var l=f.level(P);var b=f.base(P);
+        int lau=LastSeen.LAUTARO;int[] i={0};var heard=new ArrayList<String>();
+        var spotL=LastSeen.SPOT[lau];
+        var route=pace(new Vec3(spotL.x-1.0,0,spotL.z+.7),new Vec3(-11.5,0,-18.6),new Vec3(-15.5,0,-15.8),new Vec3(-15.5,0,-13.4),new Vec3(-15.5,0,-11.2));
+        h.startSequence().thenIdle(2).thenExecute(()->archive(f,p))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==LastSeen.NIGHT&&LastSeen.kid(l,b,lau)!=null,"the night, for a reader who has had both days"))
+        .thenExecute(()->{
+            h.assertTrue(LastSeen.find(l,b,LastSeen.PATRICIA)==null&&LastSeen.find(l,b,LastSeen.LUZ)==null&&LastSeen.find(l,b,LastSeen.NORA)!=null,"only Nora stays");
+            use(p,b,LastSeenSite.FRONT_DOOR,LastSeenSite.FRONT_DOOR.south());h.assertTrue(!doorOpen(l,b,LastSeenSite.FRONT_DOOR)&&told(p).contains(LastSeenTexts.FRONT_LOCKED),"the front door is locked");
+            h.assertTrue(fitting(l,b,new BlockPos(13,0,-21),LastSeenBlock.Kind.FENCE)&&LastSeenSite.LAMPS.stream().allMatch(lamp->stage(l,b,lamp)==LastSeenBlock.NOTICE),"the fence and the notices are up already");
+            var nora=LastSeen.find(l,b,LastSeen.NORA);talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_STAY),"Nora is staying: "+said(nora));
+            var k=LastSeen.kid(l,b,lau);h.assertTrue(facing(k,180),"Lautaro faces the avenue: "+yaw(k));
+            h.assertTrue(!LiteraryVignettes.retreatLocked(p),"nothing taken yet: the way back is open");
+            LastSeen.at(b,LastSeen.MEN_AT);
+            f.at(p,P,spotL.x-1.0,0,spotL.z+.7);talk(f,p,k);
+        }).thenIdle(1).thenExecute(()->{
+            h.assertTrue(p.getUUID().equals(LastSeen.led(b,lau))&&told(p).contains(LastSeenTexts.takeHand(lau))&&LastSeen.kid(l,b,lau).gesture()==LastSeen.LED,"he takes the reader's hand");
+            h.assertTrue(LiteraryVignettes.retreatLocked(p)&&f.own(p,P).getLong("Committed3")!=0,"and the reader does not go back out the way they came until morning");
+            open(l,b,LastSeenSite.BACK_DOOR);
+        }).thenExecuteFor(route.size()+10,()->step(f,p,route,i))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.inside(b,lau),"he comes into the archive: "+LastSeen.kid(l,b,lau).position().subtract(Vec3.atLowerCornerOf(b))+" led "+LastSeen.led(b,lau)))
+        .thenExecute(()->h.assertTrue(told(p).contains(LastSeenTexts.atShelf(lau))&&(f.own(p,P).getInt("LedIn")&1<<lau)!=0&&LastSeen.led(b,lau)==null,"lets go, and the reader brought him in"))
+        .thenWaitUntil(()->{var k=LastSeen.kid(l,b,lau);var front=LastSeen.shelfFront(b,lau);h.assertTrue(k.position().distanceToSqr(front)<.1&&facing(k,LastSeen.shelfYaw(lau)),"he stands at his own folder, facing it: "+k.position()+" "+front);})
+        .thenExecute(()->{talk(f,p,LastSeen.kid(l,b,lau));h.assertTrue(told(p).contains(LastSeenTexts.atFolder(lau)),"and does not turn round");})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.chained(b),"the men come and chain the gates: beat "+LastSeen.menBeat(b)))
+        .thenExecute(()->{
+            for(int m=0;m<LastSeen.MEN;m++){var a=LastSeen.man(l,b,m);h.assertTrue(a!=null&&a.getMainHandItem().is(LastSeenRegistry.FLASHLIGHT.get())&&a.gesture()==LastSeen.FLASH&&a.getOffhandItem().is(LastSeenRegistry.STICK.get())==(m!=1),"each man with his flashlight out, two with a length of wood: "+m);}
+            h.assertTrue(stage(l,b,LastSeenSite.GATE_W)==LastSeenBlock.CHAINED,"the gate is chained");
+            h.assertTrue(lights(l,b)>0,"their lights fall where they point");
+            var nora=LastSeen.find(l,b,LastSeen.NORA);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_CHAINED),"Nora tells the archive: "+said(nora));
+            shut(l,b,LastSeenSite.BACK_DOOR);f.at(p,P,LastSeen.KEEP.x,0,LastSeen.KEEP.z);p.setYRot(180);p.setYHeadRot(180);told(p);
+            LastSeen.at(b,LastSeen.OVER_AT);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.over(b),"the men come over the railing"))
+        .thenWaitUntil(()->h.assertTrue(java.util.Arrays.stream(LastSeen.EIGHT).filter(c->c!=lau).allMatch(c->LastSeen.kid(l,b,c)==null),"every one of them still in the park is gone"))
+        .thenExecute(()->{
+            h.assertTrue(LastSeen.kid(l,b,lau)!=null,"the one at his shelf is not");
+            heard.addAll(told(p));
+            h.assertTrue(f.own(p,P).getLong("NightOver")!=0&&heard.contains(LastSeenTexts.OVER_OFFICE),"the reader was there when they came");
+            h.assertTrue(LastSeenSite.LAMPS.stream().allMatch(lamp->stage(l,b,lamp.above(2))==LastSeenBlock.DARK),"the lamps are out");
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getLong("KeepCue")!=0,"the reader keeping the door is told"))
+        .thenExecute(()->{heard.addAll(told(p));h.assertTrue(heard.contains(LastSeenTexts.KEEP)&&LiteraryVignettes.retreatLocked(p),"keeping the door, and held to it");})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.tried(b),"one of them tries the back door: beat "+LastSeen.menBeat(b)+" leg "+LastSeen.leg(b,0)+" "+(LastSeen.man(l,b,0)==null?null:LastSeen.man(l,b,0).position().subtract(Vec3.atLowerCornerOf(b)))))
+        .thenExecute(()->{
+            h.assertTrue(LastSeen.held(b)&&!doorOpen(l,b,LastSeenSite.BACK_DOOR)&&told(p).contains(LastSeenTexts.KEPT)&&f.own(p,P).getLong("KeptNight")!=0,"it holds");
+            LastSeen.at(b,LastSeen.DAWN_AT+400);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.dawn(b),"dawn"))
+        .thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(LastSeen.kid(l,b,lau)==null&&LastSeen.openOn(b,LastSeen.TABLE_E).contains(lau)&&stage(l,b,new BlockPos(LastSeen.TABLE_E,0,-7))==3,"he is gone too; his folder lies open on the long table");
+            h.assertTrue(stage(l,b,LastSeen.gapCell(lau))==LastSeenBlock.ONE_OUT,"a gap on his shelf");
+            h.assertTrue(own.getInt("Days")==3&&(own.getInt("Brought")&1<<lau)!=0&&own.getBoolean("KeptDoor"),"the night is the reader's own: "+own);
+            h.assertTrue(!LiteraryVignettes.retreatLocked(p),"and they may go");
+            h.assertTrue(stage(l,b,LastSeenSite.GATE_W)==LastSeenBlock.OPEN&&lights(l,b)==0,"the gate open, the lights gone");
+            var got=sent(p);
+            h.assertTrue(lines(got).contains(LastSeenTexts.DAWN_TABLE),"the reader sees the table");
+            var hours=hours(got);h.assertTrue(!hours.isEmpty()&&hours.get(hours.size()-1)>=LastSeen.DAWN_TIME,"first light: "+hours);
+            use(p,b,new BlockPos(LastSeen.TABLE_E,0,-7),new BlockPos(LastSeen.TABLE_E,0,-6));var shown=sent(p);h.assertTrue(opened(shown,lau)&&lines(shown).contains(LastSeenTexts.tableOpen(lau)),"his folder, open at the first page: "+lines(shown));
+            var nora=LastSeen.find(l,b,LastSeen.NORA);talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_DAWN),"Nora was here all night: "+said(nora));
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * Three readers and a spectator through one night. One takes Lautaro's hand; another cannot take a hand already held; the first cannot
+     * take a second; crouching lets go, and he goes back to his place. The second leaves before taking a hand, and the way back was open
+     * for them. The third has had only one day, and the night is the furthest any of them has reached. The first is out in the park with
+     * him by the hand when the men come: the dark comes down, the hand is empty, and he is gone. Nobody keeps the door: it opens and the
+     * light goes along the shelves, and it is shut again. At dawn the night is the first reader's only: not the one who left, not the one
+     * who had not had the second day, and not the spectator. Nobody stood at the shelves, and the table is bare.
+     */
+    @GameTest(template="empty",batch="last_seen_night_three",timeoutTicks=7000)
+    public static void threeReadersOneNight(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_night_a",P);var q=f.player("last_seen_night_b",P);var r=f.player("last_seen_night_c",P);var w=f.player("last_seen_night_w",P);
+        nightOf(f,p,2);nightOf(f,q,2);nightOf(f,r,1);nightOf(f,w,2);var l=f.level(P);var b=f.base(P);
+        int lau=LastSeen.LAUTARO;var spotL=LastSeen.SPOT[lau];
+        h.startSequence().thenIdle(2).thenExecute(()->{archive(f,p);archive(f,q);archive(f,r);w.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);archive(f,w);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==LastSeen.NIGHT&&LastSeen.kid(l,b,lau)!=null&&LastSeen.kid(l,b,LastSeen.BRIAN)!=null,"the night: the furthest any of them has reached"))
+        .thenExecute(()->{
+            LastSeen.at(b,LastSeen.MEN_AT);
+            var k=LastSeen.kid(l,b,lau);
+            f.at(p,P,spotL.x-1.0,0,spotL.z+.7);talk(f,p,k);h.assertTrue(p.getUUID().equals(LastSeen.led(b,lau)),"the first takes his hand");
+            f.at(q,P,spotL.x+1.0,0,spotL.z+.7);talk(f,q,k);h.assertTrue(told(q).contains(LastSeenTexts.heldOther(lau))&&p.getUUID().equals(LastSeen.led(b,lau)),"the second cannot take a hand already held");
+            var brian=LastSeen.kid(l,b,LastSeen.BRIAN);f.at(p,P,LastSeen.SPOT[LastSeen.BRIAN].x+1,0,LastSeen.SPOT[LastSeen.BRIAN].z+1);LiteraryVignettes.talk(p,brian);
+            h.assertTrue(told(p).contains(LastSeenTexts.HAND_FULL)&&LastSeen.led(b,LastSeen.BRIAN)==null,"the first cannot take a second");
+            f.at(p,P,spotL.x-1.0,0,spotL.z+.7);p.setShiftKeyDown(true);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(LastSeen.led(b,lau)==null&&told(p).contains(LastSeenTexts.letGo(lau))&&LastSeen.kid(l,b,lau).gesture()==0,"crouching lets go");
+            p.setShiftKeyDown(false);
+            h.assertTrue(!LiteraryVignettes.retreatLocked(q),"the second took no hand: the way back is open");
+            f.leave(q);
+            talk(f,p,LastSeen.kid(l,b,lau));h.assertTrue(p.getUUID().equals(LastSeen.led(b,lau)),"and takes it again");
+            f.at(r,P,-12.5,0,-6.5);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.chained(b),"the gates are chained"))
+        .thenExecute(()->{told(p);told(r);LastSeen.at(b,LastSeen.OVER_AT);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.over(b),"the men come over"))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.kid(l,b,lau)==null,"he is gone"))
+        .thenExecute(()->{
+            var got=sent(p);var said=lines(got);
+            h.assertTrue(said.contains(LastSeenTexts.EMPTY_HAND)&&said.contains(LastSeenTexts.OVER_PARK)&&LastSeen.led(b,lau)==null,"the hand is empty: "+said);
+            h.assertTrue(got.stream().anyMatch(x->x instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.HouseFadePayload),"the dark comes down out there");
+            h.assertTrue(f.own(q,P).getLong("NightOver")==0&&f.own(w,P).getLong("NightOver")==0&&f.own(r,P).getLong("NightOver")!=0,"the one who left and the spectator were not there");
+            told(r);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.tried(b),"the back door is tried: beat "+LastSeen.menBeat(b)+" leg "+LastSeen.leg(b,0)+" "+(LastSeen.man(l,b,0)==null?null:LastSeen.man(l,b,0).position().subtract(Vec3.atLowerCornerOf(b)))))
+        .thenExecute(()->{
+            h.assertTrue(!LastSeen.held(b)&&doorOpen(l,b,LastSeenSite.BACK_DOOR)&&told(r).contains(LastSeenTexts.TRY_OPEN),"nobody keeps it: it opens");
+        }).thenIdle(20).thenExecute(()->{int n=0;for(int x=-22;x<=-10;x++)if(l.getBlockState(b.offset(x,1,-10)).is(net.minecraft.world.level.block.Blocks.LIGHT))n++;h.assertTrue(n==1,"a light goes along the shelves: "+n);})
+        .thenWaitUntil(()->h.assertTrue(!doorOpen(l,b,LastSeenSite.BACK_DOOR),"and it is shut again"))
+        .thenExecute(()->LastSeen.at(b,LastSeen.DAWN_AT+400))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dawn(b),"dawn"))
+        .thenExecute(()->{
+            var a=f.own(p,P);
+            h.assertTrue(a.getInt("Days")==3&&a.getInt("Brought")==0&&!a.getBoolean("KeptDoor")&&(a.getInt("TookHand")&1<<lau)!=0,"the night is the first reader's: "+a);
+            h.assertTrue(f.own(q,P).getInt("Days")==2&&f.own(r,P).getInt("Days")==1&&f.own(w,P).getInt("Days")==2,"and nobody else's");
+            h.assertTrue(told(r).contains(LastSeenTexts.DAWN_EMPTY)&&told(p).contains(LastSeenTexts.DAWN)&&stage(l,b,new BlockPos(LastSeen.TABLE_E,0,-7))==0,"nobody stood at the shelves, and the table is bare");
+            done();h.succeed();
+        });
+    }
 }
