@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.657** redraws the great staircase's stone, as the owner suggested. The well's walls are laid in courses a block high, of stones of different lengths, so no two stretches of wall are laid alike, and seen across the well they read as stone; the treads are stone flags drawn at Minecraft's own sixteen pixels, each a shade of its own and laid close, where they were a photograph-like texture eight times that size. Only how the stone is drawn changes. `docs/STAIRCASE_STONE_0_4_657.md`.
+Development candidate **0.4.658** lets a room remember where a reader turned back, Ted the Caver's cave first, as the owner suggested. A reader who walks out of the cave before finishing it finds their own torches where they set them and, the next time, one more just beyond the furthest place they reached: the House's, which nobody may take. Nothing is said about it. `docs/TURNED_BACK_0_4_658.md`.
 
-Previous: 0.4.656 fixed four things the owner found: the King's side hedges, faces that drew nothing, the elk's eyes and the girl from the wardrobe. `docs/QUICK_FIXES_0_4_656.md`.
+Previous: 0.4.657 redrew the great staircase's stone: the well's walls in courses of stones of different lengths, the treads as flags at Minecraft's own sixteen pixels. `docs/STAIRCASE_STONE_0_4_657.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 
