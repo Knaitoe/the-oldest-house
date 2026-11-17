@@ -48,6 +48,8 @@ public final class NotYetSite {
     /** The far door (lower half) in the long room's end wall; the small room past it, and the way on in that room's north wall. */
     public static final BlockPos FAR_DOOR=new BlockPos(0,0,-63),ONWARD=new BlockPos(0,0,-66);
     /** The counter over the arch: seven windows, the first (most significant) at the west end. */
+    /** The ward's grilles, low in the long walls: where the cold comes in (0.4.665). */
+    public static final List<BlockPos> WARD_VENTS=List.of(new BlockPos(-WARD_HALF,0,-14),new BlockPos(-WARD_HALF,0,-34),new BlockPos(WARD_HALF,0,-26));
     public static final BlockPos COUNTER_FIRST=new BlockPos(-3,4,-44);
     public static final int COUNTER_DIGITS=7;
     /** The ward's chart, on the wall by the door (the source). */
@@ -150,8 +152,7 @@ public final class NotYetSite {
         for(int i=0;i+1<WEST_COTS.length;i++)if(WEST_COTS[i]-WEST_COTS[i+1]==4)curtain(l,b,-1,(WEST_COTS[i]+WEST_COTS[i+1])/2,false);
         // Strip lamps down the middle; a vent low in each long wall.
         for(int z=WARD_S-3;z>=WARD_N+1;z-=6)set(l,b,0,WARD_HIGH,z,KeptBlock.of(KeptBlock.Kind.TUBE,Direction.NORTH));
-        for(int z:new int[]{-14,-34})set(l,b,-w,0,z,fit(NotYetBlock.Kind.VENT,Direction.EAST));
-        set(l,b,w,0,-26,fit(NotYetBlock.Kind.VENT,Direction.WEST));
+        for(var v:WARD_VENTS)set(l,b,v,fit(NotYetBlock.Kind.VENT,v.getX()<0?Direction.EAST:Direction.WEST));
         set(l,b,CHART,fit(NotYetBlock.Kind.CHART,Direction.NORTH));
     }
     /** A cot at its place against the wall, its screen and its lamp over it. */

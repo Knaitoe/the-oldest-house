@@ -7,6 +7,7 @@
     "b": "the_oldest_house:block/not_yet/blanket_made",
     "p": "the_oldest_house:block/not_yet/pillow_made",
     "d": "the_oldest_house:block/not_yet/drawer",
+    "u": "the_oldest_house:block/not_yet/tube",
     "particle": "the_oldest_house:block/not_yet/tube"
   },
   "elements": [
@@ -273,22 +274,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "south": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "east": {
           "texture": "#d"
         },
         "west": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "up": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "down": {
-          "texture": "#t"
+          "texture": "#u"
         }
       }
     },

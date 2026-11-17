@@ -28,7 +28,8 @@ public final class NotYetRegistry {
     public static final DeferredBlock<NotYetBlock> FITTING=BLOCKS.registerBlock("not_yet_fitting",NotYetBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(NotYetBlock::light));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** The ward's hum; one turn of the counter. 0.4.664: the plates dropping open; the arms at work on the table. */
-    public static final DeferredHolder<SoundEvent,SoundEvent> HUM=sound("not_yet.hum"),TICK=sound("not_yet.tick"),HATCH=sound("not_yet.hatch"),MEND=sound("not_yet.mend");
+    public static final DeferredHolder<SoundEvent,SoundEvent> HUM=sound("not_yet.hum"),TICK=sound("not_yet.tick"),HATCH=sound("not_yet.hatch"),MEND=sound("not_yet.mend"),
+        HEAT=sound("not_yet.heat"),CALL=sound("not_yet.call"),GROAN=sound("not_yet.groan"),QUIET=sound("not_yet.quiet"),SLIDE=sound("not_yet.slide");
     private NotYetRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
 }

@@ -121,7 +121,10 @@ public final class NotYetMending {
      */
     public static void refuse(ServerPlayer p,BlockPos b,String cause){
         if(held(p))return;
-        p.setHealth(p.getMaxHealth());p.clearFire();p.setTicksFrozen(0);p.setAirSupply(p.getMaxAirSupply());p.fallDistance=0;
+        p.setHealth(p.getMaxHealth());p.clearFire();p.setAirSupply(p.getMaxAirSupply());p.fallDistance=0;
+        // 0.4.665: lying down on their cot, a reader is mended where they lie, and stays down (NotYetTrial).
+        if(NotYetTrial.lying(p.getUUID())){NotYetTrial.mended(p,b,cause);return;}
+        p.setTicksFrozen(0);
         if(p.isPassenger())p.stopRiding();
         if(p.isSleeping())p.stopSleeping();
         p.setDeltaMovement(Vec3.ZERO);p.hurtMarked=true;
@@ -230,6 +233,9 @@ public final class NotYetMending {
         if(!own.getBoolean("Fallen")&&!p.isCreative()&&!held(p))WATCH.add(p.getUUID());else WATCH.remove(p.getUUID());
         show(p,own.getInt("Mended"));
         long now=p.server.getTickCount();var woken=WOKEN.get(p.getUUID());
+        // 0.4.665: while a reader lies down their screens are the trial's; once it has looked away, dark for the rest of that visit.
+        if(NotYetTrial.lying(p.getUUID()))return;
+        if(own.getInt("QuietVisit")==own.getInt("Visits")&&own.getBoolean("StayedDown")){if(now%100==0)screens(p,b,NotYetBlock.DARK);return;}
         if(woken!=null&&now>=woken){WOKEN.remove(p.getUUID());words(p,b,own.getInt("WordsVisit")==own.getInt("Visits")&&own.getInt("Mended")>0);}
         else if(woken==null&&own.getInt("Mended")>0&&own.getInt("WordsVisit")==own.getInt("Visits")&&now%100==0)words(p,b,true);
     }

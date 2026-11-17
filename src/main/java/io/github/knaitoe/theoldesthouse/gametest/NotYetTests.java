@@ -18,6 +18,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -164,7 +165,8 @@ public final class NotYetTests {
             h.assertTrue(text.contains("KEPT: THREE")&&NotYetSite.PEOPLE_COTS.length==NotYet.PEOPLE&&NotYet.PEOPLE==3,"and the three it keeps");
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the chart says nothing of what anybody is: "+word);
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            // 0.4.665: dealt from depth twelve, deep in the machine; never near the surface.
+            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P)||NotYet.dealable(f.data(),java.util.UUID.randomUUID()),"the House deals it only deep in: not at the surface");
             done();h.succeed();
         });
     }
@@ -332,6 +334,179 @@ public final class NotYetTests {
             h.assertTrue(ines.getCustomName()!=null&&ines.getCustomName().getString().equals(NotYetTexts.after(NotYet.INES,0)),"then a little more: "+ines.getCustomName());
             h.assertTrue(own.getInt("Heard"+NotYet.INES)==1&&own.getInt("Heard"+NotYet.BRAM)==0,"counted, so the next is the next");
             LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            done();h.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.665: lie down
+    /** A reader the machine has mended once, on bed one, who has heard the rule; whole, and open to harm as a player in the world is. */
+    private static void ready(LiteraryTests.Fixture f,ServerPlayer p,int cot){
+        var own=f.own(p,P);own.putBoolean("Fallen",true);own.putInt("Mended",1);own.putInt("Cot",cot);own.putBoolean("Rule",true);own.putLong("CountFrom",f.level(P).getGameTime()-600);
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+        vulnerable(p);
+    }
+    /** A mock player is never ticked, so the game's grace after joining never runs out: clear it, as the game would have by now. */
+    private static void vulnerable(ServerPlayer p){
+        try{var f=ServerPlayer.class.getDeclaredField("spawnInvulnerableTime");f.setAccessible(true);f.setInt(p,0);}
+        catch(ReflectiveOperationException e){throw new IllegalStateException("the joining grace could not be cleared",e);}
+    }
+    /** Up off the cot the way a reader gets up: the bed screen's Leave Bed. */
+    private static void leaveBed(ServerPlayer p){p.connection.handlePlayerCommand(new ServerboundPlayerCommandPacket(p,ServerboundPlayerCommandPacket.Action.STOP_SLEEPING));}
+    /** Moves a trial on to a point, in thousandths, and lets the machine act on it. */
+    private static void to(ServerPlayer p,ServerLevel l,int thousandths){
+        int now=NotYetTrial.progress(p.getUUID(),p.server.getTickCount());if(now<0)return;
+        int len=NotYetTrial.length(LiteraryVignettes.personal(io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData.get(p.server),p.getUUID(),P));
+        NotYetTrial.advance(p.getUUID(),Math.max(0,(thousandths-now)*len/1000+1));
+    }
+    private static int cotStage(ServerLevel l,BlockPos b,BlockPos head){return stage(l,b,head);}
+
+    /**
+     * 0.4.665: lying down, and getting up. A reader the machine has not mended lies on nothing: a cot is only a cot to them. One it has
+     * mended and who has heard the rule is asked to lie down, and their lamp comes on; another's cot is not theirs; their own takes them,
+     * lying on it under the lamp. The cot heats and burns them, and nothing gets them up, not the burns: only the bed screen's Leave
+     * Bed. Then it is over, the cot cools, the lamp goes off, the machine says what it says, and the next lie-down is longer.
+     */
+    @GameTest(template="empty",batch="not_yet_lie",timeoutTicks=1200)
+    public static void lyingDownStartsTheTrialAndOnlyTheReaderEndsIt(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=NativeTestPlayers.survival(h,"not_yet_lier");var q=NativeTestPlayers.survival(h,"not_yet_unmended");f.players.add(p);f.players.add(q);
+        ready(f,p,1);var qo=f.own(q,P);qo.putBoolean("Fallen",true);LiteraryVignettes.save(f.data(),q.getUUID(),P,qo);
+        f.arrive(p,P);f.arrive(q,P);
+        var mine=NotYetSite.WARD_COTS.get(0);var theirs=NotYetSite.WARD_COTS.get(1);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-16.5,180,0);q.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-18.5,180,0);
+        }).thenIdle(25).thenExecute(()->{
+            h.assertTrue(NotYet.told(f.own(p,P)).contains(NotYetTexts.INVITE),"the machine asks them to lie down: "+NotYet.told(f.own(p,P)));
+            h.assertTrue(fitting(l,b,NotYetSite.lamp(mine),NotYetBlock.Kind.LAMP)&&stage(l,b,NotYetSite.lamp(mine))==1,"and their lamp comes on over their cot");
+            h.assertFalse(NotYet.told(f.own(q,P)).contains(NotYetTexts.INVITE),"nobody unmended is asked");
+            f.click(q,P,mine);
+            h.assertFalse(NotYetTrial.lying(q.getUUID())||q.isSleeping(),"a cot is only a cot to one it has not mended");
+            f.click(p,P,theirs);
+            h.assertFalse(NotYetTrial.lying(p.getUUID()),"another's cot is not theirs");
+            f.click(p,P,NotYetSite.cotFoot(mine));
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(NotYetTrial.lying(p.getUUID())&&p.isSleeping()&&p.getSleepingPos().filter(b.offset(mine)::equals).isPresent(),"lying on their own cot: "+where(p,b));
+            h.assertTrue(f.own(p,P).getInt("LayDown")==1,"counted");
+            to(p,l,NotYetTrial.HEAT_FROM+10);
+        }).thenIdle(90).thenExecute(()->{
+            h.assertTrue(cotStage(l,b,mine)==NotYetBlock.HEATING,"the cot heats");
+            h.assertTrue(p.getHealth()<p.getMaxHealth(),"and it burns: "+p.getHealth());
+            h.assertTrue(p.isSleeping()&&NotYetTrial.lying(p.getUUID()),"and nothing gets them up, not the burns");
+            leaveBed(p);
+        }).thenIdle(2).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertFalse(p.isSleeping()||NotYetTrial.lying(p.getUUID()),"the reader got up, and it is over");
+            h.assertTrue(own.getInt("GotUp")==1&&NotYet.told(own).contains(NotYetTexts.THERE),"the machine says so: "+NotYet.told(own));
+            h.assertTrue(cotStage(l,b,mine)==NotYetBlock.PLAIN&&stage(l,b,NotYetSite.lamp(mine))==0,"the cot cools and the lamp goes off");
+            h.assertTrue(NotYetTrial.length(own)==NotYetTrial.FIRST+NotYetTrial.LONGER,"the next lie-down is longer: "+NotYetTrial.length(own));
+            f.click(p,P,mine);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(NotYetTrial.lying(p.getUUID())&&NotYet.told(f.own(p,P)).contains(NotYetTexts.AGAIN),"lying down again: \"again, then\"");
+            leaveBed(p);
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.665, alone, to the end. A reader whose companion the House saw die hears it called by name; the screens show the far door
+     * open, which it is not, and the House keeps both; the man in the long room is hurt on the screen, and says to stay down; the cold
+     * comes in, and the machine kills them, and the death is refused where they lie: a second seam, and they stay down. Then everything
+     * goes quiet, the far door opens, and it stays open while they are near it and shuts once they have gone. Lying down again, the
+     * machine does not bother.
+     */
+    @GameTest(template="empty",batch="not_yet_stay",timeoutTicks=2400)
+    public static void stayingDownToTheEndOpensTheFarDoor(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=NativeTestPlayers.survival(h,"not_yet_stayer");f.players.add(p);ready(f,p,1);
+        var hotel=HotelVignette.personal(f.data(),p.getUUID());var lost=new net.minecraft.nbt.ListTag();var moss=new net.minecraft.nbt.CompoundTag();moss.putString("Name","Moss");lost.add(moss);hotel.put("LostPets",lost);HotelVignette.save(f.data(),p.getUUID(),hotel);
+        f.arrive(p,P);
+        var mine=NotYetSite.WARD_COTS.get(0);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-16.5,180,0);
+            f.click(p,P,mine);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(NotYetTrial.lying(p.getUUID()),"lying down");
+            to(p,l,NotYetTrial.CALL+5);
+        }).thenIdle(3).thenExecute(()->{
+            var heard=f.own(p,P).getList("TrialHeard",net.minecraft.nbt.Tag.TAG_STRING).toString();
+            h.assertTrue(heard.contains("Moss"),"the companion the House saw them lose, called by name: "+heard);
+            to(p,l,NotYetTrial.LIE+5);
+        }).thenIdle(3).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(NotYet.told(own).contains(NotYetTexts.DOOR_IS_OPEN),"the screens say the door is open");
+            var lies=NotYetTrial.lies(own);
+            h.assertTrue(!lies.isEmpty()&&lies.get(lies.size()-1).getString("Line").equals(NotYetTexts.DOOR_IS_OPEN)&&!lies.get(lies.size()-1).getBoolean("True"),"and it is not, and the House keeps both: "+lies);
+            h.assertFalse(NotYetSite.doorOpen(l,b),"the far door is shut");
+            to(p,l,NotYetTrial.HURT_TO);
+        }).thenIdle(3).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(NotYet.told(own).contains(NotYetTexts.I_WILL_STOP),"get up and I will stop");
+            h.assertTrue(own.getList("TrialHeard",net.minecraft.nbt.Tag.TAG_STRING).toString().contains("Stay down"),"and the man on the screen says to stay down");
+            to(p,l,NotYetTrial.COLD_FROM+20);
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(p.getTicksFrozen()>0&&NotYet.told(f.own(p,P)).contains(NotYetTexts.WARM),"the cold comes in: "+p.getTicksFrozen());
+            to(p,l,NotYetTrial.BLOW+5);
+        }).thenIdle(3).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth(),"killed, and the death refused: "+p.getHealth());
+            h.assertTrue(own.getInt("Mended")==2&&own.getInt("MendedLying")==1&&own.getString("LastCause").equals("machine")&&NotYetMending.seams(p.getUUID())==2,"mended where they lie, a second seam: "+own);
+            h.assertTrue(NotYetTrial.lying(p.getUUID())&&p.isSleeping()&&!NotYetMending.held(p),"and they stay down, on their cot, not taken to the table");
+            to(p,l,1000);
+        }).thenIdle(3).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("StayedDown")&&!NotYetTrial.lying(p.getUUID()),"it looked away: they stayed down");
+            h.assertTrue(NotYetSite.doorOpen(l,b),"the far door opens");
+            h.assertTrue(p.getTicksFrozen()==0&&cotStage(l,b,mine)==NotYetBlock.PLAIN,"the cold gone, the cot cool");
+            leaveBed(p);
+        }).thenIdle(2).thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("GotUp")==0,"getting up after does not count as getting up");
+            f.click(p,P,mine);
+            h.assertFalse(NotYetTrial.lying(p.getUUID()),"lying down again, it does not bother");
+            h.assertTrue(NotYet.told(f.own(p,P)).contains(NotYetTexts.NOT_YOU),"not you, not now");
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-60.5,180,0);
+        }).thenIdle(NotYetTrial.DOOR_HELD+20).thenExecute(()->{
+            h.assertTrue(NotYetSite.doorOpen(l,b),"open while one who stayed down is near it");
+            f.leave(p);
+        }).thenWaitUntil(()->h.assertFalse(NotYetSite.doorOpen(l,b),"and shut once they have gone"))
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    /**
+     * 0.4.665, two lying down: the machine uses each on the other. It calls the other's name; it tells each the other got up, and the
+     * House knows it was a lie; it hurts the other, really, and tells each who could stop it. When one really gets up the other is told,
+     * and that one was true.
+     */
+    @GameTest(template="empty",batch="not_yet_pair",timeoutTicks=1600)
+    public static void twoLieDownAndTheMachineUsesEachOnTheOther(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var a=NativeTestPlayers.survival(h,"not_yet_alpha");var c=NativeTestPlayers.survival(h,"not_yet_gamma");f.players.add(a);f.players.add(c);
+        ready(f,a,1);ready(f,c,2);f.arrive(a,P);f.arrive(c,P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            a.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-16.5,180,0);c.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-18.5,180,0);
+            f.click(a,P,NotYetSite.WARD_COTS.get(0));f.click(c,P,NotYetSite.WARD_COTS.get(1));
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(NotYetTrial.lying(a.getUUID())&&NotYetTrial.lying(c.getUUID()),"both lie down");
+            to(a,l,NotYetTrial.LIE+5);
+        }).thenIdle(3).thenExecute(()->{
+            var own=f.own(a,P);
+            h.assertTrue(own.getList("TrialHeard",net.minecraft.nbt.Tag.TAG_STRING).toString().contains(c.getGameProfile().getName()),"the other's name, called");
+            var lies=NotYetTrial.lies(own);
+            h.assertTrue(!lies.isEmpty()&&lies.get(lies.size()-1).getString("Line").equals(NotYetTexts.gotUpLie(c.getGameProfile().getName()))&&!lies.get(lies.size()-1).getBoolean("True"),"told the other got up, and the House knows it was a lie: "+lies);
+            to(a,l,NotYetTrial.HURT_FROM+5);
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(c.getHealth()<c.getMaxHealth()&&NotYetTrial.lying(c.getUUID())&&c.isSleeping(),"the other really hurt, and still lying down: "+c.getHealth());
+            h.assertTrue(NotYet.told(f.own(a,P)).contains(NotYetTexts.thatIs(c.getGameProfile().getName())),"that is them; get up and I will stop");
+            h.assertTrue(NotYet.told(f.own(c,P)).contains(NotYetTexts.couldStop(a.getGameProfile().getName())),"and the other told who could stop it");
+            leaveBed(c);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertFalse(NotYetTrial.lying(c.getUUID()),"the other got up");
+            var own=f.own(a,P);var line=NotYetTexts.gotUpTrue(c.getGameProfile().getName());
+            h.assertTrue(NotYet.told(own).contains(line),"and the one still lying down is told: "+NotYet.told(own));
+            var lies=NotYetTrial.lies(own);
+            h.assertTrue(lies.get(lies.size()-1).getString("Line").equals(line)&&lies.get(lies.size()-1).getBoolean("True"),"and that one was so");
+            h.assertTrue(NotYetTrial.lying(a.getUUID()),"they are still lying down");
+            leaveBed(a);
             done();h.succeed();
         });
     }

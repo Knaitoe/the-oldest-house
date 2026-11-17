@@ -38,10 +38,22 @@
           ]
         },
         "east": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            2,
+            0,
+            3,
+            1
+          ]
         },
         "west": {
-          "texture": "#r"
+          "texture": "#r",
+          "uv": [
+            2,
+            0,
+            3,
+            1
+          ]
         },
         "up": {
           "texture": "#r",

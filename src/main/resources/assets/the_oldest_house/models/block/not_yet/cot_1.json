@@ -1,12 +1,13 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "t": "the_oldest_house:block/not_yet/tube",
+    "t": "the_oldest_house:block/not_yet/tube_hot",
     "m": "the_oldest_house:block/not_yet/ticking_hot",
-    "s": "the_oldest_house:block/not_yet/ticking_side",
-    "b": "the_oldest_house:block/not_yet/blanket",
+    "s": "the_oldest_house:block/not_yet/ticking_side_hot",
+    "b": "the_oldest_house:block/not_yet/blanket_hot",
     "p": "the_oldest_house:block/not_yet/pillow",
     "d": "the_oldest_house:block/not_yet/drawer",
+    "u": "the_oldest_house:block/not_yet/tube",
     "particle": "the_oldest_house:block/not_yet/tube"
   },
   "elements": [
@@ -168,6 +169,10 @@
         "down": {
           "texture": "#t"
         }
+      },
+      "neoforge_data": {
+        "block_light": 9,
+        "sky_light": 0
       }
     },
     {
@@ -200,6 +205,10 @@
         "down": {
           "texture": "#t"
         }
+      },
+      "neoforge_data": {
+        "block_light": 9,
+        "sky_light": 0
       }
     },
     {
@@ -226,6 +235,10 @@
         "up": {
           "texture": "#m"
         }
+      },
+      "neoforge_data": {
+        "block_light": 12,
+        "sky_light": 0
       }
     },
     {
@@ -273,22 +286,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "south": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "east": {
           "texture": "#d"
         },
         "west": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "up": {
-          "texture": "#t"
+          "texture": "#u"
         },
         "down": {
-          "texture": "#t"
+          "texture": "#u"
         }
       }
     },
@@ -316,6 +329,10 @@
         "up": {
           "texture": "#b"
         }
+      },
+      "neoforge_data": {
+        "block_light": 7,
+        "sky_light": 0
       }
     }
   ],

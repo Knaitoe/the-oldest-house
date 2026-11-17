@@ -6,6 +6,7 @@
     "s": "the_oldest_house:block/not_yet/ticking_side",
     "b": "the_oldest_house:block/not_yet/blanket_made",
     "c": "the_oldest_house:block/not_yet/card",
+    "u": "the_oldest_house:block/not_yet/tube",
     "particle": "the_oldest_house:block/not_yet/tube"
   },
   "elements": [

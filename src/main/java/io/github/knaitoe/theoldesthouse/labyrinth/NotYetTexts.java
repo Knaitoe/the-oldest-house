@@ -105,4 +105,35 @@ public final class NotYetTexts {
             "There was a ward deep in the machine, with cots in rows under lamps, and a window onto a field where the sun did not move. "
                 +"A wall of digits stood at nought. Beyond it, in a long room, three people lay with their eyes open."));
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.665: lie down
+    /** The machine's invitation, once a visit to a reader it has mended who has heard the rule; and to one who stayed down. */
+    public static final String INVITE="LIE DOWN. I WILL KEEP YOU.",NOT_YOU="NOT YOU. NOT NOW.";
+    /** A hand on a cot that is not theirs. */
+    public static final String SOMEONE_ELSES="This cot is made up for someone else. There is a name on the card at its foot, in pencil.";
+    /** Lying down; and lying down again after getting up. */
+    public static final String LIE="You lie down on the cot. The lamp bends down close over your face, and stays there.",AGAIN="AGAIN, THEN.";
+    /** 1. The cot heats. */
+    public static final String HEAT="The frame under you is warm. Then it is hot. The coils under the mattress have begun to glow.";
+    /** 2. A name called: another reader's, a companion the House saw them lose, or, with neither, their own. */
+    public static String callOther(String name){return "From the far end of the ward, low down, as if from the floor, someone calls \u201c"+name+"\u201d.";}
+    public static String callLost(String name){return "Past the arch, something whistles and calls \u201c"+name+"\u201d, and waits for it to come.";}
+    public static final String CALL_SELF="By the far door something says your name. Then it says it again, nearer.";
+    /** 3. The screens: the door open, or another reader at it. */
+    public static final String DOOR_IS_OPEN="THE DOOR AT THE END IS OPEN. NOTHING IS KEEPING YOU.";
+    public static String gotUpLie(String name){return up(name)+" GOT UP. THEY ARE AT THE DOOR. THEY ARE NOT WAITING FOR YOU.";}
+    /** 4. Someone else is hurt: another reader lying down, or, alone, the man in the long room on the screen. */
+    public static String thatIs(String name){return "THAT IS "+up(name)+". GET UP AND I WILL STOP.";}
+    public static String couldStop(String name){return up(name)+" COULD STOP THIS. THEY ARE LYING THERE.";}
+    public static final String I_WILL_STOP="GET UP AND I WILL STOP.";
+    public static final String ON_THE_SCREEN="On the screen over your cot: the man from the long room, in his cot. Something is being done to him. His face does not move.";
+    public static final String STAY_DOWN_HEARD="From the screen, the man's voice, quite clearly: \u201cStay down.\u201d";
+    /** 5. The cold, and what it says with it. */
+    public static final String COLD="Cold comes in through the grille by the floor. The blanket stiffens over you.",WARM="YOU COULD GET UP AND GET WARM.";
+    /** Getting up: to the reader, and to everyone still lying down. */
+    public static final String THERE="THERE. EVERYONE GETS UP.";
+    public static String gotUpTrue(String name){return up(name)+" GOT UP. DO YOU WANT TO BE THE ONE I KEEP?";}
+    /** It looks away. */
+    public static final String QUIET="Then everything goes quiet at once. The lamp lifts away from your face. At the far end of the long room, a door slides open.";
+    private static String up(String name){return name.toUpperCase(java.util.Locale.ROOT);}
 }
