@@ -222,9 +222,15 @@ public final class LiteraryRooms {
     }
     private static void carcasses(ServerLevel l,BlockPos b){ElkCarcassMap.build(l,b);}
     private static void camp(ServerLevel l,BlockPos b){
-        terrain(l,b,LabyrinthPlace.CAMP_BLOOD,Blocks.PODZOL);for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83}){room(l,b,x-8,x+8,z-7,z+7,0,5,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,x+(x<0?8:-8),0,z,Direction.EAST,true);for(int dx:new int[]{-5,5}){NovelRooms.bed(l,b.offset(x+dx,0,z-4),Blocks.RED_BED,Direction.NORTH);furniture(l,b,x+dx,0,z+3,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.NORTH);}for(int zz=z-8;zz<=z+8;zz++)box(l,b,x-9,5,zz,x+9,5,zz,Blocks.SPRUCE_SLAB);roof(l,b,x-8,x+8,z-7,z+7,5);window(l,b,x,z-7,false);light(l,b,x,3,z);}
+        terrain(l,b,LabyrinthPlace.CAMP_BLOOD,Blocks.PODZOL);int cabinNo=0;for(int x:new int[]{-20,20})for(int z:new int[]{-26,-57,-83}){room(l,b,x-8,x+8,z-7,z+7,0,5,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,x+(x<0?8:-8),0,z,Direction.EAST,true);for(int dx:new int[]{-5,5}){NovelRooms.bed(l,b.offset(x+dx,0,z-4),Blocks.RED_BED,Direction.NORTH);furniture(l,b,x+dx,0,z+3,HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.NORTH);}for(int zz=z-8;zz<=z+8;zz++)box(l,b,x-9,5,zz,x+9,5,zz,Blocks.SPRUCE_SLAB);roof(l,b,x-8,x+8,z-7,z+7,5);window(l,b,x,z-7,false);light(l,b,x,3,z);
+            // 0.4.677: the cabin's number on a plate by its door, at eye height, painted (BoardSigns).
+            BoardSigns.hang(l,b.offset(x+(x<0?9:-9),1,z+1),BoardSigns.Sign.cabin(++cabinNo),x<0?Direction.EAST:Direction.WEST);}
+        // 0.4.677: the camp's board at the gate, east of the road across from the flagpole, on two posts, painted (BoardSigns).
+        for(int y=0;y<=2;y++){at(l,b,3,y,-10,Blocks.SPRUCE_LOG);at(l,b,7,y,-10,Blocks.SPRUCE_LOG);}BoardSigns.centred(l,b.offset(5,1,-10),BoardSigns.Sign.CAMP,Direction.SOUTH);
         // 0.4.284: a white sand road, as the Pine Barrens' roads are.
-        for(int z=-8;z>=-98;z--)box(l,b,-2,-1,z,2,-1,z,Blocks.SAND);at(l,b,6,0,-45,Blocks.CAMPFIRE);NovelRooms.sign(l,b.offset(4,1,-97),Direction.SOUTH,new String[]{"SERVICE ROAD","No camp traffic","",""});
+        for(int z=-8;z>=-98;z--)box(l,b,-2,-1,z,2,-1,z,Blocks.SAND);at(l,b,6,0,-45,Blocks.CAMPFIRE);
+        // 0.4.677: where the sand road ends, the board on two posts east of it, painted (BoardSigns); it was the game's own sign.
+        for(int y=0;y<=1;y++){at(l,b,3,y,-97,Blocks.SPRUCE_LOG);at(l,b,8,y,-97,Blocks.SPRUCE_LOG);}BoardSigns.centred(l,b.offset(5,1,-97),BoardSigns.Sign.CAMP_ROAD,Direction.SOUTH);
         // 0.4.121: the mess hall the schedule sends everyone to, west of the path between the middle and last cabins.
         room(l,b,5,11,-74,-66,0,5,Blocks.SPRUCE_PLANKS,Blocks.SPRUCE_PLANKS);door(l,b,5,0,-70,Direction.WEST,true);for(int zz=-75;zz<=-65;zz++)box(l,b,4,5,zz,12,5,zz,Blocks.SPRUCE_SLAB);roof(l,b,5,11,-74,-66,5);window(l,b,8,-74,false);light(l,b,7,3,-67);
         CampBloodDecor.build(l,b);CampSession.build(l,b);

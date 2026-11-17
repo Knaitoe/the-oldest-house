@@ -1215,7 +1215,9 @@ public final class BorrascaTests {
             for(int i=0;i<4;i++)f.talk(p,"CastKimber");own=f.own(p);
             h.assertTrue(own.getBoolean("KellyAsked")&&own.getInt("KellyLine")>=5,"she will not come up, and asks the reader to stop the machine and take her name up: "+own.getInt("KellyLine"));
             f.at(p,-23,6,-199);f.refresh(p);h.assertTrue(f.own(p).getBoolean("MarasRoom"),"the newest room, bolted, made up for her");
-            h.assertTrue(l.getBlockEntity(BorrascaRooms.at(b,BorrascaRooms.grave(0))) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign&&sign.getFrontText().getMessage(1,false).getString().equals(BorrascaRooms.GRAVE_TAGS[0])&&sign.isWaxed(),"a number on a stake, no name");
+            // 0.4.677: the number is painted on the stake's tin tag, and a hand on it reads that number and no name.
+            for(int i=0;i<BorrascaRooms.GRAVE_TAGS.length;i++){var tag=l.getBlockState(BorrascaRooms.at(b,BorrascaRooms.grave(i)));
+                h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.BoardSignBlock.is(tag,io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign.grave(i))&&io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign.grave(i).look().startsWith(BorrascaRooms.GRAVE_TAGS[i]+","),"a number on a stake, no name: grave "+i+" has "+tag);}
             f.at(p,0,12,-204);f.refresh(p);own=f.own(p);h.assertTrue(own.getBoolean("GravesSeen"),"the rows behind the shed");
             var account=BorrascaTexts.account(own);
             h.assertTrue(account.contains("bolts on the outside")&&account.contains("scratched into the wall beside mine")&&account.contains("counted by a Prescott")&&account.contains("never sent")&&account.contains("numbers in the ground")&&account.contains("two births, both placed in town")&&account.contains("grown, and would not come up")&&account.contains("take her name up instead of her"),"the account keeps what was found: "+account);
@@ -1352,7 +1354,7 @@ public final class BorrascaTests {
                 if(behind.is(Blocks.GLASS_PANE)||behind.isAir())hung.add(hungAt.subtract(b).toShortString()+" "+hs);}
             h.assertTrue(hung.isEmpty(),"every piece that hangs on a wall has wall behind it, not glass or air: "+hung);
             // 0.4.449 (owner: "Give the different stores some variance/characterization in their signage"; "custom signs"): the
-            // town's signs are its own painted boards. None of the game's wooden signs is left but the numbers on the graves; every
+            // town's signs are its own painted boards. None of the game's wooden signs is left (0.4.677: the graves' numbers too); every
             // board is whole; one on a wall has wall or wire behind it, one in a window has the pane before it, one that hangs has
             // its beam over it.
             int wooden=0;var adrift=new ArrayList<String>();var boards=new java.util.EnumMap<BorrascaSigns.Sign,Integer>(BorrascaSigns.Sign.class);
@@ -1362,7 +1364,7 @@ public final class BorrascaTests {
                 var behind=f.out.getBlockState(at.relative(face.getOpposite()));
                 boolean held=switch(sign.mount){case WALL,DECAL->!behind.isAir()&&!behind.is(Blocks.GLASS_PANE);case WINDOW->f.out.getBlockState(at.relative(face)).is(Blocks.GLASS_PANE);case FREE->!f.out.getBlockState(at.above()).isAir();};
                 if(!held)adrift.add(at.subtract(b).toShortString()+" "+sign);}
-            h.assertTrue(wooden==BorrascaRooms.GRAVE_TAGS.length,"the only wooden signs left on the hill are the numbers on the graves: "+wooden);
+            h.assertTrue(wooden==0,"none of the game's wooden signs is left on the hill: "+wooden);
             h.assertTrue(adrift.isEmpty(),"every board has wall or wire behind it, its window before it or its beam over it: "+adrift);
             for(var sign:BorrascaSigns.Sign.values()){int want=sign.pieces()*(sign==BorrascaSigns.Sign.NO_ENTRY||sign==BorrascaSigns.Sign.ROUNDEL?2:1);h.assertTrue(boards.getOrDefault(sign,0)==want,"the "+sign+" sign is hung whole: "+boards.getOrDefault(sign,0)+" blocks of "+want);}
             // 0.4.447: the yard's boards lie on the gravel or on each other. Two of them hung in the air.

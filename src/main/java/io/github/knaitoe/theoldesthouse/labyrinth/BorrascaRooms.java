@@ -325,9 +325,9 @@ public final class BorrascaRooms {
     private static void graves(ServerLevel l,BlockPos b){
         for(int i=0;i<GRAVE_TAGS.length;i++){
             var head=grave(i);set(l,b,head.getX(),11,head.getZ()-1,Blocks.COARSE_DIRT);set(l,b,head.getX(),11,head.getZ()-2,Blocks.COARSE_DIRT);
-            var at=b.offset(head);final String tag=GRAVE_TAGS[i];
-            BuildBlocks.set(l,at,Blocks.SPRUCE_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION,8),F);
-            BuildBlocks.after(l,()->{if(l.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign){var text=sign.getFrontText().setMessage(1,net.minecraft.network.chat.Component.literal(tag));sign.setText(text,true);sign.setWaxed(true);}});
+            // 0.4.677: the number on a tin tag nailed to the stake, painted (BoardSigns); it was the game's own sign.
+            BuildBlocks.set(l,b.offset(head),Blocks.AIR.defaultBlockState(),F);
+            BoardSigns.hang(l,b.offset(head),BoardSigns.Sign.grave(i),Direction.NORTH);
         }
     }
     private static void marker(ServerLevel l,BlockPos b,BlockPos at,BorrascaFittingBlock.Kind k){box(l,b,at.getX(),at.getY(),at.getZ()-1,at.getX(),at.getY()+1,at.getZ()-1,Blocks.SPRUCE_LOG);fit(l,b,at.above(),k,Direction.SOUTH);}

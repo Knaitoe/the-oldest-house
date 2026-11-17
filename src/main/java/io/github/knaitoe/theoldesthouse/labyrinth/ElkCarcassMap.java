@@ -805,7 +805,13 @@ public final class ElkCarcassMap {
             fill(x - 1, g, z - 3, x + 1, g, z + 2, Blocks.GRAVEL);
             for (int zz = z - 3; zz <= z + 2; zz++) if (zz != z) fill(x - 1, GATE_Y, zz, x + 1, GATE_Y + 3, zz, Blocks.AIR);
             fill(x, GATE_Y, z, x, GATE_Y + 1, z, Blocks.AIR);
-            NovelRooms.sign(l, b.offset(x + 1, GATE_Y + 1, z + 1), Direction.SOUTH, new String[]{"SERVICE ROAD", "Crew only", "Sign out here", ""});
+            // 0.4.677: the county's board on two posts east of the gate, painted (BoardSigns); it was the game's own sign on the gate
+            // post. The ground climbs here, so the board stands a block clear of its highest point and each post reaches down to its own.
+            int top = GATE_Y - 1;
+            for (int xx = x + 2; xx <= x + 7; xx++) top = Math.max(top, surface(xx, z + 1));
+            for (int xx : new int[]{x + 2, x + 7}) fill(xx, surface(xx, z + 1) + 1, z + 1, xx, top + 3, z + 1, Blocks.STRIPPED_SPRUCE_LOG);
+            fill(x + 3, top + 2, z + 1, x + 6, top + 3, z + 1, Blocks.AIR);
+            BoardSigns.hang(l, b.offset(x + 3, top + 2, z + 1), BoardSigns.Sign.CREW_GATE, Direction.SOUTH);
             set(ENDING.getX(), GATE_Y, ENDING.getZ(), Blocks.BARREL);
             set(ENDING.getX() + 1, GATE_Y, ENDING.getZ(), Blocks.BARREL);
             lamp(x + 3, GATE_Y, z + 3);
@@ -952,7 +958,8 @@ public final class ElkCarcassMap {
             for (int y = -1; y <= 3; y++) set(-10, y, -12, Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST));
             set(-9, 4, -12, Blocks.AIR);
             prop(-8, 5, -14, LiteraryPropBlock.Kind.LIFE_RING, Direction.WEST, 0); // on the saloon wall over the side deck
-            NovelRooms.sign(l, b.offset(-10, 2, -2), Direction.WEST, new String[]{"", "SECOND SUMMER", "Indian Lake", ""});
+            // 0.4.677: her name painted on her port side, aft of the boarding ladder (BoardSigns); it was the game's own sign.
+            BoardSigns.centred(l, b.offset(-10, 2, -2), BoardSigns.Sign.BOAT, Direction.WEST);
         }
 
         void cabinWalls(int x0, int x1, int z0, int z1) {

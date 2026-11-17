@@ -496,7 +496,8 @@ public final class MovieNight {
         s.fill(-4,3,-89,4,3,-82,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.BOTTOM));
         s.fill(-2,0,-86,2,0,-86,Blocks.SPRUCE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE,SlabType.TOP));
         s.set(0,2,-86,Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING,true));
-        NovelRooms.sign(s.l(),s.b().offset(3,2,-82),Direction.SOUTH,new String[]{"TICKETS","Movie night","on the lake",""});
+        // 0.4.677: the board across the top of the open front, post to post (BoardSigns); it was the game's own sign on a post.
+        BoardSigns.centred(s.l(),s.b().offset(0,2,-83),BoardSigns.Sign.TICKETS,Direction.SOUTH);
         s.set(-4,0,-83,prop(MoviePropBlock.Kind.POSTER,Direction.SOUTH));s.set(-4,1,-83,prop(MoviePropBlock.Kind.POSTER_TOP,Direction.SOUTH));
     }
 }
