@@ -40,14 +40,21 @@ public final class TallGrassClient {
         var mc=Minecraft.getInstance();var base=LabyrinthPlaces.base(SceneInstances.originAt(HouseSightlineState.origin(),mc.player.blockPosition()),TallGrass.PLACE);if(base==null)return;
         var camera=e.getCamera().getPosition();var pose=e.getPoseStack();var buffers=mc.renderBuffers().bufferSource();
         int light=LevelRenderer.getLightColor(mc.level,BlockPos.containing(camera));
-        double z=camera.z-AWAY;double first=Math.floor((camera.x-base.getX())/APART)*APART+base.getX();
+        // 0.4.675 (owner: "what is that overlay in the tall grass?"): past the client's own render distance there was no ground drawn under
+        // them, and the poles and their wire hung in the sky. They stand inside it now, always over drawn ground, and in the fog with it.
+        double away=Math.max(28,Math.min(AWAY,mc.options.getEffectiveRenderDistance()*16-24));
+        double z=camera.z-away;double first=Math.floor((camera.x-base.getX())/APART)*APART+base.getX();
+        var turf=Blocks.GRASS_BLOCK.defaultBlockState();var tuft=Blocks.TALL_GRASS.defaultBlockState();
         var post=Blocks.SPRUCE_LOG.defaultBlockState();var arm=Blocks.STRIPPED_SPRUCE_LOG.defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X);
         var cap=Blocks.SPRUCE_FENCE.defaultBlockState();
         for(int i=-REACH;i<=REACH;i++){
             double x=first+i*APART;
             pose.pushPose();pose.translate(x-camera.x,base.getY()-camera.y,z-camera.z);
-            pose.pushPose();pose.scale(.4F,1F,.4F);pose.translate(.75,0,.75);
-            for(int y=0;y<TALL;y++){mc.getBlockRenderer().renderSingleBlock(post,pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.translate(0,1,0);}
+            // The foot of the pole in a hump of the field's own sod and grass, sunk a block, so it stands in the ground and not on air.
+            pose.pushPose();pose.translate(-.5,-1,-.5);pose.scale(2F,1.2F,2F);mc.getBlockRenderer().renderSingleBlock(turf,pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.popPose();
+            for(double tx:new double[]{-.6,.9}){pose.pushPose();pose.translate(tx,.2,tx*.4);pose.scale(1F,1.3F,1F);mc.getBlockRenderer().renderSingleBlock(tuft,pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.popPose();}
+            pose.pushPose();pose.scale(.4F,1F,.4F);pose.translate(.75,-1,.75);
+            for(int y=-1;y<TALL;y++){mc.getBlockRenderer().renderSingleBlock(post,pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.translate(0,1,0);}
             pose.popPose();
             // The crossarm near the top, its insulators.
             pose.pushPose();pose.translate(-1,TALL-1.2,.35);pose.scale(3F,.3F,.3F);mc.getBlockRenderer().renderSingleBlock(arm,pose,buffers,light,OverlayTexture.NO_OVERLAY);pose.popPose();

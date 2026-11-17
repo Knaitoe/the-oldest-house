@@ -93,8 +93,17 @@ public final class WinterLake {
     public static @Nullable LakeWitchEntity witch(ServerLevel l){var w=LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),PLACE);return w.hasUUID("Witch")&&l.getEntity(w.getUUID("Witch")) instanceof LakeWitchEntity e&&e.isAlive()?e:null;}
     public static @Nullable Boy boy(LiteraryActor a){if(a.role()!=LiteraryActor.STRANGER)return null;for(var b:BOYS)if(b.phase()==a.phase())return b;return null;}
     private static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;a.yRotO=yaw;}
-    private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0504",a.level().getGameTime());}
-    private static void speak(LiteraryActor a,Boy who,String line,List<ServerPlayer> readers,double reach){say(a,line);for(var p:readers)if(p.distanceToSqr(a)<reach*reach)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
+    private static void say(LiteraryActor a,String line){say(a,null,line);}
+    private static void say(LiteraryActor a,@Nullable String name,String line){a.say(name,line);a.getPersistentData().putLong("Said0504",a.level().getGameTime());}
+    /**
+     * Said to the readers near enough to hear it: the caption, with the name, for whoever is within a caption's reach. 0.4.675
+     * (owner: "doubled dialogue"): nobody gets a copy of it in chat as well; only a reader past the caption's reach and still within
+     * this voice's (a shout, a megaphone across the beach) gets the words in chat, with the name.
+     */
+    private static void speak(LiteraryActor a,Boy who,String line,List<ServerPlayer> readers,double reach){
+        say(a,who.name(),line);
+        for(var p:readers)if(p.distanceToSqr(a)<reach*reach&&p.distanceToSqr(a)>=CostumeNight.CAPTION*CostumeNight.CAPTION)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);
+    }
     private static void hint(ServerPlayer p,CompoundTag own,String key,String text){if(own.getBoolean(key))return;own.putBoolean(key,true);p.displayClientMessage(Component.literal(text),true);}
     public static boolean lake(int x,int z){return x>=X0&&x<=X1&&z<=NEAR&&z>=FAR;}
     public static boolean hole(int x,int z){int dx=x-HOLE.getX(),dz=z-HOLE.getZ();return dx*dx+dz*dz<=2;}

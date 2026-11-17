@@ -198,10 +198,10 @@ public final class LastCrossingSite {
         for(int z=NEAR_N-1;z>=-30;z--)for(int x=-1;x<=1;x++){set(l,b,x,FLOOD_FLOOR+1,z,s(Blocks.DIRT));set(l,b,x,FLOOD_FLOOR+2,z,s(z>-24?Blocks.GRAVEL:Blocks.MUD));}
         // The road's fences, standing out of the water where it goes under.
         for(int z=-3;z>=-27;z-=3)for(int x:new int[]{-3,3}){int bottom=z>NEAR_N?0:FLOOD_FLOOR+1;for(int y=bottom;y<=0;y++)set(l,b,x,y,z,fence(Blocks.SPRUCE_FENCE,y<0));}
-        // A sawhorse across the road at the water, with its sign.
-        for(int x=-1;x<=1;x++){set(l,b,x,0,NEAR_N,fence(Blocks.SPRUCE_FENCE,false));set(l,b,x,1,NEAR_N,s(Blocks.SPRUCE_SLAB));}
+        // A sawhorse across the road at the water, its legs the fence and its board the painted sign across their tops (0.4.675).
+        for(int x=-1;x<=1;x++)set(l,b,x,0,NEAR_N,fence(Blocks.SPRUCE_FENCE,false));
         set(l,b,2,0,NEAR_N,s(Blocks.SPRUCE_FENCE));
-        standingSign(l,b.offset(0,0,NEAR_N+1),new String[]{"","ROAD","FLOODED",""});
+        CrossingSigns.centred(l,b.offset(0,1,NEAR_N),CrossingSigns.Sign.ROAD,Direction.SOUTH);
     }
     /** The levee beside the road, up to the station, the power line along its east side. */
     static void levee(ServerLevel l,BlockPos b){
@@ -259,8 +259,11 @@ public final class LastCrossingSite {
         set(l,b,PORCH_TABLE,fit(Kind.TABLE,Direction.NORTH));set(l,b,CLIPBOARD,fit(Kind.CLIPBOARD,Direction.SOUTH));
         for(int x=17;x<=18;x++)set(l,b,x,0,-37,s(Blocks.SPRUCE_STAIRS).setValue(StairBlock.FACING,Direction.NORTH));
         for(int x=16;x<=OFFICE_E-1;x++)set(l,b,x,0,MOUND_S-1,s(Blocks.SPRUCE_FENCE));
-        set(l,b,15,2,MOUND_S-1,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
-        NovelRooms.sign(l,b.offset(14,2,-37),Direction.SOUTH,new String[]{"ROOK FERRY","FLOOD STATION","","KEEPER"});
+        // 0.4.675: the porch lamp hangs over the table and Vera's clipboard, clear of the name board (it had hung in front of it).
+        set(l,b,PORCH_TABLE.getX(),2,MOUND_S-1,s(Blocks.LANTERN).setValue(LanternBlock.HANGING,true));
+        // 0.4.675: the name board over the door, between the windows, and the keeper's plate at eye height beside the door.
+        CrossingSigns.centred(l,b.offset(15,2,-37),CrossingSigns.Sign.STATION,Direction.SOUTH);
+        CrossingSigns.hang(l,b.offset(14,1,-37),CrossingSigns.Sign.KEEPER,Direction.SOUTH);
     }
     /** The pump room: the gauge room above with its gauge, brake and landing; the intake below with its pipe, screw, valves and pump. */
     static void pumpRoom(ServerLevel l,BlockPos b){
@@ -336,7 +339,7 @@ public final class LastCrossingSite {
         set(l,b,BELL,s(Blocks.BELL).setValue(BellBlock.FACING,Direction.SOUTH).setValue(BellBlock.ATTACHMENT,BellAttachType.FLOOR));
         set(l,b,30,0,-63,s(Blocks.ANDESITE_WALL));set(l,b,36,0,-63,s(Blocks.ANDESITE_WALL));
         set(l,b,DEPTH,fit(Kind.DEPTH,Direction.SOUTH));
-        NovelRooms.sign(l,b.offset(PUMP_E+1,2,-56),Direction.EAST,new String[]{"","RAMP","KEEP CLEAR",""});
+        CrossingSigns.centred(l,b.offset(PUMP_E+1,2,-56),CrossingSigns.Sign.RAMP,Direction.EAST);
     }
     /** The ferry, a flat cable ferry low against its sill, its wheelhouse with the nameplate, and its line to the cable. */
     static void ferry(ServerLevel l,BlockPos b){

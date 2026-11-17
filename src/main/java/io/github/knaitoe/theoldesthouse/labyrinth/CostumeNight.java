@@ -97,9 +97,19 @@ public final class CostumeNight {
     public static @Nullable LiteraryActor cast(ServerLevel l,BlockPos b,Person who){return cast(l,record(l,b),who);}
     public static @Nullable LakeWitchEntity witch(ServerLevel l,BlockPos b){var w=record(l,b);return w.hasUUID("Witch")&&l.getEntity(w.getUUID("Witch")) instanceof LakeWitchEntity e&&e.isAlive()?e:null;}
     private static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYHeadRot(yaw);a.yBodyRot=yaw;a.yRotO=yaw;}
-    private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0503",a.level().getGameTime());}
-    /** Said to the readers near enough to hear it; Hank's megaphone carries across the beach. */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> readers,double reach){say(a,line);for(var p:readers)if(p.distanceToSqr(a)<reach*reach)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
+    private static void say(LiteraryActor a,String line){say(a,null,line);}
+    private static void say(LiteraryActor a,@Nullable String name,String line){a.say(name,line);a.getPersistentData().putLong("Said0503",a.level().getGameTime());}
+    /**
+     * Said to the readers near enough to hear it: the caption, with the name, for whoever is within a caption's reach. 0.4.675
+     * (owner: "doubled dialogue"): nobody gets a copy of it in chat as well; only a reader past the caption's reach and still within
+     * this voice's (a shout, a megaphone across the beach) gets the words in chat, with the name.
+     */
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> readers,double reach){
+        say(a,who.name(),line);
+        for(var p:readers)if(p.distanceToSqr(a)<reach*reach&&p.distanceToSqr(a)>=CAPTION*CAPTION)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);
+    }
+    /** How far a caption is seen (client.SpeechCaptions.HEARD, which the server cannot read). */
+    static final double CAPTION=24;
     private static void announce(ServerLevel l,LiteraryActor hank,String line,List<ServerPlayer> readers){
         l.playSound(null,hank.getX(),hank.getY()+1.5,hank.getZ(),CostumeNightRegistry.MEGAPHONE.get(),SoundSource.NEUTRAL,1.4F,1);speak(hank,HANK,line,readers,48);
     }

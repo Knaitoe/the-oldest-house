@@ -292,9 +292,9 @@ public final class LastSeen {
         float yaw=LastSeenBlock.is(st,LastSeenBlock.Kind.CHAIR)?st.getValue(LastSeenBlock.FACING).toYRot():Direction.SOUTH.toYRot();
         a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);a.setDeltaMovement(Vec3.ZERO);
     }
+    /** 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. */
     static void speak(ServerLevel l,BlockPos b,LiteraryActor a,@Nullable String name,String line){
         a.say(name,line);a.speaks(line);
-        for(var r:readers(l,b))if(r.distanceToSqr(a)<24*24)r.displayClientMessage(Component.literal((name==null?"":name+": ")+"“"+line+"”").withStyle(ChatFormatting.GRAY),true);
     }
     static void turn(LivingEntity a,float yaw){a.setYRot(yaw);a.setYBodyRot(yaw);a.setYHeadRot(yaw);}
     static float toward(Vec3 from,Vec3 to){var v=to.subtract(from);return (float)(Mth.atan2(v.z,v.x)*Mth.RAD_TO_DEG)-90F;}

@@ -114,8 +114,9 @@ public final class ElkLotNight {
     }
     /** Ticks a sentence is kept as just said: nobody says it again inside them while they have another to say. */
     public static final int FRESH=600;
-    private static void say(LiteraryActor a,String line){
-        a.say(line);long now=a.level().getGameTime();var data=a.getPersistentData();data.putLong("Said0478",now);
+    private static void say(LiteraryActor a,String line){say(a,null,line);}
+    private static void say(LiteraryActor a,@javax.annotation.Nullable String name,String line){
+        a.say(name,line);long now=a.level().getGameTime();var data=a.getPersistentData();data.putLong("Said0478",now);
         var recent=data.getCompound("Recent0571");recent.getAllKeys().removeIf(k->now-recent.getLong(k)>=FRESH);recent.putLong(line,now);data.put("Recent0571",recent);
     }
     /**
@@ -133,8 +134,8 @@ public final class ElkLotNight {
         }
         return best;
     }
-    /** A line said to the readers near enough to hear it. */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,line);for(var p:near)if(LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(a)<400)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),false);}
+    /** A line said to the readers near enough to hear it. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no chat copy. */
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){say(a,who.name(),line);}
     private static @Nullable ServerPlayer nearest(Entity a,List<ServerPlayer> here,double reach){ServerPlayer best=null;double d=reach*reach;for(var p:here){double e=p.distanceToSqr(a);if(e<d){d=e;best=p;}}return best;}
     static List<ServerPlayer> here(MinecraftServer s){var out=new ArrayList<ServerPlayer>();for(var p:s.getPlayerList().getPlayers())if(LiteraryVignettes.inside(p,PLACE)&&LiteraryVignettes.personal(LabyrinthData.get(s),p.getUUID(),PLACE).getBoolean("Here"))out.add(p);return out;}
     /** In the bar itself, under its roof. */

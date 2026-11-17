@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.674** continues *Fallow* (part 3, first half: the four minutes). Fifteen seconds after the man on the road is gone, the ball game on the radio stops for a long tone and the television shows a blank card. Fifteen seconds on, both pads' lids grind open in the wheat and nobody leaves by the House's door; moments later the first goes up out of its hole on a column of fire, then the second, drawn over the haze with their smoke standing over the wheat, and Harlan sends everybody to the cellar. A reader can take the cellar doors from Harlan so he goes down too, and can take Faye by the arm and lead her down from the car she will not leave; Otis carries the girl and her bean down; Boyd stays at the rig. Four minutes after the lids comes the light: a reader out in it is whited out and taken out by the House (a faint, not a death); one below sees it come in round the doors and feels the ground shake first. Each reader keeps where the light found them. `docs/FALLOW_0_4_674.md`.
+Development candidate **0.4.675** is the owner's twelve notes of 17 November (`docs/OWNER_NOTES_0_4_675.md`). The Last Crossing's four signs are painted boards. A person's line is drawn once, not twice. Bike night has framed bleachers, joined-up carts, a way to the cemetery told to a reader who is not getting nearer it (riding or on foot), and morning people out of their costumes with their own lines. A Little Longer, Last Seen and Fallow open their doorway so a reader arrives inside. The lodging house's cellar stair is walkable upright. The black city's snow lies on its roof, the tall grass's poles stand over drawn ground, the Kept's people keep apart, and AM's line fits the screen.
+
+Previous: 0.4.674 continued *Fallow* (part 3, first half: the four minutes). `docs/FALLOW_0_4_674.md`.
 
 Previous: 0.4.672 began *Fallow* (part 1: the station): the gas station on a two-lane road through wheat, its five people at their places, every thing answering a hand. `docs/FALLOW_0_4_672.md`.
 

@@ -91,6 +91,8 @@ public final class CalderTown {
     public static final BlockPos HOLE_SOUTH=new BlockPos(-18,0,-135),HOLE_NORTH=new BlockPos(-18,0,-159);
     /** The school's field, and its bleachers: four rows along its north side, each a block higher and further back, the first a block up. */
     public static final int FIELD_W=-27,FIELD_E=-8,FIELD_N=-158,FIELD_S=-136,STAND_W=-25,STAND_E=-11,STAND_FRONT=-155,STAND_ROWS=4;
+    /** 0.4.675: where the bleachers' steel frames stand, under every row. */
+    public static final java.util.Set<Integer> STAND_FRAMES=java.util.Set.of(STAND_W,-21,-15,STAND_E);
     /** The field's yard lines: every fourth row across it, from one to the other; and where the scoreboard hangs on the school's wall. */
     public static final int YARD_W=-26,YARD_E=-10,YARD_STEP=4,YARD_N=-153,YARD_S=-138,SCORE_LO=-150;
     /** Where the three one-sheets hang along the theater's side, each from its lower row. */
@@ -567,11 +569,14 @@ public final class CalderTown {
         hole(l,b,HOLE_SOUTH);hole(l,b,HOLE_NORTH);
         // The scoreboard, on the school's wall over the field. It is off; the last game is still on it.
         on(l,b,CalderSigns.Sign.SCOREBOARD,Direction.EAST,east,SCORE_LO,2);
-        // The bleachers, on posts front and back.
-        for(int k=0;k<STAND_ROWS;k++)for(int x=STAND_W;x<=STAND_E;x++)set(l,b,x,k+1,STAND_FRONT-k,town(CalderTownBlock.Kind.BLEACHER,s,0));
-        for(int x:new int[]{STAND_W,-21,-15,STAND_E}){
-            set(l,b,x,0,STAND_FRONT,BikeNightSite.play(CalderPlayBlock.Kind.POST,Direction.NORTH,CalderPlayBlock.FOOT));
-            for(int y=0;y<STAND_ROWS;y++)set(l,b,x,y,STAND_FRONT-STAND_ROWS+1,BikeNightSite.play(CalderPlayBlock.Kind.POST,Direction.NORTH,y==0?CalderPlayBlock.FOOT:CalderPlayBlock.SHAFT));
+        // The bleachers. 0.4.675 (owner: "broken bleachers in bike night"): they stood on the playground's striped posts, front and
+        // back, with nothing else under the raised rows. Now a steel frame stands under them at each of the frame lines: under every
+        // row, a leg at its back down to the ground on a base plate, with a strut forward to the row in front. The way between the
+        // holes in the fence (x -18) stays clear under every row.
+        for(int k=0;k<STAND_ROWS;k++)for(int x=STAND_W;x<=STAND_E;x++){
+            boolean frame=STAND_FRAMES.contains(x);
+            set(l,b,x,k+1,STAND_FRONT-k,town(CalderTownBlock.Kind.BLEACHER,s,frame?CalderTownBlock.SEAT_FRAMED:CalderTownBlock.SEAT));
+            if(frame)for(int y=0;y<=k;y++)set(l,b,x,y,STAND_FRONT-k,town(CalderTownBlock.Kind.BLEACHER,s,y==0?CalderTownBlock.LEG_FOOT:CalderTownBlock.LEG));
         }
         tree(l,b,-13,-163,6,rnd);
     }

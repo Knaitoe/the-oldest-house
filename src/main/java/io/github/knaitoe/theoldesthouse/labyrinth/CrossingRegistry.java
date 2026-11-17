@@ -46,6 +46,10 @@ public final class CrossingRegistry {
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CrossingBlock>> FITTING_TYPE=CODECS.register("crossing_fitting",()->CrossingBlock.CODEC);
     public static final DeferredBlock<CrossingBlock> FITTING=BLOCKS.registerBlock("crossing_fitting",CrossingBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(CrossingBlock::light));
+    /** 0.4.675: one block of the station's painted signs (CrossingSigns). Nothing walks into it. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<CrossingSignBlock>> SIGN_TYPE=CODECS.register("crossing_sign",()->CrossingSignBlock.CODEC);
+    public static final DeferredBlock<CrossingSignBlock> SIGN=BLOCKS.registerBlock("crossing_sign",CrossingSignBlock::new,
+        fixed(Blocks.SPRUCE_PLANKS).noOcclusion().noCollission().lightLevel(CrossingSignBlock::light));
     /** The handprint plate, lifted out of its bracket: it takes both hands, and is set down on a floor or in a bracket. */
     public static final DeferredItem<Plate> PLATE=ITEMS.registerItem("crossing_plate",Plate::new,new Item.Properties().stacksTo(1));
     /** The ferry's loose mooring line, the station lamp, and the wrench that hangs by the intake. */

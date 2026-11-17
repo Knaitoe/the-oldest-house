@@ -1,0 +1,4 @@
+{"ambientocclusion":false,"render_type":"minecraft:cutout","textures":{"a":"the_oldest_house:block/crossing_sign/ramp","particle":"the_oldest_house:block/crossing_sign/ramp"},
+ "elements":[
+  {"from":[0,0,15.75],"to":[16,16,15.75],"faces":{"north":{"texture":"#a","uv":[5.3333,0.0,10.6667,16.0]}}}
+ ]}

@@ -49,6 +49,10 @@ public final class CalderPeople {
     private static final String[] SKINS={"ghost","skeleton","pumpkin","vampire","monster","skull","robot","mummy","cat","scarecrow","letterman","denim","sweater","cap","stock"};
     public static boolean cast(int phase){return phase>=FIRST&&phase<FIRST+COUNT;}
     public static String skin(int phase){return "calder_"+SKINS[phase-FIRST];}
+    /** 0.4.675: the ten in costume (the trick-or-treaters and the line); the morning after, they are in what they wore under it. */
+    public static boolean costumed(int phase){return cast(phase)&&phase-FIRST<HOOD_FIRST;}
+    /** The skin a reader sees them in: at dawn, for the ten in costume, the plain one (owner: "render them without costumes"). */
+    public static String skin(int phase,boolean morning){return morning&&costumed(phase)?skin(phase)+"_day":skin(phase);}
     /** The trick-or-treaters are children; the rest are teenagers. */
     public static double size(int phase){return phase-FIRST<TRICK?.56:.8;}
     /** The ghost's sheet hangs to the shins. */
@@ -288,10 +292,18 @@ public final class CalderPeople {
     }
     static void say(LiteraryActor a,String line){a.say(name(who(a)),line);a.speaks(line);}
     /** A hand on one of them. */
+    /**
+     * 0.4.675 (owner: "change dialogue for morning humans... have them check whether the player is actually on a bike or not for the
+     * even on a bike line"): a reader whose night has turned to dawn (BikeNightGraveyard.dawn) hears the morning's lines; the line's
+     * word about bikes is said only to a reader on one.
+     */
     public static void talk(ServerPlayer p,LiteraryActor a){
         var n=BikeNight.night(p);if(n==null||!is(a)||a.saying())return;
-        var lines=BikeNightTexts.PEOPLE_TALK[lot(who(a))];
-        say(a,lines[n.people.talk++%lines.length]);
+        boolean morning=BikeNightGraveyard.dawn(n,p);
+        var lines=morning?BikeNightTexts.PEOPLE_MORNING[lot(who(a))]:BikeNightTexts.PEOPLE_TALK[lot(who(a))];
+        String line=lines[n.people.talk++%lines.length];
+        if(line.equals(BikeNightTexts.LINE_NO_CUTTING)&&p.getVehicle() instanceof NightBike)line=BikeNightTexts.LINE_NO_CUTTING_BIKE;
+        say(a,line);
     }
 
     // ------------------------------------------------------------------------------------------------ for tests

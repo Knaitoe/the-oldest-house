@@ -94,7 +94,7 @@ public final class MovieNightCast {
      * on its frame whoever was near, and Lynn called to Bobby with both readers thirty blocks off. With nobody in earshot it goes unsaid,
      * as an idle line does.
      */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){if(near.stream().noneMatch(p->p.distanceToSqr(a)<24*24))return;say(a,line);for(var p:near)if(p.distanceToSqr(a)<24*24)p.displayClientMessage(Component.literal(who.name()+": “"+line+"”"),true);}
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){if(near.stream().noneMatch(p->p.distanceToSqr(a)<24*24))return;a.say(who.name(),line);a.getPersistentData().putLong("Said0502",a.level().getGameTime());}
     /**
      * 0.4.241 (owner: "something should implore the player to check the first [paper] so they can complete it after running to the
      * grass"). The program waits on its stand by the door the reader came in at, and the account across the lake answers it. Ray calls

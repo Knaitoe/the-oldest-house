@@ -654,13 +654,14 @@ public final class Shallows {
     static void say(ServerPlayer player,int who,String line,int mood,@Nullable LakeWitchEntity girl){
         var host=host(player);Entity speaker=speaker(host,who,girl);
         for(var p:group(host)){
-            p.displayClientMessage(Component.literal(WHO[who]+": “"+line+"”"),false);
-            HousePackets.send(p,new ShallowsCuePayload(speaker==null?-1:speaker.getId(),line,mood,Math.max(50,line.length()*3+30)));
+            // 0.4.675 (owner: "doubled dialogue"): the line is the reader's caption; it comes in chat only while nobody is there to say it.
+            if(speaker==null)p.displayClientMessage(Component.literal(WHO[who]+": “"+line+"”"),false);
+            HousePackets.send(p,new ShallowsCuePayload(speaker==null?-1:speaker.getId(),WHO[who],line,mood,Math.max(50,line.length()*3+30)));
         }
     }
     /** A reaction without words, seen by this reader alone, and those with them. */
     static void react(ServerPlayer player,int who,int mood,int ticks,@Nullable LakeWitchEntity girl){
-        var host=host(player);Entity speaker=speaker(host,who,girl);if(speaker!=null)for(var p:group(host))HousePackets.send(p,new ShallowsCuePayload(speaker.getId(),"",mood,ticks));
+        var host=host(player);Entity speaker=speaker(host,who,girl);if(speaker!=null)for(var p:group(host))HousePackets.send(p,new ShallowsCuePayload(speaker.getId(),"","",mood,ticks));
     }
     /** A sound only this reader hears, and those with them. */
     static void hear(ServerPlayer player,SoundEvent sound,Vec3 at,float volume,float pitch){

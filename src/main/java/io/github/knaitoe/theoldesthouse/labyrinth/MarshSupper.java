@@ -96,10 +96,9 @@ public final class MarshSupper {
     static Vec3 world(BlockPos b,Vec3 r){return new Vec3(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z);}
     static Vec3 seatAt(BlockPos seat){return Vec3.atBottomCenterOf(seat);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Someone at the farm says something: over their head, and in the action bar for readers near enough to hear it. */
+    /** Someone at the farm says something, for whoever is near enough to hear it. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. */
     static void speak(ServerLevel l,Supper s,int who,String line){
-        var a=actor(l,s.cast[who]);if(a==null)return;a.say(line);a.speaks(line);s.said.put(a.getUUID(),s.tick);
-        for(var r:readers(l,s.base))if(r.distanceToSqr(a)<14*14)r.displayClientMessage(Component.literal(NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        var a=actor(l,s.cast[who]);if(a==null)return;a.say(NAMES[who],line);a.speaks(line);s.said.put(a.getUUID(),s.tick);
     }
     static void sound(ServerLevel l,BlockPos at,SoundEvent e,float volume,float pitch){l.playSound(null,at,e,SoundSource.BLOCKS,volume,pitch);}
     /** Marks a fact in the record of every reader in the house who was there for it. */
@@ -345,7 +344,7 @@ public final class MarshSupper {
         var r=rel(p.position(),b);
         if(!own.getBoolean("SawTree")&&(MarshSupperSite.nearTree(r)||sees(p,world(b,new Vec3(MarshSupperSite.TREE_X+.5,1,-58)),24,.8))){own.putBoolean("SawTree",true);cue(p,"An oak lies across the drive, roots and all. Nothing on wheels has come up this drive in a long while.");}
         if(MarshSupperSite.onPorch(r)&&!own.getBoolean("Greeted")){own.putBoolean("Greeted",true);
-            var ida=actor(l,s.cast[0]);if(ida!=null&&s.stage<OVER){ida.say("Wipe your boots.");ida.speaks("Wipe your boots.");s.said.put(ida.getUUID(),s.tick);p.displayClientMessage(Component.literal("From inside: “Wipe your boots.”").withStyle(ChatFormatting.GRAY),true);}
+            var ida=actor(l,s.cast[0]);if(ida!=null&&s.stage<OVER){ida.say(NAMES[0],"Wipe your boots.");ida.speaks("Wipe your boots.");s.said.put(ida.getUUID(),s.tick);}
             if(own.getBoolean("PlaceKept"))own.putBoolean("KeptAgain",true);}
         if(!own.getBoolean("Wiped")&&p.blockPosition().equals(b.offset(MarshSupperSite.MAT))){own.putBoolean("Wiped",true);sound(l,p.blockPosition(),MarshRegistry.WIPE.get(),.8F,1F);cue(p,"You wipe your boots on the mat.");}
         var seat=seated(p,b);

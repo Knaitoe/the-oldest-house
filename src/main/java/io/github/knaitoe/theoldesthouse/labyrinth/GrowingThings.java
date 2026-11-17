@@ -118,10 +118,9 @@ public final class GrowingThings {
     static Vec3 world(BlockPos b,Vec3 r){return new Vec3(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     static void sound(ServerLevel l,BlockPos at,SoundEvent e,float volume,float pitch){l.playSound(null,at,e,SoundSource.BLOCKS,volume,pitch);}
-    /** Someone at the Barretts' says something: over their head, and in the action bar for readers near enough to hear it. */
+    /** Someone at the Barretts' says something, for whoever is near enough to hear it. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. */
     static void speak(ServerLevel l,Day d,int who,String line){
-        var a=actor(l,d.cast[who]);if(a==null)return;a.say(line);a.speaks(line);
-        for(var r:readers(l,d.base))if(r.distanceToSqr(a)<HEARING*HEARING)r.displayClientMessage(Component.literal(NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        var a=actor(l,d.cast[who]);if(a==null)return;a.say(NAMES[who],line);a.speaks(line);
     }
     /**
      * One of the family asks a reader for a hand: said once, for every reader near enough to hear it, and all of them are marked as

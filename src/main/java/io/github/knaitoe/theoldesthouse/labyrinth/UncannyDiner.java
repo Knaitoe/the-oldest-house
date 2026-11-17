@@ -118,7 +118,7 @@ public final class UncannyDiner {
     public static boolean pressure(ServerPlayer p,LiteraryActor fake,BlockPos b,CompoundTag own){
         boolean sitting=seated(p,b);SceneFootpaths.face(fake,p.position(),12);
         if(!sitting){
-            if(!own.getBoolean("DinerLeftTable133")){own.putBoolean("DinerLeftTable133",true);fake.say("Where are you going, honey?");p.displayClientMessage(Component.literal("“Where are you going, honey?”"),true);}
+            if(!own.getBoolean("DinerLeftTable133")){own.putBoolean("DinerLeftTable133",true);fake.say(UncannyStories.WAITRESS,"Where are you going, honey?");}
             if(fake.distanceToSqr(p)>2.3)DinerWalk.follow(fake,p.position(),fake.phase()>=3?.15:.10);
             own.putInt("DinerFollowed201",own.getInt("DinerFollowed201")+5);
         }else own.remove("DinerLeftTable133");
@@ -126,6 +126,6 @@ public final class UncannyDiner {
         if(age<own.getLong("BoothPressureNext130"))return sitting;
         int line=own.getInt("BoothPressureLine130");String text=PRESSURE[line<PRESSURE.length?line:2+(line-PRESSURE.length)%4];
         if(!sitting&&line%3==0)text="You haven't finished. Come back and eat.";
-        fake.say(text);p.displayClientMessage(Component.literal("“"+text+"”"),true);own.putInt("BoothPressureLine130",line>=100?6:line+1);own.putLong("BoothPressureNext130",age+160+(line%3)*40);return sitting;
+        fake.say(UncannyStories.WAITRESS,text);own.putInt("BoothPressureLine130",line>=100?6:line+1);own.putLong("BoothPressureNext130",age+160+(line%3)*40);return sitting;
     }
 }

@@ -463,6 +463,7 @@ def textures():
     out[DIR + 'pole.png'] = pole()
     out[DIR + 'streamers.png'] = streamers()
     out[DIR + 'wire.png'] = wire()
+    out[DIR + 'bleacher.png'] = bleacher_plank()
     for k in range(12):
         out[DIR + f'digit_{k}.png'] = digit(k)
     return out
@@ -511,14 +512,50 @@ def chainlink(stage):
     return p
 
 
-def bleacher():
-    """A bleacher's seat: one plank along the block at its top, a foot board lower and in front, on a steel frame at each end."""
+def bleacher_plank():
+    """0.4.675 (owner: "broken bleachers in bike night"): an aluminium bleacher plank, ribbed along its length, with a darker groove
+    between ribs, a bolt where it sits on a frame and the scuffs of shoes along its front edge."""
+    im = new('#b7bcc0', 4810, 3); rnd = random.Random(4811)
+    for y in range(16):
+        if y % 4 == 3:
+            for x in range(16):
+                dot(im, x, y, shade('#7f858a', rnd.randint(-4, 4)))
+        elif y % 4 == 0:
+            for x in range(16):
+                dot(im, x, y, shade('#d3d7da', rnd.randint(-4, 4)))
+    for y in (1, 9):
+        dot(im, 7, y, '#5c6166'); dot(im, 8, y, '#6c7176')
+    for _ in range(9):
+        x, y = rnd.randint(0, 15), rnd.choice((12, 13, 14))
+        dot(im, x, y, shade('#9aa0a4', rnd.randint(-8, 0)))
+    return im
+
+
+def bleacher(stage):
+    """0.4.675: a bleacher row's block, the field ahead of it (north here; the block state turns it). Rows step up a block and back a
+    block each, so a row's footboard lies in front of its seat and lower, over the seat of the row in front.
+
+    0 a plain length of row: the seat plank and the footboard, ribbed aluminium, nothing under them (a frame carries them every few
+    blocks). 1 the same row where a frame stands under it: a steel bearer under the seat and one under the footboard, an upright
+    between them, a leg at the back down to the floor of the block, and a knee brace from the foot of the leg up to the footboard's
+    bearer. 2 the leg carried on down through a block under a row, with a strut forward to the leg of the row in front. 3 the leg at
+    the ground, on its base plate."""
     p = []
-    bar(p, [0, 13, 4], [16, 15, 13], WOOD)
-    bar(p, [0, 6, 12.5], [16, 7, 16], WOOD_DK)
-    for x in (1, 14):
-        bar(p, [x, 0, 7.5], [x + 1, 13, 8.5], STEEL)
-        bar(p, [x, 5, 8.5], [x + 1, 6, 16], STEEL)
+    if stage < 2:
+        plate(p, [0, 13, 6.5], [16, 15, 15.5], 'al', {'up': (0, 2), 'down': (0, 2), 'north': (0, 12), 'south': (0, 12), 'east': (6.5, 12), 'west': (6.5, 12)})
+        plate(p, [0, 6, 0], [16, 7.5, 6], 'al', {'up': (0, 6), 'down': (0, 6), 'north': (0, 12), 'south': (0, 12), 'east': (0, 12), 'west': (0, 12)})
+        if stage == 1:
+            bar(p, [7, 11.5, 6], [9, 13, 16], STEEL)
+            bar(p, [7, 4.5, 0], [9, 6, 14], STEEL)
+            bar(p, [7.2, 6, 6.2], [8.8, 11.5, 7.6], STEEL)
+            bar(p, [7, 0, 14], [9, 11.5, 15.6], STEEL)
+            bar(p, [7.3, .4, 1.5], [8.7, 1.4, 13.5], IRON, rot={'angle': 22.5, 'axis': 'x', 'origin': [8, 1, 13.5]})
+    else:
+        bar(p, [7, .6 if stage == 3 else 0, 14], [9, 16, 15.6], STEEL)
+        if stage == 2:
+            bar(p, [7.2, 7.4, 0], [8.8, 8.6, 14], IRON)
+        else:
+            bar(p, [5.5, 0, 12.6], [10.5, .6, 16], IRON)
     return p
 
 
@@ -583,21 +620,33 @@ def tp_model():
 
 
 def cart():
-    """A grocery cart: a wire basket on a frame, four castors, a red handle at the back (south)."""
+    """A grocery cart: a wire basket on a chromed frame, four castors, a red handle at the back (south). 0.4.675 (owner: "shopping
+    carts are disconnected"): the basket stood on nothing over a flat plate and the handle floated over it. Now two side tubes run
+    from the castors up the back to the handle, the basket rests on posts at its four corners, and the lower rack is a wire tray
+    between the frame's rails."""
     p = []
     plate(p, [3.5, 5.5, 2], [12.5, 12, 2.05], 'w', {'north': (3.5, 4), 'south': (3.5, 4)})
     plate(p, [3.5, 5.5, 13.95], [12.5, 12, 14], 'w', {'north': (3.5, 4), 'south': (3.5, 4)})
     plate(p, [3.5, 5.5, 2.05], [3.55, 12, 13.95], 'w', {'east': (2, 4), 'west': (2, 4)})
     plate(p, [12.45, 5.5, 2.05], [12.5, 12, 13.95], 'w', {'east': (2, 4), 'west': (2, 4)})
     plate(p, [3.55, 5.5, 2.05], [12.45, 5.55, 13.95], 'w', {'up': (3.5, 2), 'down': (3.5, 2)})
-    bar(p, [3.5, 2.2, 3], [12.5, 2.8, 13.5], CHROME)
-    for x in (4, 11):
-        bar(p, [x, 2.8, 12.5], [x + 1, 5.5, 13.3], CHROME)
-        for z in (3, 12.2):
-            bar(p, [x, .2, z], [x + 1, 2.2, z + 1.2], BLACK)
-    bar(p, [3.5, 12.6, 14.2], [12.5, 13.4, 15], RED)
-    for x in (3.5, 11.7):
-        bar(p, [x, 11, 14], [x + .8, 12.6, 14.8], CHROME)
+    bar(p, [3.5, 12, 1.9], [12.5, 12.6, 2.6], CHROME)
+    bar(p, [3.4, 12, 2.6], [4, 12.6, 13.4], CHROME)
+    bar(p, [12, 12, 2.6], [12.6, 12.6, 13.4], CHROME)
+    for x in (4.2, 11):
+        bar(p, [x, 2.2, 2], [x + .8, 2.9, 14.6], CHROME)
+    plate(p, [5, 2.3, 3], [11, 2.35, 13], 'w', {'up': (5, 3), 'down': (5, 3)})
+    bar(p, [5, 2.2, 2.2], [11, 2.8, 2.9], CHROME)
+    for x in (4.2, 11):
+        bar(p, [x, 2.9, 2.2], [x + .8, 5.5, 3], CHROME)
+        bar(p, [x, 2.9, 12.6], [x + .8, 5.5, 13.4], CHROME)
+    for x in (3.5, 11.8):
+        bar(p, [x, 2.2, 14], [x + .7, 13.4, 14.7], CHROME)
+    bar(p, [3.5, 13.4, 14], [12.5, 14.2, 15], RED)
+    for x in (4.2, 11):
+        for z in (2.3, 12.9):
+            bar(p, [x + .2, 1.5, z + .3], [x + .6, 2.2, z + .9], CHROME)
+            bar(p, [x, 0, z], [x + .8, 1.5, z + 1.5], BLACK)
     return p
 
 
@@ -798,7 +847,7 @@ def digit_model(k):
 FITTINGS = {
     'chainlink_0': (lambda: chainlink(0), 'mesh'), 'chainlink_1': (lambda: chainlink(1), 'mesh'),
     'chainlink_2': (lambda: chainlink(2), 'mesh'), 'chainlink_3': (lambda: chainlink(3), 'mesh'),
-    'bleacher_0': (bleacher, 'town'),
+    **{f'bleacher_{k}': ((lambda k=k: bleacher(k)), 'bleacher') for k in range(4)},
     'pumpkin_0': (lambda: pumpkin(0), 'pumpkin_0'), 'pumpkin_1': (lambda: pumpkin(1), 'pumpkin_1'),
     'pumpkin_2': (lambda: pumpkin(2), 'pumpkin_2'), 'pumpkin_3': (lambda: pumpkin(3), 'pumpkin_3'),
     'awning_0': (lambda: awning_model(0), 'awning_0'), 'awning_1': (lambda: awning_model(1), 'awning_1'), 'awning_2': (lambda: awning_model(2), 'awning_2'),
@@ -814,14 +863,14 @@ FITTINGS = {
     **{f'unit_{k}': ((lambda k=k: unit(k)), 'town') for k in range(4)},
     **{f'boards_{k}': ((lambda k=k: boards_model(k)), f'boards_{k}') for k in range(4)},
 }
-NAMES_OF = {'k': 'town', 'm': 'mesh', 't': 'mesh_torn', 'u': 'mesh_torn_top', 'b': 'pole', 's': 'streamers', 'w': 'wire',
+NAMES_OF = {'k': 'town', 'al': 'bleacher', 'm': 'mesh', 't': 'mesh_torn', 'u': 'mesh_torn_top', 'b': 'pole', 's': 'streamers', 'w': 'wire',
             'j': 'town2', 'x': 'crate', 'y': 'milk_crate', 'cb': 'cardboard', 'cf': 'cardboard_flat', 'g': 'grille',
             **{f'r{k}': f'trash_{k}' for k in range(4)}, **{f'f{k}': f'boards_{k}' for k in range(4)},
             **{f'p{k}': f'pumpkin_{k}' for k in range(4)}, **{f'c{k}': f'pumpkin_cut_{k}' for k in range(4)}, **{f'a{k}': f'awning_{k}' for k in range(3)},
             **{f'd{k}': f'digit_{k}' for k in range(12)}}
 KINDS = ['chainlink', 'bleacher', 'pumpkin', 'awning', 'hydrant', 'mailbox', 'pole', 'tp', 'cart',
          'dumpster', 'bags', 'crate', 'boxes', 'drum', 'tyres', 'trash', 'pipe', 'unit', 'boards']
-STAGES = {'chainlink': 4, 'pumpkin': 4, 'awning': 3, 'dumpster': 4, 'bags': 4, 'crate': 4, 'boxes': 4, 'drum': 4, 'tyres': 4, 'trash': 4,
+STAGES = {'chainlink': 4, 'bleacher': 4, 'pumpkin': 4, 'awning': 3, 'dumpster': 4, 'bags': 4, 'crate': 4, 'boxes': 4, 'drum': 4, 'tyres': 4, 'trash': 4,
           'pipe': 3, 'unit': 4, 'boards': 4}
 MAX_STAGE = 4
 
