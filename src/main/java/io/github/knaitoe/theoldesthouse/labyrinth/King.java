@@ -32,12 +32,27 @@ public final class King {
      * (LiteraryActor.ownGestures).
      */
     public static boolean cast(int phase){return phase>=PHASE&&phase<=KingFeast.HEARTS_QUEEN;}
+    /** 0.4.685: how near a reader has to be to hear a line said aloud in the dream, and how long before the same line is said again. */
+    public static final double EARSHOT=24;public static final int AGAIN=200;
+    /**
+     * 0.4.685 (the two-reader conduct checks, docs/NEWEST_TOGETHER_0_4_685.md): a line said aloud over someone in the dream, only while a
+     * reader is near enough to hear it, and not the same line again from the same mouth within ten seconds. The conversation panel
+     * (Talk) is apart from this: a reader who asks still has the answer in their panel, and the line already over the speaker's head.
+     */
+    static void aloud(net.minecraft.world.entity.Entity speaker,@javax.annotation.Nullable String name,String line){
+        if(!(speaker instanceof LiteraryActor a)||a.saidWithin(line,AGAIN))return;
+        boolean heard=false;for(var p:a.level().players())if(p.isAlive()&&!p.isSpectator()&&p.distanceTo(a)<=EARSHOT){heard=true;break;}
+        if(!heard)return;
+        a.say(name,line);a.speaks(line);
+    }
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     /**
      * 0.4.643: dealt among the understanding stories from depth twelve (the owner's decision 11 of 15 November), once the quiet rooms
      * are done as every story is, and never again after a reader's own ending.
      */
     public static final int DEPTH=12;
+    /** 0.4.685: readers to one dream, one country to a party (docs/SLEEPING_KING_PROPOSAL.md: "One dream to a party"); the fifth gets a country of their own. */
+    public static final int PARTY=4;
     public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH&&!LiteraryVignettes.personal(d,reader,PLACE).getBoolean("Completed");}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
     static AABB area(BlockPos b){var k=b.offset(KingSite.KING);return new AABB(k).inflate(8);}

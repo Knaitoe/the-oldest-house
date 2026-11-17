@@ -341,6 +341,7 @@ public final class KingTests {
             h.assertTrue("left_him_his_sleep".equals(f.own(p,P).getString(KingSleep.ENDING)),"the ending is leaving him his sleep: "+f.own(p,P).getString(KingSleep.ENDING));
             h.assertTrue(KingSite.inRoom(p.position().subtract(b.getX(),b.getY(),b.getZ()))&&!KingSleep.waking(b),"and comes to in the drawing-room while he sleeps on");
             h.assertFalse(King.dealable(f.data(),UUID.randomUUID()),"the House deals the country only from depth twelve");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.SceneInstances.copyable(P)&&io.github.knaitoe.theoldesthouse.labyrinth.SceneInstances.party(P)==King.PARTY&&King.PARTY==4,"0.4.685: one dream to a party of four, the fifth reader in another copy of the country");
             KingBreath.leave(p);done();h.succeed();
         });
     }
@@ -518,7 +519,7 @@ public final class KingTests {
             h.assertTrue(KingCourt.attendingToCat(l,b)&&!KingCourt.holding(q,b,mine.apply(q)),"the court looks at the Cat and holds nobody");
         })
         .thenWaitUntil(()->{KingBreath.reader(q,b,mine.apply(q));var cat=KingCourt.find(l,b,KingCourt.CAT);
-            h.assertTrue(cat!=null&&cat.position().subtract(b.getX(),b.getY(),b.getZ()).distanceTo(KingSite.CAT_OVER)<.5,"the Cat's head is over the court");
+            h.assertTrue(cat!=null&&cat.position().subtract(b.getX(),b.getY(),b.getZ()).distanceTo(KingSite.CAT_OVER)<.5&&!cat.isInvisible(),"the Cat's head is over the court, faded there and seen again");
             var queen=KingCourt.find(l,b,KingCourt.QUEEN);h.assertTrue(queen!=null&&queen.gesture()==KingCourt.LOOKING_UP,"the court looks up at it");})
         .thenExecute(()->{
             at.accept(q,past);
@@ -532,7 +533,9 @@ public final class KingTests {
             KingCourt.pack(r);
             var guard=b.offset(0,0,KingSite.GUARD_ROW);
             h.assertTrue(KingCardBlock.is(l.getBlockState(guard))&&!KingCardBlock.standing(l.getBlockState(guard)),"the guard lies flat in the grass");
-            h.assertTrue(KingCourt.find(l,b,KingCourt.KING)==null&&KingCourt.find(l,b,KingCourt.QUEEN)==null&&KingCourt.find(l,b,KingCourt.HERALD)==null,"the court has come down as cards");
+            // 0.4.685: gone from sight in the puff as the cards land, and cleared away a moment later.
+            java.util.function.Predicate<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor> gone=a->a==null||a.isInvisible();
+            h.assertTrue(gone.test(KingCourt.find(l,b,KingCourt.KING))&&gone.test(KingCourt.find(l,b,KingCourt.QUEEN))&&gone.test(KingCourt.find(l,b,KingCourt.HERALD)),"the court has come down as cards");
             var king=l.getBlockState(b.offset(KingSite.COURT_KING));
             h.assertTrue(KingCardBlock.is(king)&&king.getValue(KingCardBlock.FACE)==KingCardBlock.KING&&king.getValue(KingCardBlock.FALLEN),"the King of Hearts is a card where he stood");
             h.assertTrue(KingSleep.stirs(b)==stirs+1,"the King stirred once, a long way off: "+KingSleep.stirs(b));

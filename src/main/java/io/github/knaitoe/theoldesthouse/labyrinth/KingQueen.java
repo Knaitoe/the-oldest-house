@@ -24,7 +24,7 @@ public final class KingQueen {
     public static final int WAITING=0,RUNNING=1,WALKING=2,LOOKING=3;
     /** How long she runs, how near a reader must come for her to take their hand, and how fast she walks. */
     public static final int RUN_TICKS=100;
-    static final double REACH=3,PACE=.16;
+    static final double REACH=3,PACE=.16,LET_GO=6;
     static final String RAN="KingQueenRan";
 
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==PHASE;}
@@ -68,6 +68,8 @@ public final class KingQueen {
             case RUNNING->{
                 var p=s.queenWith==null?null:l.getServer().getPlayerList().getPlayer(s.queenWith);
                 if(p==null||!KingSleep.readers(l,b).contains(p)){s.queen=WAITING;s.queenWith=null;return;}
+                // 0.4.685: she runs beside them, not after them; a reader no longer beside her (put elsewhere) is let go.
+                if(p.distanceTo(a)>LET_GO){s.queen=WAITING;s.queenWith=null;return;}
                 // She runs on the spot beside them, facing up the road; they go nowhere.
                 a.gesture(RUNNING);a.setYRot(180);a.setYBodyRot(180);a.setYHeadRot(180);
                 if(now==s.queenAt-RUN_TICKS/2)say(p,a,KingTexts.QUEEN_DONT_TALK);
@@ -107,5 +109,5 @@ public final class KingQueen {
         return Math.hypot(r.x-peg.x,r.z-peg.z)<.8&&Math.abs(r.y-peg.y)<1.2;
     }
     /** Her words over her head, to whoever is near (no conversation is open while she runs). */
-    static void say(ServerPlayer p,LiteraryActor a,String line){a.say(KingTexts.QUEEN_NAME,line);a.speaks(line);}
+    static void say(ServerPlayer p,LiteraryActor a,String line){King.aloud(a,KingTexts.QUEEN_NAME,line);}
 }

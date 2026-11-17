@@ -142,6 +142,17 @@ public final class TogetherConductTests {
     @AfterBatch(batch="together_kept") public static void keptDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="together_drawing",timeoutTicks=TIMEOUT) public static void theDrawing(GameTestHelper h){together(h,LabyrinthPlace.THE_DRAWING);}
     @AfterBatch(batch="together_drawing") public static void drawingDone(ServerLevel l){close();}
+    /** 0.4.685: the five newest, two readers each. */
+    @GameTest(template="empty",batch="together_longer",timeoutTicks=TIMEOUT) public static void aLittleLonger(GameTestHelper h){together(h,LabyrinthPlace.LITTLE_LONGER);}
+    @AfterBatch(batch="together_longer") public static void longerDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="together_king",timeoutTicks=TIMEOUT) public static void theSleepingKing(GameTestHelper h){together(h,LabyrinthPlace.SLEEPING_KING,literary(LabyrinthPlace.SLEEPING_KING),null,c->c.floating(io.github.knaitoe.theoldesthouse.labyrinth.KingCourt::cat));}
+    @AfterBatch(batch="together_king") public static void kingDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="together_not_yet",timeoutTicks=TIMEOUT) public static void notYet(GameTestHelper h){together(h,LabyrinthPlace.NOT_YET);}
+    @AfterBatch(batch="together_not_yet") public static void notYetDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="together_last_seen",timeoutTicks=TIMEOUT) public static void lastSeen(GameTestHelper h){together(h,LabyrinthPlace.LAST_SEEN);}
+    @AfterBatch(batch="together_last_seen") public static void lastSeenDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="together_fallow",timeoutTicks=TIMEOUT) public static void fallow(GameTestHelper h){together(h,LabyrinthPlace.FALLOW);}
+    @AfterBatch(batch="together_fallow") public static void fallowDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="together_people_lights",timeoutTicks=TIMEOUT) public static void peopleLights(GameTestHelper h){together(h,LabyrinthPlace.PEOPLE_LIGHTS);}
     @AfterBatch(batch="together_people_lights") public static void peopleLightsDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="together_bike_night",timeoutTicks=TIMEOUT) public static void bikeNight(GameTestHelper h){together(h,LabyrinthPlace.BIKE_NIGHT);}

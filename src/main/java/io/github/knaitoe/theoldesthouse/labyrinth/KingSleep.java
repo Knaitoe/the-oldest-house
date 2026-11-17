@@ -60,7 +60,7 @@ public final class KingSleep {
         @Nullable UUID rider;long rideAt;@Nullable BlockPos riderSeat;final java.util.Set<UUID> ridden=new java.util.HashSet<>();
         // 0.4.646: the court of cards (KingCourt): whether the pack has come down and who said what it was, until when the Cat is over
         // the court, and until when the herald has his scroll up.
-        boolean courtFallen;long catUntil;long heraldReadsUntil;final java.util.Set<UUID> fellBy=new java.util.HashSet<>();
+        boolean courtFallen;long catUntil;long heraldReadsUntil;long catFade=-1000,courtFellAt;final java.util.Set<UUID> fellBy=new java.util.HashSet<>();
         // 0.4.647: the Knight (KingForest): how long unseen and seen, his falls, the turn (asked when, riding out from when, whether he
         // thinned on the way, gone), and who he fell for, who was asked, who watched him round and who went on.
         int knightUnseen,knightSeen,knightFalls;long knightAsked,knightRideFrom;boolean knightThinned,knightGone;

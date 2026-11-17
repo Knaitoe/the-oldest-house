@@ -149,6 +149,7 @@ public final class LongerTests {
             h.assertTrue(text.contains("WORK ORDER")&&text.contains("One screw short")&&paper.author().equals("R."),"the work order, in Rowan's pencil");
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the order says nothing of what anybody is: "+word);
             h.assertTrue(Longer.dealable(f.data(),p.getUUID()),"0.4.630: the House deals it until the reader has read their account of it");
+            h.assertTrue(io.github.knaitoe.theoldesthouse.labyrinth.SceneInstances.copyable(P)&&io.github.knaitoe.theoldesthouse.labyrinth.SceneInstances.party(P)==0,"0.4.685: every reader's evening is a copy of their own");
             done();h.succeed();
         });
     }

@@ -152,7 +152,12 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         setCustomName(Component.literal(text));setCustomNameVisible(true);spokenFor=Dialogue.ticks(text);
         entityData.set(SPEAKER,speaker==null?"":speaker);
         if(!again&&!level().isClientSide){address();TalkHistory.overheard(this,speaker,text);for(var heard:SAID)heard.accept(this,text);}
+        if(!level().isClientSide)lastSaid.put(text,level().getGameTime());
     }
+    /** 0.4.685: when each line was last said aloud, so a scene can keep a person from saying the same thing twice in a breath. */
+    private final java.util.Map<String,Long> lastSaid=new java.util.HashMap<>();
+    /** 0.4.685: whether this line was said aloud within the last so many ticks. */
+    public boolean saidWithin(String text,long ticks){var at=lastSaid.get(text);return at!=null&&level().getGameTime()-at<ticks;}
     /**
      * 0.4.673: a line said aloud to one reader in particular (Fallow's keeper giving each reader their own chore): turned to that reader
      * while it is up, as if they had just spoken, though anyone near hears it.
