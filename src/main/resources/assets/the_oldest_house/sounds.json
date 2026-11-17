@@ -6932,5 +6932,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.fallow.give"
+  },
+  "fallow.ash_wind": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:fallow/ash_wind",
+        "attenuation_distance": 48
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.fallow.ash_wind"
   }
 }

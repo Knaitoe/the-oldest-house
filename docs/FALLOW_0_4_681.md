@@ -149,4 +149,4 @@ doors give".
 ## Left for part 4b
 
 The outside in ash: the wheat to stubble and ash, craters, the poles down, the farmhouse gone, an ash sky and fog, ash falling; and its
-mend.
+mend. Built in 0.4.682 (`docs/FALLOW_0_4_682.md`).

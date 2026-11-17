@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "the_oldest_house:block/fallow_charred_log_top",
+    "side": "the_oldest_house:block/fallow_charred_log"
+  }
+}

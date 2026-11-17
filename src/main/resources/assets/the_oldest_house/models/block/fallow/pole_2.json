@@ -5,6 +5,9 @@
     "a": "the_oldest_house:block/fallow/crossarm",
     "i": "the_oldest_house:block/fallow/insulator",
     "x": "the_oldest_house:block/fallow/line_wire",
+    "l": "the_oldest_house:block/fallow/pole_wood_lying",
+    "e": "the_oldest_house:block/fallow/pole_end",
+    "u": "the_oldest_house:block/fallow/crossarm_up",
     "particle": "the_oldest_house:block/fallow/wire"
   },
   "elements": [

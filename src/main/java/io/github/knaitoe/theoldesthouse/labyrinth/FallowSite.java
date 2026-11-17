@@ -95,13 +95,12 @@ public final class FallowSite {
     static final BlockState AIR=Blocks.AIR.defaultBlockState();
 
     public static void build(ServerLevel l,BlockPos b){
-        var rnd=new Random(66872);
         box(l,b,WEST,-6,NORTH,EAST,16,0,AIR);
         box(l,b,WEST,-6,NORTH,EAST,-2,0,Blocks.DIRT.defaultBlockState());
-        wheat(l,b,rnd);
+        wheat(l,b);
         road(l,b);
         poles(l,b);
-        farm(l,b,rnd);
+        farm(l,b,new Random(FARM_SEED));
         pads(l,b);
         forecourt(l,b);
         store(l,b);
@@ -125,12 +124,19 @@ public final class FallowSite {
     }
 
     /** The whole of the ground under wheat first, ripe and standing, a bowed head here and there; everything else is laid over it. */
-    static void wheat(ServerLevel l,BlockPos b,Random rnd){
+    static void wheat(ServerLevel l,BlockPos b){
         for(int x=WEST;x<=EAST;x++)for(int z=NORTH;z<=0;z++){
             set(l,b,x,-1,z,mat("soil"));
-            set(l,b,x,0,z,fit(FallowBlock.Kind.WHEAT,Direction.from2DDataValue(rnd.nextInt(4)),rnd.nextInt(5)==0?1:0));
+            set(l,b,x,0,z,wheatAt(x,z));
         }
     }
+    /** 0.4.682: the wheat as it was sown at a place, which way it leans and whether its head is bowed. It is taken from the place alone,
+     * never from chance, so the field the light burns is the field put back for a fresh afternoon (FallowAsh.mend). */
+    public static BlockState wheatAt(int x,int z){
+        return fit(FallowBlock.Kind.WHEAT,Direction.from2DDataValue((int)(FallowRuin.hash(x,z,31)*4)),FallowRuin.hash(x,z,32)<.2?FallowBlock.BOWED:FallowBlock.RIPE);
+    }
+    /** The farmhouse's windbreak is grown from this seed, the same each time it is built (FallowAsh.mend builds it again). */
+    static final long FARM_SEED=66872;
     private static void clearGround(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1,BlockState ground){
         for(int x=Math.min(x0,x1);x<=Math.max(x0,x1);x++)for(int z=Math.min(z0,z1);z<=Math.max(z0,z1);z++){set(l,b,x,-1,z,ground);set(l,b,x,0,z,AIR);}
     }

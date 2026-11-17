@@ -7,7 +7,8 @@ playing a ball game a long way off, and the bell on the pump. Nothing in them is
 and the ground shaking over the cellar. 0.4.680 adds what the light leaves: the canopy's sheets and columns coming down over the
 pumps, the store falling in on itself, and the fall of it landing on the cellar doors, heard from under them. 0.4.681 adds the buried
 days': the cellar's timbers creaking as they settle, the lantern's wick turned, a match struck, a stroke at the doors from under them and
-the doors giving.
+the doors giving. 0.4.682 adds the wind after the light: over a field with nothing standing in it, a low hollow wind and the dry hiss of
+ash carried along the ground.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -38,6 +39,7 @@ ROWS = {
     'match': ('A match is struck', 8),
     'dig': ('Rubble is dug at overhead', 16),
     'give': ('The cellar doors give', 24),
+    'ash_wind': ('Wind blows over the ash', 48),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -397,7 +399,21 @@ def give():
     return (groan + slide + slam + slam2 + after) * edge
 
 
-MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
+def ash_wind():
+    # Eight seconds of wind over a burnt field: nothing stands in it to rustle, so there is only a low hollow moan that swells and sinks
+    # in slow gusts, a thin whistle over it at the top of each gust, and the fine dry hiss of ash grains blown along the ground, which
+    # comes in grainy bursts as the gusts lift it.
+    n = seconds(8.0)
+    t = times(n)
+    gust = .45 + .55 * np.sin(2 * np.pi * t / 7.4 + 1.1) ** 2 * (.75 + .25 * np.sin(2 * np.pi * t / 2.3))
+    moan = band(rng.standard_normal(n), 35, 260) * gust
+    whistle = band(rng.standard_normal(n), 900, 1300) * np.clip(gust - .7, 0, 1) * 1.6
+    grains = band((rng.random(n) < .04) * rng.standard_normal(n), 3000, 10000) * np.interp(t - .5, t, gust, left=gust[0]) ** 3
+    edge = np.clip(t / .8, 0, 1) * np.clip((8.0 - t) / .8, 0, 1)
+    return (moan * 1.1 + whistle * .35 + grains * .5) * edge
+
+
+MAKERS = {'ash_wind': ash_wind, 'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
           'tone': tone, 'lids': lids, 'launch': launch, 'siren': siren, 'blast': blast, 'rumble': rumble, 'canopy': canopy,
           'collapse': collapse, 'debris': debris, 'settle': settle, 'wick': wick, 'match': match, 'dig': dig, 'give': give}
 

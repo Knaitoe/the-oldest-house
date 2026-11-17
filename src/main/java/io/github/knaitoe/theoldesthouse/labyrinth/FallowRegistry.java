@@ -30,13 +30,15 @@ public final class FallowRegistry {
      * line and its gravel shoulders; the garage's corrugated walls and its stained floor; the trailer's ribbed sides, its roof and its
      * skirting; the yard's earth, the field's soil, the tracks' ruts and the pads' gravel; the cellar's stone, its floor and its roof
      * (the yard on top, timber beneath); the farmhouse's boards, its shingles, its porch and its chimney's brick; the rig's trailer.
+     * 0.4.682, what the light leaves outside: ash over the field's soil, the farmhouse's yard burnt black, its boards and its windbreak's
+     * trunks burnt to char.
      */
     public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("siding","plinth","lino","ceiling","roof","apron","asphalt","road_line",
         "shoulder","metal","garage_floor","trailer","trailer_roof","skirting","yard","soil","track","gravel","cellar_stone","cellar_floor",
-        "cellar_roof","farm_siding","farm_shingle","porch","brick","box");
+        "cellar_roof","farm_siding","farm_shingle","porch","brick","box","ash_ground","scorched","charred","charred_log");
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("fallow_"+name,fixed(switch(name){
         case "plinth","apron","asphalt","road_line","cellar_stone","brick","garage_floor"->Blocks.STONE;case "shoulder","gravel","track"->Blocks.GRAVEL;
-        case "yard","soil","cellar_floor","cellar_roof"->Blocks.DIRT;case "metal","trailer","trailer_roof","box"->Blocks.IRON_BLOCK;
+        case "yard","soil","cellar_floor","cellar_roof","ash_ground","scorched"->Blocks.DIRT;case "metal","trailer","trailer_roof","box"->Blocks.IRON_BLOCK;
         case "lino","ceiling"->Blocks.SMOOTH_STONE;default->Blocks.OAK_PLANKS;})));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredBlock<StairBlock> SHINGLE_STAIRS=BLOCKS.register("fallow_shingle_stairs",()->new StairBlock(MATERIALS.get("farm_shingle").get().defaultBlockState(),fixed(Blocks.SPRUCE_STAIRS)));
@@ -62,6 +64,8 @@ public final class FallowRegistry {
     /** 0.4.681, the buried days: the cellar settling, the lantern's wick turned, a match struck, a stroke at the doors, the doors giving. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SETTLE=sound("fallow.settle"),WICK=sound("fallow.wick"),MATCH=sound("fallow.match"),
         DIG=sound("fallow.dig"),GIVE=sound("fallow.give");
+    /** 0.4.682: the wind after the light, over a field with nothing left standing in it. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> ASH_WIND=sound("fallow.ash_wind");
     /**
      * 0.4.673: what the afternoon's people carry, never a reader: Opal's bean in its cup (drawn from its block's model), the quart of milk
      * Faye buys, the bottle of pop the stranger buys and the cup of coffee Otis pours.

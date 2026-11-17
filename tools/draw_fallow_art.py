@@ -529,7 +529,102 @@ def materials():
             'asphalt': asphalt(), 'road_line': road_line(), 'shoulder': shoulder(), 'metal': metal(), 'garage_floor': garage_floor(),
             'trailer': trailer(), 'trailer_roof': trailer_roof(), 'skirting': skirting(), 'yard': yard(), 'soil': soil(), 'track': track(),
             'gravel': gravel(), 'cellar_stone': cellar_stone(), 'cellar_floor': cellar_floor(), 'cellar_roof': cellar_ceiling(),
-            'farm_siding': farm_siding(), 'farm_shingle': shingle(), 'porch': porch(), 'brick': brick(), 'box': box()}
+            'farm_siding': farm_siding(), 'farm_shingle': shingle(), 'porch': porch(), 'brick': brick(), 'box': box(),
+            'ash_ground': ash_ground(), 'scorched': scorched(), 'charred': charred(), 'charred_log': charred_log()}
+
+
+# ------------------------------------------------------------------------------------------------ 0.4.682, the ash outside
+def ash_ground():
+    # The field after the light: the soil under a crust of ash, the drill rows still showing through as lines a shade darker, flakes
+    # and cinders in it, and here and there the black stub of a stalk.
+    im = new('#6c6862', 72400, 5)
+    rnd = random.Random(72401)
+    for y in (3, 7, 11, 15):
+        for x in range(16):
+            if rnd.random() < .7:
+                dot(im, x, y, shade('#57534d', rnd.randint(-4, 4)))
+    speckle(im, rnd, 26, ['#8e8a83', '#a39f97', '#4a4640', '#7b776f'])
+    for _ in range(6):
+        dot(im, rnd.randrange(16), rnd.choice((2, 6, 10, 14)), '#2a2724')
+    for _ in range(3):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#bcb8b0')
+    return im
+
+
+def scorched():
+    # The farmhouse's yard after the fire: the grass burnt off to the root, the earth under it black, ash lying in the low places.
+    im = new('#3b3530', 72410, 6)
+    rnd = random.Random(72411)
+    speckle(im, rnd, 30, ['#2a2622', '#4a433c', '#57514a'])
+    for _ in range(8):
+        x, y = rnd.randrange(16), rnd.randrange(1, 16)
+        dot(im, x, y, '#1c1917'); dot(im, x, y - 1, '#26221e')
+    for _ in range(4):
+        x, y = rnd.randrange(15), rnd.randrange(15)
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            dot(im, x + dx, y + dy, rnd.choice(['#7d7972', '#8e8a83']))
+    return im
+
+
+def charred():
+    # Boards burnt to char: the grain gone to the blocky crazing of charcoal, with the dull sheen of it on the blocks' upper edges, and
+    # a few places where the wood under it still shows.
+    im = new('#24201d', 72420, 4)
+    rnd = random.Random(72421)
+    for y in range(0, 16, 4):
+        for x in range(16):
+            dot(im, x, y, '#100e0c')
+    for row in range(4):
+        y0 = row * 4
+        x = rnd.randrange(3)
+        while x < 16:
+            w = rnd.randint(2, 4)
+            for yy in range(y0 + 1, y0 + 4):
+                dot(im, min(15, x + w - 1), yy, '#151210')
+            for xx in range(x, min(16, x + w - 1)):
+                if rnd.random() < .35:
+                    dot(im, xx, y0 + 1, '#3a3430')
+            x += w
+    for _ in range(3):
+        dot(im, rnd.randrange(16), rnd.randrange(16), '#5a3e2a')
+    return im
+
+
+def charred_log():
+    # A tree of the windbreak, burnt standing: its bark gone to char, split into long plates up the trunk.
+    im = new('#262220', 72430, 4)
+    rnd = random.Random(72431)
+    for x in (1, 5, 9, 12, 14):
+        for y in range(16):
+            if rnd.random() < .8:
+                dot(im, x, y, '#110f0d')
+    for _ in range(10):
+        dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(['#3c3631', '#47403a']))
+    return im
+
+
+def charred_log_top():
+    # Where it broke off: the rings black at the rim, and the heartwood in the middle not burnt through.
+    im = new('#2a2421', 72440, 3)
+    for y in range(16):
+        for x in range(16):
+            d = max(abs(x - 7.5), abs(y - 7.5))
+            ring = int(d * 2) % 2
+            dot(im, x, y, '#6a5038' if d < 2 else ('#4a3828' if ring else '#3a2c22') if d < 4 else ('#2e2622' if ring else '#24201d') if d < 6 else '#141210')
+    return im
+
+
+def pole_end():
+    # The end of a telephone pole, sawn: rings round a darker heart, creosote soaked in at the rim.
+    im = new('#7a6046', 72450, 3)
+    for y in range(16):
+        for x in range(16):
+            d = max(abs(x - 7.5), abs(y - 7.5))
+            if d >= 6:
+                dot(im, x, y, '#3e3022')
+            elif int(d * 2) % 3 == 0:
+                dot(im, x, y, '#5e4a36')
+    return im
 
 
 # ------------------------------------------------------------------------------------------------ the store's fittings
@@ -1259,8 +1354,8 @@ def wheat(stage):
                 h = rnd.randint(2, 4)
                 for y in range(16 - h, 16):
                     dot(im, x, y, rnd.choice(['#2a2622', '#3a342c', '#4a4238']) if burnt else rnd.choice(straw))
-                if burnt and rnd.random() < .4:
-                    dot(im, x, 15 - h, '#8a8680')
+                if burnt and rnd.random() < .22:
+                    dot(im, x, 15 - h, '#6a6660')
         return im
     for x in (1, 3, 5, 7, 9, 11, 13, 15):
         top = rnd.randint(2, 5)
@@ -2370,7 +2465,16 @@ WIRE_Y = {1: 14.5, 2: 13.75, 3: 12.75, 4: 12.0}
 
 
 def pole_model(stage):
-    t = {'w': 'pole_wood', 'a': 'crossarm', 'i': 'insulator', 'x': 'line_wire'}
+    t = {'w': 'pole_wood', 'a': 'crossarm', 'i': 'insulator', 'x': 'line_wire', 'l': 'pole_wood_lying', 'e': 'pole_end', 'u': 'crossarm_up'}
+    lie = {'north': 'e', 'south': 'e', 'east': 'l', 'west': 'l', 'up': 'l', 'down': 'l'}
+    if stage == 5:
+        # 0.4.682: a pole down, lying along the way its block faces.
+        return model([element([5.5, 0, 0], [10.5, 5, 16], lie)], t, 'pole_wood')
+    if stage == 6:
+        # Its top: the last length of the shaft, its end toward the way the block faces, and the crossarm, which went over with it and
+        # stands up on end out of the ground with an insulator still on it.
+        return model([element([5.5, 0, 1], [10.5, 5, 16], lie), element([6, 0, 2], [10, 16, 4.5], {'all': 'u'}),
+                      element([7, 16, 2.25], [9, 18, 4.25], {'all': 'i'})], t, 'pole_wood')
     if stage == 0:
         return model([element([5.5, 0, 5.5], [10.5, 16, 10.5], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'})], t, 'pole_wood')
     y = WIRE_Y[stage]
@@ -2562,6 +2666,28 @@ def farm_model(stage):
         for x in (1.5, 4.5, 7.5, 10.5, 13.5):
             e.append(element([x, 2, 7.5], [x + 1, 12, 8.5], {'all': 'p'}))
         return model(e, t, 'porch_paint')
+    if stage == 4:
+        # 0.4.682: a beam out of the farmhouse, burnt through, lying a little across the way it faces, a split piece beside it.
+        c = {'c': NS + 'block/fallow_charred'}
+        return model([element([-1, 0, 6], [17, 3.5, 10], {'all': 'c'}, rotation={'angle': 22.5, 'axis': 'y', 'origin': [8, 0, 8]}),
+                      element([2, 0, 11], [9, 2, 13.5], {'all': 'c'}, rotation={'angle': -22.5, 'axis': 'y', 'origin': [5, 0, 12]})], c, NS + 'block/fallow_charred')
+    if stage == 6:
+        # 0.4.682: what is left of the front door's frame beside it: a charred jamb post four pixels square in the door's own plane (a
+        # closed door facing south lies along its block's north edge), on the door's side of its block, split near the top where the
+        # wall came away. Unturned (north) it stands at the block's north-east corner; turned west, at the north-west.
+        c = {'c': NS + 'block/fallow_charred'}
+        return model([element([12, 0, 0], [16, 16, 4], {'all': 'c'}), element([11, 9, 1], [12, 13, 3], {'all': 'c'})], c, NS + 'block/fallow_charred')
+    if stage == 7:
+        # The lintel across the top of the door, in the door's plane, its ends on the two jambs; a split end standing up off it.
+        c = {'c': NS + 'block/fallow_charred'}
+        return model([element([0, 0, 0], [16, 4, 4], {'all': 'c'}), element([10, 4, 0], [14, 6, 3], {'all': 'c'})], c, NS + 'block/fallow_charred')
+    if stage == 5:
+        # What the rest of it burnt down to: a low heap of ash with charred boards lying crossed in it.
+        c = {'c': NS + 'block/fallow_charred', 'a': 'ash'}
+        return model([element([1, 0, 1], [15, 3, 15], {'up': 'a', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'down': 'c'}),
+                      element([0, 3, 5], [16, 5, 8], {'all': 'c'}, rotation={'angle': -22.5, 'axis': 'y', 'origin': [8, 3, 8]}),
+                      element([4, 3, 2], [7, 6, 14], {'all': 'c'}, rotation={'angle': 22.5, 'axis': 'y', 'origin': [8, 3, 8]}),
+                      element([9, 3, 9], [15, 4.5, 13], {'all': 'c'})], c, NS + 'block/fallow_charred')
     return model([element([7, 0, 7], [9, 12, 9], {'all': 'o'}),
                   element([5, 12, 3], [11, 16, 13], {'north': 'f', 'south': 'f', 'east': 'm', 'west': 'm', 'up': 'm', 'down': 'm'}),
                   element([5.5, 16, 3], [10.5, 17, 13], {'all': 'm'}),
@@ -2659,11 +2785,13 @@ def fitting_models():
     for s in range(4):
         m[f'gondola_{s}'] = gondola_model(s); m[f'signband_{s}'] = signband_model(s); m[f'pump_{s}'] = pump_model(s)
         m[f'wheat_{s}'] = wheat_model(s); m[f'farm_{s}'] = farm_model(s); m[f'box_{s}'] = box_model(s)
+    for s in range(4, 8):
+        m[f'farm_{s}'] = farm_model(s)
     for s in range(7):
         m[f'canopy_{s}'] = canopy_model(s); m[f'lift_{s}'] = lift_model(s)
     for s in range(3):
         m[f'sign_{s}'] = sign_model(s)
-    for s in range(5):
+    for s in range(7):
         m[f'pole_{s}'] = pole_model(s)
     for s in range(8):
         m[f'pad_{s}'] = pad_model(s); m[f'trailer_{s}'] = trailer_model(s); m[f'rig_{s}'] = rig_model(s)
@@ -2729,7 +2857,8 @@ def textures():
         'tyre_tread': tyre_tread(), 'hub': hub(), 'headlight': headlight(), 'sleeper_side': sleeper_side(), 'box_doors': box_doors(),
         'box_frame': box_frame(), 'mud_flap': mud_flap(), 'bean_cup': bean_cup(), 'bean_soil': bean_soil(),
         'debris_top': debris_top(), 'debris_side': debris_side(), 'joist': joist(), 'window_shards_0': window_shards(0),
-        'window_shards_1': window_shards(1),
+        'window_shards_1': window_shards(1), 'pole_wood_lying': pole_wood().rotate(90), 'pole_end': pole_end(),
+        'crossarm_up': crossarm().rotate(90),
     }
     faces['wire'] = wire()            # the racks' wire; the telephone line has its own below
     faces['line_wire'] = wire_tex()
@@ -2739,6 +2868,7 @@ def textures():
         faces[f'bean_{i}'] = bean_plant(i)
     for name, im in faces.items():
         out[f'block/fallow/{name}.png'] = im
+    out['block/fallow_charred_log_top.png'] = charred_log_top()
     # 0.4.673: what the afternoon's people carry: a quart of milk, a bottle of pop, a cup from the machine (the bean's cup is its block).
     for name, draw in ITEM_ART.items():
         out[f'item/fallow_{name}.png'] = draw()
@@ -2749,8 +2879,8 @@ KINDS = ['counter', 'note', 'stool', 'backshelf', 'tv', 'cooler', 'gondola', 'ma
          'island', 'canopy', 'sign', 'pole', 'wheat', 'pad', 'lift', 'trailer', 'cellar', 'cellar_open', 'shelf', 'cot', 'crock', 'farm',
          'rig', 'box', 'bean', 'rubble']
 STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 4, 'signband': 4, 'pump': 4, 'island': 2,
-          'canopy': 7, 'sign': 3, 'pole': 5, 'wheat': 4, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
-          'cot': 2, 'crock': 4, 'farm': 4, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
+          'canopy': 7, 'sign': 3, 'pole': 7, 'wheat': 4, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
+          'cot': 2, 'crock': 4, 'farm': 8, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
 ITEM_ART = {'milk': milk_carton, 'soda': soda_bottle, 'coffee': coffee_cup}
 ITEM_NAMES = {'fallow_milk': 'Quart of Milk', 'fallow_soda': 'Bottle of Pop', 'fallow_coffee': 'Cup of Coffee', 'fallow_bean_cup': 'Bean in a Cup'}
 # The bean's cup held in a hand: its block model, turned and sized as vanilla holds a block, a little larger since the cup is small.
@@ -2769,7 +2899,8 @@ MATERIAL_NAMES = {'siding': 'Painted Clapboard', 'plinth': 'Painted Block', 'lin
                   'trailer_roof': 'Trailer Roof', 'skirting': 'Trailer Skirting', 'yard': 'Trodden Yard', 'soil': 'Field Soil',
                   'track': 'Dirt Track', 'gravel': 'Pad Gravel', 'cellar_stone': 'Fieldstone', 'cellar_floor': 'Cellar Floor',
                   'cellar_roof': 'Cellar Roof', 'farm_siding': 'Farmhouse Siding', 'farm_shingle': 'Asphalt Shingles', 'porch': 'Porch Boards',
-                  'brick': 'Chimney Brick', 'box': 'Trailer Box'}
+                  'brick': 'Chimney Brick', 'box': 'Trailer Box', 'ash_ground': 'Ash', 'scorched': 'Scorched Earth',
+                  'charred': 'Charred Boards', 'charred_log': 'Charred Trunk'}
 
 
 def stair_states(model_name):
@@ -2800,7 +2931,11 @@ def stair_states(model_name):
 def files():
     out = {}
     for name in materials():
-        if name == 'cellar_roof':
+        if name == 'charred_log':
+            # 0.4.682: a burnt trunk, its broken top showing the rings.
+            out['models/block/fallow_charred_log.json'] = {'parent': 'minecraft:block/cube_column', 'textures': {
+                'end': NS + 'block/fallow_charred_log_top', 'side': NS + 'block/fallow_charred_log'}}
+        elif name == 'cellar_roof':
             # The cellar's roof is the yard on top and the cellar's ceiling of boards below.
             out['models/block/fallow_cellar_roof.json'] = {'parent': 'minecraft:block/cube_bottom_top', 'textures': {
                 'top': NS + 'block/fallow_yard', 'bottom': NS + 'block/fallow_cellar_roof', 'side': NS + 'block/fallow_yard'}}
@@ -2873,6 +3008,12 @@ def main():
     assert opaque(images['block/fallow/wheat_0.png'], range(0, 8)) > 12 and opaque(images['block/fallow/wheat_2.png'], range(0, 11)) == 0
     burnt = [images['block/fallow/wheat_3.png'].getpixel((x, y)) for x in range(16) for y in range(16)]
     assert sum(sum(p[:3]) for p in burnt if p[3]) / max(1, sum(1 for p in burnt if p[3])) < 240
+    # 0.4.682: the ash on the field is pale beside the charred boards and trunks; the yard burnt black is between them.
+    def mean(im):
+        px = [im.getpixel((x, y)) for x in range(16) for y in range(16)]
+        return sum(sum(p[:3]) for p in px) / len(px)
+    assert mean(images['block/fallow_ash_ground.png']) > mean(images['block/fallow_scorched.png']) > mean(images['block/fallow_charred.png'])
+    assert mean(images['block/fallow_charred_log.png']) < mean(images['block/fallow_ash_ground.png'])
     # Chain-link is mesh: more of each block is clear than wire.
     mesh = images['block/fallow/chainlink.png']
     assert 0.25 < sum(mesh.getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) / 256 < 0.6

@@ -302,12 +302,18 @@ public final class Fallow {
                 continue;
             }
             s.empty=0;s.tick++;
-            if(s.tick%20==0){FallowRuin.leftover(l,s,here);car(l,s.base);ensure(l,s.base,s);}
+            if(s.tick%20==0){FallowRuin.leftover(l,s,here);FallowAsh.leftover(l,s,l.players().stream().filter(p->FallowSite.inScene(FallowStrike.rel(s,p))).toList());car(l,s.base);ensure(l,s.base,s);}
             afternoon(l,s,here);
             FallowStrike.tick(l,s,here);
             var rnd=l.getRandom();var one=here.get(rnd.nextInt(here.size()));
-            if(s.tick%220==40)play(l,one.blockPosition().offset(rnd.nextInt(17)-8,1,rnd.nextInt(17)-8),FallowRegistry.WIND.get(),.55F);
-            if(s.tick%260==130){
+            // 0.4.682: after the light, nothing in the field to rustle and nothing alive in it to hum: only the wind over the ash, heard
+            // by whoever is up in it and not by anyone below.
+            boolean after=s.strike.toneAt>=0&&s.strike.since(s.tick)>=FallowStrike.LIGHT;
+            if(s.tick%220==40){
+                if(!after)play(l,one.blockPosition().offset(rnd.nextInt(17)-8,1,rnd.nextInt(17)-8),FallowRegistry.WIND.get(),.55F);
+                else if(!FallowSite.inCellar(one.position().subtract(Vec3.atLowerCornerOf(s.base))))play(l,one.blockPosition().offset(rnd.nextInt(17)-8,1,rnd.nextInt(17)-8),FallowRegistry.ASH_WIND.get(),.5F);
+            }
+            if(s.tick%260==130&&!after){
                 var r=one.position().subtract(Vec3.atLowerCornerOf(s.base));
                 if(!FallowSite.inStore(r)&&!FallowSite.inCellar(r))play(l,one.blockPosition().offset(rnd.nextInt(9)-4,0,rnd.nextInt(9)-4),FallowRegistry.INSECTS.get(),.5F);
             }
