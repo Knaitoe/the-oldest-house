@@ -88,7 +88,8 @@ public final class LastSeenTests {
      * fountain, the playground and up onto the bandstand, but not out of the gate until a hand opens it; then on across the avenue to
      * the way on. The three sit in their own chairs, one each however often they are looked for, and stay sat with a reader by them. Every
      * thing answers a hand, the three included, each reader hearing the three's first lines for themselves. The card is the office's own
-     * paper and fits a book. It is nine in the morning there. The House does not deal it.
+     * paper and fits a book. It is nine in the morning there. A bay of folders gives its letter; the day's pile gives a folder.
+     * The House deals it from depth eight.
      */
     @GameTest(template="empty",batch="last_seen_place",timeoutTicks=1800)
     public static void theOfficeTheArchiveAndThePark(GameTestHelper h){
@@ -156,7 +157,7 @@ public final class LastSeenTests {
             var office=new BlockPos(0,0,-3);var behind=new BlockPos(2,0,-9);var archive=new BlockPos(-16,0,-10);
             use(p,b,new BlockPos(0,0,LastSeenSite.COUNTER_Z),office);use(p,b,new BlockPos(6,0,LastSeenSite.COUNTER_Z),new BlockPos(5,0,-3));
             use(p,b,LastSeenSite.PATRICIA_AT,behind);use(p,b,LastSeenSite.POSTERS.get(0),new BlockPos(-6,0,-3));use(p,b,LastSeenSite.POSTERS.get(9),new BlockPos(-6,0,-9));
-            var corner=new BlockPos(-21,0,-2);use(p,b,LastSeenSite.SHELVES.get(0),corner);use(p,b,LastSeenSite.SHELVES.get(0).above(LastSeenSite.CEILING-1),corner);
+            var corner=new BlockPos(-21,0,-2);use(p,b,LastSeenSite.SHELVES.get(1),corner);use(p,b,LastSeenSite.SHELVES.get(0).above(LastSeenSite.CEILING-1),corner);
             use(p,b,new BlockPos(-16,0,-7),archive);use(p,b,new BlockPos(-17,0,-7),archive);use(p,b,new BlockPos(-19,0,-7),archive);
             use(p,b,LastSeenSite.DESK,new BlockPos(-10,0,-6));use(p,b,new BlockPos(3,1,LastSeenSite.OFFICE_N),behind);use(p,b,new BlockPos(-2,LastSeenSite.CEILING-1,-3),office);
             use(p,b,new BlockPos(-5,0,-1),office);
@@ -185,8 +186,8 @@ public final class LastSeenTests {
             h.assertTrue(avenue.contains(new BlockPos(-8,0,LastSeenSite.ROAD_S))&&avenue.contains(new BlockPos(14,0,LastSeenSite.NEAR_PAVE-1))
                 &&avenue.contains(new BlockPos(LastSeenSite.ONWARD.getX(),0,LastSeenSite.HOUSE_FRONT+1)),"through the gate, across the avenue to the stop and the way on: "+avenue.size());
             var why=told(p);
-            for(String line:List.of(LastSeenTexts.COUNTER,LastSeenTexts.FLAP,LastSeenTexts.CHAIR,LastSeenTexts.poster(0),LastSeenTexts.poster(9),LastSeenTexts.SHELF,LastSeenTexts.BOXES,
-                LastSeenTexts.TABLE,LastSeenTexts.PILE,LastSeenTexts.LAMP,LastSeenTexts.DESK,LastSeenTexts.LOUVRE,LastSeenTexts.TUBE,LastSeenTexts.BENCH,LastSeenTexts.LAMP_POST,
+            for(String line:List.of(LastSeenTexts.COUNTER,LastSeenTexts.FLAP,LastSeenTexts.CHAIR,LastSeenTexts.poster(0),LastSeenTexts.poster(9),LastSeenTexts.spines(LastSeen.letter(1)),LastSeenTexts.BOXES,
+                LastSeenTexts.TABLE,LastSeenTexts.fromPile(LastSeen.PILE[0]),LastSeenTexts.LAMP,LastSeenTexts.DESK,LastSeenTexts.LOUVRE,LastSeenTexts.TUBE,LastSeenTexts.BENCH,LastSeenTexts.LAMP_POST,
                 LastSeenTexts.FOUNTAIN,LastSeenTexts.BOWL,LastSeenTexts.TRUNK,LastSeenTexts.KIOSK,LastSeenTexts.play(1),LastSeenTexts.play(2),LastSeenTexts.play(3),LastSeenTexts.play(4),
                 LastSeenTexts.play(5),LastSeenTexts.BANDSTAND,LastSeenTexts.RAILING,LastSeenTexts.POST,LastSeenTexts.GATE))
                 h.assertTrue(why.contains(line),"each says what it is: missing \""+line+"\" in "+why);
@@ -198,7 +199,8 @@ public final class LastSeenTests {
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the card says nothing of what anybody is: "+word);
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
             h.assertTrue(SceneClock.at(f.origin,b.offset(-8,0,-40),HouseDimensions.OUTSIDE)==12,"nine in the morning in the park");
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            // 0.4.668: dealt from depth eight; never at the surface.
+            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P)||LastSeen.dealable(f.data(),java.util.UUID.randomUUID()),"the House deals it only from depth eight");
             done();h.succeed();
         });
     }
@@ -226,5 +228,172 @@ public final class LastSeenTests {
             h.assertTrue(stage(l,b,LastSeenSite.GATE_W)==LastSeenBlock.SHUT,"a spectator's hand opens nothing");
             done();h.succeed();
         });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.668: the archive and the first one
+    /** Where a reader stands to reach a bay: two cells into the archive from its wall. */
+    private static BlockPos before(int bay){
+        var at=LastSeenSite.SHELVES.get(bay);
+        if(at.getX()==LastSeenSite.OFFICE_W+1)return at.offset(2,0,0);
+        if(at.getZ()==LastSeenSite.OFFICE_S-1)return at.offset(0,0,-2);
+        return at.offset(0,0,2);
+    }
+    private static void bay(ServerPlayer p,BlockPos b,int bay){use(p,b,LastSeenSite.SHELVES.get(bay),before(bay));}
+    private static void bayOf(ServerPlayer p,BlockPos b,int child){bay(p,b,LastSeen.bayFor(child));}
+    private static int held(ServerPlayer p){return LastSeen.child(p.getMainHandItem());}
+    private static int carried(ServerPlayer p,int child){int n=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(LastSeen.child(inv.getItem(i))==child)n++;return n;}
+    private static int gap(ServerLevel l,BlockPos b,int child){return stage(l,b,LastSeen.gapCell(child));}
+    private static boolean opened(ServerPlayer p,int child){NativeTestPlayers.flush(p);return opened(new ArrayList<Object>(NativeTestPlayers.packets(p)),child);}
+    /** What a reader was sent, read once: whether a folder was held open on their screen, and the lines they were told. */
+    private static List<Object> sent(ServerPlayer p){NativeTestPlayers.flush(p);return new ArrayList<Object>(NativeTestPlayers.packets(p));}
+    private static boolean opened(List<Object> sent,int child){
+        for(var packet:sent)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket custom&&custom.payload() instanceof io.github.knaitoe.theoldesthouse.network.LastSeenFolderPayload folder&&folder.child()==child)return true;
+        return false;
+    }
+    private static List<String> lines(List<Object> sent){var out=new ArrayList<String>();for(var packet:sent)if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)out.add(chat.content().getString());return out;}
+    /** A reader in the archive, turned away from the park, as a reader at the shelves would be. */
+    private static void archive(LiteraryTests.Fixture f,ServerPlayer p){f.at(p,P,-15.5,0,-9.5);p.setYRot(0);p.setYHeadRot(0);p.setXRot(0);}
+    private static void talk(LiteraryTests.Fixture f,ServerPlayer p,LiteraryActor a){f.at(p,P,a.getX()-f.base(P).getX()+1.2,0,a.getZ()-f.base(P).getZ()+.5);LiteraryVignettes.talk(p,a);}
+
+    /**
+     * One reader through the morning. Nora gives her rule and then the chore. The day's pile is four folders, handed out one at a time
+     * into an empty hand and held open; each leaves its gap on its own shelf. A folder offered to the wrong bay is told whose names are
+     * there; at its own bay it goes back and the gap fills. With the pile shelved the table is bare, and the first of them is at the
+     * fountain: Luz opens the front door and says so, then calls Nora, who walks out as far as the head of the path and stops. The girl
+     * is child-sized and stands at the rim facing the office; coming near her the reader is told so. Her hand is cold; another child's
+     * folder she looks at and gives no more; a bay that holds one of the ten gives that folder, held open, and only one is off the
+     * shelves at a time. Given her own folder she takes it, looks at it, says the one thing, and gives it back. Nora's lines follow.
+     */
+    @GameTest(template="empty",batch="last_seen_first",timeoutTicks=4000)
+    public static void theArchiveAndTheFirstOne(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_first_reader",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->archive(f,p))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.stage(b)==LastSeen.MORNING&&LastSeen.inPile(b,LastSeen.PILE[0])&&LastSeen.find(l,b,LastSeen.NORA)!=null,"the morning starts with the day's pile on the table"))
+        .thenExecute(()->{
+            for(int c:LastSeen.PILE)h.assertTrue(gap(l,b,c)==LastSeenBlock.ONE_OUT,"each of the pile's folders is missing from its own shelf: "+LastSeenTexts.CHILDREN[c]);
+            h.assertTrue(gap(l,b,LastSeen.ROCIO)!=LastSeenBlock.ONE_OUT,"hers is on its shelf");
+            var nora=LastSeen.find(l,b,LastSeen.NORA);
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.RULE)&&f.own(p,P).getBoolean("Rule"),"Nora's rule first: "+said(nora));
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.CHORE),"then the chore: "+said(nora));
+            archive(f,p);told(p);
+            var archive=new BlockPos(-16,0,-10);
+            for(int i=0;i<LastSeen.PILE.length;i++){
+                int c=LastSeen.PILE[i];
+                use(p,b,LastSeen.PILE_AT,archive);
+                h.assertTrue(held(p)==c&&p.getUUID().equals(LastSeen.out(b,c))&&!LastSeen.inPile(b,c),"the pile's next folder, into an empty hand: "+held(p));
+                h.assertTrue(opened(p,c),"held open as it is handed over");
+                if(i==0){
+                    use(p,b,LastSeen.PILE_AT,archive);h.assertTrue(carried(p,LastSeen.PILE[1])==0,"one folder off the shelves at a time");
+                    bay(p,b,1);h.assertTrue(held(p)==c,"the wrong bay keeps nothing");
+                    var why=told(p);h.assertTrue(why.contains(LastSeenTexts.ONE_AT_A_TIME)&&why.contains(LastSeenTexts.wrongBay(LastSeen.letter(1))),"told why: "+why);
+                }
+                bayOf(p,b,c);
+                h.assertTrue(p.getMainHandItem().isEmpty()&&LastSeen.out(b,c)==null&&gap(l,b,c)!=LastSeenBlock.ONE_OUT,"back where its name says, and the gap filled: "+LastSeenTexts.CHILDREN[c]);
+                h.assertTrue(told(p).contains(LastSeenTexts.shelved(LastSeen.letter(LastSeen.bayFor(c)))),"told it goes back among the same letter");
+            }
+            int shelved=f.own(p,P).getInt("Shelved");for(int c:LastSeen.PILE)h.assertTrue((shelved&1<<c)!=0,"the reader's own count of what they shelved");
+            h.assertTrue(stage(l,b,LastSeen.PILE_AT)==0,"the table is bare");
+            use(p,b,LastSeen.PILE_AT,archive);h.assertTrue(told(p).contains(LastSeenTexts.PILE_DONE),"and says so");
+            archive(f,p);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.stage(b)>=LastSeen.CALLED,"with the pile shelved, the first of them comes"))
+        .thenExecute(()->{
+            var girl=LastSeen.rocio(l,b);
+            h.assertTrue(girl!=null&&girl.phase()==LastSeen.CHILDREN_FIRST+LastSeen.ROCIO&&Math.abs(girl.getScale()-.68)<.01,"she is there, at a child's height: "+girl);
+            h.assertTrue(girl.position().distanceToSqr(new Vec3(b.getX()+LastSeen.RIM.x,b.getY(),b.getZ()+LastSeen.RIM.z))<.25&&Math.abs(net.minecraft.util.Mth.wrapDegrees(girl.getYRot()))<5,"at the fountain's rim, facing the office: "+girl.position());
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.stage(b)==LastSeen.FOUND,"Luz calls, and Nora goes out"))
+        .thenExecute(()->{
+            var door=l.getBlockState(b.offset(LastSeenSite.FRONT_DOOR));
+            h.assertTrue(door.getBlock() instanceof DoorBlock&&door.getValue(DoorBlock.OPEN),"the front door stands open");
+            var luz=LastSeen.find(l,b,LastSeen.LUZ);var nora=LastSeen.find(l,b,LastSeen.NORA);
+            h.assertTrue(said(luz).equals(LastSeenTexts.LUZ_NORA)&&luz.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(1.5,0,-12.6))<.5,"Luz at the door, calling Nora: "+said(luz)+" "+luz.position());
+            h.assertTrue(nora.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(-7.5,0,-18.5))<.5&&nora.position().z-b.getZ()>LastSeenSite.FRONT_N-1.5,"Nora at the head of the path and no further: "+nora.position());
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_WAITS),"she stays: "+said(nora));
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_FIND),"and says to find hers: "+said(nora));
+            told(p);f.at(p,P,-7.5,0,-41.5);
+        }).thenIdle(10).thenExecute(()->{
+            var girl=LastSeen.rocio(l,b);
+            h.assertTrue(told(p).contains(LastSeenTexts.AT_RIM)&&f.own(p,P).getBoolean("SawFirst"),"near her, the reader is told how she stands");
+            talk(f,p,girl);h.assertTrue(told(p).contains(LastSeenTexts.COLD),"her hand is cold");
+            // Another child's folder: from its bay, held open; she looks at the face, and away.
+            archive(f,p);bayOf(p,b,5);var got=sent(p);
+            h.assertTrue(held(p)==5&&opened(got,5)&&lines(got).contains(LastSeenTexts.taken(5,LastSeen.letter(LastSeen.bayFor(5)))),"a bay that holds one of the ten gives that folder: "+held(p)+" "+lines(got));
+            bayOf(p,b,LastSeen.ROCIO);var why=told(p);
+            h.assertTrue(held(p)==5&&LastSeen.out(b,LastSeen.ROCIO)==null&&why.contains(LastSeenTexts.wrongBay(LastSeen.letter(LastSeen.bayFor(LastSeen.ROCIO)))),"one at a time: a bay of another letter takes nothing and gives nothing: "+why);
+            talk(f,p,girl);h.assertTrue(held(p)==5&&told(p).contains(LastSeenTexts.NOT_HERS),"not hers: she looks, and gives no more");
+            archive(f,p);bayOf(p,b,5);bayOf(p,b,LastSeen.ROCIO);
+            h.assertTrue(held(p)==LastSeen.ROCIO&&opened(p,LastSeen.ROCIO)&&(f.own(p,P).getInt("Read")&1<<LastSeen.ROCIO)!=0,"hers, from its own bay, held open");
+            talk(f,p,girl);
+            h.assertTrue(p.getMainHandItem().isEmpty()&&LastSeen.holding(b)==LastSeen.ROCIO&&LastSeen.child(girl.getMainHandItem())==LastSeen.ROCIO,"she takes it into her own hand");
+            h.assertTrue((f.own(p,P).getInt("Matched")&1<<LastSeen.ROCIO)!=0&&f.own(p,P).getInt("Days")>=1,"matched, for this reader");
+        }).thenIdle(LastSeen.LOOK+2).thenExecute(()->{
+            var girl=LastSeen.rocio(l,b);
+            h.assertTrue(said(girl).equals(LastSeenTexts.WAITING),"she looks up and says the one thing: "+said(girl));
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.holding(b)<0,"and gives it back"))
+        .thenExecute(()->{
+            h.assertTrue(carried(p,LastSeen.ROCIO)==1&&p.getUUID().equals(LastSeen.out(b,LastSeen.ROCIO))&&told(p).contains(LastSeenTexts.GIVES_BACK),"back to the reader who brought it");
+            h.assertTrue(LastSeen.rocio(l,b).getMainHandItem().isEmpty(),"her hands empty again");
+            var nora=LastSeen.find(l,b,LastSeen.NORA);talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_AFTER),"Nora: put it back where it goes: "+said(nora));
+            // The reader leaves the place with it: the folder goes back on its shelf.
+            p.moveTo(b.getX()+.5,b.getY(),b.getZ()+30);
+        }).thenWaitUntil(()->h.assertTrue(carried(p,LastSeen.ROCIO)==0&&LastSeen.out(b,LastSeen.ROCIO)==null&&gap(l,b,LastSeen.ROCIO)!=LastSeenBlock.ONE_OUT,"a reader who leaves leaves the folder on its shelf"))
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    /**
+     * Two readers. A spectator's hand takes nothing from the pile. Each reader can hold one folder at once, and each counts their own
+     * shelving. A folder out with one reader leaves a gap the other is told about. A reader who leaves has theirs put back, and is told.
+     * A copy of a folder is nobody's once the folder goes back. Each reader brings her folder for themselves and has it matched; the one
+     * watching is counted as having seen it. The House's read: Patricia asks a reader it reads as young whether they are here with
+     * someone, and Nora tells a reader it reads as having left a home that most of the ones in here went.
+     */
+    @GameTest(template="empty",batch="last_seen_two",timeoutTicks=4000)
+    public static void twoReadersEachMatchHer(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_two_a",P);var q=f.player("last_seen_two_b",P);var l=f.level(P);var b=f.base(P);
+        HouseRead.signal(q,HouseRead.Trait.AGE,"DIGITAL",false);HouseRead.signal(q,HouseRead.Trait.AGE,"DIGITAL",true);
+        HouseRead.signal(p,HouseRead.Trait.HOME,"RUNAWAY",false);HouseRead.signal(p,HouseRead.Trait.HOME,"RUNAWAY",true);
+        h.startSequence().thenIdle(5).thenExecute(()->{archive(f,p);archive(f,q);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.stage(b)==LastSeen.MORNING&&LastSeen.inPile(b,LastSeen.PILE[0]),"the morning starts"))
+        .thenExecute(()->{
+            var archive=new BlockPos(-16,0,-10);
+            q.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);use(q,b,LastSeen.PILE_AT,archive);
+            h.assertTrue(LastSeen.inPile(b,LastSeen.PILE[0])&&q.getMainHandItem().isEmpty(),"a spectator's hand takes nothing");
+            q.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            // Both hold one at once.
+            use(p,b,LastSeen.PILE_AT,archive);use(q,b,LastSeen.PILE_AT,new BlockPos(-15,0,-10));
+            h.assertTrue(held(p)==LastSeen.PILE[0]&&held(q)==LastSeen.PILE[1],"each reader holds one of their own: "+held(p)+" "+held(q));
+            // A copy made of p's folder is nobody's once it goes back.
+            p.getInventory().setItem(20,p.getMainHandItem().copy());
+            bayOf(p,b,LastSeen.PILE[0]);bayOf(q,b,LastSeen.PILE[1]);
+            h.assertTrue((f.own(p,P).getInt("Shelved")&1<<LastSeen.PILE[0])!=0&&(f.own(p,P).getInt("Shelved")&1<<LastSeen.PILE[1])==0&&(f.own(q,P).getInt("Shelved")&1<<LastSeen.PILE[1])!=0,"each counts their own shelving");
+            use(p,b,LastSeen.PILE_AT,archive);bayOf(p,b,LastSeen.PILE[2]);use(q,b,LastSeen.PILE_AT,new BlockPos(-15,0,-10));bayOf(q,b,LastSeen.PILE[3]);
+            // q takes hers; p is told there is a gap.
+            bayOf(q,b,LastSeen.ROCIO);h.assertTrue(held(q)==LastSeen.ROCIO,"one reader takes hers down");
+            told(p);bayOf(p,b,LastSeen.ROCIO);h.assertTrue(p.getMainHandItem().isEmpty()&&told(p).contains(LastSeenTexts.SHELF_GAP),"the other finds the gap");
+            told(q);q.moveTo(b.getX()+.5,b.getY(),b.getZ()+30);
+        }).thenWaitUntil(()->h.assertTrue(carried(q,LastSeen.ROCIO)==0&&LastSeen.out(b,LastSeen.ROCIO)==null,"the one who left has hers put back"))
+        .thenExecute(()->h.assertTrue(told(q).contains(LastSeenTexts.BACK_ON_SHELF),"and is told"))
+        .thenIdle(41).thenExecute(()->{
+            h.assertTrue(p.getInventory().getItem(20).isEmpty(),"the copy is nobody's, and gone");
+            archive(f,q);
+            // The House's read, in the office's own words.
+            var patricia=LastSeen.find(l,b,LastSeen.PATRICIA);var nora=LastSeen.find(l,b,LastSeen.NORA);
+            talk(f,q,patricia);h.assertTrue(said(patricia).equals(LastSeenTexts.PATRICIA_YOUNG),"to a reader read as young: "+said(patricia));
+            talk(f,p,patricia);h.assertTrue(said(patricia).equals(LastSeenTexts.line(LastSeen.PATRICIA,0)),"and her usual first line to the other: "+said(patricia));
+            for(int i=0;i<2;i++)talk(f,p,nora);
+            talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.LEAVING)&&f.own(p,P).getBoolean("Leaving"),"to a reader read as having left a home: "+said(nora));
+            archive(f,p);archive(f,q);
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.stage(b)==LastSeen.FOUND,"the first of them is at the fountain"))
+        .thenExecute(()->{
+            var girl=LastSeen.rocio(l,b);
+            bayOf(p,b,LastSeen.ROCIO);f.at(q,P,-6.5,0,-42.5);talk(f,p,girl);
+            h.assertTrue((f.own(p,P).getInt("Matched")&1)!=0&&(f.own(q,P).getInt("Matched")&1)==0&&(f.own(q,P).getInt("SawMatched")&1)!=0,"matched for the one who brought it; seen by the other");
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.holding(b)<0&&carried(p,LastSeen.ROCIO)==1,"she gives it back"))
+        .thenExecute(()->{
+            archive(f,p);bayOf(p,b,LastSeen.ROCIO);archive(f,q);bayOf(q,b,LastSeen.ROCIO);
+            h.assertTrue(held(q)==LastSeen.ROCIO,"the other takes it down in turn");
+            talk(f,q,LastSeen.rocio(l,b));
+            h.assertTrue((f.own(q,P).getInt("Matched")&1)!=0&&LastSeen.holding(b)==LastSeen.ROCIO,"and brings it to her for themselves");
+        }).thenWaitUntil(()->h.assertTrue(LastSeen.holding(b)<0&&carried(q,LastSeen.ROCIO)==1,"she gives it back to them too"))
+        .thenExecute(()->{done();h.succeed();});
     }
 }

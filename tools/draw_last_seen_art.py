@@ -16,6 +16,9 @@ fitting of the last_seen_fitting block, its models facing north and turned by it
   (swing post, swing, slide ladder and chute, see-saw, low fence, frame bar, chains), BANDSTAND (post, balustrade, eave, step).
 - The avenue: SHELTER (the bus shelter's glass, roof, sign and bench), SHUTTER (a house's window, shutter down or lit behind).
 
+0.4.668: the folder carried (one icon for each of the ten, their photograph clipped to it) and the folder held open (the manila card,
+its typed label and form sheet, and the paper clip).
+
 Writes the models and block states and the blocks' names. --check verifies everything.
 """
 from pathlib import Path
@@ -1284,6 +1287,133 @@ def folder_side():
     return im
 
 
+MANILA = '#d3bc8b'
+
+
+def folder_icon(face=None):
+    """A child's folder as it is carried (0.4.668): a manila folder, closed, its tab at the top left and its front flap a pixel lower than
+    its back, and their photograph clipped to the front with a white border and a deeper foot, so the face shows in the hand and the
+    pack. The folder with no photograph (the item before it is anyone's) has a typed label where the photograph would be."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(77660)
+    back = shade(MANILA, -26)
+    fill(im, 1, 1, 7, 3, back)  # the tab
+    dot(im, 1, 1, shade(MANILA, -40)); dot(im, 6, 1, shade(MANILA, -40))
+    fill(im, 0, 3, 16, 4, back)  # the back cover's edge, showing over the front
+    for y in range(4, 16):
+        for x in range(16):
+            im.putpixel((x, y), shade(MANILA, rnd.randint(-4, 3)))
+    for x in range(16):
+        dot(im, x, 4, shade(MANILA, 14)); dot(im, x, 15, shade(MANILA, -44))
+    for y in range(3, 16):
+        dot(im, 0, y, shade(MANILA, -34)); dot(im, 15, y, shade(MANILA, -48))
+    dot(im, 0, 3, (0, 0, 0, 0)); dot(im, 15, 3, (0, 0, 0, 0))
+    if face is None:
+        fill(im, 3, 7, 13, 11, '#eee9dc')
+        for x in range(4, 12):
+            if x % 3:
+                dot(im, x, 8, '#3c3a36')
+        for x in range(4, 10):
+            if x % 4:
+                dot(im, x, 9, '#6a665e')
+        return im
+    # the photograph: a white border a pixel wide, a deeper white foot, the face at its own eight pixels, and its shadow on the folder
+    fill(im, 4, 5, 14, 16, '#7d6a48', 120)
+    fill(im, 3, 4, 13, 15, '#ece7da')
+    for y in range(8):
+        for x in range(8):
+            p = face.getpixel((x, y))
+            if p[3] < 40:
+                p = (190, 186, 176, 255)
+            im.putpixel((4 + x, 5 + y), mix(p, '#d8c8a8', .1))
+    # the clip over the photograph's top edge, steel wire catching the light
+    for y in range(2, 7):
+        dot(im, 9, y, '#8e9399'); dot(im, 11, y, '#5e6268')
+    dot(im, 10, 1, '#c9cdd2'); dot(im, 10, 6, '#7a7e84')
+    return im
+
+
+def folder_card():
+    """The folder held open (0.4.668), 256 pixels wide: the manila card with its tab, a typed label pasted across its top for the form's
+    name and the file number, the form sheet clipped in on the right with its printed rules under each field, a ring where a cup once
+    stood, and below the card the paper clip the screen draws over the photograph's top edge."""
+    im = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
+    rnd = random.Random(77661); px = im.load()
+    # the tab, standing up off the card's top edge at the right, its own label
+    for y in range(0, 10):
+        for x in range(164, 236):
+            if (y == 0 and x in (164, 235)):
+                continue
+            px[x, y] = shade(MANILA, rnd.randint(-5, 3) - (6 if y < 2 else 0))
+    fill(im, 172, 2, 228, 8, '#efeadf')
+    for x in range(176, 222):
+        if (x * 7) % 5:
+            dot(im, x, 5, '#7a7468')
+    # the card: manila with its fibres, a darker edge, its corners worn round
+    for y in range(8, 176):
+        for x in range(256):
+            px[x, y] = shade(MANILA, rnd.randint(-5, 4))
+    for _ in range(900):
+        x, y = rnd.randrange(256), rnd.randrange(8, 176)
+        px[x, y] = shade(MANILA, rnd.choice((-12, -9, 8)))
+    for x in range(256):
+        dot(im, x, 8, shade(MANILA, -30)); dot(im, x, 9, shade(MANILA, 12)); dot(im, x, 174, shade(MANILA, -22)); dot(im, x, 175, shade(MANILA, -44))
+    for y in range(8, 176):
+        dot(im, 0, y, shade(MANILA, -34)); dot(im, 255, y, shade(MANILA, -50)); dot(im, 1, y, shade(MANILA, 8))
+    for cx, cy in ((0, 8), (255, 8), (0, 175), (255, 175)):
+        dot(im, cx, cy, (0, 0, 0, 0))
+    # the fold down the card's middle, under the sheet's left edge: a crease, its lit side and its shadow
+    for y in range(10, 174):
+        dot(im, 93, y, shade(MANILA, -18)); dot(im, 94, y, shade(MANILA, 10))
+    # the typed label pasted across the top for the form's name and the file number, its ends lifting a little
+    fill(im, 16, 12, 240, 27, '#f1ece0')
+    for x in range(16, 240):
+        dot(im, x, 26, '#d6cfbf')
+        if rnd.random() < .08:
+            dot(im, x, rnd.randrange(12, 26), '#e6e0d2')
+    for y in range(12, 27):
+        dot(im, 16, y, '#ddd6c6'); dot(im, 239, y, '#cfc8b8')
+    # the form sheet, clipped in on the right: off-white, a shadow on the card at its right and foot
+    fill(im, 99, 33, 245, 168, '#7d6a48', 90)
+    fill(im, 97, 31, 243, 166, '#f0ebde')
+    for _ in range(260):
+        dot(im, rnd.randrange(97, 243), rnd.randrange(31, 166), '#e7e1d2')
+    for x in range(97, 243):
+        dot(im, x, 31, '#faf7ef'); dot(im, x, 165, '#d8d1c1')
+    for y in range(31, 166):
+        dot(im, 242, y, '#d4cdbd')
+    # its printed rules: a box round the fields, a rule under each, in the form's own faint blue-grey ink
+    ink = '#a9afb6'
+    for x in range(102, 238):
+        if x % 2 == 0:
+            for y in (62, 92, 102, 128):
+                dot(im, x, y, ink)
+    for x in range(100, 240):
+        dot(im, x, 36, ink); dot(im, x, 140, ink)
+    for y in range(36, 141):
+        dot(im, 100, y, ink); dot(im, 239, y, ink)
+    # a punched hole at the sheet's head where it hangs on the folder's prong, and the prong through it
+    fill(im, 167, 32, 173, 35, '#8a8f95'); dot(im, 167, 32, '#c4c8cc'); dot(im, 172, 34, '#5e6268')
+    # a ring on the card's left where a cup stood once, broken where it lifted
+    for a in range(0, 360, 3):
+        if 200 < a < 250:
+            continue
+        r = 15 + (a % 9 == 0)
+        x, y = round(46 + r * math.cos(math.radians(a))), round(146 + r * .8 * math.sin(math.radians(a)))
+        darken(im, x, y, -14)
+    # the paper clip, below the card at (0, 184): a steel wire bent into its loops, lit on its left, with its shadow
+    wire = [(3, y) for y in range(6, 21)] + [(4, 21), (5, 22), (6, 22), (7, 22), (8, 22), (9, 21)] + [(10, y) for y in range(3, 21)] + \
+           [(9, 2), (8, 1), (7, 1), (6, 2)] + [(5, y) for y in range(3, 19)] + [(6, 19), (7, 19)] + [(8, y) for y in range(8, 19)]
+    for x, y in wire:
+        dot(im, x + 1, 184 + y + 1, (40, 34, 24, 90))
+    for x, y in wire:
+        lit = x in (3, 5) or y in (1, 2)
+        dot(im, x, 184 + y, '#d5d9dd' if lit else '#8d9298')
+    for x, y in ((8, 8), (3, 6), (10, 20)):
+        dot(im, x, 184 + y, '#6a6e74')
+    return im
+
+
 def textures():
     out = {}
     for name, im in materials().items():
@@ -1310,6 +1440,10 @@ def textures():
         faces[f'poster_{i}'] = poster(face, 77800 + i, faded=i >= 10)
     for name, im in faces.items():
         out[f'block/last_seen/{name}.png'] = im
+    out['item/last_seen_folder.png'] = folder_icon()
+    for i in range(10):
+        out[f'item/last_seen_folder_{i}.png'] = folder_icon(face_of(LOOKS[f'literary_lastseen_{CHILDREN[i]}']))
+    out['gui/last_seen_folder.png'] = folder_card()
     return out
 
 
@@ -1343,6 +1477,12 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/last_seen_fitting.json'] = {'variants': variants}
+    # The folder carried: one model for the folder before it is anyone's, and one for each of the ten, chosen by custom model data.
+    out['models/item/last_seen_folder.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/last_seen_folder'},
+                                                'overrides': [{'predicate': {'custom_model_data': i + 1}, 'model': NS + f'item/last_seen_folder_{i}'}
+                                                              for i in range(10)]}
+    for i in range(10):
+        out[f'models/item/last_seen_folder_{i}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/last_seen_folder_{i}'}}
     return out
 
 
@@ -1378,6 +1518,12 @@ def main():
     # A bay with a folder out has a dark slot among its spines.
     out_bay = images['block/last_seen/shelf_out.png']
     assert min(sum(out_bay.getpixel((x, 4))[:3]) for x in range(16)) < 150
+    # Each child's folder shows their own face, the same face as their poster; no two folders are alike.
+    icons = [images[f'item/last_seen_folder_{i}.png'].crop((4, 5, 12, 13)).tobytes() for i in range(10)]
+    assert len(set(icons)) == 10, 'two folders show the same face'
+    card = images['gui/last_seen_folder.png']
+    assert card.getpixel((40, 100))[3] == 255 and card.getpixel((4, 0))[3] == 0 and card.getpixel((5, 190))[3] == 255, 'the folder card and its clip'
+
     for rel, im in images.items():
         path = base / 'textures' / rel
         if check:
@@ -1395,6 +1541,7 @@ def main():
         print(f'Drew the park under {opts.out}: {len(images)} textures, {len(data)} models and states.'); return
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
+    wanted['item.the_oldest_house.last_seen_folder'] = 'Folder'
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key
