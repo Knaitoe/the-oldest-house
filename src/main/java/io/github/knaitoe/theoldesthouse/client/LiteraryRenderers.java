@@ -61,6 +61,8 @@ public final class LiteraryRenderers {
         /** 0.4.602: and the left arm in two, for somebody held by both wrists (Daniel in his frame). */
         private final ModelPart bentArmLeft,forearmLeft;
         private float walk,amount;
+        /** 0.4.679: the two bent arms, which hang from the root in the arms' place, so a build sets them out with the arms (CastBuilds). */
+        public ModelPart[] bentArms(){return new ModelPart[]{bentArm,bentArmLeft};}
         public CastModel(ModelPart r){super(r);ears=head.getChild("ears");ears.visible=false;coat=body.getChild("coat");gown=body.getChild("gown");mask=head.getChild("mask");eyelids=head.getChild("eyelids");bandage=leftLeg.getChild("bandage");hood=head.getChild("hood");
             lakeHair=head.getChild("lake_hair");lakeHairMotion=new LakeHouseHair(lakeHair);killerHood=head.getChild("killer_hood");killerMask=head.getChild("killer_mask");hardHat=head.getChild("hard_hat");killerCoat=body.getChild("killer_coat");killerBelt=body.getChild("killer_belt");
             sleeveRight=rightArm.getChild("killer_sleeve");sleeveLeft=leftArm.getChild("killer_sleeve");axe=rightArm.getChild("killer_axe");

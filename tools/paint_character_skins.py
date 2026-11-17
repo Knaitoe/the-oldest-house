@@ -12,6 +12,7 @@ import hashlib
 import json
 from PIL import Image, ImageDraw, ImageColor
 import random
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'src/main/resources/assets/the_oldest_house/textures/entity'
@@ -85,6 +86,22 @@ class Look:
     # 0.4.606 (docs/ONES_INSIDE_INJURY_0_4_606.md): a wound on the back of the right hand: 'cut' (the hall stand's glass) or 'prick'
     # (Vera's pin).
     wound: str = ''
+    # 0.4.679 (owner: "can you do a pass over each vignette and work to vary the npcs? Their faces, hairstyles, and even body
+    # compositions?"). The face's own make, '' for the common one: the brows ('arched', 'heavy', 'thin', 'sloped'), where the eyes
+    # sit and how open they are ('wide', 'close', 'narrow'), the nose ('long', 'broad', 'button', 'hooked'), the mouth ('wide',
+    # 'small', 'full', 'thin') and the jaw ('round', 'square', 'narrow', 'hollow'). And the body's build (BUILDS), which every cast
+    # renderer reads from the cast_builds.json this tool writes.
+    brow: str = ''
+    eyeset: str = ''
+    nose: str = ''
+    mouth: str = ''
+    jaw: str = ''
+    build: str = ''
+    # Drawn as before the variety pass: the people whose looks were settled one by one with the owner (KEPT_FACES).
+    classic: bool = False
+    # Repainted by the variety pass (everyone it reaches that KEPT_FACES does not keep): their eyes look straight ahead, a moustache
+    # droops at its ends, and hair is drawn with the pass's own textures and knots. Anyone else is drawn exactly as before.
+    varied: bool = False
 
 
 # Each row is a character design, rather than an index into a repeated picture.
@@ -794,7 +811,8 @@ def beard(im,look):
         # Stubble is a stipple over an even shadow; a shaved shadow is the even part alone, a little darker at the chin.
         for y,x0,x1 in JAW:
             for x in range(x0,x1+1):
-                if style=='stubble':tint(x,y,0.36 if (x*73+y*151+x*y*31)%7<3 else 0.14)
+                if style=='stubble' and fresh_face(look):tint(x,y,0.24 if _noise(x,y,21)<30 else 0.11)
+                elif style=='stubble':tint(x,y,0.36 if (x*73+y*151+x*y*31)%7<3 else 0.14)
                 else:tint(x,y,{11:0.12,12:0.18}.get(y,0.3 if y==15 else 0.24))
     elif style=='patchy':
         # A young man's beard that has not come in: the chin and the corners of the jaw, a few hairs on the lip.
@@ -841,7 +859,11 @@ def beard(im,look):
     elif style=='jawline':
         # The old stubble, a lighter jaw line with no moustache: only the manor portraits, which keep the faces they were approved with.
         d.line((2,11,3,14,5,15,10,15,12,14,13,11),fill=shade(hair,13))
-    if style in ('chinstrap','moustache'):
+    if style in ('chinstrap','moustache') and fresh_face(look):
+        # Across the lip under the nose and down a pixel at each end: the old line dipped in the middle and its ends rose, which
+        # read as a grin.
+        d.line((6,11,9,11),fill=hair);d.point((5,12),fill=hair);d.point((10,12),fill=hair);d.point((7,11),fill=hi)
+    elif style in ('chinstrap','moustache'):
         d.line((5,11,6,11,6,12,9,12,9,11,10,11),fill=hair)
 
 
@@ -867,6 +889,453 @@ def notyet_seam(d,look,runs,step=3):
             if i%step==1:
                 for k in (-1,1):d.point((x,y+k) if flat else (x+k,y),fill=thread)
             else:d.point((x,y-1) if flat else (x-1,y),fill=lip)
+
+
+# 0.4.679: the marks that draw the face's own features themselves; a face with one keeps the common make under it.
+FACE_MARKS=('dead','wax','possessed','witch','unsure','despair','truant','truant_leer','lodging_daniel','diner_second','diner_split',
+            'changed','bent_injury')
+FACE_MARK_PREFIXES=('notyet_','lodging_failed','borrasca_dana','lastseen_','family_','borrasca_')
+EYESET={'':(3,10),'wide':(2,11),'close':(4,9),'narrow':(3,10)}
+BROWS=('','arched','heavy','thin','sloped');EYESETS=tuple(EYESET);NOSES=('','long','broad','button','hooked')
+MOUTHS=('','wide','small','full','thin');JAWS=('','round','square','narrow','hollow')
+
+
+def plain_face(look):
+    """A face drawn with the common make, whose features the variety pass may change."""
+    return (look.face_style in ('','child','young_teen') and look.mark not in FACE_MARKS and not look.mark.startswith(FACE_MARK_PREFIXES)
+            and costume_face(look) is None)
+
+
+def fresh_face(look):
+    """A face the variety pass draws anew: one of its people, with the common make. A face made for a moment of the story (the
+    dead, the possessed, the Truant's leer, the waitress's split) keeps the stubble, moustache and eyes it was drawn with."""
+    return look.varied and plain_face(look)
+
+
+def features(d,look):
+    """0.4.679: the face's own make over the common one: brows, eyes, nose, mouth and jaw. A child's nose and jaw stay a child's."""
+    skin=rgb(look.skin);hair=rgb(look.hair);dark=shade(look.skin,-36);cheek=shade(look.skin,-12)
+    child=look.face_style in ('child','young_teen')
+    brow=shade(hair,7) if child else shade(hair,-4)
+    if look.eyeset or look.brow or fresh_face(look):
+        d.rectangle((2,5,13,8),fill=skin)
+        for left,x in zip((True,False),EYESET[look.eyeset]):
+            b=look.brow
+            if b=='arched':
+                # Raised in the middle and falling to the outer end (a gentle arch, not a peak).
+                outer,inner=(x,x+2) if left else (x+2,x)
+                d.point((outer,6),fill=brow);d.point((x+1,5),fill=brow);d.point((inner,5),fill=brow)
+            elif b=='heavy':
+                c=shade(hair,-24);d.line((x,6,x+2,6),fill=c);d.point((x+2 if left else x,5),fill=c)
+            elif b=='thin':d.line((x+1,6,x+2,6) if left else (x,6,x+1,6),fill=mix(brow,skin,.35))
+            elif b=='sloped':
+                # Raised at the inside end: a worried look, or a kind one.
+                inner,outer=(x+2,x) if left else (x,x+2)
+                d.point((inner,5),fill=brow);d.point((x+1,6),fill=brow);d.point((outer,6),fill=brow)
+            else:d.line((x,6,x+2,6),fill=brow)
+            # Both irises in the middle of their eyes: the pass's people look straight ahead (the common face's one iris set to the
+            # inside of its eye read as eyes turned in).
+            iris=x+1 if child or look.level_eyes or left or fresh_face(look) else x
+            if look.eyeset=='narrow':
+                d.line((x,7,x+2,7),fill=shade(look.skin,-22));d.line((x,8,x+2,8),fill='#e9e2ce');d.point((iris,8),fill=rgb(look.eyes))
+            else:
+                d.rectangle((x,7,x+2,8),fill='#e9e2ce');d.line((iris,7,iris,8),fill=rgb(look.eyes));d.point((iris,8),fill='#343331')
+    if look.nose and not child:
+        d.rectangle((6,8,9,11),fill=skin);n=look.nose
+        if n=='long':d.rectangle((7,7,8,11),fill=shade(skin,8));d.line((8,9,8,11),fill=dark);d.point((7,11),fill=shade(skin,-20))
+        elif n=='broad':
+            d.rectangle((6,9,9,10),fill=shade(skin,8));d.line((8,9,8,10),fill=dark);d.point((6,10),fill=shade(skin,-24));d.point((9,10),fill=shade(skin,-24))
+        elif n=='button':d.point((7,9),fill=shade(skin,8));d.point((7,10),fill=shade(skin,-14));d.point((8,10),fill=dark)
+        elif n=='hooked':
+            d.rectangle((7,7,8,10),fill=shade(skin,8));d.line((8,8,8,10),fill=dark);d.point((9,9),fill=shade(skin,-12));d.point((7,10),fill=shade(skin,-18))
+    if look.mouth:
+        d.rectangle((4,12,11,14),fill=skin);m=look.mouth
+        if m=='wide':d.line((5,13,10,13),fill=shade(skin,-42));d.line((6,14,9,14),fill=shade(skin,-9))
+        elif m=='small':d.line((7,13,8,13),fill=shade(skin,-42));d.line((7,14,8,14),fill=shade(skin,-9))
+        elif m=='full':d.line((6,12,9,12),fill=shade(skin,-12));d.line((6,13,9,13),fill=shade(skin,-46));d.line((6,14,9,14),fill=shade(skin,-22))
+        elif m=='thin':d.line((6,13,9,13),fill=shade(skin,-32))
+    if look.jaw and not child:
+        d.line((1,10,1,13),fill=skin);d.line((14,10,14,13),fill=skin);j=look.jaw
+        if j=='round':d.point((3,11),fill=shade(skin,-6));d.point((12,11),fill=shade(skin,-6))
+        elif j=='square':
+            d.line((1,10,1,14),fill=cheek);d.line((14,10,14,14),fill=cheek)
+            for x in (1,2,13,14):d.point((x,15),fill=shade(skin,-18))
+        elif j=='narrow':
+            for x,y in ((0,14),(0,15),(1,15),(15,14),(15,15),(14,15)):d.point((x,y),fill=shade(skin,-22))
+            d.line((2,11,2,13),fill=cheek);d.line((13,11,13,13),fill=cheek)
+        elif j=='hollow':d.line((2,11,2,12),fill=shade(skin,-9));d.line((13,11,13,12),fill=shade(skin,-9))
+
+
+# 0.4.679: the cuts the variety pass adds, drawn on the front (cut_front), the sides, back and top (cut_side, cut_back, cut_top) and the
+# head's second layer, which stands half a pixel proud and carries their volume (cut_hat).
+CUTS_0679=('bob','fringe','side','buzz','bald','curls','quiff','mullet','pigtails','tied')
+
+
+def buzz_colour(look):
+    return mix(look.hair,look.skin,.45)
+
+
+def bald_band(d,x,top,bottom,look,salt):
+    """One column of a bald man's remaining hair, cut close: from top to bottom in the near-solid colour, a little nap over it,
+    and above its top a pixel that is half scalp, so the edge thins out instead of stopping like a band."""
+    hair=mix(look.hair,look.skin,.22);skin=rgb(look.skin)
+    for y in range(top,bottom+1):
+        n=_noise(x,y,salt);d.point((x,y),fill=shade(hair,-8) if n<16 else shade(hair,6) if n>90 else hair)
+    if top>0 and _noise(x,top-1,salt+1)%3:d.point((x,top-1),fill=mix(hair,skin,.55))
+
+
+def rim(hair):
+    """The edge round a knot or a bunch of hair: darker than the hair, or on very dark hair a little lighter, so it still shows."""
+    r,g,b=hair[:3];return shade(hair,22) if r*.3+g*.59+b*.11<52 else shade(hair,-26)
+
+
+def stubble(d,box,hair):
+    """Hair cut to the scalp: a few darker points over the scalp's tone, uneven, as the stubble on a jaw is drawn."""
+    x0,y0,x1,y1=box
+    for y in range(y0,y1+1):
+        for x in range(x0,x1+1):
+            if (x*73+y*151+x*y*31)%7<2:d.point((x,y),fill=hair)
+
+
+def _noise(x,y,salt=0):
+    """An even, unpatterned 0-99 for one pixel: the pass's textures never fall into rows or a grid."""
+    n=(x*374761393+y*668265263+salt*2147483647)&0xffffffff
+    n=((n^(n>>13))*1274126177)&0xffffffff
+    return (n^(n>>16))%100
+
+
+def fuzz(d,box,base,salt=0):
+    """Hair clipped close to the scalp: its own even tone, a little darker and lighter here and there, as a short nap catches light.
+    (The pass's buzz cut; the stipple it was drawn with read as a pattern.)"""
+    x0,y0,x1,y1=box
+    for y in range(y0,y1+1):
+        for x in range(x0,x1+1):
+            n=_noise(x,y,salt)
+            if n<18:d.point((x,y),fill=shade(base,-9))
+            elif n>93:d.point((x,y),fill=shade(base,7))
+
+
+def curl_clumps(size,color,cell,salt):
+    """0.4.679: curly hair as clumps: each a small round lock lit on its upper left and shaded on its lower right, set in staggered
+    rows a little out of line, so the head reads as curls and not as noise. Light hair is drawn softer, dark hair a little harder."""
+    w,h=size;c=rgb(color);im=Image.new('RGBA',size,c+(255,));d=ImageDraw.Draw(im)
+    L=c[0]*.3+c[1]*.59+c[2]*.11;k=.6 if L>150 else 1.0 if L>60 else 1.3
+    hi=shade(c,round(14*k));hi2=shade(c,round(24*k));lo=shade(c,-round(14*k));gap=shade(c,-round(24*k))
+    if cell==3:shape=((0,0,hi2),(1,0,hi),(0,1,hi),(2,1,lo),(1,2,lo),(2,2,gap))
+    else:shape=((1,0,hi),(2,0,hi),(0,1,hi),(1,1,hi2),(3,1,lo),(0,2,hi),(3,2,lo),(1,3,lo),(2,3,lo),(3,3,gap))
+    for row,gy in enumerate(range(-cell,h+cell,cell)):
+        off=(cell//2)*(row%2)
+        for gx in range(-cell,w+cell,cell):
+            jx=_noise(gx,gy,salt)%(2 if cell==3 else 3);jy=_noise(gy,gx,salt+3)%2
+            for dx,dy,col in shape:
+                x=gx+off+dx+jx;y=gy+dy+jy
+                if 0<=x<w and 0<=y<h:d.point((x,y),fill=col)
+    return im
+
+
+def tight_coils(size,color,salt=1):
+    """0.4.679: tight coils, small clumps set close."""
+    return curl_clumps(size,color,3,salt)
+
+
+def loose_curls(size,color,salt=2):
+    """0.4.679: looser curls, larger turned locks."""
+    return curl_clumps(size,color,4,salt)
+
+
+def hair_patch(look,side,box,ragged=(0,1),salt=3):
+    """A piece of hair for the head's second layer: the same strands as the hair beneath it (so no edge shows where one meets the
+    other), its lower edge uneven by a pixel or two as hair ends. ragged is how far the lower edge may climb, in pixels."""
+    src=panel((16,16),look.hair,'hair',side);art=Image.new('RGBA',(16,16));x0,y0,x1,y1=box
+    for x in range(x0,x1+1):
+        bottom=y1-(ragged[0]+_noise(x,y1,salt)%(ragged[1]-ragged[0]+1))
+        for y in range(y0,bottom+1):art.putpixel((x,y),src.getpixel((x,y)))
+    return art
+
+
+# A bun seen from behind and from above: H and h its lit upper edge, m its body (a little lighter than the hair round it, as wound hair
+# stands proud), T the crease of its turn, L its shaded underside and S the shadow it casts on the hair beneath.
+BUN_BACK=('..hhhh..',
+          '.hHHhhm.',
+          'hHmmmhmL',
+          'hmTTmmmL',
+          'hmmmTTmL',
+          '.mmmmmL.',
+          '..LLLL..',
+          '...SS...')
+BUN_TOP=('..mmmm..',
+         '.hmTTmm.',
+         'hHmmmTmL',
+         '.hhmmmL.',
+         '...SS...')
+
+
+def knot(d,x0,y0,rows,hair):
+    """Draws a bun's knot from one of the masks above, its shading scaled to the hair: softer on pale hair, firmer on dark."""
+    # On dark hair the light carries the shape and the shadows stay soft, or they go black and read as a mark on the head.
+    L=hair[0]*.3+hair[1]*.59+hair[2]*.11;up,dn=(.7,1.0) if L>150 else (1.0,.9) if L>60 else (1.5,.5)
+    tone={'H':shade(hair,round(26*up)),'h':shade(hair,round(16*up)),'m':shade(hair,round(7*up)),'T':shade(hair,-round(9*dn)),
+          'L':shade(hair,-round(12*dn)),'S':shade(hair,-round(14*dn))}
+    for j,row in enumerate(rows):
+        for i,ch in enumerate(row):
+            if ch in tone:d.point((x0+i,y0+j),fill=tone[ch])
+
+
+def tail(d,x0,y0,width,length,hair,band):
+    """Hair gathered and tied: the tie across the top, the hair hanging under it, lit down its middle and shaded down its far side,
+    narrowing a little at the end. Solid throughout: no drawn outline round it."""
+    hi=shade(hair,15);lo=shade(hair,-16)
+    d.line((x0,y0,x0+width-1,y0),fill=band)
+    for i in range(1,length+1):
+        y=y0+i;narrow=1 if i>=length-1 and width>2 else 0
+        xa,xb=x0+(narrow if i==length else 0),x0+width-1-narrow
+        d.line((xa,y,xb,y),fill=hair)
+        if xb-xa>=2:d.point((xa+1,y),fill=hi if i%3 else hair);d.point((xb,y),fill=lo)
+        elif xb>xa:d.point((xb,y),fill=lo)
+
+
+def plait(d,x0,y0,length,hair,band):
+    """A braid hanging from (x0, y0), three pixels wide: each crossing a lit pair at the edges over a lit middle and its shadow,
+    so it reads as a row of chevrons down the plait, as a braid does; tied at the end."""
+    hi=shade(hair,18);lo=shade(hair,-20);mid=shade(hair,4)
+    for i in range(length):
+        y=y0+i;r=i%3
+        row=(hi,mid,hi) if r==0 else (lo,hi,lo) if r==1 else (lo,lo,lo)
+        for k,c in enumerate(row):d.point((x0+k,y),fill=c)
+    d.line((x0,y0+length,x0+2,y0+length),fill=band)
+
+
+def lit_in_strands(look):
+    """Whose fringe the variety pass lights in strands: every one of its people, a face kept from a moment of the story among them
+    (the owner, of a missing boy at Last Seen: "The line is present in Santino messy short too"), but not the Truant, whose sheets
+    are held to their approved painting."""
+    return look.varied and look.mark not in ('truant','truant_leer')
+def strands(d,points):
+    """0.4.679: a fringe's light picked out a pixel at a time along its locks, never as a straight bar across the forehead: each
+    cut's strokes follow the way it is combed, so two pale dashes on one row never read as a line."""
+    for x,y,c in points:d.point((x,y),fill=c)
+def cut_front(d,look,skin,hair,hlo,hhi):
+    """The hairline of the variety pass's cuts, and the bun's pulled-back front. False for the older cuts."""
+    c=look.cut
+    if c=='bob':
+        # Chin length with a straight fringe: the fringe's edge a little ragged, the sides falling past the cheeks and turning in.
+        # The fringe ends in tips, the shadow under every other one: no line drawn along its edge.
+        d.rectangle((0,0,15,3),fill=hair)
+        for x in (1,2,5,6,9,10,13,14):d.point((x,4),fill=hlo if x in (2,6,10,14) else hair)
+        d.rectangle((0,4,1,12),fill=hair);d.rectangle((14,4,15,12),fill=hair)
+        d.point((2,12),fill=hair);d.point((13,12),fill=hair);d.point((2,11),fill=hlo);d.point((13,11),fill=hlo)
+        strands(d,((3,1,hhi),(4,2,hhi),(8,1,hhi),(9,2,hlo),(12,2,hhi),(13,1,hhi)));d.line((0,6,0,10),fill=hhi)
+    elif c=='fringe':
+        # Long, with a fringe cut straight across.
+        d.rectangle((0,0,15,3),fill=hair)
+        for x in (2,3,6,7,10,11):d.point((x,4),fill=hlo if x in (3,7,11) else hair)
+        d.polygon([(0,4),(2,4),(2,13),(0,15)],fill=hair);d.polygon([(13,4),(15,4),(15,15),(13,13)],fill=hair)
+        strands(d,((2,1,hhi),(3,2,hhi),(6,1,hlo),(7,2,hhi),(10,1,hhi),(11,2,hhi)));d.line((1,5,1,12),fill=hhi);d.line((14,6,14,12),fill=hlo)
+    elif c=='side':
+        # Swept across from a low part, over the one brow.
+        d.polygon([(0,0),(15,0),(15,2),(12,2),(9,3),(6,4),(4,5),(2,6),(0,6)],fill=hair)
+        strands(d,((3,2,hhi),(4,1,hhi),(8,2,hhi),(9,1,hhi),(12,1,hhi)));d.line((3,4,8,2),fill=hlo);d.point((14,1),fill=hlo)
+    elif c=='buzz':
+        # A close nap at the hairline, the temples a pixel lower; no hair-coloured points over it.
+        b=buzz_colour(look);d.rectangle((0,0,15,1),fill=b);d.line((0,2,1,2),fill=b);d.line((14,2,15,2),fill=b);fuzz(d,(0,0,15,2),b,11)
+        d.rectangle((2,2,13,2),fill=skin)
+    elif c=='bald':
+        d.line((5,0,10,0),fill=shade(skin,10))
+    elif c=='curls':
+        d.rectangle((0,0,15,2),fill=hair)
+        for x in (0,1,4,5,9,10,13,14):d.point((x,3),fill=hair)
+        d.line((0,3,0,6),fill=hair);d.line((15,3,15,6),fill=hair)
+        for x,y in ((1,1),(4,0),(7,1),(10,0),(13,1)):d.point((x,y),fill=hhi)
+        for x,y in ((2,2),(5,2),(8,2),(11,2),(14,2)):d.point((x,y),fill=hlo)
+    elif c=='quiff':
+        # Short at the sides and combed up off the forehead; the second layer carries the height.
+        d.rectangle((0,0,15,1),fill=hair);d.polygon([(5,2),(13,2),(12,3),(7,3)],fill=hair)
+        strands(d,((2,0,hhi),(3,1,hhi),(8,2,hhi),(9,1,hhi),(11,1,hhi),(8,3,hlo),(11,3,hlo)))
+        d.point((0,2),fill=hlo);d.point((15,2),fill=hlo)
+    elif c=='mullet':
+        d.polygon([(0,0),(15,0),(15,3),(13,2),(11,3),(9,2),(7,3),(5,2),(3,3),(1,2),(0,3)],fill=hair);strands(d,((2,1,hhi),(3,2,hhi),(8,1,hhi),(9,2,hhi),(12,1,hhi)))
+    elif c=='pigtails':
+        # Parted down the middle: the part a faint line in the hair, not a notch of skin.
+        d.rectangle((0,0,15,2),fill=hair);d.point((7,0),fill=mix(hair,skin,.25));d.point((7,1),fill=hlo)
+        d.rectangle((0,3,1,6),fill=hair);d.rectangle((14,3,15,6),fill=hair)
+        # Combed away from the part on each side.
+        strands(d,((5,0,hhi),(4,1,hhi),(2,2,hhi),(9,0,hhi),(10,1,hhi),(13,2,hhi)))
+    elif c in ('bun','tied') and look.varied:
+        # Pulled back off the face, the comb's lines running back; a tied cut parted at the side.
+        d.rectangle((0,0,15,1),fill=hair);d.rectangle((0,2,1,5),fill=hair);d.rectangle((14,2,15,5),fill=hair)
+        strands(d,((2,1,hhi),(4,0,hhi),(11,0,hhi),(13,1,hhi)))
+        if c=='tied':d.point((5,0),fill=mix(hair,skin,.25));d.point((5,1),fill=hlo)
+    elif c=='part' and look.varied:
+        # 0.4.679: a part that shows, on the face's left, the hair combed over from it (it was drawn as 'short' was).
+        d.polygon([(0,0),(15,0),(15,3),(12,2),(6,2),(5,1),(4,2),(2,3),(0,4)],fill=hair)
+        d.point((5,0),fill=mix(hair,skin,.25));strands(d,((6,0,hhi),(7,1,hhi),(9,1,hhi),(10,2,hhi),(12,1,hhi),(3,1,hlo),(2,2,hlo)))
+    else:return False
+    return True
+
+
+def cut_side(look,side):
+    """A side of the head for the variety pass's cuts; None leaves the older drawing."""
+    c=look.cut;skin=rgb(look.skin);hair=rgb(look.hair)
+    if c not in CUTS_0679:return None
+    front=0 if side=='left' else 10
+    back=(6,15) if side=='left' else (0,9)
+    def ear(d,top=7):
+        d.rectangle((front+3,top,front+5,top+4),fill=shade(look.skin,-16));d.line((front+4,top+1,front+4,top+3),fill=shade(look.skin,-34))
+    if c in ('bob','fringe'):
+        art=panel((16,16),look.hair,'hair',side)
+        if c=='bob':ImageDraw.Draw(art).rectangle((0,13,15,15),fill=skin)
+        return art
+    if c in ('buzz','bald'):
+        art=panel((16,16),look.skin,'skin',side);d=ImageDraw.Draw(art)
+        if c=='buzz':
+            # Clipped close: the nap stops above and behind the ear, its edge a little uneven.
+            b=buzz_colour(look);d.rectangle((0,0,15,9),fill=b);fuzz(d,(0,0,15,9),b,12 if side=='left' else 14)
+            d.rectangle((front,6,front+5,15),fill=skin)
+            for x in range(16):
+                if not front<=x<=front+5 and _noise(x,10,13)%3==0:d.point((x,10),fill=b)
+        else:
+            # A horseshoe of close hair: a sideburn by the face, a narrow band over the ear, broad behind it.
+            burn=front if side=='left' else front+5
+            for x in range(16):
+                behind=back[0]<=x<=back[1]
+                bottom=12 if behind else 9 if x==burn else 6
+                bald_band(d,x,4+_noise(x,4,22)%2,bottom-(_noise(x,bottom,23)%2 if behind else 0),look,24 if side=='left' else 26)
+        ear(d);return art
+    if c=='curls':
+        art=loose_curls((16,16),look.hair);d=ImageDraw.Draw(art);d.rectangle((front,8,front+5,15),fill=skin);ear(d,9);return art
+    art=panel((16,16),look.hair,'hair',side);d=ImageDraw.Draw(art)
+    top={'side':5,'quiff':4,'mullet':4,'pigtails':5,'tied':5}[c]
+    d.rectangle((front,top,front+5,15),fill=skin)
+    if c in ('quiff','side'):
+        # Short at the back of the neck too.
+        d.rectangle((back[0],13,back[1],15),fill=skin)
+    ear(d);return art
+
+
+def cut_back(look):
+    """The back of the head for the variety pass's cuts (and the knots and tails it draws for the older ones), or None."""
+    c=look.cut;skin=rgb(look.skin);hair=rgb(look.hair);hi=shade(hair,8);lo=shade(hair,-8)
+    if c=='bob':
+        art=panel((16,16),look.hair,'hair','back');ImageDraw.Draw(art).rectangle((0,13,15,15),fill=skin);return art
+    if c=='buzz':
+        art=panel((16,16),look.skin,'skin','back');d=ImageDraw.Draw(art);b=buzz_colour(look);d.rectangle((0,0,15,10),fill=b);fuzz(d,(0,0,15,10),b,15)
+        for x in range(16):
+            if _noise(x,11,16)%3==0:d.point((x,11),fill=b)
+        return art
+    if c=='bald':
+        # The horseshoe's back: broad from ear to ear, the crown bare above it, the nape cut short under it.
+        art=panel((16,16),look.skin,'skin','back');d=ImageDraw.Draw(art)
+        for x in range(16):bald_band(d,x,4+_noise(x,4,27)%2,12-_noise(x,12,28)%2,look,29)
+        return art
+    if c in ('quiff','side'):
+        art=panel((16,16),look.hair,'hair','back');ImageDraw.Draw(art).rectangle((0,13,15,15),fill=skin);return art
+    if c=='curls':return loose_curls((16,16),look.hair)
+    if c=='pigtails':
+        # Parted down the back into its two bunches: the part a faint line toward the crown.
+        art=panel((16,16),look.hair,'hair','back');d=ImageDraw.Draw(art);d.line((7,0,7,5),fill=mix(hair,skin,.22));d.line((8,0,8,5),fill=lo);return art
+    if c in ('bun','tied','ponytail') and look.varied:
+        # Combed back to the knot or the tie: two faint strands leaning in toward it, and the nape under it.
+        art=panel((16,16),look.hair,'hair','back');d=ImageDraw.Draw(art)
+        if c=='bun':d.line((3,12,5,9),fill=shade(hair,5));d.line((12,12,10,9),fill=shade(hair,-5))
+        elif c=='tied':d.line((2,2,6,8),fill=hi);d.line((13,2,9,8),fill=lo)
+        else:d.line((2,1,6,5),fill=hi);d.line((13,1,9,5),fill=lo)
+        if c=='ponytail':d.polygon([(0,12),(4,13),(11,13),(15,12),(15,15),(0,15)],fill=skin)
+        else:d.rectangle((0,14,15,15),fill=skin)
+        return art
+    return None
+
+
+def cut_top(look):
+    c=look.cut
+    if c=='buzz':
+        art=panel((16,16),look.skin,'skin','top');d=ImageDraw.Draw(art);b=buzz_colour(look);d.rectangle((0,0,15,15),fill=b);fuzz(d,(0,0,15,15),b,17)
+        return art
+    if c=='bald':
+        art=panel((16,16),look.skin,'skin','top');d=ImageDraw.Draw(art);d.line((5,9,9,8),fill=shade(look.skin,12));return art
+    if c=='curls':return loose_curls((16,16),look.hair)
+    return None
+
+
+def cut_hat(look,side):
+    """What the variety pass puts on the head's second layer: the fullness of a bob, a fringe, curls or a mullet's back (in the
+    strands of the hair beneath, never a flat box), a quiff's height, a bun's knot, and the tails and braids that hang from a tie.
+    None where the cut has nothing there."""
+    c=look.cut;hair=rgb(look.hair);hi=shade(hair,14);lo=shade(hair,-14);band=shade(look.accent,-10)
+    # A tie is an elastic: a pale accent (a white collar, a cream shirt) is blended into the hair so it never shows as a white dash.
+    if sum(rgb(look.accent))>480:band=mix(shade(look.accent,-60),hair,.5)
+    if side=='bottom':return None
+    art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
+    back=(6,15) if side=='left' else (0,9)
+    behind=6 if side=='left' else 7
+    if c=='bob':
+        if side=='back':return hair_patch(look,'back',(0,2,15,12),(0,1),31)
+        if side in ('left','right'):return hair_patch(look,side,(0,2,15,12),(0,1),32)
+        if side=='top':return hair_patch(look,'top',(0,0,15,15),(0,0),33)
+        return None
+    elif c=='fringe':
+        if side=='back':return hair_patch(look,'back',(0,2,15,14),(0,2),34)
+        if side in ('left','right'):return hair_patch(look,side,(back[0],3,back[1],14),(0,2),35)
+        return None
+    elif c=='curls':
+        art=loose_curls((16,16),look.hair,5);d=ImageDraw.Draw(art)
+        if side!='top':
+            depth={'front':2,'back':10,'left':7,'right':7}[side]
+            for x in range(16):
+                edge=depth+_noise(x,depth,6)%3-1 if side!='front' else (depth if 3<=x<=12 else depth+2)
+                d.line((x,max(0,edge),x,15),fill=(0,0,0,0))
+    elif c=='quiff':
+        if side=='front':
+            art=hair_patch(look,'front',(3,0,12,2),(0,0),36);d=ImageDraw.Draw(art)
+            for x,y in ((3,0),(12,0),(12,1)):art.putpixel((x,y),(0,0,0,0))
+            d.point((5,1),fill=hi);d.point((6,0),fill=hi);d.point((11,2),fill=lo)
+        elif side=='top':
+            art=hair_patch(look,'top',(2,7,13,15),(0,0),37);d=ImageDraw.Draw(art);d.line((4,10,8,9),fill=hi)
+        else:return None
+    elif c=='mullet':
+        if side=='back':return hair_patch(look,'back',(0,5,15,15),(0,2),38)
+        if side in ('left','right'):
+            x0,x1=(back[0]+3,back[1]) if side=='left' else (back[0],back[1]-3)
+            return hair_patch(look,side,(x0,8,x1,15),(0,2),39)
+        return None
+    elif c=='pigtails':
+        # A bunch tied behind each ear and hanging to the jaw, solid, with no line drawn round it.
+        if side in ('left','right'):tail(d,behind,6,3,9,hair,band)
+        elif side=='back':tail(d,0,6,3,9,hair,band);tail(d,13,6,3,9,hair,band)
+        else:return None
+    elif c=='bun' and look.varied:
+        # The knot: wound hair, lit along its upper edge and shaded under, with the crease of the turn across it. No outline.
+        if side=='back':knot(d,4,1,BUN_BACK,hair)
+        elif side=='top':knot(d,4,0,BUN_TOP,hair)
+        else:return None
+    elif c=='tied' and look.varied:
+        # Gathered low and tied at the nape, the tail down the neck.
+        if side=='back':tail(d,6,8,4,7,hair,band)
+        else:return None
+    elif c=='ponytail' and look.varied:
+        # Tied high at the back of the head, the tail falling to the collar.
+        if side=='back':tail(d,6,4,4,11,hair,band)
+        else:return None
+    elif c=='braids' and look.varied:
+        # Two braids down the back, one over each shoulder, tied at their ends.
+        if side=='back':plait(d,2,4,10,hair,band);plait(d,11,4,10,hair,band)
+        elif side in ('left','right'):plait(d,behind,5,9,hair,band)
+        else:return None
+    else:return None
+    return art
+
+
+# 0.4.679: the earth on a Last Seen child's cheek, drawn for the picture's right cheek (x, y, how much earth).
+EARTH_SMEAR=((11,10,.22),(12,10,.34),(11,11,.28),(12,11,.5),(13,11,.46),(12,12,.38),(13,12,.62),(14,12,.42),(13,13,.52),(14,13,.64),
+             (15,13,.38),(14,14,.46),(15,14,.52),(13,14,.24))
+
+
+def earth_side(art,look,side):
+    """The same earth carried on round the jaw onto the side of the head that lay on the ground."""
+    if not (look.varied and look.mark.startswith('lastseen_') and look.face_style=='child'):return
+    right=look.mark in ('lastseen_rocio','lastseen_brian','lastseen_abril','lastseen_santino')
+    if side!=('left' if right else 'right'):return
+    for x,y,t in ((0,12,.42),(0,13,.58),(1,13,.36),(0,14,.5),(1,14,.4),(2,14,.2)):
+        x=x if side=='left' else 15-x;art.putpixel((x,y),mix(art.getpixel((x,y)),'#6e5840',t)+(255,))
 
 
 def face(look):
@@ -975,7 +1444,15 @@ def face(look):
         for x in (3,10):d.line((x,9,x+2,9),fill=shade(skin,-15))
         d.line((6,13,9,13),fill=shade(skin,-30))
         side=12 if look.mark in ('lastseen_rocio','lastseen_brian','lastseen_abril','lastseen_santino') else 2
-        d.point((side,11),fill='#7a6246');d.point((side+1,12),fill='#86704f');d.point((side,12),fill='#6c5640')
+        if look.varied:
+            # 0.4.679: dried earth smeared from the cheekbone down to the jaw's edge, heaviest where the face lay on the ground and
+            # thinning toward the nose, worked into the skin rather than sitting on it (three hard pixels read as a blotch). It runs
+            # on round the side of the head (earth_side).
+            for x,y,t in EARTH_SMEAR:
+                x=x if side==12 else 15-x;im.putpixel((x,y),mix(im.getpixel((x,y)),'#6e5840',t)+(255,))
+        else:
+            d.point((side,11),fill='#7a6246');d.point((side+1,12),fill='#86704f');d.point((side,12),fill='#6c5640')
+    if plain_face(look):features(d,look)
     if look.age:
         d.line((5,3,10,3),fill=cheek)
         for x in (2,13):d.point((x,9),fill=dark)
@@ -1005,20 +1482,24 @@ def face(look):
         d.rectangle((7,9,8,10),fill='#e07a1c');d.line((3,13,12,13),fill='#3a2a1e')
         for x in (3,5,7,9,11):d.point((x,12),fill='#3a2a1e');d.point((x+1,14),fill='#3a2a1e')
         for x in (2,12):d.rectangle((x,10,x+1,11),fill='#d86a5a')
-    if look.cut=='receding':
+    if cut_front(d,look,skin,hair,hlo,hhi):pass
+    elif look.cut=='receding':
         d.rectangle((0,0,1,5),fill=hair);d.rectangle((14,0,15,5),fill=hair)
-        d.line((1,0,3,0),fill=hhi);d.line((12,0,14,0),fill=hhi)
+        if lit_in_strands(look):strands(d,((1,1,hhi),(0,3,hhi),(14,1,hhi),(15,3,hhi),(2,0,hlo),(13,0,hlo)))
+        else:d.line((1,0,3,0),fill=hhi);d.line((12,0,14,0),fill=hhi)
     elif look.cut=='close':
         d.rectangle((0,0,15,1),fill=hair);d.line((0,2,2,2),fill=hlo);d.line((13,2,15,2),fill=hlo)
     elif look.cut=='ponytail':
         # Hair swept off her face, with a short side fringe and the ears left clear.
         d.rectangle((0,0,15,2),fill=hair);d.polygon([(0,2),(7,2),(4,4),(2,5),(2,9),(1,12),(0,12)],fill=hair)
         d.polygon([(11,2),(15,2),(15,12),(14,10),(13,4)],fill=hair)
-        d.line((1,2,4,2),fill=hhi);d.line((14,2,14,5),fill=hhi)
+        if lit_in_strands(look):strands(d,((1,2,hhi),(2,1,hhi),(4,2,hlo),(14,2,hhi),(14,4,hhi),(15,7,hlo)))
+        else:d.line((1,2,4,2),fill=hhi);d.line((14,2,14,5),fill=hhi)
     elif look.cut in ('long','bun','braids'):
         d.rectangle((0,0,15,2),fill=hair);d.polygon([(0,2),(6,2),(4,4),(2,5),(2,13),(0,14)],fill=hair)
         d.polygon([(9,2),(15,2),(15,14),(13,12),(13,4)],fill=hair)
-        d.line((1,2,1,7),fill=hhi);d.line((14,3,14,10),fill=hhi)
+        if lit_in_strands(look):strands(d,((1,2,hhi),(1,3,hhi),(0,6,hhi),(1,9,hlo),(14,3,hhi),(14,4,hhi),(15,8,hhi),(14,11,hlo)))
+        else:d.line((1,2,1,7),fill=hhi);d.line((14,3,14,10),fill=hhi)
         if look.cut=='braids':
             for y in (5,8,11):d.rectangle((0,y,1,y+1),fill=hhi);d.rectangle((14,y,15,y+1),fill=hhi)
     elif look.cut=='coils':
@@ -1027,10 +1508,14 @@ def face(look):
         for x,y in ((1,1),(4,0),(7,1),(10,0),(13,1),(2,3),(14,3)):d.point((x,y),fill=hhi);d.point((min(15,x+1),min(5,y+1)),fill=hlo)
     elif look.cut=='messy':
         d.polygon([(0,0),(15,0),(15,4),(13,3),(12,4),(10,2),(8,4),(6,2),(4,5),(2,3),(0,5)],fill=hair)
-        d.line((2,1,5,1),fill=hhi);d.line((9,1,12,1),fill=hhi)
+        # 0.4.679 (the owner: "The line is present in Santino messy short too"): the highlight is broken into short strands, a lock
+        # at a time, not one bar across the forehead.
+        if lit_in_strands(look):strands(d,((2,1,hhi),(3,2,hhi),(5,1,hlo),(7,0,hhi),(8,1,hhi),(9,3,hlo),(11,1,hhi),(12,2,hhi)))
+        else:d.line((2,1,5,1),fill=hhi);d.line((9,1,12,1),fill=hhi)
     else:
         d.polygon([(0,0),(15,0),(15,3),(12,2),(8,2),(5,4),(2,3),(0,4)],fill=hair)
-        d.line((2,1,7,1),fill=hhi);d.line((10,0,10,2),fill=hlo)
+        if lit_in_strands(look):strands(d,((2,1,hhi),(3,2,hhi),(6,1,hhi),(7,0,hhi),(10,1,hlo),(12,0,hhi)))
+        else:d.line((2,1,7,1),fill=hhi);d.line((10,0,10,2),fill=hlo)
     if look.mark=='pell_callum':
         # A drop run down from his wet hair to his temple.
         d.point((13,5),fill=shade(skin,24));d.point((13,6),fill=shade(skin,12))
@@ -1531,6 +2016,13 @@ def paint(look):
         art=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(art)
         d.rectangle((0,0,1,15),fill=rgb(look.hair));d.rectangle((14,0,15,15),fill=rgb(look.hair));d.rectangle((0,13,15,15),fill=rgb(look.hair));put(head['top'],art)
     for side in ('left','right'):
+        art=cut_side(look,side)
+        if art is not None:
+            d=ImageDraw.Draw(art)
+            if look.cut not in ('bob','fringe'):
+                if look.glasses:d.line((0 if side=='left' else 10,7,5 if side=='left' else 15,7),fill='#666250')
+                beard_side(d,look,side)
+            earth_side(art,look,side);put(head[side],art);continue
         art=panel((16,16),look.hair,'hair',side);d=ImageDraw.Draw(art)
         if look.cut not in ('long','braids'):
             front=0 if side=='left' else 10
@@ -1538,15 +2030,17 @@ def paint(look):
             d.rectangle((front+3,7,front+5,11),fill=shade(look.skin,-16));d.line((front+4,8,front+4,10),fill=shade(look.skin,-34))
             if look.glasses:d.line((front,7,front+5,7),fill='#666250')
             beard_side(d,look,side)
-        put(head[side],art)
+        earth_side(art,look,side);put(head[side],art)
     if look.cut=='ponytail':
         art=panel((16,16),look.hair,'hair','back');d=ImageDraw.Draw(art)
         d.polygon([(0,10),(3,12),(6,13),(9,13),(12,12),(15,10),(15,15),(0,15)],fill=rgb(look.skin))
         d.line((1,5,5,9,7,10),fill=shade(look.hair,12));d.line((14,5,11,9,9,10),fill=shade(look.hair,-11))
         put(head['back'],art)
     if look.cut=='coils':
+        # 0.4.679: the pass's people wear their coils in tight_coils (coil_panel's grid read as dots).
+        coils=tight_coils if look.varied else coil_panel
         for side in ('top','back','left','right'):
-            art=coil_panel((16,16),look.hair);d=ImageDraw.Draw(art)
+            art=coils((16,16),look.hair);d=ImageDraw.Draw(art)
             if side in ('left','right'):
                 front=0 if side=='left' else 10
                 d.rectangle((front,7,front+5,15),fill=rgb(look.skin))
@@ -1554,7 +2048,7 @@ def paint(look):
             put(head[side],art)
         for side,box in net(32,0,8,8,8).items():
             if side=='bottom':continue
-            art=coil_panel((16,16),look.hair)
+            art=coils((16,16),look.hair)
             if side!='top':
                 # Fuller at the crown and back, thinning to an uneven edge; the face and ears stay clear.
                 d=ImageDraw.Draw(art);depth={'front':3,'back':12,'left':6,'right':6}[side]
@@ -1562,6 +2056,11 @@ def paint(look):
                     edge=depth+(x*5)%3-1 if side!='front' else (depth if 2<=x<=13 else depth+1)
                     d.line((x,max(0,edge),x,15),fill=(0,0,0,0))
             put(box,art)
+    for side,art in (('back',cut_back(look)),('top',cut_top(look))):
+        if art is not None:put(head[side],art)
+    for side,box in net(32,0,8,8,8).items():
+        art=cut_hat(look,side)
+        if art is not None:put(box,art)
     if 'pillow' in look.costume.split():
         for side,box in head.items():
             art=panel((16,16),'#ecebe4','cloth',side);d=ImageDraw.Draw(art)
@@ -1835,7 +2334,8 @@ def paint(look):
                     if look.mark=='borrasca_prescott' and side=='front':
                         d.rectangle((5,0,10,4),fill='#d6d1b9');d.line((7,1,7,4),fill='#4d6650');d.line((7,1,9,1,9,2,7,2),fill='#4d6650')
                 put(box,art)
-    if look.mark.startswith('diner_'):
+    if look.mark.startswith('diner_') and not look.varied:
+        # The diner's own bun, as it was; the variety pass's knot (cut_hat) takes its place for anyone that pass draws.
         art=Image.new('RGBA',(16,16));d=ImageDraw.Draw(art)
         d.rectangle((5,5,11,11),fill=rgb(look.hair));d.line((6,5,10,5),fill=shade(look.hair,13))
         d.line((5,7,5,10),fill=shade(look.hair,-13));d.point((11,8),fill=shade(look.hair,8))
@@ -2394,6 +2894,121 @@ def brad_lamp():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.679, the variety pass
+# The owner: "can you do a pass over each vignette and work to vary the npcs? Their faces, hairstyles, and even body compositions?"
+# (docs/NPC_VARIETY_0_4_679.md). Every scene's people are told apart by the make of the face, the cut of the hair and the build of
+# the body. What a person's own design gives them (a field set in their Look) is theirs and stays; what it leaves to the common
+# make is chosen here, for each scene, so that nobody in a scene shares their face with anyone else in it and no cut is worn twice
+# where another of its kind would do.
+
+# What each build does to the body, read by the renderers from cast_builds.json: (height, shoulders, depth, limbs). Height scales
+# the whole figure from the feet (from the hips when seated or lying); shoulders and depth the torso across and front to back, the
+# arms set out with it; limbs the arms' and legs' thickness. The head is never scaled.
+BUILDS={'':(1,1,1,1),'tall':(1.06,1,1,.97),'short':(.94,1,1,1),'broad':(1.02,1.12,1.06,1.06),'heavy':(1,1.14,1.3,1.1),
+        'stocky':(.95,1.1,1.16,1.1),'thin':(1.02,.9,.84,.88),'lanky':(1.07,.92,.88,.88),'slight':(.96,.92,.9,.9)}
+# The builds described in a person's own design notes.
+DESCRIBED_BUILDS={'borrasca_worker_two':'heavy','literary_fallow_otis':'heavy','literary_hollow_ghoul':'thin','literary_hollow_goblin':'slight',
+                  'literary_kept_silas':'thin','literary_kept_petra':'thin','literary_kept_wendell':'thin','literary_kept_tamsin':'thin'}
+# Scenes whose people were designed one by one with the owner and keep their cuts, faces and builds as they are (the Borrasca cast,
+# the Ghosts set's family, the Pell house, the reader's own body, the lake's witch, the boy in the cell), save a build their own
+# design notes give them.
+KEPT_FACES=('borrasca_','ghosts_','literary_pell_','house_','lake_witch','caged_child','literary_lake_tess','literary_family_','uncanny_family_')
+# A repeated cut gives way to the next of its own kind that the scene has not yet used: short hair stays short, long hair long.
+CUT_ALTERNATIVES={'short':('part','side','quiff','buzz','mullet'),'part':('side','short','quiff'),'messy':('curls','side','short','part'),
+                  'close':('buzz','quiff','part'),'receding':('bald','close','buzz'),'long':('fringe','tied','bob'),'bun':('tied','bob','fringe'),
+                  'ponytail':('tied','braids','fringe'),'braids':('pigtails','ponytail','tied'),'coils':('curls',)}
+CHILD_CUT_ALTERNATIVES={'short':('part','curls','side','messy','buzz','quiff'),'messy':('curls','part','side','buzz'),'part':('side','messy'),
+                        'long':('pigtails','fringe','bob','braids'),'ponytail':('pigtails','braids','fringe'),'close':('buzz','part')}
+# A cut that a costume or a cap covers stays as it is.
+COVERED=('yarn','mop','hood','ghost','pillow','wraps','scarecrow')
+COVERING_MARKS=('swim_cap','cottage_bowler','pizza_visor','movie_cap','knight')
+
+
+# The children whose sheets do not say so (they are made small in the game by the actor's own size): their noses and jaws stay a
+# child's, and their builds are a child's.
+CHILDREN=re.compile(r'trailer_child_\d|lake_boy|literary_movie_jamie|literary_polybius_kid_|literary_family_child|seance_daughter|'
+                    r'ghosts_merry|caged_child|literary_winter_|literary_costume_(danny|kaylee|owen|pip)$|literary_brother')
+
+
+def is_child(name,look):
+    return look.face_style in ('child','young_teen') or bool(CHILDREN.match(name))
+
+
+# Sheets that are made alike on purpose and stay alike: the King's two brothers in the wood, "alike as two buttons" (0.4.643).
+SAME_MAKE={'literary_king_dee':'literary_king_dum'}
+
+
+# The words a person's other sheets are named by: the same person changed, hurt, dressed for another day, or seen another way.
+VARIANTS={'aside','bandaged','bare','cap','changed','coat','cut','day','dead','despair','dinner','exhausted','grown','hand','leer','mangled',
+          'memory','prick','robe','scream','shoes','split','swim','unsure'}
+
+
+def scene_of(name):
+    parts=name.split('_');return '_'.join(parts[:2]) if parts[0] in ('literary','uncanny','borrasca','house') else parts[0]
+
+
+def _rank(name,salt):
+    import hashlib
+    return int(hashlib.sha256((salt+name).encode()).hexdigest()[:8],16)
+
+
+def vary_cast():
+    """Gives each scene's people their own faces, cuts and builds (see above). The same person's sheets (a changed face, a dinner,
+    a bandage) share the make: a person's other sheets are named for them and one of VARIANTS."""
+    import itertools
+    scenes={}
+    for name,look in LOOKS.items():scenes.setdefault(scene_of(name),[]).append(name)
+    combos=list(itertools.product(BROWS,EYESETS,NOSES,MOUTHS,JAWS))
+    for scene,names in scenes.items():
+        # One person's sheets: a sheet named for another and one of the words a person's own changes are named by (a dancer's
+        # despair, the family changed, a day's clothes, a bandage) is that person. Anyone else is someone else, whatever they share.
+        people={}
+        def person(name):
+            if name in SAME_MAKE:return person(SAME_MAKE[name])
+            base=next((o for o in names if name.startswith(o+'_') and name[len(o)+1:] in VARIANTS),None)
+            return person(base) if base else name
+        for name in sorted(names):people.setdefault(person(name),[]).append(name)
+        chosen=[];used_cuts=[];builds=[]
+        for key,sheets in sorted(people.items()):
+            first=LOOKS[sheets[0]];child=is_child(sheets[0],first);kept=sheets[0].startswith(KEPT_FACES)
+            change={'classic':True} if kept else {'varied':True}
+            if not kept and all(plain_face(LOOKS[n]) for n in sheets) and not (first.brow or first.eyeset or first.nose or first.mouth or first.jaw):
+                own=[c for c in combos if not child or (c[2]=='' and c[4]=='')]
+                own.sort(key=lambda c:_rank(sheets[0]+repr(c),'face'))
+                need=2 if child else 3
+                pick=next((c for c in own if all(sum(a!=b for a,b in zip(c,o))>=need for o,ch in chosen if ch==child)),own[0])
+                chosen.append((pick,child));change.update(brow=pick[0],eyeset=pick[1],nose=pick[2],mouth=pick[3],jaw=pick[4])
+            cut=first.cut
+            covered=bool(set(first.costume.split())&set(COVERED)) or first.mark in COVERING_MARKS
+            if not kept and not covered and cut in used_cuts:
+                for alt in (CHILD_CUT_ALTERNATIVES if child else CUT_ALTERNATIVES).get(cut,()):
+                    if alt not in used_cuts:change['cut']=alt;cut=alt;break
+            used_cuts.append(cut)
+            build=next((DESCRIBED_BUILDS[n] for n in sheets if n in DESCRIBED_BUILDS),'')
+            if not build and not first.build and not kept:
+                options=('','slight','stocky','thin','short','heavy') if child else ('','tall','short','broad','heavy','stocky','thin','lanky','slight')
+                if first.age>=2 and not child:options=('','short','stocky','heavy','thin','slight')
+                ranked=sorted(options,key=lambda b:_rank(sheets[0]+b,'build'))
+                build=next((b for b in ranked if b not in builds),ranked[0])
+            builds.append(build or first.build)
+            if build:change['build']=build
+            if change:
+                for n in sheets:
+                    was=LOOKS[n];LOOKS[n]=replace(was,**change)
+                    # The hotel's and the club's people are known by their looks (their hat shelf, their phone): a changed look is still theirs.
+                    if was in HOTEL:HOTEL.append(LOOKS[n])
+                    if was in [v for _,v in CLUB]:CLUB.append(('varied',LOOKS[n]))
+
+
+vary_cast()
+
+
+def builds_json():
+    """cast_builds.json: each painted sheet whose person is not of the common build, by its texture's name."""
+    rows={name:dict(zip(('height','shoulders','depth','limbs'),BUILDS[look.build])) for name,look in sorted(LOOKS.items()) if look.build}
+    return json.dumps(rows,indent=1,sort_keys=True)+'\n'
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');args=parser.parse_args()
     paintings={name:paint(look) for name,look in LOOKS.items()}
@@ -2425,7 +3040,11 @@ def main():
             with Image.open(path) as saved:
                 assert saved.size==im.size and saved.convert('RGBA').tobytes()==im.tobytes(),name
         else:im.save(path,optimize=True)
-    print(f'{"Verified" if args.check else "Painted"} {len(paintings)} face-fitted character sheets, including Drisking and the recent human cast.')
+    # 0.4.679: the builds, read by the renderers (client.CastBuilds).
+    builds=OUT.parents[1]/'cast_builds.json'
+    if args.check:assert builds.read_text()==builds_json(),'cast_builds.json differs from the builds the painter gives'
+    else:builds.write_text(builds_json())
+    print(f'{"Verified" if args.check else "Painted"} {len(paintings)} face-fitted character sheets, including Drisking and the recent human cast, and {builds_json().count(chr(34)+"height")} builds.')
 
 
 if __name__=='__main__':main()

@@ -44,6 +44,32 @@ public final class CharacterArtVisualProof extends Screen {
         }
         verifyHarrigan();
         verifyPellFaces();
+        verifyBuilds();
+    }
+    /**
+     * 0.4.679: every build in cast_builds.json is one the cast can wear, and is taken off again whole: one model draws everyone in a
+     * scene, so a build left on it would be the next person's too. The head is never stretched with the body.
+     */
+    private static void verifyBuilds(){
+        var mc=Minecraft.getInstance();int built=0;
+        try(var reader=mc.getResourceManager().openAsReader(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"cast_builds.json"))){
+            for(var e:JsonParser.parseReader(reader).getAsJsonObject().entrySet()){
+                var m=new LiteraryRenderers.CastModel(mc.getEntityModels().bakeLayer(LiteraryRenderers.CAST));m.young=false;
+                var parts=List.of(m.head,m.hat,m.body,m.rightArm,m.leftArm,m.rightLeg,m.leftLeg);
+                var before=new ArrayList<List<Float>>();for(var part:parts)before.add(List.of(part.x,part.y,part.z,part.xRot,part.yRot,part.zRot,part.xScale,part.yScale,part.zScale));
+                var pose=new PoseStack();var texture=texture(e.getKey());var b=CastBuilds.of(texture);
+                if(b==null)throw new IllegalStateException("A build is not found by its own sheet: "+e.getKey());
+                if(b.height()<.8F||b.height()>1.12F||b.shoulders()<.7F||b.shoulders()>1.25F||b.depth()<.7F||b.depth()>1.35F||b.limbs()<.7F||b.limbs()>1.2F)
+                    throw new IllegalStateException("A build past what a person is: "+e.getKey()+" "+b);
+                var saved=CastBuilds.apply(m,texture,false,pose);
+                if(b.height()!=1&&Math.abs(m.head.yScale*b.height()-1)>.001F)throw new IllegalStateException("A build stretches the head: "+e.getKey());
+                CastBuilds.restore(saved);
+                var after=new ArrayList<List<Float>>();for(var part:parts)after.add(List.of(part.x,part.y,part.z,part.xRot,part.yRot,part.zRot,part.xScale,part.yScale,part.zScale));
+                if(!after.equals(before))throw new IllegalStateException("A build is left on the model after drawing: "+e.getKey());
+                built++;
+            }
+        }catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
+        if(built<200)throw new IllegalStateException("Too few builds: "+built);
     }
     /**
      * 0.4.569: the Pell house's people's painted faces (PellFaces, tools/draw_pell_faces.py). Each sheet is the size its looks make; on
@@ -217,7 +243,11 @@ public final class CharacterArtVisualProof extends Screen {
         // as in a mirror: a number on a jersey read backwards here and the right way round in the game. Turned over across x, the
         // sheet shows what the game shows.
         p.pushPose();p.translate(cx,cy,180);p.scale(-scale,scale,scale);p.translate(-(bounds.x0+bounds.x1)/2,-(bounds.y0+bounds.y1)/2,0);p.mulPose(Axis.YP.rotationDegrees(yaw));p.mulPose(Axis.XP.rotationDegrees(pitch));
+        // 0.4.679: each person in their own build (CastBuilds), sized from the common build's bounds, so a tall or broad person reads
+        // taller or broader than their neighbours on the sheet, as in the game.
+        var built=CastBuilds.apply(model,skin,false,p);
         model.renderToBuffer(p,out.getBuffer(RenderType.entityCutoutNoCull(skin)),LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY,-1);
+        CastBuilds.restore(built);
         if(model instanceof GoatmanFigureModel<?> goat)GoatmanHorns.render(goat,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         if(skin.getPath().endsWith("literary_snow_rabbit.png"))HolyRabbitRenderer.markings(Minecraft.getInstance().getEntityModels().bakeLayer(HolyRabbitRenderer.MARKS),false,0,0,p,out,LightTexture.FULL_BRIGHT,OverlayTexture.NO_OVERLAY);
         out.endBatch();p.popPose();
