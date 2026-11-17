@@ -2,6 +2,7 @@
 
 The place has only its everyday sounds in this part: the wind going over the wheat, the insects in it, the radio on the back shelf
 playing a ball game a long way off, and the bell on the pump. Nothing in them is frightening; what the afternoon becomes comes later.
+0.4.673 adds the afternoon's: the register ringing up a sale, a wrench working under the car on the lift, coins left on the counter.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -15,6 +16,9 @@ ROWS = {
     'insects': ('Insects buzz in the wheat', 16),
     'radio': ('A radio plays a ball game', 12),
     'bell': ('The pump\'s bell rings', 24),
+    'register': ('A cash register rings up a sale', 16),
+    'wrench': ('A wrench works under a car', 16),
+    'coins': ('Coins are set down on a counter', 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -111,7 +115,63 @@ def bell():
     return out + click
 
 
-MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell}
+def register():
+    # An old mechanical register ringing up a sale: two keys going down with a clack each, the crank's whirr, the bell struck once,
+    # bright and ringing on, and the drawer shooting out on its spring to a wooden knock.
+    n = seconds(1.6)
+    t = times(n)
+    out = np.zeros(n)
+    for at in (.02, .16):
+        x = t - at
+        on = x >= 0
+        out += band(rng.standard_normal(n), 900, 5000) * np.exp(-np.clip(x, 0, None) / .012) * on * .8
+        out += np.sin(2 * np.pi * 420 * x) * np.exp(-np.clip(x, 0, None) / .02) * on * .4
+    whirr = (t >= .28) & (t < .5)
+    out += band(rng.standard_normal(n), 300, 1800) * whirr * (.25 + .15 * np.sin(2 * np.pi * 38 * t))
+    x = t - .52
+    on = x >= 0
+    out += (np.sin(2 * np.pi * 2650 * x) + .5 * np.sin(2 * np.pi * 4010 * x) + .25 * np.sin(2 * np.pi * 6300 * x)) * np.exp(-np.clip(x, 0, None) / .4) * on * .9
+    x = t - .6
+    on = x >= 0
+    out += band(rng.standard_normal(n), 200, 2200) * np.exp(-np.clip(x, 0, None) / .05) * on * .5
+    x = t - .7
+    on = x >= 0
+    out += (band(rng.standard_normal(n), 120, 900) * .7 + np.sin(2 * np.pi * 160 * x)) * np.exp(-np.clip(x, 0, None) / .03) * on
+    return out
+
+
+def wrench():
+    # A ratchet wrench turning a bolt up under a car: a run of quick metal clicks, a pause as the hand comes back, another run, and a
+    # little knock of the socket against the frame.
+    n = seconds(1.8)
+    t = times(n)
+    out = np.zeros(n)
+    for start in (.05, .75):
+        for k in range(9):
+            x = t - (start + k * .055)
+            on = x >= 0
+            ping = np.sin(2 * np.pi * (3100 + 120 * (k % 3)) * x) * np.exp(-np.clip(x, 0, None) / .008)
+            out += (band(rng.standard_normal(n), 2500, 9000) * np.exp(-np.clip(x, 0, None) / .004) + .5 * ping) * on * (.7 + .3 * (k % 2))
+    x = t - 1.45
+    on = x >= 0
+    out += (np.sin(2 * np.pi * 740 * x) + .6 * np.sin(2 * np.pi * 1310 * x)) * np.exp(-np.clip(x, 0, None) / .06) * on * .6
+    return out
+
+
+def coins():
+    # A few coins set down on a counter one after another: each a short bright ring on its edge and a tick as it lies flat.
+    n = seconds(1.0)
+    t = times(n)
+    out = np.zeros(n)
+    for at, f, level in ((.03, 5200, 1.0), (.17, 6100, .8), (.26, 4700, .7), (.41, 5600, .5)):
+        x = t - at
+        on = x >= 0
+        out += (np.sin(2 * np.pi * f * x) + .5 * np.sin(2 * np.pi * f * 1.48 * x)) * np.exp(-np.clip(x, 0, None) / .07) * on * level
+        out += band(rng.standard_normal(n), 3000, 10000) * np.exp(-np.clip(x, 0, None) / .003) * on * level * .6
+    return out
+
+
+MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins}
 
 
 def main():

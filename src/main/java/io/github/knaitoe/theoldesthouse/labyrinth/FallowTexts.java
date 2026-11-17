@@ -147,8 +147,53 @@ public final class FallowTexts {
                 case 2->"The trailer's back doors, sealed with a wire tag.";
                 default->"The side of the trailer, dusty enough to write in. Nobody has.";
             };
+            case BEAN->switch(stage){
+                case 1->"The bean has put out two more leaves since it was set down.";
+                case 2->"The bean has grown over the rim of its cup and leans out after the light.";
+                case 3->"The bean has grown long and thin in the dark, its leaves open wide, a tendril feeling for something to hold.";
+                default->"A paper cup of dirt with a bean come up in it, two leaves open. OPAL is written on the cup in pencil, the letters going downhill.";
+            };
         };
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.673, the afternoon
+    /** The register rung up for someone waiting; the drawer opened on nobody. */
+    public static final String RING="The keys go down, the bell rings and the drawer jumps out. The money goes in.",
+        RING_NOTHING="The drawer jumps out on its spring. Nobody is waiting to pay.",
+        COINS_LEFT="Coins clink on the counter by the register.";
+    /** Harlan's chore for a reader, in the four ways the House's read lets him address them: minding the till; keeping Opal company. */
+    public static final String[] TILL={"Do me a favor and mind the till while I'm under that car. Ring up whatever they bring you.",
+        "Do me a favor, sir, and mind the till while I'm under that car. Ring up whatever they bring you.",
+        "Do me a favor, ma'am, and mind the till while I'm under that car. Ring up whatever they bring you.",
+        "Do me a favor, friend, and mind the till while I'm under that car. Ring up whatever they bring you."};
+    public static final String[] COMPANY={"Keep the little one company while her mama sees about the car? She's been on that step since noon.",
+        "Keep the little one company, son, while her mama sees about the car? She's been on that step since noon.",
+        "Keep the little one company, honey, while her mama sees about the car? She's been on that step since noon.",
+        "Keep the little one company, kid, while her mama sees about the car? She's been on that step since noon."};
+    /** Harlan under the car, to a reader with a chore: the first time, then the second each time after. */
+    public static String working(boolean till,int heard){
+        if(till)return heard==0?"Drawer sticks. Give it the heel of your hand.":"Gas is on the honor. Just ring up what they take from the store.";
+        return heard==0?"She's no trouble. Talks about that bean like it was a dog.":"Her mama's had a long day. You're doing her a kindness.";
+    }
+    /** Boyd and Harlan at the car, in turn, overheard. */
+    public static final String[][] AT_THE_CAR={{"Boyd","You said an hour an hour ago."},{"Harlan","Fuel pump's off a different year. I'm making it fit."},
+        {"Boyd","Make it fit faster."}};
+    /** Opal asking for her bean down out of the car, and Harlan handing it to her. */
+    public static final String ASK_BEAN="Can I have my bean? It needs the sun.",HAND_BEAN="Here. Hold it level, now.";
+    /** Opal by her bean, to whoever keeps her company, in order. */
+    public static final String[] BEAN_TALK={"It's a bean. It came up in a cup at school, and I got to bring it.",
+        "You can touch the leaf. Gentle.",
+        "Boyd says it won't live in a cup. It's living.",
+        "When we get to my aunt's I'm going to put it in the ground by her porch."};
+    /** At the counter: Faye, Otis and the stranger, each asking, thanking whoever rang them up, or leaving the money. */
+    public static final String[][] CUSTOMER={{"Just the milk.","Thank you.","I'll leave it by the register."},
+        {"The coffee, and twenty on the diesel.","Obliged.","Money's on the counter, Harlan."},
+        {"Just the pop.","Keep the change.","That ought to cover it."}};
+    /** The stranger: to Opal, to himself when she does not answer, to a reader, and after. */
+    public static final String STRANGER_GREETS="Hot one.",ASKS_NAME="That's a fine bean. What's your name?",NAMES_KEEP="That's all right. Names keep.",
+        ASKS_TIME="Got the time?",TIME_ANSWER="Almost five.",SAY_NOTHING="Say nothing.",ANSWERED="Later than I thought.",UNANSWERED="Doesn't matter.";
+    /** The stranger has no name; the conversation panel calls him this. */
+    public static final String STRANGER_LABEL="The man";
 
     /** The five's lines: the first time, then the second each time after. */
     public static String line(int who,int heard){

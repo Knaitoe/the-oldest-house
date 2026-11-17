@@ -838,6 +838,8 @@ public final class PellTexts {
         case "a_sort_of_thing"->"I shook the King to see if he would wake.";
         // 0.4.666 (run 1700: the forged lines missed Not Yet).
         case "not_yet"->"I got up the first time it called my name.";
+        // 0.4.673 (run 1705: the forged lines missed Last Seen).
+        case "last_seen"->"I kept one of the folders back and never said whose face was in it.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

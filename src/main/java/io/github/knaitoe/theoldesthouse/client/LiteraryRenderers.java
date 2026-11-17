@@ -587,6 +587,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase()))drawing(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Corner.cast(a.phase()))corner(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.cast(a.phase()))lastSeen(a.gesture(),age);
+            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Fallow.cast(a.phase()))fallow(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.cast(a.phase()))gus(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.cast(a.phase()))bully(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.cast(a.phase()))people(a,a.gesture(),age);
@@ -1073,6 +1074,37 @@ public final class LiteraryRenderers {
                 // 0.4.670: a man's flashlight held out ahead of him at shoulder height, turned a little as it sweeps; the length of wood hangs
                 // from the other hand.
                 case io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.FLASH->{rightArm.xRot=-1.32F;rightArm.yRot=-.08F+(float)Math.sin(age*.04F)*.12F;rightArm.zRot=0;leftArm.xRot=.12F;leftArm.zRot=-.06F;head.xRot=.12F;}
+                default->{}
+            }
+            hat.copyFrom(head);
+        }
+        /**
+         * 0.4.673, Fallow: both hands up into the car on the lift, the wrench turning in one, the head back to see; an arm reaching up into
+         * the car or out to a cooler's shelf; a paper cup carried in both hands at the chest, the head bent to it; kneeling on the
+         * forecourt beside the bean, sitting back on the heels, the hands in the lap and the head bowed to it; the pot tipped over a cup.
+         */
+        void fallow(int gesture,float age){
+            switch(gesture){
+                case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.WORK->{
+                    float turn=net.minecraft.util.Mth.sin(age*.35F);
+                    rightArm.xRot=-2.7F+turn*.12F;rightArm.yRot=-.15F;rightArm.zRot=turn*.06F;leftArm.xRot=-2.85F;leftArm.yRot=.2F;leftArm.zRot=0;head.xRot=-.7F;
+                }
+                case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.REACH->{rightArm.xRot=-2.1F;rightArm.yRot=-.1F;rightArm.zRot=0;leftArm.xRot=-.2F;head.xRot=-.35F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.CUP->{rightArm.xRot=leftArm.xRot=-.95F;rightArm.yRot=-.42F;leftArm.yRot=.42F;rightArm.zRot=leftArm.zRot=0;head.xRot=.4F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.KNEEL->{
+                    // As June kneels at the line (PAINT): the hips a thigh above the ground over the knees, the shins in the ground behind
+                    // them; here upright but for a little lean, and the head bowed over the cup on the ground beside her.
+                    float lean=.3F,c=net.minecraft.util.Mth.cos(lean),sn=net.minecraft.util.Mth.sin(lean),hips=18;
+                    leftLeg.y=rightLeg.y=hips;leftLeg.z=rightLeg.z=0;leftLeg.xRot=rightLeg.xRot=-.1F;leftLeg.yRot=-.05F;rightLeg.yRot=.05F;leftLeg.zRot=rightLeg.zRot=0;
+                    body.xRot=lean;body.y=hips-12*c;body.z=-12*sn;
+                    head.y=body.y;head.z=body.z;head.xRot=lean+.55F+net.minecraft.util.Mth.sin(age*.05F)*.03F;head.yRot=0;head.zRot=0;
+                    leftArm.y=rightArm.y=body.y+2*c;leftArm.z=rightArm.z=body.z+2*sn;
+                    rightArm.xRot=-.55F;rightArm.yRot=-.25F;rightArm.zRot=0;leftArm.xRot=-.5F;leftArm.yRot=.3F;leftArm.zRot=0;
+                }
+                case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.POUR->{
+                    float tip=net.minecraft.util.Mth.sin(age*.08F)*.05F;
+                    rightArm.xRot=-1.25F;rightArm.yRot=-.2F;rightArm.zRot=.35F+tip;leftArm.xRot=-.95F;leftArm.yRot=.35F;leftArm.zRot=0;head.xRot=.35F;
+                }
                 default->{}
             }
             hat.copyFrom(head);

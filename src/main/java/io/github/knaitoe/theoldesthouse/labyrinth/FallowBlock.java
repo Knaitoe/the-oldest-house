@@ -38,6 +38,8 @@ import net.minecraft.world.phys.shapes.*;
  * <li>The rig. RIG: a slice of the cab, each drawn whole across both its cells: the hood (0, 1), the cab (2, 3), the sleeper (4, 5),
  * the roof over the cab and sleeper (6), and the other half of a slice, which only stands in the way (7). BOX: the trailer's two axles
  * (0), its landing legs (1), its back doors (2), a half that only stands in the way (3).</li>
+ * <li>0.4.673, BEAN: Opal's bean in its paper cup, set down on the forecourt: two leaves (0), four (1), a tangle as high again as the
+ * cup (2), grown long and thin in the dark (3). Nothing stands in its way.</li>
  * </ul>
  */
 public final class FallowBlock extends HorizontalDirectionalBlock {
@@ -45,7 +47,7 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         COUNTER,NOTE,STOOL,BACKSHELF,TV,COOLER,GONDOLA,MAPS,COFFEE,WINDOW,TUBE,SIGNBAND,
         PUMP,ISLAND,CANOPY,SIGN,POLE,WHEAT,PAD,
-        LIFT,TRAILER,CELLAR,CELLAR_OPEN,SHELF,COT,CROCK,FARM,RIG,BOX;
+        LIFT,TRAILER,CELLAR,CELLAR_OPEN,SHELF,COT,CROCK,FARM,RIG,BOX,BEAN;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -103,6 +105,7 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
             case CROCK->stage==0?Block.box(4,0,4,12,10,12):Block.box(5,3,5,11,16,11);
             case FARM->switch(stage){case 0->Shapes.block();case 1->Block.box(6,0,6,10,16,10);case 2->t(f,0,0,7,16,13,9);default->Block.box(5,0,5,11,16,11);};
             case RIG,BOX->Shapes.block();
+            case BEAN->Block.box(4,0,4,12,stage==0?11:16,12);
         };
     }
     /** What stands in the way: the fittings with bodies, the shut cellar doors, the fences and the rig; not wheat, lights, signs above
@@ -110,7 +113,7 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         int stage=s.getValue(STAGE);
         return switch(s.getValue(KIND)){
-            case NOTE,TUBE,WHEAT,SIGNBAND->Shapes.empty();
+            case NOTE,TUBE,WHEAT,SIGNBAND,BEAN->Shapes.empty();
             case POLE->stage==0?getShape(s,l,p,c):Shapes.empty();
             case CANOPY->stage>=4?getShape(s,l,p,c):Shapes.empty();
             case SIGN->stage==0?getShape(s,l,p,c):Shapes.empty();

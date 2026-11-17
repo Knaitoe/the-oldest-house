@@ -1868,6 +1868,118 @@ def mud_flap():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ the afternoon (0.4.673)
+def bean_cup():
+    # A waxed paper cup from a school's lunch line, a little crushed at the rim: its side is laid out in the 6 x 6 square from (5, 9),
+    # a ring of print round its middle and her pencil going downhill across it under the rim.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 5, 9, 11, 15, '#ece6d6')
+    for x in range(5, 11):
+        dot(im, x, 9, '#f8f4ea')
+        dot(im, x, 12, '#7d93a8' if x % 2 else '#9fb1c2')
+        dot(im, x, 14, '#d8d0bc')
+    # her pencil: one faint stroke, not a mark, so that from a step away it is writing and not a pair of dark spots
+    for x, y in ((5, 10), (6, 10), (7, 10), (8, 11), (9, 11), (10, 11)):
+        dot(im, x, y, '#a8a49c')
+    dot(im, 10, 13, '#d8d0bc')
+    return im
+
+
+def bean_soil():
+    im = new('#4e3a26', 73310, 3)
+    rnd = random.Random(73311)
+    speckle(im, rnd, 6, ['#66503a', '#3a2a1c', '#7c6448'], (5, 5, 11, 11))
+    dot(im, 7, 7, '#8e7656'); dot(im, 9, 9, '#33251a')
+    return im
+
+
+def bean_plant(stage):
+    # The bean come up in the cup: its stem and its leaves, heart-shaped and veined, on a sheet that is clear everywhere else. Two
+    # leaves; then a third and a fourth; then a tangle as high again as the cup; then, grown in the dark, long, thin and pale, its leaves
+    # wide and its tendril reaching.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    stem, lit, dark, vein = ('#6f9a3c', '#8cbc4a', '#5a8430', '#b6d878') if stage < 3 else ('#b8c48a', '#d6dca4', '#a2ad74', '#eef0c8')
+
+    def leaf(x, y, left):
+        # a blade from its stalk at (x, y), broad near the stalk and pointed at the far end, tipped up a little, its midrib along it
+        rows = ['..###..', '.#####.', '#######', '.######', '...###.', '.....#.']
+        for j, row in enumerate(rows):
+            for i, c in enumerate(row):
+                if c == '#':
+                    dot(im, x - i if left else x + i, y - 4 + j, dark if j >= 3 or (j == 2 and i == 6) else lit)
+        for i in range(1, 6):
+            dot(im, x - i if left else x + i, y - 2 + i // 3, vein)
+    if stage == 0:
+        line(im, 8, 15, 8, 11, stem)
+        leaf(7, 12, True); leaf(9, 12, False)
+    elif stage == 1:
+        line(im, 8, 15, 8, 6, stem)
+        leaf(7, 13, True); leaf(9, 11, False); leaf(8, 8, False)
+    elif stage == 2:
+        line(im, 8, 15, 8, 2, stem)
+        leaf(7, 14, True); leaf(9, 12, False); leaf(7, 9, True); leaf(9, 6, False)
+        dot(im, 7, 1, stem); dot(im, 6, 0, stem)
+    else:
+        line(im, 8, 15, 8, 1, stem)
+        leaf(7, 14, True); leaf(9, 10, False); leaf(7, 6, True)
+        for x, y in ((9, 1), (10, 0), (11, 1), (12, 0)):
+            dot(im, x, y, stem)
+    return im
+
+
+def milk_carton():
+    # A quart of milk in a waxed carton, seen a little from one side: the front and its narrower side face, the roof sloping back
+    # from the front to the folded fin along the top, the gable's triangle over the side, and a band of print round it with a drop.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 4, 6, 10, 15, '#f2efe6')
+    fill(im, 10, 6, 12, 15, '#d6d2c6')
+    fill(im, 4, 3, 10, 6, '#e4e0d4')
+    for x in range(4, 10):
+        dot(im, x, 3, '#d2cdc1')
+    fill(im, 4, 1, 10, 3, '#f6f4ee')
+    for y, x1 in ((2, 11), (3, 11), (4, 12), (5, 12)):
+        fill(im, 10, y, x1, y + 1, '#c8c4b8')
+    fill(im, 4, 8, 10, 13, '#3f6f9e')
+    fill(im, 10, 8, 12, 13, '#34608a')
+    dot(im, 7, 9, '#f2efe6'); fill(im, 6, 10, 8, 12, '#f2efe6')
+    for y in range(6, 15):
+        dot(im, 4, y, '#fbfaf6')
+    for x in range(4, 12):
+        dot(im, x, 15, '#b8b4a8')
+    return im
+
+
+def soda_bottle():
+    # A bottle of pop with its cap on: thick glass going up into a neck, a paper label round its middle, the light along one side.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 7, 0, 9, 1, '#b0b4b8')
+    fill(im, 7, 1, 9, 5, '#4e7a58')
+    fill(im, 6, 5, 10, 7, '#4e7a58')
+    fill(im, 5, 7, 11, 16, '#46704f')
+    fill(im, 5, 9, 11, 13, '#c43a2c')
+    fill(im, 6, 10, 10, 12, '#e8dccb')
+    for y in range(2, 15):
+        dot(im, 6 if y >= 7 else 7, y, '#86b08e')
+    for x in range(5, 11):
+        dot(im, x, 15, '#33553b')
+    return im
+
+
+def coffee_cup():
+    # A paper cup of coffee from the machine: a band round it, the coffee just under its rim, a little steam going off it.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for y in range(7, 16):
+        inset = (y - 7) // 4
+        fill(im, 4 + inset, y, 12 - inset, y + 1, '#efebe0')
+    fill(im, 4, 7, 12, 8, '#3a2416')
+    fill(im, 5, 10, 11, 12, '#9a6a3c')
+    for y in range(8, 15):
+        dot(im, 5 + (y - 7) // 4, y, '#fbf8f0')
+    for x, y, a in ((7, 5, 120), (8, 4, 100), (7, 3, 80), (9, 2, 60), (8, 1, 40)):
+        dot(im, x, y, '#e8e8e8', a)
+    return im
+
+
 # ------------------------------------------------------------------------------------------------ models
 def element(lo, hi, textures, uv=None, rotation=None):
     faces = {}
@@ -2392,7 +2504,23 @@ def fitting_models():
         m[f'pad_{s}'] = pad_model(s); m[f'trailer_{s}'] = trailer_model(s); m[f'rig_{s}'] = rig_model(s)
     for s in range(6):
         m[f'cellar_{s}'] = cellar_model(s, False); m[f'cellar_open_{s}'] = cellar_model(s, True)
+    for s in range(4):
+        m[f'bean_{s}'] = bean_model(s)
     return m
+
+
+def bean_model(stage):
+    # Opal's bean in its paper cup on the ground (0.4.673): the cup six pixels across with its rolled rim, the soil a little below the
+    # rim, and the plant on two crossed sheets, as vanilla's own saplings stand, taller at each stage.
+    t = {'c': 'bean_cup', 's': 'bean_soil', 'b': f'bean_{stage}'}
+    h = (8, 13, 16, 16)[stage]
+    side = {k: [5, 9, 11, 15] for k in ('north', 'south', 'east', 'west', 'down')}
+    e = [element([5, 0, 5], [11, 5.5, 11], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'down': 'c', 'up': 's'}, uv={**side, 'up': [5, 5, 11, 11]}),
+         element([4.75, 5, 4.75], [11.25, 6, 11.25], {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c'}, uv={k: [5, 9, 11, 10] for k in ('north', 'south', 'east', 'west')})]
+    for angle in (45, -45):
+        e.append(element([2, 5.5, 8], [14, 5.5 + h, 8], {'north': 'b', 'south': 'b'}, uv={'north': [2, 16 - h, 14, 16], 'south': [2, 16 - h, 14, 16]},
+                         rotation={'angle': angle, 'axis': 'y', 'origin': [8, 8, 8]}))
+    return model(e, t, 'bean_cup')
 
 
 def textures():
@@ -2425,24 +2553,38 @@ def textures():
         'porch_paint': porch_paint(), 'mailbox': mailbox(), 'mailbox_front': mailbox_front(), 'flag': flag(), 'rig_paint': rig_paint(),
         'rig_door': rig_door(), 'rig_cab_side': rig_cab_side(), 'windshield': windshield(), 'grille': grille(),
         'tyre_tread': tyre_tread(), 'hub': hub(), 'headlight': headlight(), 'sleeper_side': sleeper_side(), 'box_doors': box_doors(),
-        'box_frame': box_frame(), 'mud_flap': mud_flap(),
+        'box_frame': box_frame(), 'mud_flap': mud_flap(), 'bean_cup': bean_cup(), 'bean_soil': bean_soil(),
     }
     faces['wire'] = wire()            # the racks' wire; the telephone line has its own below
     faces['line_wire'] = wire_tex()
     for i in range(4):
         faces[f'signband_{i}'] = signband(i)
         faces[f'wheat_{i}'] = wheat(i)
+        faces[f'bean_{i}'] = bean_plant(i)
     for name, im in faces.items():
         out[f'block/fallow/{name}.png'] = im
+    # 0.4.673: what the afternoon's people carry: a quart of milk, a bottle of pop, a cup from the machine (the bean's cup is its block).
+    for name, draw in ITEM_ART.items():
+        out[f'item/fallow_{name}.png'] = draw()
     return out
 
 
 KINDS = ['counter', 'note', 'stool', 'backshelf', 'tv', 'cooler', 'gondola', 'maps', 'coffee', 'window', 'tube', 'signband', 'pump',
          'island', 'canopy', 'sign', 'pole', 'wheat', 'pad', 'lift', 'trailer', 'cellar', 'cellar_open', 'shelf', 'cot', 'crock', 'farm',
-         'rig', 'box']
+         'rig', 'box', 'bean']
 STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 2, 'signband': 4, 'pump': 4, 'island': 2,
           'canopy': 7, 'sign': 3, 'pole': 5, 'wheat': 4, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
-          'cot': 2, 'crock': 3, 'farm': 4, 'rig': 8, 'box': 4}
+          'cot': 2, 'crock': 3, 'farm': 4, 'rig': 8, 'box': 4, 'bean': 4}
+ITEM_ART = {'milk': milk_carton, 'soda': soda_bottle, 'coffee': coffee_cup}
+ITEM_NAMES = {'fallow_milk': 'Quart of Milk', 'fallow_soda': 'Bottle of Pop', 'fallow_coffee': 'Cup of Coffee', 'fallow_bean_cup': 'Bean in a Cup'}
+# The bean's cup held in a hand: its block model, turned and sized as vanilla holds a block, a little larger since the cup is small.
+BEAN_HELD = {'gui': {'rotation': [30, 225, 0], 'translation': [0, 2, 0], 'scale': [1, 1, 1]},
+             'ground': {'rotation': [0, 0, 0], 'translation': [0, 3, 0], 'scale': [0.5, 0.5, 0.5]},
+             'fixed': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [0.75, 0.75, 0.75]},
+             'thirdperson_righthand': {'rotation': [0, 45, 0], 'translation': [0, 1, 2.5], 'scale': [0.6, 0.6, 0.6]},
+             'thirdperson_lefthand': {'rotation': [0, 45, 0], 'translation': [0, 1, 2.5], 'scale': [0.6, 0.6, 0.6]},
+             'firstperson_righthand': {'rotation': [0, 45, 0], 'translation': [0, 2, 0], 'scale': [0.7, 0.7, 0.7]},
+             'firstperson_lefthand': {'rotation': [0, 225, 0], 'translation': [0, 2, 0], 'scale': [0.7, 0.7, 0.7]}}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'siding': 'Painted Clapboard', 'plinth': 'Painted Block', 'lino': 'Store Linoleum', 'ceiling': 'Beadboard Ceiling',
@@ -2507,6 +2649,9 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/fallow_fitting.json'] = {'variants': variants}
+    for name in ITEM_ART:
+        out[f'models/item/fallow_{name}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/fallow_{name}'}}
+    out['models/item/fallow_bean_cup.json'] = {'parent': P + 'bean_0', 'display': BEAN_HELD}
     return out
 
 
@@ -2575,7 +2720,7 @@ def main():
     if opts.out and not check:
         print(f'Drew the station under {opts.out}: {len(images)} textures, {len(data)} models and states.'); return
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
-    wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
+    wanted = {**{f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}, **{f'item.the_oldest_house.{k}': v for k, v in ITEM_NAMES.items()}}
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key
