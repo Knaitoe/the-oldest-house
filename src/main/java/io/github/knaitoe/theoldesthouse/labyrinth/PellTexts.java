@@ -836,6 +836,8 @@ public final class PellTexts {
         case "a_little_longer"->"I turned the dial off their station when they weren't looking.";
         // 0.4.645 (run 1680: the forged lines missed A sort of thing).
         case "a_sort_of_thing"->"I shook the King to see if he would wake.";
+        // 0.4.666 (run 1700: the forged lines missed Not Yet).
+        case "not_yet"->"I got up the first time it called my name.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

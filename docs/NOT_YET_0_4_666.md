@@ -149,6 +149,7 @@ Every line below is new in this part.
 | When the far door slid open for me, %s {was} still lying under a lamp in the ward. | Witness page, together, another still lying. |
 | Deep in the machine there is a ward where it mends what it breaks. It would not let me die. I lay down and stayed down, whatever it did, until it looked away. | Witness line (and the advancement's first sentence). |
 | the one from the long room who told the rule, standing | The figure on the stair (not shown as text in play). |
+| I got up the first time it called my name. | The Pell house's forged journal line for this story. Added after run 1700: the Pell house checks that every story has one. |
 
 Advancement: **Not yet**, *Deep in the machine there is a ward where it mends what it breaks.*
 
