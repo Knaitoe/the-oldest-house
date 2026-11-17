@@ -193,7 +193,8 @@ public final class FallowAsh {
             if(ground.is(FallowRegistry.material("ash_ground"))){
                 BuildBlocks.set(l,under,mat("soil"),F);
                 if(st.isAir()||burnt)BuildBlocks.set(l,top,wheatAt(x,z),F);
-            }else if(burnt)BuildBlocks.set(l,top,wheatAt(x,z),F);
+            }else if(burnt)BuildBlocks.set(l,top,ground.is(FallowRegistry.material("yard"))?AIR:wheatAt(x,z),F);
+            // 0.4.683: what came up round Opal's bean in the yard (FallowRoad.green) is not the field's: the yard is bare again.
         }
     }
     /** The opened ground filled again as it was laid: earth, the field's soil, the wheat on it. */

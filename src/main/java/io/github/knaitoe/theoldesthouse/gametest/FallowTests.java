@@ -489,7 +489,7 @@ public final class FallowTests {
      * then down to Opal; Otis carrying Opal and her bean down; Boyd at the rig; the doors pulled shut, Opal counting, and the light, kept
      * by each reader as where it found them, and both taken out by the House.
      */
-    @GameTest(template="empty",batch="fallow_strike",timeoutTicks=6000)
+    @GameTest(template="empty",batch="fallow_strike",timeoutTicks=7500)
     public static void theFourMinutes(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
         f.chunks.hold(l,new AABB(b.getX()-30,b.getY()-8,b.getZ()-118,b.getX()+30,b.getY()+8,b.getZ()-80));
@@ -576,6 +576,11 @@ public final class FallowTests {
         // 0.4.681: the one below stays below, for the buried days (theBuriedDays has them); here they step out of it before the ground is
         // still, as a spectator, so that the afternoon is let go as before.
         .thenExecute(()->{h.assertTrue(FallowSite.inCellar(q.position().subtract(Vec3.atLowerCornerOf(b))),"the one below is still below");q.setGameMode(GameType.SPECTATOR);})
+        // 0.4.683: the station is held for the one the light found out in it (FallowRoad.RETURN_HOLD); they come back, and then go too.
+        .thenIdle(Fallow.EMPTY_FORGET+20)
+        .thenExecute(()->{h.assertTrue(Fallow.afternoon(b)!=null,"with nobody at it, the afternoon is kept");h.assertTrue(FallowRoad.held(b),"with nobody at it, the station is held for them");f.at(p,P,2.5,0,-6.5);})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CameBack"),"they come back"))
+        .thenExecute(()->p.setGameMode(GameType.SPECTATOR))
         // Empty, the afternoon is over; the next begins on the station as it was built, with nobody's shadow on it.
         .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"the afternoon is over"))
         .thenExecute(()->{
@@ -804,6 +809,164 @@ public final class FallowTests {
             h.assertTrue(!door[0]||l.getBlockState(b.offset(FallowSite.ONWARD)).getBlock() instanceof DoorBlock,"with its front door kept");
             h.assertTrue(is(l,b,trunk,Blocks.OAK_LOG)&&is(l,b,yard,Blocks.GRASS_BLOCK),"its windbreak grown and its yard in grass");
             h.assertTrue(!FallowAsh.burnt(l,b),"nothing of the light is left outside");
+        })
+        .thenExecute(()->{done();h.succeed();});
+    }
+    /** Turns a reader to look at a spot (relative to the station) with their eyes, as a client would. */
+    private static void look(ServerPlayer p,BlockPos b,Vec3 rel){p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,Vec3.atLowerCornerOf(b).add(rel));}
+    /** Wheat at a stage within a ring of the bean: cells further than {@code from} and no further than {@code to} blocks from it. */
+    private static boolean wheatRing(ServerLevel l,BlockPos b,BlockPos bean,double from,double to,int stage){
+        int r=(int)Math.ceil(to);
+        for(int x=-r;x<=r;x++)for(int z=-r;z<=r;z++){
+            double d=Math.hypot(x,z);if(d<=from||d>to)continue;
+            var st=l.getBlockState(b.offset(bean.offset(x,0,z)));
+            if(FallowBlock.is(st,FallowBlock.Kind.WHEAT)&&st.getValue(FallowBlock.STAGE)==stage)return true;
+        }
+        return false;
+    }
+
+    /**
+     * 0.4.683, the road (docs/FALLOW_0_4_683.md). One reader out in front at the light and one below; both keep the afternoon's mark. The
+     * one out in it is taken out by the House, and the station is held for them; back, they are told the store has no roof, find their own
+     * shadow on its front by hand (and, a second time, that it does not come off) and Boyd's, an arm up. Dug out on the third day, Otis and
+     * Opal come up and she sits by the steps; a while after, she kneels and sets her bean down in its cup in the yard and sits by it, and
+     * the ground comes up round her a ring at a time: shoots through the yard's dirt and through the ash (the ash going back to soil under
+     * them), young wheat behind them. Some while after, the man is made out on the pads' track where nobody sees him and walks down to the
+     * yard and stands looking at the cellar doors. Seen, somebody is coming down the road, and Otis (Faye is gone) takes Opal down the
+     * steps; the green stops where it reached. Each time he is looked at again, out of everyone's sight between, he has another face:
+     * Harlan's, Boyd's, Otis's, and last the reader's own; the reader who never looked at him keeps none of them. Spoken to, he looks past
+     * the reader at the doors. When all have gone, a fresh afternoon takes the bean up, leaves the yard bare and puts the field back.
+     */
+    @GameTest(template="empty",batch="fallow_road_after",timeoutTicks=14000)
+    public static void theRoad(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        // The station and the yard, and the field north to past where the man is made on the pads' track.
+        f.chunks.hold(l,new AABB(b.getX()-40,b.getY()-8,b.getZ()-118,b.getX()+30,b.getY()+8,b.getZ()+1));
+        var p=f.player("fallow_road_out",P);var q=f.player("fallow_road_below",P);
+        var door=new BlockPos(FallowSite.WELL_E,0,FallowSite.WELL_S);var step=new BlockPos(-14,-2,-10);
+        var heard=new ArrayList<String>();int[] boydX={Integer.MIN_VALUE},ringAt={0};BlockPos[] bean={null};
+        var seq=h.startSequence().thenIdle(5).thenExecute(()->{
+            f.at(p,P,3.5,0,-2.5);f.at(q,P,2.5,0,-2.5);
+            for(var x:new ServerPlayer[]{p,q})f.data().pushReturn(x.getUUID(),new LabyrinthData.Waypoint(l.dimension(),Vec3.atBottomCenterOf(b.offset(0,0,24)),0F,false));
+        }).thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)!=null&&Fallow.find(l,b,Fallow.GIRL)!=null&&Fallow.find(l,b,Fallow.DRIVER)!=null,"the afternoon is on"))
+        .thenExecute(()->{l.setBlock(b.offset(Fallow.BEAN_AT),FallowBlock.of(FallowBlock.Kind.BEAN,Direction.WEST,0),3);FallowStrike.begin(b);})
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=1,"the tone comes on"))
+        .thenExecute(()->FallowStrike.skip(b,FallowStrike.GO-1))
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.otis(b)==FallowStrike.OTIS_BELOW,"Otis carries Opal down: "+FallowStrike.otis(b)))
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.boyd(b)==FallowStrike.AT_RIG,"Boyd is at the rig's door: "+FallowStrike.boyd(b)))
+        .thenExecute(()->{f.at(q,P,-12.5,-3,-13.5);f.at(p,P,-6.6,0,-13.5);FallowStrike.skip(b,FallowStrike.LIGHT-2);})
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=FallowStrike.LIGHT+2,"the light"))
+        .thenExecute(()->{
+            int mark=Fallow.mark(b);
+            h.assertTrue(mark!=0&&f.own(p,P).getInt("Afternoon")==mark&&f.own(q,P).getInt("Afternoon")==mark,"both keep this afternoon's mark: "+mark+" "+f.own(p,P).getInt("Afternoon"));
+            for(int x:FallowRuin.WALL)if(l.getBlockEntity(b.offset(x,0,FallowSite.STORE_N-1)) instanceof FallowShadowBlock.Shadow sh&&sh.person)boydX[0]=x;
+            h.assertTrue(boydX[0]!=Integer.MIN_VALUE,"Boyd's shadow is on the front");
+        })
+        .thenWaitUntil(()->h.assertTrue(!FallowSite.inScene(p.position().subtract(Vec3.atLowerCornerOf(b)))||p.level()!=l,"the reader out in it is taken out by the House"))
+        .thenExecute(()->h.assertTrue(FallowRoad.held(b),"the station is held for them while they have not come back"))
+        // Back through the House's door, into the store under no roof.
+        .thenExecute(()->{told(p);f.at(p,P,2.5,0,-6.5);})
+        .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CameBack"),"they are back"))
+        .thenExecute(()->{
+            heard.addAll(told(p));
+            h.assertTrue(heard.contains(FallowTexts.ARRIVE_AFTER),"and told the store has no roof: "+heard);
+            h.assertFalse(FallowRoad.held(b),"and the station is no longer held for anyone");
+            // A hand on the wall where their shadow lies, twice; then on Boyd's.
+            use(p,b,new BlockPos(-7,1,FallowSite.STORE_N),new BlockPos(-7,0,-15));
+            heard.addAll(told(p));
+            h.assertTrue(f.own(p,P).getBoolean("FoundShadow")&&heard.contains(FallowTexts.FOUND_OWN),"they find their own shadow: "+heard);
+            use(p,b,new BlockPos(-7,1,FallowSite.STORE_N),new BlockPos(-7,0,-15));
+            heard.addAll(told(p));
+            h.assertTrue(heard.contains(FallowTexts.OWN_ON_HAND),"and it does not come off on the hand");
+            use(p,b,new BlockPos(boydX[0],1,FallowSite.STORE_N),new BlockPos(boydX[0],0,-15));
+            heard.addAll(told(p));
+            h.assertTrue(heard.contains(FallowTexts.SHADOW_REACHING.formatted("Boyd")),"and Boyd's, an arm up: "+heard);
+            h.assertTrue(f.own(p,P).getInt("OthersShadows")==0,"his is one of the five's, not another reader's");
+            FallowBuried.skip(b,FallowBuried.DAY*FallowBuried.COOL_DAY+20);
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowBuried.day(b)==FallowBuried.COOL_DAY,"the third day"))
+        .thenExecute(()->{FallowBuried.dugTo(b,FallowBuried.DIG-1);use(q,b,door,step);})
+        .thenWaitUntil(()->h.assertTrue(FallowBuried.open(b),"the doors give"))
+        .thenExecute(()->{
+            // Out of the way of the yard, both looking south, away from the road and the yard's gate.
+            f.at(q,P,-18.5,0,-2.5);look(q,b,new Vec3(-18.5,1.6,20));
+            f.at(p,P,5.5,0,-6.5);look(p,b,new Vec3(20,1.6,10));
+        })
+        .thenWaitUntil(()->{var girl=Fallow.find(l,b,Fallow.GIRL);h.assertTrue(girl!=null&&girl.gesture()==Fallow.SIT&&!FallowSite.inCellar(girl.position().subtract(Vec3.atLowerCornerOf(b))),"Opal comes up and sits by the steps");})
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.bean(b)!=null,"she sets her bean down"))
+        .thenExecute(()->{
+            bean[0]=FallowRoad.bean(b);var girl=Fallow.find(l,b,Fallow.GIRL);
+            h.assertTrue(fitting(l,b,bean[0],FallowBlock.Kind.BEAN)&&girl.getMainHandItem().isEmpty(),"in its cup in the yard, out of her hands: "+bean[0]);
+            h.assertTrue(girl.gesture()==Fallow.SIT&&said(girl).equals(FallowTexts.OPAL_SITS_WITH_IT),"and sits by it: "+said(girl));
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.ring(b)>=5,"the ground comes up round her: "+FallowRoad.ring(b)))
+        .thenExecute(()->{
+            h.assertTrue(wheatRing(l,b,bean[0],0,1,FallowBlock.GREEN),"young wheat by the bean");
+            h.assertTrue(wheatRing(l,b,bean[0],4,5,FallowBlock.SHOOT),"shoots at the edge");
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.ring(b)>=18,"out past the yard: "+FallowRoad.ring(b)))
+        .thenExecute(()->{
+            // Seventeen blocks west of the bean is the field, burnt to ash; the shoots come up there through the ash, on soil again.
+            var field=bean[0].offset(-17,0,0);var top=l.getBlockState(b.offset(field));
+            h.assertTrue(field.getX()<FallowSite.YARD_W&&FallowBlock.is(top,FallowBlock.Kind.WHEAT)&&top.getValue(FallowBlock.STAGE)>=FallowBlock.SHOOT,"shoots in the field: "+top);
+            h.assertTrue(is(l,b,field.below(),FallowRegistry.material("soil")),"the ash gone back to soil under them");
+            h.assertTrue(FallowRoad.road(b)==FallowRoad.WALKING,"and somebody is on the road, where nobody saw him made: "+FallowRoad.road(b));
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(man!=null&&man.marks()==FallowRoad.OWN_FACE&&!FallowRoad.hid(b),"the man from the afternoon, with his own face, unseen");
+            FallowRoad.hurry(b,.35);
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.road(b)==FallowRoad.STOOD,"he comes down to the yard and stands: "+Fallow.find(l,b,Fallow.STRANGER).position().subtract(Vec3.atLowerCornerOf(b))))
+        .thenExecute(()->{
+            var man=Fallow.find(l,b,Fallow.STRANGER);var r=man.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(r.distanceTo(new Vec3(-16.5,0,-9.5))<1.5,"west of the cellar doors: "+r);
+            h.assertTrue(!FallowRoad.hid(b)&&f.own(p,P).getInt("SawFaces")==0,"and nobody has seen him yet");
+            // The one who was out in it goes into the yard and looks at him.
+            told(p);f.at(p,P,-10.5,0,-12.5);look(p,b,r.add(0,1.6,0));
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowRoad.hid(b),"seen"))
+        .thenExecute(()->{
+            heard.clear();heard.addAll(told(p));
+            h.assertTrue(heard.contains(FallowTexts.STRANGER_SEEN),"somebody is walking down the road: "+heard);
+            var otis=Fallow.find(l,b,Fallow.DRIVER);
+            h.assertTrue(said(otis).equals(FallowTexts.OTIS_TAKES_HER),"Otis, Faye being gone, takes Opal down: "+said(otis));
+            ringAt[0]=FallowRoad.ring(b);
+        })
+        .thenWaitUntil(()->{var girl=Fallow.find(l,b,Fallow.GIRL);h.assertTrue(FallowSite.inCellar(girl.position().subtract(Vec3.atLowerCornerOf(b))),"down the steps");})
+        .thenIdle(FallowRoad.GROW_RING*2)
+        .thenExecute(()->{
+            h.assertTrue(FallowRoad.ring(b)<=ringAt[0]+1,"the green stops where it reached: "+ringAt[0]+" "+FallowRoad.ring(b));
+            h.assertTrue(fitting(l,b,bean[0],FallowBlock.Kind.BEAN),"her bean stays in the ground");
+        });
+        // Each time he is out of everyone's sight and looked at again, he has another face: Harlan's, Boyd's, Otis's, then the reader's own.
+        String[] faces={FallowTexts.HIS_FACE.formatted("Harlan"),FallowTexts.HIS_FACE.formatted("Boyd"),FallowTexts.HIS_FACE.formatted("Otis"),FallowTexts.YOUR_FACE};
+        for(int i=0;i<faces.length;i++){
+            int face=i+1;String line=faces[i];
+            seq=seq.thenExecute(()->look(p,b,new Vec3(30,1.6,-12.5)))
+                .thenWaitUntil(()->h.assertTrue(FallowRoad.face(b)==face,"out of sight, his face changes: "+FallowRoad.face(b)))
+                .thenExecute(()->{told(p);var man=Fallow.find(l,b,Fallow.STRANGER);
+                    // The client draws the borrowed faces from the cast's own skins, and the last on the viewer's own body.
+                    String worn=Fallow.dressed(man.phase(),man.marks());
+                    h.assertTrue(face<FallowRoad.VIEWER?Fallow.skin(Fallow.FIRST+FallowRoad.faceOf(face)).equals(worn)&&!Fallow.viewersFace(man):worn==null&&Fallow.viewersFace(man),"drawn with that face: "+worn);
+                    look(p,b,man.position().subtract(Vec3.atLowerCornerOf(b)).add(0,1.6,0));})
+                .thenWaitUntil(()->h.assertTrue((f.own(p,P).getInt("SawFaces")&1<<face)!=0,"looked at again: "+f.own(p,P).getInt("SawFaces")))
+                .thenExecute(()->{var got=told(p);h.assertTrue(got.contains(line),"he has another face: "+got);});
+        }
+        seq.thenExecute(()->{
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(man.marks()==FallowRoad.VIEWER&&f.own(p,P).getInt("SawFaces")==31,"the last is the face of whoever looks at him, and the reader kept each one");
+            h.assertTrue(f.own(q,P).getInt("SawFaces")==0&&!f.own(q,P).getBoolean("CameBack"),"the one who never looked keeps none of it, and never went out to come back");
+            // Beside him (a word reaches six blocks), and spoken to.
+            f.at(p,P,-16.5,0,-6.5);told(p);LiteraryVignettes.talk(p,man);
+            h.assertTrue(told(p).contains(FallowTexts.LOOKS_PAST),"spoken to, he looks past them at the doors");
+            for(var x:new ServerPlayer[]{p,q})x.setGameMode(GameType.SPECTATOR);
+        })
+        .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"once both have gone, the afternoon is over"))
+        .thenExecute(()->{
+            h.assertTrue(l.getBlockState(b.offset(bean[0])).isAir(),"the bean is taken up");
+            h.assertFalse(wheatRing(l,b,bean[0],0,5,FallowBlock.GREEN)||wheatRing(l,b,bean[0],0,5,FallowBlock.SHOOT),"nothing of it is left in the yard");
+            var field=bean[0].offset(-17,0,0);
+            h.assertTrue(l.getBlockState(b.offset(field)).equals(FallowSite.wheatAt(field.getX(),field.getZ())),"and the field stands as it was sown");
+            h.assertTrue(Fallow.find(l,b,Fallow.STRANGER)==null,"and the man is gone off the road");
         })
         .thenExecute(()->{done();h.succeed();});
     }

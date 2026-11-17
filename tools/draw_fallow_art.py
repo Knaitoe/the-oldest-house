@@ -1343,10 +1343,45 @@ def wire_tex():
 def wheat(stage):
     """A crop sheaf seen side-on, drawn as vanilla draws its crops: ripe wheat, its stalks and leaves gone to straw, heavy heads with
     their awns standing up (0); the same with the heads bowed over (1); the stubble left after cutting, short and even (2); and the
-    stubble burnt, black stalks, a little ash among them (3)."""
+    stubble burnt, black stalks, a little ash among them (3); and coming up again round the girl's bean (0.4.683), shoots (4) and young
+    wheat (5)."""
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     rnd = random.Random(72840 + stage)
     straw = ['#c9b06a', '#b89c56', '#d6bf7c', '#a88c4a']
+    if stage == 4:
+        # 0.4.683: shoots come up through the ash round the girl's bean: thin blades in tufts, a few leaning, the oldest with a fold
+        # where its first leaf opens; their feet darker where they come out of the ground.
+        blade = ['#7fae4a', '#6c9c3c', '#8fbe56', '#5f8e34']
+        for x in (1, 4, 6, 9, 11, 14):
+            if rnd.random() < .2:
+                continue
+            for k in range(rnd.randint(1, 3)):
+                xx = x + k - 1
+                h = rnd.randint(3, 6)
+                lean = rnd.choice((-1, 0, 0, 1))
+                for y in range(16 - h, 16):
+                    dot(im, xx + (lean if y < 16 - h + 2 else 0), y, '#4f7e2e' if y >= 14 else rnd.choice(blade))
+                if h >= 5 and rnd.random() < .5:
+                    dot(im, xx + (1 if lean >= 0 else -1), 16 - h + 2, '#9cca62')
+        return im
+    if stage == 5:
+        # Young wheat, knee-high: soft stalks with their leaves out to the sides, and small heads still in the leaf, unripe, the awns
+        # only begun. Nothing of it has gone to straw.
+        stalk = ['#6c9c3c', '#5f8e34', '#7aaa46']
+        for x in (1, 3, 5, 7, 9, 11, 13, 15):
+            top = rnd.randint(5, 8)
+            lean = rnd.choice((-1, 0, 0, 1))
+            for y in range(top + 3, 16):
+                dot(im, x + (lean if y < top + 6 else 0), y, '#4f7e2e' if y >= 14 else rnd.choice(stalk))
+            for _ in range(2):
+                ly = rnd.randint(top + 5, 14)
+                side = rnd.choice((-1, 1))
+                dot(im, x + side, ly, '#86b650'); dot(im, x + 2 * side, ly - 1, '#94c25c')
+            hx = x + lean
+            for y in range(top, top + 3):
+                dot(im, hx, y, rnd.choice(['#a6c264', '#98b85a', '#b2cc70']))
+            dot(im, hx, top - 1, '#c2d888')
+        return im
     if stage >= 2:
         burnt = stage == 3
         for x in range(0, 16):
@@ -2787,6 +2822,8 @@ def fitting_models():
         m[f'wheat_{s}'] = wheat_model(s); m[f'farm_{s}'] = farm_model(s); m[f'box_{s}'] = box_model(s)
     for s in range(4, 8):
         m[f'farm_{s}'] = farm_model(s)
+    for s in range(4, 6):
+        m[f'wheat_{s}'] = wheat_model(s)
     for s in range(7):
         m[f'canopy_{s}'] = canopy_model(s); m[f'lift_{s}'] = lift_model(s)
     for s in range(3):
@@ -2866,6 +2903,8 @@ def textures():
         faces[f'signband_{i}'] = signband(i)
         faces[f'wheat_{i}'] = wheat(i)
         faces[f'bean_{i}'] = bean_plant(i)
+    for i in range(4, 6):
+        faces[f'wheat_{i}'] = wheat(i)
     for name, im in faces.items():
         out[f'block/fallow/{name}.png'] = im
     out['block/fallow_charred_log_top.png'] = charred_log_top()
@@ -2879,7 +2918,7 @@ KINDS = ['counter', 'note', 'stool', 'backshelf', 'tv', 'cooler', 'gondola', 'ma
          'island', 'canopy', 'sign', 'pole', 'wheat', 'pad', 'lift', 'trailer', 'cellar', 'cellar_open', 'shelf', 'cot', 'crock', 'farm',
          'rig', 'box', 'bean', 'rubble']
 STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 4, 'signband': 4, 'pump': 4, 'island': 2,
-          'canopy': 7, 'sign': 3, 'pole': 7, 'wheat': 4, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
+          'canopy': 7, 'sign': 3, 'pole': 7, 'wheat': 6, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
           'cot': 2, 'crock': 4, 'farm': 8, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
 ITEM_ART = {'milk': milk_carton, 'soda': soda_bottle, 'coffee': coffee_cup}
 ITEM_NAMES = {'fallow_milk': 'Quart of Milk', 'fallow_soda': 'Bottle of Pop', 'fallow_coffee': 'Cup of Coffee', 'fallow_bean_cup': 'Bean in a Cup'}
@@ -3008,6 +3047,12 @@ def main():
     assert opaque(images['block/fallow/wheat_0.png'], range(0, 8)) > 12 and opaque(images['block/fallow/wheat_2.png'], range(0, 11)) == 0
     burnt = [images['block/fallow/wheat_3.png'].getpixel((x, y)) for x in range(16) for y in range(16)]
     assert sum(sum(p[:3]) for p in burnt if p[3]) / max(1, sum(1 for p in burnt if p[3])) < 240
+    # 0.4.683: shoots keep low; the young wheat stands below the ripe wheat's heads and above the stubble; both are green, not straw.
+    assert opaque(images['block/fallow/wheat_4.png'], range(0, 9)) == 0 and opaque(images['block/fallow/wheat_4.png'], range(10, 16)) > 12
+    assert opaque(images['block/fallow/wheat_5.png'], range(0, 4)) == 0 and opaque(images['block/fallow/wheat_5.png'], range(4, 10)) > 8
+    for i in (4, 5):
+        px = [p for p in (images[f'block/fallow/wheat_{i}.png'].getpixel((x, y)) for x in range(16) for y in range(16)) if p[3]]
+        assert sum(p[1] for p in px) > sum(p[0] for p in px), i
     # 0.4.682: the ash on the field is pale beside the charred boards and trunks; the yard burnt black is between them.
     def mean(im):
         px = [im.getpixel((x, y)) for x in range(16) for y in range(16)]

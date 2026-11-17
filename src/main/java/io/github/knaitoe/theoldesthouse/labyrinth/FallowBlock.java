@@ -62,8 +62,8 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);
     /** The television's stages. */
     public static final int PICTURE=0,CARD=1,DARK=2;
-    /** Wheat's stages. */
-    public static final int RIPE=0,BOWED=1,STUBBLE=2,ASH=3;
+    /** Wheat's stages; 0.4.683: and coming up again round Opal's bean, shoots, then young wheat (FallowRoad.green). */
+    public static final int RIPE=0,BOWED=1,STUBBLE=2,ASH=3,SHOOT=4,GREEN=5;
     /** A window's halves, whole and blown in. */
     public static final int PANE_LOW=0,PANE_HIGH=1,BLOWN_LOW=2,BLOWN_HIGH=3;
     /** 0.4.681: the lantern's stages (CROCK): lit, dark, and turned low (FallowBuried). */
@@ -110,7 +110,7 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
             case CANOPY->stage==4||stage==6?Block.box(5,0,5,11,16,11):stage==5?Block.box(4,0,4,12,16,12):Block.box(0,8,0,16,16,16);
             case SIGN->stage==0?Block.box(6,0,6,10,16,10):t(f,0,0,6,16,16,10);
             case POLE->stage==0?Block.box(5.5,0,5.5,10.5,16,10.5):stage==1?t(f,0,6,6,16,16,10):stage>=POLE_DOWN?down(f,stage):t(f,0,10,6,16,16,10);
-            case WHEAT->Block.box(1,0,1,15,stage>=2?4:13,15);
+            case WHEAT->Block.box(1,0,1,15,stage==GREEN?10:stage>=STUBBLE?4:13,15);
             case PAD->switch(stage){case 3->Block.box(6.5,0,6.5,9.5,16,9.5);case 4->Block.box(4,0,4,12,10,12);case 5,6->Shapes.block();case 7->t(f,3,0,3,13,9,13);default->t(f,0,0,7,16,16,9);};
             case LIFT->switch(stage){case 0,6->Block.box(4,0,4,12,16,12);case 1->t(f,0,12,6,16,16,10);case 2->t(f,0,0,4,16,15,16);case 3->t(f,0,0,14,16,16,16);case 4->Block.box(1,0,1,15,13,15);default->Block.box(3,0,3,13,15,13);};
             case TRAILER->switch(stage){case 0->Shapes.block();case 1->t(f,6,0,0,10,5,16);case 2->t(f,4,0,4,12,15,12);case 3->Shapes.or(t(f,0,0,0,16,4,16),t(f,0,4,8,16,8,16));case 4->Block.box(6.5,0,6.5,9.5,16,9.5);case 5->t(f,0,12,6,16,15,10);case 6->Block.box(3,0,3,13,14,13);default->t(f,0,0,7,16,14,9);};

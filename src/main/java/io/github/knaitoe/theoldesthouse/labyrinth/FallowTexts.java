@@ -93,6 +93,9 @@ public final class FallowTexts {
                 case FallowBlock.BOWED->"Wheat with its heads bowed over, heavy.";
                 case FallowBlock.STUBBLE->"Stubble, where the wheat has been cut.";
                 case FallowBlock.ASH->"Stubble, burnt. The ash comes off on the hand.";
+                // 0.4.683, round the girl's bean.
+                case FallowBlock.SHOOT->"Shoots, up through the ash.";
+                case FallowBlock.GREEN->"Young wheat, its heads still soft. It came up after the light.";
                 default->"Wheat, ripe, to the waist. It runs to the edge of sight every way but the road.";
             };
             case PAD->switch(stage){
@@ -323,6 +326,21 @@ public final class FallowTexts {
         OTIS_GIVE="There. Up we go, slow. Mind the edges.",OTIS_LOOKS="Well. There it is.";
     /** Up in the yard: Opal by the steps with her bean, Faye calling toward the rig, Harlan at what is left of his store. */
     public static final String OPAL_UP="It needs the sun. There isn't any.",FAYE_UP_LINE="Boyd? Boyd!",HARLAN_UP_LINE="That was a good store.";
+
+    // 0.4.683, the road (FallowRoad).
+    /** Back at the station, a reader the light found out in it. */
+    public static final String ARRIVE_AFTER="The store has no roof now. Over it the sky is ash.";
+    /** The shadows on the store's front: one's own, a hand on it again, another reader's, Boyd's. */
+    public static final String FOUND_OWN="Your shadow is on the store's front, where you stood when the light came.",OWN_ON_HAND="It does not come off on your hand.",
+        SHADOW_OF="%s's shadow is on the wall, where the light found them.",SHADOW_REACHING="%s's shadow is on the wall, an arm up toward the rig.";
+    /** Opal and her bean: setting it down, sitting with it, the fourth ring; and what comes up round her, seen. */
+    public static final String OPAL_PLANTS="It can go here.",OPAL_SITS_WITH_IT="If I sit with it, it'll grow.",OPAL_COMING_UP="Look. It's all coming up.",
+        GREENING="Around where the girl sits, something is coming up through the ash.";
+    /** The man on the road: first seen, his faces, spoken to. */
+    public static final String STRANGER_SEEN="Somebody is walking down the road out of the ash, from where the pads were.",HIS_FACE="The man has %s's face.",
+        YOUR_FACE="The man has your face.",LOOKS_PAST="He looks past you, at the cellar doors.";
+    /** Opal taken down out of his sight: by Faye, or by Otis when Faye is not up. */
+    public static final String FAYE_TAKES_HER="Opal. Down the steps. Now.",OTIS_TAKES_HER="Down you go, sweetheart. Quiet as you can.";
     /** Otis's question on the second day, the reader's two answers, and what he says to each. What he says to an answer follows the House's
      * read of the reader's home: somebody to get back to, somewhere not to go back to, nowhere at all, or nothing read. */
     public static final String HOME_ASK="Anybody waiting on you, back home?",TELL_HIM="Tell him.",HOME_QUIET="That's all right. You don't have to say.";
