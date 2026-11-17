@@ -222,6 +222,12 @@ public final class PlaceForYouSite {
     public static boolean cupboard(ServerLevel l,BlockPos b){return PlaceForYouBlock.is(l.getBlockState(b.offset(KIT_DOOR)),CUPBOARD);}
     /** Kit's chair at the table, or tucked away. */
     public static void kitsChair(ServerLevel l,BlockPos b,boolean there){set(l,b,KIT_CHAIR,there?furniture(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST):Blocks.AIR.defaultBlockState());}
+    /** 0.4.686: the reader's own chair at the table, or gone while the house bargains with the voice at the door. */
+    public static void readerChair(ServerLevel l,BlockPos b,boolean there){set(l,b,READER_CHAIR,there?furniture(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.WEST):Blocks.AIR.defaultBlockState());}
+    public static boolean readerChair(ServerLevel l,BlockPos b){return l.getBlockState(b.offset(READER_CHAIR)).getBlock() instanceof HouseholdFurnitureBlock;}
+    /** 0.4.686: the household's pictures over the sideboard, the gap in the row empty (0) or filled by a man in a work shirt (1). */
+    public static void pictures(ServerLevel l,BlockPos b,boolean filled){set(l,b,PICTURES,fit(PlaceForYouBlock.Kind.PICTURES,Direction.SOUTH,filled?1:0));}
+    public static boolean picturesFilled(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(PICTURES));return PlaceForYouBlock.is(s,PlaceForYouBlock.Kind.PICTURES)&&PlaceForYouBlock.stage(s)==1;}
     public static void cups(ServerLevel l,BlockPos b,boolean poured){set(l,b,CUPS,fit(PlaceForYouBlock.Kind.CUPS,Direction.SOUTH,poured?1:0));}
     public static void kettle(ServerLevel l,BlockPos b,boolean there){set(l,b,KETTLE,there?fit(PlaceForYouBlock.Kind.KETTLE,Direction.SOUTH,0):Blocks.AIR.defaultBlockState());}
     public static void spoon(ServerLevel l,BlockPos b,boolean there){set(l,b,SPOON,there?fit(PlaceForYouBlock.Kind.SPOON,Direction.EAST,0):Blocks.AIR.defaultBlockState());}
@@ -251,5 +257,6 @@ public final class PlaceForYouSite {
     public static void reset(ServerLevel l,BlockPos b,CompoundTag drawing){
         table(l,b,true);card(l,b,true);bag(l,b,"none");kitsDoor(l,b,false);kitsChair(l,b,true);cups(l,b,false);kettle(l,b,true);spoon(l,b,false);
         kitchenLight(l,b,true);propped(l,b,false);routine(l,b,-1);picture(l,b,drawing,true);gate(l,b,false);
+        pictures(l,b,false);readerChair(l,b,true);
     }
 }
