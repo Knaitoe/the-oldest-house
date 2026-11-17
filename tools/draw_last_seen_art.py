@@ -1082,6 +1082,76 @@ def coat_icon():
     return im
 
 
+def folder_open():
+    """0.4.670, dawn: a folder lying open on the long table at its first page, seen from above. The left leaf has the photograph clipped
+    to it, a small face with its white border, and the right leaf the typed form, its lines and the date, with Nora's pencil tick. The
+    spine is a crease between them. The folder fills x 2-13, y 3-12 at the table's own pixel; the rest is clear."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(77670)
+    for y in range(3, 13):
+        for x in range(2, 14):
+            im.putpixel((x, y), shade(MANILA, rnd.randint(-5, 3) - (6 if x >= 8 else 0)))
+    for y in range(3, 13):
+        dot(im, 7, y, shade(MANILA, -30)); dot(im, 8, y, shade(MANILA, -18))
+        dot(im, 2, y, shade(MANILA, -22)); dot(im, 13, y, shade(MANILA, -40))
+    for x in range(2, 14):
+        dot(im, x, 3, shade(MANILA, 10)); dot(im, x, 12, shade(MANILA, -42))
+    # the photograph: its border, a face (hair, skin, the eyes as two dark points, a collar), and the clip over its top edge
+    fill(im, 3, 4, 7, 10, '#ece7da')
+    fill(im, 4, 5, 6, 6, '#3a2c22'); fill(im, 4, 6, 6, 8, '#c49a78'); dot(im, 4, 6, '#3a2c22')
+    dot(im, 5, 6, '#c49a78'); dot(im, 4, 7, '#2a2420'); dot(im, 5, 7, '#c49a78')
+    fill(im, 4, 8, 6, 9, '#5a6a80')
+    dot(im, 5, 4, '#8e9399'); dot(im, 5, 3, '#c9cdd2')
+    # the typed form: each line a short printed label, a gap, then what was typed in (a row of paper between lines, so they read as
+    # type and not as blacked out); the date on its own line, and the pencil tick in the margin
+    for y, typed in ((4, 2), (6, 3), (8, 2), (10, 3)):
+        dot(im, 9, y, '#8a8070')
+        for x in range(11, 11 + typed):
+            dot(im, x, y, '#5a564e')
+    dot(im, 12, 11, '#7a7a80'); dot(im, 11, 12, '#7a7a80')
+    return im
+
+
+def flashlight_icon():
+    """0.4.670: a man's flashlight, as it is held: a ribbed rubber body corner to corner, its thumb switch, and the bezel at the top with
+    the lens, pale where it catches the light."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    body = '#2a2a2c'
+    for i in range(2, 11):
+        x, y = i, 15 - i
+        for dx, dy in ((0, 0), (1, 0), (0, -1), (1, -1)):
+            dot(im, x + dx - 1, y + dy, body)
+        dot(im, x, y - 1, shade(body, 22))
+        if i % 2 == 0:
+            dot(im, x - 1, y, shade(body, -12))
+    dot(im, 6, 8, '#6a6a6e'); dot(im, 7, 8, '#4a4a4e')
+    # the bezel, chrome, and the lens in it
+    for (x, y) in ((10, 3), (11, 3), (12, 3), (10, 4), (12, 4), (10, 5), (11, 5), (12, 5), (13, 4), (11, 2)):
+        dot(im, x, y, '#a8adb2')
+    dot(im, 11, 4, '#f2eccc'); dot(im, 12, 2, '#d8dde2'); dot(im, 13, 3, '#8e9399'); dot(im, 13, 5, '#6e7378')
+    dot(im, 1, 14, '#1a1a1c'); dot(im, 2, 14, '#3a3a3c')
+    return im
+
+
+def stick_icon():
+    """0.4.670: what the second hand holds, a length of wood: an old broom handle sawn off, its grain along it, black tape wound round
+    the grip, and the far end split where it was broken."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    wood = '#b8946a'
+    for i in range(1, 15):
+        x, y = i, 15 - i
+        dot(im, x, y, wood); dot(im, x - 1, y, shade(wood, -26)); dot(im, x, y - 1, shade(wood, 16))
+        if i % 3 == 0:
+            dot(im, x, y, shade(wood, -12))
+    for i in range(1, 5):
+        x, y = i, 15 - i
+        dot(im, x, y, '#1e1e20'); dot(im, x - 1, y, '#141416'); dot(im, x, y - 1, '#3a3a3e')
+    dot(im, 5, 10, '#2a2a2e')
+    # the split end
+    dot(im, 15, 0, (0, 0, 0, 0)); dot(im, 14, 0, shade(wood, 30)); dot(im, 15, 1, shade(wood, -34)); dot(im, 13, 0, shade(wood, 8))
+    return im
+
+
 def element(lo, hi, textures, uv=None, rotation=None):
     faces = {}
     keys = ['north', 'south', 'east', 'west', 'up', 'down']
@@ -1159,6 +1229,17 @@ def table_model(stage):
                 element([8.5, 17, 9], [14, 19, 12], {'all': 's'})]
         glow(lamp[2:], 12)
         e += lamp
+    # 0.4.670, dawn: one folder lying open at its first page (3), or two, the one under turned a little from the other (4). They lie
+    # the right way up for a reader at the chairs, on the table's north side.
+    if stage >= 3:
+        t['o'] = 'folder_open'
+    def leaf(dz, y, rot=None):
+        return element([2, y, 3 + dz], [14, y + .2, 13 + dz], {'up': 'o', 'down': 'f'}, uv={'up': [14, 13, 2, 3], 'down': [0, 0, 12, 10]},
+                       rotation=rot)
+    if stage == 3:
+        e.append(leaf(0, 13))
+    if stage == 4:
+        e += [leaf(-1, 13, {'angle': -22.5, 'axis': 'y', 'origin': [8, 13, 7]}), leaf(1.5, 13.25)]
     return model(e, t, 'formica')
 
 
@@ -1423,6 +1504,8 @@ def fitting_models():
     for s in range(3):
         m[f'table_{s}'] = table_model(s); m[f'desk_{s}'] = desk_model(s); m[f'gate_{s}'] = gate_model(s)
         m[f'bench_{s}'] = bench_model(s); m[f'leaves_{s}'] = leaves_model(s)
+    for s in (3, 4):
+        m[f'table_{s}'] = table_model(s)
     for s in range(2):
         m[f'railing_{s}'] = railing_model(s); m[f'kiosk_{s}'] = kiosk_model(s)
     for s in range(len(SHUTTER_FACES)):
@@ -1597,6 +1680,7 @@ def textures():
         'shutter_top': shutter_face(0, 'top'), 'shutter_low_lit': shutter_face(1, 'low'), 'shutter_top_lit': shutter_face(1, 'top'),
         'sill': sill(), 'fascia': fascia(),
         'fence_mesh': fence_mesh(), 'fence_tube': fence_tube(), 'fence_foot': fence_foot(), 'notice': notice(), 'tape': tape(),
+        'folder_open': folder_open(),
     }
     from paint_character_skins import LOOKS
     for i in range(16):
@@ -1609,12 +1693,14 @@ def textures():
         out[f'item/last_seen_folder_{i}.png'] = folder_icon(face_of(LOOKS[f'literary_lastseen_{CHILDREN[i]}']))
     out['gui/last_seen_folder.png'] = folder_card()
     out['item/last_seen_coat.png'] = coat_icon()
+    out['item/last_seen_flashlight.png'] = flashlight_icon()
+    out['item/last_seen_stick.png'] = stick_icon()
     return out
 
 
 KINDS = ['counter', 'card', 'chair', 'shelf', 'poster', 'poster_b', 'table', 'desk', 'louvre', 'tube', 'railing', 'gate', 'lamp_post', 'bench',
          'fountain', 'kiosk', 'trunk', 'leaves', 'play', 'bandstand', 'shelter', 'shutter', 'fence']
-STAGES = {'counter': 2, 'shelf': 5, 'poster': 8, 'poster_b': 8, 'table': 3, 'desk': 3, 'railing': 2, 'gate': 3, 'lamp_post': 5, 'bench': 3,
+STAGES = {'counter': 2, 'shelf': 5, 'poster': 8, 'poster_b': 8, 'table': 5, 'desk': 3, 'railing': 2, 'gate': 3, 'lamp_post': 5, 'bench': 3,
           'fountain': 4, 'kiosk': 2, 'trunk': 4, 'leaves': 3, 'play': 8, 'bandstand': 5, 'shelter': 4, 'shutter': 6, 'fence': 6}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
@@ -1649,6 +1735,8 @@ def files():
     for i in range(10):
         out[f'models/item/last_seen_folder_{i}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/last_seen_folder_{i}'}}
     out['models/item/last_seen_coat.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/last_seen_coat'}}
+    for name in ('flashlight', 'stick'):
+        out[f'models/item/last_seen_{name}.json'] = {'parent': 'minecraft:item/handheld', 'textures': {'layer0': NS + f'item/last_seen_{name}'}}
     return out
 
 
@@ -1694,6 +1782,10 @@ def main():
     assert 0.25 < sum(mesh.getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) / 256 < 0.5
     sheet = images['block/last_seen/notice.png']
     assert all(sheet.getpixel((x, y))[3] == 255 for x in range(5, 11) for y in range(5, 13)) and sheet.getpixel((4, 4))[3] == 0
+    # The open folder fills exactly the part of its texture its leaf reads, and has a face on its left leaf and type on its right.
+    opened = images['block/last_seen/folder_open.png']
+    assert all(opened.getpixel((x, y))[3] == 255 for x in range(2, 14) for y in range(3, 13)) and opened.getpixel((1, 2))[3] == 0
+    assert opened.getpixel((4, 6))[:3] != opened.getpixel((10, 6))[:3]
 
     for rel, im in images.items():
         path = base / 'textures' / rel
@@ -1714,6 +1806,8 @@ def main():
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
     wanted['item.the_oldest_house.last_seen_folder'] = 'Folder'
     wanted['item.the_oldest_house.last_seen_coat'] = 'Coat'
+    wanted['item.the_oldest_house.last_seen_flashlight'] = 'Flashlight'
+    wanted['item.the_oldest_house.last_seen_stick'] = 'Length of Wood'
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key

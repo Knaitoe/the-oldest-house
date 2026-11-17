@@ -1070,6 +1070,9 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.LEADING->{leftArm.xRot=.38F;leftArm.yRot=0;leftArm.zRot=-.1F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.MESH->{rightArm.xRot=leftArm.xRot=-2.05F;rightArm.yRot=-.14F;leftArm.yRot=.14F;rightArm.zRot=leftArm.zRot=0;head.xRot=-.12F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.CARRY->{rightArm.xRot=leftArm.xRot=-.85F;rightArm.yRot=-.38F;leftArm.yRot=.38F;rightArm.zRot=leftArm.zRot=0;}
+                // 0.4.670: a man's flashlight held out ahead of him at shoulder height, turned a little as it sweeps; the length of wood hangs
+                // from the other hand.
+                case io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.FLASH->{rightArm.xRot=-1.32F;rightArm.yRot=-.08F+(float)Math.sin(age*.04F)*.12F;rightArm.zRot=0;leftArm.xRot=.12F;leftArm.zRot=-.06F;head.xRot=.12F;}
                 default->{}
             }
             hat.copyFrom(head);

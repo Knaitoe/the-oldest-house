@@ -386,6 +386,10 @@ LOOKS = {
     'literary_lastseen_mother': Look('#8e5e42','#1a1614','coils','#6e4a3a','#2e3038','coat','#ddd0ba',eyes='#2a2018',age=1,sleeve=10),
     # Tomás with the coat his grandmother brings put round his shoulders: his own sheet, the coat over it (lastseen_coat).
     'literary_lastseen_tomas_coat': Look('#c8946e','#3a2a1e','messy','#7ab0d8','#26282e','jersey','#f0f0ea',eyes='#3a2e26',sleeve=4,face_style='child',level_eyes=True,mark='lastseen_tomas_coat',jersey=10,shoes='#e4e2dc'),
+    # 0.4.670, the night: the three men on the avenue with their flashlights. Work clothes for a cold night, nothing to mark them out.
+    'literary_lastseen_man_a': Look('#c49274','#24201c','close','#3a3e44','#2a2c30','hoodie','#5a5e64',eyes='#3a3026',age=1,beard='stubble',sleeve=10),
+    'literary_lastseen_man_b': Look('#b68464','#4a3a2c','receding','#5a3e34','#34363a','flannel','#2e2a26',eyes='#3a2e24',age=1,beard='full',sleeve=10),
+    'literary_lastseen_man_c': Look('#d2a486','#3a3430','part','#48503a','#3a3a36','jacket','#7a7a6a',eyes='#46403a',age=1,beard='moustache',sleeve=10),
     'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
     # in old coats; and Benny on the far stool.

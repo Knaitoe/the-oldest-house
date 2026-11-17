@@ -23,6 +23,9 @@ public final class LastSeenRegistry {
     public static final DeferredItem<LastSeenFolder> FOLDER=ITEMS.registerItem("last_seen_folder",LastSeenFolder::new,new net.minecraft.world.item.Item.Properties().stacksTo(1));
     /** 0.4.669: the coat Tomás's grandmother brings him, carried folded over her arm until she puts it round him. Nobody else holds it. */
     public static final DeferredItem<net.minecraft.world.item.Item> COAT=ITEMS.registerSimpleItem("last_seen_coat",new net.minecraft.world.item.Item.Properties().stacksTo(1));
+    /** 0.4.670: what the men carry at night, a flashlight in one hand and a length of wood in the other. Nobody else ever holds them. */
+    public static final DeferredItem<net.minecraft.world.item.Item> FLASHLIGHT=ITEMS.registerSimpleItem("last_seen_flashlight",new net.minecraft.world.item.Item.Properties().stacksTo(1)),
+        STICK=ITEMS.registerSimpleItem("last_seen_stick",new net.minecraft.world.item.Item.Properties().stacksTo(1));
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /**
@@ -41,7 +44,9 @@ public final class LastSeenRegistry {
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** The avenue beyond the railings; pigeons on the paths; a folder taken down or put back; the typewriter. */
     public static final DeferredHolder<SoundEvent,SoundEvent> TRAFFIC=sound("last_seen.traffic"),PIGEONS=sound("last_seen.pigeons"),PAPER=sound("last_seen.paper"),
-        TYPEWRITER=sound("last_seen.typewriter");
+        TYPEWRITER=sound("last_seen.typewriter"),
+        // 0.4.670, the night: the chain on the gates, a flashlight switched on, the men on the avenue, the back door tried, the railing climbed.
+        CHAIN=sound("last_seen.chain"),SWITCH=sound("last_seen.switch"),VOICES=sound("last_seen.voices"),RATTLE=sound("last_seen.rattle"),CLIMB=sound("last_seen.climb");
     private LastSeenRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }

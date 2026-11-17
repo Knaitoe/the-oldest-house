@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
  * <p>0.4.668, part 2 (docs/LAST_SEEN_0_4_668.md): the folders, the shelves' letters, the day's pile, Nora's rule, Luz at the door, and
  * the first of them at the fountain.
  * <p>0.4.669, part 3 (docs/LAST_SEEN_0_4_669.md): the second day, the eight, the families, the city, and dusk.
+ * <p>0.4.670, part 4 (docs/LAST_SEEN_0_4_670.md): the night, the men, a child's hand, the back door, and dawn.
  */
 public final class LastSeenTexts {
     private LastSeenTexts(){}
@@ -203,6 +204,46 @@ public final class LastSeenTexts {
     /** The city's fence round the playground, and its notice on the lamp posts. */
     public static final String FENCE="A wire fence on concrete feet, put up round the playground. It is too high to climb.",
         NOTICE="A notice taped round the post: DO NOT APPROACH. DO NOT FEED. It is signed by the city.";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.670, the night
+    static String his(int child){return GIRL[child]?"her":"his";}
+    /** Nora at night: before the chain, once it is on, once the men are over, and in the morning. */
+    public static final String NORA_STAY="I'm not going home tonight. Stay if you're staying.",
+        NORA_CHAINED="They've chained the gates. Bring them in here, by the back door.",
+        NORA_BRING="Bring them in by the back door. The front is locked.",
+        NORA_SHELF="Each one knows where their folder is. Let them go to it.",
+        NORA_DOOR="Don't open the door.",
+        NORA_DAWN="I didn't take them down. I was here all night.";
+    public static final String FRONT_LOCKED="The front door is locked. Patricia locked it when she went home.",
+        CHAINED="Out on the avenue, someone winds a chain round the park's gates, and padlocks it.",
+        MAN_TALK="He turns his light on you, and then back to the park.";
+    /** The men on the avenue, one line at a time while they wait; at the back door, the one who tries it. */
+    public static final String[] MEN_LINES={"Gate's done.","They haven't moved. Not one of them.","Wait for the office to go dark.",
+        "Somebody's in there with them.","It isn't going to go dark.","Then we don't wait."};
+    public static final String MAN_LOCKED="Locked.",MAN_PAPER="Nothing in here but paper.";
+    /** A child's hand. */
+    public static String takeHand(int child){return CHILDREN[child]+" takes your hand. "+(GIRL[child]?"Hers":"His")+" is cold, and it holds on.";}
+    public static String letGo(int child){return "You let go of "+CHILDREN[child]+"'s hand.";}
+    public static String heldOther(int child){return CHILDREN[child]+" is holding someone else's hand.";}
+    public static final String HAND_FULL="You already have one of them by the hand.";
+    public static String atShelf(int child){return CHILDREN[child]+" lets go of your hand and goes to the shelf where "+his(child)+" folder is, and stands facing it.";}
+    public static String atFolder(int child){return CHILDREN[child]+" stands at "+his(child)+" folder, facing it, and does not turn round.";}
+    /** Coming near each of the eight at night, once. */
+    public static String nearNight(int child){return CHILDREN[child]+" stands facing the avenue. "+pronoun(child)+" does not blink.";}
+    /** The back door: kept, tried and held, tried and opened. */
+    public static final String KEEP="You put your weight against the back door.",
+        KEPT="The handle turns under your hand. You hold it, and the door holds.",
+        TRY_HELD="Someone tries the back door. It holds.",
+        TRY_OPEN="The back door opens. A light goes along the shelves and does not stop.";
+    /** The men over the railing. */
+    public static final String EMPTY_HAND="Your hand is empty.",
+        OVER_PARK="The lamps go out, all of them at once. When you can see again, there is nobody where the children were.",
+        OVER_OFFICE="Out in the park, the lamps go out all at once. Lights are coming over the railing.";
+    /** Dawn. */
+    public static final String DAWN="Light comes up over the avenue. It is morning, and the park is empty.",
+        DAWN_TABLE="Light comes in at the louvres. Nobody stands at the shelves. On the long table, their folders lie open at the first page.",
+        DAWN_EMPTY="Light comes in at the louvres. It is morning. The archive is as it was.";
+    public static String tableOpen(int child){return folderName(child)+", lying open at the first page.";}
 
     /** The account. Nothing asks for it until part 5; it says only what anybody could see of the place. */
     public static ItemStack account(String name,CompoundTag own){
