@@ -39,7 +39,7 @@ public final class CityTexts {
         return HouseWriting.book("The radio log","Set operator",pages(HouseWriting.WritingStyle.PLAIN,
             "Day 1. Camp made on the ice under the range. All well. Wind light. Dogs in good heart.\n\nDay 4. Cores from the east face. The rock is older than anything we were told to expect.",
             "Day 6. Found them in a cave in the ice, eight, frozen. Brought three back to the table under the tarp. The dogs won't go near the tarp.\n\nDay 7. Storm in the night.",
-            "Day 7, later. The straps on the table are cut. Not torn. Cut. All three gone. The dogs gone too, with their harnesses still done up.\n\nThe aeroplane's fabric opened in long cuts.",
+            "Day 7, later. The straps on the table have been cut through, not torn. All three gone. The dogs gone too, with their harnesses still done up.\n\nThe aeroplane's fabric opened in long cuts.",
             "Day 8. The others say the peaks to the north are too regular to be peaks. Going up the pass to look. I am to stay with the set.\n\nDay 9. Walls over the pass, they think. Steps. Not back yet. Calling every hour.",
             "Day 10. Calling.\n\nDay 11. Calling.\n\nDay 12. If anyone reads this: they went up the pass. The aeroplane won't fly. I am going after them."));
     }

@@ -138,7 +138,7 @@ public final class OwnLight {
         own.putBoolean("Turned213",true);own.putDouble("TurnZ213",r.z);int behind=OwnLightSite.GAPS[0];for(int g:OwnLightSite.GAPS)if(g>r.z+1)behind=g;
         var a=dbl(p);if(a!=null){a.moveTo(b.getX()+.5,b.getY(),b.getZ()+behind+.5,0,0);a.gesture(2);}
         own.putInt("Gap213",behind);save(p,own);
-        cue(p,"It stops. It is not level with you any more. It is behind you, in your branch, walking back the way you came.");
+        cue(p,"It stops. It is behind you now, in your branch, walking back the way you came.");
         heard(p,p.position(),DarkHallRegistry.STEPS.get(),.8F,.9F);
     }
     /** Back down the reader's branch, taking their torches down one at a time, then out through the way in. */

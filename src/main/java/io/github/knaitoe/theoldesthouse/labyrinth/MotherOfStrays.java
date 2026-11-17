@@ -484,7 +484,7 @@ public final class MotherOfStrays {
             } else if (collection.offer(player.getUUID(), held, player.registryAccess(), now)) {
                 say(player, collection.salved() ? "A thing returned. A thing given. A life brought home. I remember now."
                         : "You gave this without asking for anything back?");
-            } else if (collection.debt(player.getUUID()) != null) say(player, "Something loved. Not something you can spare.");
+            } else if (collection.debt(player.getUUID()) != null) say(player, "Something you loved. I'll know if you didn't.");
             else if (collection.salved()) say(player, "Bring the record and bow your head, if you mean for me to leave.");
             else say(player, "Look carefully. Somebody did love these once.");
             if(!settledBefore&&(collection.salved()||collection.banished()))WitnessAccount.resolve(player,WitnessAccount.Story.MOTHER,"salved");

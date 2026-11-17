@@ -37,7 +37,7 @@ public final class HarriganPhones {
         "Turn a light on. You've been sitting in the dark again.",
         "I liked our afternoons. I don't say that to many people.",
         "Go home before it gets late.",
-        "Nothing you owe me. Not a thing."};
+        "You don't owe me anything."};
 
     private static CompoundTag state(ServerPlayer p){return HarriganVignette.playerState(LabyrinthData.get(p.server),p.getUUID());}
     private static void save(ServerPlayer p,CompoundTag s){HarriganVignette.savePlayerState(LabyrinthData.get(p.server),p.getUUID(),s);}

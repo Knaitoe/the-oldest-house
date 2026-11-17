@@ -361,10 +361,10 @@ public final class BorrascaPeople {
         };
     }
     private static String[] greetings(int phase,int visit){boolean grown=visit>=3;return switch(phase){
-        case LORNA->grown?new String[]{"Sit anywhere. Coffee's fresh.","Pie's chess today. Nobody orders the chess."}:new String[]{"Sit anywhere, hon. Pie's on the board.","You with your folks? Sit at the counter, then."};
+        case LORNA->grown?new String[]{"Sit anywhere. Coffee's fresh.","Pie's chess today. I'd have the coffee."}:new String[]{"Sit anywhere, hon. Pie's on the board.","You with your folks? Sit at the counter, then."};
         case AMES->grown?new String[]{"Hardware's on the back wall. Holler if you need something.","Feed's out back. Everything else is in here."}:new String[]{"Look with your eyes, not your hands.","Sodas are in the cooler. Pay up here."};
         case ROWE->grown?new String[]{"The society's through the back. Sign the book if you're from out of town.","Everything in here was somebody's.","The Prescotts lent the society most of its pieces."}:new String[]{"Look all you like. Hands in your pockets.","The society's open Saturdays. Mind the photographs.","That clock's older than me and keeps worse time."};
-        case KURT->visit==4?new String[]{"Open till ten. Not much open past that up here.","Pumps are on. Anything from inside?"}:grown?new String[]{"Pump two sticks. Anything from inside?","Ice is in the cooler. Bait's in the back."}:new String[]{"Sodas are in the cooler. Pay me first.","Don't hang on the pumps."};
+        case KURT->visit==4?new String[]{"Open till ten. After that it's the gas station on the highway.","Pumps are on. Anything from inside?"}:grown?new String[]{"Pump two sticks. Anything from inside?","Ice is in the cooler. Bait's in the back."}:new String[]{"Sodas are in the cooler. Pay me first.","Don't hang on the pumps."};
         case ODELL->new String[]{"He's booked through next month. Half the county's expecting.","Do you have an appointment? No? Then take a seat and wait."};
         case FENN->grown?new String[]{"Prescriptions at the back. The fountain's still open.","A malt, for old times? The stools haven't changed."}:new String[]{"Fountain's open. Stools are for customers.","No running in here."};
         case GUS->visit==4?new String[]{"Last call's at one. What'll it be?","Sheriff's out on the ridge again. What'll it be?"}:grown?new String[]{"What'll it be?","Earl's out by the alley. I don't serve him anymore. I leave a plate out the back."}:new String[]{"What'll it be?","Earl's stool's open. He's in the Sheriff's cell again."};
@@ -386,7 +386,7 @@ public final class BorrascaPeople {
      */
     public static boolean taken(CompoundTag own){return own.getInt("Visit")==2&&own.getBoolean("FriendMissing");}
     /** What Gus says to that child as he puts them out, and what Mr. Rowe says on his break out front. */
-    public static final String GUS_AFTER="Out. And go home by the street. Not by the trail.",ROWE_OUT_AFTER="I'm on my break. I'm not looking up the street. Go on home.";
+    public static final String GUS_AFTER="Out. And go home by the street, not the trail.",ROWE_OUT_AFTER="I'm on my break. I'm not looking up the street. Go on home.";
     /** What Mrs. Odell says with the lollipop her own rule does not allow, with two at once, and after that. */
     public static final String ODELL_ANOTHER="One's the rule. ...Here. Take another. I won't count it.",ODELL_TWO="Here. Take two today. I won't count them.",ODELL_DONE="That's all I have for you. Go on home.";
     /**
@@ -411,7 +411,7 @@ public final class BorrascaPeople {
     /** 0.4.427: what the bar and the cell say on the visit after the Sheriff was killed on the ridge; null for everyone else. */
     private static @Nullable String[] afterTheSheriff(int phase){return switch(phase){
         case DUTCH->new String[]{"Sheriff's dead. He's still up by the tape. Nobody's gone for him.","Prescott says leave him till the county comes. So he's still lying up there."};
-        case MERLE->new String[]{"Somebody's going to have to write it up. It won't be me. Not this time.","They'll send a new one from the county. They always do."};
+        case MERLE->new String[]{"Somebody's going to have to write it up, and this time it won't be me.","They'll send a new one from the county. They always do."};
         case GUS->new String[]{"Drinks are on the house tonight. Don't ask me why.","Nobody's said a word about the Sheriff in here. Keep it that way."};
         case EARL->new String[]{"Somebody finally did it. Don't tell me who. I'd only say it.","Nobody's told me to move along all day. First time in years."};
         default->null;

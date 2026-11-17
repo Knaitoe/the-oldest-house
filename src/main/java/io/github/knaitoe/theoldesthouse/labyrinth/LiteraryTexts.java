@@ -64,7 +64,7 @@ public final class LiteraryTexts {
             "He stops when I leave. When I return, he finds the exact word.\n\nThere are clean books on the low shelf. I put one on the table between our chairs. By the time I reached the last page, I recognised the handwriting.");
         // 0.4.50: found aboard the yacht. Readers who took the earlier note keep their own saved original.
         case ELK_CARCASSES->book("Morning aboard","A deckhand",
-            "Nobody rang for breakfast. The party was still on the tables, and the doors below stood open. Nobody answered from any of them.",
+            "Nobody rang for breakfast. The party was still on the tables, and the doors below stood open, and no one answered from any of them.",
             "He is still aboard. Do not wait for the boat. Go over the side and make for the trees.",
             "The road crew dragged their elk to a cut under the ridge. There is a hollow under the pile. Watch the boots through the gap and do not move until they are gone.\n\nThe crew's path runs on from the cut to their gate.");
         // 0.4.103: Hank's card for the town's Lake Witch contest; he has judged it every year since the shallows.

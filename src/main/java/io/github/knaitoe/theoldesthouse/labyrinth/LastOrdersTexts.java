@@ -66,10 +66,10 @@ public final class LastOrdersTexts {
         out.add(new Said(2,"All of it. Every note on the table."));
         out.add(new Said(1,"And never went home."));
         out.add(new Said(2,"Came in from somewhere else, you could tell. Through the wrong door, I always thought."));
-        out.add(new Said(1,deaths<=0?"Never died once before that. Not once.":deaths==1?"Died once before, I heard.":"Died a good few times before, I heard. "+deaths+" times."));
+        out.add(new Said(1,deaths<=0?"Never died once before that.":deaths==1?"Died once before, I heard.":"Died a good few times before, I heard. "+deaths+" times."));
         out.add(new Said(2,lost.isEmpty()?"Never kept an animal. Nothing waiting at home.":"Had an animal. "+lost.get(0)+". Lost it somewhere."));
         out.add(new Said(1,left.isEmpty()?"Stayed to the end of everything. That kind.":"Walked out of "+left.get(0)+" before the end. Didn't stop for it."));
-        out.add(new Said(2,glasses<=0?"Wouldn't take a drink off Benny. Not one.":glasses==1?"Took a drink off Benny, though.":"Took "+glasses+" drinks off Benny."));
+        out.add(new Said(2,glasses<=0?"Wouldn't take a drink off Benny.":glasses==1?"Took a drink off Benny, though.":"Took "+glasses+" drinks off Benny."));
         out.add(new Said(1,"Name of "+name+"."));
         out.add(new Said(2,"Was it."));
         return out;

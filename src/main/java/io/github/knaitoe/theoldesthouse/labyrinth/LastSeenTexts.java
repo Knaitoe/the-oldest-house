@@ -133,7 +133,7 @@ public final class LastSeenTexts {
     /** The second day: the desk lamp left on since the morning; the park lamps at dusk; Luz at the door, once she has said the rest. */
     public static final String LAMP_LATE="A desk lamp, on. Nobody has turned it off since the morning.",
         LAMP_POST_DUSK="A park lamp. Its globe is lit.",
-        LUZ_DOOR="They don't come to the door. Not one of them has.";
+        LUZ_DOOR="Not one of them has come to the door.";
     /** Which of the ten are girls, for the few lines that need she or he. */
     static final boolean[] GIRL={true,false,true,false,true,false,true,false,true,false};
     static String pronoun(int child){return GIRL[child]?"She":"He";}
@@ -218,7 +218,7 @@ public final class LastSeenTexts {
         CHAINED="Out on the avenue, someone winds a chain round the park's gates, and padlocks it.",
         MAN_TALK="He turns his light on you, and then back to the park.";
     /** The men on the avenue, one line at a time while they wait; at the back door, the one who tries it. */
-    public static final String[] MEN_LINES={"Gate's done.","They haven't moved. Not one of them.","Wait for the office to go dark.",
+    public static final String[] MEN_LINES={"Gate's done.","None of them has moved.","Wait for the office to go dark.",
         "Somebody's in there with them.","It isn't going to go dark.","Then we don't wait."};
     public static final String MAN_LOCKED="Locked.",MAN_PAPER="Nothing in here but paper.";
     /** A child's hand. */
@@ -282,7 +282,7 @@ public final class LastSeenTexts {
     /** The office's three on the day after. */
     public static final String NORA_DRAWER="My drawer's unlocked. Go on.",NORA_OPEN_AFTER="It stays open. They all do.",
         PATRICIA_AFTER="Nobody's come in yet. They will, after work.",
-        LUZ_AFTER="There's nobody out there. Not one of them.";
+        LUZ_AFTER="There's nobody out there.";
     /** The girl with one arm at the fountain, and the man across the avenue. Neither says anything. */
     public static final String ROMINA_TURNS="She turns her head to you.",
         NACHO_ACROSS="He stays on the far pavement, facing the park. He does not cross.";

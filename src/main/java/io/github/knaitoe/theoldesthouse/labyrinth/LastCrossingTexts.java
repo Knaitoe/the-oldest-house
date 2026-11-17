@@ -227,7 +227,7 @@ public final class LastCrossingTexts {
         case LastCrossingDayThree.FEED_GAUGE->"You rub the grime off the tag: FEED. The pipe goes down through the floor. You chalk an arrow on the wall beside it.";
         case LastCrossingDayThree.FEED_INTAKE->"The feed comes down the wall from above and goes into the stone, right beside a rusted door. You chalk an arrow.";
         default->"Here it is again, along the roof, turning down into the gate's housing. You chalk an arrow.";};}
-    public static final String DOOR_RUSTED="A rusted iron door in the wall. Rusted shut; nobody's opened it in years.";
+    public static final String DOOR_RUSTED="An iron door in the wall, rusted shut. Nobody's opened it in years.";
     public static final String DOOR_SHOVE="You put your shoulder to it. Rust gives, a little.";
     public static final String DOOR_OPENED="It grinds open on a stair going down into the dark, and a cold that smells of the river.";
     public static final String DOOR_HEARD="Iron grinds on iron in the east wall. The rusted door's open.";

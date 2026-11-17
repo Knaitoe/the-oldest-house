@@ -58,7 +58,7 @@ public final class DrawingTexts {
         text.append(switch(t.getString("Choice")){
             case Drawing.THREW->"I threw it.";
             case Drawing.DROPPED->"I dropped it on the flagstones and it rolled a little way and stopped.";
-            case Drawing.WALKED->"I kept it in my hand and walked back down the lane, and they stood aside to let me through. Nobody said anything. Nobody stopped me.";
+            case Drawing.WALKED->"I kept it in my hand and walked back down the lane, and they stood aside to let me through, and nobody stopped me.";
             case Drawing.STOOD->"I stood where I was and held it, and they went forward without me.";
             default->"";
         });

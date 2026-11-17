@@ -18,7 +18,7 @@ public final class ReplacementTexts {
     static List<Component> styled(HouseWriting.WritingStyle style,String text){var out=new ArrayList<Component>();for(String p:LookoutTexts.pages(text,PAGE))out.add(HouseWriting.page(style,p));return out;}
 
     /** What it says at the reader's heels: a cat's noises, or a dog's, in a person's mouth. */
-    public static final String[] CAT={"\"Mrrow.\"","\"Mrrp?\"","\"Mew.\"","It purrs. It isn't a purr. It's someone saying the word under their breath.","\"Meow,\" it says, the way you'd read it off a page."};
+    public static final String[] CAT={"\"Mrrow.\"","\"Mrrp?\"","\"Mew.\"","It purrs. Then you hear that it's someone saying the word under their breath.","\"Meow,\" it says, the way you'd read it off a page."};
     public static final String[] DOG={"\"Woof.\"","\"Wuff.\"","It whines, low, through its teeth.","It pants, close behind you. Its breath smells of tins.","\"Woof,\" it says, the way you'd read it off a page."};
     public static final String HINT="It isn't yours. Yours is somewhere on this street, and every house is boarded but one.";
 

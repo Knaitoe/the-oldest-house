@@ -70,13 +70,13 @@ public final class CostumeNight {
         new Person("Ron","Mr. Askew",3,24,3.5,0,-19.5,180,false,"Ron's mask came from the hardware store. We can tell, Ron.",new String[]{"The kids made me do it. I'm number three.","This mask is hot. I can't feel my face."}),
         new Person("Kaylee","Kaylee",4,25,-1.5,0,-21.5,0,true,"Green hair! She was never green, sweetheart. Doesn't matter.",new String[]{"I'm green because she lives in the lake.","Watch me crawl! Watch!"}),
         new Person("Marcus","Marcus",5,26,9.5,0,-23.5,90,true,"That's real weed off the dock. Smell it from here.",new String[]{"This is real weed. I pulled it off the dock.","I'm going to win. I've been practicing."}),
-        new Person("Shelly","Shelly",6,27,11.5,0,-17.5,90,false,"Shelly does this every year. Every year she holds so still.",new String[]{"I've done her every year since I was nine.","You hold still and they get scared. That's all it is."}),
+        new Person("Shelly","Shelly",6,27,11.5,0,-17.5,90,false,"Shelly does this every year. She holds so still.",new String[]{"I've done her every year since I was nine.","You hold still and they get scared. That's all it is."}),
         new Person("Owen","Owen",7,28,-6.5,0,-12.5,180,false,"A cardboard mask. Drew the teeth himself. Good teeth.",new String[]{"I drew the teeth.","Is the real one here? My dad says she isn't real."}),
         new Person("Brooke","Brooke",8,29,7.5,0,-21.5,90,true,"A mop on her head and she still crawls better than Marcus.",new String[]{"It's a mop. Don't tell my mom.","Mr. Hank always picks somebody weird."}),
         new Person("Wes","Wes",9,30,-10.5,0,-26.5,270,false,"Hood up, hair stapled in. Lazy, Wes. Points for the staples.",new String[]{"Hood up, done. I'm here for the candy.","Staples. It's the hair that sells it."}),
-        new Person("Rosa","Rosa",10,31,12.5,0,-21.5,90,true,"Now that. That's close. That's very close, Rosa.",new String[]{"I've been in the lake. That's not water from the hose.","Shh. Nobody's supposed to know which one is me."}),
+        new Person("Rosa","Rosa",10,31,12.5,0,-21.5,90,true,"Now that's very close, Rosa.",new String[]{"I've been in the lake. That's not water from the hose.","Shh. Nobody's supposed to know which one is me."}),
         new Person("Pip","Pip",11,32,.5,0,-14.5,180,false,"A pillowcase. Is that a ghost, Pip? It's a witch. All right.",new String[]{"I'm a witch. I'm not a ghost. I'm a WITCH.","Can I have more candy?"}),
-        new Person("Lyle","Lyle",12,33,-14.5,0,-30.5,270,false,"Lyle. Lyle, you didn't shave. Nobody's scared of a beard.",new String[]{"My wife bet me twenty dollars.","I'm the prettiest witch on this beach."}));
+        new Person("Lyle","Lyle",12,33,-14.5,0,-30.5,270,false,"Lyle, you didn't even shave. That's the whole costume?",new String[]{"My wife bet me twenty dollars.","I'm the prettiest witch on this beach."}));
     public static final List<Person> EVERYONE;
     static{var all=new ArrayList<Person>();all.add(HANK);all.addAll(ENTRANTS);EVERYONE=List.copyOf(all);}
     /** The four smallest entrants are children. */

@@ -549,7 +549,7 @@ public final class SecondPerson {
                 else if(sub==1){if(dt==60){say(f,a,"There.");}if(dt>=140){next(own,4);}}
                 else if(sub==2){if(dt==0||dt==1)say(f,a,"I had it. I had it this morning.");
                     if(state.equals("placed")||state.equals("home")){own.putBoolean("RoutineSet",true);next(own,3);SecondPersonStory.turned(own,"You set their "+SecondPersonStory.routine(own)+" out where they would see it.");}
-                    else if(dt>=WAIT){say(f,a,"Never mind. Never mind.");next(own,4);}}
+                    else if(dt>=WAIT){say(f,a,"Never mind.");next(own,4);}}
                 else if(sub==3){if(arrived(a,b,residentMark(own))&&!f.once.contains("thanks")){f.once.add("thanks");say(f,a,"Thanks.");}if(dt>=120){f.once.remove("thanks");next(own,4);}}
                 else if(dt>=60){go(own,EVENING);cloth(l,b,0);own.putBoolean("EveLamp",lampOn(l,b));own.remove("EveDoorBanged");}
             }

@@ -88,17 +88,17 @@ public final class ElkLotNight {
     private static final Map<String,String[]> IDLE=Map.of(
         "Marla",new String[]{"We're past close, hon. You look rough. Sit a minute.","You're not from around here. That's all right. Nobody's from around here after midnight.","Kitchen's closed. There's pickled eggs if you're brave.","Put it on the tab. Everybody does.","Wipe your feet next time. The field comes in on everybody's boots."},
         "Russ",new String[]{"Drove eleven hours today. Every one of them looked the same.","You hear that? Out past the lot. Every night this week.","My cousin hit one on this road. Cow elk. Said it stood up after.","Don't go out past the fence. Ground's soft out there.","%s, right? Thought so. You look like a %s."},
-        "Denny",new String[]{"You shoot? No? Then quit hovering.","Eight ball, corner pocket. Watch.","Wade owes me forty. Wade always owes me forty.","Lights went out across the road last night. Just a second. Like something walked in front of them."},
-        "Wade",new String[]{"Sit down if you're sitting.","There's a herd comes down to that field. You don't see them. You see where they were.","Marla's got a clipping on the board by the door. Read it sometime. Or don't.","Song's almost over. They're always almost over."},
+        "Denny",new String[]{"You shoot? No? Then quit hovering.","Eight ball, corner pocket. Watch.","Wade owes me forty again.","Lights went out across the road last night. Just a second. Like something walked in front of them."},
+        "Wade",new String[]{"Sit down if you're sitting.","There's a herd comes down to that field. You don't see them. You see where they were.","Marla's got a clipping on the board by the door. Read it sometime. Or don't.","Song's almost over."},
         "Hollis",new String[]{"Mm. Not yet.","...counted them going in. Never counted them coming out...","Tell her I paid.","Is it still out there? Don't tell me."});
     /** The men's lines once they are out: questions, then the reader, then accusations, then the field. */
     private static final String[][][] OUTSIDE={
-        {{"Where'd it go? Anybody see where it went?","It came over the fence. Nothing comes over that fence."},{"Look at my truck. Look at it!","Door's caved right in. It went for the truck."},{"Field. It went for the field.","Nobody follow it. You hear me?"}},
+        {{"Where'd it go? Anybody see where it went?","It came over the fence. That fence is six foot."},{"Look at my truck. Look at it!","Door's caved right in. It went for the truck."},{"Field. It went for the field.","Nobody follow it. You hear me?"}},
         {{"%s. You were out here. You saw it.","You were out here when it happened, %s."},{"It looked right at you, %s. Why'd it look at you?","It knew you. It stood there like it knew you."},{"Stood there like it was waiting on you.","It's not leaving, %s. It's waiting."}},
         {{"What did you do, %s?","What did you bring here, %s?"},{"You brought it. Didn't you. You brought it here.","Every night this week. And now you."},{"Go on, then. Out there. It's waiting on you.","Nobody leaves till it's done, %s."}},
         {{"Field's that way, %s.","Road's closed, %s. Field's that way."},{"Go find it.","Go on. Go find it."},{"Go on, %s. Out past the fence.","It's in the stalks. Go see it."}}};
     private static final String[] WOUNDED={"You hit it. You actually hit it.","Now it'll remember you.","You hurt it, %s. You don't hurt them."};
-    private static final String[] MARLA_AFTER={"They'll come back in. They always come back in.","Don't look at me, hon. I just pour.","Still serving. God knows why.","Close the door behind you. The cold gets in."};
+    private static final String[] MARLA_AFTER={"They'll come back in. Give it a minute.","Don't look at me, hon. I just pour.","Still serving. God knows why.","Close the door behind you. The cold gets in."};
 
     // ------------------------------------------------------------------------------------------------ helpers
     private static String said(Person who,String line,ServerPlayer p){return line.replace("%s",p.getGameProfile().getName());}
@@ -388,7 +388,7 @@ public final class ElkLotNight {
         var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);
         icons.put(7,LiteraryChoiceMenu.icon(Items.PAPER,"Your tab: "+money(own.getInt("Tab"))));
         LiteraryChoiceMenu.open(p,"Marla: What'll it be?",icons,()->LiteraryVignettes.inside(p,PLACE)&&p.distanceToSqr(marla)<=36,slot->{
-            if(slot==7){p.displayClientMessage(Component.literal("Marla: “Settle up when you're done, hon. Nobody's done yet.”"),false);return true;}
+            if(slot==7){p.displayClientMessage(Component.literal("Marla: “Settle up when you're done, hon. No rush.”"),false);return true;}
             int i=(slot-1)/2;if(slot%2!=1||i<0||i>=Drink.values().length)return false;order(p,marla,Drink.values()[i]);return true;});
     }
     /** One drink poured onto the reader's own tab, never more than {@value #MAX_DRINKS} a reader. */

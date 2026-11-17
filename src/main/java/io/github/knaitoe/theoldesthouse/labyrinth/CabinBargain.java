@@ -111,14 +111,14 @@ public final class CabinBargain {
                 new Line(SABRINA,"My name is Sabrina. I'm a nurse. If this is going to be done, I'd rather be the one who does it properly."),
                 new Line(SABRINA,"It wants something real now. Something... handy."),
                 new Line(SABRINA,"Your "+side+" arm. I'll tie it off first. I've done this before, for people who never got to choose."),
-                new Line(REDMOND,"It's our world that ends tonight if you don't. Not yours. Ours. You'd go home with both hands."),
+                new Line(REDMOND,"It's our world that ends tonight if you don't. You'd go home with both hands."),
                 new Line(SABRINA,"Say no, and that will be the end of it. Say yes, and everyone gets to go home."));
             case "after"->List.of(
                 new Line(REDMOND,"It was ours, you know. The world. We let you think it was yours."),
                 new Line(LEONARD,"Thank you, "+name+". Go home. It's still there. Look at the television."),
                 new Line(ADRIANE,"The storm's going. Do you hear it?"),
                 new Line(SABRINA,"Keep it clean and dry. You'll feel the hand for a long time. That's normal."));
-            case "refuse0"->List.of(new Line(LEONARD,"All right. That's all right. It was always your answer to give."),new Line(LEONARD,"It ends for us, then. Not for you. Never for you."));
+            case "refuse0"->List.of(new Line(LEONARD,"All right. It was always your answer to give."),new Line(LEONARD,"It ends for us, then. You go home either way."));
             case "refuse1"->List.of(new Line(ADRIANE,"You already gave one. I know what it cost."),new Line(ADRIANE,"Look after what you have left."));
             case "refuse2"->List.of(new Line(SABRINA,"I understand. I wouldn't either."),new Line(SABRINA,"Keep your hands. Both of them."));
             default->List.of();

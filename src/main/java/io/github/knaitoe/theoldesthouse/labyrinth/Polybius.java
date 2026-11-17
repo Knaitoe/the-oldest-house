@@ -100,7 +100,7 @@ public final class Polybius {
             case PRIZES->{exchange(p,PolybiusSite.prize(rel));return true;}
             case PIZZA_WARMER->{counter(p,PolybiusRegistry.PIZZA.get(),PolybiusRegistry.PIZZA_COST,SLICE_SOLD);return true;}
             case SODA->{counter(p,PolybiusRegistry.SODA.get(),PolybiusRegistry.SODA_COST,SODA_SOLD);return true;}
-            case PIZZA_COUNTER,BACK_COUNTER,NAPKINS->{cue(p,"\"Slice is four tickets, soda's three. It's on the menu. It's always been on the menu.\"");return true;}
+            case PIZZA_COUNTER,BACK_COUNTER,NAPKINS->{cue(p,"\"Slice is four tickets, soda's three. It's on the menu.\"");return true;}
             case PIZZA_OVEN->{cue(p,"The oven ticks. Something on its belt has been going round a long time.");return true;}
             case PIZZA_BOXES->{cue(p,"Pizza boxes, folded flat. A chef with a moustache on every lid.");return true;}
             case MENU_BOARD->{cue(p,"A slice, four tickets. A soda, three. Nothing else.");return true;}
@@ -229,7 +229,7 @@ public final class Polybius {
     public static boolean teen(int phase){return phase==TEEN_PHASE;}
     static final String[] TEEN_LINES={
         "\"Yeah?\" They don't look up from the magazine.",
-        "\"It's pepperoni. It's always pepperoni. The other kind ran out in, like, spring.\"",
+        "\"It's pepperoni. The other kind ran out in, like, spring.\"",
         "\"Tickets only. Don't ask me. Ask whoever owns this place. Nobody's seen them.\"",
         "\"The soda's flat. Everybody says. I've told them.\"",
         "\"If you're not getting anything you can stand somewhere else.\"",

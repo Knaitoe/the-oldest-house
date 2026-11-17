@@ -438,7 +438,7 @@ public final class PlaceForYou {
         line(p,h,"Mara","I don't want another conversation in an empty kitchen.");
         Talk.ask(p,Talk.reply("I'll sit with you tonight.",q->{line(q,h,"Mara","Tonight. All right. I'll hold you to that.");sunk(q,h,"company");})
             ,Talk.reply("I'm listening.",q->{line(q,h,"Mara","That's more than most.");sunk(q,h,"listen");})
-            ,Talk.reply("What does Kit want?",q->{line(q,h,"Mara","Kit wants to be somewhere else. Kit's always wanted to be somewhere else.");line(q,h,"Mara","...I know what Kit wants.");sunk(q,h,"kit");}));
+            ,Talk.reply("What does Kit want?",q->{line(q,h,"Mara","Kit's always wanted to be somewhere else.");line(q,h,"Mara","...I know what Kit wants.");sunk(q,h,"kit");}));
     }
     static void sunk(ServerPlayer p,House h,String promise){
         edit(p,o->{o.putBoolean("TheoTold",true);o.putString("Promise",promise);o.putInt("Chapter",DINNER);});Talk.end(p);startDinner(p.serverLevel(),h,p);
@@ -474,7 +474,7 @@ public final class PlaceForYou {
         Talk.begin(p,"spoon","Mara");line(p,h,"Mara","Take this off me. Would you? I can't seem to put it down.");
         Talk.ask(p,Talk.act("Take the spoon.",q->{PlaceForYouSite.spoon(q.serverLevel(),h.base,true);edit(q,o->o.putBoolean("SpoonTaken",true));line(q,h,"Mara","Thank you. Thank you. Sit down, all of you, it's getting cold.");Talk.end(q);
                 if(own(q).getString("Promise").equals("company"))edit(q,o->o.putBoolean("PromiseKept",true));})
-            ,Talk.act("Leave it.",q->{line(q,h,"Mara","There's one more. There's always one more.");Talk.end(q);}));
+            ,Talk.act("Leave it.",q->{line(q,h,"Mara","There's one more.");Talk.end(q);}));
     }
     static void confront(ServerPlayer p,House h){
         var own=own(p);Talk.begin(p,"confront","At the table");line(p,h,"Mara","Sit down, all of you. It's getting cold.");
@@ -487,7 +487,7 @@ public final class PlaceForYou {
                 line(q,h,"Mara","What would you have me do?");
                 Talk.ask(q,Talk.reply("Let them go. Let yourself go, too.",z->confronted(z,h,"open")),Talk.reply("Let Kit go. The rest of you can decide for yourselves.",z->confronted(z,h,"open")));})
             ,Talk.reply("Mara, can we talk in the other room?",q->{line(q,h,"Mara","...All right.");
-                line(q,h,"Mara","You've seen it, then. I'm not keeping anyone. I'm keeping the evening. They're in it.");
+                line(q,h,"Mara","You've seen it, then. It's the evening I keep. They're in it.");
                 Talk.ask(q,Talk.reply("They want to leave. You can let them.",z->{line(z,h,"Mara","Would you open the door for me? I don't think I can be the one.");confronted(z,h,"private");})
                     ,Talk.reply("You could leave too.",z->{line(z,h,"Mara","Would you open the door for me? I don't think I can be the one.");confronted(z,h,"private");}));})
             ,Talk.reply("Kit, go now. I'll keep them talking.",q->{line(q,h,"Kit","Now? Now. Right.");line(q,h,"Mara","Was that— Kit? Was that the door?");confronted(q,h,"kit");})
@@ -508,7 +508,7 @@ public final class PlaceForYou {
         boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown");
         if(ready&&own.getString("MaraEnd").isEmpty()&&!Talk.waiting(p)&&PlaceForYouSite.inKitchen(r)&&!own.getBoolean("MaraAsked")){own.putBoolean("MaraAsked",true);save(p,own);maraDecides(p,h);}
         if(own.getString("MaraEnd").equals("sat")&&!own.getBoolean("SatDone")){
-            if(p.getVehicle() instanceof SeatEntity&&PlaceForYouSite.inKitchen(r)){if(++h.sitFor>=160){own.putBoolean("SatDone",true);own.putBoolean("PromiseKept",true);save(p,own);above(h,actor(l,h,"Mara"),"I'll stay a while. Not because I have to. I'll try it, and see.");}}
+            if(p.getVehicle() instanceof SeatEntity&&PlaceForYouSite.inKitchen(r)){if(++h.sitFor>=160){own.putBoolean("SatDone",true);own.putBoolean("PromiseKept",true);save(p,own);above(h,actor(l,h,"Mara"),"I'll stay a while. I'll try it, and see.");}}
         }
         if(own.getString("MaraEnd").equals("gate")&&!own.getBoolean("MaraGone")){if(h.maraGoneAt<0)h.maraGoneAt=(int)h.tick;if(h.tick-h.maraGoneAt>200){own.putBoolean("MaraGone",true);own.putBoolean("LightOff",true);save(p,own);PlaceForYouSite.kitchenLight(l,b,false);}}
         if(ready&&own.getString("AlexEnd").isEmpty()&&!Talk.waiting(p)&&!own.getBoolean("AlexAsked")){var a=actor(l,h,"Alex");if(a!=null&&p.distanceToSqr(a)<12){own.putBoolean("AlexAsked",true);save(p,own);alexGoes(p,h);}}

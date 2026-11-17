@@ -419,7 +419,7 @@ public final class MarshSupper {
         if(holdsKeys(p)){if(who==0)lay(p,b,s);else cue(p,NAMES[who]+" looks at the keys in your hand, then down the table at Ida.");return;}
         switch(who){
             case 0->{if(s.stage==SOUP&&seated(p,b)!=null&&s.asked.add(p.getUUID()))askWhere(p);
-                else{begin(p,"Ida");Talk.line(p,"Ida",s.stage==ARRIVE?"Come in, sit down. There's a plate for you. There's always a plate.":s.stage>=CHAIR_GONE?"Something on your mind?":"You eat. There's plenty.");smallTalk(p,0);}}
+                else{begin(p,"Ida");Talk.line(p,"Ida",s.stage==ARRIVE?"Come in, sit down. There's a plate for you.":s.stage>=CHAIR_GONE?"Something on your mind?":"You eat. There's plenty.");smallTalk(p,0);}}
             case 1->cue(p,"Royce nods and goes back to his plate.");
             case 2->{begin(p,"Del");Talk.line(p,"Del",s.stage<CORINNE_OUT?"You came up through the corn? I used to get lost in there on purpose.":"Mom does a good roast. You'll see.");
                 var replies=new ArrayList<Talk.Reply>();

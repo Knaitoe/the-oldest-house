@@ -366,7 +366,7 @@ public final class Drawing {
         if(t==25)sound(l,d.base.offset(DrawingSite.BOX),DrawingRegistry.MURMUR.get(),1F,1F);
         if(t==70){int sayer=firstOf(d,m,idx(DUNN),idx(PIKE),idx(RUDD),idx(ALBRIGHT));if(sayer>=0)speak(l,d,sayer,members.size()>1?"It's the "+house+"s.":"It's "+(house.equals("Pike")?"Pike":SAYS[m])+".");}
         if(t==100){var a=actor(l,d.cast[head]);if(a!=null)a.gesture(HOLD_OUT);}
-        if(t==140)speak(l,d,m,switch(d.year){case 1->"He was rushed. You all saw him rushed, he never had the time to choose.";case 2->"Somebody look at that list again. Somebody check it.";case 3->"Give it a minute. Just give it one minute.";case 4->"I didn't even want to come.";case 5->"Dad?";default->"Every year. There's always been one.";});
+        if(t==140)speak(l,d,m,switch(d.year){case 1->"He was rushed. You all saw him rushed, he never had the time to choose.";case 2->"Somebody look at that list again. Somebody check it.";case 3->"Give it a minute.";case 4->"I didn't even want to come.";case 5->"Dad?";default->"Every year. There's always been one.";});
         if(t>=OPENING_LENGTH){var a=actor(l,d.cast[head]);if(a!=null)a.gesture(0);next(l,d,HOUSEHOLD_DRAW);d.household=members;d.draw=-1;}
     }
     static int firstOf(Day d,int not,int... who){for(int w:who)if(d.here.contains(w)&&w!=not&&!HOUSEHOLD[w].equals(HOUSEHOLD[not]))return w;return -1;}
@@ -431,7 +431,7 @@ public final class Drawing {
         // Walking back down the lane once the stones are out: with the stone in hand, or after dropping it.
         if(d.stage==CHOICE&&DrawingSite.inLane(r)){
             String choice=own.getString("Choice");
-            if(choice.isEmpty()&&holdsStone(p)){cue(p,"The crowd stands aside to let you through. Nobody says anything. Nobody stops you.");cut(l,d,p,WALKED);own=own(p);}
+            if(choice.isEmpty()&&holdsStone(p)){cue(p,"The crowd stands aside to let you through, and nobody stops you.");cut(l,d,p,WALKED);own=own(p);}
             else if(choice.equals(DROPPED)){cut(l,d,p,DROPPED);own=own(p);}
         }
         refresh(held,own);

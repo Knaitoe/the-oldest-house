@@ -242,7 +242,7 @@ public final class BorrascaGames {
         boolean back=true;for(int who=KEL;who<=KEN;who++){send(own,who,WAITS[who]);back&=walk(p,own,who,cast[who],b,OUT);if(near(cast[who],b,WAITS[who],.6))face(cast[who],p.position());}
         boolean said=own.getBoolean("GamesCaught")
             ?lines(p,own,cast,KEN,"New kid's it! Count at the big oak. No looking.")
-            :lines(p,own,cast,KEL,"I give up! Come out! Where were you?",PAT,"Nobody beats Kelly. Nobody.",KEN,"Then the new kid's it. Count at the big oak. No looking.");
+            :lines(p,own,cast,KEL,"I give up! Come out! Where were you?",PAT,"Kelly hasn't lost a game all summer.",KEN,"Then the new kid's it. Count at the big oak. No looking.");
         if(said){own.putBoolean("GrovePlayed",true);if(!own.getBoolean("GamesCaught"))own.putBoolean("GroveHid",true);if(back||ticks>200)state(own,READER_SEEKS);}
     }
     /** Whether she can see the reader: near and in the open in front of her, or near enough to touch. */

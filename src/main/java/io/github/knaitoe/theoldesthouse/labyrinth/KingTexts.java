@@ -42,7 +42,7 @@ public final class KingTexts {
         DUM_LONGER_NAME="The Red King, people call him, when they don't know him. He has a longer name than that.",
         DEE_HIS_NAME="His Red Majesty, King of the Fourth Square, who sleeps under the tree. All of it, mind, or it doesn't count.",
         DUM_RATTLE="And that's my rattle under his tree. Spoilt.",
-        DEE_RATTLE="It isn't spoilt. It's old.",
+        DEE_RATTLE="It's old, that's all.",
         DUM_BATTLE="Then we'll have a battle about it. As soon as we're dressed.",
         DUM_GOT_IT="You've got it, then.",DEE_GOT_IT="Then there's nothing to fight about. A pity.",
         DUM_DRESSING="We're dressing. You can see we're dressing.",DEE_DRESSING="Hold this bolster.",
