@@ -78,6 +78,8 @@ public final class HallFeedClient {
     public static List<HallFeed.Print> prints(){return prints;}
     public static boolean screenOn(){return screenOn;}
     public static BlockPos monitor(){return monitor;}
+    /** The last picture taken of the watched hall, grey levels row by row, or null. For checks. */
+    public static int[] picture(){return still;}
 
     public static void accept(HallFeedPayload p){
         switch(p.mode()){

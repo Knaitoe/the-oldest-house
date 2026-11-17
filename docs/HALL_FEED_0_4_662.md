@@ -53,11 +53,20 @@ since it is only ever in the first reader's game. When each reader was last show
   footprints, all of them, breaking up), and the feed flat. It checks that the model is loaded, that each footprint darkens the picture
   where it falls, and that the clock is lit.
 - `tools/draw_hall_feed.py --check`: the textures and the model, and the glass well darker than the bezel round it.
+- In play, in the scene review's two real clients (`SceneReviewSocketProof`, the CI job `scene-review-clients`, its last two
+  phases): one client walks up the alcove hall with real movement while the server's own tick has it watched, its own game taking
+  the pictures, and is then in the offset hall alone, where the server shows it the feed. That client must have taken at least two
+  pictures, the last of them not flat; must have three footprints or more from its walk; must see the screen lit, then dark once
+  the picture has broken up. It saves the monitor on the wall at four moments (`A-feed-empty`, `A-feed-steps`, `A-feed-all`,
+  `A-feed-breaking`), the picture as its game took it (`A-feed-picture`) and the screen as composed at three of those moments
+  (`A-feed-screen-*`). Staging: the two halls are built as the House builds them, six crossings are pushed behind the reader, the
+  hall is watched for certain rather than one time in three, and the reader is set down in the second hall rather than walking
+  through a door to it. The other client stays in the flat, so both halls are the first reader's alone.
 
 ## Not covered
 
-- The picture is taken by the reader's own game in a running world, as the four-camera room's feeds are; no case or proof takes one. The
-  proof stands a hall drawn for the purpose in for it.
+- In the scene review the reader is set down in the second hall; coming into it through a door, as a reader does, is covered only by
+  the case, which drives the same steps with places of its own.
 - When a hall is watched and when the feed is shown are decided by the server's own tick from the readers' places; the case drives the
   same steps directly, with places and times of its own.
 
