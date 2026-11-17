@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.656** fixes four things the owner found. Walking through either side hedge of A sort of thing now leaves the King his sleep, as walking off the far side always did, or puts the reader back. Ten models whose thinnest sides drew nothing, the Last Crossing's frayed coil among them, show their own edges. The elk's lit eyes are where its painted eyes are, on the sides of its head. And the girl from the wardrobe is painted again: a face under her hair, her hair down her back, a nightdress gone dull with keeping, and a neck. `docs/QUICK_FIXES_0_4_656.md`.
+Development candidate **0.4.657** redraws the great staircase's stone, as the owner suggested. The well's walls are laid in courses a block high, of stones of different lengths, so no two stretches of wall are laid alike, and seen across the well they read as stone; the treads are stone flags drawn at Minecraft's own sixteen pixels, each a shade of its own and laid close, where they were a photograph-like texture eight times that size. Only how the stone is drawn changes. `docs/STAIRCASE_STONE_0_4_657.md`.
 
-Previous: 0.4.655 gave nine more stories someone on the great staircase, each drawn there by its own story's renderer. `docs/STAIR_STAND_INS_0_4_655.md`.
+Previous: 0.4.656 fixed four things the owner found: the King's side hedges, faces that drew nothing, the elk's eyes and the girl from the wardrobe. `docs/QUICK_FIXES_0_4_656.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

@@ -29,6 +29,7 @@ BOY_PATH='src/main/resources/assets/the_oldest_house/textures/entity/caged_child
 ELK_REVIEW=ROOT/'art/inventory/elk_eyes_04656.json'
 ELK_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_elk'+sheet+'.png' for sheet in ('','_wounded','_carcass','_carcass_skinned')}
 GIRL_REVIEW=ROOT/'art/inventory/clap_girl_04656.json'
+STAIR_REVIEW=ROOT/'art/inventory/staircase_stone_04657.json'
 GIRL_PATH='src/main/resources/assets/the_oldest_house/textures/entity/clap_ghost_girl.png'
 GIRL_MODEL=ROOT/'art/clap_ghost_girl.model.json'
 # The slim player model's two layers: head and hat, body and jacket, each arm and its sleeve (three pixels wide), each leg and its trouser.
@@ -125,11 +126,20 @@ def main():
     # 0.4.656, the owner: "Can you improve the texture for the ghost girl from hide and clap?" (tools/draw_clap_girl.py).
     girl={r['path']:r for r in json.loads(GIRL_REVIEW.read_text())['repainted']}
     assert set(girl)=={GIRL_PATH}
+    # 0.4.657, the owner: "Feel free to rework the texture of the staircase too". The treads' stone, drawn at sixteen pixels by
+    # tools/draw_stair_well_art.py; it supersedes only its own historical hash.
+    stair={r['path']:r for r in json.loads(STAIR_REVIEW.read_text())['repainted']}
+    assert set(stair)=={'src/main/resources/assets/the_oldest_house/textures/block/staircase_stone.png'}
     for path,digest in review['unchanged_png_sha256'].items():
         if path in props:
             row=props[path];assert row['review_04100_sha256']==digest,('Historical prop review changed',path)
             raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('Devil\'s Rock prop changed since its redrawing',path)
             assert list(Image.open(BytesIO(raw)).size)==row['size'],path
+            continue
+        if path in stair:
+            row=stair[path];assert row['review_04100_sha256']==digest,('Historical review of the staircase stone changed',path)
+            raw=read(path);assert hashlib.sha256(raw).hexdigest()==row['sha256'],('The staircase stone changed since it was redrawn',path)
+            assert list(Image.open(BytesIO(raw)).size)==row['size']==[16,16],path
             continue
         if path in girl:
             row=girl[path];assert row['review_04100_sha256']==digest,('Historical review of the girl changed',path)
