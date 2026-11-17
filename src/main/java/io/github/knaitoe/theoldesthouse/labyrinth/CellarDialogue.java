@@ -14,7 +14,7 @@ public final class CellarDialogue {
         "My blade broke in a collarbone. I've been using my nails.","If he gets the bottom step, there's no room left to breathe down here."};
     private static final String[] MAN={"Cut deeper. Please.","I didn't want this.","Is it morning?","Don't leave me like this.","It keeps coming back. Get all of it.","I can still feel your hands.",
         "There's someone else in here with me. He won't stop crying.","It's so warm. Why is it so warm.","Every time you cut, it comes back thicker. I'm sorry.","I had a name. It's under all this somewhere.",
-        "Not with your nails. Not like him. Use the blade.","My mouth isn't mine any more."};
+        "Use the blade. He's been at me with his nails.","My mouth isn't mine any more."};
     private CellarDialogue(){}
     public static void worker(ServerPlayer p,CompoundTag own){
         int line=own.getInt("WorkerStory130");own.putInt("WorkerStory130",line+1);var b=LiteraryVignettes.base(p,LabyrinthPlace.LAYERED_MAN);var shared=b==null?new CompoundTag():UncannyStories.world(p.serverLevel(),b,LabyrinthPlace.LAYERED_MAN);

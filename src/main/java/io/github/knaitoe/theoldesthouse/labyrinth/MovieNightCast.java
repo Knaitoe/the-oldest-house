@@ -66,7 +66,7 @@ public final class MovieNightCast {
     // ------------------------------------------------------------------------------------------------ their words
     private static final Map<String,String[]> IDLE=Map.of(
         "Ray",new String[]{"Canoes are free. Take one out past the sand; it plays better from the water.","Keep out of my beam unless you want to be in the picture.","This print's older than I am. It jumps in the boat scene.","Pier's across the lake. Dot keeps the hut open till the last reel.","Every summer somebody asks if there's sharks in the lake. There's no sharks in the lake."},
-        "Dot",new String[]{"You walked round? Nobody walks round.","Ticket's free tonight, hon. Ray says the print's paid for itself.","I can hear it from here, you know. Every word. I've seen it forty times."},
+        "Dot",new String[]{"You walked round? It's a mile by the road.","Ticket's free tonight, hon. Ray says the print's paid for itself.","I can hear it from here, you know. Every word. I've seen it forty times."},
         "Frank",new String[]{"Down in front, would you?","We saw this one at the drive-in in '74. Still gets me.","June, pass the popcorn.","That boat's too small. Everybody knows that boat's too small."},
         "June",new String[]{"Jamie, sit back in your chair.","It's only a movie, sweetheart.","Frank, did you lock the car?","Mind the cooler. There's pop in it if you want one."},
         "Jamie",new String[]{"Is it real?","I'm not going in the water tomorrow.","Mom. There's somebody standing on the lake.","Can I have the last of the popcorn?"},
@@ -88,13 +88,15 @@ public final class MovieNightCast {
         new Reaction(11,140,JAMIE,"Mom? Is it gone?",JUNE,"Jamie? Jamie, it's over."),
         new Reaction(12,20,RAY,"Lacing it up again. Same picture all night.",RAY,"Lacing it up again."));
 
-    private static void say(LiteraryActor a,String line){a.say(line);a.getPersistentData().putLong("Said0502",a.level().getGameTime());}
+    private static void say(LiteraryActor a,String line){a.say(line);said(a,line);}
+    /** When they last spoke and what they said (0.4.676: an idle line that would only repeat it goes unsaid). */
+    private static void said(LiteraryActor a,String line){a.getPersistentData().putLong("Said0502",a.level().getGameTime());a.getPersistentData().putString("SaidLine0676",line);}
     /**
      * A line said to the readers near enough to hear it. 0.4.565 (two readers, the standard cast checks): a line to the film was said
      * on its frame whoever was near, and Lynn called to Bobby with both readers thirty blocks off. With nobody in earshot it goes unsaid,
      * as an idle line does.
      */
-    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){if(near.stream().noneMatch(p->p.distanceToSqr(a)<24*24))return;a.say(who.name(),line);a.getPersistentData().putLong("Said0502",a.level().getGameTime());}
+    private static void speak(LiteraryActor a,Person who,String line,List<ServerPlayer> near){if(near.stream().noneMatch(p->p.distanceToSqr(a)<24*24))return;a.say(who.name(),line);said(a,line);}
     /**
      * 0.4.241 (owner: "something should implore the player to check the first [paper] so they can complete it after running to the
      * grass"). The program waits on its stand by the door the reader came in at, and the account across the lake answers it. Ray calls
@@ -199,7 +201,11 @@ public final class MovieNightCast {
     private static void idle(ServerLevel l,CompoundTag w,List<ServerPlayer> readers){
         int n=w.getInt("CastLines");w.putInt("CastLines",n+1);var who=CAST.get(n%CAST.size());var a=cast(l,w,who);if(a==null||a.isInvisible())return;
         ServerPlayer near=null;double best=16*16;for(var p:readers){double e=p.distanceToSqr(a);if(e<best){best=e;near=p;}}if(near==null)return;
-        say(a,line(who,w.getInt("Gone0502"),n/CAST.size()));
+        // 0.4.676 (the two-reader cast checks): the first idle line is the first a reader is answered with, so a reader who has just
+        // asked would hear it again at once. A line they said in the last half minute is not said again unasked.
+        String line=line(who,w.getInt("Gone0502"),n/CAST.size());var mem=a.getPersistentData();
+        if(line.equals(mem.getString("SaidLine0676"))&&l.getGameTime()-mem.getLong("Said0502")<600)return;
+        say(a,line);
     }
     private static String line(Person who,int gone,int n){
         String[] pool=IDLE.get(who.key());
@@ -232,7 +238,7 @@ public final class MovieNightCast {
         else if(dot!=null&&!p.isSpectator()&&!own.getBoolean("MetDot0502")&&p.distanceToSqr(dot)<25){own.putBoolean("MetDot0502",true);speak(dot,DOT,gone!=0?DOT_AFTER[0]:IDLE.get("Dot")[0],List.of(p));}
         // Out on the water with no program: Ray calls after them from the dock, once.
         var ray=cast(l,LiteraryVignettes.shared(p,PLACE),RAY);
-        if(ray!=null&&!p.isSpectator()&&noProgram(own)&&!own.getBoolean("RayProgram0524")&&p.getVehicle() instanceof LakeCanoeEntity){own.putBoolean("RayProgram0524",true);say(ray,RAY_PROGRAM);p.displayClientMessage(Component.literal(RAY.name()+": “"+RAY_PROGRAM+"”"),true);}
+        if(ray!=null&&!p.isSpectator()&&noProgram(own)&&!own.getBoolean("RayProgram0524")&&p.getVehicle() instanceof LakeCanoeEntity){own.putBoolean("RayProgram0524",true);speak(ray,RAY,RAY_PROGRAM,List.of(p));}
     }
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         var who=person(a);if(who==null)return;int gone=LiteraryVignettes.shared(p,PLACE).getInt("Gone0502");

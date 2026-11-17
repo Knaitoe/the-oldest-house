@@ -89,7 +89,7 @@ public final class LongerTexts {
         GO_ON="All right. It's the same door you came in by.",STILL_THERE="Kettle's still there.",
         POURED="The one without the crack's yours.",TOOK_CUP="You take the cup without the crack.",
         NOTICED_LINE="This is the good chair. I know. I'm not getting up.",
-        GOOD_TAKEN="You found the good one. That's fine. That's completely fine.",
+        GOOD_TAKEN="You found the good one. That's fine.",
         OPPOSITE="Is it cold by the window? Pull the chair in. It's warmer this side.",
         STAND_SIT="You can sit. That chair doesn't bite. This one does, a bit.",
         HELPING="Two slices. The left side burns, so watch it.",
@@ -210,7 +210,7 @@ public final class LongerTexts {
     public static ItemStack source(){
         return HouseWriting.book("Work order","R.",pages(
             "WORK ORDER\n\nSet: table radio, walnut case.\nFault: hums. Will not hold a station.\nPromised: Friday.",
-            "Valves tested, all good. Back panel off. One screw short; it went somewhere.\n\nIt finds something late at night and then loses it again. Not interference. Not the aerial.",
+            "Valves tested, all good. Back panel off. One screw short; it went somewhere.\n\nIt finds something late at night and then loses it again. It isn't interference, or the aerial.",
             "Shop closed until further notice.\n\nR."));
     }
     /** The account, read at the table in the room afterward (0.4.630): what happened, in order, from what this reader did and heard;

@@ -59,7 +59,7 @@ public final class GhostsSet {
             new Line(170,0,"I can do the voice whenever. The other ones just start."),
             new Line(320,0,"Dad got his show. We get to keep the house. I did that, didn't I? You can thank me later."),
             new Line(470,1,"Then you can stop doing it to me. Can't you?"),new Line(620,4,"We need Merry upstairs, please. We're ready for her."),
-            new Line(660,1,"That's my house. You won't fit, Marjorie."),new Line(745,0,"There's room. There's always room in here."),
+            new Line(660,1,"That's my house. You won't fit, Marjorie."),new Line(745,0,"There's room in here."),
             new Line(780,1,"Stop! That's my house!"),new Line(1030,0,"Did you get it? All of it?")),
         List.of(new Line(5,5,"We need to establish what we are dealing with."),new Line(170,0,"With cameras in the room? Your own rules say no."),
             new Line(330,2,"How could she know these things?"),new Line(480,3,"She can read, John. She can use the internet. She's a person."),

@@ -409,7 +409,7 @@ public final class PeopleLights {
     static void sharing(ServerLevel l,Evening e,LiteraryActor k,LiteraryActor m){
         var b=e.base;int t=e.since;
         if(k!=null)seat(k,b,PeopleLightsSite.KELLY_PLACE,Direction.SOUTH);if(m!=null)seat(m,b,PeopleLightsSite.MARK_SEAT,Direction.EAST);
-        if(t==1)say(l,e,"Kelly",e.changeChoice.isEmpty()?"Then something has to change tonight. Not everything. One thing.":"That one. Tonight.");
+        if(t==1)say(l,e,"Kelly",e.changeChoice.isEmpty()?"Then one thing has to change tonight.":"That one. Tonight.");
         if(t==60&&!PeopleLightsSite.caseDownstairs(l,b)){say(l,e,"Mark","I'll bring the case down.");}
         if(t==160&&!PeopleLightsSite.caseDownstairs(l,b))PeopleLightsSite.caseUpstairs(l,b,false);
         if(t==200)say(l,e,"Kelly","Put it where you can work.");
@@ -621,11 +621,11 @@ public final class PeopleLights {
         LiteraryChoiceMenu.open(p,"At the kitchen table",icons,()->LiteraryVignettes.current(p)==PLACE&&e.stage==AWAKE,slot->{
             var o=own(p);
             switch(slot){
-                case 0->{e.kellyWants=true;o.putBoolean("AskedKelly253",true);say(l,e,"Kelly","I want to call my father in the morning. Not now. Now I want tonight. And I want to not be listened to through the floor.");}
+                case 0->{e.kellyWants=true;o.putBoolean("AskedKelly253",true);say(l,e,"Kelly","I'll call my father in the morning. Tonight I want to not be listened to through the floor.");}
                 case 1->{e.markAdmitted=true;o.putBoolean("AskedMark253",true);say(l,e,"Mark","The thing upstairs looks like you. Like you before. And when you go round the hall at night it frightens me, and I sit up there to keep you where I can hear you.");
                     say(l,e,"Kelly","You listen to me. Through the floor. For how long?");say(l,e,"Kelly","...And I don't remember any of it. That's the part. I don't remember.");}
                 case 2->{e.uncertain=true;o.putBoolean("Uncertain253",true);say(l,e,"Mark","No. Nobody can.");say(l,e,"Kelly","But you saw it. That's something.");}
-                case 3->{if(!e.kellyWants)return false;say(l,e,"Kelly","One more night. I'll call Dad in the morning.");say(l,e,"Mark","Then I'm staying with you tonight. In there. Not up there.");
+                case 3->{if(!e.kellyWants)return false;say(l,e,"Kelly","One more night. I'll call Dad in the morning.");say(l,e,"Mark","Then I'm staying with you tonight, down here.");
                     agree(p,b,e,"one_more_night");}
                 case 4->{if(!e.kellyWants){say(l,e,"Kelly","Don't decide that for me. Ask me first.");e.refusal|=1;}
                     else if(!e.markAdmitted){say(l,e,"Mark","Not tonight. Tomorrow. I can't— not tonight.");e.refusal|=2;}

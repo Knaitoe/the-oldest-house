@@ -42,7 +42,7 @@ public final class BorrascaPrescott {
     public static final int CHILDREN=3;
     public static final String DOWN="All right. All right. There's a safe in the office. It's open.";
     public static final String[] PLEAS={
-        "I can put you on nights tomorrow. Nobody on nights goes short.",
+        "I can put you on nights tomorrow. Nights pays better.",
         "You want her up? I'll sign a transfer. I've signed them before.",
         "It isn't me you want. I only count. Look at who approves.",
         "Do it, then. There's a Prescott away at school. They'll have him home by Christmas."};

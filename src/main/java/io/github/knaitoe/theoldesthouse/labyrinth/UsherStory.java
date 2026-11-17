@@ -553,12 +553,12 @@ public final class UsherStory {
     private static final String[] STORM_CLOSED = {
         "You hear it too. You have heard it for days and said nothing.",
         "Read to me. Anything. The old romance, there on the floor by my chair. Read it loud.",
-        "Do not open the window. The light is not from the sky. It is coming off the house.",
+        "Do not open the window. The light out there is coming off the house.",
     };
     private static final String[] STORM_OPEN = {
         "You left it open. She has been walking all night. I hear her on the boards of the wing.",
         "She does not come in here. She stands where there used to be a chair and waits.",
-        "Do not open the window. The light is not from the sky. It is coming off the house.",
+        "Do not open the window. The light out there is coming off the house.",
     };
     /** 0.4.183: what he sees of the house the reader came from, by the House's read of them (HOME), once known. */
     public static String homeLine(String home) {

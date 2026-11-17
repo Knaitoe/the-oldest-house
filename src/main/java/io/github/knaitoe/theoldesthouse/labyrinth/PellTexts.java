@@ -402,13 +402,13 @@ public final class PellTexts {
         // In the pool, a week in.
         DRAIN="Under the grate of the drain at the deep end, a child's swimming goggles, the strap knotted where it broke.",
         BAND_MISSING="One tile of the band along the waterline is missing. The grout round the gap is new.",
-        BAND_ODD="One tile of the band does not match the rest. It is newer, and not quite the same.";
+        BAND_ODD="One tile of the band is newer than the rest, and not quite the same.";
     /**
      * 0.4.546, Tilly's senses (PellSenses.hush): what June says low into the telephone, between her other lines to Gail, where she thinks
      * nobody can hear it. Only a reader as Tilly hears it, anywhere in the house; the older sibling never hears it said. Four to a call:
      * the first morning's, and a week in (the first of those knows whether Tilly has answered to the name).
      */
-    public static final String[] JUNE_QUIETLY_FIRST={"Tilly's in Nessa's bed. It fits, Gail. It fits.","The older one watches me. All the time.",
+    public static final String[] JUNE_QUIETLY_FIRST={"Tilly's in Nessa's bed. It fits her, Gail.","The older one watches me. All the time.",
         "No. Nobody goes near the pool. I've seen to that.","A week. Give me a week and you'll see."};
     public static final String JUNE_QUIETLY_ANSWERS="Tilly answers to it now. Doesn't even notice.",JUNE_QUIETLY_NOT_YET="Tilly still won't answer to it. That'll come.";
     public static final String[] JUNE_QUIETLY_WEEK={"The older one's been telling stories. You'll hear them. Don't listen.",
@@ -456,7 +456,7 @@ public final class PellTexts {
             case KNIFE_LYING->List.of("I won't have that, love. Not about June.","She's been doing this a long time. It's going on your file.");
             case KNIFE_NOT_ME->List.of("All right, love. She says it was one of you.","You keep well out of it.");
             case KNIFE_SAW->List.of("On his own? With a knife?","June says one of you had it out of the block. I'll put down what you saw, love.");
-            case LEAVE->List.of("Oh, love. I know.","Not after last night. Not yet. Give it a bit longer. That's all I'm asking.");
+            case LEAVE->List.of("Oh, love. I know.","Not after last night. Give it a bit longer. That's all I'm asking.");
             default->found?List.of("Nothing to say? All right.","It's going on your file, love."):List.of("Hello? Are you there, love?","That's all right. You keep out of it.");
         };
     }
@@ -470,7 +470,7 @@ public final class PellTexts {
         SLAM_FAR="Over at the house a door slams, hard, and somebody cries out.",
         JUNE_HAND_OUT="It's nothing. I caught it in the door.",
         HAND_WRAPPED="June's right hand is wrapped in a tea towel. She holds it against her.",
-        JUNE_HAND_TROUBLE="Well. Not trouble, Gail. Not really.",
+        JUNE_HAND_TROUBLE="Well. Not trouble, Gail.",
         JUNE_HAND_WHAT="One of them slammed the laundry door on my hand yesterday.",
         JUNE_HAND_AND="And yesterday one of them slammed the laundry door on my hand.",
         JUNE_HAND_BRUISED="No, it's only bruised. I'll live.",
@@ -526,7 +526,7 @@ public final class PellTexts {
         {"Now. It won't stay in an empty ring. It needs somebody to stay in.",
          "A child holds it best. One nobody will come asking after.",
          "Keep him inside the ring. He mustn't ever cross it, or it goes out with him."},
-        {"He doesn't eat. I know how that sounds. Water, yes. Never food.",
+        {"He doesn't eat. I know how that sounds. He'll drink water, but never food.",
          "Food brings him back into himself, and what he's holding goes.",
          "Lay him a place at every meal all the same. It has to think it's at a table."},
         {"Then you want the other one. A girl, as near to yours as you can find.",
@@ -782,7 +782,7 @@ public final class PellTexts {
         case "movie_night"->"I rowed past the ones in the water.";
         case "winter_lake"->"I dared her out onto the ice.";
         case "camp_blood"->"I ran past the last cabin and didn't knock.";
-        case "devils_rock"->"It wasn't chasing me. I was chasing it.";
+        case "devils_rock"->"I was the one chasing it.";
         case "wheel"->"Every room measured me against her. I cheated.";
         case "ghosts_set"->"Marjorie asked for a blanket. I didn't bring it.";
         case "end_world_cabin"->"I answered the visitors for everyone in the cabin.";
@@ -873,7 +873,7 @@ public final class PellTexts {
         if(visit>=2)switch(told){
             case NO_SLEEP->{return juneToldUp?List.of("June said somebody's still up at night.","It can take a while. It does get easier, love.")
                 :List.of("Still? That's hard, love.","It can take a while. It does get easier.");}
-            case LEAVE->{return List.of("Oh, love. I know.","It's only been a week. Give it a bit longer. Give June a bit longer. That's all I'm asking.");}
+            case LEAVE->{return List.of("Oh, love. I know.","It's only been a week. Give June a bit longer. That's all I'm asking.");}
             case FINE->{return List.of("Good. That's good, love.","June says you're a help to her. You're in good hands.");}
             default->{}
         }
@@ -883,7 +883,7 @@ public final class PellTexts {
                 :List.of("No, I don't suppose you did. First nights are hard.","It gets easier. I promise it does.");
             case JUNE_OUT->List.of("In the garden? In the dark?","She'll have been seeing to something, love. She's always up at all hours, June.");
             case CALLUM->List.of("Callum does that. June did say.","He won't hurt anybody. Let him be, love.");
-            case LEAVE->List.of("Oh, love. I know.","Nowhere's going to be home for a while. Give it a week. Give June a week. That's all I'm asking.");
+            case LEAVE->List.of("Oh, love. I know.","Nowhere's going to be home for a while. Give June a week. That's all I'm asking.");
             default->List.of("Hello? Are you there, love?","That's all right. You don't have to say anything.");
         };
     }
@@ -1325,9 +1325,9 @@ public final class PellTexts {
         TELL_BORDER="Little animals along the top of the wall, all the way round.",TILLY_BORDER="What kind? No, don't say. I'll make them up.",
         TELL_DESK="A desk under the window, with a magnifier on a stand.",TILLY_MAGNIFIER="A magnifier. Then she couldn't see much either.",
         TELL_MARKS="Heights in pencil up the door frame. They stop. Then a new one, today's, with an N by it.",TILLY_NOT_AN_N="An N. I'm not an N.",
-        TELL_CANE="There's a cane in the wardrobe. Like yours, but shorter.",TILLY_CANE="She had a cane? Nobody said she had a cane.",
+        TELL_CANE="There's a cane in the wardrobe. Like yours, but shorter.",TILLY_CANE="She had a cane? Since when?",
         TELL_PHOTOS="Photographs all down the hall. The same girl in every one.",TILLY_HER_HAIR="June says I've got her hair. I haven't. Dad cut mine.",
-        TELL_KENNEL="There's a kennel out by the drive. No dog in it.",TILLY_NO_DOG="I haven't heard a dog. Not once.",
+        TELL_KENNEL="There's a kennel out by the drive. No dog in it.",TILLY_NO_DOG="I haven't heard a dog bark once.",
         TELL_GARAGE="I'm out in the garage, across the yard.",TILLY_TOO_FAR="That's too far. I won't hear you from there.",
         TELL_POOL="There's a pool out the back, with a cover on it.",TILLY_SMELL_IT="I can smell it. June said about the gate twice.",
         TELL_CHART="Your name's on a chart in the kitchen. It's stuck over somebody else's.",TILLY_FELT_EDGE="I know. I felt the edge of it. I didn't lift it.",

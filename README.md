@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.675** is the owner's twelve notes of 17 November (`docs/OWNER_NOTES_0_4_675.md`). The Last Crossing's four signs are painted boards. A person's line is drawn once, not twice. Bike night has framed bleachers, joined-up carts, a way to the cemetery told to a reader who is not getting nearer it (riding or on foot), and morning people out of their costumes with their own lines. A Little Longer, Last Seen and Fallow open their doorway so a reader arrives inside. The lodging house's cellar stair is walkable upright. The black city's snow lies on its roof, the tall grass's poles stand over drawn ground, the Kept's people keep apart, and AM's line fits the screen.
+Development candidate **0.4.676** is the dialogue pass the owner asked for on 17 November (`docs/DIALOGUE_PASS_0_4_676.md`). A hundred and sixteen lines across forty-three files lose the echo, the turned correction, the "not this but that" and the paired negative; every change is listed as it was and as it is.
+
+Previous: 0.4.675, the owner's twelve notes of 17 November (`docs/OWNER_NOTES_0_4_675.md`).
 
 Previous: 0.4.674 continued *Fallow* (part 3, first half: the four minutes). `docs/FALLOW_0_4_674.md`.
 

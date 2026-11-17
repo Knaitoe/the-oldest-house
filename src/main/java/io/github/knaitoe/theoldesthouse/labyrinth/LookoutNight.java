@@ -393,7 +393,7 @@ public final class LookoutNight {
             if(!inVoid(p,b)){
                 if(own.getInt("Returned202")==visit)continue;
                 HousePackets.send(p,new HouseFadePayload(6,30,30));var w=at(b,LookoutTower.VOID_WAKE);p.teleportTo(l,w.x,w.y,w.z,180,10);p.setDeltaMovement(Vec3.ZERO);p.connection.resetPosition();
-                cue(p,"No storm. No ground. The tower stands on its legs over nothing, and there are other towers round it.");continue;
+                cue(p,"There is no storm, and no ground. The tower stands on its legs over nothing, and there are other towers round it.");continue;
             }
             var rel=rel(b,p.position());
             // Down through the opened hatch, back into the tower's own cab; any other way down, back up into the cab.

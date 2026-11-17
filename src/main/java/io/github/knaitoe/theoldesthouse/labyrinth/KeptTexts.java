@@ -58,30 +58,30 @@ public final class KeptTexts {
         {"2","Walk faster, Wendell.","1","I'm walking as fast as I'm let."},
         {"0","It said there'd be food.","1","It always says."},
         {"2","Bread. I'd take bread somebody else had started.","3","Stop it. Please stop."},
-        {"3","You're new. Nobody's new.","0","Don't talk to them. They go."},
+        {"3","You're new. How did you get in here?","0","Don't talk to them. They go."},
         {"1","We've walked this before.","0","We've walked everything before."},
         {"2","I used to count the days. Then I counted the counting.","1","And then?","2","Then it counted for me."},
     };
     static final String[] COLD={"Cold now. It knows we hate the cold.","Keep moving. If you stop it gets into you."};
-    static final String WIRE_ROUND="We'll go round. We know a way round. You go under.",WIRE_UNDER="Under the wires. On your front. Don't let them touch your neck.";
+    static final String WIRE_ROUND="We know a way round. You go under.",WIRE_UNDER="Under the wires. On your front. Don't let them touch your neck.";
     static final String[] HALL={"Look at it. All those places laid.","Don't look at the chairs. They only turn if you look at them."};
-    static final String[] CRATE={"There. It's there. It said.","Open one. Go on, you've got hands. Open one.","There's nothing to open them with.","Of course there isn't.","I want to stop. Can we stop."};
+    static final String[] CRATE={"There. It's there. It said.","Open one. Go on, you've got hands. Open one.","There's nothing to open them with.","Of course there isn't.","Can we stop."};
     /** Each one's asking, at their cell's door. */
     static final String[][] ASK={
-        {"I know what's behind that door. Nothing. Nothing at all. Let me go into it.","It won't let you see it. Shut your eyes and open the door."},
+        {"I know what's behind that door. Nothing. Let me go into it.","It won't let you see it. Shut your eyes and open the door."},
         {"Me next. Don't argue. You saw. It's quiet in there.","Eyes shut. Then the door."},
         {"Is there anything in there to eat, do you think? No. I know. Open it anyway.","Close your eyes first. It doesn't like being looked at."},
-        {"Will it notice? When I've gone, will it notice?","Don't watch me go. Close your eyes."},
+        {"When I've gone, will it notice?","Don't watch me go. Close your eyes."},
     };
     static final String[] THANKS={"Thank you.","There.","Oh.","It's so quiet."};
     /** What each says when a reader talks to them, by where the walk has got to. */
     static String talk(int who,int stage,boolean released,boolean before){
-        if(released&&before)return switch(who){case 0->"I know you. I was gone. Then I was here again. It doesn't let anyone stay gone.";case 1->"You. You opened it. I was out, and then I was sitting by the cabinets.";case 2->"I remember the quiet. I remember it the way you remember food.";default->"Was it you? I think it was you. Thank you anyway.";};
+        if(released&&before)return switch(who){case 0->"I know you. I was gone. Then I was here again. It doesn't let anyone stay gone.";case 1->"You. You opened it. I was out, and then I was sitting by the cabinets.";case 2->"I remember the quiet the way you remember food.";default->"Was it you? I think it was you. Thank you anyway.";};
         return switch(stage){
-            case Kept.SITTING->switch(who){case 0->"Sit down. There's no hurry. There's never any hurry.";case 1->"Who let you in? Nobody lets anybody in.";case 2->"Have you eaten? Today, I mean. Have you eaten today?";default->"Are you real? Say something. Say anything.";};
+            case Kept.SITTING->switch(who){case 0->"Sit down. There's no hurry.";case 1->"Who let you in? That door doesn't open.";case 2->"Have you eaten today?";default->"Are you real? Say something.";};
             case Kept.WALKING->switch(who){case 0->"Don't believe it. Walk anyway. That's all there is.";case 1->"Don't stop for the screens. It wants you to stop.";case 2->"Tins, it'll be. It's always tins, at the end, when there's anything.";default->"What's it like? Out there. Tell me one thing.";};
             case Kept.AT_TABLE->switch(who){case 0->"Here we are, then.";case 1->"Don't sit down.";case 2->"Up at the end. Up by the wall. Can you see it?";default->"I don't like the chairs.";};
-            case Kept.BROKEN->switch(who){case 0->"It never lied. It never had to.";case 1->"Don't laugh. If you laugh I'll start.";case 2->"Nothing to open them with. Nothing to open them with.";default->"I want it to stop.";};
+            case Kept.BROKEN->switch(who){case 0->"It never once lied to us.";case 1->"Don't laugh. If you laugh I'll start.";case 2->"Cans. And nothing to open them with.";default->"I want it to stop.";};
             default->switch(who){case 0->"Go on. You know what to do.";case 1->"Shut your eyes. Then it's not looking.";case 2->"I'm next, then, am I? Or am I last?";default->"I'll wait. I'm good at waiting.";};
         };
     }

@@ -80,8 +80,8 @@ public final class MarshSupperTexts {
                 default->"I got up and left without saying anything. The House's door was where I had left it.";
             });
             case MarshSupper.WITNESS->{
-                if(by.isEmpty())text.append("I put her keys on the table in front of Ida. Nobody moved. Nobody looked at them. Outside, the porch light went out.");
-                else{text.append(by+" put her keys on the table in front of Ida. Nobody moved. Nobody looked at them. Outside, the porch light went out.");
+                if(by.isEmpty())text.append("I put her keys on the table in front of Ida. Nobody moved, or looked at them. Outside, the porch light went out.");
+                else{text.append(by+" put her keys on the table in front of Ida. Nobody moved, or looked at them. Outside, the porch light went out.");
                     if(t.getBoolean("TookKeys"))text.append(" I had brought them out of the kitchen myself.");}
             }
             default->{}

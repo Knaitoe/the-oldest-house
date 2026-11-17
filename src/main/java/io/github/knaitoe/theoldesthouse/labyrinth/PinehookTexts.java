@@ -45,7 +45,7 @@ public final class PinehookTexts {
     public static final String COOLER_SHOW="Kitchen's through there. I'll show you.";
     public static final String SECRET="Hey. Don't tell the others. Jude's going to give everybody a scare later, after dark. Mask, the whole thing. It's going to be great.";
     public static final String SECRET_KEEP="I won't say a word.",SECRET_KEEP_ANSWER="Knew I could count on you.";
-    public static final String SECRET_OBJECT="That's a terrible idea, Casey.",SECRET_OBJECT_ANSWER="It's going to be fine. It's a bit. Nobody gets hurt in a bit.";
+    public static final String SECRET_OBJECT="That's a terrible idea, Casey.",SECRET_OBJECT_ANSWER="It's going to be fine. It's a bit. I've done this before.";
     public static final String SECRET_WHO="Who's Jude, exactly?",SECRET_WHO_ANSWER="Jude's an actor. A real one. He's doing me a favour.";
     public static final String MUSIC_ON="Now it's a weekend.";
     public static final String FILM_CASEY="Good. Something everybody likes.",FILM_FAN="Oh, come on. Fine. Fine! But when it's terrible I'm talking through it.";
@@ -66,7 +66,7 @@ public final class PinehookTexts {
     public static final String JUDE_OWNER="Does the owner know you're here?",JUDE_OWNER_ANSWER="Casey said he told him. Why?";
     public static final String[] JUDE_IDLE={"Nice place. Smells like pine and mouse.","I'm going to look at the lake later. I grew up near one like this.","Casey talks a lot. He means well."};
     public static final String JUDE_LAKE="I'm going to go look at the lake for a bit.";
-    public static final String JUDE_FILM="I was in one of these. Not this one. One like it.";
+    public static final String JUDE_FILM="I was in one like this once.";
 
     // ------------------------------------------------------------------------------------------------ Nina
     public static final String NINA_TALK="Hi.";
@@ -131,7 +131,7 @@ public final class PinehookTexts {
     public static final String CASEY_BURN_CUE="Casey crouches at the fire and feeds a folded sheet of paper into it, and watches it go.",CASEY_BAG_EMPTY_CUE="Casey looks in his bag, then round the room, and doesn't say anything.";
     // Len, through the boathouse door.
     public static final String LEN_DOOR="Who's there? Go back to the cabin. Lock the doors. And nobody touches anything down here.";
-    public static final String LEN_Q_IN="Let me in.",LEN_IN="No. Nobody comes in. Not tonight.";
+    public static final String LEN_Q_IN="Let me in.",LEN_IN="No. Nobody comes in tonight.";
     public static final String LEN_Q_WHO="Who would want to hurt you?",LEN_WHO="Nobody. Kids. I don't know. Go back up.";
     public static final String LEN_Q_PRINTS="Somebody came up out of the water right by here.",LEN_PRINTS="Then she's been round the back.",LEN_SLIP="I didn't say she. I didn't say anything.";
     public static final String LEN_Q_SAFE="What's in the safe?",LEN_SAFE="Nothing that's yours.";
@@ -210,7 +210,7 @@ public final class PinehookTexts {
         CASEY_TAKES_JUDE="I'll take him. Go on. I've got him.";
     public static final String ACROSS_CUE="Casey and Jude go down the dock together, Jude leaning on him, and Casey rows them out toward the lights of the store.";
     // Casey: owning up, or hiding it.
-    public static final String CASEY_CONFESS="Everybody listen. The mask was mine. I set all of it up: the knocking, the breaker, Jude in the costume. Not the shed. Not the knife. Somebody else did that, and I helped them by keeping my mouth shut.";
+    public static final String CASEY_CONFESS="Everybody listen. The mask was mine. I set all of it up: the knocking, the breaker, Jude in the costume. Not the shed or the knife. Somebody else did that, and I helped them by keeping my mouth shut.";
     public static final String CASEY_SINK_CUE="Casey goes down the dock to the rowboat, lifts the bundle out from under the tarp and lets it go over the side.",
         CASEY_GOES_CUE="Casey gets into the rowboat, fumbles the rope loose and rows out into the dark on his own, badly, toward the far shore.";
     public static final String CASEY_HOLDS="I've got her arm. I've got her. Get the knife.";
@@ -218,7 +218,7 @@ public final class PinehookTexts {
     public static final String NINA_GOES_CUE="Nina gets up without a word and goes out the back.",NINA_SLIP_CUE="Nina casts the rope off the cleat, hauls on it, and goes into the water. Across the way the slip gate swings open.",
         NINA_LEAVES_CUE="Nina goes out through the slip with the envelope, into the black water, and doesn't come up anywhere you can see.";
     public static final String NINA_GOING="Go back inside. This isn't anything to do with you.",NINA_CLEAT="Move. This isn't anything to do with you.",
-        NINA_STANDOFF="Get out of the way. This isn't about you. It was never about any of you.",NINA_WHERE="Where is it? It isn't in the safe. One of you has got it.",
+        NINA_STANDOFF="Get out of the way. This is between me and him.",NINA_WHERE="Where is it? It isn't in the safe. One of you has got it.",
         NINA_GIVES_UP="...Fine. Keep him. He's all yours.",NINA_HELD="Let go of me. Let go. ...All right. All right.";
     public static final String NINA_HELD_TALK="You can let go. I'm not going anywhere.",NINA_DISARMED_TALK="It's done. Whatever happens now, it's done.",NINA_GAVE_UP_TALK="Don't. Just don't.",
         NINA_DAWN_TALK="I'm going to sit here until somebody tells me what happens next.";
@@ -257,13 +257,13 @@ public final class PinehookTexts {
         LEN_DAWN_EXPOSED="You've had your look. Happy? You don't know the half of what she did.",LEN_DAWN_NINA="My safe. Somebody's been in my safe.";
     public static final String Q_NOT_ALL="That's not all that happened.",NOT_ALL_ANSWER="Prove it.";
     // 0.4.368: the proposal's last branches. Len keeps his safe shut until someone faces him with it.
-    public static final String LEN_GUARDS="Nobody's opening anything down here. Nobody.",
+    public static final String LEN_GUARDS="Nobody's opening anything down here.",
         LEN_STOPS_SAFE="Len puts himself between you and the safe. \"Don't you touch that. That's mine.\"",
         Q_CONFRONT_LEN="She's coming for what's in that safe. Step away from it.",
         CONFRONT_LEN_ANSWER="...Then she can have the box. The key's under the bench. I'm not touching any of it.";
     // Jude won't help Casey hide what he did.
     public static final String CASEY_ASKS_JUDE="Jude. Give me a hand with the boat. Please. Before anybody looks.",
-        JUDE_REFUSES="No. Not this time. You carry it.";
+        JUDE_REFUSES="Not this time. You carry it.";
     // The boat can take Nina away: held, disarmed, or with nothing left to come for.
     public static final String Q_BOAT_NINA="The boat's ready. Take it, and go.",
         BOAT_NINA_HELD="Then let go of me.",BOAT_NINA_FREE="...All right. All right.",
@@ -301,7 +301,7 @@ public final class PinehookTexts {
         switch(own.getString("Outcome")){
             case "wounded"->lines.add(own.getBoolean("SawFigure")?"Jude came back from the shed cut and asked Casey who else he'd hired. Down at the end of the dock someone in the costume walked across the planks.":"Jude came back from the shed cut, and asked Casey who else he'd hired.");
             case "witnessed"->lines.add(own.getBoolean("WitnessedAttack")?"I got into the shed while she was at him. It was Nina, with a knife.":"Someone got into the shed in time. Jude said it was Nina.");
-            case "prevented"->lines.add(own.getBoolean("WithJude")?"I stayed with Jude while he changed. Nothing happened. Nobody came.":"Jude changed in the shed and came back. Nothing happened, that I saw.");
+            case "prevented"->lines.add(own.getBoolean("WithJude")?"I stayed with Jude while he changed, and nobody came.":"Jude changed in the shed and came back. Nothing happened, that I saw.");
             default->{}
         }
         if(own.getBoolean("HelpedJude"))lines.add("I held a dressing on his cut until it stopped.");

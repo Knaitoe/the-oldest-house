@@ -19,7 +19,7 @@ public final class PeopleLightsTexts {
 
     public static final String HINT="Stay for supper. The house has two floors, and they're not the same.";
     public static final String AFTER="The porch light is off. Nobody laughs inside. You know the house well enough not to knock.";
-    public static String stanGreeting(){return "Evening. Don't get up. Nobody get up.";}
+    public static String stanGreeting(){return "Evening. Don't get up.";}
 
     /** Stan's offer, folded once, left on the kitchen table: plain, fair, and in his hand. */
     public static ItemStack source(){

@@ -49,7 +49,7 @@ public final class LodgingTexts {
     public static final String[] VERA_YOURS={"That's yours. It isn't finished.","It wants a week of looking at you. You'd be surprised how little it needs.",
         "When it's ready it can go out in your place for a while, and you can rest. Everybody here was tired once."};
     public static final String VERA_EITHER_WAY="Nobody makes you. The room is yours either way.",VERA_DONT="Don't. It isn't anybody's yet. You'll only spoil the work.",
-        DAN_NOT_HOW="That's not how it was. That's not how it was for me.";
+        DAN_NOT_HOW="That's not how it was for me.";
     public static final String DOUBLE_OWN="Asleep under the blanket is a body with your face. The skin is too smooth. Its eyes move under the lids.",
         DOUBLE_OWN_AWAKE="Its eyes are open. It is not looking at you.",
         DOUBLE_WAKES="It opens its eyes. It does not look at you. It turns its head on the pillow and looks toward the rest of the house.",
@@ -81,14 +81,14 @@ public final class LodgingTexts {
         "She said a week. I'd been working nights for a year. She said I could sleep a week and something would go out and do my days, and when the week was done it would come back, and I'd go out, and nobody would know.",
         "It didn't come back. I asked her where it was. She said it was getting on well.",
         "The food comes through the hatch. I mended the chair. I mended it again.",
-        "I want the key. I want my name. I want whatever's left."};
+        "I want the key. I want my name back."};
     public static final String R_DIDNT_KNOW="He didn't know.",R_WAIT="Wait.",R_GIVE="Give it to him.",R_HURT_SELF="If you hurt him, you hurt yourself. I watched it.",
         DANIEL_GOOD="Good.",DANIEL_MAKE="Then he'd better not make me.",
         DANIEL_SILENT="He looks at you, and says nothing to that.",DANIEL_TAKES="He takes it in the hand the strap leaves free, and holds it down against the frame.",
         DANIEL_ARMED="He has it still, held down against the frame.";
     public static final String[] DAN_DOG={
         "There's a woman two doors down from me with a dog that's too old for the stairs. I carry it up for her, morning and night. Six years. Rae can tell you. She thinks I'm the nicest man in the street.",
-        "That happened. I don't care what else happened. That happened."};
+        "That happened. I don't care what else did."};
     public static final String DAN_STAND="When it comes to it, what does that mean? Standing with me.",
         R_STILL="He's still here, in the room at the back. She's still using him.";
     public static final String[] DAN_NO={"No. Vera told me he'd gone home. She said he had his own life and didn't want this one.","Show me."};
@@ -114,7 +114,7 @@ public final class LodgingTexts {
         STRAPS_OPEN="The straps hang open from their iron loops.",
         DANIEL_FREE="He stands with his arms down, turning one wrist in the other hand.",
         KEY_FOUND="On the floor of the cupboard, pushed to the back: a key, long and plain.",
-        RAE_NOT_YET="Daniel. Please. Not yet. Not with him there.",
+        RAE_NOT_YET="Daniel. Please. Not with him there.",
         R_RAE_KNEW="Rae knew he was alive.",DAN_SHE_KNEW="She knew?",DAN_YOU_KNEW="You knew.",RAE_SO_YOU_CAME="I did it so you'd come.";
     // 0.4.609: N8. VERA_OFFER and VERA_TRUTH are the script's; the reply labels and every other line are new here.
     public static final String[] VERA_OFFER={"I can mend him. I need help keeping the other one quiet while I do it.",
@@ -207,7 +207,7 @@ public final class LodgingTexts {
         CATCH_LIFT="Low in the jamb there is an iron catch, set flush in the plaster. You work it back a little.",
         CATCH_AGAIN="It gives a little more.",CATCH_DONE="The catch is out of the plaster. The frame is only wood now.",
         SEVERED="Under the whole house something lets go, all at once and quietly, and every floor settles a finger's width.",
-        BEG_FRAME="Put it back. I'll stand in it. I'll stand in anything.",
+        BEG_FRAME="Put it back. I'll stand in it.",
         VERA_SEVERED="You've let the house go. There's no keeping anybody now.",
         DANIEL_SITS="I keep thinking I'm leaning on something.",
         DANIEL_HANDS="Get it off. Get its hands off me.",
@@ -220,7 +220,7 @@ public final class LodgingTexts {
         DAN_WHAT="What are you doing to him?",
         YOU_HOLD_DANIEL="You take him by the shoulders. He is thin under the shirt, and he pulls against you.",
         YOU_LET_DANIEL_GO="You take your hands off him.",
-        DANIEL_HELD_BY_YOU="Don't. I'll stand. I'll stand for you.",
+        DANIEL_HELD_BY_YOU="Don't. I'll stand for you.",
         ROOM_SHALLOWER="The back wall of the room is nearer than it was. There are fewer boards in front of it.",
         DANIEL_PULLS_OUT="Let go. I'm not going back into it.",
         VERA_LOST="Then he stays as he is. I won't ask twice.",
@@ -234,12 +234,12 @@ public final class LodgingTexts {
     public static final String[] VERA_NOW={"It's time. Bring him to his frame, and hold him there.","Hold him till I say. It goes quicker with more hands."},
         VERA_COME_DOWN={"Now. Whoever said they would, come down to his frame.","Bring him, and hold him. It goes quicker with more hands."};
     /** Daniel as the room takes him: a line at each third. */
-    public static final String[] DANIEL_HELD={"No. I'm in the room. I'm still in the room.","Rae. Rae, the window's the wrong way round.","There isn't any floor behind me."};
+    public static final String[] DANIEL_HELD={"No. I'm still in the room.","Rae. Rae, the window's the wrong way round.","There isn't any floor behind me."};
     /** His voice in the wall, after. */
     public static final String[] DANIEL_WALL={"In the mornings the light came along the floor as far as the chair.","I used to wait for it to reach my feet. Rae, what was the..."};
     // 0.4.613: E1. Every line here is new.
     public static final String R_GO_BACK="You could go back through. He'd walk out.",R_TAKE_HIM="Then we'll take you.",R_STOP_DAN="It isn't coming. Stop.",
-        DAN_REFUSES="No. I've only just got here.",DAN_FORCED="Don't. Don't, I can walk.",DAN_LET_GO="Nobody's holding me. Nobody's holding me now.",
+        DAN_REFUSES="No. I've only just got here.",DAN_FORCED="Don't. Don't, I can walk.",DAN_LET_GO="Nobody's holding me now.",
         YOU_HOLD_DAN="You take his arm above the elbow. He pulls against it, and comes.",
         DAN_PANICS="Where? Where's it coming from?",DAN_STOPS="Then why did she say it?",
         DAN_SINKS="Dan steps into the frame and turns round in it. The plaster behind him gives, slowly, like a held breath, and takes him back.",
@@ -251,8 +251,8 @@ public final class LodgingTexts {
     /** Vera, calling down the stair, using his panic. */
     public static final String[] VERA_PANIC={"Dan. It's coming back through the walls.","Go to his room. The frame's the one place it won't put a hand on you."};
     /** Rae, Dan, Daniel: as it takes hold of them; coming out of the wall. */
-    public static final String[] TAKEN_CRY={"Dan! Dan!","Get it off me!","Not back in there. Not back in there."},
-        OUT_OF_WALL={"I couldn't see my hands in there.","It just let go of me.","I know these walls. I know every inch of them."};
+    public static final String[] TAKEN_CRY={"Dan! Dan!","Get it off me!","Not back in there. Please."},
+        OUT_OF_WALL={"I couldn't see my hands in there.","It just let go of me.","I know every inch of these walls."};
     /** Vera, to a reader against her who comes up when she calls. */
     public static final String[] VERA_SENT_ASK={"What's in your bed I won't touch if you won't have it touched. So it'll be you.","When I call, come down to the frame and hold him by the shoulders. He'll fight it."};
     /** What is seen as it takes one of the four. */

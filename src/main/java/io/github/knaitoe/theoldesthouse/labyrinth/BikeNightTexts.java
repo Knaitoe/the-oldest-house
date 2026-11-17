@@ -109,14 +109,14 @@ public final class BikeNightTexts {
             case "wasp"->"The Wasp. It turns on a dime. I've seen it turn on an actual dime.";
             case "hare"->"The Hare! Three pushes and it's gone. Try to stay on it.";
             case "comet"->"The Comet goes like anything. It doesn't stop like anything, though.";
-            case "hopper"->"The Hopper. You can stand somebody on those pegs. Not me. Somebody.";
+            case "hopper"->"The Hopper. You can stand somebody on those pegs. Not me, though.";
             case "lamp"->"The Lamp has a real light. It runs off the wheel. That's science.";
-            default->"Oh. The Rattler. No, take it. I said take any. I meant it. Mostly.";
+            default->"Oh. The Rattler. No, take it. I said take any.";
         };
     }
     /** About nothing. */
     public static final String[] GUS_IDLE={
-        "My cousin ate a whole pie once. A whole one. He said it was worth it. He didn't look like it was worth it.",
+        "My cousin ate a whole pie once. He said it was worth it. He threw up in the car.",
         "Do you think dogs know it's Halloween? Ours hides under the porch. Maybe that's just our dog.",
         "If you count the railings there's a hundred and twelve. I counted twice. The second time I got a hundred and nine.",
         "My mom thinks I'm at the library. The library shuts at five. She doesn't know that. Don't tell her.",
@@ -128,11 +128,11 @@ public final class BikeNightTexts {
         "You ever notice the swings always stop facing the same way? I have a theory. It's not finished.",
         "My brother says the dome was taller when he was little. I think my brother was shorter.",
         "I brought candy. I ate the candy. I'm telling you so you don't ask.",
-        "A few more years and we can drive. Then nobody can chase us. Nobody on bikes, anyway.",
+        "A few more years and we can drive. Then let them try and chase us.",
         "Do you smell leaves burning? I like that smell. It means somebody's home.",
         "The trick with the merry-go-round is don't look at anything. Or look at one thing. I forget which.",
         "I timed myself on the bars once. I didn't have a watch. I counted. It was a lot.",
-        "If Tully comes, we don't say anything. That's the plan. That's the whole plan.",
+        "If Tully comes, we don't say anything. That's the plan.",
         "Somebody cut a heart in that bench before we were born. I wonder if they're still, you know. A heart.",
         "You can hear the highway from here if you hold your breath. Go on. I'll wait.",
         "This is good. This is a good night. I'm saying it out loud so it counts."};
@@ -145,7 +145,7 @@ public final class BikeNightTexts {
     /** A hand on him: before the reader has a bike; and after, in turn. */
     public static final String GUS_TALK_NO_BIKE="Go and pick a bike. Any one. I'll wait here and not look like I care which.";
     public static final String[] GUS_TALK={
-        "I'm fine. I'm just standing. Standing is a thing people do.",
+        "I'm fine. I'm just standing here.",
         "You want to do the seesaw? Get on an end. I'm heavier than I look. It's the jacket.",
         "I can push you on the swings, if nobody else is going to. I'm good at it. I've got a system.",
         "Don't cut through the graveyard later. I put it in the plan. It's number six.",
@@ -176,7 +176,7 @@ public final class BikeNightTexts {
         "I'm not mad. I'm just going to stand over here."};
     /** The seesaw: getting on the other end; and when he has been left on it. */
     public static final String GUS_SEESAW_ON="I've got this end. Push off when you're down. I'll do the same. That's all there is to it.";
-    public static final String GUS_SEESAW_OFF="Good seesaw. That was a good seesaw.";
+    public static final String GUS_SEESAW_OFF="Good seesaw.";
     /** The swings: going round to push; and with the swing as high as pushing takes it. */
     public static final String GUS_SWING_OFFER="Stay there. I'll push. I've got a system.";
     public static final String GUS_HIGH="That's as high as it goes. That's what everybody says, anyway.";
@@ -201,7 +201,7 @@ public final class BikeNightTexts {
         "I know a short cut. I think. I knew one in July.",
         "This is the fastest I ever went on purpose.",
         "They never chase me. I don't know if that's good.",
-        "Don't look back. I looked back. It didn't help."};
+        "Don't look back. Just pedal."};
     public static final String[] GUS_BEHIND={"Behind you! Right behind you!","He's on you! Go! GO!","Pedal! Don't look, just pedal!"};
     public static final String[] GUS_ROUND={"They went round! One of them went round!","Not that way! One's waiting up there!","They split up. Since when do they split up?"};
     public static final String GUS_CHURCH="Not the graveyard. Anywhere else. I told you the story!";

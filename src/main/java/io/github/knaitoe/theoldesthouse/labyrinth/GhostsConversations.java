@@ -14,7 +14,7 @@ public final class GhostsConversations {
             {"Get the two of them together first. Before all the other stuff.","I'm between jobs right now. Everybody asks. I'd go back tomorrow."},
             {"Those are Merry's books, not props. Don't pack them up with your things.","Marjorie sees the doctor on Thursday. I don't care what your schedule says."},
             {"Grab Merry for me? We'll do hers while they're still upstairs.","She'll look right at the camera. Kids always do. Just stay on her."},
-            {"I'm here because John asked. I haven't really talked to Marjorie yet.","I'd like to talk to each of them on their own. Not all together like this."}
+            {"I'm here because John asked. I haven't really talked to Marjorie yet.","I'd like to talk to each of them on their own."}
         },
         {
             {"You'd think I'd promised her a crown. It's a hat, Merry.","Why are you filming me? Film Dad. He's the one doing all the praying."},

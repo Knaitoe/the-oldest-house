@@ -63,7 +63,7 @@ public final class NightOperator {
         RAIN("Rain on a window."),
         RADIO("A radio between stations."),
         KETTLE("A kettle, nearly on the boil."),
-        QUIET("Nothing. Nothing at all."),
+        QUIET("Nothing."),
         EXCHANGE("A switchboard. Someone breathing near it.");
         public final String heard;
         Line(String heard){this.heard=heard;}

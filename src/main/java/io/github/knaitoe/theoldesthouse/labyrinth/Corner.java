@@ -213,7 +213,7 @@ public final class Corner {
     static void waiting(ServerLevel l,Day d,List<ServerPlayer> here,int t){
         var a=actor(l,d.cast[0]);if(a==null)return;
         boolean near=false;for(var r:here)if(r.distanceTo(a)<7)near=true;
-        if(t==40)speak(l,d,0,switch(d.day){case DARE->"You're new. Do you want to see it? Nobody lives there. Nobody ever has.";case CORRIDOR->"It's open today. I know it is. Come on.";default->"Today. Come on.";});
+        if(t==40)speak(l,d,0,switch(d.day){case DARE->"You're new. Do you want to see it? Nobody's ever lived there.";case CORRIDOR->"It's open today. I know it is. Come on.";default->"Today. Come on.";});
         if(near&&t>=60||t>=KERB_WAIT){
             next(d,GOING);
             CornerSite.gate(l,d.base,true);CornerSite.frontDoor(l,d.base,true);sound(l,d.base.offset(CornerSite.GATE_W),CornerRegistry.GATE.get(),.8F,1F);
@@ -344,8 +344,8 @@ public final class Corner {
             return;
         }
         line=switch(actor.phase()){
-            case NACHO->d.stage==GONE?"She'll come out. She always comes out. You can go, if you want.":d.day==LAST?"I'm not going in. Somebody has to stay out here.":d.day==CORRIDOR?"We went in yesterday and nothing happened. Nothing ever happens.":"Don't believe her about her arm. She changes it. I don't remember either, and I was there.";
-            case LULI->d.stage==GONE?"Can we go home now? I want to go home.":d.day==DARE?"My nan says nobody has ever lived there. Not ever. It was built like that, empty.":"Don't touch the jars. I mean it.";
+            case NACHO->d.stage==GONE?"She'll come out. She always comes out. You can go, if you want.":d.day==LAST?"I'm not going in. Somebody has to stay out here.":d.day==CORRIDOR?"We went in yesterday and nothing happened. We just stood in the hall.":"Don't believe her about her arm. She changes it. I don't remember either, and I was there.";
+            case LULI->d.stage==GONE?"Can we go home now? I want to go home.":d.day==DARE?"My nan says nobody has ever lived there. It was built like that, empty.":"Don't touch the jars. I mean it.";
             default->switch(Math.min(5,Math.max(1,own.getInt("After")))){
                 case 1->"I know you. You were here that day. I hear her, you know. Not in there. In our house, in the wall behind my bed, telling one of her stories about her arm.";
                 case 2->"My mother still sets four places at the table. Nobody says anything.";

@@ -87,7 +87,7 @@ public final class SecondPersonStory {
             }
             default->{
                 if(call==4)return List.of("You picked up. You actually picked up.","You sound like you've slept, for once.","Don't be a stranger. You know where I am.");
-                if(call==3)return List.of("You didn't come. We waited for both trains.","It's fine. It's fine. Happy new year.","Ring me. Or don't. Just be alive.");
+                if(call==3)return List.of("You didn't come. We waited for both trains.","It's fine. Happy new year.","Ring me. Or don't. Just be alive.");
                 return call==1?List.of("It's me. Just checking you're alive.","The new place. Is it awful?","It's awful, isn't it.")
                         :tried?List.of("Oh, so you do exist. I tried and tried. It just rang and rang.","I'm coming to see it. Don't argue. A weekend.","You can show me round your awful flat.")
                         :List.of("Me again. I've decided something.","I'm coming to see it. Don't argue. A weekend.","You can show me round your awful flat.");
@@ -101,16 +101,16 @@ public final class SecondPersonStory {
                     :call==3?List.of("Hello? ...I'll put it down that I rang.","I'll tell them you're coming.","I'll tell them something.")
                     :call==1?List.of("This line's terrible. I'll let you go.","Ring me when you're settled.","Did you say Tuesday?")
                     :List.of("Never mind. I'll find it.","I've got it written on something.","Night, love. Night night.");
-            case "DANGER"->call==4?List.of("...Is somebody there?","Never mind. Never mind.")
+            case "DANGER"->call==4?List.of("...Is somebody there?","Never mind.")
                     :call==3?List.of("I can hear you.","You can't stay in there forever.")
                     :call==1?List.of("Say something.","You can't not say anything forever.","I know you're in.")
                     :List.of("I can wait.","I'm very good at waiting.","Goodnight.");
             case "RUNAWAY"->call==4?List.of("That's all right. I'll take that.","Night, then.")
                     :call==3?List.of("Are you there? I think you're there.","Happy new year. From all of us. Well. From me.")
                     :call==1?List.of("Hello? Chip shop?","...Wrong number. Sorry.")
-                    :List.of("I can hear you there.","That's all right. That's all right.","I'll ring next month.");
+                    :List.of("I can hear you there.","That's all right.","I'll ring next month.");
             default->call==4?List.of("I'll take that as a yes.","Night.")
-                    :call==3?List.of("I know you're there.","I'm not angry. I was. I'm not.","Happy new year, you idiot.")
+                    :call==3?List.of("I know you're there.","I'm not angry any more.","Happy new year, you idiot.")
                     :call==1?List.of("I can hear you breathing, you know.","You're doing the silent thing.","Ring me.")
                     :List.of("Fine. Be mysterious.","I'm still coming.","Ring me, you coward.");
         };
@@ -121,7 +121,7 @@ public final class SecondPersonStory {
             case "HAVEN"->call==1?"Hello? No, I'm here, I was in the bath. Tuesday, yes. Tuesday.":"It's flat two. Above the launderette. Two. Have you got a pen?";
             case "DANGER"->call==1?"Hello? ...Nobody. It was nobody.":"How did you get this number?";
             case "RUNAWAY"->call==1?"Hello? ...No. Wrong number. Ha. Wrong number.":"Lou. How did you— No. Don't. I'm fine.";
-            default->call==1?"Alive. Just about. It's not awful. It's a bit awful.":"A weekend's fine. Bring your own pillow.";
+            default->call==1?"Alive. Just about. It's a bit awful.":"A weekend's fine. Bring your own pillow.";
         };
     }
 
@@ -141,7 +141,7 @@ public final class SecondPersonStory {
         case "RUNAWAY"->"a letter from Lou with a train ticket in it: Come home for New Year. Just for the day. Nobody will make you stay.";
         default->"a card from the old friend with a train ticket folded inside: You're coming for New Year. It's non-refundable.";};}
     static String ticketLine(CompoundTag own){return switch(home(own)){case "HAVEN"->"They're asking for me.";case "DANGER"->"Nobody needs to know where.";case "RUNAWAY"->"Home. Just for the day.";default->"New Year. You absolute— New Year.";};}
-    static String backLine(CompoundTag own){return switch(home(own)){case "HAVEN"->"They knew me. Not the first day. Then they did.";case "DANGER"->"I slept. I slept the whole week.";case "RUNAWAY"->"Nobody made me stay. Nobody even asked me to.";default->"I'd forgotten I liked people.";};}
+    static String backLine(CompoundTag own){return switch(home(own)){case "HAVEN"->"They didn't know me the first day. Then they did.";case "DANGER"->"I slept. I slept the whole week.";case "RUNAWAY"->"Nobody made me stay. Nobody even asked me to.";default->"I'd forgotten I liked people.";};}
 
     // ------------------------------------------------------------------------------------------------ the book's latest page
     /** The book opened at its latest page: where things stand, then by number what the reader can do now. */
