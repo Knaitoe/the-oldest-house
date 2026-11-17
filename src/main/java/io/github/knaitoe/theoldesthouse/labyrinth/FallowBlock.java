@@ -18,7 +18,8 @@ import net.minecraft.world.phys.shapes.*;
  * shelf of cartons and cans (1), the shelf with the radio on it (2). TV: the television on its bracket, its picture (0), a card with
  * nothing on it (1), dark (2). COOLER: a glass-doored cooler's lower half (0) and its lit top, one panel along the run of doors: ICE (1), COLD (2) and plain (3). GONDOLA: shelving down the middle,
  * double-sided, of cans (0), boxes (1) and oil and parts (2), and its low top shelf (3). MAPS: the rack of road maps (0) and its header
- * (1). COFFEE: the coffee machine on its stand. WINDOW: a plate window's lower (0) and upper (1) half. TUBE: a strip light.
+ * (1). COFFEE: the coffee machine on its stand. WINDOW: a plate window's lower (0) and upper (1) half, and the same blown in by the
+ * light, the frame left and the glass gone but for its edges (2, 3). TUBE: a strip light.
  * SIGNBAND: the four boards of the station's name along the roof (0-3).</li>
  * <li>The forecourt. PUMP: a pump on its island (0) and its head with the dials (1); the diesel pump (2) and its head (3). ISLAND: the
  * island's curb (0) and its rounded end (1). CANOPY: the deck (0), the deck with a light let into it (1), its edge with the fascia (2),
@@ -40,6 +41,9 @@ import net.minecraft.world.phys.shapes.*;
  * (0), its landing legs (1), its back doors (2), a half that only stands in the way (3).</li>
  * <li>0.4.673, BEAN: Opal's bean in its paper cup, set down on the forecourt: two leaves (0), four (1), a tangle as high again as the
  * cup (2), grown long and thin in the dark (3). Nothing stands in its way.</li>
+ * <li>0.4.680, RUBBLE: what the light leaves of the station. A low spread of the store (0), a heap of it (1), the shut cellar doors with
+ * the store come down on them (2), a joist fallen across a spread (3), a sheet of the canopy's deck down on the forecourt, buckled (4),
+ * another leaning on what caught it (5), a column of the canopy lying down (6), a fallen run of the store's wall (7).</li>
  * </ul>
  */
 public final class FallowBlock extends HorizontalDirectionalBlock {
@@ -47,7 +51,7 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         COUNTER,NOTE,STOOL,BACKSHELF,TV,COOLER,GONDOLA,MAPS,COFFEE,WINDOW,TUBE,SIGNBAND,
         PUMP,ISLAND,CANOPY,SIGN,POLE,WHEAT,PAD,
-        LIFT,TRAILER,CELLAR,CELLAR_OPEN,SHELF,COT,CROCK,FARM,RIG,BOX,BEAN;
+        LIFT,TRAILER,CELLAR,CELLAR_OPEN,SHELF,COT,CROCK,FARM,RIG,BOX,BEAN,RUBBLE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -56,6 +60,10 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     public static final int PICTURE=0,CARD=1,DARK=2;
     /** Wheat's stages. */
     public static final int RIPE=0,BOWED=1,STUBBLE=2,ASH=3;
+    /** A window's halves, whole and blown in. */
+    public static final int PANE_LOW=0,PANE_HIGH=1,BLOWN_LOW=2,BLOWN_HIGH=3;
+    /** Rubble's stages. */
+    public static final int SPREAD=0,HEAP=1,ON_DOORS=2,JOIST=3,SHEET=4,LEANING=5,COLUMN=6,WALL=7;
     public FallowBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.COUNTER).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return FallowRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(7,stage)));}
@@ -106,6 +114,9 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
             case FARM->switch(stage){case 0->Shapes.block();case 1->Block.box(6,0,6,10,16,10);case 2->t(f,0,0,7,16,13,9);default->Block.box(5,0,5,11,16,11);};
             case RIG,BOX->Shapes.block();
             case BEAN->Block.box(4,0,4,12,stage==0?11:16,12);
+            case RUBBLE->switch(stage){case SPREAD->Block.box(0,0,0,16,4,16);case HEAP->Block.box(0,0,0,16,9,16);case ON_DOORS->Block.box(0,0,0,16,13,16);
+                case JOIST->Block.box(0,0,0,16,5,16);case SHEET->Block.box(0,0,0,16,3,16);case LEANING->Block.box(0,0,0,16,12,16);case COLUMN->t(f,0,0,4,16,7,12);
+                default->Block.box(0,0,0,16,5,16);};
         };
     }
     /** What stands in the way: the fittings with bodies, the shut cellar doors, the fences and the rig; not wheat, lights, signs above
@@ -121,6 +132,8 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
             case TRAILER->stage==5?Shapes.empty():getShape(s,l,p,c);
             case CROCK->stage==0?getShape(s,l,p,c):Shapes.empty();
             case LIFT->stage==1||stage==3?Shapes.empty():getShape(s,l,p,c);
+            // A blown window is only its frame, and a body may climb in over its sill.
+            case WINDOW->stage>=BLOWN_LOW?Shapes.empty():getShape(s,l,p,c);
             default->getShape(s,l,p,c);
         };
     }

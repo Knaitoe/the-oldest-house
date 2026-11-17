@@ -2124,5 +2124,9 @@
   "subtitles.the_oldest_house.fallow.launch": "A rocket roars up out of the wheat",
   "subtitles.the_oldest_house.fallow.siren": "A siren wails far off",
   "subtitles.the_oldest_house.fallow.blast": "A roar shakes everything",
-  "subtitles.the_oldest_house.fallow.rumble": "The ground shakes"
+  "subtitles.the_oldest_house.fallow.rumble": "The ground shakes",
+  "subtitles.the_oldest_house.fallow.canopy": "Sheet metal comes down with a crash",
+  "subtitles.the_oldest_house.fallow.collapse": "A building falls in",
+  "subtitles.the_oldest_house.fallow.debris": "Rubble lands on the doors overhead",
+  "block.the_oldest_house.fallow_shadow": "Shadow"
 }

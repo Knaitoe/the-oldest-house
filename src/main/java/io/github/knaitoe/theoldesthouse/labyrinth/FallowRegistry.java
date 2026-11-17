@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.*;
@@ -21,6 +22,7 @@ public final class FallowRegistry {
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /**
@@ -41,6 +43,11 @@ public final class FallowRegistry {
     public static final DeferredBlock<StairBlock> CELLAR_STAIRS=BLOCKS.register("fallow_cellar_stairs",()->new StairBlock(MATERIALS.get("cellar_stone").get().defaultBlockState(),fixed(Blocks.STONE_STAIRS)));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FallowBlock>> FITTING_TYPE=CODECS.register("fallow_fitting",()->FallowBlock.CODEC);
     public static final DeferredBlock<FallowBlock> FITTING=BLOCKS.registerBlock("fallow_fitting",FallowBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(FallowBlock::light));
+    /** 0.4.680: a reader's shadow on the station's front wall (FallowShadowBlock), nothing a body meets. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<FallowShadowBlock>> SHADOW_TYPE=CODECS.register("fallow_shadow",()->FallowShadowBlock.CODEC);
+    public static final DeferredBlock<FallowShadowBlock> SHADOW=BLOCKS.registerBlock("fallow_shadow",FallowShadowBlock::new,fixed(Blocks.STONE).noOcclusion().noCollission());
+    public static final DeferredHolder<BlockEntityType<?>,BlockEntityType<FallowShadowBlock.Shadow>> SHADOW_ENTITY=
+        BES.register("fallow_shadow",()->BlockEntityType.Builder.of(FallowShadowBlock.Shadow::new,SHADOW.get()).build(null));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** The wind over the wheat; the insects in it; the radio on the back shelf; the pump's bell. */
     public static final DeferredHolder<SoundEvent,SoundEvent> WIND=sound("fallow.wind"),INSECTS=sound("fallow.insects"),RADIO=sound("fallow.radio"),
@@ -50,6 +57,8 @@ public final class FallowRegistry {
     /** 0.4.674, the four minutes: the radio's tone, the lids grinding open, a launch, a siren far off, the light, the ground shaking. */
     public static final DeferredHolder<SoundEvent,SoundEvent> TONE=sound("fallow.tone"),LIDS=sound("fallow.lids"),LAUNCH=sound("fallow.launch"),
         SIREN=sound("fallow.siren"),BLAST=sound("fallow.blast"),RUMBLE=sound("fallow.rumble");
+    /** 0.4.680, what the light leaves: the canopy coming down, the store falling in, the fall of it landing on the cellar doors. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> CANOPY=sound("fallow.canopy"),COLLAPSE=sound("fallow.collapse"),DEBRIS=sound("fallow.debris");
     /**
      * 0.4.673: what the afternoon's people carry, never a reader: Opal's bean in its cup (drawn from its block's model), the quart of milk
      * Faye buys, the bottle of pop the stranger buys and the cup of coffee Otis pours.
@@ -58,5 +67,5 @@ public final class FallowRegistry {
         MILK=ITEMS.registerSimpleItem("fallow_milk",new Item.Properties().stacksTo(1)),SODA=ITEMS.registerSimpleItem("fallow_soda",new Item.Properties().stacksTo(1)),
         COFFEE=ITEMS.registerSimpleItem("fallow_coffee",new Item.Properties().stacksTo(1));
     private FallowRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }

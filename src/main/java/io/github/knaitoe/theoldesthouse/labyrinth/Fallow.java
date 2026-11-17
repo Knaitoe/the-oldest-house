@@ -289,7 +289,7 @@ public final class Fallow {
                 continue;
             }
             s.empty=0;s.tick++;
-            if(s.tick%20==0){car(l,s.base);ensure(l,s.base,s);}
+            if(s.tick%20==0){FallowRuin.leftover(l,s,here);car(l,s.base);ensure(l,s.base,s);}
             afternoon(l,s,here);
             FallowStrike.tick(l,s,here);
             var rnd=l.getRandom();var one=here.get(rnd.nextInt(here.size()));

@@ -104,11 +104,24 @@ public final class FallowSite {
         farm(l,b,rnd);
         pads(l,b);
         forecourt(l,b);
-        store(l,b,rnd);
+        store(l,b);
         garage(l,b);
         yard(l,b);
         cellar(l,b);
         rig(l,b);
+    }
+
+    /** 0.4.680: the station built again for a fresh afternoon after the light has had it (FallowRuin.mend). Its parts are drawn from their
+     * plans alone, so they come back as they were built: the forecourt and the rig on it, the store, the garage, the yard and the cellar.
+     * The store's back wall is laid whole by its plan, so the House's opening through it is cut again, as the scene's builder cut it. */
+    static void mend(ServerLevel l,BlockPos b){
+        forecourt(l,b);
+        store(l,b);
+        garage(l,b);
+        yard(l,b);
+        cellar(l,b);
+        rig(l,b);
+        set(l,b,0,0,0,AIR);set(l,b,0,1,0,AIR);
     }
 
     /** The whole of the ground under wheat first, ripe and standing, a bowed head here and there; everything else is laid over it. */
@@ -300,7 +313,7 @@ public final class FallowSite {
     /** The store: painted boards on a block plinth, a flat roof with the station's name on a board along its front, plate windows either
      * side of the front door, and inside, the counter, its register and its flap, the back shelves, the coolers, the shelving, the maps,
      * the coffee and the lights. */
-    static void store(ServerLevel l,BlockPos b,Random rnd){
+    static void store(ServerLevel l,BlockPos b){
         box(l,b,STORE_W,-1,STORE_N,STORE_E,-1,STORE_S,mat("lino"));
         for(int x=STORE_W;x<=STORE_E;x++)for(int z=STORE_N;z<=STORE_S;z++){
             boolean wall=x==STORE_W||x==STORE_E||z==STORE_N||z==STORE_S;
@@ -308,8 +321,9 @@ public final class FallowSite {
             set(l,b,x,CEILING,z,mat("ceiling"));
             set(l,b,x,CEILING+1,z,wall?mat("siding"):mat("roof"));
         }
-        // The name on a board standing along the front of the roof, centred over the door.
-        for(int i=0;i<4;i++)set(l,b,-2+i,CEILING+2,STORE_N,fit(FallowBlock.Kind.SIGNBAND,Direction.NORTH,i));
+        // The name on a board standing along the front of the roof, centred over the door. It is read from the forecourt, facing south,
+        // where east is on the left: its first piece is the east end (0.4.680; it read backwards before).
+        for(int i=0;i<4;i++)set(l,b,1-i,CEILING+2,STORE_N,fit(FallowBlock.Kind.SIGNBAND,Direction.NORTH,i));
         door(l,b,FRONT_DOOR,Direction.NORTH);
         for(int x=-6;x<=6;x++){
             if(Math.abs(x)<2)continue;

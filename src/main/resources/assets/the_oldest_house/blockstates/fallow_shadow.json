@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "the_oldest_house:block/fallow_shadow"
+    },
+    "facing=east": {
+      "model": "the_oldest_house:block/fallow_shadow"
+    },
+    "facing=south": {
+      "model": "the_oldest_house:block/fallow_shadow"
+    },
+    "facing=west": {
+      "model": "the_oldest_house:block/fallow_shadow"
+    }
+  }
+}
