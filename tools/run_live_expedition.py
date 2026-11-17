@@ -174,8 +174,14 @@ try:
         # Every moment the review looks at was captured by an actual connected client (0.4.244).
         for shot in ("A-pool-hauling", "B-pool-swimmer", "A-flat-hall", "A-flat-stair-top", "A-flat-stair-middle", "A-flat-van",
                      "B-flat-stair-watch", "B-flat-tenant-seated", "A-flat-tenant-stands", "B-flat-tenant-stands",
-                     "A-flat-chair-lifted", "A-flat-chair-stair", "A-flat-window-dark", "B-flat-empty"):
+                     "A-flat-chair-lifted", "A-flat-chair-stair", "A-flat-window-dark", "B-flat-empty",
+                     # 0.4.662, the feed: the monitor in the next hall, empty, with the steps, with all of them, breaking up;
+                     # the picture A's own game took of the watched hall; the screen as composed at three of those moments.
+                     "A-feed-empty", "A-feed-steps", "A-feed-all", "A-feed-breaking", "A-feed-picture",
+                     "A-feed-screen-empty", "A-feed-screen-steps", "A-feed-screen-all"):
             assert (report / f"{shot}.png").stat().st_size > 500, shot
+        assert "footprints" in (report / "A-feed.txt").read_text(), "the feed's record"
+        assert "LIVE SCENE REVIEW CLIENT A feed picture mean=" in (report / "client-a.log").read_text(errors="replace")
         attendant = list(report.glob("*-pool-attendant-*.png"))
         assert attendant and all(shot.stat().st_size > 500 for shot in attendant), attendant
         # 0.4.581 (the owner: the pool is too dark to see the impressions): the steps under the cover, looked at with the hall's

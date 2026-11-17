@@ -1874,6 +1874,7 @@ jobs:
           sudo apt-get install -y -qq xvfb libgl1-mesa-dri
           # The cover hauled from the strap, the attendant to the fire door, the dresser down the real stair,
           # the tenant standing as the reader comes close, the chair carried down and the window gone dark.
+          # Then the feed (0.4.662): a hall walked while it is watched, and its monitor in the next hall.
           LP_NUM_THREADS=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a python3 tools/run_live_expedition.py --scenes-only
           test -s build/scene-review-live-proof/scene-review-passed.txt
       - uses: actions/upload-artifact@v4

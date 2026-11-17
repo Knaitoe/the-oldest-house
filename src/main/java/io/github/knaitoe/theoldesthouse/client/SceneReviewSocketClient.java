@@ -131,10 +131,59 @@ public final class SceneReviewSocketClient {
                 }
                 return chairDown(mc,b,age);
             }
+            case 67->{
+                // 0.4.662, the feed. A walks up the alcove hall with real movement once the server has it watched; its own game
+                // takes the pictures. B waits in the flat.
+                if(!a){stop(mc);return true;}
+                if(route==0){stop(mc);if(HallFeedClient.watching()){route=1;mark=age;}else if(age>300)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: the hall was never watched");return false;}
+                if(route==1){if(walk(mc,at(b,.5,0,-11.5),.3))route=2;else if(age-mark>300)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: the walk up the watched hall stopped at "+mc.player.position());return false;}
+                stop(mc);if(age-mark<110)return false;
+                if(HallFeedClient.shots()<2)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: the watched hall was photographed "+HallFeedClient.shots()+" times");
+                return true;
+            }
+            case 68->{
+                // Set down alone in the offset hall: the monitor on the wall ahead, the hall just left on it, the footprints coming.
+                if(!a){stop(mc);return true;}
+                stop(mc);var monitor=HallFeedClient.monitor();
+                if(monitor==null){if(age>300)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: no monitor in the next hall");return false;}
+                look(mc,new Vec3(monitor.getX()+.5,monitor.getY()+.2,monitor.getZ()+.5));
+                int n=HallFeedClient.prints().size();
+                if(mark<0){mark=age;
+                    if(n<3)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: only "+n+" footprints from the walk up the hall");
+                    feedPicture();}
+                int t=age-mark,end=HallFeedClient.DELAY+HallFeedClient.PACE*n+HallFeedClient.AFTER;
+                if(t==30){if(!HallFeedClient.screenOn())throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: the monitor's screen is dark");shoot("A-feed-empty");feedScreen("A-feed-screen-empty");}
+                if(t==HallFeedClient.DELAY+HallFeedClient.PACE*(n/2)+2){shoot("A-feed-steps");feedScreen("A-feed-screen-steps");}
+                if(t==end-12){shoot("A-feed-all");feedScreen("A-feed-screen-all");}
+                if(t==end+10)shoot("A-feed-breaking");
+                if(t>end+HallFeedClient.BREAK+12&&shot==null){
+                    if(HallFeedClient.screenOn())throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: the screen did not go dark after breaking up");
+                    try{Files.writeString(LiveExpeditionProof.folder().resolve("A-feed.txt"),"The feed in a running game: "+HallFeedClient.shots()+" pictures of the watched hall taken by this client, "+n+" footprints, the monitor at "+monitor+", the screen lit then dark.\n");}catch(Exception e){throw new IllegalStateException(e);}
+                    return true;
+                }
+                return false;
+            }
             default->{return false;}
         }
     }
     private static boolean flagShotPending(){return shot!=null;}
+    /** 0.4.662: the picture this client's own game took of the watched hall, as it was taken, and its spread of grey. */
+    private static void feedPicture(){
+        var still=HallFeedClient.picture();if(still==null)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: no picture of the watched hall");
+        long sum=0,squares=0;int top=0;for(int v:still){sum+=v;squares+=(long)v*v;top=Math.max(top,v);}
+        double mean=(double)sum/still.length,spread=Math.sqrt(Math.max(0,(double)squares/still.length-mean*mean));
+        TheOldestHouse.LOGGER.info("LIVE SCENE REVIEW CLIENT A feed picture mean={} spread={} brightest={}",Math.round(mean),Math.round(spread),top);
+        if(spread<6||top<40)throw new IllegalStateException("LIVE SCENE REVIEW CLIENT A: the picture of the hall is flat (mean "+Math.round(mean)+", spread "+Math.round(spread)+", brightest "+top+")");
+        try(var image=new com.mojang.blaze3d.platform.NativeImage(HallFeedClient.W,HallFeedClient.H,false)){
+            for(int y=0;y<HallFeedClient.H;y++)for(int x=0;x<HallFeedClient.W;x++){int v=still[y*HallFeedClient.W+x];image.setPixelRGBA(x,y,0xff000000|v<<16|v<<8|v);}
+            Files.createDirectories(LiveExpeditionProof.folder());image.writeToFile(LiveExpeditionProof.folder().resolve("A-feed-picture.png"));
+        }catch(Exception e){throw new IllegalStateException(e);}
+    }
+    /** The monitor's screen as composed this moment, at its own size. */
+    private static void feedScreen(String name){
+        var pixels=HallFeedClient.screenPixels();if(pixels==null)return;
+        try{Files.createDirectories(LiveExpeditionProof.folder());pixels.writeToFile(LiveExpeditionProof.folder().resolve(name+".png"));}catch(Exception e){throw new IllegalStateException(e);}
+    }
     /** 0.4.581: the cell of the pool's cover that something is pressing up under, nearest this reader; null while nothing is. */
     @Nullable private static BlockPos foot(Minecraft mc,BlockPos b){
         BlockPos best=null;double d=Double.MAX_VALUE;

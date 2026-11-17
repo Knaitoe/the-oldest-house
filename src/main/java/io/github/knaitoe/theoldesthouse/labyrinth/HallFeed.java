@@ -166,12 +166,14 @@ public final class HallFeed {
      * then behind them, between {@link #NEAREST} and {@link #FURTHEST} blocks off, with its middle {@link #HIGH} above their feet. The
      * wall must be solid, not glass; the cell it hangs in empty of everything, the cell below open, and nothing hung there already.
      */
-    public static Spot spot(ServerLevel level,ServerPlayer p){
-        var feet=BlockPos.containing(p.position());int y=feet.getY()+2;
+    public static Spot spot(ServerLevel level,ServerPlayer p){return spot(level,p.position(),p.getYRot());}
+    /** The same, for a reader standing at {@code at} and facing {@code yaw}. */
+    public static Spot spot(ServerLevel level,Vec3 at,float yaw){
+        var feet=BlockPos.containing(at);int y=feet.getY()+2;
         for(int turn:new int[]{0,-35,35,-70,70,-110,110,180}){
-            var dir=Vec3.directionFromRotation(0,p.getYRot()+turn);BlockPos last=null;
+            var dir=Vec3.directionFromRotation(0,yaw+turn);BlockPos last=null;
             for(double d=.5;d<=FURTHEST+.01;d+=.25){
-                var cell=BlockPos.containing(p.getX()+dir.x*d,y,p.getZ()+dir.z*d);
+                var cell=BlockPos.containing(at.x+dir.x*d,y,at.z+dir.z*d);
                 if(!level.isLoaded(cell))break;
                 if(open(level,cell)){last=cell;continue;}
                 if(last==null||d<NEAREST)break;

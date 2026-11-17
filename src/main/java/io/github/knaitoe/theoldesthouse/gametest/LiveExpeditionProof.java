@@ -108,7 +108,7 @@ public final class LiveExpeditionProof {
         if(a!=null&&b!=null&&phase>=54&&phase<=59&&s.getTickCount()%40==0)BorrascaSocketProof.status(a,b,phase);
         // 0.4.240: the pool and the flat in play.
         if(a!=null&&phase==SceneReviewSocketProof.CARRY)SceneReviewSocketProof.preload(a);
-        if(a!=null&&b!=null&&phase>=SceneReviewSocketProof.POOL&&phase<=SceneReviewSocketProof.CHAIR&&s.getTickCount()%40==0)SceneReviewSocketProof.status(a,b,phase);
+        if(a!=null&&b!=null&&phase>=SceneReviewSocketProof.POOL&&phase<=SceneReviewSocketProof.FEED_SHOWN&&s.getTickCount()%40==0)SceneReviewSocketProof.status(a,b,phase);
         // Read on the tick the native return lands, before the reader's restored stride or the test
         // client's still-held walk key carries them on along the tread.
         if(phase==11&&a!=null&&!firstReturned&&!StaircaseLeaks.active(a)){
@@ -476,6 +476,11 @@ public final class LiveExpeditionProof {
         }else if(phase==SceneReviewSocketProof.CARRY&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.carried()){
             step(s,SceneReviewSocketProof.CHAIR,SceneReviewSocketProof.flat());
         }else if(phase==SceneReviewSocketProof.CHAIR&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.gone()){
+            SceneReviewSocketProof.feedWalk(a);step(s,SceneReviewSocketProof.FEED_WALK,SceneReviewSocketProof.watchedHall());
+        }else if(phase==SceneReviewSocketProof.FEED_WALK&&a!=null&&b!=null&&ACKS.size()==2&&SceneReviewSocketProof.watching(a)){
+            SceneReviewSocketProof.feedShow(a);step(s,SceneReviewSocketProof.FEED_SHOWN,SceneReviewSocketProof.nextHall());
+        }else if(phase==SceneReviewSocketProof.FEED_SHOWN&&a!=null&&b!=null&&ACKS.size()==2){
+            require(SceneReviewSocketProof.shown(a),"the server showed the feed in the offset hall");
             SceneReviewSocketProof.finish();write("passed.txt","The pool and the flat looked at in play with two actual clients; see scene-review-passed.txt.\n");step(s,30,a.blockPosition());
         }else if(phase==30&&s.getTickCount()-changed>100){huntChunks.close();s.halt(false);}
     }
