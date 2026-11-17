@@ -204,6 +204,19 @@ public final class KitchenVisitors {
     static void strays(ServerLevel l,BlockPos b,@Nullable LiteraryActor keep){
         for(var v:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(32),v->v!=keep&&v.role()==LiteraryActor.STRANGER&&cast(v.phase())!=null)){WALKS.remove(v.getUUID());v.discard();}
     }
+    /**
+     * 0.4.663 (run 1695): whether the kitchen and the passage behind its door have their people in, every chunk of them ticking
+     * entities. A visitor made into a chunk that did not yet was out of the kitchen's sight from the start: the next second it
+     * found nobody, let them go and sent another, and the first came in with the chunk to stand beside the second (two travellers
+     * on a loaded server, the kitchen's first case of the run). Nobody is made, looked for or let go until it has.
+     */
+    static boolean awake(ServerLevel l,BlockPos b){
+        var box=IndianLakeRooms.bounds(b,FamiliarRoom.KITCHEN);
+        for(int x=net.minecraft.util.Mth.floor(box.minX)>>4;x<=net.minecraft.util.Mth.floor(box.maxX-1)>>4;x++)
+            for(int z=net.minecraft.util.Mth.floor(box.minZ)>>4;z<=net.minecraft.util.Mth.floor(box.maxZ-1)>>4;z++)
+                if(!l.isPositionEntityTicking(new BlockPos(x<<4,b.getY(),z<<4)))return false;
+        return true;
+    }
     /** Once a second while anyone is in the kitchen. */
     static void second(MinecraftServer s,ServerLevel l,BlockPos b){
         var here=inKitchen(s);var t=shared(s);var a=current(l);
@@ -215,6 +228,9 @@ public final class KitchenVisitors {
             if(t.contains("Who")){t.remove("Who");t.remove("Actor");t.putInt("Next",t.getInt("Occ")+GAP);shared(s,t);}
             return;
         }
+        // 0.4.663: with somebody in it, the clock waits for the kitchen to come in: whoever is there is neither let go nor sent
+        // again before it has. (Empty, it lets them go as before; a body that comes back with its chunk is put away as a stray.)
+        if(!awake(l,b))return;
         int occ=t.getInt("Occ")+1;t.putInt("Occ",occ);if(occ%5==1)ensureBook(l,b);if(!t.contains("Next"))t.putInt("Next",FIRST);
         if(!t.contains("Who")){
             if(occ>=t.getInt("Next")){var pool=available(s,here);if(!pool.isEmpty()){
@@ -291,6 +307,7 @@ public final class KitchenVisitors {
      */
     public static @Nullable LiteraryActor arrive(ServerLevel l,BlockPos b,int phase){
         var v=cast(phase);if(v==null)return null;var s=l.getServer();
+        if(!awake(l,b))return null;
         var start=behind(l,b);if(start==null)return null;
         var old=current(l);if(old!=null){WALKS.remove(old.getUUID());old.discard();}
         strays(l,b,null);

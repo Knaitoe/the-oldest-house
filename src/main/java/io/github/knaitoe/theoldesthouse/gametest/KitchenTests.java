@@ -33,6 +33,7 @@ public final class KitchenTests {
     @AfterBatch(batch="kitchen_cook") public static void doneCook(ServerLevel l){close();}
     @AfterBatch(batch="kitchen_visitors") public static void doneVisitors(ServerLevel l){close();}
     @AfterBatch(batch="kitchen_weight") public static void doneWeight(ServerLevel l){close();}
+    @AfterBatch(batch="kitchen_unseen") public static void doneUnseen(ServerLevel l){close();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static ItemStack water(){return PotionContents.createItemStack(Items.POTION,Potions.WATER);}
 
@@ -154,6 +155,44 @@ public final class KitchenTests {
                 hollo.putBoolean("ActorDead",false);f.data().setState(HollowayVignette.ID,hollo);
             })
             .thenWaitUntil(()->h.assertTrue(KitchenVisitors.current(l)==null,"and is gone"))
+            .thenSucceed();
+    }
+    /**
+     * 0.4.663 (run 1695): nobody comes to the kitchen before it and the passage behind its door have come in. The kitchen's first
+     * case on a loaded server made a traveller into a chunk whose people were not in yet, found nobody there the next second and
+     * sent another: two travellers, once the chunk came in. Here only the kitchen's own corner is held when a reader walks in.
+     */
+    @GameTest(template="empty",batch="kitchen_unseen",timeoutTicks=600)
+    public static void nobodyComesBeforeTheKitchenHasComeIn(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.FAMILIAR_KITCHEN;var b=f.base(place);var l=f.in;KitchenFittings.clearAll();
+        var box=IndianLakeRooms.bounds(b,place);
+        var corners=new net.minecraft.core.BlockPos[]{net.minecraft.core.BlockPos.containing(box.minX,b.getY(),box.minZ),net.minecraft.core.BlockPos.containing(box.maxX-1,b.getY(),box.minZ),
+            net.minecraft.core.BlockPos.containing(box.minX,b.getY(),box.maxZ-1),net.minecraft.core.BlockPos.containing(box.maxX-1,b.getY(),box.maxZ-1)};
+        f.chunks.hold(l,new AABB(b));
+        var p=NativeTestPlayers.survival(h,"kitchen_early");f.players.add(p);
+        LiteraryActor[] made={null};
+        java.util.function.Supplier<List<LiteraryActor>> visitors=()->l.getEntitiesOfClass(LiteraryActor.class,box.inflate(16),a->a.role()==LiteraryActor.STRANGER&&KitchenVisitors.visitor(a.phase()));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen's own corner is resident"))
+            .thenExecute(()->{
+                FamiliarRoom.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                p.teleportTo(l,b.getX()-3.5,b.getY(),b.getZ()-4.5,0,0);
+                boolean partly=false;for(var c:corners)if(!l.isPositionEntityTicking(c))partly=true;
+                h.assertTrue(partly,"part of the kitchen and its passage has not come in yet");
+                h.assertTrue(KitchenVisitors.arrive(l,b,KitchenVisitors.TRAVELLER)==null,"so nobody is sent yet");
+                h.assertTrue(visitors.get().isEmpty(),"and nobody is made: "+visitors.get().size());
+                f.chunks.hold(l,box);
+            })
+            .thenWaitUntil(()->h.assertTrue(f.chunks.entityTicking(l,corners),"the whole kitchen comes in"))
+            .thenExecute(()->{
+                made[0]=KitchenVisitors.arrive(l,b,KitchenVisitors.TRAVELLER);
+                h.assertTrue(made[0]!=null&&KitchenVisitors.current(l)==made[0],"then the traveller comes, and the kitchen knows where he is");
+            })
+            .thenIdle(60)
+            .thenExecute(()->{
+                var all=visitors.get();
+                h.assertTrue(all.size()==1&&all.get(0)==made[0]&&KitchenVisitors.current(l)==made[0],"one of him, still the one it sent: "+all.size());
+                made[0].discard();
+            })
             .thenSucceed();
     }
     /** 0.4.332: the kitchen comes when it is wanted, and who comes in is weighted. */

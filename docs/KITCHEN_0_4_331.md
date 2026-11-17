@@ -140,3 +140,14 @@ A reader who has never found it gets its ordinary weight. Someone already in the
   - Johnny, struck, goes.
 - `FamiliarRoomTests#theKitchenIsForUseAndNothingFrightensAnyoneInIt` still passes: four of one thing on the stove, done in ten seconds, never burnt.
 - `tools/draw_kitchen_dishes.py --check`, `tools/paint_character_skins.py --check` and `tools/verify_character_art.py` pass.
+
+## Run 1695: nobody before the kitchen has come in (17 November)
+
+Run 1695's build job failed `CastConductTests#theKitchensVisitors`: from its second tick two travellers stood in the kitchen at once. It was the first kitchen case of the run, on a loaded server. A visitor is made in the passage behind the kitchen's door. That passage's chunk had not come in yet, so the body was made where the kitchen could not see it. The next second the kitchen found nobody, let the visitor go and sent another. The first came in with its chunk and stood beside the second. The 0.4.602 stray sweep could not help: it only finds bodies that are already loaded.
+
+- `KitchenVisitors.awake` is true when every chunk of the kitchen and its passage ticks entities (`IndianLakeRooms.bounds`).
+- While somebody is in the kitchen and it is not awake, its clock waits. Nobody is sent and nobody is let go.
+- `arrive` makes nobody until the kitchen is awake.
+- With the kitchen empty, it lets its visitor go as before. A body that comes back with its chunk is put away as a stray.
+
+`KitchenTests#nobodyComesBeforeTheKitchenHasComeIn` (new, batch `kitchen_unseen`) holds only the kitchen's own corner when a reader walks in. It checks that nobody is sent or made. It then holds the whole kitchen and waits for it to come in. Then the traveller comes, the kitchen knows where he is, and after three seconds there is still one of him. The case fails on the old code ("so nobody is sent yet") and passes now, alongside the visitors case, the weight case and the cast case.
