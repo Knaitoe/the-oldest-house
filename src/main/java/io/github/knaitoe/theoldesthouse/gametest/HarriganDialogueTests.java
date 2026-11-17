@@ -169,7 +169,9 @@ public final class HarriganDialogueTests {
         var caller=NativeTestPlayers.survival(h,"phone_caller");var kept=NativeTestPlayers.survival(h,"phone_keeper");var inside=NativeTestPlayers.survival(h,"phone_inside");
         PHONE_READERS.addAll(List.of(caller,kept,inside));
         for(var p:PHONE_READERS)p.getInventory().add(HarriganVignette.phoneFor(p));
-        caller.setRespawnPosition(net.minecraft.world.level.Level.OVERWORLD,caller.blockPosition(),0,true,false);
+        // The caller's home: a bed of their own (HomeBed), where the hostile call is answered.
+        var bed=h.absolutePos(new BlockPos(1,1,1));io.github.knaitoe.theoldesthouse.labyrinth.NovelRooms.bed(h.getLevel(),bed,net.minecraft.world.level.block.Blocks.WHITE_BED,net.minecraft.core.Direction.NORTH);
+        caller.setRespawnPosition(net.minecraft.world.level.Level.OVERWORLD,bed.north(),0,true,false);
         line(data,caller,t->t.putBoolean("Contact",true));line(data,inside,t->t.putBoolean("Contact",true));
         line(data,kept,t->t.putBoolean("KeptHarriganPhone",true));kept.getInventory().add(new ItemStack(LabyrinthRegistry.HARRIGANS_PHONE.get()));
         inside.teleportTo(HouseTestLevel.get(server),0.5,80,0.5,0,0);

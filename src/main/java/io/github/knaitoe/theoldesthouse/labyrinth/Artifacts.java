@@ -187,7 +187,8 @@ public final class Artifacts {
         var inst=p.getAttribute(attribute);if(inst==null)return;boolean has=inst.hasModifier(id);
         if(on&&!has)inst.addTransientModifier(new AttributeModifier(id,amount,op));else if(!on&&has)inst.removeModifier(id);
     }
-    static boolean nearBed(ServerPlayer p){var bed=p.getRespawnPosition();return bed!=null&&p.getRespawnDimension().equals(p.level().dimension())&&bed.distSqr(p.blockPosition())<=BED_REACH*BED_REACH;}
+    /** Near their home bed (HomeBed), in the Overworld. */
+    static boolean nearBed(ServerPlayer p){var bed=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);return bed!=null&&p.level().dimension().equals(Level.OVERWORLD)&&bed.distSqr(p.blockPosition())<=BED_REACH*BED_REACH;}
 
     /** The doll keeps phantoms away; in their world the number card keeps witches off and the essay page the drowned. */
     @SubscribeEvent public static void phantoms(PlayerSpawnPhantomsEvent e){if(carries(e.getEntity(),Kind.DOLL))e.setResult(PlayerSpawnPhantomsEvent.Result.DENY);}
@@ -225,9 +226,12 @@ public final class Artifacts {
         if((effect==MobEffects.BLINDNESS.value()||effect==MobEffects.DARKNESS.value())&&mine(p.getOffhandItem(),p,Kind.BLINDFOLD)
                 ||(effect==MobEffects.POISON.value()||effect==MobEffects.HUNGER.value())&&carries(p,Kind.INVITATION))e.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
-    /** The hotel's key tag: waking in their world after a night's sleep, they are fed in full; the front-door key, mended. */
+    /**
+     * The hotel's key tag: waking in their world after a night's sleep, they are fed in full; the front-door key, mended. Only a night
+     * in a bed of their own or one of the manor's (HomeBed): a night where they were put does not undo what that place asks of them.
+     */
     @SubscribeEvent public static void woke(PlayerWakeUpEvent e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||e.wakeImmediately()||e.updateLevel()||!ownWorld(p))return;
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.wakeImmediately()||e.updateLevel()||!ownWorld(p)||!io.github.knaitoe.theoldesthouse.opening.HomeBed.asleepAtHomeOrInManor(p))return;
         if(carries(p,Kind.KEY_TAG)){var food=p.getFoodData();food.setFoodLevel(20);food.setSaturation(Math.max(food.getSaturationLevel(),10F));}
         // The front-door key: they wake mended.
         if(carries(p,Kind.DOOR_KEY))p.setHealth(p.getMaxHealth());
@@ -307,8 +311,8 @@ public final class Artifacts {
     /** One who would not leave, asleep in their own bed on one of the family's nights, long enough to be woken. */
     public static boolean familyWakes(ServerPlayer p,long day){
         if(!p.isSleeping()||!refused(p)||!familyNight(p.getUUID(),day))return false;
-        var bed=p.getRespawnPosition();var at=p.getSleepingPos().orElse(null);
-        if(bed==null||at==null||!bed.equals(at)||!p.getRespawnDimension().equals(p.level().dimension()))return false;
+        var at=p.getSleepingPos().orElse(null);
+        if(at==null||!p.level().dimension().equals(Level.OVERWORLD)||!io.github.knaitoe.theoldesthouse.opening.HomeBed.isHome(p,at))return false;
         var own=LabyrinthData.get(p.server).stateEntry(STATE,p.getStringUUID());return own.getLong("WokenDay")!=day+1;
     }
     /** Woken before dawn by someone moving about in the house: no night passes. Never hurt. */

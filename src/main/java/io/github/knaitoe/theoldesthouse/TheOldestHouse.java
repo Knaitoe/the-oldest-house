@@ -60,6 +60,7 @@ public final class TheOldestHouse {
     public TheOldestHouse(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(HouseNetwork::registerPayloads);
         OpeningRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.house.Neighbours.register(modEventBus);
         HouseBlocks.register(modEventBus);
         HouseBlockEntities.register(modEventBus);
         LabyrinthRegistry.register(modEventBus);

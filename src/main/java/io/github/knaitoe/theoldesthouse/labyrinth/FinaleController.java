@@ -276,7 +276,6 @@ public final class FinaleController {
         if(world.hasUUID("WoundedCreature"))record.putUUID("Creature",world.getUUID("WoundedCreature"));
         else if(world.hasUUID("CagedCreature"))record.putUUID("Creature",world.getUUID("CagedCreature"));
         if(world.getBoolean("MinotaurWounded"))FinaleCollapse.wounded(player,origin,record);
-        if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());record.putString("BaseDimension",player.getRespawnDimension().location().toString());
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
         ensureMinotaur(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);
         LabyrinthData.get(player.server).clearReturns(player.getUUID());return true;
@@ -510,8 +509,9 @@ public final class FinaleController {
         }
         if(changed)LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
     }
+    /** The pages left at the reader's home (HomeBed), read when they are delivered; beside the reader if they have none. */
     private static boolean epilogue(ServerPlayer player,CompoundTag record){
-        ServerLevel level=player.server.overworld();BlockPos home=record.contains("Base")&&record.getString("BaseDimension").equals(Level.OVERWORLD.location().toString())?BlockPos.of(record.getLong("Base")):player.blockPosition();
+        ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(player.blockPosition());
         level.getChunkAt(home);
         for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())){
             level.setBlock(candidate,Blocks.CHEST.defaultBlockState(),FLAGS);
@@ -524,9 +524,10 @@ public final class FinaleController {
         }
         return false;
     }
+    /** Sixty days on, round the reader's home (HomeBed); nothing grows for a reader with none of their own. */
     private static void overgrowBase(ServerPlayer player,CompoundTag record){
-        if(!record.contains("Base")||!record.getString("BaseDimension").equals(Level.OVERWORLD.location().toString()))return;
-        ServerLevel level=player.server.overworld();BlockPos home=BlockPos.of(record.getLong("Base"));
+        BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);if(home==null)return;
+        ServerLevel level=player.server.overworld();
         // Age only crops and add plants to vacant, supported cells; built blocks stay intact.
         for(BlockPos p:BlockPos.betweenClosed(home.offset(-8,-3,-8),home.offset(8,5,8))){
             var state=level.getBlockState(p);

@@ -1025,13 +1025,15 @@ public final class HarriganVignette {
     }
 
     private static void scheduleHostile(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today, ResourceLocation type) {
-        if (!caller.getRespawnDimension().equals(Level.OVERWORLD) || caller.getRespawnPosition() == null) {
+        // The call goes to their home (HomeBed); a reader with none of their own is refused, as one with no bed always was.
+        BlockPos home = io.github.knaitoe.theoldesthouse.opening.HomeBed.of(caller).orElse(null);
+        if (home == null) {
             consumeBlocked(caller, data, p, today);
             return;
         }
         p.putLong("LastCallDay", today);
         p.putString("HostileType", type.toString());
-        p.putLong("HostileBed", caller.getRespawnPosition().asLong());
+        p.putLong("HostileBed", home.asLong());
         p.putLong("HostileDay", today + 1L);
         savePlayerState(data, caller.getUUID(), p);
         acknowledge(caller, data, p);
