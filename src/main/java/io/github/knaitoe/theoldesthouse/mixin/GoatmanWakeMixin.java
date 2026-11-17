@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GoatmanWakeMixin {
     @Inject(method="stopSleepInBed",at=@At("HEAD"),cancellable=true)
     private void house$finishBedside(boolean immediately,boolean updateSleeping,CallbackInfo ci){
-        if(GoatmanBedtime.locked((ServerPlayer)(Object)this))ci.cancel();
+        // 0.4.664: nor does a reader the machine in Not Yet is mending get up off its table or their cot before it is done.
+        if(GoatmanBedtime.locked((ServerPlayer)(Object)this)||io.github.knaitoe.theoldesthouse.labyrinth.NotYetMending.held((ServerPlayer)(Object)this))ci.cancel();
     }
 }

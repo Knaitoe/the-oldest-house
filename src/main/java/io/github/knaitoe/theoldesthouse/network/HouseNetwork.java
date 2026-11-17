@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("196")
+        event.registrar("197")
                 .playToServer(BikeKeysPayload.TYPE,BikeKeysPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike bike&&bike.getFirstPassenger()==p)bike.keys(payload.jump(),payload.turbo());}))
                 .playToClient(BorrascaLetterPayload.TYPE,BorrascaLetterPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaLetterScreen.accept(payload)))
                 .playToServer(BorrascaLetterSeenPayload.TYPE,BorrascaLetterSeenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaGarritys.seen(p,payload.back());}))
@@ -36,6 +36,8 @@ public final class HouseNetwork {
                 .playToServer(CompanionNearbyPayload.TYPE,CompanionNearbyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.opening.CompanionOrders.openNearest(p);}))
                 .playToServer(JournalRibbonPayload.TYPE,JournalRibbonPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.journal.Journals.ribbon(p,payload.page());}))
                 .playToClient(SourceMarkPayload.TYPE,SourceMarkPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.SourceMarkClient.accept(payload)))
+                .playToClient(NotYetSeamsPayload.TYPE,NotYetSeamsPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.NotYetClient.seams(payload.player(),payload.seams())))
+                .playToClient(NotYetStatePayload.TYPE,NotYetStatePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.NotYetClient.state(payload)))
                 .playToClient(FaceLossPayload.TYPE,FaceLossPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.labyrinth.FaceLoss.clientSet(payload.player(),payload.gone())))
                 .playToClient(CityPayload.TYPE,CityPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CityClient.accept(payload)))
                 .playToClient(CornerPayload.TYPE,CornerPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CornerClient.accept(payload)))

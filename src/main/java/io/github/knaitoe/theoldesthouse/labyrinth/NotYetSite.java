@@ -25,8 +25,12 @@ public final class NotYetSite {
     public static final int WEST=-20,EAST=12,NORTH=-67,TOP=8,BOTTOM=-12;
     /** The passage from the House's door: its half-width, its far end, its height. */
     public static final int PASS_HALF=2,PASS_N=-8,PASS_HIGH=3;
-    /** The plates over the shaft, three by three in the passage floor; the shaft under them, and the floor at its foot. */
-    public static final int HATCH_W=-1,HATCH_E=1,HATCH_S=-4,HATCH_N=-6,SHAFT_FLOOR=-12;
+    /**
+     * The plates over the shaft, the passage's whole width and three plates long; the shaft under them, and the floor at its foot. 0.4.664:
+     * the whole width, so that nobody who has not yet fallen walks round it (in 0.4.663 it was three by three, with a plate's width of
+     * grating either side).
+     */
+    public static final int HATCH_W=-PASS_HALF,HATCH_E=PASS_HALF,HATCH_S=-4,HATCH_N=-6,SHAFT_FLOOR=-12;
     /** The ward between its walls: its half-width, its near and far ends, its height. */
     public static final int WARD_HALF=9,WARD_S=-10,WARD_N=-44,WARD_HIGH=6;
     /** The cots down either side, by the z of each head; the west side leaves room for the doorway to the mending room. */
@@ -74,11 +78,16 @@ public final class NotYetSite {
     /** Where a body stands beside a cot to lie on it: in the aisle, at its foot. */
     public static Vec3 bedside(BlockPos head){var f=cotFacing(head);var foot=cotFoot(head).relative(f);return new Vec3(foot.getX()+.5,0,foot.getZ()+.5);}
     public static boolean isCot(BlockPos rel){return COTS.contains(rel);}
+    /** Over the hatch's plates at any height a body can be at, jumping included. */
+    public static boolean aboveHatch(Vec3 r){return r.x>=HATCH_W&&r.x<HATCH_E+1&&r.z<HATCH_S+1&&r.z>=HATCH_N&&r.y>=-.5&&r.y<PASS_HIGH;}
+    /** On the grating at the foot of the shaft. */
+    public static boolean atShaftFoot(Vec3 r){return inShaft(r)&&r.y<SHAFT_FLOOR+1.5;}
+    /** Where a body lies on the mending table: its head cell. */
+    public static BlockPos tableHead(){return TABLE;}
 
     // ------------------------------------------------------------------------------------------------ where a body is
     public static boolean inPassage(Vec3 r){return r.z<=1&&r.z>PASS_N-1&&Math.abs(r.x-.5)<=PASS_HALF+1&&r.y>-1.5;}
-    public static boolean inShaft(Vec3 r){return r.x>=HATCH_W&&r.x<HATCH_E+1&&r.z<=HATCH_S+1&&r.z>HATCH_N&&r.y<-.5;}
-    public static boolean overHatch(Vec3 r){return r.x>=HATCH_W&&r.x<HATCH_E+1&&r.z<=HATCH_S+1&&r.z>HATCH_N&&r.y>=-.5&&r.y<1;}
+    public static boolean inShaft(Vec3 r){return r.x>=HATCH_W&&r.x<HATCH_E+1&&r.z<HATCH_S+1&&r.z>=HATCH_N&&r.y<-.5;}
     public static boolean inWard(Vec3 r){return r.z<=WARD_S+1&&r.z>WARD_N&&Math.abs(r.x-.5)<=WARD_HALF+1;}
     public static boolean inMending(Vec3 r){return r.x>=MEND_W&&r.x<MEND_E+1&&r.z<=MEND_S+1&&r.z>MEND_N;}
     public static boolean inLong(Vec3 r){return r.z<=WARD_N&&r.z>LONG_N&&Math.abs(r.x-.5)<=WARD_HALF+1;}
@@ -99,7 +108,7 @@ public final class NotYetSite {
         passage(l,b);shaft(l,b);ward(l,b);window(l,b);mending(l,b);longRoom(l,b);far(l,b);
     }
 
-    /** Machine casing, grating underfoot, cable overhead, two strip lamps; three by three of its floor plates are over the shaft. */
+    /** Machine casing, grating underfoot, cable overhead, two strip lamps; a stretch of its floor plates, wall to wall, is over the shaft. */
     static void passage(ServerLevel l,BlockPos b){
         int w=PASS_HALF;
         box(l,b,-w,-1,PASS_N,w,-1,0,kept("grating"));
@@ -120,7 +129,8 @@ public final class NotYetSite {
     static void shaft(ServerLevel l,BlockPos b){
         box(l,b,HATCH_W,SHAFT_FLOOR+1,HATCH_N,HATCH_E,-2,HATCH_S,AIR);
         box(l,b,HATCH_W,SHAFT_FLOOR,HATCH_N,HATCH_E,SHAFT_FLOOR,HATCH_S,kept("grating"));
-        for(int y=SHAFT_FLOOR+1;y<=-2;y+=3)set(l,b,HATCH_E+1,y,HATCH_S+1,kept("rime"));
+        // A little rime on its walls, east and west, staggered, where the cold off the grating has got into the casing.
+        for(int y=SHAFT_FLOOR+1;y<=-2;y+=3){set(l,b,HATCH_E+1,y,HATCH_N+1,kept("rime"));if(y+1<=-2)set(l,b,HATCH_W-1,y+1,HATCH_S,kept("rime"));}
     }
 
     /** The ward: tiled floor, a dado to waist height, painted wall above it, cable ceiling, two rows of cots. */

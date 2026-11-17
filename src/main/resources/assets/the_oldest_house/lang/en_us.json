@@ -2032,5 +2032,7 @@
   "block.the_oldest_house.not_yet_dado": "Ward Dado",
   "subtitles.the_oldest_house.not_yet.hum": "The ward hums",
   "subtitles.the_oldest_house.not_yet.tick": "A counter turns over",
-  "subtitles.the_oldest_house.bleed.not_yet": "A ward hums and a counter turns over, behind a door"
+  "subtitles.the_oldest_house.bleed.not_yet": "A ward hums and a counter turns over, behind a door",
+  "subtitles.the_oldest_house.not_yet.hatch": "A hatch drops open",
+  "subtitles.the_oldest_house.not_yet.mend": "Fine arms work"
 }

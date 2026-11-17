@@ -551,14 +551,15 @@ def board():
 
 # ------------------------------------------------------------------------------------------------ what each reader's game draws
 def seams():
-    # A seam on a skin: a thin dark line closed with small slanting stitches of pale thread, the skin either side of it drawn in a
-    # little. Four of them, one to a row of four pixels, each a different length, so a body drawn with several does not look stamped.
+    # A seam on a skin: a thin dark line closed with small slanting stitches of pale thread, the skin either side of it drawn up
+    # into a pale ridge, so the line reads on a dark skin as well as a light one. Four of them, one to a row of four pixels, each a
+    # different length, so a body drawn with several does not look stamped.
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     for row, (length, start) in enumerate(((14, 1), (10, 3), (12, 2), (8, 4))):
         y = row * 4 + 1
         for x in range(start, start + length):
-            im.putpixel((x, y), (74, 40, 38, 220))
-            im.putpixel((x, y - 1), (60, 30, 30, 46)); im.putpixel((x, y + 1), (60, 30, 30, 46))
+            im.putpixel((x, y), (62, 32, 30, 236))
+            im.putpixel((x, y - 1), (226, 196, 184, 64)); im.putpixel((x, y + 1), (226, 196, 184, 64))
         for x in range(start + 1, start + length - 1, 3):
             im.putpixel((x, y - 1), (196, 186, 164, 235)); im.putpixel((x + 1, y + 1), (196, 186, 164, 235))
     return im

@@ -20,7 +20,7 @@ The proposal's build is four parts:
 All positions are relative to the House's door, which is at z 0 facing north.
 
 - **The passage** (x -2 to 2, z 0 to -8, three high). The machine's casing, grating underfoot, cable overhead, two strip lamps, and cable runs down both walls.
-  - Nine of its floor plates (x -1 to 1, z -4 to -6) are a hatch, shut.
+  - Fifteen of its floor plates (x -2 to 2, z -4 to -6), the passage's full width, are a hatch, shut. (Part 1 had nine, three wide; 0.4.664 widened it so it cannot be walked round.)
   - Under the hatch is a shaft ten blocks deep in the casing, with grating at its foot and a little rime on its walls.
   - A doorway three wide leads into the ward.
 - **The ward** (x -9 to 9, z -10 to -44, seven high). It has its own tiled floor, a darker gloss dado to waist height, and painted wall above. The ceiling is the machine's cable.
@@ -84,7 +84,7 @@ From part 2 the per-reader things begin: a reader's own cot, their own counter, 
 
 `NotYetTests.theWardTheMendingRoomAndTheLongRoom` (the new `not_yet` namespace and job):
 
-- **Materials:** the passage's casing, grating and cable; the hatch's nine plates, shut, over the shaft and its grating; the ward's tile, dado, wall and ceiling.
+- **Materials:** the passage's casing, grating and cable; the hatch's plates, shut, over the shaft and its grating; the ward's tile, dado, wall and ceiling.
 - **Fittings:**
   - all twenty-one cots, each with its foot, screen and lamp;
   - the counter at nought;
