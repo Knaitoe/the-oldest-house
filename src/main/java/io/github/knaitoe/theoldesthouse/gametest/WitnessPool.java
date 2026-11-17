@@ -26,8 +26,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  * 0.4.618, The Ones Already Inside: 89 / 67 / 65.
  * 0.4.630, A Little Longer: 90 / 68 / 66.
  * 0.4.643, A sort of thing: 91 / 69 / 67.
+ * 0.4.666, Not yet: 92 / 69 / 68.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=91,REQUIRED=69,LITERARY=67;
+    static final int SOURCES=92,REQUIRED=69,LITERARY=68;
 }

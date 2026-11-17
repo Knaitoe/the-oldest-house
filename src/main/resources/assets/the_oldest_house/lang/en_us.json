@@ -2039,5 +2039,7 @@
   "subtitles.the_oldest_house.not_yet.call": "Someone calls a name",
   "subtitles.the_oldest_house.not_yet.groan": "A groan, from a screen",
   "subtitles.the_oldest_house.not_yet.quiet": "Everything goes quiet",
-  "subtitles.the_oldest_house.not_yet.slide": "A steel door slides open"
+  "subtitles.the_oldest_house.not_yet.slide": "A steel door slides open",
+  "advancements.the_oldest_house.account.not_yet.title": "Not yet",
+  "advancements.the_oldest_house.account.not_yet.description": "Deep in the machine there is a ward where it mends what it breaks."
 }

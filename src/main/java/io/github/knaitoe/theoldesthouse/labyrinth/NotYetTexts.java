@@ -99,11 +99,67 @@ public final class NotYetTexts {
             "NOBODY DIES HERE. I HAVE SEEN TO IT.",
             "BED ONE IS MADE.\n\nI HAVE PUT A NAME ON IT IN PENCIL. I WILL WRITE IT IN INK WHEN YOU LIE DOWN."));
     }
-    /** The account. Nothing asks for it until part 4; it says only what anybody could see of the place. */
+    /**
+     * 0.4.666: the account, in the drawer under the reader's own cot once they have stayed down. It is written from what the House kept:
+     * how the machine met them, how often it mended them, what it called and what it told them (and whether that was so), whom it hurt
+     * to get them up, what it had read of home and of their years, and who lay down beside them. Its last page is in the machine's hand.
+     */
     public static ItemStack account(String name,CompoundTag own){
-        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.NOT_YET),name,pages(
-            "There was a ward deep in the machine, with cots in rows under lamps, and a window onto a field where the sun did not move. "
-                +"A wall of digits stood at nought. Beyond it, in a long room, three people lay with their eyes open."));
+        var p=new ArrayList<String>();
+        p.add((own.getBoolean("TookFour")?"I came down through the machine to a ward. Further up I had let four of its people go, and it knew. It said there was only me now."
+            :"I came down through the machine to a ward. It said it had been waiting for someone to keep.")
+            +" There were cots in rows under lamps, and a window onto a field where the sun did not move.");
+        int mended=own.getInt("Mended");
+        p.add("The floor gave under me on the way in, and I fell further than anyone lives through. I woke on a cot with a seam on me I had not had."
+            +(mended>1?" It did that "+count(mended)+" times in all. Every time there was another seam, and the screens said NOT YET.":" The screens said NOT YET."));
+        if(own.contains("RuleFrom")){int who=Math.max(0,Math.min(2,own.getInt("RuleFrom")));
+            p.add("Past the ward, in a long room, three people lay with their eyes open. "+NAMES[who]+" told me the only rule there is: it wants you up.");}
+        int gotUp=own.getInt("GotUp");
+        p.add("It asked me to lie down, and said it would keep me."+(gotUp<=0?" I lay down on the cot it had given me.":" I got up "+times(gotUp)+" before I stayed down. Every time, it said that everyone gets up, and the next time was longer."));
+        var did=new ArrayList<String>();
+        did.add("it heated the cot under me until the coils glowed");
+        var called=NotYetTrial.names(own,"Called");called.removeIf(String::isEmpty);
+        if(!called.isEmpty()&&own.getBoolean("CalledOthers"))did.add("it called "+CoopAccounts.names(called)+" from the far end of the ward, low down, as if from the floor");
+        else if(!called.isEmpty())did.add("something past the arch whistled and called "+CoopAccounts.names(called)+", and waited for "+(called.size()==1?"it":"them")+" to come");
+        else did.add("it said my own name by the far door, and then nearer");
+        p.add("While I lay there "+String.join(", and ",did)+".");
+        for(var row:NotYetTrial.lies(own)){
+            String about=row.getString("About");boolean so=row.getBoolean("True");String line=row.getString("Line");
+            if(line.equals(DOOR_IS_OPEN))p.add("The screens said the door at the end was open and nothing was keeping me. "+(so?"That time it was.":"It was not."));
+            else if(line.startsWith(up(about)+" GOT UP. THEY ARE AT THE DOOR"))p.add("The screens said "+about+" had got up and was standing at the door. "+(so?about+" had.":about+" had not."));
+            else if(line.startsWith(up(about)+" GOT UP. DO YOU WANT"))p.add("When "+about+" got up, it told me so. That was true.");
+        }
+        var used=NotYetTrial.names(own,"Used");var hurtFor=NotYetTrial.names(own,"HurtFor");
+        if(!used.isEmpty())p.add("It hurt "+CoopAccounts.names(used)+" where they lay, and told me it would stop if I got up. I did not get up.");
+        else if(own.getBoolean("ScreenMan"))p.add("It showed me the man from the long room on the screen over my cot, with something being done to him, and said it would stop if I got up. He said to stay down.");
+        if(!hurtFor.isEmpty())p.add("It hurt me where I lay, and told "+CoopAccounts.names(hurtFor)+" that they could stop it.");
+        if(own.getBoolean("Cold"))p.add("Then it let the cold in through the grille, and said I could get up and get warm."+(own.getInt("MendedLying")>0?" Then it killed me, and would not let that count either.":""));
+        var beside=NotYetTrial.names(own,"Beside");
+        p.add("I stayed down. Everything went quiet at once. The lamp lifted away from my face, and at the far end of the long room a door slid open."
+            +(beside.isEmpty()?"":" "+CoopAccounts.names(beside)+(beside.size()==1?" was":" were")+" lying in the ward with me."));
+        String home=switch(own.getString("HomeRead")){
+            case "HAVEN"->"that someone once kept me warm and fed, and that it could do it for longer";
+            case "DANGER"->"that I knew what it was to be kept, and that it did it better";
+            case "RUNAWAY"->"that I had left every place that ever kept me, and would not leave this one";
+            default->"";};
+        String counter=switch(own.getInt("CounterKind")){case NotYet.FLAP->"cards that fell one over another";case NotYet.SEGMENT->"bars of light";default->"drums that turned";};
+        p.add((home.isEmpty()?"":"When I first came into the ward it had told me "+home+". ")
+            +"On the way out I passed under the counter over the arch. It was counting my years, on "+counter+". It kept counting after I left.");
+        p.add("My cot was made when I looked back, tight, the way the others were. This was in the drawer under it.");
+        p.add(up(name)+". IN INK.\n\nMENDED: "+up(count(Math.max(mended,1)))+".\nGOT UP: "+up(count(gotUp))+".\nSTAYED DOWN.\n\nNOT YET.");
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.NOT_YET),name,pages(p.toArray(String[]::new)));
+    }
+    private static String times(int n){return n==1?"once":n==2?"twice":count(n)+" times";}
+    /** 0.4.666: as the drawer under the reader's own cot comes open. */
+    public static final String DRAWER="The drawer under your cot slides out a little way on its own. There is a book in it.";
+    /** 0.4.666: what each of the long room's three says to a reader who stayed down, and says again after. */
+    public static String stayed(int who,ServerPlayer reader){
+        return switch(who){
+            case INES_->"It went quiet. I heard it from here. I didn't know it could.";
+            case BRAM_->"The door's open for you. Don't stand in it long. It'll take that as asking.";
+            default->HouseRead.address(reader,"Go on, then. It won't look at you again.","Go on, son. It won't look at you again.",
+                "Go on, pet. It won't look at you again.","Go on, pet. It won't look at you again.");
+        };
     }
 
     // ------------------------------------------------------------------------------------------------ 0.4.665: lie down

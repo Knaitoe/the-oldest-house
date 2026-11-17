@@ -127,6 +127,8 @@ public final class StairCompany {
             chosen("Daniel, or Dan if he went back into the frame",S,LodgingPeople.FIRST+LodgingPeople.DANIEL,StairCompany::lodger,Story.ONES_INSIDE),
             chosen("Rowan",S,LongerRowan.FIRST+LongerRowan.WOMAN,StairCompany::rowan,Story.LITTLE_LONGER),
             posed("one of the brothers, pointing",S,KingBrothers.DUM,KingBrothers.ALONE,ItemStack.EMPTY,Story.SLEEPING_KING),
+            // 0.4.666: whoever of the long room told the reader the rule, on their feet as they never are in the ward.
+            chosen("the one from the long room who told the rule, standing",S,NotYet.FIRST+NotYet.ODILE,StairCompany::ward,Story.NOT_YET),
             figure("the swimmer, out of the water",S,LastSwimmer.STOOD,Story.LAST_SWIMMER),
             figure("Mr. Harrigan, on his feet",LiteraryActor.HARRIGAN,HarriganVignette.STANDING_PHASE,Story.HARRIGAN),
             // 0.4.655: eight of the stories' own creatures, each drawn by its own story's renderer in the place of the body that stands for it.
@@ -147,6 +149,8 @@ public final class StairCompany {
         var ending=WitnessAccount.record(LabyrinthData.get(p.server),p.getUUID()).getCompound("Stories").getString(Story.ONES_INSIDE.id);
         return LodgingPeople.FIRST+(ending.equals(LodgingEnd.OUTCOMES[LodgingEnd.RETURNED])?LodgingPeople.DAN:LodgingPeople.DANIEL);
     }
+    /** Not Yet: whichever of Ines, Bram and Odile told this reader the rule (a copy of their record is asked). */
+    static int ward(ServerPlayer p){var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),NotYet.PLACE);return NotYet.FIRST+Math.max(0,Math.min(NotYet.PEOPLE-1,own.getInt("RuleFrom")));}
     /** A little longer: the Rowan this reader was given (a copy of their record is asked, so nothing is kept by asking). */
     static int rowan(ServerPlayer p){return LongerRowan.castFor(p,LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LongerRowan.PLACE));}
     /**
