@@ -2138,5 +2138,8 @@
   "block.the_oldest_house.fallow_ash_ground": "Ash",
   "block.the_oldest_house.fallow_scorched": "Scorched Earth",
   "block.the_oldest_house.fallow_charred": "Charred Boards",
-  "block.the_oldest_house.fallow_charred_log": "Charred Trunk"
+  "block.the_oldest_house.fallow_charred_log": "Charred Trunk",
+  "subtitles.the_oldest_house.fallow.rig": "A diesel engine idles",
+  "advancements.the_oldest_house.account.fallow.title": "Fallow",
+  "advancements.the_oldest_house.account.fallow.description": "A light came over the wheat and brought down a gas station."
 }

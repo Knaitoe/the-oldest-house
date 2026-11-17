@@ -66,6 +66,8 @@ public final class FallowRegistry {
         DIG=sound("fallow.dig"),GIVE=sound("fallow.give");
     /** 0.4.682: the wind after the light, over a field with nothing left standing in it. */
     public static final DeferredHolder<SoundEvent,SoundEvent> ASH_WIND=sound("fallow.ash_wind");
+    /** 0.4.684: the big man's rig idling on the forecourt while the man stands at the cellar doors. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> RIG=sound("fallow.rig");
     /**
      * 0.4.673: what the afternoon's people carry, never a reader: Opal's bean in its cup (drawn from its block's model), the quart of milk
      * Faye buys, the bottle of pop the stranger buys and the cup of coffee Otis pours.

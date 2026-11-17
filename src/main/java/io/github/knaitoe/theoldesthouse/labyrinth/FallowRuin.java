@@ -45,7 +45,7 @@ public final class FallowRuin {
             if((st.ruined&1<<i)!=0||k<AT[i]&&(below||k<CANOPY))continue;
             st.ruined|=1<<i;
             switch(i){
-                case 0->glass(l,s.base);
+                case 0->{glass(l,s.base);ledger(l,s.base);}
                 case 1->{canopy(l,s.base);heard(l,s,here,FallowRegistry.CANOPY.get(),.45F,FallowTexts.RUIN_CANOPY);}
                 case 2->{roof(l,s.base);heard(l,s,here,FallowRegistry.COLLAPSE.get(),.5F,FallowTexts.RUIN_STORE);}
                 case 3->{walls(l,s.base);heard(l,s,here,FallowRegistry.COLLAPSE.get(),.35F,null);}
@@ -67,6 +67,13 @@ public final class FallowRuin {
         for(int x=-6;x<=6;x++){if(Math.abs(x)<2)continue;for(int y=1;y<=2;y++)blow(l,b,new BlockPos(x,y,STORE_N));}
         for(int z:new int[]{-9,-10})for(int y=1;y<=2;y++)blow(l,b,new BlockPos(STORE_W,y,z));
         sound(l,b,new BlockPos(0,2,STORE_N),SoundEvents.GLASS_BREAK,2F,.8F);sound(l,b,new BlockPos(STORE_W,2,-9),SoundEvents.GLASS_BREAK,1.5F,.9F);
+    }
+    /** 0.4.684: the till end of the counter, its top scorched through the glass, and on the shelf beneath it the keeper's ledger, its
+     * edges singed (counter stage 4), where the account is. The afternoon's plans put the till end back (FallowSite.store). */
+    static void ledger(ServerLevel l,BlockPos b){
+        var p=b.offset(ENDING);if(!l.isLoaded(p))return;var s=l.getBlockState(p);
+        if(!FallowBlock.is(s,FallowBlock.Kind.COUNTER)||s.getValue(FallowBlock.STAGE)==FallowBlock.LEDGER)return;
+        BuildBlocks.set(l,p,s.setValue(FallowBlock.STAGE,FallowBlock.LEDGER),F);
     }
     private static void blow(ServerLevel l,BlockPos b,BlockPos at){
         var p=b.offset(at);if(!l.isLoaded(p))return;var s=l.getBlockState(p);

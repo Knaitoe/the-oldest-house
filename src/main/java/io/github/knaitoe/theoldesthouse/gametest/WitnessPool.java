@@ -2,7 +2,7 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 /**
  * The Witness pool every case pins, in one place, so a new story changes one line here rather than sixteen across the suite:
- * the sources in {@code WitnessAccount.Story}, the resolutions required (75%, rounded up), and the literary places among them.
+ * the sources in {@code WitnessAccount.Story}, the resolutions required (75%, rounded up, capped at 33), and the literary places among them.
  * 0.4.209: the closing hall makes 62 / 47 / 40; 0.4.210, the storeroom, 63 / 48 / 41; 0.4.211, the stillness, 64 / 48 / 42; 0.4.212, the line, 65 / 49 / 43; 0.4.213, your own light, 66 / 50 / 44; 0.4.215, the household (not a place), 67 / 51 / 44; 0.4.217, Polybius, 68 / 51 / 45; 0.4.218, the replacement, 69 / 52 / 46.
  0.4.227, the last swimmer: 70 / 53 / 47.
  0.4.228, Vacant Possession: 71 / 54 / 48.
@@ -28,8 +28,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  * 0.4.643, A sort of thing: 91 / 69 / 67.
  * 0.4.666, Not yet: 92 / 69 / 68.
  * 0.4.671, Last seen: 93 / 70 / 69.
+ * 0.4.684, Fallow: 94 / 33 / 70, the quota now capped at 33 (WitnessAccount.CAP).
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=93,REQUIRED=70,LITERARY=69;
+    static final int SOURCES=94,REQUIRED=33,LITERARY=70;
 }

@@ -840,6 +840,8 @@ public final class PellTexts {
         case "not_yet"->"I got up the first time it called my name.";
         // 0.4.673 (run 1705: the forged lines missed Last Seen).
         case "last_seen"->"I kept one of the folders back and never said whose face was in it.";
+        // 0.4.684: Fallow becomes a Witness story.
+        case "fallow"->"I told the man on the road where the girl was.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

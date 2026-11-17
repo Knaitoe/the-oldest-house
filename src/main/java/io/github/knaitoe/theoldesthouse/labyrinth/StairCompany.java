@@ -131,6 +131,8 @@ public final class StairCompany {
             chosen("the one from the long room who told the rule, standing",S,NotYet.FIRST+NotYet.ODILE,StairCompany::ward,Story.NOT_YET),
             // 0.4.671: the first of the ten, who stood at the dry fountain facing the office and did not blink.
             figure("the first of them, from the fountain",S,LastSeen.CHILDREN_FIRST+LastSeen.ROCIO,Story.LAST_SEEN),
+            // 0.4.684: the man who came down the road, in no one's face but the one he was made in.
+            figure("the man who came down the road",S,Fallow.FIRST+Fallow.STRANGER,Story.FALLOW),
             figure("the swimmer, out of the water",S,LastSwimmer.STOOD,Story.LAST_SWIMMER),
             figure("Mr. Harrigan, on his feet",LiteraryActor.HARRIGAN,HarriganVignette.STANDING_PHASE,Story.HARRIGAN),
             // 0.4.655: eight of the stories' own creatures, each drawn by its own story's renderer in the place of the body that stands for it.

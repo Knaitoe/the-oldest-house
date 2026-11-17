@@ -118,9 +118,13 @@ public final class WitnessTests {
         helper.succeed();
     }
     @GameTest(template="empty") public static void witnessQuotaTracksSeventyFivePercentOfTheEligiblePool(GameTestHelper helper){
-        helper.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"the fifty-seven playable sources currently require forty-three resolutions");
+        helper.assertTrue(WitnessAccount.Story.values().length==WitnessPool.SOURCES&&WitnessAccount.REQUIRED==WitnessPool.REQUIRED,"the playable sources require the pinned resolutions: "+WitnessAccount.REQUIRED);
         for(int[] quota:new int[][]{{5,4},{6,5},{7,6},{8,6},{9,7},{10,8},{11,9},{12,9},{13,10},{16,12},{17,13},{18,14},{19,15},{20,15},{43,33}})
             helper.assertTrue(WitnessAccount.requiredForPoolSize(quota[0])==quota[1],"the Witness quota rounds 75 percent upward for a pool of "+quota[0]);
+        // 0.4.684: past 44 sources the quota stays at the cap, however many vignettes are added; a small pool still asks for 75 percent.
+        for(int[] quota:new int[][]{{44,33},{45,33},{71,33},{94,33},{200,33}})
+            helper.assertTrue(WitnessAccount.requiredForPoolSize(quota[0])==quota[1],"the Witness quota is capped at 33 for a pool of "+quota[0]);
+        helper.assertTrue(WitnessAccount.CAP==33,"the cap is the bar approved as the hardest ending");
         helper.succeed();
     }
     @GameTest(template="empty") public static void accountAndDeliberateReadingSurviveWorldReload(GameTestHelper helper){

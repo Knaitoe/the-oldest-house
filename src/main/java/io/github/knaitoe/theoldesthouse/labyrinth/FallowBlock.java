@@ -14,7 +14,7 @@ import net.minecraft.world.phys.shapes.*;
  * tools/draw_fallow_art.py.
  * <ul>
  * <li>The store. COUNTER: a length of the counter, plain (0), with the register (1), its end, the flap lifted and standing up against the counter so the staff can pass (2), with the candy rack
- * (3). NOTE: the keeper's note propped against the register (0). STOOL: the keeper's stool. BACKSHELF: the back wall's cabinet (0), its
+ * (3), and (0.4.684) the till end after the light, the top scorched and the keeper's ledger singed on the shelf beneath (4). NOTE: the keeper's note propped against the register (0). STOOL: the keeper's stool. BACKSHELF: the back wall's cabinet (0), its
  * shelf of cartons and cans (1), the shelf with the radio on it (2). TV: the television on its bracket, its picture (0), a card with
  * nothing on it (1), dark (2). COOLER: a glass-doored cooler's lower half (0) and its lit top, one panel along the run of doors: ICE (1), COLD (2) and plain (3). GONDOLA: shelving down the middle,
  * double-sided, of cans (0), boxes (1) and oil and parts (2), and its low top shelf (3). MAPS: the rack of road maps (0) and its header
@@ -62,6 +62,8 @@ public final class FallowBlock extends HorizontalDirectionalBlock {
     public static final IntegerProperty STAGE=IntegerProperty.create("stage",0,7);
     /** The television's stages. */
     public static final int PICTURE=0,CARD=1,DARK=2;
+    /** 0.4.684: the counter's till end after the light (FallowRuin.ledger). */
+    public static final int LEDGER=4;
     /** Wheat's stages; 0.4.683: and coming up again round Opal's bean, shoots, then young wheat (FallowRoad.green). */
     public static final int RIPE=0,BOWED=1,STUBBLE=2,ASH=3,SHOOT=4,GREEN=5;
     /** A window's halves, whole and blown in. */

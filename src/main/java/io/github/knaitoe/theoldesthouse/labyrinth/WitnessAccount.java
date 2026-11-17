@@ -142,14 +142,21 @@ public final class WitnessAccount {
         NOT_YET("not_yet","Not yet","survival","Deep in the machine there is a ward where it mends what it breaks. It would not let me die. I lay down and stayed down, whatever it did, until it looked away."),
         // 0.4.671 (docs/LAST_SEEN_0_4_671.md): resolved by the account under the reader's own folder in Nora's drawer, ready once they
         // have had the night and opened the drawer on the day after.
-        LAST_SEEN("last_seen","Last seen","understanding","Children came back to a park the way they were the day they went, and I took each one the folder with their face in it. The city wanted them gone by morning. My own folder was in her drawer.");
+        LAST_SEEN("last_seen","Last seen","understanding","Children came back to a park the way they were the day they went, and I took each one the folder with their face in it. The city wanted them gone by morning. My own folder was in her drawer."),
+        // 0.4.684 (docs/FALLOW_0_4_684.md): resolved by the account in the keeper's ledger under the counter by the till, ready once the
+        // man who came down the road after the light had gone, the reader still at the station.
+        FALLOW("fallow","Fallow","survival","A light came over the wheat and brought down a gas station. Afterward a man walked down the road wearing our faces and asked where the girl was.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}
     }
     private WitnessAccount(){}
-    /** Seventy-five percent of shipped Witness stories, rounded up as the pool grows. */
-    public static int requiredForPoolSize(int availableStories){return (3*availableStories+3)/4;}
+    /**
+     * Seventy-five percent of shipped Witness stories, rounded up as the pool grows, but never more than CAP. 0.4.684 (owner, November 17):
+     * the bar stays where it was approved as the hardest ending (33 of 43, October 7) instead of climbing with every vignette added.
+     */
+    public static final int CAP=33;
+    public static int requiredForPoolSize(int availableStories){return Math.min(CAP,(3*availableStories+3)/4);}
     public static CompoundTag record(LabyrinthData data,UUID player){return data.stateEntry(STATE,player.toString());}
     private static void save(LabyrinthData data,UUID player,CompoundTag record){
         data.setStateEntry(STATE,player.toString(),record);
