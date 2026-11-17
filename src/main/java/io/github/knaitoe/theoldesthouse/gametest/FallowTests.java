@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -717,6 +718,92 @@ public final class FallowTests {
             h.assertTrue(fitting(l,b,new BlockPos(FallowSite.WELL_W,0,FallowSite.WELL_S),FallowBlock.Kind.CELLAR),"the cellar doors are shut and clear");
             h.assertTrue(l.getBlockState(b.offset(FallowBuried.BEAN_BELOW)).isAir()&&stage(l,b,FallowSite.LANTERN)==FallowBlock.LANTERN_LIT,"the cellar is as it was");
             for(int x:FallowRuin.WALL)h.assertTrue(l.getBlockState(b.offset(x,0,FallowSite.STORE_N-1)).isAir(),"and nobody's shadow is on the front: "+x);
+        })
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    /**
+     * 0.4.682, the ash outside (docs/FALLOW_0_4_682.md). With one reader below at the light, once the light has gone over the field burns
+     * tile by tile to bare ash and burnt stubble on ash-grey ground; the ground is opened where things came down, a bowl burnt black at the
+     * bottom; the poles lie across the road with their crossarms stood on end, their wires gone, some broken off at their feet; the
+     * farmhouse is burnt to its sill, its chimney standing broken and its front door still in a charred scrap of its frame, the way on;
+     * the windbreak is burnt standing and the yard black. When the station has stood empty, the fresh afternoon puts every bit of it back as
+     * it was sown and built: the same wheat in the same places, the ground filled, the poles stood up and strung, the farmhouse whole, its
+     * windbreak in leaf and its yard in grass, and the front door kept.
+     */
+    @GameTest(template="empty",batch="fallow_ash",timeoutTicks=3000)
+    public static void theAshOutside(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        // The whole field, from the station to its far edge.
+        f.chunks.hold(l,new AABB(b.getX()+FallowSite.WEST-1,b.getY()-8,b.getZ()+FallowSite.NORTH-1,b.getX()+FallowSite.EAST+1,b.getY()+16,b.getZ()+1));
+        var q=f.player("fallow_ash_below",P);
+        var field=new BlockPos(-50,0,-70);var crater=FallowAsh.CRATERS[0];int mid=(FallowSite.FARM_S+FallowSite.FARM_N)/2;
+        var chimney=new BlockPos(FallowSite.FARM_E-3,0,mid);var wall=new BlockPos(FallowSite.FARM_W,3,FallowSite.FARM_S);
+        var yard=new BlockPos(-40,-1,-48);var trunk=new BlockPos(-40,0,FallowSite.WINDBREAK_Z);
+        boolean[] door={false};
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            f.at(q,P,2.5,0,-2.5);
+            f.data().pushReturn(q.getUUID(),new LabyrinthData.Waypoint(l.dimension(),Vec3.atBottomCenterOf(b.offset(0,0,24)),0F,false));
+        }).thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)!=null&&Fallow.find(l,b,Fallow.DRIVER)!=null,"the afternoon is on"))
+        .thenExecute(()->{
+            // The way on is put in by OnwardDoors' own tick once nobody can see the doorway, which may be before or after the light
+            // (run 1711's local check raced it); it is put in here, so that the burn is shown to leave a door that stands.
+            if(!(l.getBlockState(b.offset(FallowSite.ONWARD)).getBlock() instanceof DoorBlock))OnwardDoors.install(l,b,LabyrinthPlace.FALLOW);
+            door[0]=l.getBlockState(b.offset(FallowSite.ONWARD)).getBlock() instanceof DoorBlock;
+            h.assertTrue(door[0],"the farmhouse's front door, the way on, is in its wall");
+            h.assertTrue(l.getBlockState(b.offset(field)).equals(FallowSite.wheatAt(field.getX(),field.getZ())),"the wheat stands as it was sown");
+            FallowStrike.begin(b);
+        })
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=1,"the tone comes on"))
+        .thenExecute(()->{f.at(q,P,-12.5,-3,-13.5);FallowStrike.skip(b,FallowStrike.LIGHT-2);})
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=FallowStrike.LIGHT+2,"the light"))
+        .thenWaitUntil(()->h.assertTrue(FallowAsh.done(b),"the outside burns: "+FallowStrike.since(b)))
+        .thenExecute(()->{
+            h.assertTrue(FallowSite.inCellar(q.position().subtract(Vec3.atLowerCornerOf(b))),"the reader below stays below");
+            h.assertTrue(is(l,b,field.below(),FallowRegistry.material("ash_ground")),"the field's ground is grey with ash");
+            var top=l.getBlockState(b.offset(field));
+            h.assertTrue(top.isAir()||FallowBlock.is(top,FallowBlock.Kind.WHEAT)&&top.getValue(FallowBlock.STAGE)==FallowBlock.ASH,"and its wheat is burnt to stubble or to nothing: "+top);
+            for(int x=FallowSite.WEST;x<=FallowSite.EAST;x+=7)for(int z=-40;z>=FallowSite.NORTH;z-=9){
+                var st=l.getBlockState(b.offset(x,0,z));
+                h.assertTrue(!FallowBlock.is(st,FallowBlock.Kind.WHEAT)||st.getValue(FallowBlock.STAGE)==FallowBlock.ASH,"no wheat stands anywhere in the field: "+x+" "+z);
+            }
+            h.assertTrue(l.getBlockState(b.offset(crater[0],-1,crater[1])).isAir()&&l.getBlockState(b.offset(crater[0],-3,crater[1])).isAir()
+                &&is(l,b,new BlockPos(crater[0],-4,crater[1]),FallowRegistry.material("scorched")),"the ground is opened, burnt black at the bottom");
+            for(int x:FallowAsh.POLE_X){
+                h.assertTrue(fitting(l,b,new BlockPos(x,0,FallowSite.POLES_Z+6),FallowBlock.Kind.POLE)&&stage(l,b,new BlockPos(x,0,FallowSite.POLES_Z+6))==FallowBlock.POLE_DOWN_TOP,"each pole lies across the road with its crossarm on end: "+x);
+                h.assertTrue(stage(l,b,new BlockPos(x,0,FallowSite.POLES_Z+3))==FallowBlock.POLE_DOWN&&l.getBlockState(b.offset(x,FallowSite.POLE_TOP,FallowSite.POLES_Z)).isAir(),"and nothing of it stands: "+x);
+                var foot=l.getBlockState(b.offset(x,0,FallowSite.POLES_Z));
+                h.assertTrue(FallowAsh.snapped(x)==(FallowBlock.is(foot,FallowBlock.Kind.POLE)&&foot.getValue(FallowBlock.STAGE)<FallowBlock.POLE_DOWN),"the broken ones leave a stump: "+x);
+            }
+            for(int x=FallowSite.WEST;x<=FallowSite.EAST;x++){
+                var st=l.getBlockState(b.offset(x,FallowSite.POLE_TOP,FallowSite.POLES_Z));
+                h.assertTrue(!FallowBlock.is(st,FallowBlock.Kind.POLE),"the wires are gone: "+x);
+            }
+            h.assertTrue(is(l,b,chimney,FallowRegistry.material("brick"))&&is(l,b,chimney.above(FallowAsh.CHIMNEY_LEFT),FallowRegistry.material("brick"))
+                &&!is(l,b,chimney.above(FallowAsh.CHIMNEY_LEFT+1),FallowRegistry.material("brick")),"the farmhouse's chimney stands, its top broken off");
+            h.assertTrue(l.getBlockState(b.offset(wall)).isAir(),"and its walls are gone");
+            h.assertTrue(stage(l,b,new BlockPos(FallowSite.FARM_DRIVE_X-1,1,FallowSite.FARM_S))==FallowBlock.JAMB&&stage(l,b,new BlockPos(FallowSite.FARM_DRIVE_X+1,1,FallowSite.FARM_S))==FallowBlock.JAMB&&stage(l,b,new BlockPos(FallowSite.FARM_DRIVE_X,2,FallowSite.FARM_S))==FallowBlock.LINTEL,"but for a charred scrap of the door's frame");
+            h.assertTrue(!door[0]||l.getBlockState(b.offset(FallowSite.ONWARD)).getBlock() instanceof DoorBlock,"and the door in it, the way on");
+            h.assertTrue(is(l,b,trunk,FallowRegistry.material("charred_log"))&&!l.getBlockState(b.offset(trunk.above(7))).is(Blocks.OAK_LEAVES),"the windbreak burnt standing");
+            h.assertTrue(is(l,b,yard,FallowRegistry.material("scorched")),"the yard burnt black");
+            q.setGameMode(GameType.SPECTATOR);
+        })
+        .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"once the reader has gone, the afternoon is over"))
+        .thenExecute(()->{
+            h.assertTrue(is(l,b,field.below(),FallowRegistry.material("soil"))&&l.getBlockState(b.offset(field)).equals(FallowSite.wheatAt(field.getX(),field.getZ())),"the same wheat stands where it was sown");
+            for(int x=FallowSite.WEST;x<=FallowSite.EAST;x+=7)for(int z=-40;z>=FallowSite.NORTH;z-=9){
+                var st=l.getBlockState(b.offset(x,0,z));
+                h.assertTrue(!FallowBlock.is(st,FallowBlock.Kind.WHEAT)||st.getValue(FallowBlock.STAGE)<FallowBlock.STUBBLE,"no burnt stubble is left: "+x+" "+z);
+                h.assertTrue(!is(l,b,new BlockPos(x,-1,z),FallowRegistry.material("ash_ground")),"and no ash on the ground: "+x+" "+z);
+            }
+            h.assertTrue(is(l,b,new BlockPos(crater[0],-1,crater[1]),FallowRegistry.material("soil"))&&is(l,b,new BlockPos(crater[0],-4,crater[1]),Blocks.DIRT),"the opened ground is filled");
+            for(int x:FallowAsh.POLE_X){
+                h.assertTrue(fitting(l,b,new BlockPos(x,1,FallowSite.POLES_Z),FallowBlock.Kind.POLE)&&l.getBlockState(b.offset(x,0,FallowSite.POLES_Z+6)).isAir(),"the poles stand again and the road is clear: "+x);
+            }
+            h.assertTrue(l.getBlockState(b.offset(chimney)).isAir()&&is(l,b,wall,FallowRegistry.material("farm_siding")),"the farmhouse stands whole");
+            h.assertTrue(!door[0]||l.getBlockState(b.offset(FallowSite.ONWARD)).getBlock() instanceof DoorBlock,"with its front door kept");
+            h.assertTrue(is(l,b,trunk,Blocks.OAK_LOG)&&is(l,b,yard,Blocks.GRASS_BLOCK),"its windbreak grown and its yard in grass");
+            h.assertTrue(!FallowAsh.burnt(l,b),"nothing of the light is left outside");
         })
         .thenExecute(()->{done();h.succeed();});
     }

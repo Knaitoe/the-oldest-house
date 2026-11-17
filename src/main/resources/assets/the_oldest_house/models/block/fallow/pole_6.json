@@ -1,0 +1,160 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/fallow/pole_wood",
+    "a": "the_oldest_house:block/fallow/crossarm",
+    "i": "the_oldest_house:block/fallow/insulator",
+    "x": "the_oldest_house:block/fallow/line_wire",
+    "l": "the_oldest_house:block/fallow/pole_wood_lying",
+    "e": "the_oldest_house:block/fallow/pole_end",
+    "u": "the_oldest_house:block/fallow/crossarm_up",
+    "particle": "the_oldest_house:block/fallow/pole_wood"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        0,
+        1
+      ],
+      "to": [
+        10.5,
+        5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        0,
+        2
+      ],
+      "to": [
+        10,
+        16,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u"
+        },
+        "south": {
+          "texture": "#u"
+        },
+        "east": {
+          "texture": "#u"
+        },
+        "west": {
+          "texture": "#u"
+        },
+        "up": {
+          "texture": "#u"
+        },
+        "down": {
+          "texture": "#u"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        16,
+        2.25
+      ],
+      "to": [
+        9,
+        18,
+        4.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#i",
+          "uv": [
+            7,
+            14,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#i",
+          "uv": [
+            7,
+            14,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#i",
+          "uv": [
+            11.75,
+            14,
+            13.75,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#i",
+          "uv": [
+            2.25,
+            14,
+            4.25,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#i"
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6,
+        -0.02,
+        2
+      ],
+      "to": [
+        10,
+        0,
+        4.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#u",
+          "uv": [
+            6,
+            11.5,
+            10,
+            14
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

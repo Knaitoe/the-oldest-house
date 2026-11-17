@@ -23,7 +23,29 @@ public final class HouseOutsideEffects extends DimensionSpecialEffects {
     /** One complete sky, including below the horizon: no sea-level black hemisphere can overlap it. */
     @Override public boolean renderSky(ClientLevel level,int ticks,float partial,Matrix4f view,Camera camera,Matrix4f projection,boolean foggy,Runnable setupFog){
         setupFog.run();if(foggy||camera.getFluidInCamera()!=FogType.NONE)return true;
-        drawSky(view,level.getSkyColor(camera.getPosition(),partial),level.getTimeOfDay(partial),YardSky.here());return true;
+        var sky=level.getSkyColor(camera.getPosition(),partial);var ash=FallowClient.ashSky(partial,sky);
+        if(ash!=null){drawAsh(view,ash);return true;}
+        drawSky(view,sky,level.getTimeOfDay(partial),YardSky.here());return true;
+    }
+    /** 0.4.682, Fallow after the light (FallowClient.ashSky): one low sky of ash with no sun, moon or stars in it, a little darker
+     * overhead and a little lighter at the horizon, where it meets the fog. */
+    public static void drawAsh(Matrix4f view,Vec3 color){
+        RenderSystem.depthMask(false);RenderSystem.disableCull();RenderSystem.enableBlend();RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1,1,1,1);RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        try{
+            var builder=Tesselator.getInstance().begin(VertexFormat.Mode.QUADS,DefaultVertexFormat.POSITION_COLOR);
+            float s=96,r=(float)color.x,g=(float)color.y,b=(float)color.z,top=.8F,low=1.08F;
+            float[][] corners={{-s,-s},{s,-s},{s,s},{-s,s}};
+            for(int i=0;i<4;i++){
+                float[] a=corners[i],c=corners[(i+1)%4];
+                skyVertex(builder,view,a[0],-s,a[1],r,g,b);skyVertex(builder,view,c[0],-s,c[1],r,g,b);
+                skyVertex(builder,view,c[0],0,c[1],r*low,g*low,b*low);skyVertex(builder,view,a[0],0,a[1],r*low,g*low,b*low);
+                skyVertex(builder,view,a[0],0,a[1],r*low,g*low,b*low);skyVertex(builder,view,c[0],0,c[1],r*low,g*low,b*low);
+                skyVertex(builder,view,c[0],s,c[1],r*top,g*top,b*top);skyVertex(builder,view,a[0],s,a[1],r*top,g*top,b*top);
+            }
+            for(float y:new float[]{-s,s})for(var c:corners){float k=y>0?top:1;skyVertex(builder,view,c[0],y,c[1],r*k,g*k,b*k);}
+            BufferUploader.drawWithShader(builder.buildOrThrow());
+        }finally{RenderSystem.disableBlend();RenderSystem.enableCull();RenderSystem.depthMask(true);RenderSystem.setShaderColor(1,1,1,1);}
     }
     public static void drawSky(Matrix4f view,Vec3 color,float time){drawSky(view,color,time,false);}
     /** 0.4.358: over the yard the night shows home's own stars, fixed and a little out of place (YardSky). */

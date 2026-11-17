@@ -36,8 +36,8 @@ public final class FallowStrikeClient {
     public static void accept(FallowStrikePayload p){var mc=Minecraft.getInstance();if(mc.level==null)return;base=p.base();since=p.since();at=mc.level.getGameTime();}
     /** Ticks since the tone, now, for a reader at the station; -1 if there is no strike or no word of it lately. */
     static float now(float partial){
-        var mc=Minecraft.getInstance();if(base==null||since<0||mc.level==null||FallowClient.at()==null)return -1;
-        long age=mc.level.getGameTime()-at;if(age<0||age>100)return -1;
+        var mc=Minecraft.getInstance();if(base==null||since<0||mc.level==null)return -1;
+        long age=mc.level.getGameTime()-at;if(age<0||age>100||FallowClient.at()==null)return -1;
         return since+age+partial;
     }
     static boolean below(){var r=FallowClient.at();return r!=null&&FallowSite.inCellar(r);}

@@ -84,6 +84,9 @@ public final class FallowTexts {
             case POLE->switch(stage){
                 case 1->"The top of a telephone pole: a crossarm, glass insulators, the wires.";
                 case 2,3,4->"The wires, slack between the poles, running along the road out of sight both ways.";
+                // 0.4.682, after the light.
+                case FallowBlock.POLE_DOWN->"A telephone pole, down across the road. The wires are gone off it.";
+                case FallowBlock.POLE_DOWN_TOP->"The top of the pole, down on the road, its crossarm driven into the ground on end. One insulator is still on it.";
                 default->"A telephone pole, its wood split with weather.";
             };
             case WHEAT->switch(stage){
@@ -144,6 +147,10 @@ public final class FallowTexts {
                 case 1->"A post of the farmhouse porch.";
                 case 2->"The porch rail. A coffee can of sand stands on it, full of cigarette ends.";
                 case 3->"A mailbox on a post at the end of the drive. Its flag is down. The name on it has been painted over.";
+                // 0.4.682, after the light.
+                case FallowBlock.BEAM->"A beam of the farmhouse, burnt through. Under the ash it is still warm.";
+                case FallowBlock.BURNT->"What the farmhouse came down to: boards burnt to char, and the ash of the rest.";
+                case FallowBlock.JAMB,FallowBlock.LINTEL->"The front door's frame, charred through. The door in it was not touched.";
                 default->"A window of the farmhouse across the road. There is nobody at it.";
             };
             case RIG->switch(stage){

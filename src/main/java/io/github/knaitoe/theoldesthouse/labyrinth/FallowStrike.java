@@ -72,6 +72,10 @@ public final class FallowStrike {
         final Map<UUID,Integer> struck=new HashMap<>();final Set<UUID> buried=new HashSet<>(),out=new HashSet<>();
         boolean padsWhole,shut;@Nullable UUID led,heldBy;
         final Set<UUID> done=new HashSet<>();final Map<UUID,Integer> faint=new HashMap<>();
+        /** 0.4.682, the outside after the light (FallowAsh): which tiles of the field have burnt; whether the ground has opened, the poles
+         * gone down and the farmhouse burnt. And before the light of a fresh afternoon, which tiles are known to be standing again, and
+         * whether all the rest is. */
+        final java.util.BitSet ash=new java.util.BitSet(),clean=new java.util.BitSet();boolean cratered,polesDown,farmGone,cleanOutside;
         int since(int tick){return toneAt<0?-1:tick-toneAt;}
     }
 
@@ -142,7 +146,7 @@ public final class FallowStrike {
         if(t>GO&&t<LIGHT){harlan(l,s,here,t);otis(l,s,t);faye(l,s,here,t);boyd(l,s,t);}
         if(t>=GO)below(l,s,here,t);
         if(t>=SHUT)doors(l,s,here,t);
-        if(t>=LIGHT){light(l,s,here,t);FallowRuin.tick(l,s,here,t-LIGHT);}
+        if(t>=LIGHT){light(l,s,here,t);FallowRuin.tick(l,s,here,t-LIGHT);FallowAsh.tick(l,s,t-LIGHT);}
         if(t>=LIGHT+FallowBuried.SETTLE)FallowBuried.tick(l,s,here,t-LIGHT-FallowBuried.SETTLE);
     }
     /** The tone: the television to its card, the people at the station laid off their afternoon. */

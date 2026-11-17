@@ -1,0 +1,318 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "c": "the_oldest_house:block/fallow_charred",
+    "particle": "the_oldest_house:block/fallow_charred"
+  },
+  "elements": [
+    {
+      "from": [
+        -1,
+        0,
+        6
+      ],
+      "to": [
+        0,
+        3.5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            12.5,
+            1,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            15,
+            12.5,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            15,
+            6,
+            16,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            15,
+            6,
+            16,
+            10
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        6
+      ],
+      "to": [
+        16,
+        3.5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        16,
+        0,
+        6
+      ],
+      "to": [
+        17,
+        3.5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            15,
+            12.5,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            0,
+            12.5,
+            1,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            0,
+            6,
+            1,
+            10
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            0,
+            6,
+            1,
+            10
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "y",
+        "origin": [
+          8,
+          0,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        2,
+        0,
+        11
+      ],
+      "to": [
+        9,
+        2,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          12
+        ]
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2,
+        -0.02,
+        11
+      ],
+      "to": [
+        9,
+        0,
+        13.5
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          12
+        ]
+      },
+      "faces": {
+        "down": {
+          "texture": "#c",
+          "uv": [
+            2,
+            2.5,
+            9,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            2.5,
+            16,
+            5,
+            15.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2.72576,
+        -0.02,
+        13.5
+      ],
+      "to": [
+        9,
+        0,
+        13.5
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          12
+        ]
+      },
+      "faces": {
+        "south": {
+          "texture": "#c",
+          "uv": [
+            2.72576,
+            16,
+            9,
+            15.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        5.27576,
+        -0.02,
+        11
+      ],
+      "to": [
+        9,
+        0,
+        11
+      ],
+      "rotation": {
+        "angle": -22.5,
+        "axis": "y",
+        "origin": [
+          5,
+          0,
+          12
+        ]
+      },
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            7,
+            16,
+            10.72424,
+            15.98
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

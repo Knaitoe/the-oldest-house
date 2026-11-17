@@ -225,6 +225,8 @@ public final class FallowRuin {
     }
     /** A fresh afternoon: a station the light has had is built again from its plans, once all of it is loaded. */
     static void mend(ServerLevel l,BlockPos b){
+        // 0.4.682: the outside first, wherever it is loaded (FallowAsh).
+        FallowAsh.mend(l,b);
         if(!ruined(l,b))return;
         for(int x:new int[]{YARD_W,APRON_E})for(int z:new int[]{0,APRON_N})if(!l.isLoaded(b.offset(x,0,z)))return;
         FallowSite.mend(l,b);
