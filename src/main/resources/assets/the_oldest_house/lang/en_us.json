@@ -2108,5 +2108,12 @@
   "block.the_oldest_house.fallow_farm_shingle": "Asphalt Shingles",
   "block.the_oldest_house.fallow_porch": "Porch Boards",
   "block.the_oldest_house.fallow_brick": "Chimney Brick",
-  "block.the_oldest_house.fallow_box": "Trailer Box"
+  "block.the_oldest_house.fallow_box": "Trailer Box",
+  "subtitles.the_oldest_house.fallow.register": "A cash register rings up a sale",
+  "subtitles.the_oldest_house.fallow.wrench": "A wrench works under a car",
+  "subtitles.the_oldest_house.fallow.coins": "Coins are set down on a counter",
+  "item.the_oldest_house.fallow_milk": "Quart of Milk",
+  "item.the_oldest_house.fallow_soda": "Bottle of Pop",
+  "item.the_oldest_house.fallow_coffee": "Cup of Coffee",
+  "item.the_oldest_house.fallow_bean_cup": "Bean in a Cup"
 }

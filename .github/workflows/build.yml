@@ -2702,15 +2702,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: 'Native station in the wheat (Fallow): the store, the garage, the yard, the cellar, the road and the field'
-        timeout-minutes: 21
+      - name: 'Native station in the wheat (Fallow): the store, the garage, the yard, the cellar, the road, the field and the afternoon'
+        timeout-minutes: 31
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_fallow --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/fallow-native.log
+          timeout --signal=QUIT --kill-after=20s 30m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_fallow --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/fallow-native.log
           python3 - <<'PY_CHECK'
           from pathlib import Path
           import re

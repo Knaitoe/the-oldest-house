@@ -5,6 +5,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
@@ -19,6 +20,7 @@ public final class FallowRegistry {
     private static final DeferredRegister.Blocks BLOCKS=DeferredRegister.createBlocks(TheOldestHouse.MOD_ID);
     private static final DeferredRegister<MapCodec<? extends Block>> CODECS=DeferredRegister.create(Registries.BLOCK_TYPE,TheOldestHouse.MOD_ID);
     private static final DeferredRegister<SoundEvent> SOUNDS=DeferredRegister.create(Registries.SOUND_EVENT,TheOldestHouse.MOD_ID);
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /**
@@ -43,6 +45,15 @@ public final class FallowRegistry {
     /** The wind over the wheat; the insects in it; the radio on the back shelf; the pump's bell. */
     public static final DeferredHolder<SoundEvent,SoundEvent> WIND=sound("fallow.wind"),INSECTS=sound("fallow.insects"),RADIO=sound("fallow.radio"),
         BELL=sound("fallow.bell");
+    /** 0.4.673, the afternoon: the register ringing up a sale, a wrench working under the car, coins left on the counter. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> REGISTER=sound("fallow.register"),WRENCH=sound("fallow.wrench"),COINS=sound("fallow.coins");
+    /**
+     * 0.4.673: what the afternoon's people carry, never a reader: Opal's bean in its cup (drawn from its block's model), the quart of milk
+     * Faye buys, the bottle of pop the stranger buys and the cup of coffee Otis pours.
+     */
+    public static final DeferredItem<Item> BEAN_CUP=ITEMS.registerSimpleItem("fallow_bean_cup",new Item.Properties().stacksTo(1)),
+        MILK=ITEMS.registerSimpleItem("fallow_milk",new Item.Properties().stacksTo(1)),SODA=ITEMS.registerSimpleItem("fallow_soda",new Item.Properties().stacksTo(1)),
+        COFFEE=ITEMS.registerSimpleItem("fallow_coffee",new Item.Properties().stacksTo(1));
     private FallowRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }

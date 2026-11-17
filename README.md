@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.672** begins *Fallow* (part 1: the station). Through the House's door is the back of a gas station's store on a two-lane road through wheat, late on a dry summer afternoon. Harlan keeps it from his stool behind the register, his note propped against it; a woman and her daughter wait on their car, which is up on the lift, while her man paces the garage; a long-haul driver's rig stands by the diesel pump. Out back are the keeper's trailer and the storm cellar's doors, across the road a farmhouse behind its windbreak, and out in the wheat two fenced squares of gravel with lights on in daylight. Every thing answers a hand, the five each have a word, and the cellar's doors open onto three steps down. Nothing happens yet; the House does not deal it until part 2. `docs/FALLOW_0_4_672.md`.
+Development candidate **0.4.673** continues *Fallow* (part 2: the afternoon), and the House now deals the station from ten crossings down. The afternoon goes on whether or not anyone helps: Harlan gives each reader a chore (minding the till or keeping the little girl company, by what the House has read of them) and goes under the car; the girl fetches her bean from the car and sets it in the sun; Faye and Otis come in to pay, and a reader behind the counter can ring them up; then a man nobody knows walks in out of the haze for a bottle of pop, asks the girl her name and a reader the time, and walks off into the wheat. `docs/FALLOW_0_4_673.md`.
 
-Previous: 0.4.671 finished *Last Seen* (part 5: after): the day after, Nora's drawer unlocked, the reader's own face among the missing, the account, and a Witness source of understanding (93 / 70). `docs/LAST_SEEN_0_4_671.md`.
+Previous: 0.4.672 began *Fallow* (part 1: the station): the gas station on a two-lane road through wheat, its five people at their places, every thing answering a hand. `docs/FALLOW_0_4_672.md`.
 
 Previous: 0.4.670 continued *Last Seen* (part 4: the night): the gates chained, a child's hand to take and lead in by the back door, the door to keep, the men over the railing, and dawn with the folders open on the long table. `docs/LAST_SEEN_0_4_670.md`.
 

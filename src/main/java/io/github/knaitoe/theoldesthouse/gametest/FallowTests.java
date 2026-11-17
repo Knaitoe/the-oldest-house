@@ -179,7 +179,7 @@ public final class FallowTests {
             open(l,b,FallowSite.FRONT_DOOR,false);
             // The hour, the dealing and the title.
             h.assertTrue(SceneClock.at(f.origin,b.offset(0,0,-20),HouseDimensions.OUTSIDE)==16,"late afternoon over the wheat");
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P)||Fallow.dealable(f.data(),java.util.UUID.randomUUID()),"the House does not deal it yet");
+            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P)||Fallow.dealable(f.data(),java.util.UUID.randomUUID()),"the House deals it only from ten crossings down");
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
             var paper=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);String text=String.join(" ",paper.pages().stream().map(pg->pg.raw().getString()).toList());
             h.assertTrue(text.contains("Ring the bell on the pump")&&text.contains("cellar")&&paper.pages().size()==4,"the note: where he is, what costs what, the cellar, the phone: "+text);
@@ -194,11 +194,15 @@ public final class FallowTests {
      */
     @GameTest(template="empty",batch="fallow_people",timeoutTicks=1800)
     public static void theFiveAtTheirPlacesEachWithTheirOwnLines(GameTestHelper h){
-        var f=place(h);var p=f.player("fallow_people_reader",P);var peer=f.player("fallow_people_peer",P);var l=f.level(P);var b=f.base(P);
-        h.startSequence().thenIdle(5).thenExecute(()->Fallow.ensure(l,b)).thenWaitUntil(()->{
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);var p=f.player("fallow_people_reader",P);var peer=f.player("fallow_people_peer",P);
+        // 0.4.673: the afternoon's clock is held back, so that everyone stays at their places and says their first lines.
+        h.startSequence().thenIdle(5).thenExecute(()->{Fallow.forget(b);Fallow.ensure(l,b);}).thenWaitUntil(()->{
             for(int who=0;who<Fallow.PEOPLE;who++)h.assertTrue(Fallow.find(l,b,who)!=null,"the "+who+"th is at their place");
+            // 0.4.673 (the 0.4.672 release chain): the car is put up on the lift once its chunk's entities are in; with other cases
+            // loading beside this one that was after the five were found, so it is waited for too.
+            h.assertTrue(Fallow.car(l,b)!=null,"the car is up on the lift");
         }).thenExecute(()->{
-            Fallow.ensure(l,b);
+            Fallow.forget(b);Fallow.ensure(l,b);
             var at=new BlockPos[]{FallowSite.KEEPER_AT,FallowSite.WOMAN_AT,FallowSite.GIRL_AT,FallowSite.MAN_AT,FallowSite.DRIVER_AT};
             for(int who=0;who<Fallow.PEOPLE;who++){
                 int phase=Fallow.FIRST+who;
@@ -332,5 +336,143 @@ public final class FallowTests {
             h.assertFalse(shut.stream().anyMatch(c->c.getY()<-1),"the way down is covered while they are shut");
             done();h.succeed();
         });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.673, the afternoon
+    /**
+     * The chores and the register. Three readers in the store: one the House has read as young, two it has not read. Harlan gives each their
+     * own chore, said to them: the young one keeps Opal company, the first unread one minds the till, and the second unread one, with both
+     * chores given, minds the till too. Then he gets down off his stool and walks round to the car, opening the garage door, and works under
+     * it with his wrench. Faye comes for milk; the reader behind the counter rings her up, and she thanks them. Otis comes for coffee and
+     * diesel; nobody rings him up, and after his wait he leaves the money by the register. Each reader's chore and what they rang up is their
+     * own; spectators are given nothing.
+     */
+    @GameTest(template="empty",batch="fallow_afternoon",timeoutTicks=6000)
+    public static void theChoresAndTheRegister(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        var p=f.player("fallow_till",P);var q=f.player("fallow_young",P);var r=f.player("fallow_third",P);
+        HouseRead.signal(q,HouseRead.Trait.AGE,"DIGITAL",false);HouseRead.signal(q,HouseRead.Trait.AGE,"DIGITAL",true);
+        int[] keeperWas={0};
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            h.assertTrue(Fallow.clock(b)>=0,"an afternoon begins when a reader comes in");
+            // The third out of his hearing at first, so that the other two have theirs before them.
+            f.at(p,P,2.5,0,-2.5);f.at(q,P,2.5,0,-6.5);f.at(r,P,4.5,0,-11.5);
+            Fallow.skipTo(b,Fallow.CHORES);
+        }).thenWaitUntil(()->{
+            for(var x:List.of(p,q))h.assertTrue(Fallow.chore(b,x.getUUID())!=null,"Harlan has given "+x.getGameProfile().getName()+" a chore: "+Fallow.clock(b));
+        }).thenExecute(()->{
+            h.assertTrue(Fallow.chore(b,r.getUUID())==null&&Fallow.keeper(b)==Fallow.STOOL,"nobody out of his hearing is given one, and he waits for them");
+            f.at(r,P,4.5,0,-6.5);
+        }).thenWaitUntil(()->h.assertTrue(Fallow.chore(b,r.getUUID())!=null,"come nearer, the third is given theirs: "+Fallow.clock(b)))
+        .thenExecute(()->{
+            h.assertTrue(Fallow.TILL.equals(Fallow.chore(b,p.getUUID()))&&Fallow.TILL.equals(f.own(p,P).getString("Chore")),"one the House has not read minds the till");
+            h.assertTrue(Fallow.GIRL_CHORE.equals(Fallow.chore(b,q.getUUID()))&&Fallow.GIRL_CHORE.equals(f.own(q,P).getString("Chore")),"one it reads as young keeps Opal company");
+            h.assertTrue(Fallow.TILL.equals(Fallow.chore(b,r.getUUID())),"a third, with both chores given, gets the one the House's read gives them");
+            var keeper=Fallow.find(l,b,Fallow.KEEPER);
+            h.assertTrue(List.of(FallowTexts.TILL).contains(said(keeper))||List.of(FallowTexts.COMPANY).contains(said(keeper)),"a chore is said aloud, in his own words: "+said(keeper));
+            h.assertTrue(Fallow.keeper(b)==Fallow.STOOL,"he gives the chores from his stool");
+        }).thenWaitUntil(()->h.assertTrue(Fallow.keeper(b)==Fallow.UNDER,"Harlan gets down and goes round to the car: "+Fallow.keeper(b)+" at "+Fallow.find(l,b,Fallow.KEEPER).position().subtract(Vec3.atLowerCornerOf(b))))
+        .thenExecute(()->{
+            var keeper=Fallow.find(l,b,Fallow.KEEPER);var at=keeper.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(at.distanceTo(Fallow.UNDER_CAR)<1.2,"he is under the car: "+at);
+            h.assertTrue(keeper.gesture()==Fallow.WORK&&!keeper.getMainHandItem().isEmpty(),"working up into it, a wrench in his hand: "+keeper.gesture());
+            h.assertTrue(l.getBlockState(b.offset(FallowSite.GARAGE_DOOR)).getValue(DoorBlock.OPEN),"he opened the garage door on his way");
+            h.assertTrue(ActorSeat.of(keeper)==null,"off his stool");
+            keeperWas[0]=1;
+            Fallow.skipTo(b,Fallow.FAYE_TIME);
+        }).thenWaitUntil(()->h.assertTrue(Fallow.customer(b)==Fallow.WOMAN,"Faye comes to the register with her milk: "+Fallow.customer(b)))
+        .thenExecute(()->{
+            var faye=Fallow.find(l,b,Fallow.WOMAN);
+            h.assertTrue(faye.getMainHandItem().is(io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.MILK.get()),"she carries a quart of milk");
+            h.assertTrue(said(faye).equals(FallowTexts.CUSTOMER[0][0]),"and asks for it: "+said(faye));
+            // A reader in front of the counter only looks at the register; the reader behind it rings her up.
+            told(q);use(q,b,FallowSite.ENDING,new BlockPos(1,0,-5));
+            h.assertTrue(Fallow.customer(b)==Fallow.WOMAN&&!told(q).contains(FallowTexts.RING),"from in front of the counter, nothing is rung up");
+            told(p);f.click(p,P,FallowSite.ENDING);
+            h.assertTrue(told(p).contains(FallowTexts.RING),"the reader behind the counter rings her up");
+            h.assertTrue(said(faye).equals(FallowTexts.CUSTOMER[0][1]),"and she thanks them: "+said(faye));
+            h.assertTrue(f.own(p,P).getInt("Rang")==1&&f.own(q,P).getInt("Rang")==0&&f.own(r,P).getInt("Rang")==0,"what each reader rang up is their own");
+            h.assertTrue((Fallow.served(b)&1)!=0,"Faye has paid");
+            told(p);f.click(p,P,FallowSite.ENDING);
+            h.assertTrue(told(p).contains(FallowTexts.RING_NOTHING)&&f.own(p,P).getInt("Rang")==1,"rung again with nobody waiting, the drawer opens on nothing");
+            Fallow.skipTo(b,Fallow.OTIS_TIME);
+        }).thenWaitUntil(()->h.assertTrue(Fallow.customer(b)==Fallow.DRIVER,"Otis comes in with his coffee: "+Fallow.customer(b)))
+        .thenExecute(()->{
+            var otis=Fallow.find(l,b,Fallow.DRIVER);
+            h.assertTrue(otis.getMainHandItem().is(io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.COFFEE.get()),"a cup from the machine in his hand");
+            told(p);
+        }).thenWaitUntil(()->h.assertTrue((Fallow.served(b)&2)!=0,"with nobody ringing him up, Otis waits, then pays anyway"))
+        .thenExecute(()->{
+            var otis=Fallow.find(l,b,Fallow.DRIVER);
+            h.assertTrue(said(otis).equals(FallowTexts.CUSTOMER[1][2]),"and leaves the money by the register: "+said(otis));
+            h.assertTrue(told(p).contains(FallowTexts.COINS_LEFT),"the coins are heard on the counter in the store");
+            h.assertTrue(f.own(p,P).getInt("Rang")==1,"nothing rung up that was not");
+            // Nothing they say names a colour or an age, or says how anybody feels.
+            var lines=new ArrayList<String>(List.of(FallowTexts.TILL));lines.addAll(List.of(FallowTexts.COMPANY));lines.addAll(List.of(FallowTexts.BEAN_TALK));
+            for(var c:FallowTexts.CUSTOMER)lines.addAll(List.of(c));for(var c:FallowTexts.AT_THE_CAR)lines.add(c[1]);
+            lines.addAll(List.of(FallowTexts.ASK_BEAN,FallowTexts.HAND_BEAN,FallowTexts.ASKS_NAME,FallowTexts.NAMES_KEEP,FallowTexts.ASKS_TIME,FallowTexts.ANSWERED,FallowTexts.UNANSWERED,FallowTexts.RING,FallowTexts.RING_NOTHING,FallowTexts.COINS_LEFT));
+            for(int stage=0;stage<4;stage++)lines.add(FallowTexts.thing(FallowBlock.Kind.BEAN,stage));
+            for(String line:lines){String low=" "+line.toLowerCase(java.util.Locale.ROOT)+" ";
+                for(String word:List.of(" red "," blue "," green "," yellow "," years old"," afraid"," scared"," happy"," sad "," angry"))h.assertFalse(low.contains(word),"a line says nothing of colour, age or feeling: "+line);}
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * Opal's bean and the man on the road. Harlan goes under the car, and Opal goes to him for her bean, which is in the car; he hands it
+     * down and she carries it out front in both hands and sets it down in the sun, and kneels by it. A reader who stays by her keeps her
+     * company and has the time kept. Then a man nobody knows comes walking along the road out of the haze, made where nobody sees him come
+     * to be: he takes a bottle of pop from the cooler and pays for it, goes out to Opal and asks her name, and she does not tell him. He asks
+     * the readers near him the time; one tells him, and he walks off up the track into the wheat and is gone the first moment nobody sees him.
+     */
+    @GameTest(template="empty",batch="fallow_road",timeoutTicks=9000)
+    public static void theBeanAndTheManOnTheRoad(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        var p=f.player("fallow_road_till",P);var q=f.player("fallow_road_girl",P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            // One behind the counter, one out front by Opal's step, too far for Harlan to give a chore to: he waits for them a while,
+            // then goes all the same.
+            f.at(p,P,3.5,0,-2.5);f.at(q,P,5.5,0,-14.5);
+            f.look(p,b.offset(0,1,20));f.look(q,b.offset(0,1,20));
+            Fallow.skipTo(b,Fallow.BEAN_TIME);
+        }).thenWaitUntil(()->h.assertTrue(Fallow.bean(b)>=Fallow.FETCHING,"Opal goes for her bean once Harlan is under the car: "+Fallow.keeper(b)+" "+Fallow.bean(b)))
+        .thenWaitUntil(()->h.assertTrue(Fallow.bean(b)>=Fallow.CARRYING,"he hands it down to her: "+Fallow.bean(b)))
+        .thenExecute(()->{
+            var girl=Fallow.find(l,b,Fallow.GIRL);
+            h.assertTrue(girl.getMainHandItem().is(io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.BEAN_CUP.get())&&girl.gesture()==Fallow.CUP,"she carries the cup in both hands");
+            h.assertTrue(Fallow.find(l,b,Fallow.KEEPER).getMainHandItem().isEmpty()||!Fallow.find(l,b,Fallow.KEEPER).getMainHandItem().is(io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.BEAN_CUP.get()),"and he no longer has it");
+        }).thenWaitUntil(()->h.assertTrue(Fallow.bean(b)==Fallow.SET,"she sets it down out front: "+Fallow.bean(b)))
+        .thenExecute(()->{
+            h.assertTrue(fitting(l,b,Fallow.BEAN_AT,FallowBlock.Kind.BEAN)&&stage(l,b,Fallow.BEAN_AT)==0,"the bean on the forecourt, two leaves up");
+            var girl=Fallow.find(l,b,Fallow.GIRL);
+            h.assertTrue(girl.gesture()==Fallow.KNEEL&&girl.getMainHandItem().isEmpty(),"kneeling by it, her hands empty");
+            h.assertTrue(girl.blockPosition().equals(b.offset(FallowSite.GIRL_AT)),"at her own step: "+girl.position().subtract(Vec3.atLowerCornerOf(b)));
+            told(q);use(q,b,Fallow.BEAN_AT,new BlockPos(5,0,-14));
+            h.assertTrue(told(q).contains(FallowTexts.thing(FallowBlock.Kind.BEAN,0)),"a hand on the bean answers");
+        }).thenWaitUntil(()->h.assertTrue(f.own(q,P).getInt("Kept")>=40&&f.own(p,P).getInt("Kept")==0,"the reader by her keeps her company, the one inside does not: "+f.own(q,P).getInt("Kept")))
+        .thenExecute(()->{Fallow.servedAlready(b);Fallow.skipTo(b,Fallow.STRANGER_TIME);})
+        .thenWaitUntil(()->h.assertTrue(Fallow.stranger(b)>=Fallow.COMING,"the man comes along the road: "+Fallow.stranger(b)))
+        .thenExecute(()->{
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(man!=null&&man.position().subtract(Vec3.atLowerCornerOf(b)).x<-40,"out of the haze to the west: "+(man==null?"none":man.position()));
+        }).thenWaitUntil(()->h.assertTrue(Fallow.customer(b)==Fallow.STRANGER,"he comes to the register with a bottle of pop: "+Fallow.stranger(b)+" "+Fallow.customer(b)))
+        .thenExecute(()->{
+            var man=Fallow.find(l,b,Fallow.STRANGER);
+            h.assertTrue(man.getMainHandItem().is(io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.SODA.get()),"the pop from the cooler");
+            told(p);f.click(p,P,FallowSite.ENDING);
+            h.assertTrue(said(man).equals(FallowTexts.CUSTOMER[2][1]),"rung up, he says to keep the change: "+said(man));
+            f.look(p,b.offset(0,1,20));
+        }).thenWaitUntil(()->h.assertTrue(Fallow.stranger(b)==Fallow.ASKING,"he goes out to Opal, asks her name, and asks the time: "+Fallow.stranger(b)))
+        .thenExecute(()->{
+            h.assertTrue(Talk.replies(q).contains(FallowTexts.TIME_ANSWER)&&Talk.replies(q).contains(FallowTexts.SAY_NOTHING),"the reader by Opal is asked the time: "+Talk.replies(q));
+            h.assertTrue(f.own(q,P).getBoolean("Asked"),"and it is kept that they were asked");
+            h.assertTrue(Talk.choose(q,FallowTexts.TIME_ANSWER),"they tell him");
+            h.assertTrue(f.own(q,P).getBoolean("Answered")&&!f.own(p,P).getBoolean("Answered"),"what each told him is their own");
+            h.assertTrue(Fallow.stranger(b)==Fallow.GOING,"and he goes");
+            h.assertTrue(said(Fallow.find(l,b,Fallow.STRANGER)).equals(FallowTexts.ANSWERED),"saying what he says: "+said(Fallow.find(l,b,Fallow.STRANGER)));
+            h.assertTrue(Fallow.find(l,b,Fallow.GIRL).gesture()==Fallow.KNEEL,"Opal never got up for him");
+            f.look(q,b.offset(0,1,20));
+        }).thenWaitUntil(()->h.assertTrue(Fallow.stranger(b)==Fallow.GONE&&Fallow.find(l,b,Fallow.STRANGER)==null,"up the track into the wheat, and gone where nobody saw: "+Fallow.stranger(b)))
+        .thenExecute(()->{done();h.succeed();});
     }
 }

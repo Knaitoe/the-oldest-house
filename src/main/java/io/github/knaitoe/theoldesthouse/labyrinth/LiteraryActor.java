@@ -150,6 +150,11 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         entityData.set(SPEAKER,speaker==null?"":speaker);
         if(!again&&!level().isClientSide){address();TalkHistory.overheard(this,speaker,text);for(var heard:SAID)heard.accept(this,text);}
     }
+    /**
+     * 0.4.673: a line said aloud to one reader in particular (Fallow's keeper giving each reader their own chore): turned to that reader
+     * while it is up, as if they had just spoken, though anyone near hears it.
+     */
+    public void sayTo(ServerPlayer reader,@javax.annotation.Nullable String speaker,String text){spokenTo(reader);say(speaker,text);}
     // ------------------------------------------------------------------------------------------------ 0.4.560: turned to the reader
     /**
      * 0.4.560 (the standard cast checks, gametest.CastConduct, found it in most of the talking scenes): whoever says a line turns to

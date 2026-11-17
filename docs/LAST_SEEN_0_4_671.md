@@ -310,3 +310,6 @@ The city wanted them gone by morning. My own folder was in her drawer."
 - "When I shut the drawer, Ana was still out in the empty park."
 
 **Stair:** "the first of them, from the fountain".
+
+**Pell house** (added in 0.4.673, after run 1705: the Pell house checks that every Witness story has a forged journal line, and Last
+Seen had none): "I kept one of the folders back and never said whose face was in it."
