@@ -194,7 +194,7 @@ public final class KingFeast {
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         if(!filled(a)){King.cue(p,KingTexts.GUEST_DRAWN);return;}
         Talk.begin(p,"king_feast",name(a.phase()));
-        Talk.line(p,name(a.phase()),KingTexts.atTable(a.phase()));a.say(name(a.phase()),KingTexts.atTable(a.phase()));a.speaks(KingTexts.atTable(a.phase()));
+        Talk.line(p,name(a.phase()),KingTexts.atTable(a.phase()));King.aloud(a,name(a.phase()),KingTexts.atTable(a.phase()));
         Talk.end(p);
     }
     /** A hand on something at the feast: drawn, it is only drawn; introduced, it is somebody, and not to be cut or sat on. */
@@ -206,7 +206,7 @@ public final class KingFeast {
         return switch(phase){case QUEEN->KingTexts.QUEEN_NAME;case GUARD->KingTexts.GUARD_NAME;case KNIGHT->KingTexts.KNIGHT_NAME;case HERALD->KingTexts.HERALD_NAME;
             case HEARTS_KING->KingTexts.HEARTS_KING_NAME;default->KingTexts.HEARTS_QUEEN_NAME;};
     }
-    static void say(LiteraryActor a,int phase,String line){a.say(name(phase),line);a.speaks(line);}
+    static void say(LiteraryActor a,int phase,String line){King.aloud(a,name(phase),line);}
     /** For the look review and tests: which way the foot chair faces. */
     static Direction footFacing(){return Direction.NORTH;}
 }

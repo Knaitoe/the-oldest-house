@@ -93,5 +93,5 @@ public final class KingGuard {
         if(s.ridden.contains(p.getUUID()))return true;
         var d=LabyrinthData.get(p.server);return LiteraryVignettes.personal(d,p.getUUID(),PLACE).getBoolean(RODE);
     }
-    static void say(LiteraryActor a,String line){a.say(KingTexts.GUARD_NAME,line);a.speaks(line);}
+    static void say(LiteraryActor a,String line){King.aloud(a,KingTexts.GUARD_NAME,line);}
 }

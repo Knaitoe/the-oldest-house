@@ -77,7 +77,7 @@ public final class KingCourt {
     /** A fresh dream: the pack standing and the court in its places, the Cat in its tree. */
     static void reset(ServerLevel l,BlockPos b){
         if(l.isLoaded(b.offset(0,0,KingSite.GUARD_ROW)))KingSite.court(l,b);
-        var cat=find(l,b,CAT);if(cat!=null){var at=KingSite.CAT_IN_TREE;cat.moveTo(b.getX()+at.x,b.getY()+at.y,b.getZ()+at.z,90,0);}
+        var cat=find(l,b,CAT);if(cat!=null){var at=KingSite.CAT_IN_TREE;cat.moveTo(b.getX()+at.x,b.getY()+at.y,b.getZ()+at.z,90,0);cat.setInvisible(false);}
     }
 
     /** For tests: the Cat goes back to its tree at once. */
@@ -99,13 +99,22 @@ public final class KingCourt {
         if(cat!=null){
             var to=over?KingSite.CAT_OVER:KingSite.CAT_IN_TREE;
             var want=new Vec3(b.getX()+to.x,b.getY()+to.y,b.getZ()+to.z);
-            if(cat.position().distanceToSqr(want)>.01)cat.moveTo(want.x,want.y,want.z,cat.getYRot(),cat.getXRot());
+            // 0.4.685 (the two-reader cast checks saw it jump from the tree to the court in a tick): the Cat goes the way it goes. It
+            // fades where it is, in a breath of smoke; a moment later it is somewhere else; a moment after that it can be seen there.
+            boolean there=cat.position().distanceToSqr(want)<=.01;
+            if(!there&&!cat.isInvisible()){cat.setInvisible(true);s.catFade=now;fade(l,cat.position());}
+            else if(!there&&now-s.catFade>=FADE)cat.moveTo(want.x,want.y,want.z,cat.getYRot(),cat.getXRot());
+            else if(there&&cat.isInvisible()&&now-s.catFade>=FADE*2){cat.setInvisible(false);fade(l,want);}
             cat.setDeltaMovement(Vec3.ZERO);
             var near=KingSleep.nearest(l,b,cat.position());
             if(over){cat.setYRot(0);cat.setYBodyRot(0);cat.setYHeadRot(0);cat.setXRot(25);}
             else if(near!=null&&near.distanceTo(cat)<14)KingCourt.look(cat,near.getEyePosition());
         }
-        if(s.courtFallen)return;
+        if(s.courtFallen){
+            // 0.4.685: the court, gone into its cards, is cleared away once it has been out of sight a moment.
+            if(now-s.courtFellAt>=5)for(int phase:new int[]{KING,QUEEN,HERALD}){var a=find(l,b,phase);if(a!=null)a.discard();}
+            return;
+        }
         for(int phase:new int[]{KING,QUEEN,HERALD}){
             var a=find(l,b,phase);if(a==null)continue;
             var home=b.offset(spot(phase));
@@ -129,6 +138,9 @@ public final class KingCourt {
             if(t==ATTEND-60&&cat!=null)say(cat,CAT,KingTexts.CAT_GOING);
         }
     }
+    /** 0.4.685: ticks the Cat takes to fade, and as long again to come back where it has gone. */
+    static final int FADE=10;
+    static void fade(ServerLevel l,Vec3 at){l.sendParticles(ParticleTypes.SMOKE,at.x,at.y+.6,at.z,10,.2,.25,.2,.01);}
     /** Turns an actor's head and body toward a point, pitch included, so its look (KingBreath) goes where it seems to. */
     static void look(LiteraryActor a,Vec3 at){
         var to=at.subtract(a.getEyePosition());
@@ -186,7 +198,7 @@ public final class KingCourt {
     static void whatFor(ServerPlayer p){
         var b=LiteraryVignettes.base(p,PLACE);if(b==null){Talk.end(p);return;}
         var king=find(p.serverLevel(),b,KING);
-        Talk.line(p,name(KING),KingTexts.WHAT_FOR);if(king!=null)king.say(name(KING),KingTexts.WHAT_FOR);
+        Talk.line(p,name(KING),KingTexts.WHAT_FOR);if(king!=null)King.aloud(king,name(KING),KingTexts.WHAT_FOR);
         Talk.end(p);
     }
     /** "You're nothing but a pack of cards!": the pack goes up and comes down as cards, and the King stirs once, a long way off. */
@@ -194,14 +206,15 @@ public final class KingCourt {
         Talk.end(p);
         var b=LiteraryVignettes.base(p,PLACE);if(b==null)return;
         var l=p.serverLevel();var s=KingSleep.get(b);if(s.courtFallen)return;
-        s.courtFallen=true;s.fellBy.add(p.getUUID());
+        s.courtFallen=true;s.courtFellAt=l.getGameTime();s.fellBy.add(p.getUUID());
         var mid=Vec3.atCenterOf(b.offset(0,1,-128));
         l.playSound(null,mid.x,mid.y,mid.z,KingRegistry.CARDS.get(),SoundSource.AMBIENT,1.2F,1);
         // The court come down as their own cards where they stood.
         for(int phase:new int[]{KING,QUEEN,HERALD}){
             var a=find(l,b,phase);
             int face=phase==KING?KingCardBlock.KING:phase==QUEEN?KingCardBlock.QUEEN:KingCardBlock.KNAVE;
-            if(a!=null){l.sendParticles(ParticleTypes.POOF,a.getX(),a.getY()+1,a.getZ(),8,.3,.5,.3,.02);a.discard();}
+            // 0.4.685: gone in the puff as the card lands, and cleared away a moment later (tick), never taken from sight.
+            if(a!=null){l.sendParticles(ParticleTypes.POOF,a.getX(),a.getY()+1,a.getZ(),8,.3,.5,.3,.02);a.setInvisible(true);}
             KingSite.set(l,b,spot(phase),KingCardBlock.of(face,dir(phase*7),true));
         }
         // And the whole pack lies flat in the grass, every card turned some way of its own.
@@ -238,6 +251,6 @@ public final class KingCourt {
 
     // ------------------------------------------------------------------------------------------------ words
     static String name(int phase){return switch(phase){case KING->KingTexts.HEARTS_KING_NAME;case QUEEN->KingTexts.HEARTS_QUEEN_NAME;case HERALD->KingTexts.HERALD_NAME;default->KingTexts.CAT_NAME;};}
-    static void say(LiteraryActor a,int phase,String line){a.say(name(phase),line);a.speaks(line);}
-    static void line(ServerPlayer p,LiteraryActor a,int phase,String line){Talk.line(p,name(phase),line);a.say(name(phase),line);a.speaks(line);}
+    static void say(LiteraryActor a,int phase,String line){King.aloud(a,name(phase),line);}
+    static void line(ServerPlayer p,LiteraryActor a,int phase,String line){Talk.line(p,name(phase),line);King.aloud(a,name(phase),line);}
 }

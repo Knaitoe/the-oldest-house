@@ -174,6 +174,18 @@ public final class CastConductTests {
     /** 0.4.602: the lodging house's seven, though the House does not deal it yet. */
     @GameTest(template="empty",batch="cast_lodging",timeoutTicks=TIMEOUT) public static void lodgingHouse(GameTestHelper h){sweep(h,LabyrinthPlace.ONES_INSIDE,c->{});}
     @AfterBatch(batch="cast_lodging") public static void lodgingDone(ServerLevel l){close();}
+    /** 0.4.685: the five newest, each a round of its people: Rowan's radio shop, the sleeping King's country, the machine's ward, the
+     * park's office and the station in the wheat. */
+    @GameTest(template="empty",batch="cast_longer",timeoutTicks=TIMEOUT) public static void aLittleLonger(GameTestHelper h){sweep(h,LabyrinthPlace.LITTLE_LONGER,c->{});}
+    @AfterBatch(batch="cast_longer") public static void longerDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_king",timeoutTicks=TIMEOUT) public static void theSleepingKing(GameTestHelper h){sweep(h,LabyrinthPlace.SLEEPING_KING,c->c.floating(io.github.knaitoe.theoldesthouse.labyrinth.KingCourt::cat));}
+    @AfterBatch(batch="cast_king") public static void kingDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_not_yet",timeoutTicks=TIMEOUT) public static void notYet(GameTestHelper h){sweep(h,LabyrinthPlace.NOT_YET,c->{});}
+    @AfterBatch(batch="cast_not_yet") public static void notYetDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_last_seen",timeoutTicks=TIMEOUT) public static void lastSeen(GameTestHelper h){sweep(h,LabyrinthPlace.LAST_SEEN,c->{});}
+    @AfterBatch(batch="cast_last_seen") public static void lastSeenDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_fallow",timeoutTicks=TIMEOUT) public static void fallow(GameTestHelper h){sweep(h,LabyrinthPlace.FALLOW,c->{});}
+    @AfterBatch(batch="cast_fallow") public static void fallowDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_pinehook",timeoutTicks=TIMEOUT) public static void pinehook(GameTestHelper h){sweep(h,LabyrinthPlace.PINEHOOK,c->{});}
     @AfterBatch(batch="cast_pinehook") public static void pinehookDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_last_crossing",timeoutTicks=TIMEOUT) public static void lastCrossing(GameTestHelper h){sweep(h,LabyrinthPlace.LAST_CROSSING,c->{});}

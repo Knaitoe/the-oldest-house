@@ -89,6 +89,6 @@ public final class KingCaterpillar {
     }
     static void say(ServerPlayer p,BlockPos b,String line){
         Talk.line(p,KingTexts.CATERPILLAR_NAME,line);
-        var a=find(p.serverLevel(),b);if(a!=null){a.say(KingTexts.CATERPILLAR_NAME,line);a.speaks(line);}
+        var a=find(p.serverLevel(),b);if(a!=null)King.aloud(a,KingTexts.CATERPILLAR_NAME,line);
     }
 }

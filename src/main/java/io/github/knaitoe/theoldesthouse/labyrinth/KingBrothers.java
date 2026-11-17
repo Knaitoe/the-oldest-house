@@ -154,6 +154,6 @@ public final class KingBrothers {
     public static void soon(BlockPos b,long now){var s=KingSleep.get(b);if(s.battle==ARMED)s.battleAt=now;}
     static void say(ServerPlayer p,BlockPos b,int phase,String line){
         String who=name(phase);Talk.line(p,who,line);
-        var a=find(p.serverLevel(),b,phase);if(a!=null){a.say(who,line);a.speaks(line);}
+        var a=find(p.serverLevel(),b,phase);if(a!=null)King.aloud(a,who,line);
     }
 }

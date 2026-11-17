@@ -53,7 +53,7 @@ public final class CastConduct implements AutoCloseable {
     private Predicate<LiteraryActor> swimming=a->false,floating=a->false,turnsAway=a->false,exempt=a->false,emerges=a->false;
     /** Parts a scene has several of, and how many: dancers, a pair of parents, a family propped about a room. */
     private final List<Map.Entry<Predicate<LiteraryActor>,Integer>> several=new ArrayList<>();
-    private static final class Track {Vec3 last;boolean first=true,wasRider,wasSeen;final ArrayDeque<double[]> steps=new ArrayDeque<>();int inside,unsupported,dryswim;long reported;List<ServerPlayer> shown=List.of();}
+    private static final class Track {Vec3 last;boolean first=true,wasRider,wasSeen,wasHidden;final ArrayDeque<double[]> steps=new ArrayDeque<>();int inside,unsupported,dryswim;long reported;List<ServerPlayer> shown=List.of();}
     /** Ticks after the checks begin during which people a scene sets out as the reader arrives are not said to appear. */
     public static final int ARRIVAL=40;
     private final Map<UUID,Track> tracks=new HashMap<>();
@@ -235,7 +235,9 @@ public final class CastConduct implements AutoCloseable {
                 continue;
             }
             double moved=a.position().distanceTo(t.last);
-            if(moved>JUMP&&!a.isPassenger()&&!t.wasRider&&(seen||seenAt(t.last,a.getEyeHeight(),to)||nearest(a,to)<4))fault(a,"jumped",String.format(Locale.ROOT,"%.1f blocks in a tick, from %s to %s",moved,at(t.last),at(a.position())));
+            // 0.4.685: a person nobody can see (gone invisible, as the King's Cat fades) is not seen to move.
+            boolean hidden=a.isInvisible()||t.wasHidden;
+            if(moved>JUMP&&!a.isPassenger()&&!t.wasRider&&!hidden&&(seen||seenAt(t.last,a.getEyeHeight(),to)||nearest(a,to)<4))fault(a,"jumped",String.format(Locale.ROOT,"%.1f blocks in a tick, from %s to %s",moved,at(t.last),at(a.position())));
             // Moving in steps: over the last second, strides of a third of a block or more where a reader could see, on few ticks with
             // nothing between them. A walk or a slide moves a little every tick; a move nobody sees is how a scene puts people away.
             // 0.4.565: a stride counts only after a tick standing still. A step goes, stops, and goes again; somebody who hurries to
@@ -263,14 +265,15 @@ public final class CastConduct implements AutoCloseable {
             String key=a.role()+"/"+(a.role()==LiteraryActor.STRANGER?a.phase():-1)+"/"+a.owner().map(UUID::toString).orElse("all");
             int allowed=bodiesFor(a);
             if(bodies.merge(key,1,Integer::sum)==allowed+1)fault(a,"is there twice",allowed==1?"(two bodies for one part)":"("+(allowed+1)+" bodies for a part this scene has "+allowed+" of)");
-            t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;t.shown=to;
+            t.last=a.position();t.wasRider=a.isPassenger();t.wasSeen=seen;t.shown=to;t.wasHidden=a.isInvisible();
         }
         // Gone where a reader could see.
         for(var it=tracks.entrySet().iterator();it.hasNext();){
             var e=it.next();if(present.contains(e.getKey()))continue;
             var gone=level.getEntity(e.getKey());
             var watching=e.getValue().shown.stream().filter(r->r.isAlive()&&!r.isSpectator()&&r.level()==level).toList();
-            if(gone==null&&seenAt(e.getValue().last,1.6,watching))faults.add("tick "+ticks+": somebody vanished where a reader could see, at "+at(e.getValue().last));
+            // 0.4.685: nor does somebody who had already gone from sight (invisible) vanish where a reader could see.
+            if(gone==null&&!e.getValue().wasHidden&&seenAt(e.getValue().last,1.6,watching))faults.add("tick "+ticks+": somebody vanished where a reader could see, at "+at(e.getValue().last));
             it.remove();
         }
         // Turned to the reader.

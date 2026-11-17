@@ -94,7 +94,9 @@ public final class KingSite {
     public static final net.minecraft.world.phys.Vec3 DOCK=new net.minecraft.world.phys.Vec3(.5,0,-126.5);
     public static final BlockPos CAT_TREE=new BlockPos(18,0,-127);
     /** Where the Cat's head is, in its tree and over the court (the actor's feet: the head is a block and three quarters up). */
-    public static final net.minecraft.world.phys.Vec3 CAT_IN_TREE=new net.minecraft.world.phys.Vec3(15.5,3.45,-126.5),CAT_OVER=new net.minecraft.world.phys.Vec3(-.5,2.6,-131.5);
+    /** 0.4.685 (the cast checks found it hanging in the air beside the tree): the Cat sits on the bough at the canopy's west edge, facing the court. */
+    public static final BlockPos CAT_BOUGH=new BlockPos(16,5,-127);
+    public static final net.minecraft.world.phys.Vec3 CAT_IN_TREE=new net.minecraft.world.phys.Vec3(16.5,6,-126.5),CAT_OVER=new net.minecraft.world.phys.Vec3(-.5,2.6,-131.5);
     /** Whether a place is in the court: the sixth square's middle file, from the bank to the guard. */
     public static boolean inCourt(Vec3 r){return rank((int)Math.floor(r.z))==6&&file((int)Math.floor(r.x))==2;}
     /** Whether a reader has got past the court's guard, toward the brook. */
@@ -246,6 +248,8 @@ public final class KingSite {
         drawnBridge(l,b);
         court(l,b);
         tree(l,b,CAT_TREE.getX(),CAT_TREE.getZ(),6,2);
+        set(l,b,CAT_BOUGH.getX(),CAT_BOUGH.getY(),CAT_BOUGH.getZ(),KingRegistry.country("bough",ruled(CAT_BOUGH.getX(),CAT_BOUGH.getZ())));
+        set(l,b,CAT_BOUGH.getX(),CAT_BOUGH.getY()+1,CAT_BOUGH.getZ(),Blocks.AIR.defaultBlockState());set(l,b,CAT_BOUGH.getX(),CAT_BOUGH.getY()+2,CAT_BOUGH.getZ(),Blocks.AIR.defaultBlockState());
         forest(l,b);
         // 0.4.644: a peg on every square from the second, and the glass table by the road on the hill's square.
         for(int r=2;r<=RANKS;r++)set(l,b,peg(r),KingBlock.of(KingBlock.Kind.PEG,Direction.NORTH));

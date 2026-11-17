@@ -209,6 +209,6 @@ public final class KingForest {
         if(k!=null)line(p,k,KingTexts.KNIGHT_CAKE);
         Talk.end(p);
     }
-    static void say(LiteraryActor a,String line){a.say(KingTexts.KNIGHT_NAME,line);a.speaks(line);}
+    static void say(LiteraryActor a,String line){King.aloud(a,KingTexts.KNIGHT_NAME,line);}
     static void line(ServerPlayer p,LiteraryActor a,String line){Talk.line(p,KingTexts.KNIGHT_NAME,line);say(a,line);}
 }
