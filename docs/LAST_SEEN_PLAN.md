@@ -8,8 +8,8 @@ to the proposal's recommended decisions:
 - **The headscarves:** no. The park carries the history without borrowing that symbol.
 
 It is built in five parts, like *Not Yet*. Each part is a release with its own doc listing every new line. The House does not deal it
-until part 2, when there is something to do. It becomes a Witness source in part 5: the pool goes from 92 to 93, and the quota stays
-70 (three quarters of 93, rounded up).
+until part 2, when there is something to do. It becomes a Witness source in part 5: the pool goes from 92 to 93, and the quota from 69
+to 70 (three quarters of 93, rounded up).
 
 ## The place
 

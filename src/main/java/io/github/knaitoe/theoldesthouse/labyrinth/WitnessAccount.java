@@ -139,7 +139,10 @@ public final class WitnessAccount {
         SLEEPING_KING("a_sort_of_thing","A sort of thing","understanding","I crossed a country drawn in squares to an old man asleep under a tree, and two brothers told me what I was in his dream."),
         // 0.4.666 (docs/NOT_YET_0_4_666.md): resolved by the account in the drawer under the reader's own cot, ready once they stayed down
         // to the end of a trial and the machine looked away.
-        NOT_YET("not_yet","Not yet","survival","Deep in the machine there is a ward where it mends what it breaks. It would not let me die. I lay down and stayed down, whatever it did, until it looked away.");
+        NOT_YET("not_yet","Not yet","survival","Deep in the machine there is a ward where it mends what it breaks. It would not let me die. I lay down and stayed down, whatever it did, until it looked away."),
+        // 0.4.671 (docs/LAST_SEEN_0_4_671.md): resolved by the account under the reader's own folder in Nora's drawer, ready once they
+        // have had the night and opened the drawer on the day after.
+        LAST_SEEN("last_seen","Last seen","understanding","Children came back to a park the way they were the day they went, and I took each one the folder with their face in it. The city wanted them gone by morning. My own folder was in her drawer.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

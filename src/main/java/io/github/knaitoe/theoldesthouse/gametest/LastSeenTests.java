@@ -715,4 +715,129 @@ public final class LastSeenTests {
             done();h.succeed();
         });
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.671, after
+    private static void afterOf(LiteraryTests.Fixture f,ServerPlayer p){var o=f.own(p,P);o.putInt("Days",3);o.putString("FolderName",p.getGameProfile().getName());LiteraryVignettes.save(f.data(),p.getUUID(),P,o);}
+    private static @javax.annotation.Nullable io.github.knaitoe.theoldesthouse.network.LastSeenDrawerPayload drawer(List<Object> sent){
+        for(var x:sent)if(x instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.LastSeenDrawerPayload d)return d;
+        return null;
+    }
+    private static String pages(ServerPlayer p,LiteraryTests.Fixture f){return LiteraryTexts.ending(p.getGameProfile().getName(),P,f.own(p,P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).reduce("",(x,y)->x+" "+y).replaceAll("\\s+"," ");}
+
+    /**
+     * 0.4.671: the day after, for one reader who has had the night (they brought Lautaro in by the back door and kept it; he was gone at
+     * dawn), whom the House took in on the evening of its fourth day. Mid-morning and nobody in the park; the city's fence lies flat; the
+     * notices are torn; the gate is open; Lautaro's folder lies open on the long table, a gap on his shelf; Nora's drawer is unlocked and
+     * she says so. A hand on her desk: the drawer comes out, and in it is the reader's own folder, with their own face, their name and the
+     * day the House took them in; Nora says whose it is; the reader is ready. The account under it is what they did, and not what they did
+     * not. Read after the card, it is theirs. Nora: it stays open.
+     */
+    @GameTest(template="empty",batch="last_seen_after",timeoutTicks=3000)
+    public static void theDayAfterAndTheDrawer(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_after_reader",P);var l=f.level(P);var b=f.base(P);
+        int lau=LastSeen.LAUTARO;
+        var o=f.own(p,P);o.putInt("Days",3);o.putBoolean("Rule",true);o.putInt("Matched",1<<LastSeen.ROCIO);o.putInt("Second",1<<LastSeen.TOMAS|1<<LastSeen.ABRIL);
+        o.putInt("TookHand",1<<lau);o.putInt("Brought",1<<lau);o.putBoolean("KeptDoor",true);o.putInt("Gone",1<<lau);LiteraryVignettes.save(f.data(),p.getUUID(),P,o);
+        io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered(3,13000);
+        h.startSequence().thenIdle(2).thenExecute(()->archive(f,p))
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==LastSeen.AFTER,"the day after, for a reader who has had the night: "+LastSeen.dayNumber(b)))
+        .thenIdle(25).thenExecute(()->{
+            h.assertTrue(told(p).contains(LastSeenTexts.AFTER_OFFICE),"told what the morning is");
+            h.assertTrue(java.util.Arrays.stream(LastSeen.EIGHT).allMatch(c->LastSeen.kid(l,b,c)==null)&&LastSeen.cornerActor(l,b,true)==null,"nobody in the park");
+            h.assertTrue(stage(l,b,new BlockPos(13,0,-21))>=LastSeenBlock.FALLEN&&!fitting(l,b,new BlockPos(13,1,-21),LastSeenBlock.Kind.FENCE),"the city's fence lies flat: "+stage(l,b,new BlockPos(13,0,-21)));
+            h.assertTrue(LastSeenSite.LAMPS.stream().allMatch(lamp->stage(l,b,lamp)==LastSeenBlock.TORN),"the notices are torn");
+            h.assertTrue(stage(l,b,LastSeenSite.GATE_W)==LastSeenBlock.OPEN,"the gate is open");
+            h.assertTrue(stage(l,b,new BlockPos(LastSeen.TABLE_E,0,-7))==3&&gap(l,b,lau)==LastSeenBlock.ONE_OUT,"his folder lies open on the long table, a gap on his shelf");
+            h.assertTrue(stage(l,b,LastSeenSite.DESK)==LastSeenBlock.UNLOCKED,"Nora's drawer is unlocked");
+            var nora=LastSeen.find(l,b,LastSeen.NORA);talk(f,p,nora);h.assertTrue(said(nora).equals(LastSeenTexts.NORA_DRAWER),"Nora says so: "+said(nora));
+            h.assertTrue(!f.own(p,P).getBoolean("Ready"),"nothing counts yet");
+            f.click(p,P,LastSeenSite.DESK);
+            var got=sent(p);var d=drawer(got);
+            h.assertTrue(d!=null&&d.folders().size()==1&&d.folders().get(0).reader().equals(p.getUUID()),"the drawer holds their own folder: "+d);
+            var mine=d.folders().get(0);
+            h.assertTrue(mine.name().equals(p.getGameProfile().getName())&&mine.on().equals("the evening of day four")&&mine.file().equals(LastSeenTexts.file(p.getUUID())),"their name, and the day the House took them in: "+mine);
+            h.assertTrue(lines(got).contains(LastSeenTexts.DRAWER)&&stage(l,b,LastSeenSite.DESK)==LastSeenBlock.DRAWN,"the drawer is out, theirs on top: "+lines(got));
+            h.assertTrue(said(LastSeen.find(l,b,LastSeen.NORA)).equals(LastSeenTexts.NORA_YOURS),"Nora says whose it is");
+            var own=f.own(p,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("found_their_own_folder"),"they are ready: "+own);
+            var text=pages(p,f);
+            h.assertTrue(text.contains("Nora kept them")&&text.contains("I took Lautaro by the hand.")&&text.contains("and it held")&&text.contains("Lautaro was gone from the shelves")
+                &&text.contains("the evening of day four")&&text.contains("Folder stays open.")&&text.contains("She keeps it with the others. A folder stays open."),"the account is what they did: "+text);
+            h.assertFalse(text.contains("girl with one arm")||text.contains("Under mine"),"and not what they did not: "+text);
+            f.source(p,P);f.read(p,P,LastSeenSite.DESK);
+            h.assertTrue(f.own(p,P).getBoolean("Completed")&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.LAST_SEEN),"read after the card, it is theirs: "+f.own(p,P));
+            var again=LastSeen.find(l,b,LastSeen.NORA);talk(f,p,again);h.assertTrue(said(again).equals(LastSeenTexts.NORA_OPEN_AFTER),"it stays open: "+said(again));
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * Three readers and a spectator on the day after. Two have had the night; the third has had only two days; the spectator was there
+     * through the night, but a spectator is never counted at dawn and has no folder. Each of the two finds their own folder first and the other's under it; each account names the other's.
+     * The third is shown the two others' folders and told there is none of theirs, and nothing counts for them. The spectator opens nothing.
+     */
+    @GameTest(template="empty",batch="last_seen_after_two",timeoutTicks=3000)
+    public static void readersFindEachOthersFolders(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_after_a",P);var q=f.player("last_seen_after_b",P);var r=f.player("last_seen_after_c",P);var w=f.player("last_seen_after_w",P);
+        afterOf(f,p);afterOf(f,q);nightOf(f,r,2);nightOf(f,w,3);var l=f.level(P);var b=f.base(P);
+        String a=p.getGameProfile().getName(),bn=q.getGameProfile().getName();
+        h.startSequence().thenIdle(2).thenExecute(()->{archive(f,p);archive(f,q);archive(f,r);w.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);archive(f,w);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==LastSeen.AFTER,"the day after: the furthest any of them has reached"))
+        .thenIdle(2).thenExecute(()->{
+            sent(p);sent(q);sent(r);sent(w);
+            f.click(p,P,LastSeenSite.DESK);var dp=drawer(sent(p));
+            h.assertTrue(dp!=null&&dp.folders().size()==2&&dp.folders().get(0).reader().equals(p.getUUID())&&dp.folders().get(1).reader().equals(q.getUUID()),"the first finds their own folder, and the other's under it: "+dp);
+            f.click(q,P,LastSeenSite.DESK);var dq=drawer(sent(q));
+            h.assertTrue(dq!=null&&dq.folders().size()==2&&dq.folders().get(0).reader().equals(q.getUUID())&&dq.folders().get(1).name().equals(a),"and the second theirs first: "+dq);
+            f.click(r,P,LastSeenSite.DESK);var got=sent(r);var dr=drawer(got);
+            h.assertTrue(dr!=null&&dr.folders().size()==2&&dr.folders().stream().noneMatch(x->x.reader().equals(r.getUUID()))&&lines(got).contains(LastSeenTexts.NO_FOLDER),"the third is shown theirs, and none of their own: "+lines(got));
+            h.assertTrue(!f.own(r,P).getBoolean("Ready"),"nothing counts for them");
+            f.click(w,P,LastSeenSite.DESK);
+            h.assertTrue(drawer(sent(w))==null&&!f.own(w,P).getBoolean("Ready"),"the spectator opens nothing");
+            h.assertTrue(f.own(p,P).getBoolean("Ready")&&f.own(q,P).getBoolean("Ready"),"the two are ready");
+            h.assertTrue(pages(p,f).contains("Under mine were "+bn+"'s.")&&pages(q,f).contains("Under mine were "+a+"'s."),"each account names the other's folder");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * The Corner's girl, once. One reader has finished The House on the Corner and another has not. While both are in the archive and
+     * nobody can see the fountain, she comes: the girl with one arm at the rim, facing the avenue, and her brother, grown, across it, facing
+     * the park. The one who has not finished the Corner sees her and is not marked; the one who has is. A hand on her: she turns her head,
+     * and says nothing. On him: he does not cross. Once they are both indoors again and nobody sees, the two are gone, and they do not come
+     * again that day. Only the first reader's account has her in it.
+     */
+    @GameTest(template="empty",batch="last_seen_after_corner",timeoutTicks=3000)
+    public static void theCornersGirlOnce(GameTestHelper h){
+        var f=place(h);var p=f.player("last_seen_corner_a",P);var q=f.player("last_seen_corner_b",P);
+        afterOf(f,p);afterOf(f,q);var l=f.level(P);var b=f.base(P);
+        WitnessAccount.resolve(f.data(),p.getUUID(),WitnessAccount.Story.CORNER_HOUSE,"took_the_photograph");
+        var rim=LastSeen.RIM;
+        h.startSequence().thenIdle(2).thenExecute(()->{archive(f,p);archive(f,q);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.dayNumber(b)==LastSeen.AFTER,"the day after"))
+        .thenExecute(()->{h.assertTrue(!LastSeen.romina(b),"not yet");LastSeen.at(b,LastSeen.GIRL_AT);})
+        .thenWaitUntil(()->h.assertTrue(LastSeen.romina(b),"while nobody sees the fountain, she comes"))
+        .thenExecute(()->{
+            var girl=LastSeen.cornerActor(l,b,true);var man=LastSeen.cornerActor(l,b,false);
+            h.assertTrue(girl!=null&&girl.phase()==Corner.ROMINA&&girl.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(rim))<.1&&facing(girl,180),"the girl with one arm at the rim, facing the avenue: "+(girl==null?null:girl.position()));
+            h.assertTrue(man!=null&&man.phase()==Corner.NACHO_GROWN&&man.position().distanceToSqr(Vec3.atLowerCornerOf(b).add(LastSeen.NACHO_AT))<.1&&facing(man,0),"her brother across the avenue, facing the park");
+            f.at(q,P,rim.x,0,rim.z+5);q.setYRot(180);q.setYHeadRot(180);q.setXRot(0);
+        }).thenIdle(12).thenExecute(()->{
+            h.assertTrue(!f.own(q,P).getBoolean("SawRomina")&&LastSeen.romina(b),"one who has not finished the Corner is not marked, and she stays");
+            f.at(p,P,rim.x+1,0,rim.z+5);p.setYRot(180);p.setYHeadRot(180);p.setXRot(0);
+        }).thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("SawRomina"),"the one who has, seeing her, is"))
+        .thenExecute(()->{
+            var girl=LastSeen.cornerActor(l,b,true);talk(f,p,girl);
+            h.assertTrue(told(p).contains(LastSeenTexts.ROMINA_TURNS)&&f.own(p,P).getBoolean("RominaTurned"),"a hand on her: she turns her head");
+            talk(f,q,girl);h.assertTrue(told(q).contains(LastSeenTexts.ROMINA_TURNS)&&!f.own(q,P).getBoolean("RominaTurned"),"to the other too, but it is not theirs");
+            var man=LastSeen.cornerActor(l,b,false);talk(f,p,man);h.assertTrue(told(p).contains(LastSeenTexts.NACHO_ACROSS),"he does not cross");
+            h.assertTrue(said(girl).isEmpty()&&said(man).isEmpty(),"neither says a word");
+            archive(f,p);archive(f,q);
+        }).thenWaitUntil(()->h.assertTrue(!LastSeen.romina(b)&&LastSeen.cornerActor(l,b,true)==null&&LastSeen.cornerActor(l,b,false)==null,"once nobody sees, they are gone"))
+        .thenIdle(30).thenExecute(()->{
+            h.assertTrue(LastSeen.cornerActor(l,b,true)==null,"and she does not come again");
+            h.assertTrue(pages(p,f).contains("a girl with one arm")&&pages(p,f).contains("turned her head to me"),"the first reader's account has her: "+pages(p,f));
+            h.assertFalse(pages(q,f).contains("girl with one arm"),"the second's does not");
+            done();h.succeed();
+        });
+    }
 }

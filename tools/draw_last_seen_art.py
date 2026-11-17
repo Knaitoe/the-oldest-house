@@ -1039,6 +1039,30 @@ def notice():
     return im
 
 
+def notice_torn():
+    """0.4.671, the day after: what is left of the city's notice once it has been torn off the post. The sheet keeps the same place as
+    the notice (cols 5..10, rows 5..12) but only the strips the tape still holds are there: a ragged band under the top tape, with the
+    heading's first letters on it, and a narrower one under the bottom tape, and a single flap at a corner. The rest is the post."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    paper, torn = '#ece9df', '#d8d2c2'
+    # under the top tape: row 5 whole across, row 6 most of the way, row 7 where the tear ran low
+    for x in range(5, 11):
+        dot(im, x, 5, paper)
+    for x in range(5, 9):
+        dot(im, x, 6, paper)
+    for x in (5, 6):
+        dot(im, x, 7, torn)
+    dot(im, 9, 6, torn)
+    dot(im, 6, 6, '#262422'); dot(im, 7, 6, '#262422')
+    # under the bottom tape: row 12, and row 11 at its two ends
+    for x in range(5, 11):
+        dot(im, x, 12, paper)
+    dot(im, 5, 11, torn); dot(im, 10, 11, torn); dot(im, 9, 12, '#6a7a9a')
+    # a corner flap left hanging from the top band, its back to the light
+    dot(im, 10, 7, '#c4bdac'); dot(im, 10, 8, '#bcb5a4')
+    return im
+
+
 def tape():
     # Packing tape gone a little yellow, the light catching its edge, a crease where it was pulled round.
     im = new('#d8d0b2', 77694, 2)
@@ -1297,11 +1321,13 @@ def lamp_post_model(stage):
              element([6, 11, 6], [10, 13, 10], {'all': 'i'})]
         if stage == 2:
             glow(e[1:2], 15)
-    if stage == 4:
+    if stage in (4, 5):
         # 0.4.669: the shaft with the city's notice taped round it, on its north face; tape round the post above and below the sheet.
-        t = {**t, 'n': 'notice', 'p': 'tape'}
+        # 0.4.671 (5): the day after, torn off, only the strips under the tape left; its edges are gone, so only its face is drawn.
+        t = {**t, 'n': 'notice' if stage == 4 else 'notice_torn', 'p': 'tape'}
+        sheet_faces = {'north': 'n', 'east': 'n', 'west': 'n', 'up': 'n', 'down': 'n'} if stage == 4 else {'north': 'n'}
         e = [element([6.5, 0, 6.5], [9.5, 16, 9.5], {'all': 'i'}),
-             element([5, 5, 6.2], [11, 13, 6.5], {'north': 'n', 'east': 'n', 'west': 'n', 'up': 'n', 'down': 'n'},
+             element([5, 5, 6.2], [11, 13, 6.5], sheet_faces,
                      uv={'north': [5, 5, 11, 13], 'east': [5, 11, 5.3, 13], 'west': [10.7, 11, 11, 13], 'up': [5, 5, 11, 5.3],
                          'down': [5, 12.7, 11, 13]})]
         for y0 in (12.4, 4.8):
@@ -1317,6 +1343,17 @@ def fence_model(stage):
     the model faces); 4 and 5 are its second block, mesh only, so each panel is two blocks wide. 2 and 3 are a corner: a post on
     its own foot with half a panel running off it to the east and half to the south, turned with the block to fit each corner."""
     t = {'m': 'fence_mesh', 'u': 'fence_tube', 'f': 'fence_foot'}
+    if stage in (6, 7):
+        # 0.4.671, the day after: the panel pushed over and lying flat in the grass along the line it stood on. The mesh rests on its
+        # two rails just off the ground; at a joint (6) the frame's upright lies along its edge on top of the foot, which was pulled
+        # over with it and lies on its side, its two leg holes showing.
+        e = [element([0, 1.3, 1.5], [16, 1.55, 14.5], {'up': 'm', 'down': 'm'}),
+             element([0, 0, .75], [16, 1.5, 2.25], {'up': 'u', 'down': 'u', 'north': 'u', 'south': 'u'}),
+             element([0, 0, 13.75], [16, 1.5, 15.25], {'up': 'u', 'down': 'u', 'north': 'u', 'south': 'u'})]
+        if stage == 6:
+            e += [element([-1, 0, 2.5], [1, 1.2, 10.5], {'all': 'f'}),
+                  element([-.75, 1.2, .75], [.75, 2.7, 15.25], {'all': 'u'})]
+        return model(e, t, 'fence_tube')
     low, top = stage in (0, 2, 4), stage in (1, 3, 5)
     corner = stage in (2, 3)
     e = []
@@ -1513,9 +1550,9 @@ def fitting_models():
     for s in range(4):
         m[f'fountain_{s}'] = fountain_model(s); m[f'trunk_{s}'] = trunk_model(s)
         m[f'shelter_{s}'] = shelter_model(s)
-    for s in range(5):
-        m[f'lamp_post_{s}'] = lamp_post_model(s)
     for s in range(6):
+        m[f'lamp_post_{s}'] = lamp_post_model(s)
+    for s in range(8):
         m[f'fence_{s}'] = fence_model(s)
     for s in range(5):
         m[f'bandstand_{s}'] = bandstand_model(s)
@@ -1680,6 +1717,7 @@ def textures():
         'shutter_top': shutter_face(0, 'top'), 'shutter_low_lit': shutter_face(1, 'low'), 'shutter_top_lit': shutter_face(1, 'top'),
         'sill': sill(), 'fascia': fascia(),
         'fence_mesh': fence_mesh(), 'fence_tube': fence_tube(), 'fence_foot': fence_foot(), 'notice': notice(), 'tape': tape(),
+        'notice_torn': notice_torn(),
         'folder_open': folder_open(),
     }
     from paint_character_skins import LOOKS
@@ -1700,8 +1738,8 @@ def textures():
 
 KINDS = ['counter', 'card', 'chair', 'shelf', 'poster', 'poster_b', 'table', 'desk', 'louvre', 'tube', 'railing', 'gate', 'lamp_post', 'bench',
          'fountain', 'kiosk', 'trunk', 'leaves', 'play', 'bandstand', 'shelter', 'shutter', 'fence']
-STAGES = {'counter': 2, 'shelf': 5, 'poster': 8, 'poster_b': 8, 'table': 5, 'desk': 3, 'railing': 2, 'gate': 3, 'lamp_post': 5, 'bench': 3,
-          'fountain': 4, 'kiosk': 2, 'trunk': 4, 'leaves': 3, 'play': 8, 'bandstand': 5, 'shelter': 4, 'shutter': 6, 'fence': 6}
+STAGES = {'counter': 2, 'shelf': 5, 'poster': 8, 'poster_b': 8, 'table': 5, 'desk': 3, 'railing': 2, 'gate': 3, 'lamp_post': 6, 'bench': 3,
+          'fountain': 4, 'kiosk': 2, 'trunk': 4, 'leaves': 3, 'play': 8, 'bandstand': 5, 'shelter': 4, 'shutter': 6, 'fence': 8}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'last_seen_fitting': 'Park Fitting', 'last_seen_paving': 'Park Paving', 'last_seen_curb': 'Curbstone', 'last_seen_earth': 'Trodden Earth',
@@ -1782,6 +1820,10 @@ def main():
     assert 0.25 < sum(mesh.getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) / 256 < 0.5
     sheet = images['block/last_seen/notice.png']
     assert all(sheet.getpixel((x, y))[3] == 255 for x in range(5, 11) for y in range(5, 13)) and sheet.getpixel((4, 4))[3] == 0
+    # 0.4.671: the torn notice keeps the notice's place, and less than half of it is left.
+    torn = images['block/last_seen/notice_torn.png']
+    kept = sum(torn.getpixel((x, y))[3] > 0 for x in range(5, 11) for y in range(5, 13))
+    assert 8 < kept < 24 and all(torn.getpixel((x, y))[3] == 0 for x in range(16) for y in range(16) if not (5 <= x <= 10 and 5 <= y <= 12))
     # The open folder fills exactly the part of its texture its leaf reads, and has a face on its left leaf and type on its right.
     opened = images['block/last_seen/folder_open.png']
     assert all(opened.getpixel((x, y))[3] == 255 for x in range(2, 14) for y in range(3, 13)) and opened.getpixel((1, 2))[3] == 0

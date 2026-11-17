@@ -39,7 +39,9 @@ public final class OpeningPlayerState {
             Codec.LONG.optionalFieldOf("last_morning_day", -1L).forGetter(OpeningPlayerState::lastMorningDay),
             UUIDUtil.CODEC.optionalFieldOf("hillary").forGetter(state -> Optional.ofNullable(state.hillaryUuid)),
             Codec.BOOL.optionalFieldOf("entered_house", false).forGetter(OpeningPlayerState::enteredHouse),
-            Codec.LONG.optionalFieldOf("hillary_day", -1L).forGetter(OpeningPlayerState::hillaryDay)
+            Codec.LONG.optionalFieldOf("hillary_day", -1L).forGetter(OpeningPlayerState::hillaryDay),
+            Codec.LONG.optionalFieldOf("entered_day", -1L).forGetter(OpeningPlayerState::enteredDay),
+            Codec.INT.optionalFieldOf("entered_time", -1).forGetter(OpeningPlayerState::enteredTime)
     ).apply(instance, OpeningPlayerState::new));
 
     private OpeningStage stage = OpeningStage.NONE;
@@ -54,6 +56,9 @@ public final class OpeningPlayerState {
     private UUID hillaryUuid;
     private boolean enteredHouse;
     private long hillaryDay = -1L;
+    /** 0.4.671: the House's own day (see HouseCalendar) and the hour of that day when it first took this reader in; -1 if unknown. */
+    private long enteredDay = -1L;
+    private int enteredTime = -1;
 
     public OpeningPlayerState() {
     }
@@ -69,7 +74,9 @@ public final class OpeningPlayerState {
             long lastMorningDay,
             Optional<UUID> hillaryUuid,
             boolean enteredHouse,
-            long hillaryDay
+            long hillaryDay,
+            long enteredDay,
+            int enteredTime
     ) {
         this.stage = stage;
         this.nightsSlept = nightsSlept;
@@ -82,6 +89,8 @@ public final class OpeningPlayerState {
         this.hillaryUuid = hillaryUuid.orElse(null);
         this.enteredHouse = enteredHouse;
         this.hillaryDay = hillaryDay;
+        this.enteredDay = enteredDay;
+        this.enteredTime = enteredTime;
     }
 
     public OpeningStage stage() {
@@ -126,6 +135,8 @@ public final class OpeningPlayerState {
     }
 
     public long hillaryDay() { return hillaryDay; }
+    public long enteredDay() { return enteredDay; }
+    public int enteredTime() { return enteredTime; }
 
     public boolean houseDue(long today) {
         return stage.isAtLeast(OpeningStage.HILLARY_ARRIVED)
@@ -183,6 +194,15 @@ public final class OpeningPlayerState {
     public void markHillaryArrived(long day) {
         hillaryDay = day;
         markHillaryArrived();
+    }
+
+    /** 0.4.671: the first entry also records the House's day and the hour of it; later entries leave the record as it was. */
+    public void markEntered(long day, int time) {
+        if (enteredDay < 0) {
+            enteredDay = day;
+            enteredTime = time;
+        }
+        markEntered();
     }
 
     public void markEntered() {
@@ -245,6 +265,8 @@ public final class OpeningPlayerState {
         hillaryUuid = null;
         enteredHouse = false;
         hillaryDay = -1L;
+        enteredDay = -1L;
+        enteredTime = -1;
     }
 
     public void setStageForTesting(OpeningStage newStage, long day) {

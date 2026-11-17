@@ -118,6 +118,7 @@ STORY_ICONS = {
     'a_little_longer': NS + ':longer_tea',
     'a_sort_of_thing': 'minecraft:white_dye',
     'not_yet': 'minecraft:white_bed',
+    'last_seen': 'minecraft:player_head',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

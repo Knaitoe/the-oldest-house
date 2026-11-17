@@ -245,10 +245,91 @@ public final class LastSeenTexts {
         DAWN_EMPTY="Light comes in at the louvres. It is morning. The archive is as it was.";
     public static String tableOpen(int child){return folderName(child)+", lying open at the first page.";}
 
-    /** The account. Nothing asks for it until part 5; it says only what anybody could see of the place. */
-    public static ItemStack account(String name,CompoundTag own){
-        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LAST_SEEN),name,pages(
-            "There was an office at the edge of a park, with a counter, and posters of children on the partition behind it. In the archive, folders stood on steel shelves to the ceiling. "
-                +"Outside, the park was empty in the morning, and the fountain was dry."));
+    // ------------------------------------------------------------------------------------------------ 0.4.671, after
+    /** The day after: coming back to it, the fence and the notices, Nora's desk with its drawer unlocked. */
+    public static final String AFTER="It is morning. The gate stands open, and there is nobody in the park.",
+        AFTER_OFFICE="It is morning. Nobody stands at the shelves. Nora's desk drawer is unlocked.",
+        FENCE_DOWN="The city's fence lies flat in the grass, a panel at a time, along the line it stood on.",
+        NOTICE_TORN="A notice was taped round the post. Only its corners are left, under the tape.",
+        DESK_UNLOCKED="Nora's desk. The one drawer is unlocked.",
+        LAMP_AFTER="A park lamp, its globe dark. It went out in the night and has not come back on.";
+    /** The drawer. */
+    public static final String DRAWER="The drawer is full of folders. Yours is on top.",
+        DRAWER_OTHERS="The drawer is full of folders.",
+        NO_FOLDER="There is no folder with your face in it.",
+        NORA_YOURS="Yours came in on the first night. I keep it with the others.";
+    /** The reader's own folder: the plain heading, where they were last seen, and Nora's note in pencil, by the House's read of home. */
+    public static final String FORM_PLAIN="MISSING PERSONS",AT_DOOR="at a door",UNKNOWN_DAY="not written in";
+    public static String note(String home){
+        return switch(home){case "HAVEN"->"Somebody is still looking.";case "DANGER"->"Nobody has asked.";case "RUNAWAY"->"Not the first time.";default->NOTE;};
     }
+    /** The House's own record of the day it took a reader in, in words: "the evening of day four". */
+    public static String takenOn(long day,int time){
+        if(day<0||time<0)return UNKNOWN_DAY;
+        String part=time<6000?"the morning":time<12000?"the afternoon":time<13800?"the evening":time<23000?"the night":"first light";
+        return part+" of day "+count(day+1);
+    }
+    static String count(long n){
+        String[] ones={"zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen",
+            "sixteen","seventeen","eighteen","nineteen"};
+        String[] tens={"","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"};
+        if(n<20)return ones[(int)Math.max(0,n)];
+        if(n<100)return tens[(int)(n/10)]+(n%10==0?"":"-"+ones[(int)(n%10)]);
+        return Long.toString(n);
+    }
+    /** A reader's own file number, from who they are. */
+    public static String file(java.util.UUID reader){return String.format("FILE %04d",1000+Math.floorMod(reader.hashCode(),8999));}
+    /** The office's three on the day after. */
+    public static final String NORA_DRAWER="My drawer's unlocked. Go on.",NORA_OPEN_AFTER="It stays open. They all do.",
+        PATRICIA_AFTER="Nobody's come in yet. They will, after work.",
+        LUZ_AFTER="There's nobody out there. Not one of them.";
+    /** The girl with one arm at the fountain, and the man across the avenue. Neither says anything. */
+    public static final String ROMINA_TURNS="She turns her head to you.",
+        NACHO_ACROSS="He stays on the far pavement, facing the park. He does not cross.";
+
+    /**
+     * 0.4.671: the account, from what this reader did: the office and the archive; the first of them; the second day; the night; the day
+     * after and the drawer, with their own folder and Nora's note; the girl with one arm if they saw her.
+     */
+    public static ItemStack account(String name,CompoundTag own){
+        var p=new ArrayList<String>();
+        p.add("There was an office at the edge of a park, with a counter, and posters of children on the partition behind it. In the archive behind that, "
+            +"folders stood on steel shelves to the ceiling, a name written by hand on every spine."
+            +(own.getBoolean("Rule")?" Nora kept them. She told me every one of them had a folder, and that a folder stays open.":""));
+        int matched=own.getInt("Matched");
+        p.add("One morning a girl stood at the dry fountain, facing the office, and did not blink. Her name was "+CHILDREN[LastSeen.ROCIO]+"."
+            +((matched&1<<LastSeen.ROCIO)!=0?" I found her folder on the shelves by the first letter of her name and took it out to her. She held it, and looked at me, and gave it back."
+              :(own.getInt("SawMatched")&1<<LastSeen.ROCIO)!=0?" Someone took her own folder out to her, and she held it.":""));
+        if(own.getInt("Days")>=2){
+            var mine=new ArrayList<String>();for(int c:LastSeen.EIGHT)if(c!=LastSeen.ROCIO&&(own.getInt("Second")&1<<c)!=0)mine.add(CHILDREN[c]);
+            p.add("The next day there were eight of them in the park, each where they had last been seen."
+                +(mine.size()==1?" I took "+mine.get(0)+" "+his(index(mine.get(0)))+" own folder.":mine.isEmpty()?"":" I took "+CoopAccounts.names(mine)+" each their own folder.")
+                +" A man from the city put a fence round the playground and taped notices to the lamp posts, and told Nora to close their files. She would not.");
+        }
+        if(own.getInt("Days")>=3){
+            var took=kids(own.getInt("TookHand"));var brought=kids(own.getInt("Brought"));
+            String night="That night men came along the avenue with flashlights, and chained the gates.";
+            if(!took.isEmpty())night+=" I took "+CoopAccounts.names(took)+" by the hand"+(took.size()>1?", one at a time.":".");
+            if(brought.size()==1){int c=index(brought.get(0));night+=" I brought "+brought.get(0)+" in by the archive's back door, and "+pronoun(c).toLowerCase()+" went to stand at the shelf where "+his(c)+" folder was.";}
+            else if(!brought.isEmpty())night+=" I brought "+CoopAccounts.names(brought)+" in by the archive's back door, and each went to stand at the shelf where their own folder was.";
+            night+=own.getBoolean("KeptDoor")?" When they tried the back door I had my weight against it, and it held.":" They came over the railing, and every lamp in the park went out at once.";
+            p.add(night);
+            var gone=new ArrayList<String>();for(int c:LastSeen.EIGHT)if((own.getInt("Gone")&1<<c)!=0)gone.add(CHILDREN[c]);
+            p.add(gone.isEmpty()?"In the morning nobody was left in the park, or at the shelves."
+                :"In the morning "+CoopAccounts.names(gone)+(gone.size()==1?" was":" were")+" gone from the shelves as well, and "+(gone.size()==1?his(index(gone.get(0)))+" folder lay":"their folders lay")+" open on the long table at the first page.");
+        }
+        p.add("The next time I came it was the middle of the morning, and the park was empty. The city's fence lay flat in the grass and the notices had been torn off the posts, all but the corners under the tape. Nora's drawer was unlocked.");
+        String taken=own.getString("TakenOn");
+        p.add("My own folder was in it, on top, with my own face clipped to it. It said I was last seen at a door"
+            +(taken.isEmpty()||taken.equals(UNKNOWN_DAY)?".":", on "+taken+".")+" Nora had written on it in pencil: "+note(own.getString("HomeRead")));
+        var others=new ArrayList<String>();var list=own.getList("Others",net.minecraft.nbt.Tag.TAG_STRING);for(int i=0;i<list.size();i++)others.add(list.getString(i));
+        if(!others.isEmpty())p.add("Under mine were "+CoopAccounts.names(others.stream().map(n->n+"'s").toList())+".");
+        if(own.getBoolean("SawRomina"))p.add("At the fountain, where the first of them had stood, a girl with one arm stood facing the avenue. A man stood across it on the far pavement and did not cross."
+            +(own.getBoolean("RominaTurned")?" When I put a hand on her shoulder she turned her head to me, and said nothing.":""));
+        p.add("She keeps it with the others. A folder stays open.");
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.LAST_SEEN),name,pages(p.toArray(String[]::new)));
+    }
+    /** The children in a record's mask, by name, in their order. */
+    static List<String> kids(int mask){var out=new ArrayList<String>();for(int c=0;c<CHILDREN.length;c++)if((mask&1<<c)!=0)out.add(CHILDREN[c]);return out;}
+    static int index(String child){for(int i=0;i<CHILDREN.length;i++)if(CHILDREN[i].equals(child))return i;return 0;}
 }

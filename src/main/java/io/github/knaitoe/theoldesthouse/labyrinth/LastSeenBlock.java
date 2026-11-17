@@ -19,7 +19,8 @@ import net.minecraft.world.phys.shapes.*;
  * pile (1), with its lamp (2). DESK: Nora's desk with the typewriter on it, its one drawer locked (0), unlocked (1) or open (2). LOUVRE:
  * one of the office's louvred windows. TUBE: a strip light on the ceiling.</li>
  * <li>The park. RAILING: the iron railing, a run of bars (0), a post with its finial (1). GATE: a leaf of a park gate, shut (0), shut and
- * chained (1), open (2). LAMP_POST: a park lamp, its foot (0), its shaft (1), its globe lit (2) or dark (3). BENCH: a park bench's left end
+ * chained (1), open (2). LAMP_POST: a park lamp, its foot (0), its shaft (1), its globe lit (2) or dark (3), its shaft with the city's
+ * notice taped round it (4) or, the day after, only the notice's corners left under the tape (5). BENCH: a park bench's left end
  * (0), middle (1) or right end (2). FOUNTAIN: the dry fountain's rim (0), its rim's corner (1), its plinth (2) and its bowl (3). KIOSK: the
  * kiosk's shuttered front (0), its side with old bills pasted on it (1). TRUNK: a silk-floss tree's trunk, its foot (0), its swollen belly
  * (1), its neck (2), its fork (3). LEAVES: a plane's canopy (0), a silk-floss's (1), a plane's thinner edge (2). PLAY: the playground's
@@ -49,9 +50,11 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
     /** Stages of a gate leaf, and of Nora's drawer. */
     public static final int SHUT=0,CHAINED=1,OPEN=2,LOCKED=0,UNLOCKED=1,DRAWN=2;
     /** Stages of a lamp post. */
-    public static final int FOOT=0,SHAFT=1,LIT=2,DARK=3,NOTICE=4;
+    public static final int FOOT=0,SHAFT=1,LIT=2,DARK=3,NOTICE=4,TORN=5;
     /** Stages of the city's fence: a panel's lower half on its concrete foot, its upper half, and the same at a corner, with a post. */
     public static final int PANEL=0,PANEL_TOP=1,CORNER=2,CORNER_TOP=3,PANEL_MID=4,PANEL_MID_TOP=5;
+    /** 0.4.671, the day after: a panel pushed over and lying flat in the grass, with its frame's upright and foot (6) or mesh only (7). */
+    public static final int FALLEN=6,FALLEN_MID=7;
     public LastSeenBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.COUNTER).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return LastSeenRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(7,stage)));}
@@ -81,7 +84,7 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
             case TUBE->Block.box(2,13,6,14,16,10);
             case RAILING->stage==1?Block.box(6,0,6,10,16,10):t(f,0,0,7,16,16,9);
             case GATE->t(f,0,0,7,16,16,9);
-            case LAMP_POST->stage==FOOT?Block.box(5,0,5,11,16,11):stage==SHAFT?Block.box(6.5,0,6.5,9.5,16,9.5):stage==NOTICE?Shapes.or(Block.box(6.5,0,6.5,9.5,16,9.5),t(f,5,5,6,11,13,6.5)):Block.box(3,0,3,13,13,13);
+            case LAMP_POST->stage==FOOT?Block.box(5,0,5,11,16,11):stage==SHAFT?Block.box(6.5,0,6.5,9.5,16,9.5):stage==NOTICE||stage==TORN?Shapes.or(Block.box(6.5,0,6.5,9.5,16,9.5),t(f,5,5,6,11,13,6.5)):Block.box(3,0,3,13,13,13);
             case BENCH->t(f,0,0,2,16,15,14);
             case FOUNTAIN->stage==2?Block.box(3,0,3,13,16,13):stage==3?Block.box(1,0,1,15,6,15):t(f,0,0,0,16,8,16);
             case KIOSK->Shapes.block();
@@ -91,7 +94,7 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
             case BANDSTAND->switch(stage){case 0->Block.box(6,0,6,10,16,10);case 1->t(f,0,0,7,16,12,9);case 2,4->Block.box(0,15,0,16,16,16);default->t(f,0,0,8,16,8,16);};
             case SHELTER->switch(stage){case 1->Block.box(0,13,0,16,16,16);case 2->Block.box(7,0,7,9,16,9);case 3->t(f,0,0,8,16,8,14);default->t(f,0,0,7,16,16,9);};
             case SHUTTER->Shapes.block();
-            case FENCE->stage==CORNER||stage==CORNER_TOP?Shapes.or(t(f,7,0,7,9,16,9),t(f,9,0,7,16,16,9),t(f,7,0,9,9,16,16)):t(f,0,0,7,16,16,9);
+            case FENCE->stage>=FALLEN?Block.box(0,0,0,16,1.5,16):stage==CORNER||stage==CORNER_TOP?Shapes.or(t(f,7,0,7,9,16,9),t(f,9,0,7,16,16,9),t(f,7,0,9,9,16,16)):t(f,0,0,7,16,16,9);
         };
     }
     /** What stands in the way: the furniture, the railings and gates (a shut gate), the fountain, the kiosk, the trunks, the bandstand's posts and

@@ -458,7 +458,8 @@ public final class OpeningSequence {
         if (!state.enteredHouse()) {
             TheOldestHouse.LOGGER.info("{} has entered the House for the first time.", player.getGameProfile().getName());
         }
-        state.markEntered();
+        // 0.4.671: the House keeps the day and the hour it first took each reader in (Last Seen's own folder reads it).
+        state.markEntered(currentDay(player.server), (int) (player.server.overworld().getDayTime() % HouseCalendar.TICKS_PER_DAY));
         io.github.knaitoe.theoldesthouse.journal.Journals.arrived(player);
     }
 
