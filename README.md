@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.660** answers the owner's question about fanfare at the foot of the great staircase: none. When a reader comes off the last tread into the chamber before the cell, the descent's score dies away and the growls that followed them down stop. After five seconds' quiet the creature growls once, from the cell, for that reader alone. The chamber's two lanterns hang at the cell's gate now, so what is lit there is the bars, and the one line about the bars waits until the reader is a few steps short of them. `docs/STAIR_FOOT_0_4_660.md`.
+Development candidate **0.4.661** gives readers together different things to swear they heard. When two readers deep in the House stop in the same hall, a few steps apart, one may hear the other's footsteps carry on down the hall and round the corner, while the other hears a door shut softly somewhere behind the first. Each hears only their own, nothing is said about it, and only comparing tells them. `docs/HEARD_APART_0_4_661.md`.
 
-Previous: 0.4.659 let a reader answer the House with a chair: a chair drawn up to the House's own kitchen table is laid for, the next time nobody is there to see. `docs/SECOND_CHAIR_0_4_659.md`.
+Previous: 0.4.660 answered the owner's question about fanfare at the foot of the great staircase: none. The descent's score and growls stop there, and after five seconds' quiet the creature growls once, from the cell. `docs/STAIR_FOOT_0_4_660.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

@@ -1315,4 +1315,70 @@ public final class ExplorationPassTests {
             }finally{cat.discard();NativeTestPlayers.remove(p);lease.close();}
         });
     }
+
+    /** 0.4.661 (docs/HEARD_APART_0_4_661.md): two readers stopped in a hall each hear something the other does not. */
+    @GameTest(template="empty",batch="heard_apart",timeoutTicks=400)
+    public static void twoReadersStoppedInAHallSwearToDifferentThings(GameTestHelper h){
+        var l=HouseTestLevel.get(h.getLevel().getServer());var at=new BlockPos(632000,64,632000);
+        var lease=new NativeTestChunks();lease.hold(l,new AABB(at).inflate(20,6,20));
+        var a=NativeTestPlayers.survival(h,"heard_a");var b=NativeTestPlayers.survival(h,"heard_b");var c=NativeTestPlayers.survival(h,"heard_c");
+        var watcher=NativeTestPlayers.survival(h,"heard_watcher");watcher.setGameMode(GameType.SPECTATOR);
+        var d=LabyrinthData.get(h.getLevel().getServer());var all=List.of(a,b,c,watcher);boolean[] done={false};
+        Runnable cleanup=()->{
+            for(var p:all){HeardApart.forget(p.getUUID());d.clearReturns(p.getUUID());NativeTestPlayers.remove(p);}HeardApart.force=false;
+            for(int x=-2;x<=14;x++)for(int y=-1;y<=3;y++)for(int z=-3;z<=12;z++)l.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);lease.close();
+        };
+        h.runAfterDelay(399,()->{if(!done[0]){done[0]=true;cleanup.run();}});
+        h.onEachTick(()->{if(done[0]||!lease.ready())return;done[0]=true;
+            try{
+                // A hall three wide along +x for thirteen blocks, turning right (+z) at its end for ten more; walls and ceiling round it.
+                for(int x=-2;x<=14;x++)for(int y=-1;y<=3;y++)for(int z=-3;z<=12;z++)l.setBlock(at.offset(x,y,z),Blocks.STONE_BRICKS.defaultBlockState(),2);
+                for(int y=0;y<=2;y++){for(int x=0;x<=12;x++)for(int z=-1;z<=1;z++)l.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);for(int x=10;x<=12;x++)for(int z=-1;z<=10;z++)l.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);}
+                h.assertTrue(HeardApart.hall(LabyrinthPlace.STRAIGHT_HALL)&&HeardApart.hall(LabyrinthPlace.STONE_GALLERY),"the ordinary halls, domestic and stone, are where it happens");
+                h.assertTrue(!HeardApart.hall(LabyrinthPlace.EXPLORER_CAMP)&&!HeardApart.hall(LabyrinthPlace.GOATMAN)&&!HeardApart.hall(null),"not the camp, not a story, not outside the House");
+                java.util.function.BiConsumer<ServerPlayer,Double> put=(p,x)->{p.teleportTo(l,at.getX()+x,at.getY(),at.getZ()+.5,0,0);p.connection.resetPosition();};
+                put.accept(a,1.5);put.accept(b,2.5);put.accept(c,3.5);put.accept(watcher,4.5);
+                long t=l.getGameTime();for(var p:all)HeardApart.track(p,t);
+                h.assertTrue(!HeardApart.ready(a,t+HeardApart.STILL),"a reader at the House's first doors hears nothing of it");
+                for(var p:List.of(a,b,watcher))for(int i=0;i<HeardApart.DEPTH;i++)d.pushReturn(p.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(i,64,0),0F,true,false));
+                h.assertTrue(HeardApart.ready(a,t+HeardApart.STILL)&&HeardApart.ready(b,t+HeardApart.STILL),"six crossings deep and stood still three seconds, a reader may be one of a pair");
+                h.assertTrue(!HeardApart.ready(a,t+HeardApart.STILL-1),"not before the three seconds are over");
+                h.assertTrue(!HeardApart.ready(watcher,t+HeardApart.STILL)&&!HeardApart.ready(c,t+HeardApart.STILL),"neither a spectator nor a reader not yet six crossings in");
+                for(var p:all)HeardApart.track(p,t+HeardApart.STILL);HeardApart.force=true;
+                h.assertTrue(!HeardApart.consider(l,all,t+HeardApart.STILL)&&HeardApart.pending(a.getUUID()).isEmpty()&&HeardApart.pending(b.getUUID()).isEmpty(),"two readers shoulder to shoulder do not");
+                put.accept(b,5.5);HeardApart.track(b,t+HeardApart.STILL);h.assertTrue(HeardApart.still(b,t+HeardApart.STILL)==0,"moving starts a reader's stillness again");
+                long now=t+2L*HeardApart.STILL;for(var p:all)HeardApart.track(p,now);
+                h.assertTrue(HeardApart.consider(l,all,now),"four steps apart, both still, they hear apart");
+                var listen=HeardApart.pending(a.getUUID());var other=HeardApart.pending(b.getUUID());
+                // From b, the hall runs on east and round the turn; from a, back west, only a wall a step behind. So a hears b walk on.
+                h.assertTrue(listen.size()==HeardApart.STEPS&&listen.stream().allMatch(HeardApart.Cue::step),"the reader with hall behind the other hears ten footsteps, and only footsteps: "+listen.size());
+                double last=-1;float loud=Float.MAX_VALUE;long due=now;
+                for(var cue:listen){
+                    h.assertTrue(HeardApart.walkable(l,BlockPos.containing(cue.at())),"every footstep is on floor a body could stand on: "+cue.at());
+                    double away=cue.at().distanceTo(a.position());h.assertTrue(away>last-1e-6,"each footstep is further from the one who hears them");last=away;
+                    h.assertTrue(cue.volume()<=loud&&cue.volume()>0,"they fade as they go");loud=cue.volume();
+                    h.assertTrue(cue.due()>due&&(due==now||cue.due()-due==HeardApart.PACE),"they come at a walking pace, the first a moment after: "+cue.due());due=cue.due();
+                }
+                var firstStep=listen.getFirst().at();h.assertTrue(firstStep.x>b.getX()&&firstStep.x-b.getX()<HeardApart.STRIDE+.01&&Math.abs(firstStep.z-b.getZ())<.01,"the first is a stride on from where the other stands");
+                h.assertTrue(listen.stream().anyMatch(cue->cue.at().z-at.getZ()>3),"they turn the corner and carry on round it");
+                h.assertTrue(listen.stream().noneMatch(cue->cue.at().x-at.getX()>13),"and never through its wall");
+                h.assertTrue(other.size()==1&&!other.getFirst().step()&&other.getFirst().sound()==net.minecraft.sounds.SoundEvents.WOODEN_DOOR_CLOSE,"the other hears one door shut, and no footsteps");
+                h.assertTrue(other.getFirst().at().x<a.getX()-4,"behind the one who hears the footsteps, as seen from the other");
+                h.assertTrue(other.getFirst().due()>listen.getFirst().due()&&other.getFirst().due()<listen.getLast().due(),"while the footsteps are going");
+                h.assertTrue(HeardApart.pending(c.getUUID()).isEmpty()&&HeardApart.pending(watcher.getUUID()).isEmpty(),"nobody else hears either");
+                h.assertTrue(a.getPersistentData().getLong(HeardApart.LAST)==now&&b.getPersistentData().getLong(HeardApart.LAST)==now&&!c.getPersistentData().contains(HeardApart.LAST),"both readers keep when it was");
+                HeardApart.force=true;h.assertTrue(!HeardApart.consider(l,all,now+10),"the same stop hears nothing more");HeardApart.force=false;
+                put.accept(a,1.2);HeardApart.track(a,now+20);put.accept(b,5.2);HeardApart.track(b,now+20);
+                for(var p:all)HeardApart.track(p,now+20+HeardApart.STILL);HeardApart.force=true;
+                h.assertTrue(!HeardApart.ready(a,now+20+HeardApart.STILL)&&!HeardApart.consider(l,all,now+20+HeardApart.STILL),"stopping again within ten minutes hears nothing");HeardApart.force=false;
+                HeardApart.forget(a.getUUID());HeardApart.forget(b.getUUID());
+                long later=now+HeardApart.REST+5;put.accept(a,1.5);put.accept(b,5.5);for(var p:all)HeardApart.track(p,later);for(var p:all)HeardApart.track(p,later+HeardApart.STILL);HeardApart.force=true;
+                h.assertTrue(HeardApart.consider(l,all,later+HeardApart.STILL),"ten minutes on, the next stop together can");
+                h.assertTrue(HeardApart.walk(l,a.position(),new Vec3(-1,0,0)).size()<3,"with only a wall behind, the footsteps have nowhere to go");
+                var cut=new ArrayList<HeardApart.Cue>(HeardApart.pending(a.getUUID()));HeardApart.forget(a.getUUID());HeardApart.deliver(l,later+10000);
+                h.assertTrue(!cut.isEmpty()&&HeardApart.pending(a.getUUID()).isEmpty()&&HeardApart.pending(b.getUUID()).isEmpty(),"what was still to come is dropped for a reader who goes, and the rest are sent");
+            }finally{cleanup.run();}
+            h.succeed();
+        });
+    }
 }
