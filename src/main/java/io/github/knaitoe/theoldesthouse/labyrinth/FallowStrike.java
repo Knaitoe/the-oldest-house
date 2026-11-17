@@ -60,6 +60,8 @@ public final class FallowStrike {
     /** Each station's four minutes, kept on its afternoon (Fallow.Site.strike). */
     static final class State{
         int goneAt=-1,toneAt=-1,slid,harlan,faye,otis,boyd,liftAt,calls,callAt,talk,talkAt=-1,count,boydAt,openedAt=-1,fayeStill;
+        /** 0.4.680: which parts of the station the light has had this afternoon (FallowRuin). */
+        int ruined;
         boolean padsWhole,shut;@Nullable UUID led,heldBy;
         final Set<UUID> done=new HashSet<>();final Map<UUID,Integer> faint=new HashMap<>();
         int since(int tick){return toneAt<0?-1:tick-toneAt;}
@@ -131,7 +133,7 @@ public final class FallowStrike {
         if(t>GO&&t<=LIGHT+BELOW_FAINT){harlan(l,s,here,t);otis(l,s,t);faye(l,s,here,t);boyd(l,s,t);}
         if(t>=GO)below(l,s,here,t);
         if(t>=SHUT)doors(l,s,here,t);
-        if(t>=LIGHT)light(l,s,here,t);
+        if(t>=LIGHT){light(l,s,here,t);FallowRuin.tick(l,s,here,t-LIGHT);}
     }
     /** The tone: the television to its card, the people at the station laid off their afternoon. */
     static void begin(ServerLevel l,Fallow.Site s,List<ServerPlayer> here){
@@ -354,6 +356,9 @@ public final class FallowStrike {
                 own.putString("AtLight",below?"cellar":"outside");own.putInt("Strikes",own.getInt("Strikes")+1);
                 own.putDouble("LightX",r.x);own.putDouble("LightY",r.y);own.putDouble("LightZ",r.z);own.putFloat("LightYaw",p.getYRot());
                 if(p.getUUID().equals(st.heldBy))own.putBoolean("HeldDoors",true);
+                // 0.4.680: out in front of the station, their shadow left on its front.
+                int shadow=below?FallowRuin.NO_SHADOW:FallowRuin.shadow(l,s.base,p,r);
+                if(shadow!=FallowRuin.NO_SHADOW)own.putInt("ShadowX",shadow);else own.remove("ShadowX");
                 Fallow.save(p,own);
             }
             heard(p,FallowRegistry.BLAST.get(),below?.55F:1F);
@@ -421,6 +426,8 @@ public final class FallowStrike {
     static void afresh(ServerLevel l,BlockPos b){
         tv(l,b,FallowBlock.PICTURE);
         FallowSite.lid(l,b,FallowSite.PAD_A,0);FallowSite.lid(l,b,FallowSite.PAD_B,0);
+        // 0.4.680: a station the light has had is built again first, so the doors below are the doors as built.
+        FallowRuin.mend(l,b);
         if(l.isLoaded(b.offset(FallowSite.WELL_W,0,FallowSite.WELL_S))&&Fallow.cellarOpen(l,b))Fallow.cellarDoors(l,b,false);
     }
     static void tv(ServerLevel l,BlockPos b,int stage){

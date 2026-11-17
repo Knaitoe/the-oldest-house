@@ -6,7 +6,8 @@ line and its gravel shoulders; the garage's corrugated iron and its stained floo
 and its skirting; the yard's trodden earth, the field's furrowed soil, the pads' tracks and gravel; the storm cellar's fieldstone, its
 earth floor and its timbered roof under the yard; the farmhouse's weathered boards, its shingles, its porch floor and its chimney brick;
 the rig's trailer), the farmhouse's shingle stairs and the cellar's stone steps, and every fitting of the fallow_fitting block, its
-models facing north and turned by its facing (FallowBlock lists them).
+models facing north and turned by its facing (FallowBlock lists them). 0.4.680: what the light leaves, the store and the canopy come
+down in pieces (debris, a broken joist, the canopy's sheets and columns) and the plate windows blown in to their edges.
 
 Writes the models and block states and the blocks' names. --check verifies everything; --out draws them somewhere else for a look.
 """
@@ -986,13 +987,18 @@ def tube_light():
 
 
 def signband(i):
-    """One of the four boards that stand along the store's roof with the station's name on them, two letters to a board, in broad
-    letters painted with a shadow, on boards whose paint has gone chalky."""
-    letters = ['HA', 'RL', 'AN', "'S"][i]
-    im = new('#e3ddc8', 72550 + i, 2)
-    for x in range(16):
-        dot(im, x, 0, '#9a3328'); dot(im, x, 1, '#b8352b'); dot(im, x, 14, '#b8352b'); dot(im, x, 15, '#9a3328')
-    centre(im, 4, letters, BROAD, '#b8352b', shadow='#7a7466')
+    """One of the four boards that stand along the store's roof with the station's name on them. The name was painted across all
+    four once they were up, so it runs evenly from board to board and a letter may cross the joint between two: broad letters with
+    a shadow, three pixels apart and the apostrophe tucked in, on boards whose paint has gone chalky."""
+    strip = new('#e3ddc8', 72550, 2, size=(64, 16))
+    for x in range(64):
+        dot(strip, x, 0, '#9a3328'); dot(strip, x, 1, '#b8352b'); dot(strip, x, 14, '#b8352b'); dot(strip, x, 15, '#9a3328')
+    word, gaps = "HARLAN'S", [3, 3, 3, 3, 3, 1, 2]
+    x = (64 - sum(len(BROAD[ch][0]) for ch in word) - sum(gaps)) // 2
+    for k, ch in enumerate(word):
+        write(strip, x, 4, ch, BROAD, '#b8352b', shadow='#7a7466')
+        x += len(BROAD[ch][0]) + (gaps[k] if k < len(gaps) else 0)
+    im = strip.crop((16 * i, 0, 16 * i + 16, 16))
     rnd = random.Random(72560 + i)
     for _ in range(8):
         x, y = rnd.randrange(16), rnd.randrange(2, 14)
@@ -1927,6 +1933,106 @@ def bean_plant(stage):
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.680: what the light leaves
+# The store come down: its own clapboard, beadboard, tar and gravel and joists, broken small and lying under a grey dust; the plate
+# glass gone from its frames but for the edges; the canopy's sheets and columns down on the forecourt.
+DEBRIS = [('#d8cfb5', 3, 2), ('#cfc6aa', 2, 1), ('#d6d0bd', 2, 3), ('#4b4741', 3, 2), ('#5c5750', 2, 2), ('#8a6a48', 4, 1),
+          ('#6e5236', 1, 3), ('#a39e93', 2, 2)]
+
+
+def debris_top():
+    """The top of a fall of the store, seen from above: chips of painted clapboard and beadboard, lumps of the roof's tar and gravel,
+    splinters of joist and a scrap of block, each with the dark of its own edge where it lies over what is under it, a glint or two
+    of the plate glass, and the grey dust of it all settled in between."""
+    im = new('#858077', 75010, 6)
+    rnd = random.Random(75011)
+    for _ in range(15):
+        c, w, h = rnd.choice(DEBRIS)
+        if rnd.random() < .5:
+            w, h = h, w
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for dy in range(h):
+            for dx in range(w):
+                dot(im, (x + dx) % 16, (y + dy) % 16, shade(c, rnd.randint(-8, 3)))
+        for dx in range(w):
+            dot(im, (x + dx) % 16, (y + h) % 16, '#4f4b45')
+        dot(im, (x + w) % 16, (y + h) % 16, '#45423d')
+    speckle(im, rnd, 10, ['#a9a49a', '#9b968c'])
+    for _ in range(3):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        dot(im, x, y, '#e6eeec'); dot(im, x + 1, y, '#b8c4c2')
+    return im
+
+
+def debris_side():
+    """The side of the fall: the pieces lying edge on, flat and broken, in a bank that darkens toward the ground, with the dust lying
+    paler along its top."""
+    im = new('#6f6a62', 75020, 5)
+    rnd = random.Random(75021)
+    for _ in range(18):
+        c, w, h = rnd.choice(DEBRIS)
+        w, h = max(w, h) + rnd.randint(0, 2), 1
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for dx in range(w):
+            dot(im, (x + dx) % 16, y, shade(c, rnd.randint(-10, 0)))
+        dot(im, x % 16, (y + 1) % 16, '#3f3c37')
+    for y in range(16):
+        for x in range(16):
+            darken(im, x, y, -(y * 18) // 15)
+    for x in range(16):
+        dot(im, x, 0, shade('#9d988e', rnd.randint(-6, 6)))
+    return im
+
+
+def joist():
+    """A roof joist broken out of its place: a length of plain timber, its grain along it, a nail head where a ceiling board was, and
+    the splintered end where it broke, pale and torn."""
+    im = new('#9a7a54', 75030, 3)
+    rnd = random.Random(75031)
+    for y in range(1, 15):  # the grain: long streaks along the timber, a knot in one
+        if rnd.random() < .6:
+            x0 = rnd.randrange(-4, 12)
+            for x in range(x0, x0 + rnd.randint(5, 11)):
+                darken(im, x, y, -16)
+    for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+        darken(im, 11 + dx, 9 + dy, -30)
+    for y in (0, 15):
+        for x in range(16):
+            dot(im, x, y, '#6e5236')
+    for y in range(1, 15):
+        n = rnd.randint(0, 3)
+        for x in range(n):
+            dot(im, 15 - x, y, shade('#cdb48a', rnd.randint(-10, 6)))
+    dot(im, 5, 7, '#3a3632'); dot(im, 9, 4, '#3a3632')
+    return im
+
+
+def window_shards(upper):
+    """What is left of a plate window: the glass gone from the frame but for jagged pieces held at its edge, along the bottom of the
+    lower half and the top of the upper, a few in from the sides, each with a glint along its broken edge. Mostly clear."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(75040 + upper)
+    heights = []
+    h = 3
+    for x in range(16):
+        h = max(0, min(7, h + rnd.choice((-2, -1, 0, 1, 1, 2))))
+        if x in (0, 15):
+            h = max(h, 5)
+        heights.append(h)
+    for x, h in enumerate(heights):
+        for k in range(h):
+            y = k if upper else 15 - k
+            im.putpixel((x, y), (200, 210, 206, 70 + rnd.randint(-8, 8)))
+        if h:
+            y = h - 1 if upper else 16 - h
+            im.putpixel((x, y), (236, 242, 240, 150))
+    for y in range(16):  # a sliver left down each side, held by the stop
+        for x in (0, 15):
+            if im.getpixel((x, y))[3] == 0 and rnd.random() < .55:
+                im.putpixel((x, y), (200, 210, 206, 64))
+    return im
+
+
 def milk_carton():
     # A quart of milk in a waxed carton, seen a little from one side: the front and its narrower side face, the roof sloping back
     # from the front to the folded fin along the top, the gable's triangle over the side, and a band of print round it with a drop.
@@ -2126,12 +2232,57 @@ def coffee_model():
 
 
 def window_model(stage):
-    t = {'f': 'window_frame', 'g': 'window_glass'}
-    if stage == 0:
+    # 0.4.680: stages 2 and 3 are the lower and upper halves blown in by the light, the frame still in the wall and the glass gone
+    # but for what its edges hold.
+    t = {'f': 'window_frame', 'g': 'window_glass' if stage < 2 else f'window_shards_{stage - 2}'}
+    if stage % 2 == 0:
         e = [element([0, 0, 6], [16, 2, 10], {'all': 'f'}), element([0, 2, 7.5], [16, 16, 8.5], {'north': 'g', 'south': 'g'})]
     else:
         e = [element([0, 0, 7.5], [16, 14, 8.5], {'north': 'g', 'south': 'g'}), element([0, 14, 6], [16, 16, 10], {'all': 'f'})]
     return model(e, t, 'window_frame', render='translucent')
+
+
+def rubble_model(stage):
+    """0.4.680, what the light leaves: a low spread of the store (0), a heap of it (1), the shut cellar doors with the store come down
+    on them (2), a joist fallen across a spread (3), a sheet of the canopy's deck down on the forecourt, buckled (4), another leaning
+    on what caught it (5), a column of the canopy lying down (6), a fallen run of the store's wall, its boards still lapped (7)."""
+    t = {'t': 'debris_top', 's': 'debris_side', 'j': 'joist', 'w': NS + 'block/fallow_siding', 'c': NS + 'block/fallow_ceiling',
+         'r': NS + 'block/fallow_roof', 'd': 'canopy_soffit', 'f': 'canopy_fascia', 'o': 'column', 'k': 'collar', 'l': 'cellar_door',
+         'u': 'curb_concrete'}
+    pile = {'up': 't', 'north': 's', 'south': 's', 'east': 's', 'west': 's', 'down': 's'}
+    board = {'up': 'w', 'down': 'c', 'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w'}
+    if stage == 0:
+        e = [element([0, 0, 0], [16, 3, 16], pile),
+             element([2, 3, 4], [13, 4, 7], board, rotation={'angle': 22.5, 'axis': 'y', 'origin': [8, 3, 8]}),
+             element([9, 3, 9], [13, 5, 13], {'all': 'r'})]
+    elif stage == 1:
+        e = [element([0, 0, 0], [16, 5, 16], pile), element([2, 5, 2], [14, 8, 14], pile), element([5, 8, 4], [12, 10, 11], pile),
+             element([1, 6, 7], [15, 7, 10], board, rotation={'angle': 22.5, 'axis': 'z', 'origin': [8, 6, 8]}),
+             element([3, 8, 9], [7, 11, 13], {'all': 'r'})]
+    elif stage == 2:
+        e = [element([0, 0, 0], [2, 7, 16], {'all': 'u'}), element([0, 7, 0], [16, 9, 16], {'up': 'l', 'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l', 'down': 'l'}),
+             element([1, 9, 1], [15, 12, 15], pile), element([4, 12, 3], [13, 14, 12], pile),
+             element([-2, 12, 6], [18, 14, 9], {'all': 'j'}, rotation={'angle': 22.5, 'axis': 'y', 'origin': [8, 12, 8]})]
+    elif stage == 3:
+        e = [element([0, 0, 0], [16, 2, 16], pile),
+             element([-3, 2, 6], [19, 5, 9], {'all': 'j'}, rotation={'angle': -22.5, 'axis': 'y', 'origin': [8, 2, 8]}),
+             element([10, 2, 2], [14, 3, 4], board)]
+    elif stage == 4:
+        e = [element([0, 0, 0], [16, 1, 16], pile),
+             element([0, 1, 1], [16, 2, 8], {'up': 'd', 'down': 'r', 'north': 'f', 'south': 'd', 'east': 'd', 'west': 'd'}, rotation={'angle': -22.5, 'axis': 'x', 'origin': [8, 1, 8]}),
+             element([0, 1, 8], [16, 2, 15], {'up': 'd', 'down': 'r', 'north': 'd', 'south': 'd', 'east': 'd', 'west': 'd'}, rotation={'angle': 22.5, 'axis': 'x', 'origin': [8, 1, 8]})]
+    elif stage == 5:
+        e = [element([0, 0, 0], [16, 2, 16], pile),
+             element([0, 0, 7], [16, 16, 8], {'north': 'd', 'south': 'r', 'east': 'd', 'west': 'd', 'up': 'f', 'down': 'd'}, rotation={'angle': 45, 'axis': 'x', 'origin': [8, 0, 8]})]
+    elif stage == 6:
+        e = [element([0, 0, 0], [16, 1, 16], pile),
+             element([-6, 1, 5], [22, 7, 11], {'north': 'o', 'south': 'o', 'up': 'o', 'down': 'o', 'east': 'k', 'west': 'o'}, uv={k: [0, 5, 16, 11] for k in ('north', 'south', 'up', 'down')}),
+             element([20, 0, 4], [23, 8, 12], {'all': 'k'})]
+    else:
+        e = [element([0, 0, 0], [16, 2, 16], pile),
+             element([0, 2, 1], [16, 4, 15], board, rotation={'angle': 22.5, 'axis': 'z', 'origin': [8, 2, 8]}),
+             element([1, 3, 3], [12, 5, 13], board, rotation={'angle': -22.5, 'axis': 'y', 'origin': [8, 3, 8]})]
+    return model(e, t, 'debris_top')
 
 
 def tube_model():
@@ -2488,8 +2639,12 @@ def fitting_models():
         m[f'backshelf_{s}'] = backshelf_model(s); m[f'tv_{s}'] = tv_model(s); m[f'crock_{s}'] = crock_model(s)
     for s in range(4):
         m[f'cooler_{s}'] = cooler_model(s)
+    for s in range(4):
+        m[f'window_{s}'] = window_model(s)
+    for s in range(8):
+        m[f'rubble_{s}'] = rubble_model(s)
     for s in range(2):
-        m[f'maps_{s}'] = maps_model(s); m[f'window_{s}'] = window_model(s)
+        m[f'maps_{s}'] = maps_model(s)
         m[f'island_{s}'] = island_model(s); m[f'shelf_{s}'] = shelf_model(s); m[f'cot_{s}'] = cot_model(s)
     for s in range(4):
         m[f'gondola_{s}'] = gondola_model(s); m[f'signband_{s}'] = signband_model(s); m[f'pump_{s}'] = pump_model(s)
@@ -2554,6 +2709,8 @@ def textures():
         'rig_door': rig_door(), 'rig_cab_side': rig_cab_side(), 'windshield': windshield(), 'grille': grille(),
         'tyre_tread': tyre_tread(), 'hub': hub(), 'headlight': headlight(), 'sleeper_side': sleeper_side(), 'box_doors': box_doors(),
         'box_frame': box_frame(), 'mud_flap': mud_flap(), 'bean_cup': bean_cup(), 'bean_soil': bean_soil(),
+        'debris_top': debris_top(), 'debris_side': debris_side(), 'joist': joist(), 'window_shards_0': window_shards(0),
+        'window_shards_1': window_shards(1),
     }
     faces['wire'] = wire()            # the racks' wire; the telephone line has its own below
     faces['line_wire'] = wire_tex()
@@ -2571,10 +2728,10 @@ def textures():
 
 KINDS = ['counter', 'note', 'stool', 'backshelf', 'tv', 'cooler', 'gondola', 'maps', 'coffee', 'window', 'tube', 'signband', 'pump',
          'island', 'canopy', 'sign', 'pole', 'wheat', 'pad', 'lift', 'trailer', 'cellar', 'cellar_open', 'shelf', 'cot', 'crock', 'farm',
-         'rig', 'box', 'bean']
-STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 2, 'signband': 4, 'pump': 4, 'island': 2,
+         'rig', 'box', 'bean', 'rubble']
+STAGES = {'counter': 4, 'backshelf': 3, 'tv': 3, 'cooler': 4, 'gondola': 4, 'maps': 2, 'window': 4, 'signband': 4, 'pump': 4, 'island': 2,
           'canopy': 7, 'sign': 3, 'pole': 5, 'wheat': 4, 'pad': 8, 'lift': 7, 'trailer': 8, 'cellar': 6, 'cellar_open': 6, 'shelf': 2,
-          'cot': 2, 'crock': 3, 'farm': 4, 'rig': 8, 'box': 4, 'bean': 4}
+          'cot': 2, 'crock': 3, 'farm': 4, 'rig': 8, 'box': 4, 'bean': 4, 'rubble': 8}
 ITEM_ART = {'milk': milk_carton, 'soda': soda_bottle, 'coffee': coffee_cup}
 ITEM_NAMES = {'fallow_milk': 'Quart of Milk', 'fallow_soda': 'Bottle of Pop', 'fallow_coffee': 'Cup of Coffee', 'fallow_bean_cup': 'Bean in a Cup'}
 # The bean's cup held in a hand: its block model, turned and sized as vanilla holds a block, a little larger since the cup is small.
@@ -2652,10 +2809,13 @@ def files():
     for name in ITEM_ART:
         out[f'models/item/fallow_{name}.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + f'item/fallow_{name}'}}
     out['models/item/fallow_bean_cup.json'] = {'parent': P + 'bean_0', 'display': BEAN_HELD}
+    # 0.4.680: a reader's shadow on the station's front is drawn by its own renderer, from the body they wore; the block draws nothing.
+    out['models/block/fallow_shadow.json'] = {'textures': {'particle': NS + 'block/fallow_siding'}}
+    out['blockstates/fallow_shadow.json'] = {'variants': {f'facing={f}': {'model': NS + 'block/fallow_shadow'} for f in FACING_Y}}
     return out
 
 
-NAMES = {'fallow_fitting': 'Station Fitting', 'fallow_shingle_stairs': 'Shingle Stairs', 'fallow_cellar_stairs': 'Cellar Steps',
+NAMES = {'fallow_fitting': 'Station Fitting', 'fallow_shingle_stairs': 'Shingle Stairs', 'fallow_cellar_stairs': 'Cellar Steps', 'fallow_shadow': 'Shadow',
          **{f'fallow_{k}': v for k, v in MATERIAL_NAMES.items()}}
 
 
@@ -2700,6 +2860,16 @@ def main():
     # The plate glass is mostly clear.
     glass = images['block/fallow/window_glass.png']
     assert sum(glass.getpixel((x, y))[3] for x in range(16) for y in range(16)) / 256 < 80
+    # 0.4.680: a blown window keeps its glass only at the edge it hangs from: the lower half's at its foot, the upper's at its head;
+    # its middle is open.
+    for upper in (0, 1):
+        shards = images[f'block/fallow/window_shards_{upper}.png']
+        held = range(0, 3) if upper else range(13, 16)
+        assert sum(shards.getpixel((x, y))[3] > 0 for x in range(16) for y in held) > 24, upper
+        assert sum(shards.getpixel((x, y))[3] > 0 for x in range(2, 14) for y in range(7, 9)) == 0, upper
+    # The fall of the store is darker at the foot of its bank than at its top.
+    side = images['block/fallow/debris_side.png']
+    assert sum(sum(side.getpixel((x, 1))[:3]) for x in range(16)) > sum(sum(side.getpixel((x, 14))[:3]) for x in range(16))
     # Two of the pegboard's outlines are empty: the pixels inside them show the board, not a tool.
     peg = images['block/fallow/pegboard.png']
     assert peg.getpixel((11, 1))[:3] != rgb('#9ea2a6')

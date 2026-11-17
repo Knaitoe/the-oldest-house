@@ -40,6 +40,7 @@ public final class FallowTests {
     private static boolean is(ServerLevel l,BlockPos b,BlockPos at,net.minecraft.world.level.block.Block block){return l.getBlockState(b.offset(at)).is(block);}
     private static boolean fitting(ServerLevel l,BlockPos b,BlockPos at,FallowBlock.Kind kind){return FallowBlock.is(l.getBlockState(b.offset(at)),kind);}
     private static int stage(ServerLevel l,BlockPos b,BlockPos at){return l.getBlockState(b.offset(at)).getValue(FallowBlock.STAGE);}
+    private static boolean rubble(ServerLevel l,BlockPos b,BlockPos at,int stage){var s=l.getBlockState(b.offset(at));return FallowBlock.is(s,FallowBlock.Kind.RUBBLE)&&s.getValue(FallowBlock.STAGE)==stage;}
     private static List<String> told(ServerPlayer p){
         NativeTestPlayers.flush(p);
         var out=new ArrayList<String>();
@@ -116,7 +117,8 @@ public final class FallowTests {
             h.assertTrue(is(l,b,new BlockPos(0,-1,-5),FallowRegistry.material("lino"))&&is(l,b,new BlockPos(FallowSite.STORE_W,0,-6),FallowRegistry.material("plinth"))
                 &&is(l,b,new BlockPos(FallowSite.STORE_W,2,-6),FallowRegistry.material("siding"))&&is(l,b,new BlockPos(0,FallowSite.CEILING,-6),FallowRegistry.material("ceiling"))
                 &&is(l,b,new BlockPos(0,FallowSite.CEILING+1,-6),FallowRegistry.material("roof")),"the store: its own floor, boards on a block plinth, its ceiling and roof");
-            for(int i=0;i<4;i++)h.assertTrue(fitting(l,b,new BlockPos(-2+i,FallowSite.CEILING+2,FallowSite.STORE_N),FallowBlock.Kind.SIGNBAND)&&stage(l,b,new BlockPos(-2+i,FallowSite.CEILING+2,FallowSite.STORE_N))==i,"the name along the front of the roof, piece "+i);
+            // Read from the forecourt, facing south, east is on the left: the first piece is the east end.
+            for(int i=0;i<4;i++)h.assertTrue(fitting(l,b,new BlockPos(1-i,FallowSite.CEILING+2,FallowSite.STORE_N),FallowBlock.Kind.SIGNBAND)&&stage(l,b,new BlockPos(1-i,FallowSite.CEILING+2,FallowSite.STORE_N))==i,"the name along the front of the roof, read left to right from the forecourt, piece "+i);
             for(int x=FallowSite.STORE_W+1;x<=FallowSite.STORE_E-2;x++)h.assertTrue(fitting(l,b,new BlockPos(x,0,FallowSite.COUNTER_Z),FallowBlock.Kind.COUNTER),"the counter across the room at "+x);
             h.assertTrue(stage(l,b,FallowSite.ENDING)==1&&stage(l,b,new BlockPos(-5,0,FallowSite.COUNTER_Z))==3,"the register and the candy rack on it");
             h.assertTrue(fitting(l,b,new BlockPos(FallowSite.STORE_E-1,0,FallowSite.COUNTER_Z),FallowBlock.Kind.COUNTER)&&stage(l,b,new BlockPos(FallowSite.STORE_E-1,0,FallowSite.COUNTER_Z))==2,"its flap at the east end, lifted");
@@ -489,6 +491,8 @@ public final class FallowTests {
     public static void theFourMinutes(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
         f.chunks.hold(l,new AABB(b.getX()-30,b.getY()-8,b.getZ()-118,b.getX()+30,b.getY()+8,b.getZ()-80));
+        // The station itself, so that it is all there to be built again once the readers have gone.
+        f.chunks.hold(l,new AABB(b.getX()+FallowSite.YARD_W-1,b.getY()-8,b.getZ()+FallowSite.APRON_N-1,b.getX()+FallowSite.APRON_E+1,b.getY()+8,b.getZ()+1));
         var p=f.player("fallow_strike_doors",P);var q=f.player("fallow_strike_faye",P);
         var cx=FallowSite.PAD_A.getX();var cz=FallowSite.PAD_A.getZ();
         h.startSequence().thenIdle(5).thenExecute(()->{
@@ -535,7 +539,8 @@ public final class FallowTests {
             h.assertTrue(!girl.isPassenger()&&FallowSite.inCellar(r),"set down below, by the cot: "+r);
             h.assertTrue(girl.getMainHandItem().is(FallowRegistry.BEAN_CUP.get())&&l.getBlockState(b.offset(Fallow.BEAN_AT)).isAir(),"with her bean, taken up off the forecourt");
         }).thenWaitUntil(()->h.assertTrue(FallowStrike.harlan(b)==FallowStrike.BELOW&&FallowStrike.boyd(b)==FallowStrike.AT_RIG,"Harlan below, Boyd at the rig's door: "+FallowStrike.harlan(b)+" "+FallowStrike.boyd(b)))
-        .thenExecute(()->{f.at(p,P,-10.5,0,-4.5);FallowStrike.skip(b,FallowStrike.LIGHT-205);})
+        // The one who held the doors goes out front, before the store's west window, for the light to find them there.
+        .thenExecute(()->{f.at(p,P,-6.6,0,-13.5);FallowStrike.skip(b,FallowStrike.LIGHT-205);})
         .thenWaitUntil(()->h.assertTrue(FallowStrike.counted(b)==FallowTexts.COUNTING.length,"at the last, Opal counts: "+FallowStrike.counted(b)))
         .thenExecute(()->h.assertFalse(Fallow.cellarOpen(l,b),"the doors are pulled shut before the light"))
         .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=FallowStrike.LIGHT+2,"the light"))
@@ -543,8 +548,39 @@ public final class FallowTests {
             h.assertTrue(f.own(p,P).getString("AtLight").equals("outside")&&f.own(q,P).getString("AtLight").equals("cellar"),"each reader kept where it found them: "+f.own(p,P).getString("AtLight")+" "+f.own(q,P).getString("AtLight"));
             h.assertTrue(f.own(p,P).getInt("Strikes")==1&&f.own(q,P).getInt("Strikes")==1,"once each");
             h.assertTrue(stage(l,b,FallowSite.TV)==FallowBlock.DARK,"the television is dark");
-        }).thenWaitUntil(()->h.assertTrue(!FallowSite.inScene(p.position().subtract(Vec3.atLowerCornerOf(b)))||p.level()!=l,"the reader out in it is taken out by the House"))
+            // 0.4.680: the light throws the one out front's shadow back onto the store's front, on the solid column nearest them.
+            var cast=l.getBlockEntity(b.offset(-7,0,FallowSite.STORE_N-1));
+            h.assertTrue(cast instanceof FallowShadowBlock.Shadow sh&&p.getUUID().equals(sh.reader),"the reader out front leaves their shadow beside where they stood");
+            h.assertTrue(f.own(p,P).getInt("ShadowX")==-7&&!f.own(q,P).contains("ShadowX"),"kept as theirs; the one below throws none");
+            for(int x:FallowRuin.WALL)if(l.getBlockEntity(b.offset(x,0,FallowSite.STORE_N-1)) instanceof FallowShadowBlock.Shadow sh)
+                h.assertTrue(p.getUUID().equals(sh.reader),"no other shadow on the front: "+x);
+            told(q);
+        }).thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=FallowStrike.LIGHT+FallowRuin.DOORS+2,"the station comes down"))
+        .thenExecute(()->{
+            var heard=told(q);
+            h.assertTrue(heard.contains(FallowTexts.RUIN_CANOPY)&&heard.contains(FallowTexts.RUIN_STORE)&&heard.contains(FallowTexts.RUIN_DOORS),"heard from below, a part at a time: "+heard);
+            var pane=l.getBlockState(b.offset(-6,1,FallowSite.STORE_N));
+            h.assertTrue(FallowBlock.is(pane,FallowBlock.Kind.WINDOW)&&pane.getValue(FallowBlock.STAGE)>=FallowBlock.BLOWN_LOW,"the plate glass is blown out of its frame");
+            h.assertFalse(fitting(l,b,new BlockPos(0,FallowSite.CANOPY_Y,FallowSite.ISLAND_Z),FallowBlock.Kind.CANOPY),"the canopy is off its columns");
+            h.assertTrue(rubble(l,b,new BlockPos(FallowSite.CANOPY_W,0,FallowSite.CANOPY_N+1),FallowBlock.COLUMN),"a column lies beside its foot");
+            h.assertTrue(l.getBlockState(b.offset(0,FallowSite.CEILING,-6)).isAir(),"the store's roof has gone into the store");
+            h.assertTrue(rubble(l,b,new BlockPos(FallowSite.WELL_W,0,FallowSite.WELL_S),FallowBlock.ON_DOORS),"and the fall of it lies across the cellar doors");
+            h.assertTrue(is(l,b,new BlockPos(-7,2,FallowSite.STORE_N),FallowRegistry.material("siding")),"the front stands");
+            h.assertTrue(l.getBlockState(b).isAir()&&l.getBlockState(b.above()).isAir(),"and so does the House's door in the back wall");
+            h.assertTrue(FallowShadowBlock.is(l.getBlockState(b.offset(-7,0,FallowSite.STORE_N-1))),"with the shadow still on the front");
+        })
+        .thenWaitUntil(()->h.assertTrue(!FallowSite.inScene(p.position().subtract(Vec3.atLowerCornerOf(b)))||p.level()!=l,"the reader out in it is taken out by the House"))
         .thenWaitUntil(()->h.assertTrue(!FallowSite.inScene(q.position().subtract(Vec3.atLowerCornerOf(b)))||q.level()!=l,"and the one below, after the dark"))
+        // Empty, the afternoon is over; the next begins on the station as it was built, with nobody's shadow on it.
+        .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)==null,"the afternoon is over"))
+        .thenExecute(()->{
+            h.assertTrue(fitting(l,b,new BlockPos(0,FallowSite.CANOPY_Y,FallowSite.ISLAND_Z),FallowBlock.Kind.CANOPY),"the canopy is back on its columns");
+            h.assertTrue(stage(l,b,new BlockPos(-6,1,FallowSite.STORE_N))<FallowBlock.BLOWN_LOW,"the glass is in its frames");
+            h.assertFalse(l.getBlockState(b.offset(0,FallowSite.CEILING,-6)).isAir(),"the store has its ceiling");
+            h.assertTrue(fitting(l,b,new BlockPos(FallowSite.WELL_W,0,FallowSite.WELL_S),FallowBlock.Kind.CELLAR),"the cellar doors are shut and clear");
+            h.assertTrue(l.getBlockState(b.offset(-7,0,FallowSite.STORE_N-1)).isAir(),"and the front has no shadow on it");
+            h.assertFalse(FallowRuin.ruined(l,b),"the station is whole");
+        })
         .thenExecute(()->{done();h.succeed();});
     }
 }

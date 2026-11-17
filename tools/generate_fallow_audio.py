@@ -4,7 +4,8 @@ The place has only its everyday sounds in this part: the wind going over the whe
 playing a ball game a long way off, and the bell on the pump. Nothing in them is frightening; what the afternoon becomes comes later.
 0.4.673 adds the afternoon's: the register ringing up a sale, a wrench working under the car on the lift, coins left on the counter.
 0.4.674 adds the four minutes': the radio's two-note tone, the pads' lids grinding open, a launch, a siren a long way off, the light,
-and the ground shaking over the cellar.
+and the ground shaking over the cellar. 0.4.680 adds what the light leaves: the canopy's sheets and columns coming down over the
+pumps, the store falling in on itself, and the fall of it landing on the cellar doors, heard from under them.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -27,6 +28,9 @@ ROWS = {
     'siren': ('A siren wails far off', 32),
     'blast': ('A roar shakes everything', 32),
     'rumble': ('The ground shakes', 16),
+    'canopy': ('Sheet metal comes down with a crash', 32),
+    'collapse': ('A building falls in', 32),
+    'debris': ('Rubble lands on the doors overhead', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -262,8 +266,59 @@ def rumble():
     return (roll + creak + grit) * edge
 
 
+def canopy():
+    # The canopy over the pumps coming down: its sheets buckling with a groan, then the crash of the deck and its columns onto the
+    # concrete, the sheets ringing as they settle, a last one sliding off and slapping down.
+    n = seconds(4.5)
+    t = times(n)
+    groan = band(rng.standard_normal(n), 90, 700) * np.abs(band(rng.standard_normal(n), 2, 9)) * 7 * np.clip(t / .5, 0, 1) * (t < .9)
+    x = t - .9
+    on = x >= 0
+    crash = band(rng.standard_normal(n), 60, 5000) * np.exp(-np.clip(x, 0, None) / .25) * 2.4 * on
+    ring = sum(np.sin(2 * np.pi * f * x + p) * np.exp(-np.clip(x, 0, None) / d) * a
+               for f, p, d, a in ((287, 0, 1.4, .5), (713, 1, .9, .35), (1264, 2, .6, .22), (2189, 3, .4, .12))) * on
+    y = t - 3.2
+    slap = band(rng.standard_normal(n), 100, 3000) * np.exp(-np.clip(y, 0, None) / .08) * 1.3 * (y >= 0)
+    edge = np.clip((4.5 - t) / .4, 0, 1)
+    return (groan + crash + ring + slap) * edge
+
+
+def collapse():
+    # The store falling in on itself: a joist cracking, then the roof going in a long sliding roar of boards, plaster and gravel with
+    # surges in it as each part goes, glass running out of a frame, and the last heavy pieces thudding down after.
+    n = seconds(6.0)
+    t = times(n)
+    crack = band(rng.standard_normal(n), 300, 6000) * np.exp(-t / .03) * 1.6
+    surge = 1 + .6 * np.abs(band(rng.standard_normal(n), .8, 3)) * 10
+    slide = band(rng.standard_normal(n), 70, 2600) * np.clip((t - .15) / .5, 0, 1) * np.exp(-np.clip(t - 1.2, 0, None) / 1.6) * surge * 1.4
+    glass = band((rng.random(n) < .006) * rng.standard_normal(n), 3000, 9000) * 1.2 * np.clip((t - 1.0) / .3, 0, 1) * np.exp(-np.clip(t - 1.5, 0, None) / .9)
+    thuds = np.zeros(n)
+    for at, level in ((3.6, 1.0), (4.15, .7), (4.9, .5)):
+        x = t - at
+        thuds += (band(rng.standard_normal(n), 40, 400) + np.sin(2 * np.pi * 52 * x)) * np.exp(-np.clip(x, 0, None) / .12) * level * (x >= 0)
+    edge = np.clip(t / .003, 0, 1) * np.clip((6.0 - t) / .5, 0, 1)
+    return (crack + slide + glass + thuds * 1.6) * edge
+
+
+def debris():
+    # Heard from under the cellar doors: heavy pieces landing on the boards overhead, a knock that shakes them, then more, irregular,
+    # and the small stuff and grit pouring down onto them after until it thins out.
+    n = seconds(4.0)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((0.0, 1.0), (.35, .8), (.52, .55), (1.1, .9), (1.6, .5), (2.05, .35)):
+        x = t - at
+        knock = band(rng.standard_normal(n), 35, 260) * 1.4 + np.sin(2 * np.pi * 176 * x) * .5
+        out += knock * np.exp(-np.clip(x, 0, None) / .09) * level * (x >= 0)
+    pour = band(rng.standard_normal(n), 1200, 7000) * (np.abs(band(rng.standard_normal(n), 2, 12)) * 6) * .25
+    pour *= np.clip((t - .4) / .6, 0, 1) * np.clip((4.0 - t) / 1.6, 0, 1)
+    edge = np.clip(t / .003, 0, 1) * np.clip((4.0 - t) / .3, 0, 1)
+    return (out + pour) * edge
+
+
 MAKERS = {'wind': wind, 'insects': insects, 'radio': radio, 'bell': bell, 'register': register, 'wrench': wrench, 'coins': coins,
-          'tone': tone, 'lids': lids, 'launch': launch, 'siren': siren, 'blast': blast, 'rumble': rumble}
+          'tone': tone, 'lids': lids, 'launch': launch, 'siren': siren, 'blast': blast, 'rumble': rumble, 'canopy': canopy,
+          'collapse': collapse, 'debris': debris}
 
 
 def main():

@@ -56,7 +56,8 @@ public final class FallowTexts {
             case MAPS->stage==1?"The rack's header: ROAD MAPS."
                 :"A rack of road maps, one for each state round about. The nearest one has been unfolded and put back wrong.";
             case COFFEE->"A coffee machine on a stand, the pot half full. Paper cups, sugar, and a can with a slot cut in its lid.";
-            case WINDOW->stage==1?"The top of the front window. A fly walks on the inside of the glass."
+            case WINDOW->stage>=FallowBlock.BLOWN_LOW?"The window's frame. The glass has gone out of it, all but a few teeth along the edges."
+                :stage==1?"The top of the front window. A fly walks on the inside of the glass."
                 :"The store's front window. Through it, the pumps, the road, and the wheat beyond the road, to the edge of sight.";
             case TUBE->"A strip light. It buzzes, very faintly.";
             case SIGNBAND->"The station's name, painted along the edge of the roof in letters a foot high.";
@@ -128,6 +129,16 @@ public final class FallowTexts {
                 case 1->"A lantern on its hook, lit.";
                 case 2->"A lantern on its hook, unlit.";
                 default->"A crock of water, a dipper hung on its side.";
+            };
+            case RUBBLE->switch(stage){
+                case FallowBlock.HEAP->"A heap of what the roof was: joists, tar paper, a strip light still in its housing.";
+                case FallowBlock.ON_DOORS->"The store, down across the cellar doors. It does not shift.";
+                case FallowBlock.JOIST->"A roof joist, fallen across the rest, its nails still in it.";
+                case FallowBlock.SHEET->"A sheet of the canopy's deck, buckled flat on the concrete.";
+                case FallowBlock.LEANING->"A sheet of the canopy, caught on the island and leaning there.";
+                case FallowBlock.COLUMN->"A column of the canopy, broken off at its foot. The pencil marks run along it now, a line and a date beside each.";
+                case FallowBlock.WALL->"A run of the store's wall, its boards still lapped, lying where it fell.";
+                default->"Siding, ceiling tile, a shelf's bracket, and dust over all of it.";
             };
             case FARM->switch(stage){
                 case 1->"A post of the farmhouse porch.";
@@ -254,6 +265,10 @@ public final class FallowTexts {
     public static final String[] COUNTING={"One.","Two.","Three.","Four.","Five.","Six.","Seven."};
     /** In the cellar at the light; the dust after. */
     public static final String CRACKS="Light comes in round the doors, at every crack at once.",DUST="Dust comes down out of the roof and does not stop.";
+    /** 0.4.680, from below as the station comes down (FallowRuin): the canopy out front, the store, the fall of it across the doors. */
+    public static final String RUIN_CANOPY="Out toward the road, sheet metal comes down on concrete and goes on ringing.",
+        RUIN_STORE="Nearer, a roof gives, and everything under it goes with it.",
+        RUIN_DOORS="Something heavy lands across the doors overhead. The light at their cracks is gone.";
 
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: Harlan's note, propped against the register. */
