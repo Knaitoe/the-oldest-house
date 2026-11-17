@@ -715,7 +715,11 @@ public enum LabyrinthPlace {
     LITTLE_LONGER("a_little_longer",Kind.MULTI_VISIT,241,new BoundingBox(-16,-2,-30,16,30,0),literaryEntry()),
     /** 0.4.641, A sort of thing (King, docs/SLEEPING_KING_PLAN.md): a drawing-room, the same room behind its glass, and a country laid
      * out in squares where an old man sleeps under a tree (KingSite). One long visit. This part, the place. Not dealt until part 3. */
-    SLEEPING_KING("a_sort_of_thing",Kind.ONE_SHOT,242,new BoundingBox(-64,-4,-185,64,32,0),literaryEntry());
+    SLEEPING_KING("a_sort_of_thing",Kind.ONE_SHOT,242,new BoundingBox(-64,-4,-185,64,32,0),literaryEntry()),
+    /** 0.4.663, Not Yet (NotYet, docs/NOT_YET_0_4_663.md): deeper in the Kept's machine, a ward where it mends what it breaks: a passage
+     * over a hatch, cots under lamps on jointed arms, a painted window, a counter of years, the mending table under its arms, and a long
+     * room of three it has mended too often (NotYetSite). This part, the place. Not dealt until part 3. */
+    NOT_YET("not_yet",Kind.RECURRING,243,new BoundingBox(-20,-12,-67,12,8,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

@@ -1,0 +1,75 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "d": "the_oldest_house:block/not_yet/door_leaf",
+    "j": "the_oldest_house:block/not_yet/door_jamb",
+    "particle": "the_oldest_house:block/not_yet/door_jamb"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        5.5
+      ],
+      "to": [
+        1.5,
+        16,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j"
+        },
+        "south": {
+          "texture": "#j"
+        },
+        "east": {
+          "texture": "#j"
+        },
+        "west": {
+          "texture": "#j"
+        },
+        "up": {
+          "texture": "#j"
+        },
+        "down": {
+          "texture": "#j"
+        }
+      }
+    },
+    {
+      "from": [
+        14.5,
+        0,
+        5.5
+      ],
+      "to": [
+        16,
+        16,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j"
+        },
+        "south": {
+          "texture": "#j"
+        },
+        "east": {
+          "texture": "#j"
+        },
+        "west": {
+          "texture": "#j"
+        },
+        "up": {
+          "texture": "#j"
+        },
+        "down": {
+          "texture": "#j"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

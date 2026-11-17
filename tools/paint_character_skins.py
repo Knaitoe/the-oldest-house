@@ -357,6 +357,12 @@ LOOKS = {
     'literary_kept_petra': Look('#c8a088','#2a2420','long','#4a4e52','#34363a','ragged','#6a6e70',eyes='#4a3c30',age=1,mark='despair'),
     'literary_kept_wendell': Look('#c49a7c','#6a5a4a','receding','#6a5a44','#3e3a34','ragged','#8a7a5a',eyes='#5a4a3a',age=1,glasses=True,beard='stubble',mark='despair'),
     'literary_kept_tamsin': Look('#d8b49a','#4a3426','close','#5a6a6a','#3a4044','ragged','#7a8a88',eyes='#4a5a4a',mark='despair'),
+    # 0.4.663, Not Yet (docs/NOT_YET_0_4_663.md): the three the machine has mended too often, in the long room past its ward. They
+    # lie in their cots with their eyes open and can no longer move. Ward pyjamas washed thin, bare feet, and on each the seams of its
+    # mending: a ridge of healed skin with the thread's stitches still across it, on the face, round the wrists and up the arms.
+    'literary_notyet_ines': Look('#c9a48a','#3a2c24','long','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4a4036',mark='notyet_ines',sleeve=4,level_eyes=True,shoes='#c09a80'),
+    'literary_notyet_bram': Look('#b4876a','#5a4a3c','close','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4e4a3e',age=1,beard='stubble',mark='notyet_bram',sleeve=4,level_eyes=True,shoes='#a87e62'),
+    'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
     # in old coats; and Benny on the far stool.
     'literary_orders_stranger': Look('#cfcac0','#2e2c2a','receding','#232326','#1c1c1f','coat','#bdb8ae',eyes='#5c605e',age=2),
@@ -795,6 +801,21 @@ def beard_side(d,look,side):
     d.line((front+1,bottom,front+4,bottom),fill=shade(hair,-14));d.point((front+2,top),fill=shade(hair,15))
 
 
+def notyet_seam(d,look,runs,step=3):
+    """0.4.663: a seam of the machine's mending: a ridge of healed skin along each run, a paler lip beside it, and across it the
+    thread's stitches, one every third pixel, a pixel either side. Sunk into the skin's own tone, so it reads as a scar sewn shut,
+    not as a row of dots."""
+    ridge=shade(look.skin,-32);lip=shade(look.skin,10);thread=shade(look.skin,-62)
+    for (x0,y0),(x1,y1) in runs:
+        n=max(abs(x1-x0),abs(y1-y0));flat=abs(x1-x0)>=abs(y1-y0)
+        for i in range(n+1):
+            x=round(x0+(x1-x0)*i/max(1,n));y=round(y0+(y1-y0)*i/max(1,n))
+            d.point((x,y),fill=ridge)
+            if i%step==1:
+                for k in (-1,1):d.point((x,y+k) if flat else (x+k,y),fill=thread)
+            else:d.point((x,y-1) if flat else (x-1,y),fill=lip)
+
+
 def face(look):
     if look.face_style and look.face_style not in ('young_teen','child'):return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
@@ -832,6 +853,13 @@ def face(look):
             d.line((3,5,5,6),fill=hair);d.line((10,6,12,5),fill=hair)
             d.line((4,9,4,11),fill=shade(skin,-25));d.line((11,9,11,12),fill=shade(skin,-25))
             d.line((6,13,7,12,8,12,9,13),fill=shade(skin,-44))
+        if look.mark.startswith('notyet_'):
+            # 0.4.663: open, and looking at nothing: the irises level, a shadow under each eye, the mouth a slack line. The face's
+            # seams follow (notyet_seam), each where the machine last opened it.
+            for x in (3,10):d.line((x,9,x+2,9),fill=shade(skin,-22))
+            d.line((6,13,9,13),fill=shade(skin,-30))
+            notyet_seam(d,look,{'notyet_ines':[((5,4),(11,4)),((12,10),(14,14))],'notyet_bram':[((8,0),(8,4)),((1,9),(3,14))],
+                'notyet_odile':[((1,3),(14,3)),((13,6),(13,13))]}[look.mark])
     if look.mark in ('truant','truant_leer'):
         # Tired: shadow under both eyes, one lid (the picture's left) heavier than the other, the mouth a pixel off true.
         for x in (3,10):d.line((x,9,x+2,9),fill=shade(skin,-24))
@@ -1780,6 +1808,14 @@ def paint(look):
                         if x*S<w:px(x,y,deep if i in (1,2) else blood)
                     if side=='front':px(1,2,run);px(2,3,run)
                 elif side=='front':px(1,2,blood);d.rectangle((S,top+3*S,S+S-1,top+3*S+S//2-1),fill=run)
+            if look.mark.startswith('notyet_') and side not in ('top','bottom'):
+                # 0.4.663: a seam round each wrist where the hand was taken off and put back, and on the more mended a second round
+                # the forearm (Bram) or one up the inside of the arm (Ines, her left).
+                d=ImageDraw.Draw(art);wrist=h-4*S-1
+                runs=[((0,wrist),(w-1,wrist))]
+                if look.mark=='notyet_bram':runs.append(((0,7*S),(w-1,7*S)))
+                if look.mark=='notyet_ines' and ai==1 and side=='front':runs.append(((w//2,5*S),(w//2,wrist-2)))
+                notyet_seam(d,look,runs)
             if look.mark=='borrasca_worker' and side not in ('top','bottom'):
                 d=ImageDraw.Draw(art);d.rectangle((0,h-4,w-1,h-1),fill='#a48f64');d.line((0,h-4,w-1,h-4),fill='#786b51')
             if look.mark=='borrasca_kyle' and side not in ('top','bottom'):

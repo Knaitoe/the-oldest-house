@@ -107,6 +107,7 @@ ROWS = {
     'ones_inside': 'Something moves inside a wall, behind a door',
     'little_longer': 'A radio turns between stations behind a door',
     'sleeping_king': 'Someone breathes in their sleep behind a door',
+    'not_yet': 'A ward hums and a counter turns over, behind a door',
 }
 
 
@@ -683,6 +684,7 @@ MAKERS = {
     'ones_inside': own(('literary/scratch', .3, 1, 1300), ('hall/settle', 2.2, .5, 800, 0, 1.0), length=3.3),
     'little_longer': own(('longer/tuning', 0, 1, 2400, .4, 3.0), ('longer/tune', 2.4, .5, 1600, 3.0, .9), length=3.3),
     'sleeping_king': own(('king/breath_in', 0, 1, 1300, .4, 1.6), ('king/breath_out', 1.7, .9, 1000, .2, 1.6), length=3.4),
+    'not_yet': own(('not_yet/hum', 0, 1, 1400, 0, 3.4), ('not_yet/tick', .9, .7, 2600), ('not_yet/tick', 2.1, .7, 2600)),
 }
 
 

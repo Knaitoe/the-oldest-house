@@ -119,6 +119,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.LITTLE_LONGER&&!Longer.dealable(d,p))return false;
         // 0.4.643: A sort of thing is dealt from depth twelve.
         if(place==LabyrinthPlace.SLEEPING_KING&&!King.dealable(d,p))return false;
+        // 0.4.663: Not Yet is not dealt until part 3.
+        if(place==LabyrinthPlace.NOT_YET&&!NotYet.dealable(d,p))return false;
         // 0.4.218: the street is dealt only to a reader who has a companion following them.
         if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;
         // 0.4.209: the dark halls' horrors are dealt only in the dark band.
@@ -172,6 +174,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.CORNER_HOUSE){Corner.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.BLACK_CITY){BlackCity.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.KEPT){Kept.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.NOT_YET){NotYet.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_ORDERS){LastOrders.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.BIKE_NIGHT){BikeNight.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.PELL_HOUSE){PellHouse.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
@@ -289,6 +292,7 @@ public final class LiteraryVignettes {
             case CORNER_HOUSE->handled=Corner.click(p,b,rel,own);
             case BLACK_CITY->handled=BlackCity.click(p,b,rel,own);
             case KEPT->handled=Kept.click(p,b,rel,own);
+            case NOT_YET->handled=NotYet.click(p,b,rel,own);
             case LAST_ORDERS->handled=LastOrders.click(p,b,rel,own);
             case BIKE_NIGHT->handled=BikeNight.click(p,b,rel,own);
             case PELL_HOUSE->handled=PellHouse.click(p,b,rel,own);
@@ -376,6 +380,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.SLEEPING_KING){if(King.is(actor))King.talk(p,actor,own);else if(KingBrothers.is(actor))KingBrothers.talk(p,actor,own);else if(KingQueen.is(actor))King.cue(p,KingTexts.QUEEN_HAND);else if(KingGuard.is(actor))King.cue(p,KingTexts.GUARD_HAND);else if(KingCaterpillar.is(actor))KingCaterpillar.talk(p,actor,own);else if(KingCourt.is(actor))KingCourt.talk(p,actor,own);else if(KingCourt.cat(actor))KingCourt.talkCat(p,actor,own);else if(KingForest.is(actor))KingForest.talk(p,actor,own);else if(KingFeast.is(actor))KingFeast.talk(p,actor,own);}
         else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else if(CalderPeople.is(actor))CalderPeople.talk(p,actor);else if(!BikeNightSpecters.is(actor))BikeNightGus.talk(p,actor);}
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
+        else if(place==LabyrinthPlace.NOT_YET){if(NotYet.is(actor))NotYet.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);
         else if(place==LabyrinthPlace.TALL_GRASS)TallGrass.talk(p,actor);
         else if(place==LabyrinthPlace.GROWING_THINGS)GrowingThings.talk(p,actor);
