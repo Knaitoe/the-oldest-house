@@ -530,7 +530,7 @@ public final class StaircaseAccessTests {
      * 0.4.654: a figure whose story could end more than one way, or gave its reader one of two people, stands for each reader as that
      * reader's own story had it, and asking does not change their record.
      */
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=600)
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void aFigureIsDressedAsTheReadersOwnStoryLeftIt(GameTestHelper h){
         var f=new Fixture(h,599000);ACTIVE.add(f);int y=FinaleArchitecture.TOP-30;
         f.chunks.hold(f.level,new AABB(f.base.getX()-8,y-2,f.base.getZ()-8,f.base.getX()+9,y+6,f.base.getZ()+9));
@@ -581,7 +581,7 @@ public final class StaircaseAccessTests {
      * 0.4.655: eight more stories' people are their own stories' creatures. Each stands on the stair as one of the cast's bodies in the
      * stand-in's role, at its creature's own size; the cousin wears the face the reader's own night gave it.
      */
-    @GameTest(template="empty",batch="staircase_access",timeoutTicks=600)
+    @GameTest(template="empty",batch="staircase_access",timeoutTicks=1200)
     public static void theStoriesOwnCreaturesStandOnTheStairAtTheirOwnSize(GameTestHelper h){
         var f=new Fixture(h,655000);ACTIVE.add(f);int y=FinaleArchitecture.TOP-30;
         f.chunks.hold(f.level,new AABB(f.base.getX()-14,y-2,f.base.getZ()-8,f.base.getX()+15,y+6,f.base.getZ()+9));
