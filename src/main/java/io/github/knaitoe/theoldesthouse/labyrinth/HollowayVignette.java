@@ -96,7 +96,7 @@ public final class HollowayVignette {
         var visitors=IndianLakeRooms.visitors(l,b,LabyrinthPlace.HOLLOWAY_CAMP);if(visitors.isEmpty()){
             var all=LabyrinthData.get(s).state(ID);if(all.hasUUID("Actor")&&l.getEntity(all.getUUID("Actor")) instanceof HouseHuman actor){actor.pursue(null);actor.getNavigation().stop();}return;
         }
-        IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.HOLLOWAY_CAMP);HollowayCamp.repairSigns(l,b);var actor=ensureActor(l,b);if(actor!=null)hunt(actor,visitors,b);
+        IndianLakeRooms.keepLoaded(l,b,LabyrinthPlace.HOLLOWAY_CAMP);var actor=ensureActor(l,b);if(actor!=null)hunt(actor,visitors,b);
     }
     public static void playerTick(ServerPlayer p){
         if(!inside(p)){if(PRESENT.contains(p.getUUID())||personal(LabyrinthData.get(p.server),p.getUUID()).getBoolean("InRoom"))depart(p);return;}

@@ -92,7 +92,7 @@ public final class HouseNpcTests {
         activity=new Fixture(h,43800);var f=activity;var p=f.player();var actor=f.actor();var start=actor.position();UUID id=actor.getUUID();
         h.runAfterDelay(65,()->{
             h.assertTrue(actor.position().distanceToSqr(start)>1,"the unprovoked human physically patrols his encampment");
-            h.assertTrue(f.l.getBlockState(f.b.offset(-8,0,-19)).is(Blocks.SPRUCE_SIGN)&&f.l.getBlockState(f.b.offset(-8,1,-19)).isAir(),"the native sign post starts on its stone floor");
+            h.assertTrue(LetterPlateBlock.is(f.l.getBlockState(f.b.offset(-8,0,-19)),LetterPlates.Kind.NOTE)&&f.l.getBlockEntity(f.b.offset(-8,0,-19)) instanceof LetterPlateEntity note&&note.words().equals(java.util.List.of(HollowayCamp.NOTE_LINES[1]))&&f.l.getBlockState(f.b.offset(-8,-1,-19)).isFaceSturdy(f.l,f.b.offset(-8,-1,-19),net.minecraft.core.Direction.UP)&&f.l.getBlockState(f.b.offset(-8,1,-19)).isAir(),"his note stands on its stake in the camp's floor, in his words");
             f.click(p,HollowayCamp.CACHE);h.assertTrue(f.own(p).getInt("Suspicion")>0&&!f.own(p).getBoolean("Looted"),"handling a belonging draws a warning before theft");p.closeContainer();
             var food=f.cache(p);food.quickMoveStack(p,1);p.closeContainer();h.assertTrue(HollowayVignette.pursued(p),"actual theft can immediately provoke hostility");
             actor.moveTo(f.b.getX()+.5,f.b.getY(),f.b.getZ()-18.5);f.at(p,0,-23.5);

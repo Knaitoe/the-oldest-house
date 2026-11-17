@@ -29,6 +29,9 @@ import net.minecraft.world.phys.Vec3;
  * without reading the world.
  */
 public final class ElkCarcassMap {
+    /** 0.4.678: the road crew's notice on their trailer, and what a hand on it reads. */
+    public static final String[] CREW_NOTICE={"ROAD CREW","Elk to the cut","below the ridge.","Sign in at gate"};
+    static final String CREW_LOOK="ROAD CREW. Elk to the cut below the ridge. Sign in at gate. Typed, in a sleeve tacked to the siding.";
     private static final int F = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     public static final int MIN_X = -64, MAX_X = 64, MIN_Z = -250;
     /** The scene owns its ground this far past its room box, so no generic border digs a ditch at its edge. */
@@ -745,7 +748,8 @@ public final class ElkCarcassMap {
             NovelRooms.furniture(l, b.offset(56, y, -152), HouseholdFurnitureBlock.Kind.CANE_CHAIR, Direction.EAST);
             set(54, y, -153, Blocks.BARREL);
             prop(55, y, -150, LiteraryPropBlock.Kind.HARD_HAT, Direction.NORTH, 0);
-            NovelRooms.sign(l, b.offset(51, y + 2, -153), Direction.WEST, new String[]{"ROAD CREW", "Elk to the cut", "below the ridge.", "Sign in at gate"});
+            // 0.4.678: the crew's notice is a typed sheet in a sleeve tacked to the siding (LetterPlates).
+            LetterPlates.place(l, b.offset(51, y + 2, -153), LetterPlates.Kind.NOTICE, Direction.WEST, CREW_LOOK, CREW_NOTICE);
             // The crew's flatbed, nose to the road and tail to the trail, two carcasses still on the deck where the stains are,
             // and the drag marks leaving it.
             machine(SiteMachineBlock.Machine.TRUCK, FLATBED, Direction.EAST);

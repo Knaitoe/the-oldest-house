@@ -37,28 +37,22 @@ public final class HollowayCamp {
         }
         level.setBlock(base.offset(JOURNAL),Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.HAS_BOOK,true),3);
         if(level.getBlockEntity(base.offset(JOURNAL)) instanceof LecternBlockEntity desk)desk.setBook(journal());
-        sign(level,base.offset(-5,1,-10),"SUPPLIES","I counted them.","Leave the torch.","");
-        sign(level,base.offset(-8,1,-19),"I went this way.","The wall moved.","It did not move", "when I watched.");
-        sign(level,base.offset(-6,1,-43),"YOUR LIGHT", "IS NOT A WAY", "OUT.","");
+        // 0.4.678: his notes are pencil on split boards staked in the dirt, facing the way a reader comes in (LetterPlates).
+        for(int i=0;i<NOTE_AT.length;i++)LetterPlates.place(level,base.offset(NOTE_AT[i]),LetterPlates.Kind.NOTE,Direction.SOUTH,NOTES[i],NOTE_LINES[i]);
         level.setBlock(base.offset(LATCH).below(),Blocks.SMOOTH_STONE.defaultBlockState(),3);
         level.setBlock(base.offset(LATCH),Blocks.LEVER.defaultBlockState().setValue(LeverBlock.FACE,AttachFace.FLOOR),3);
         LabyrinthBuilder.entrance(level,base,dirt,Blocks.COARSE_DIRT.defaultBlockState(),dirt);
         LabyrinthBuilder.doors(level,base,LabyrinthPlace.HOLLOWAY_CAMP);
         HollowayVignette.ensureActor(level,base);
     }
-    private static void sign(ServerLevel level,BlockPos at,String a,String b,String c,String d){
-        level.setBlock(at.below(),Blocks.SPRUCE_SIGN.defaultBlockState(),3);at=at.below();
-        if(level.getBlockEntity(at) instanceof SignBlockEntity sign){var text=sign.getFrontText();String[] lines={a,b,c,d};for(int i=0;i<4;i++)text=text.setMessage(i,net.minecraft.network.chat.Component.literal(lines[i]));sign.setText(text,true);sign.setWaxed(true);sign.setChanged();}
-    }
-    public static void repairSigns(ServerLevel level,BlockPos base){
-        var data=LabyrinthData.get(level.getServer());var all=data.state(HollowayVignette.ID);if(all.getBoolean("GroundedSigns"))return;
-        for(BlockPos old:new BlockPos[]{base.offset(-5,1,-10),base.offset(-8,1,-19),base.offset(-6,1,-43)})
-            if(level.getBlockEntity(old) instanceof SignBlockEntity source&&level.getBlockState(old.below()).isAir()){
-                var front=source.getFrontText();var back=source.getBackText();level.setBlock(old,Blocks.AIR.defaultBlockState(),3);level.setBlock(old.below(),Blocks.SPRUCE_SIGN.defaultBlockState(),3);
-                if(level.getBlockEntity(old.below()) instanceof SignBlockEntity target){target.setText(front,true);target.setText(back,false);target.setWaxed(true);target.setChanged();}
-            }
-        all.putBoolean("GroundedSigns",true);data.setState(HollowayVignette.ID,all);
-    }
+    /** Where his three notes stand, from the camp's base, and their words. */
+    public static final BlockPos[] NOTE_AT={new BlockPos(-5,0,-10),new BlockPos(-8,0,-19),new BlockPos(-6,0,-43)};
+    public static final String[][] NOTE_LINES={{"SUPPLIES","I counted them.","Leave the torch."},{"I went this way.","The wall moved.","It did not move","when I watched."},{"YOUR LIGHT","IS NOT A WAY","OUT."}};
+    /** What a hand on each of his three notes reads. */
+    static final String[] NOTES={
+        "SUPPLIES. I counted them. Leave the torch. Pencil on a split board, staked in the dirt.",
+        "I went this way. The wall moved. It did not move when I watched. The same pencil, pressed harder.",
+        "YOUR LIGHT IS NOT A WAY OUT. The letters have been gone over twice."};
     public static ItemStack journal(){return HouseWriting.book("Holloway's survey","Holloway",HouseWriting.WritingStyle.WILL,java.util.List.of(
             "No tent left. Dirt holds warmth better than canvas. I have food, a pickaxe and sixteen torches.\n\nLeave them where they are. I will know.\n\nA copy of this survey is still a thing taken.",
             "Three rooms north of the hut. Pillars. A room with somebody's stairs. Broken stone.\n\nA service door stands beyond them. The latch is on the left.",

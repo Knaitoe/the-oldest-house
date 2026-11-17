@@ -1,0 +1,68 @@
+{
+ "parent": "block/block",
+ "textures": {
+  "a": "the_oldest_house:block/letter_plate/notice",
+  "particle": "the_oldest_house:block/letter_plate/notice"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    15.5
+   ],
+   "to": [
+    14,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#a",
+     "uv": [
+      2,
+      0,
+      14,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#a",
+     "uv": [
+      2,
+      0,
+      3,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#a",
+     "uv": [
+      13,
+      0,
+      14,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#a",
+     "uv": [
+      2,
+      0,
+      14,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#a",
+     "uv": [
+      2,
+      15,
+      14,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

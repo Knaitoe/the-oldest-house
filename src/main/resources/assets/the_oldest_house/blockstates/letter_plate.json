@@ -1,0 +1,49 @@
+{
+ "variants": {
+  "facing=north,kind=note": {
+   "model": "the_oldest_house:block/letter_plate/note"
+  },
+  "facing=east,kind=note": {
+   "model": "the_oldest_house:block/letter_plate/note",
+   "y": 90
+  },
+  "facing=south,kind=note": {
+   "model": "the_oldest_house:block/letter_plate/note",
+   "y": 180
+  },
+  "facing=west,kind=note": {
+   "model": "the_oldest_house:block/letter_plate/note",
+   "y": 270
+  },
+  "facing=north,kind=label": {
+   "model": "the_oldest_house:block/letter_plate/label"
+  },
+  "facing=east,kind=label": {
+   "model": "the_oldest_house:block/letter_plate/label",
+   "y": 90
+  },
+  "facing=south,kind=label": {
+   "model": "the_oldest_house:block/letter_plate/label",
+   "y": 180
+  },
+  "facing=west,kind=label": {
+   "model": "the_oldest_house:block/letter_plate/label",
+   "y": 270
+  },
+  "facing=north,kind=notice": {
+   "model": "the_oldest_house:block/letter_plate/notice"
+  },
+  "facing=east,kind=notice": {
+   "model": "the_oldest_house:block/letter_plate/notice",
+   "y": 90
+  },
+  "facing=south,kind=notice": {
+   "model": "the_oldest_house:block/letter_plate/notice",
+   "y": 180
+  },
+  "facing=west,kind=notice": {
+   "model": "the_oldest_house:block/letter_plate/notice",
+   "y": 270
+  }
+ }
+}

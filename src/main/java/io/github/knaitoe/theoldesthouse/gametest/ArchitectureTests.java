@@ -216,11 +216,9 @@ public final class ArchitectureTests {
             h.assertTrue(falling.isEmpty(),"nothing hung on a wall in a finished scene is about to fall: "+falling);
             // 0.4.677 (the owner: "there are several signs in last crossing that could benefit from custom textures. i was hoping
             // you'd notice that on your own"): no finished scene has the game's own wooden sign with words typed on it. The short ones
-            // are painted boards now (BoardSigns); the long notices, still the game's until they are lettered on painted plates, are
-            // the only ones let stand, and are named here so none is missed.
-            var longNotices=java.util.Set.of("SUPPLIES","I went this way.","YOUR LIGHT","ROAD CREW");
-            var archiveNames=java.util.Set.of(io.github.knaitoe.theoldesthouse.labyrinth.ArchiveReaderFiles.NAMES);
-            var gameSigns=new ArrayList<String>();var stillLong=new ArrayList<String>();
+            // are painted boards (BoardSigns); 0.4.678 letters the long notices over plates drawn for them (LetterPlates), so none is
+            // let stand. Every lettered plate is found, holds the words its builder wrote, once, and a wall plate has the wall behind it.
+            var gameSigns=new ArrayList<String>();var plates=new ArrayList<String>();var plateAdrift=new ArrayList<String>();
             for(var scene:LabyrinthPlace.values()){
                 var level=HouseTestLevel.get(server,NovelRooms.dimension(scene));BlockPos base=LabyrinthPlaces.base(origin,scene);var r=scene.room();
                 if(base==null||r==null||!level.isLoaded(base))continue;
@@ -228,16 +226,32 @@ public final class ArchitectureTests {
                 for(int cx=lo.getX()>>4;cx<=hi.getX()>>4;cx++)for(int cz=lo.getZ()>>4;cz<=hi.getZ()>>4;cz++){
                     if(!level.hasChunk(cx,cz))continue;
                     for(var be:level.getChunk(cx,cz).getBlockEntities().values()){
-                        if(!(be instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign))continue;var at=be.getBlockPos();
+                        var at=be.getBlockPos();
                         if(at.getX()<lo.getX()||at.getX()>hi.getX()||at.getY()<lo.getY()||at.getY()>hi.getY()||at.getZ()<lo.getZ()||at.getZ()>hi.getZ())continue;
-                        var lines=new ArrayList<String>();for(int i=0;i<4;i++){var line=sign.getFrontText().getMessage(i,false).getString();if(!line.isBlank())lines.add(line);}
-                        String where=scene.id()+"@"+at.subtract(base).toShortString()+" "+lines;
-                        if(lines.stream().anyMatch(line->longNotices.contains(line)||archiveNames.contains(line)))stillLong.add(where);else gameSigns.add(where);
+                        if(be instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign){
+                            var lines=new ArrayList<String>();for(int i=0;i<4;i++){var line=sign.getFrontText().getMessage(i,false).getString();if(!line.isBlank())lines.add(line);}
+                            if(!lines.isEmpty())gameSigns.add(scene.id()+"@"+at.subtract(base).toShortString()+" "+lines);
+                        }else if(be instanceof io.github.knaitoe.theoldesthouse.labyrinth.LetterPlateEntity plate){
+                            var state=level.getBlockState(at);var kind=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LetterPlateBlock.KIND);
+                            var face=state.getValue(io.github.knaitoe.theoldesthouse.labyrinth.LetterPlateBlock.FACING);
+                            plates.add(scene.id()+" "+kind.getSerializedName()+" "+String.join("|",plate.words()));
+                            if(plate.look().isBlank())plateAdrift.add(scene.id()+"@"+at.subtract(base).toShortString()+" "+kind+" reads nothing to a hand");
+                            var behind=at.relative(face.getOpposite());
+                            if(kind.wall&&!level.getBlockState(behind).isFaceSturdy(level,behind,face))plateAdrift.add(scene.id()+"@"+at.subtract(base).toShortString()+" "+kind+" before "+level.getBlockState(behind));
+                            if(!kind.wall&&!level.getBlockState(at.below()).isFaceSturdy(level,at.below(),Direction.UP))plateAdrift.add(scene.id()+"@"+at.subtract(base).toShortString()+" "+kind+" staked in "+level.getBlockState(at.below()));
+                        }
                     }
                 }
             }
-            TheOldestHouse.LOGGER.info("Architecture: the game's own signs left in the finished scenes, long notices to be lettered: {}",stillLong);
             h.assertTrue(gameSigns.isEmpty(),"no finished scene has the game's own wooden sign with words typed on it: "+gameSigns);
+            var written=new ArrayList<String>();
+            for(var lines:io.github.knaitoe.theoldesthouse.labyrinth.HollowayCamp.NOTE_LINES)written.add(LabyrinthPlace.HOLLOWAY_CAMP.id()+" note "+String.join("|",lines));
+            for(var name:io.github.knaitoe.theoldesthouse.labyrinth.ArchiveReaderFiles.NAMES)written.add(LabyrinthPlace.ZAMPANO_COURTYARD.id()+" label "+name);
+            written.add(LabyrinthPlace.ELK_CARCASSES.id()+" notice "+String.join("|",io.github.knaitoe.theoldesthouse.labyrinth.ElkCarcassMap.CREW_NOTICE));
+            TheOldestHouse.LOGGER.info("Architecture: {} lettered plates in the finished scenes: {}",plates.size(),plates);
+            java.util.Collections.sort(written);java.util.Collections.sort(plates);
+            h.assertTrue(plates.equals(written),"every lettered plate stands once, with the words its builder wrote: found "+plates+", written "+written);
+            h.assertTrue(plateAdrift.isEmpty(),"every lettered plate is held, on a wall or staked in the ground, and reads to a hand: "+plateAdrift);
             // Every painted board stands whole, once; one on a wall has the wall behind it.
             var boards=new java.util.EnumMap<io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign,Integer>(io.github.knaitoe.theoldesthouse.labyrinth.BoardSigns.Sign.class);var boardAdrift=new ArrayList<String>();
             for(var scene:LabyrinthPlace.values()){
