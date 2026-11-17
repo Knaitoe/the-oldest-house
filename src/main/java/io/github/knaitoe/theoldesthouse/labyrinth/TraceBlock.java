@@ -45,6 +45,26 @@ public final class TraceBlock extends HorizontalDirectionalBlock {
     /** The chair's stage standing on this floor (0 bare, 1 dust, 2 grit), and the floor it leaves behind it. */
     public static int under(BlockState floor){return is(floor,Kind.DUST)?1:is(floor,Kind.GRIT)?2:0;}
     public static boolean is(BlockState s,Kind kind){return s.is(TraceRegistry.FITTING.get())&&s.getValue(KIND)==kind;}
+    /**
+     * 0.4.659 (docs/SECOND_CHAIR_0_4_659.md): the sides of a table a place is laid at. Bare at stage 0; from 1, a place at the side it
+     * faces, and at 2, 3 and 4 a second place: across from the first, at the next side clockwise seen from above, or at the next
+     * side anticlockwise.
+     */
+    public static java.util.List<Direction> places(BlockState table){
+        if(!is(table,Kind.TABLE))return java.util.List.of();var f=table.getValue(FACING);
+        return switch(table.getValue(STAGE)){
+            case 1->java.util.List.of(f);
+            case 2->java.util.List.of(f,f.getOpposite());
+            case 3->java.util.List.of(f,f.getClockWise());
+            case 4->java.util.List.of(f,f.getCounterClockWise());
+            default->java.util.List.of();
+        };
+    }
+    /** The stage of a table facing {@code facing} laid for one at that side, and, if {@code second} is another side, a second place there. */
+    public static int laid(Direction facing,@javax.annotation.Nullable Direction second){
+        if(second==null||second==facing||second.getAxis().isVertical())return 1;
+        return second==facing.getOpposite()?2:second==facing.getClockWise()?3:4;
+    }
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}

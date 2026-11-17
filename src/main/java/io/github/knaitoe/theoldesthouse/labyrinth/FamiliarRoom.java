@@ -51,6 +51,13 @@ public final class FamiliarRoom {
     public static final BlockPos TABLE=new BlockPos(1,0,-8),PANTRY=new BlockPos(-5,0,-3),SINK=new BlockPos(-5,0,-7),FRIDGE=new BlockPos(-5,0,-12),CLOCK=new BlockPos(0,3,-14);
     /** The yard under the window: its ground, and how far it reaches (west of the kitchen's wall, north of its door). */
     public static final int GROUND_Y=-5,YARD_EAST=-8,YARD_WEST=-30,LANES=3,LANE=4,WALKED=12;
+    /**
+     * 0.4.659 (the second chair): the side of the table laid for one, and the kitchen's other three chairs, back against its walls and
+     * facing into it, clear of its doors and its counters.
+     */
+    public static final Direction LAID=Direction.SOUTH;
+    public static final BlockPos[] SPARE={new BlockPos(5,0,-13),new BlockPos(5,0,-2),new BlockPos(-2,0,-14)};
+    public static final Direction[] SPARE_FACING={Direction.WEST,Direction.WEST,Direction.SOUTH};
     /** A reader's weight for the kitchen, and while somebody else is in it. */
     public static final int WEIGHT=4,MEET=40;
 
@@ -87,14 +94,20 @@ public final class FamiliarRoom {
         set(l,b,-5,0,-11,tract(TractHouseBlock.Kind.STOVE,Direction.EAST));
         set(l,b,FRIDGE,tract(TractHouseBlock.Kind.FRIDGE_LOWER,Direction.EAST));set(l,b,FRIDGE.above(),tract(TractHouseBlock.Kind.FRIDGE_UPPER,Direction.EAST));
         for(int z:new int[]{-3,-4,-10,-11})set(l,b,-5,3,z,tract(TractHouseBlock.Kind.WALL_CABINET,Direction.EAST));
-        // The table, its four chairs (loose: pulled where anyone likes, and left there), and the light over it.
-        set(l,b,TABLE,TraceBlock.of(TraceBlock.Kind.TABLE,Direction.NORTH));
-        set(l,b,TABLE.south(),TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.NORTH));set(l,b,TABLE.north(),TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.SOUTH));
-        set(l,b,TABLE.west(),TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.EAST));set(l,b,TABLE.east(),TraceBlock.of(TraceBlock.Kind.CHAIR,Direction.WEST));
+        furnishTable(l,b);
         set(l,b,TABLE.above(5),tract(TractHouseBlock.Kind.PENDANT_LIGHT,Direction.NORTH));
         LabyrinthBuilder.entrance(l,b,paper,lino,plaster);
         LabyrinthBuilder.doors(l,b,KITCHEN);
         stock(l,b);clock(l,b);
+    }
+    /**
+     * The table, laid for one where its one chair stands (0.4.659: until then it had a chair at each side and was bare), and the other
+     * three chairs back against the walls. All four are loose: pulled where anyone likes, and left there. Public for tests.
+     */
+    public static void furnishTable(ServerLevel l,BlockPos b){
+        set(l,b,TABLE,TraceBlock.of(TraceBlock.Kind.TABLE,LAID,1));
+        set(l,b,TABLE.relative(LAID),TraceBlock.of(TraceBlock.Kind.CHAIR,LAID.getOpposite()));
+        for(int i=0;i<SPARE.length;i++)set(l,b,SPARE[i],TraceBlock.of(TraceBlock.Kind.CHAIR,SPARE_FACING[i]));
     }
     /** What the pantry holds when the kitchen is first built: a little, once. What is taken or left after that is the readers'. */
     static void stock(ServerLevel l,BlockPos b){
@@ -224,6 +237,7 @@ public final class FamiliarRoom {
         }
         var b=LabyrinthPlaces.base(origin,KITCHEN);if(b==null||LabyrinthData.get(server).door(KITCHEN.entryDoorId())==null)return;
         if(!PENDING.isEmpty()){var it=PENDING.entrySet().iterator();while(it.hasNext()){var due=it.next();if(due.getValue()>now)continue;it.remove();var p=server.getPlayerList().getPlayer(due.getKey());if(p!=null&&p.serverLevel()==l&&l.isLoaded(b))show(p,l,origin,b);}}
+        if(now%20==5&&l.isLoaded(b.offset(TABLE)))lay(server,l,b);
         if(IN.isEmpty()||!l.isLoaded(b))return;
         // Its own sounds: the clock every second, the tap now and then, the fridge's hum.
         if(now%20==0)l.playSound(null,b.offset(CLOCK),StaircaseLeakRegistry.CLOCK.get(),SoundSource.BLOCKS,.35F,1F);
@@ -231,6 +245,44 @@ public final class FamiliarRoom {
         if(now%120==40)l.playSound(null,b.offset(FRIDGE),NovelRegistry.WARD_HUM.get(),SoundSource.BLOCKS,.18F,.7F);
     }
     public static void forget(UUID reader){PENDING.remove(reader);SHOWN.remove(reader);IN.remove(reader);}
+
+    // ------------------------------------------------------------------ the second chair
+    /**
+     * 0.4.659, the second chair (docs/SECOND_CHAIR_0_4_659.md). The owner, 16 November: "A flat sets the table for one. The player
+     * pulls up a second chair, and on a later visit there's a plate at that place." The table is laid for one where its one chair
+     * stands. A chair a reader draws up to another side of it is laid for the next time nobody is in the kitchen and nobody can see
+     * the table, and the place is cleared the same way once that chair has gone from it. The chair drawn up last is the one laid for:
+     * one other place, at most. What lies on the table is moved onto the plates or clear of them, never left under them; if there is
+     * no room for it, the table is not laid. Nothing is said about it. Public for tests.
+     */
+    public static void lay(net.minecraft.server.MinecraftServer s,ServerLevel l,BlockPos b){
+        var table=b.offset(TABLE);var state=l.getBlockState(table);if(!TraceBlock.is(state,TraceBlock.Kind.TABLE))return;
+        var facing=state.getValue(TraceBlock.FACING);
+        int want=TraceBlock.laid(facing,drawnUp(s,l,table,facing));if(state.getValue(TraceBlock.STAGE)==want||seen(l,b,table))return;
+        var next=state.setValue(TraceBlock.STAGE,want);
+        if(!KitchenFittings.reseat(l,table,next,true))return;
+        l.setBlock(table,next,FLAGS);KitchenFittings.reseat(l,table,next,false);
+    }
+    /** The side of the table the chair drawn up to it last stands at, if it stands there still and faces it; none at the laid side. */
+    static @Nullable Direction drawnUp(net.minecraft.server.MinecraftServer s,ServerLevel l,BlockPos table,Direction laid){
+        var data=LabyrinthData.get(s);Direction side=null;long last=Long.MIN_VALUE;
+        for(var key:data.stateKeys(TraceRooms.STATE)){
+            var chair=data.stateEntry(TraceRooms.STATE,key).getCompound("Chairs").getCompound(KITCHEN.id());
+            if(!chair.contains("At")||chair.getLong("Table")!=table.asLong())continue;
+            var at=BlockPos.of(chair.getLong("At"));var st=l.getBlockState(at);
+            if(!TraceBlock.is(st,TraceBlock.Kind.CHAIR)||!at.relative(st.getValue(TraceBlock.FACING)).equals(table))continue;
+            var from=st.getValue(TraceBlock.FACING).getOpposite();long when=chair.getLong("When");
+            if(from!=laid&&(side==null||when>last)){side=from;last=when;}
+        }
+        return side;
+    }
+    /** Whether anyone is in or at the kitchen (a spectator's camera too), or a living reader can see its table from further off. */
+    static boolean seen(ServerLevel l,BlockPos b,BlockPos table){
+        var box=KITCHEN.room();
+        var near=new AABB(b.getX()+box.minX()-2,b.getY()+box.minY()-2,b.getZ()+box.minZ()-2,b.getX()+box.maxX()+3,b.getY()+box.maxY()+3,b.getZ()+box.maxZ()+3);
+        for(var p:l.players())if(near.contains(p.getEyePosition())||near.intersects(p.getCamera().getBoundingBox()))return true;
+        return io.github.knaitoe.theoldesthouse.house.HouseWatchers.isWatched(l,table);
+    }
 
     // ------------------------------------------------------------------ keeping the view on the reader's client
     /** Whether a reader stands in the kitchen now. */

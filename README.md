@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.658** lets a room remember where a reader turned back, Ted the Caver's cave first, as the owner suggested. A reader who walks out of the cave before finishing it finds their own torches where they set them and, the next time, one more just beyond the furthest place they reached: the House's, which nobody may take. Nothing is said about it. `docs/TURNED_BACK_0_4_658.md`.
+Development candidate **0.4.659** lets a reader answer the House with a chair, as the owner suggested. The House's own kitchen is laid for one now, where its one chair stands. A chair a reader draws up to another side of the table is laid for the next time nobody is there to see: a plate, a knife and fork and a cup at that place. Pulled away again, the place is cleared the same way. Nothing is said about it. `docs/SECOND_CHAIR_0_4_659.md`.
 
-Previous: 0.4.657 redrew the great staircase's stone: the well's walls in courses of stones of different lengths, the treads as flags at Minecraft's own sixteen pixels. `docs/STAIRCASE_STONE_0_4_657.md`.
+Previous: 0.4.658 let a room remember where a reader turned back: in Ted the Caver's cave, one more torch just beyond the furthest place they reached, the House's. `docs/TURNED_BACK_0_4_658.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

@@ -26,6 +26,7 @@ public final class FamiliarRoomTests {
     @AfterBatch(batch="familiar_return") public static void doneReturn(ServerLevel l){close();}
     @AfterBatch(batch="familiar_wedge") public static void doneWedge(ServerLevel l){close();}
     @AfterBatch(batch="familiar_use") public static void doneUse(ServerLevel l){close();KitchenFittings.clearAll();}
+    @AfterBatch(batch="familiar_table") public static void doneTable(ServerLevel l){close();KitchenFittings.clearAll();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
 
     @GameTest(template="empty",batch="familiar_kitchen",timeoutTicks=600)
@@ -221,17 +222,101 @@ public final class FamiliarRoomTests {
                 KitchenFittings.use(p,l,b,KitchenFittings.Fitting.TABLE,table,top);
                 h.assertTrue(p.getMainHandItem().isEmpty()&&KitchenFittings.lying(l,table).size()==1&&KitchenFittings.item(l,KitchenFittings.lying(l,table).get(0)).getCount()==2,"two loaves left on the table");
                 for(int i=0;i<4;i++){p.setItemInHand(hand,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.APPLE));KitchenFittings.use(p,l,b,KitchenFittings.Fitting.TABLE,table,top);}
-                h.assertTrue(KitchenFittings.lying(l,table).size()==KitchenFittings.TABLE_SPOTS.length&&p.getMainHandItem().is(net.minecraft.world.item.Items.APPLE),"no room left on the table, and the last apple still in hand");
+                // 0.4.659: the table is laid for one; its plate and the two corners clear of it.
+                int room=KitchenFittings.spots(l.getBlockState(table)).size();
+                h.assertTrue(room==3&&KitchenFittings.lying(l,table).size()==room&&p.getMainHandItem().is(net.minecraft.world.item.Items.APPLE),"no room left on the table, and the last apple still in hand: "+room);
                 q.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);
                 var bread=KitchenFittings.lying(l,table).stream().filter(d->KitchenFittings.item(l,d).is(net.minecraft.world.item.Items.BREAD)).findFirst().orElseThrow();
                 KitchenFittings.use(q,l,b,KitchenFittings.Fitting.TABLE,table,bread.position());
-                h.assertTrue(q.getInventory().countItem(net.minecraft.world.item.Items.BREAD)==2&&KitchenFittings.lying(l,table).size()==KitchenFittings.TABLE_SPOTS.length-1,"the other reader takes the bread");
+                h.assertTrue(q.getInventory().countItem(net.minecraft.world.item.Items.BREAD)==2&&KitchenFittings.lying(l,table).size()==room-1,"the other reader takes the bread");
             })
             .thenIdle(KitchenFittings.COOK+20)
             .thenExecute(()->{
                 h.assertTrue(KitchenFittings.done(l),"done");
                 p.setItemInHand(hand,net.minecraft.world.item.ItemStack.EMPTY);KitchenFittings.use(p,l,b,KitchenFittings.Fitting.STOVE,b.offset(KitchenFittings.STOVE),net.minecraft.world.phys.Vec3.ZERO);
                 h.assertTrue(p.getInventory().countItem(net.minecraft.world.item.Items.COOKED_BEEF)==4&&!KitchenFittings.cooking(l.getServer()),"four cooked, off the stove, and nothing burnt");
+            })
+            .thenSucceed();
+    }
+
+    /**
+     * 0.4.659, the second chair (docs/SECOND_CHAIR_0_4_659.md). The table is laid for one where its one chair stands, the kitchen's
+     * other chairs back against the walls. A chair drawn up to another side is laid for once nobody is in the kitchen, never while
+     * someone is, and what lay there is moved onto the new plate; drawn away again, the place is cleared the same way. A chair nobody
+     * drew up lays nothing. With the table's chair taken, a visitor sits in one by the wall, stepping into it from in front.
+     */
+    @GameTest(template="empty",batch="familiar_table",timeoutTicks=900)
+    public static void theTableIsLaidForTheChairDrawnUpToIt(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.FAMILIAR_KITCHEN;var b=f.base(place);var l=f.in;hold(f,place);KitchenFittings.clearAll();
+        var p=NativeTestPlayers.survival(h,"table_reader");f.players.add(p);
+        var table=b.offset(FamiliarRoom.TABLE);var north=table.north();var hand=net.minecraft.world.InteractionHand.MAIN_HAND;
+        var south=java.util.List.of(net.minecraft.core.Direction.SOUTH);
+        java.util.function.BiPredicate<BlockPos,net.minecraft.core.Direction> chairFacing=(at,d)->TraceBlock.is(l.getBlockState(at),TraceBlock.Kind.CHAIR)&&l.getBlockState(at).getValue(TraceBlock.FACING)==d;
+        Runnable asBuilt=()->{
+            for(var at:BlockPos.betweenClosed(b.offset(-5,0,-14),b.offset(5,0,-1)))if(TraceBlock.is(l.getBlockState(at),TraceBlock.Kind.CHAIR))l.setBlock(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+            for(var d:KitchenFittings.lying(l,table))d.discard();FamiliarRoom.furnishTable(l,b);
+        };
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen is resident"))
+            .thenExecute(()->{
+                FamiliarRoom.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                // The kitchen is built once and kept: set its table and chairs back as built, whatever an earlier case moved.
+                asBuilt.run();
+                var s=l.getBlockState(table);
+                h.assertTrue(TraceBlock.is(s,TraceBlock.Kind.TABLE)&&TraceBlock.places(s).equals(south),"the table laid for one, at its south side: "+s);
+                h.assertTrue(chairFacing.test(table.south(),net.minecraft.core.Direction.NORTH),"its one chair drawn up to the place");
+                for(int i=0;i<FamiliarRoom.SPARE.length;i++)h.assertTrue(chairFacing.test(b.offset(FamiliarRoom.SPARE[i]),FamiliarRoom.SPARE_FACING[i]),"a chair back against the wall: "+FamiliarRoom.SPARE[i]);
+                // An apple left at the table's north end, before any chair is drawn up there.
+                p.teleportTo(l,b.getX()+2.5,b.getY(),b.getZ()-6.5,0,0);
+                p.setItemInHand(hand,new net.minecraft.world.item.ItemStack(Items.APPLE));
+                KitchenFittings.use(p,l,b,KitchenFittings.Fitting.TABLE,table,net.minecraft.world.phys.Vec3.atBottomCenterOf(table).add(-.22,.95,-.22));
+                var lying=KitchenFittings.lying(l,table);
+                h.assertTrue(lying.size()==1&&lying.get(0).position().z<table.getZ()+.5,"an apple left at the table's north end");
+                // A chair brought round to the north side and drawn up its last block by hand.
+                l.setBlock(north.north(),TraceBlock.of(TraceBlock.Kind.CHAIR,net.minecraft.core.Direction.SOUTH),3);
+                h.assertTrue(TraceRooms.chair(p,north.north(),l.getBlockState(north.north()))&&chairFacing.test(north,net.minecraft.core.Direction.SOUTH),"drawn up to the north side");
+            })
+            .thenIdle(45)
+            .thenExecute(()->{
+                h.assertTrue(TraceBlock.places(l.getBlockState(table)).equals(south),"nothing is laid while the reader is in the kitchen");
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+60.5,0,0);
+            })
+            .thenIdle(45)
+            .thenExecute(()->{
+                var s=l.getBlockState(table);
+                h.assertTrue(TraceBlock.places(s).equals(java.util.List.of(net.minecraft.core.Direction.SOUTH,net.minecraft.core.Direction.NORTH)),"a place laid where the chair was drawn up, once nobody was there: "+s);
+                var lying=KitchenFittings.lying(l,table);
+                h.assertTrue(lying.size()==1&&KitchenFittings.item(l,lying.get(0)).is(Items.APPLE)&&lying.get(0).position().y>table.getY()+.96&&lying.get(0).position().z<table.getZ()+.5,
+                        "the apple moved onto the new place's plate, not left under it: "+(lying.isEmpty()?"nothing":lying.get(0).position()));
+                // Back in, and the chair drawn away from the table: the place stays while anyone is there.
+                p.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-11.5,0,0);
+                h.assertTrue(TraceRooms.chair(p,north,l.getBlockState(north))&&chairFacing.test(north.north(),net.minecraft.core.Direction.SOUTH),"drawn away from the table");
+            })
+            .thenIdle(45)
+            .thenExecute(()->{
+                h.assertTrue(TraceBlock.places(l.getBlockState(table)).size()==2,"the place is not cleared in front of anyone");
+                p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+60.5,0,0);
+            })
+            .thenIdle(45)
+            .thenExecute(()->{
+                h.assertTrue(TraceBlock.places(l.getBlockState(table)).equals(south),"cleared once nobody was there");
+                var lying=KitchenFittings.lying(l,table);
+                h.assertTrue(lying.size()==1&&lying.get(0).position().y<table.getY()+.96,"and the apple off the plate that went, onto the bare top");
+                // A chair nobody drew up (the House's own, or one simply set there) lays nothing.
+                l.setBlock(north.north(),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                l.setBlock(table.west(),TraceBlock.of(TraceBlock.Kind.CHAIR,net.minecraft.core.Direction.EAST),3);
+            })
+            .thenIdle(45)
+            .thenExecute(()->{
+                h.assertTrue(TraceBlock.places(l.getBlockState(table)).equals(south),"a chair nobody drew up lays nothing");
+                l.setBlock(table.west(),net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);
+                // With a reader in the table's one chair, a visitor takes one by the wall, stepping into it from in front of it.
+                p.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-5.5,180,0);
+                h.assertTrue(TraceRooms.sitOn(p,table.south()),"a reader in the table's chair");
+                var seat=KitchenVisitors.chair(l,b,net.minecraft.world.phys.Vec3.atBottomCenterOf(b).add(0,0,-1));
+                h.assertTrue(seat!=null&&java.util.Arrays.asList(FamiliarRoom.SPARE).contains(seat.subtract(b)),"a visitor takes a chair by the wall: "+seat);
+                var facing=l.getBlockState(seat).getValue(TraceBlock.FACING);
+                h.assertTrue(BlockPos.containing(KitchenVisitors.stepOut(l,b,seat)).equals(seat.relative(facing)),"stepping into it from in front, not through the wall behind it");
+                p.stopRiding();asBuilt.run();
             })
             .thenSucceed();
     }
