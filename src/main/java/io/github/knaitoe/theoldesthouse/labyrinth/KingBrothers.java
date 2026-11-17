@@ -35,6 +35,8 @@ public final class KingBrothers {
     public static final int NONE=0,ARMED=1,DRESS=2,FIGHT=3,CROW=4,GONE=5,SETTLED=6;
     /** How long after they have spoken before they start to dress, how long they dress for, and how long they fight. */
     public static final int WAIT=900,DRESS_TICKS=100,FIGHT_TICKS=80,CROW_TICKS=40;
+    /** How far they run in a tick, and how far past the wood's area anybody of theirs is looked for when they are gone. */
+    static final double RUN=.9,GONE_REACH=48;
     static final String TALK="king_brothers";
 
     public static boolean cast(int phase){return phase==DUM||phase==DEE;}
@@ -48,9 +50,11 @@ public final class KingBrothers {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,area(b),x->x.role()==LiteraryActor.STRANGER&&x.phase()==phase))if(a.isAlive())return a;
         return null;
     }
-    /** Both brothers are in the wood unless they have run; nothing is made while the wood's entities are unloaded. */
+    /** Both brothers are in the wood unless they are running or have run; nothing is made while the wood's entities are unloaded.
+     * Run 1711: while they ran past the edge of {@link #area}, a fresh pair was made at their places and only that pair was taken
+     * when they were gone, so one stayed in the wood. */
     static void ensure(ServerLevel l,BlockPos b,KingSleep.Sleep s){
-        if(s.battle==GONE)return;
+        if(s.battle==CROW||s.battle==GONE)return;
         for(int phase:new int[]{DUM,DEE}){
             var at=b.offset(spot(phase));
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;
@@ -93,8 +97,9 @@ public final class KingBrothers {
             }
             case CROW->{
                 // They run for it, east into the trees, and are not seen again in this dream.
-                for(var a:new LiteraryActor[]{dum,dee})if(a!=null){a.moveTo(a.getX()+1.6,a.getY(),a.getZ()+(a==dum?.4:-.4),-90,0);a.setYBodyRot(-90);a.setYHeadRot(-90);}
-                if(now>=s.battleAt){s.battle=GONE;if(dum!=null)dum.discard();if(dee!=null)dee.discard();}
+                // Short of the edge of the wood's area (36 blocks in CROW_TICKS), so the pair that ran is the pair that goes.
+                for(var a:new LiteraryActor[]{dum,dee})if(a!=null){a.moveTo(a.getX()+RUN,a.getY(),a.getZ()+(a==dum?.2:-.2),-90,0);a.setYBodyRot(-90);a.setYHeadRot(-90);}
+                if(now>=s.battleAt){s.battle=GONE;for(var a:l.getEntitiesOfClass(LiteraryActor.class,area(b).inflate(GONE_REACH),x->x.role()==LiteraryActor.STRANGER&&cast(x.phase())))a.discard();}
             }
             default->{}
         }

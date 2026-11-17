@@ -293,6 +293,11 @@ public final class KingTests {
         .thenWaitUntil(()->h.assertTrue(KingSleep.stirs(b)>=2&&f.own(p,P).getBoolean("KingSawBattle"),"a battle beside him stirs him twice, and the reader saw it: "+KingSleep.stirs(b)))
         .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)==KingBrothers.GONE&&KingBrothers.find(l,b,KingBrothers.DUM)==null,"then the shadow, and they run: battle "+KingBrothers.battle(b)+", stirs "+KingSleep.stirs(b)+(KingSleep.waking(b)?", waking":"")+(KingBrothers.find(l,b,KingBrothers.DUM)!=null?", one still here":"")))
         .thenExecute(()->{
+            // Run 1711: none of them is left anywhere in the country, and none was made again while they ran.
+            var left=l.getEntitiesOfClass(LiteraryActor.class,new AABB(brothers).inflate(120,8,120),x->KingBrothers.cast(x.phase())).stream().map(a->a.phase()+"@"+a.blockPosition().subtract(b)).toList();
+            h.assertTrue(left.isEmpty(),"the brothers who ran are gone, and nobody stands in their places: "+left);
+        })
+        .thenExecute(()->{
             beside(p,l,b);KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
             KingSleep.stir(l,b,p,f.own(p,P),KingSleep.WAKE_AT);
             h.assertTrue(KingSleep.waking(b),"six stirs wake him");

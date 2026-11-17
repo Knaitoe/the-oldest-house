@@ -23,7 +23,11 @@ lines, which change once the brothers are dressing or the rattle is gone.
 
 Forty-five seconds after the battle is readied, they dress (five seconds, bolsters), then fight beside him (four seconds, the
 clash of their swings). The fight stirs him twice. Every reader in the country remembers seeing it (`KingSawBattle`, written through
-that reader's own tick). Then a great shadow goes over the wood (`king.crow`) and they run east and are gone for the rest of that dream.
+that reader's own tick). Then a great shadow goes over the wood (`king.crow`) and they run east and are gone for the rest of that dream. (Run 1711 found a
+fault here: they ran past the edge of the area the wood looks in for them, a fresh pair was made at their places while they ran, and
+only that pair was taken when they were gone, so one of them could be left standing in the wood. Now nobody is made while they run,
+they run slower, staying inside it, and when they are gone every one of them in and round the wood is taken; the battle case checks
+that none is left anywhere in the country.)
 
 ## The rattle
 
