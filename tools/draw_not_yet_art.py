@@ -137,6 +137,16 @@ def tube():
     return im
 
 
+def tube_hot():
+    # The same tube with the heat in it: the steel gone a dull cherry, the lit edge orange, the round of it brightest at the middle.
+    im = new('#8e4a38', 66317, 2)
+    for i in range(16):
+        dot(im, i, 0, '#d88a5a'); dot(im, 0, i, '#d88a5a'); dot(im, i, 15, '#4a2820'); dot(im, 15, i, '#4a2820')
+    for i in range(1, 15):
+        dot(im, i, 4, '#c26a44'); dot(im, i, 7, '#e0904e'); dot(im, i, 8, '#d07c48'); dot(im, i, 11, '#6e3a2c')
+    return im
+
+
 def ticking(hot=False):
     # Mattress ticking: narrow stripes down its length. Heating, the coils under it show through as lines that do not follow the
     # stripes, darkest where they cross.
@@ -158,13 +168,23 @@ def ticking(hot=False):
     return im
 
 
-def ticking_side():
+def ticking_side(hot=False):
     im = new('#bfb9a7', 66312, 2)
     for x in range(16):
         dot(im, x, 0, '#d8d3c2'); dot(im, x, 15, '#9a9484')
     for x in (2, 7, 12):
         for y in range(1, 15):
             dot(im, x, y, '#8d93a0')
+    if hot:
+        # The coils' ends glowing through the welt every four pixels, and the cloth over them scorched brown toward the bottom.
+        for y in range(8, 16):
+            t = (y - 7) / 9
+            for x in range(16):
+                r, g, b, a = im.getpixel((x, y))
+                im.putpixel((x, y), (round(r + (150 - r) * t), round(g + (92 - g) * t), round(b + (60 - b) * t), 255))
+        for x in (1, 5, 9, 13):
+            fill(im, x, 11, x + 2, 15, '#e0783a'); dot(im, x, 12, '#f6b060'); dot(im, x + 1, 12, '#f6b060')
+            dot(im, x, 10, '#a4583a'); dot(im, x + 1, 10, '#a4583a')
     return im
 
 
@@ -183,6 +203,21 @@ def blanket(made=False):
         for _ in range(5):
             x, y = rnd.randrange(16), rnd.randrange(5, 16)
             line(im, x, y, min(15, x + 3), y + 1, '#7a7c76')
+    return im
+
+
+def blanket_hot():
+    # The grey wool with the coils under it showing through: a dull orange line across every four pixels, singed brown along it.
+    im = blanket()
+    def toward(x, y, c, t):
+        r, g, b, a = im.getpixel((x, y)); cr, cg, cb = rgb(c)
+        im.putpixel((x, y), (round(r + (cr - r) * t), round(g + (cg - g) * t), round(b + (cb - b) * t), 255))
+    rnd = random.Random(66318)
+    for y in (5, 9, 13):
+        for x in range(16):
+            toward(x, y, '#d8743a', .62); toward(x, y - 1, '#8a5a40', .3); toward(x, y + 1, '#8a5a40', .3)
+            if rnd.random() < .25:
+                toward(x, y + (1 if rnd.random() < .5 else -1), '#5a3a2c', .45)
     return im
 
 
@@ -422,18 +457,46 @@ def hatch_leaf():
 
 
 def vent(frost):
-    im = new('#3a3e42', 66372 + frost, 2)
+    # A floor grille: a cast frame and six dark slots between the bars. Rimed, the frost grows on the bars and the frame, white where it
+    # is thick, a grey-blue fur of needles reaching out into the slots, heaviest along the bottom and in the corners where the cold
+    # comes in; the slots stay dark between, so it is still a grille.
+    im = new('#3a3e42', 66372, 2)
     for i in range(16):
         dot(im, i, 0, '#54595d'); dot(im, 0, i, '#54595d'); dot(im, i, 15, '#222528'); dot(im, 15, i, '#222528')
     for y in range(3, 14, 2):
         fill(im, 2, y, 14, y + 1, '#0e1012')
     if frost:
         rnd = random.Random(66374)
-        for y in range(1, 15):
-            for x in range(1, 15):
-                if rnd.random() < .45 or y in (2, 4, 6, 8, 10, 12, 14) and rnd.random() < .6:
-                    v = rnd.choice((200, 214, 228))
-                    im.putpixel((x, y), (v - 8, v, v + 6, 255))
+        def rime(x, y, v):
+            im.putpixel((x, y), (v - 10, v - 2, v + 8 if v < 248 else 255, 255))
+        def weight(x, y):
+            # thicker toward the bottom and the two sides, thickest in the corners
+            edge = max(0, 3 - min(x, 15 - x)) / 3
+            return min(1, .08 + .42 * (y / 15) ** 2 + .3 * edge * edge + (.2 if y >= 13 else 0))
+        bars = [y for y in range(16) if y not in range(3, 14, 2)]
+        for y in bars:
+            for x in range(16):
+                w = weight(x, y)
+                if rnd.random() < w:
+                    rime(x, y, rnd.choice((214, 228, 240)))
+                elif rnd.random() < w * .6:
+                    rime(x, y, rnd.choice((112, 128)))
+        for y in range(3, 14, 2):
+            for x in range(2, 14):
+                w = weight(x, y)
+                # needles growing down from the bar above and up from the bar below; never across the whole slot
+                if rnd.random() < w * .3:
+                    rime(x, y, rnd.choice((84, 104, 128)))
+        # the bottom rows and the corners all but white
+        for x in range(16):
+            rime(x, 15, rnd.choice((222, 236)))
+            if rnd.random() < .7:
+                rime(x, 14, rnd.choice((206, 222, 236)))
+        for cx, cy in ((1, 1), (14, 1), (1, 13), (14, 13)):
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    if rnd.random() < (.75 if cy > 7 else .4):
+                        rime(min(15, max(0, cx + dx)), min(15, max(0, cy + dy)), rnd.choice((220, 238, 248)))
     return im
 
 
@@ -635,11 +698,17 @@ def model(elements, textures, particle, cutout=True):
     return m
 
 
+def glow(elements, light):
+    # Heating: the rails and the mattress give off their own dull light, so the cot reads as hot across a dim ward.
+    for e in elements:
+        e['neoforge_data'] = {'block_light': light, 'sky_light': 0}
+
+
 def cot_head(stage):
     top = {0: 'ticking', 1: 'ticking_hot', 2: 'ticking'}[stage]
-    cover = 'blanket_made' if stage == 2 else 'blanket'
+    cover = {0: 'blanket', 1: 'blanket_hot', 2: 'blanket_made'}[stage]
     pil = 'pillow_made' if stage == 2 else 'pillow'
-    t = {'t': 'tube', 'm': top, 's': 'ticking_side', 'b': cover, 'p': pil, 'd': 'drawer'}
+    t = {'t': 'tube_hot' if stage == 1 else 'tube', 'm': top, 's': 'ticking_side_hot' if stage == 1 else 'ticking_side', 'b': cover, 'p': pil, 'd': 'drawer', 'u': 'tube'}
     e = [
         # the head end: two posts, two bars across
         element([1, 0, 14], [2.5, 14, 15.5], {'all': 't'}), element([13.5, 0, 14], [15, 14, 15.5], {'all': 't'}),
@@ -650,21 +719,25 @@ def cot_head(stage):
         element([2, 7, 0], [14, 9, 14], {'up': 'm', 'east': 's', 'west': 's', 'south': 's'}),
         element([3, 9, 10], [13, 10.75, 13.5], {'all': 'p'}),
         # the drawer under the head, its front to the cot's right
-        element([3, 1.5, 7], [13, 5.5, 13], {'east': 'd', 'west': 't', 'north': 't', 'south': 't', 'up': 't', 'down': 't'}),
+        element([3, 1.5, 7], [13, 5.5, 13], {'east': 'd', 'west': 'u', 'north': 'u', 'south': 'u', 'up': 'u', 'down': 'u'}),
     ]
+    if stage == 1:
+        glow(e[4:7], 9); glow(e[6:7], 12)
     if stage == 2:
         e.append(element([1.9, 9, 0], [14.1, 9.4, 9.75], {'up': 'b', 'east': 'b', 'west': 'b', 'south': 'b'}))
         e.append(element([1.8, 7, 0], [2, 9, 9.75], {'west': 'b'}))
         e.append(element([14, 7, 0], [14.2, 9, 9.75], {'east': 'b'}))
     else:
         e.append(element([2.1, 9, 0], [13.9, 9.5, 8.5], {'up': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}))
+        if stage == 1:
+            glow(e[-1:], 7)
     return model(e, t, 'tube')
 
 
 def cot_foot(stage):
     top = {0: 'ticking', 1: 'ticking_hot', 2: 'ticking'}[stage]
-    cover = 'blanket_made' if stage == 2 else 'blanket'
-    t = {'t': 'tube', 'm': top, 's': 'ticking_side', 'b': cover, 'c': 'card'}
+    cover = {0: 'blanket', 1: 'blanket_hot', 2: 'blanket_made'}[stage]
+    t = {'t': 'tube_hot' if stage == 1 else 'tube', 'm': top, 's': 'ticking_side_hot' if stage == 1 else 'ticking_side', 'b': cover, 'c': 'card', 'u': 'tube'}
     e = [
         element([1, 0, 0.5], [2.5, 10, 2], {'all': 't'}), element([13.5, 0, 0.5], [15, 10, 2], {'all': 't'}),
         element([2.5, 8.5, 0.75], [13.5, 9.75, 1.75], {'all': 't'}),
@@ -675,6 +748,8 @@ def cot_foot(stage):
         # the cross-stay between the legs
         element([2.5, 2, 1], [13.5, 3, 1.5], {'all': 't'}),
     ]
+    if stage == 1:
+        glow(e[3:5], 9); glow(e[5:6], 12)
     if stage == 2:
         e.append(element([1.9, 9, 2], [14.1, 9.4, 16], {'up': 'b', 'north': 'b', 'east': 'b', 'west': 'b'}))
         e.append(element([1.8, 7, 2], [2, 9, 16], {'west': 'b'})); e.append(element([14, 7, 2], [14.2, 9, 16], {'east': 'b'}))
@@ -682,6 +757,8 @@ def cot_foot(stage):
     else:
         e.append(element([2.1, 9, 2], [13.9, 9.5, 16], {'up': 'b', 'north': 'b', 'east': 'b', 'west': 'b'}))
         e.append(element([2.1, 7.5, 1.75], [13.9, 9.5, 2], {'north': 'b'}))
+        if stage == 1:
+            glow(e[-2:], 7)
     return model(e, t, 'tube')
 
 
@@ -692,7 +769,8 @@ def curtain_model(stage):
     top = stage in (0, 1, 3)
     e = []
     if top:
-        e.append(element([0, 15, 7.5], [16, 16, 8.5], {'all': 'r'}, uv={'north': [0, 0, 16, 1], 'south': [0, 0, 16, 1], 'up': [0, 0, 16, 1], 'down': [0, 0, 16, 1]}))
+        e.append(element([0, 15, 7.5], [16, 16, 8.5], {'all': 'r'}, uv={'north': [0, 0, 16, 1], 'south': [0, 0, 16, 1], 'up': [0, 0, 16, 1], 'down': [0, 0, 16, 1],
+                                                                     'east': [2, 0, 3, 1], 'west': [2, 0, 3, 1]}))
     y0, y1 = (0, 14.5) if top else (1, 16)
     if stage in (1, 2):
         # gathered at the west end of the rail, in four folds
@@ -837,7 +915,8 @@ def textures():
     for name, im in materials().items():
         out[f'block/not_yet_{name}.png'] = im
     faces = {
-        'tube': tube(), 'ticking': ticking(), 'ticking_hot': ticking(True), 'ticking_side': ticking_side(), 'blanket': blanket(),
+        'tube': tube(), 'tube_hot': tube_hot(), 'ticking': ticking(), 'ticking_hot': ticking(True), 'ticking_side': ticking_side(),
+        'ticking_side_hot': ticking_side(True), 'blanket': blanket(), 'blanket_hot': blanket_hot(),
         'blanket_made': blanket(True), 'pillow': pillow(), 'pillow_made': pillow(True), 'drawer': drawer(), 'card': chart_card(),
         'curtain': curtain(), 'ring': ring_tex(), 'lamp_steel': lamp_steel(), 'shade': shade_tex(), 'bulb_on': bulb(True), 'bulb_off': bulb(False),
         'housing': housing(), 'screen_dark': screen_dark(), 'screen_words': screen_words(), 'screen_door': door_picture(0),
@@ -911,6 +990,14 @@ def main():
     assert sum(mean(images['block/not_yet/screen_door.png'])) > sum(mean(images['block/not_yet/screen_dark.png'])) + 60
     hot, cold = mean(images['block/not_yet/ticking_hot.png'], (0, 0, 16, 16)), mean(images['block/not_yet/ticking.png'], (0, 0, 16, 16))
     assert hot[0] - hot[2] > cold[0] - cold[2] + 20, (hot, cold)
+    for warm, plain in (('tube_hot', 'tube'), ('blanket_hot', 'blanket'), ('ticking_side_hot', 'ticking_side')):
+        w, c = mean(images[f'block/not_yet/{warm}.png'], (0, 0, 16, 16)), mean(images[f'block/not_yet/{plain}.png'], (0, 0, 16, 16))
+        assert w[0] - w[2] > c[0] - c[2] + 20, (warm, w, c)
+    # a rimed grille is still a grille: its slots stay darker than its bars
+    rimed = images['block/not_yet/vent_frost.png']
+    slots = sum(sum(rimed.getpixel((x, y))[:3]) for y in range(3, 14, 2) for x in range(3, 13)) / 60
+    bars = sum(sum(rimed.getpixel((x, y))[:3]) for y in range(4, 13, 2) for x in range(3, 13)) / 50
+    assert slots + 150 < bars, (slots, bars)
     for rel, im in images.items():
         path = base / 'textures' / rel
         if check:

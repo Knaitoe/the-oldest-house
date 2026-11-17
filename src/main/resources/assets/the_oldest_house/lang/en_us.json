@@ -2034,5 +2034,10 @@
   "subtitles.the_oldest_house.not_yet.tick": "A counter turns over",
   "subtitles.the_oldest_house.bleed.not_yet": "A ward hums and a counter turns over, behind a door",
   "subtitles.the_oldest_house.not_yet.hatch": "A hatch drops open",
-  "subtitles.the_oldest_house.not_yet.mend": "Fine arms work"
+  "subtitles.the_oldest_house.not_yet.mend": "Fine arms work",
+  "subtitles.the_oldest_house.not_yet.heat": "A cot frame ticks with heat",
+  "subtitles.the_oldest_house.not_yet.call": "Someone calls a name",
+  "subtitles.the_oldest_house.not_yet.groan": "A groan, from a screen",
+  "subtitles.the_oldest_house.not_yet.quiet": "Everything goes quiet",
+  "subtitles.the_oldest_house.not_yet.slide": "A steel door slides open"
 }

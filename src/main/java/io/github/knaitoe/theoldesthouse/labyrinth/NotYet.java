@@ -39,8 +39,9 @@ public final class NotYet {
     public static String skin(int phase){return SKINS[phase-FIRST];}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until part 3. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /** 0.4.665: dealt now a reader can lie down, from depth twelve, deep in the machine as The Kept is. */
+    public static final int DEPTH=12;
+    public static boolean dealable(LabyrinthData d,UUID reader){return d.returnDepth(reader)>=DEPTH;}
 
     /** A reader in: the three are put in their cots if they are not there, and the ward hums once round them. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -77,6 +78,10 @@ public final class NotYet {
             own.putBoolean("HomeSaid",true);
             var line=NotYetTexts.home(HouseRead.value(LabyrinthData.get(p.server),p.getUUID(),HouseRead.Trait.HOME,true));
             if(!line.isEmpty()){Kept.machine(p,line);told(own,line);}
+        }else if(NotYetTrial.ready(own)&&!own.getBoolean("StayedDown")&&own.getInt("InvitedVisit")!=visit&&NotYetSite.inWard(r)&&!NotYetMending.held(p)&&!NotYetTrial.lying(p.getUUID())){
+            // 0.4.665: mended, and told the rule: the machine asks them to lie down, once a visit, and their lamp comes on over their cot.
+            own.putInt("InvitedVisit",visit);Kept.machine(p,NotYetTexts.INVITE);told(own,NotYetTexts.INVITE);
+            var mine=NotYetMending.cot(own);if(mine!=null)NotYetTrial.lamp(p.serverLevel(),b,mine,true);
         }
         NotYetMending.reader(p,b,own);
     }
@@ -144,6 +149,8 @@ public final class NotYet {
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(!NotYetBlock.is(st))return false;
         int stage=st.getValue(NotYetBlock.STAGE);
+        // 0.4.665: a cot is to lie down on, for a reader the machine has asked.
+        if((NotYetBlock.is(st,NotYetBlock.Kind.COT)||NotYetBlock.is(st,NotYetBlock.Kind.COT_FOOT))&&NotYetTrial.lie(p,b,rel,own))return true;
         switch(st.getValue(NotYetBlock.KIND)){
             case CHART->{return false;}
             case COT->cue(p,NotYetTexts.COT);
