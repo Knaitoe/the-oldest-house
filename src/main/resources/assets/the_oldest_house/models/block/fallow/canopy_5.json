@@ -1,0 +1,74 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "d": "the_oldest_house:block/fallow/canopy_soffit",
+    "r": "the_oldest_house:block/fallow_roof",
+    "f": "the_oldest_house:block/fallow/canopy_fascia",
+    "l": "the_oldest_house:block/fallow/canopy_light",
+    "c": "the_oldest_house:block/fallow/column",
+    "k": "the_oldest_house:block/fallow/collar",
+    "m": "the_oldest_house:block/fallow/column_marks",
+    "particle": "the_oldest_house:block/fallow/column"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        3,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        3,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

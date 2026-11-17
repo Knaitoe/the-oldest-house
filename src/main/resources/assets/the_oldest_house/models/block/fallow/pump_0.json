@@ -1,0 +1,166 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "b": "the_oldest_house:block/fallow/pump_body",
+    "s": "the_oldest_house:block/fallow/pump_side",
+    "h": "the_oldest_house:block/fallow/pump_head",
+    "o": "the_oldest_house:block/fallow/hose",
+    "n": "the_oldest_house:block/fallow/nozzle",
+    "c": "the_oldest_house:block/fallow/chrome",
+    "particle": "the_oldest_house:block/fallow/pump_body"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        3
+      ],
+      "to": [
+        14,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        0,
+        2.5
+      ],
+      "to": [
+        14.5,
+        1.5,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "south": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        },
+        "down": {
+          "texture": "#c"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        9,
+        6
+      ],
+      "to": [
+        15.5,
+        13,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#n"
+        },
+        "south": {
+          "texture": "#n"
+        },
+        "east": {
+          "texture": "#n"
+        },
+        "west": {
+          "texture": "#n"
+        },
+        "up": {
+          "texture": "#n"
+        },
+        "down": {
+          "texture": "#n"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        6,
+        7
+      ],
+      "to": [
+        15,
+        9,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#o"
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#o"
+        },
+        "down": {
+          "texture": "#o"
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2,
+        -0.02,
+        3
+      ],
+      "to": [
+        14,
+        0,
+        13
+      ],
+      "faces": {
+        "down": {
+          "texture": "#s",
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

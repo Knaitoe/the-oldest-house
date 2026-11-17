@@ -38,6 +38,7 @@ public final class SceneClock {
             case LEFT_RIGHT->9; // 0.4.205: two in the morning at the toll
             case REPLACEMENT->9; // 0.4.218: midnight on the street
             case LAST_SEEN->12; // 0.4.667: nine in the morning at the park, the office just open
+            case FALLOW->16; // 0.4.672: late afternoon at the station, the sun low over the wheat
             case SLEEPING_KING->18; // 0.4.641: a bright morning in the ruled country, all day
             case LITTLE_LONGER->9; // 0.4.621: late at night in the rain over Rowan's shop
             case PLACE_FOR_YOU->9; // 0.4.257: one evening in Mara's house

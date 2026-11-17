@@ -120,6 +120,7 @@ public enum DoorBleed {
     NOT_YET(new Spec().light(0xD8E2DC,Rhythm.STEADY).glow(.4F).sound("bleed.not_yet")),
     // 0.4.667: morning daylight under the door, and the avenue beyond it.
     LAST_SEEN(new Spec().drawn(1).light(0xFFF4DC,Rhythm.STEADY).glow(.5F).sound("bleed.last_seen")),
+    FALLOW(new Spec().drawn(2).air(Air.DUST,0xCDB57A).light(0xFFD9A0,Rhythm.STEADY).glow(.45F).sound("bleed.fallow")),
     LAST_ORDERS(new Spec().drawn(1).light(0xFFB14F,Rhythm.STEADY).glow(.5F).sound("bleed.last_orders")),
     BIKE_NIGHT(new Spec().drawn(1).light(0xFF9A2E,Rhythm.CANDLE).glow(.7F).sound("bleed.bike_night")),
     PELL_HOUSE(new Spec().drawn(1).light(0xFFE8B0,Rhythm.STEADY).glow(.5F).sound("bleed.pell_house")),

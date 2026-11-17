@@ -1,0 +1,51 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/fallow/lift_post",
+    "a": "the_oldest_house:block/fallow/lift_arm",
+    "b": "the_oldest_house:block/fallow/bench_top",
+    "f": "the_oldest_house:block/fallow/bench_front",
+    "g": "the_oldest_house:block/fallow/pegboard",
+    "y": "the_oldest_house:block/fallow/tyre_side",
+    "o": "the_oldest_house:block/fallow/tyre_top",
+    "d": "the_oldest_house:block/fallow/drum",
+    "r": "the_oldest_house:block/fallow/rags",
+    "m": "the_oldest_house:block/fallow/hitch_metal",
+    "particle": "the_oldest_house:block/fallow/pegboard"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        15
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

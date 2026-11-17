@@ -1072,6 +1072,16 @@ def main(argv):
               f'python3 tools/flicker.py --cure keeps the pack on as it lies.')
         if '--check' in argv:
             return 1
+    # 0.4.672: the game will not load a model with a piece reaching past -16 or 32 on any side (it draws the whole block as missing),
+    # and the cure's hair-thin copy of a face lying on that edge would reach past it; such a face is moved in, in the tool that draws it.
+    outside = [name for name, model in pack().items()
+               if any(v < -16 or v > 32 for e in model.get('elements') or [] for v in list(e.get('from', [])) + list(e.get('to', [])))]
+    for name in outside:
+        print(f'a piece reaches past the edge of what the game will load (-16 to 32): {name}')
+    if outside:
+        print(f'{len(outside)} models have pieces the game will not load; the game draws each as missing.')
+        if '--check' in argv:
+            return 1
     # 0.4.651: a face that draws nothing is a hole in its piece, or a part left out; it is given its picture, or left off.
     models, pictures, empty = pack(), Pictures(), {}
     for name in sorted(models):

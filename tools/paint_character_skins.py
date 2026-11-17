@@ -390,6 +390,18 @@ LOOKS = {
     'literary_lastseen_man_a': Look('#c49274','#24201c','close','#3a3e44','#2a2c30','hoodie','#5a5e64',eyes='#3a3026',age=1,beard='stubble',sleeve=10),
     'literary_lastseen_man_b': Look('#b68464','#4a3a2c','receding','#5a3e34','#34363a','flannel','#2e2a26',eyes='#3a2e24',age=1,beard='full',sleeve=10),
     'literary_lastseen_man_c': Look('#d2a486','#3a3430','part','#48503a','#3a3a36','jacket','#7a7a6a',eyes='#46403a',age=1,beard='moustache',sleeve=10),
+    # 0.4.672, Fallow (docs/FALLOW_0_4_672.md): the five at the station and the stranger, who comes in part 2. Harlan, who keeps it, in
+    # a work shirt with his name on a patch over the pocket, grey at the temples, a day's stubble, a cloth cap; Faye, travelling, in a
+    # summer blouse and slacks, her hair tied back for the heat; Opal, her daughter, in a cotton dress, her fair hair long; Boyd, Faye's
+    # man, in an undershirt and jeans, impatient, his hair combed back with something in it; Otis, the long-haul driver, a big man in
+    # a flannel shirt with the sleeves rolled, a ball cap, a short beard; and the stranger, in a pale short-sleeved shirt buttoned to the
+    # neck and dark trousers, nothing about him to remember.
+    'literary_fallow_harlan': Look('#c4946e','#9a958a','receding','#6a7a88','#3a3e44','crew','#e8e2cf',eyes='#5a6066',age=2,beard='stubble',mark='movie_cap',sleeve=10),
+    'literary_fallow_faye': Look('#dcb496','#7a4a2a','ponytail','#c8a86a','#5a6a7a','shirt','#efe6cf',eyes='#4a6050',sleeve=4),
+    'literary_fallow_opal': Look('#e0b896','#c9a060','long','#d88a9a','#d88a9a','dress','#f0e6d0',eyes='#4a6a7a',mark='fallow_opal',sleeve=4,face_style='child',level_eyes=True,shoes='#e4e0d4'),
+    'literary_fallow_boyd': Look('#c8966e','#2e241c','part','#e8e4d8','#3a4a66','tee','#d8d2c4',eyes='#3a3026',sleeve=4),
+    'literary_fallow_otis': Look('#8a5a3c','#2a201c','close','#5a3e34','#34363a','flannel','#b23a30',eyes='#2e2620',age=1,beard='short',mark='bike_cap',sleeve=10),
+    'literary_fallow_stranger': Look('#d0b098','#3a3430','part','#d8d4c4','#2e3038','shirt','#c8c4b4',eyes='#4a4a46',sleeve=4),
     'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
     # in old coats; and Benny on the far stool.
@@ -1960,6 +1972,12 @@ def paint(look):
                     d.line((1,h//2,w-2,h//2),fill=shade(look.skin,-14))
                     if side=='front':d.point((2,h-9),fill='#8a7686');d.point((3,h-9),fill='#8a7686');d.point((2,h-10),fill='#9c8a92')
                     d.rectangle((0,h-4,w-1,h-1),fill='#8d8a84');d.line((0,h-4,w-1,h-4),fill='#6f6c66');d.line((0,h-1,w-1,h-1),fill='#d6d0c2')
+                elif look.mark=='fallow_opal':
+                    # 0.4.672: her cotton dress to the knee, a pale hem, bare shins, short socks turned down, and her shoes.
+                    hem=h//2-1;d.rectangle((0,hem+1,w-1,h-1),fill=rgb(look.skin));d.line((0,hem,w-1,hem),fill=rgb(look.accent))
+                    d.line((0,hem+1,w-1,hem+1),fill=shade(look.skin,-22))
+                    d.rectangle((0,h-7,w-1,h-6),fill='#f2efe6');d.line((0,h-7,w-1,h-7),fill='#d9d4c6')
+                    d.rectangle((0,h-5,w-1,h-1),fill=rgb(look.shoes));d.line((1,h-4,w-2,h-4),fill=shade(look.shoes,-38));d.line((0,h-1,w-1,h-1),fill=shade(look.shoes,-60))
                 elif look.mark=='possessed':
                     # Barefoot under the hem: a pale shin and a dirty sole line, no shoes.
                     d.rectangle((0,h-9,w-1,h-1),fill=rgb(look.skin));d.line((0,h-9,w-1,h-9),fill=shade(look.pants,-24));d.line((0,h-1,w-1,h-1),fill=shade(look.skin,-40))

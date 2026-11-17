@@ -1,0 +1,45 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "c": "the_oldest_house:block/fallow/chainlink",
+    "g": "the_oldest_house:block/fallow/galv",
+    "b": "the_oldest_house:block/fallow/barb",
+    "s": "the_oldest_house:block/fallow/gov_sign",
+    "w": "the_oldest_house:block/fallow/pole_wood",
+    "f": "the_oldest_house:block/fallow/flood_lit",
+    "l": "the_oldest_house:block/fallow/lid",
+    "e": "the_oldest_house:block/fallow/lid_edge",
+    "h": "the_oldest_house:block/fallow/hatch",
+    "k": "the_oldest_house:block/fallow/hitch_metal",
+    "particle": "the_oldest_house:block/fallow/pole_wood"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,39 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/fallow/sign_pole",
+    "n": "the_oldest_house:block/fallow/name_board",
+    "b": "the_oldest_house:block/fallow/price_board",
+    "r": "the_oldest_house:block/fallow/sign_trim",
+    "particle": "the_oldest_house:block/fallow/sign_pole"
+  },
+  "elements": [
+    {
+      "from": [
+        6,
+        0,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

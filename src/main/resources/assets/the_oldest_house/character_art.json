@@ -1728,6 +1728,54 @@
     "phase": 255
   },
   {
+    "name": "literary_fallow_harlan",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 263
+  },
+  {
+    "name": "literary_fallow_faye",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 264
+  },
+  {
+    "name": "literary_fallow_opal",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 265
+  },
+  {
+    "name": "literary_fallow_boyd",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 266
+  },
+  {
+    "name": "literary_fallow_otis",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 267
+  },
+  {
+    "name": "literary_fallow_stranger",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 268
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",
