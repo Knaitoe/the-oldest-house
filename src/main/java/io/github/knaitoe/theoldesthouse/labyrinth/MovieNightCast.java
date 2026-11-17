@@ -89,8 +89,22 @@ public final class MovieNightCast {
         new Reaction(12,20,RAY,"Lacing it up again. Same picture all night.",RAY,"Lacing it up again."));
 
     private static void say(LiteraryActor a,String line){a.say(line);said(a,line);}
-    /** When they last spoke and what they said (0.4.676: an idle line that would only repeat it goes unsaid). */
-    private static void said(LiteraryActor a,String line){a.getPersistentData().putLong("Said0502",a.level().getGameTime());a.getPersistentData().putString("SaidLine0676",line);}
+    /**
+     * When they last spoke and what they said (0.4.676: an idle line that would only repeat it goes unsaid). 0.4.680 (run 1709, two
+     * readers): the last line alone was not enough, since a line to the film or an answer to the other reader came between and the
+     * earlier one was said again; the last six are kept, each with when.
+     */
+    private static void said(LiteraryActor a,String line){
+        var mem=a.getPersistentData();long now=a.level().getGameTime();mem.putLong("Said0502",now);mem.putString("SaidLine0676",line);
+        var recent=mem.getList("Recent0680",net.minecraft.nbt.Tag.TAG_COMPOUND);var e=new CompoundTag();e.putString("Line",line);e.putLong("At",now);
+        recent.add(e);while(recent.size()>6)recent.remove(0);mem.put("Recent0680",recent);
+    }
+    /** Whether they said this line in the last half minute. */
+    private static boolean recently(LiteraryActor a,String line){
+        long now=a.level().getGameTime();
+        for(var t:a.getPersistentData().getList("Recent0680",net.minecraft.nbt.Tag.TAG_COMPOUND)){var e=(CompoundTag)t;if(e.getString("Line").equals(line)&&now-e.getLong("At")<600)return true;}
+        return false;
+    }
     /**
      * A line said to the readers near enough to hear it. 0.4.565 (two readers, the standard cast checks): a line to the film was said
      * on its frame whoever was near, and Lynn called to Bobby with both readers thirty blocks off. With nobody in earshot it goes unsaid,
@@ -203,8 +217,8 @@ public final class MovieNightCast {
         ServerPlayer near=null;double best=16*16;for(var p:readers){double e=p.distanceToSqr(a);if(e<best){best=e;near=p;}}if(near==null)return;
         // 0.4.676 (the two-reader cast checks): the first idle line is the first a reader is answered with, so a reader who has just
         // asked would hear it again at once. A line they said in the last half minute is not said again unasked.
-        String line=line(who,w.getInt("Gone0502"),n/CAST.size());var mem=a.getPersistentData();
-        if(line.equals(mem.getString("SaidLine0676"))&&l.getGameTime()-mem.getLong("Said0502")<600)return;
+        String line=line(who,w.getInt("Gone0502"),n/CAST.size());
+        if(recently(a,line))return;
         say(a,line);
     }
     private static String line(Person who,int gone,int n){
@@ -245,7 +259,13 @@ public final class MovieNightCast {
         int n=own.getInt("Talk_"+who.key());own.putInt("Talk_"+who.key(),n+1);
         String line;
         if(who==DOT){own.putBoolean("MetDot0502",true);line=!own.getBoolean("Ready")?"You came round early, hon. It isn't over out there yet.":noProgram(own)&&!own.getBoolean("Completed")?DOT_PROGRAM:n%2==0?"There's your account, on the stand. Somebody wrote it all down while you were out there.":line(who,gone,n/2+1);}
-        else line=line(who,gone,n);
+        else{
+            line=line(who,gone,n);
+            // 0.4.680 (run 1709, two readers): each reader's first word with someone is answered from the top of their lines, so a
+            // second reader asking just after the first got the same line and the first heard it twice. Lines they said in the last
+            // half minute are passed over for the next they have not.
+            for(int k=1;k<IDLE.get(who.key()).length&&recently(a,line);k++){own.putInt("Talk_"+who.key(),n+1+k);line=line(who,gone,n+k);}
+        }
         speak(a,who,line,List.of(p));
     }
     /** Right-clicking the teenagers' canoe. */
