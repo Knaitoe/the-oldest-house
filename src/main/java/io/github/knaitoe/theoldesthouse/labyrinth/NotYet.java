@@ -1,6 +1,8 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -45,6 +47,38 @@ public final class NotYet {
         var l=p.serverLevel();ensure(l,b);
         own.putInt("Visits",own.getInt("Visits")+1);
         l.playSound(null,b.offset(0,1,-20),NotYetRegistry.HUM.get(),SoundSource.AMBIENT,.6F,1F);
+        NotYetMending.state(p,own);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.664: each reader
+    /** The counter's three kinds of window, by the House's read of the reader's age: turning drums, falling cards, lit bars. */
+    public static final int DRUM=0,FLAP=1,SEGMENT=2;
+    public static int counterKind(LabyrinthData d,UUID id){
+        return switch(HouseRead.value(d,id,HouseRead.Trait.AGE,false)){case "DIGITAL"->SEGMENT;case "TRANSITIONAL"->FLAP;default->DRUM;};
+    }
+    /** Whether this reader let the Kept's four go, as the machine there saw it. */
+    static boolean tookFour(ServerPlayer p){return (Kept.own(p).getInt("Released")&15)==15;}
+    /** What the machine has said to this reader, the last twelve lines, for the account and for the House's own checks. */
+    static void told(CompoundTag own,String line){
+        var list=own.getList("Told",net.minecraft.nbt.Tag.TAG_STRING);list.add(net.minecraft.nbt.StringTag.valueOf(line));while(list.size()>12)list.remove(0);own.put("Told",list);
+    }
+    public static List<String> told(CompoundTag own){var list=own.getList("Told",net.minecraft.nbt.Tag.TAG_STRING);var out=new ArrayList<String>();for(int i=0;i<list.size();i++)out.add(list.getString(i));return out;}
+    /**
+     * Every five ticks for each reader in the ward. The machine speaks once a visit as they come in, and the first time they are in the
+     * ward, once more, by what the House has read of home; its screens wake to them as it speaks. The rest is the mending's.
+     */
+    public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
+        var r=p.position().subtract(b.getX(),b.getY(),b.getZ());int visit=own.getInt("Visits");
+        if(own.getInt("SpokeVisit")!=visit&&r.z<-1){
+            own.putInt("SpokeVisit",visit);
+            var line=NotYetTexts.arrival(tookFour(p),visit,NotYetMending.cot(own)!=null);
+            Kept.machine(p,line);told(own,line);NotYetMending.wakeScreens(p,b);
+        }else if(!own.getBoolean("HomeSaid")&&own.getInt("SpokeVisit")==visit&&NotYetSite.inWard(r)&&!NotYetMending.held(p)){
+            own.putBoolean("HomeSaid",true);
+            var line=NotYetTexts.home(HouseRead.value(LabyrinthData.get(p.server),p.getUUID(),HouseRead.Trait.HOME,true));
+            if(!line.isEmpty()){Kept.machine(p,line);told(own,line);}
+        }
+        NotYetMending.reader(p,b,own);
     }
 
     /** The one lying in this cot of the long room, if their body is there. */
@@ -83,11 +117,26 @@ public final class NotYet {
      */
     @SubscribeEvent public static void keepLying(CanContinueSleepingEvent e){
         if(e.getEntity() instanceof LiteraryActor a&&is(a))e.setContinueSleeping(true);
+        // 0.4.664: a reader laid on the table or on a cot lies there until the machine (or, from part 3, the reader) says otherwise.
+        else if(e.getEntity() instanceof net.minecraft.world.entity.player.Player p&&onMachineBed(p))e.setContinueSleeping(true);
+    }
+    /** Whether a body is lying on one of the ward's cots or on the mending table. */
+    public static boolean onMachineBed(net.minecraft.world.entity.LivingEntity e){
+        var at=e.getSleepingPos().orElse(null);if(at==null)return false;var s=e.level().getBlockState(at);
+        return NotYetBlock.is(s,NotYetBlock.Kind.COT)||NotYetBlock.is(s,NotYetBlock.Kind.TABLE);
     }
 
-    /** A hand on one of the three. They do not speak yet (part 2); a reader sees how they lie. */
+    /**
+     * A hand on one of the three. To a reader the machine has not yet mended they say nothing, and the reader sees how they lie. To one it
+     * has, whichever of them is spoken to first tells the only rule they know; after that, a little more, in turn.
+     */
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
-        cue(p,switch(a.phase()-FIRST){case INES->NotYetTexts.INES;case BRAM->NotYetTexts.BRAM;default->NotYetTexts.ODILE;});
+        int who=a.phase()-FIRST;
+        if(own.getInt("Mended")==0){cue(p,switch(who){case INES->NotYetTexts.INES;case BRAM->NotYetTexts.BRAM;default->NotYetTexts.ODILE;});return;}
+        String line;
+        if(!own.getBoolean("Rule")){line=NotYetTexts.rule(who,p);own.putBoolean("Rule",true);own.putInt("RuleFrom",who);}
+        else{int heard=own.getInt("Heard"+who);line=NotYetTexts.after(who,heard);own.putInt("Heard"+who,heard+1);}
+        a.say(NotYetTexts.NAMES[who],line);a.speaks(line);
     }
 
     /** A hand on something of the ward's. True if it was theirs to answer. The chart is the first paper: the House's own reading answers it. */

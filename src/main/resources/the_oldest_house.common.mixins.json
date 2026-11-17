@@ -16,7 +16,8 @@
     "ArtifactPaddleMixin",
     "ArtifactSnowMixin",
     "CraftingKeyMixin",
-    "TeleportBaselineMixin"
+    "TeleportBaselineMixin",
+    "NotYetSleepMixin"
   ],
   "injectors": {
     "defaultRequire": 1

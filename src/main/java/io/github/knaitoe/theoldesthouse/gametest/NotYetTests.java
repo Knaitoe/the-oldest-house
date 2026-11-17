@@ -14,6 +14,10 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -161,6 +165,173 @@ public final class NotYetTests {
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the chart says nothing of what anybody is: "+word);
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
             h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            done();h.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.664: refused
+    /** Gravity for a test player, which the game never ticks; a body lying on a bed does not move, as in the game. */
+    private static void body(GameTestHelper h,ServerPlayer p){
+        p.setNoGravity(false);
+        h.onEachTick(()->{if(p.isRemoved()||p.isSpectator()||p.isSleeping())return;var v=p.getDeltaMovement();double y=p.onGround()&&v.y<=0?-.08:(v.y-.08)*.98;
+            p.setDeltaMovement(v.x,y,v.z);p.move(net.minecraft.world.entity.MoverType.SELF,p.getDeltaMovement());
+            var after=p.getDeltaMovement();double friction=p.onGround()?.546:.91;p.setDeltaMovement(after.x*friction,after.y,after.z*friction);});
+    }
+    /** Who is held, on the table, on a cot, and where, for a failure's message. */
+    private static String where(ServerPlayer p,BlockPos b){return "held "+NotYetMending.held(p)+", table "+NotYetMending.onTable(p.getUUID())+", sleeping "+p.getSleepingPos().map(s->s.subtract(b).toShortString()).orElse("no")+", at "+p.position().subtract(b.getX(),b.getY(),b.getZ());}
+
+    /**
+     * 0.4.664: the first fall. A spectator standing over the plates opens nothing. A reader who has not fallen steps onto them at the
+     * passage's edge, where a narrower hatch would have left a plate's width of grating to go round by: the plates drop under them and they
+     * fall to the grating at the foot of the shaft, and the fall is refused without its harm. A moment's dark where they fell; the mending
+     * table, lying, under the arms at work; bed one, with the machine's NOT YET and a seam on them, the counter running; then up at the
+     * cot's side, whole, nothing they carry lost, the arms folded. The plates shut behind them, and do not open for them twice.
+     */
+    @GameTest(template="empty",batch="not_yet_fall",timeoutTicks=1800)
+    public static void theFloorOpensTheTableMendsTheCotWakes(GameTestHelper h){
+        var f=place(h);var p=f.player("not_yet_faller",P);var w=f.player("not_yet_onlooker",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            w.setGameMode(GameType.SPECTATOR);w.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-4.5,180,0);
+            body(h,p);
+            p.teleportTo(l,b.getX()-1.5,b.getY(),b.getZ()-1.5,180,0);p.connection.resetPosition();
+            p.getInventory().add(new ItemStack(Items.BREAD,3));
+        }).thenIdle(20).thenExecute(()->{
+            h.assertFalse(NotYetSite.hatchOpen(l,b),"a spectator over the plates opens nothing");
+            h.assertFalse(f.own(p,P).getBoolean("Fallen"),"nobody has fallen yet");
+            w.teleportTo(l,b.getX()+.5,b.getY()+2,b.getZ()-30.5,180,0);
+            p.teleportTo(l,b.getX()-1.5,b.getY(),b.getZ()-4.5,180,0);p.connection.resetPosition();
+        }).thenWaitUntil(()->h.assertTrue(NotYetMending.held(p),"the floor opens under them and takes them: open "+NotYetSite.hatchOpen(l,b)+", "+where(p,b)))
+        .thenExecute(()->{
+            h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth(),"whole: "+p.getHealth());
+            h.assertTrue(p.getY()-b.getY()<NotYetSite.SHAFT_FLOOR+2,"at the foot of the shaft: "+where(p,b));
+            h.assertTrue(f.own(p,P).getBoolean("Fallen"),"fallen");
+        }).thenWaitUntil(()->h.assertTrue(NotYetMending.onTable(p.getUUID())&&p.getSleepingPos().filter(b.offset(NotYetSite.TABLE)::equals).isPresent(),"then on the mending table, lying: "+where(p,b)))
+        .thenExecute(()->{
+            for(var arm:NotYetSite.ARMS)h.assertTrue(stage(l,b,arm)==2,"the arms at work over the table");
+            h.assertTrue(NotYetMending.seams(p.getUUID())==0,"no seam until the arms are done");
+        }).thenWaitUntil(()->h.assertTrue(!NotYetMending.onTable(p.getUUID())&&p.getSleepingPos().filter(b.offset(NotYetSite.WARD_COTS.get(0))::equals).isPresent(),"then on bed one: "+where(p,b)))
+        .thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("Mended")==1&&own.contains("CountFrom"),"mended once, the counter running: "+own);
+            h.assertTrue(NotYetMending.seams(p.getUUID())==1,"one seam, shown to everyone");
+            h.assertTrue(NotYet.told(own).contains(NotYetTexts.NOT_YET),"the machine says it: "+NotYet.told(own));
+            h.assertTrue(NotYetSite.WARD_COTS.get(0).equals(NotYetMending.cot(own)),"bed one is theirs: "+NotYetMending.cot(own));
+        }).thenWaitUntil(()->h.assertFalse(NotYetMending.held(p),"and then up: "+where(p,b)))
+        .thenExecute(()->{
+            h.assertFalse(p.isSleeping(),"standing");
+            var side=NotYetSite.bedside(NotYetSite.WARD_COTS.get(0));
+            h.assertTrue(p.position().distanceTo(new Vec3(b.getX()+side.x,b.getY(),b.getZ()+side.z))<1.5,"at the cot's side: "+where(p,b));
+            h.assertTrue(p.getHealth()==p.getMaxHealth()&&p.getInventory().countItem(Items.BREAD)==3,"whole, and nothing lost");
+            for(var arm:NotYetSite.ARMS)h.assertTrue(stage(l,b,arm)==0,"the arms folded again");
+        }).thenWaitUntil(()->h.assertFalse(NotYetSite.hatchOpen(l,b),"the plates shut again behind them"))
+        .thenExecute(()->{p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-5.5,180,0);p.connection.resetPosition();})
+        .thenIdle(30).thenExecute(()->{
+            h.assertFalse(NotYetSite.hatchOpen(l,b),"they cross the plates again and the plates hold");
+            h.assertTrue(p.getY()-b.getY()>-.5&&!NotYetMending.held(p),"standing on them: "+where(p,b));
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.664: every death after the first is refused the same way. A reader who has fallen before is struck down in the ward: they are
+     * whole at once and the machine has them; table, cot, up. A second seam, its cause kept, the machine counting. Nothing they carry is
+     * dropped and nothing lies on the floor. Out of the place, the seams are no longer drawn.
+     */
+    @GameTest(template="empty",batch="not_yet_death",timeoutTicks=1400)
+    public static void everyDeathAfterIsRefusedTheSameWay(GameTestHelper h){
+        var f=place(h);var p=f.player("not_yet_struck",P);var l=f.level(P);var b=f.base(P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            var own=f.own(p,P);own.putBoolean("Fallen",true);own.putInt("Mended",1);own.putInt("Cot",1);own.putLong("CountFrom",l.getGameTime()-600);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            body(h,p);
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-20.5,180,0);p.connection.resetPosition();
+            p.getInventory().add(new ItemStack(Items.IRON_INGOT,5));
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(NotYetMending.seams(p.getUUID())==1,"the seam they came in with is drawn on them");
+            p.invulnerableTime=0;p.hurt(p.damageSources().fellOutOfWorld(),1000);
+            h.assertTrue(p.isAlive()&&p.getHealth()==p.getMaxHealth(),"the death is refused: alive and whole, "+p.getHealth());
+            h.assertTrue(NotYetMending.held(p),"and the machine has them");
+        }).thenWaitUntil(()->h.assertFalse(NotYetMending.held(p),"mended: "+where(p,b)))
+        .thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getInt("Mended")==2&&NotYetMending.seams(p.getUUID())==2,"a second seam: "+own.getInt("Mended")+" "+NotYetMending.seams(p.getUUID()));
+            h.assertTrue(own.getString("LastCause").equals("outOfWorld"),"its cause kept: "+own.getString("LastCause"));
+            h.assertTrue(p.getInventory().countItem(Items.IRON_INGOT)==5,"nothing dropped");
+            h.assertTrue(l.getEntitiesOfClass(ItemEntity.class,new AABB(b).inflate(40)).isEmpty(),"nothing on the floor");
+            h.assertTrue(NotYet.told(own).contains(NotYetTexts.mended(2)),"the machine counts: "+NotYet.told(own));
+            h.assertTrue(NotYetSite.WARD_COTS.get(0).equals(NotYetMending.cot(own)),"the same cot: "+NotYetMending.cot(own));
+            f.leave(p);
+        }).thenWaitUntil(()->h.assertTrue(NotYetMending.seams(p.getUUID())==0,"out of the ward, the seams are no longer drawn"))
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    /**
+     * 0.4.664, two readers: both over the plates, both fall. The table is had in turn, never by both: one is mended while the other waits
+     * in the dark where they fell. Each gets their own cot, bed one and bed two, and their own seam.
+     */
+    @GameTest(template="empty",batch="not_yet_two",timeoutTicks=2000)
+    public static void twoFallTogetherAndAreMendedInTurn(GameTestHelper h){
+        var f=place(h);var a=f.player("not_yet_first",P);var c=f.player("not_yet_second",P);var l=f.level(P);var b=f.base(P);
+        h.onEachTick(()->{if(NotYetMending.onTable(a.getUUID())&&NotYetMending.onTable(c.getUUID()))h.fail("both on the table at once");});
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            for(var p:List.of(a,c)){body(h,p);}
+            a.teleportTo(l,b.getX()-.5,b.getY(),b.getZ()-4.5,180,0);c.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-5.5,180,0);
+            a.connection.resetPosition();c.connection.resetPosition();
+        }).thenWaitUntil(()->h.assertTrue(NotYetMending.held(a)&&NotYetMending.held(c),"both fall: "+where(a,b)+" / "+where(c,b)))
+        .thenWaitUntil(()->h.assertTrue(NotYetMending.onTable(a.getUUID())||NotYetMending.onTable(c.getUUID()),"one on the table"))
+        .thenExecute(()->{var waiting=NotYetMending.onTable(a.getUUID())?c:a;h.assertTrue(NotYetMending.held(waiting)&&!waiting.isSleeping(),"the other waits in the dark: "+where(waiting,b));})
+        .thenWaitUntil(()->h.assertFalse(NotYetMending.held(a)||NotYetMending.held(c),"both mended: "+where(a,b)+" / "+where(c,b)))
+        .thenExecute(()->{
+            var ca=NotYetMending.cot(f.own(a,P));var cc=NotYetMending.cot(f.own(c,P));
+            h.assertTrue(ca!=null&&cc!=null&&!ca.equals(cc),"each their own cot: "+ca+" "+cc);
+            h.assertTrue(java.util.Set.of(ca,cc).equals(java.util.Set.of(NotYetSite.WARD_COTS.get(0),NotYetSite.WARD_COTS.get(1))),"bed one and bed two");
+            h.assertTrue(NotYetMending.seams(a.getUUID())==1&&NotYetMending.seams(c.getUUID())==1,"a seam each");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.664: what the machine says, and the rule. A reader who let the Kept's four go is told so as they come in; at the ward, the machine
+     * says what it says by what the House has read of their home. A newcomer is told the machine has been waiting. The three say nothing to
+     * a reader the machine has not mended; to one it has, whichever is spoken to first tells the rule, and the others then say a little
+     * more. The counter's kind follows the House's read of age.
+     */
+    @GameTest(template="empty",batch="not_yet_rule",timeoutTicks=1200)
+    public static void theMachineSpeaksAndTheLongRoomTellsTheRule(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        // Who they are to the House is settled before they come in: one let the Kept's four go and has been read; the other is new.
+        var p=NativeTestPlayers.survival(h,"not_yet_listener");var q=NativeTestPlayers.survival(h,"not_yet_newcomer");f.players.add(p);f.players.add(q);
+        var kept=LiteraryVignettes.personal(f.data(),p.getUUID(),LabyrinthPlace.KEPT);kept.putInt("Released",15);LiteraryVignettes.save(f.data(),p.getUUID(),LabyrinthPlace.KEPT,kept);
+        HouseRead.signal(p,HouseRead.Trait.HOME,"RUNAWAY",false);HouseRead.signal(p,HouseRead.Trait.HOME,"RUNAWAY",true);
+        HouseRead.signal(p,HouseRead.Trait.AGE,"DIGITAL",false);HouseRead.signal(p,HouseRead.Trait.AGE,"DIGITAL",true);
+        // Both have fallen before, so the plates hold them here.
+        for(var r:List.of(p,q)){var own=f.own(r,P);own.putBoolean("Fallen",true);LiteraryVignettes.save(f.data(),r.getUUID(),P,own);}
+        f.arrive(p,P);f.arrive(q,P);
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);q.teleportTo(l,b.getX()-.5,b.getY(),b.getZ()-3.5,180,0);
+        }).thenIdle(15).thenExecute(()->{
+            h.assertTrue(NotYet.told(f.own(p,P)).contains(NotYetTexts.TOOK_FOUR),"the Kept's four remembered: "+NotYet.told(f.own(p,P)));
+            h.assertTrue(NotYet.told(f.own(q,P)).contains(NotYetTexts.WAITING),"and a newcomer waited for: "+NotYet.told(f.own(q,P)));
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-14.5,180,0);q.teleportTo(l,b.getX()-.5,b.getY(),b.getZ()-14.5,180,0);
+        }).thenIdle(15).thenExecute(()->{
+            h.assertTrue(NotYet.told(f.own(p,P)).contains(NotYetTexts.home("RUNAWAY")),"at the ward, by the read of home: "+NotYet.told(f.own(p,P)));
+            h.assertTrue(NotYet.told(f.own(q,P)).size()==1,"and nothing more to one with no read: "+NotYet.told(f.own(q,P)));
+            h.assertTrue(NotYet.counterKind(f.data(),p.getUUID())==NotYet.SEGMENT&&NotYet.counterKind(f.data(),q.getUUID())==NotYet.DRUM,"the counter's kind by the read of age");
+            NotYet.ensure(l,b);
+        }).thenWaitUntil(()->{for(int who=0;who<NotYet.PEOPLE;who++)h.assertTrue(NotYet.find(l,b,who)!=null,"the three in their cots");})
+        .thenExecute(()->{
+            var ines=NotYet.find(l,b,NotYet.INES);var bram=NotYet.find(l,b,NotYet.BRAM);
+            // Not yet mended: they say nothing; the reader sees how they lie.
+            NotYet.talk(q,ines,f.own(q,P));
+            h.assertTrue(ines.getCustomName()==null,"nothing said to one not yet mended: "+ines.getCustomName());
+            h.assertFalse(f.own(q,P).getBoolean("Rule"),"and no rule told");
+            var own=f.own(p,P);own.putInt("Mended",1);
+            NotYet.talk(p,bram,own);
+            h.assertTrue(own.getBoolean("Rule")&&own.getInt("RuleFrom")==NotYet.BRAM,"the first spoken to tells the rule");
+            h.assertTrue(bram.getCustomName()!=null&&bram.getCustomName().getString().equals(NotYetTexts.rule(NotYet.BRAM,p)),"in their own words: "+bram.getCustomName());
+            NotYet.talk(p,ines,own);
+            h.assertTrue(ines.getCustomName()!=null&&ines.getCustomName().getString().equals(NotYetTexts.after(NotYet.INES,0)),"then a little more: "+ines.getCustomName());
+            h.assertTrue(own.getInt("Heard"+NotYet.INES)==1&&own.getInt("Heard"+NotYet.BRAM)==0,"counted, so the next is the next");
+            LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
             done();h.succeed();
         });
     }

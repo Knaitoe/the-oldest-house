@@ -6581,5 +6581,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.bleed.not_yet"
+  },
+  "not_yet.hatch": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:not_yet/hatch",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.not_yet.hatch"
+  },
+  "not_yet.mend": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:not_yet/mend",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.not_yet.mend"
   }
 }

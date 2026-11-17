@@ -18,12 +18,13 @@ public abstract class GoatmanBedWakeMixin {
     @Inject(method="render",at=@At("HEAD"),cancellable=true)
     private void ghosthouse$bedButton(GuiGraphics graphics,int mouseX,int mouseY,float partialTick,CallbackInfo ci){
         // 0.4.163: once it stands laughing, the bed's chat box is not drawn either; the screen is clear.
-        if(GoatmanClient.clearBedScreen()){if(leaveBedButton!=null){leaveBedButton.visible=false;leaveBedButton.active=false;}ci.cancel();return;}
+        // 0.4.664: while the machine in Not Yet holds a reader on its table or their cot, nothing is drawn over the dark and nobody gets up.
+        if(GoatmanClient.clearBedScreen()||io.github.knaitoe.theoldesthouse.client.NotYetClient.held()){if(leaveBedButton!=null){leaveBedButton.visible=false;leaveBedButton.active=false;}ci.cancel();return;}
         if(leaveBedButton!=null){boolean available=!GoatmanClient.watchingFromBed();leaveBedButton.visible=available;leaveBedButton.active=available;}
     }
 
     @Inject(method="sendWakeUp",at=@At("HEAD"),cancellable=true)
     private void ghosthouse$holdAdmittedBed(CallbackInfo ci){
-        if(GoatmanClient.watchingFromBed())ci.cancel();
+        if(GoatmanClient.watchingFromBed()||io.github.knaitoe.theoldesthouse.client.NotYetClient.held())ci.cancel();
     }
 }

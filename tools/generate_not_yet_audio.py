@@ -1,4 +1,5 @@
-"""Original sounds for Not Yet (0.4.663, docs/NOT_YET_0_4_663.md): the ward's hum, and one turn of the counter.
+"""Original sounds for Not Yet (0.4.663, docs/NOT_YET_0_4_663.md): the ward's hum, and one turn of the counter; 0.4.664
+(docs/NOT_YET_0_4_664.md) adds the hatch dropping open and the arms at work on the table.
 
 The proposal: "the counter's tick, the mending, the hatch, a name called, and the silence when it looks away." This part has the place
 only: its hum, which the machine's other rooms share the timbre of (mains at fifty and its harmonics, a fan's broadband air, the faint
@@ -15,6 +16,8 @@ from pathlib import Path
 ROWS = {
     'hum': ('The ward hums', 24),
     'tick': ('A counter turns over', 16),
+    'hatch': ('A hatch drops open', 24),
+    'mend': ('Fine arms work', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -68,7 +71,45 @@ def tick():
     return out + ring
 
 
-MAKERS = {'hum': hum, 'tick': tick}
+def hatch():
+    # 0.4.664: the plates dropping open under a reader: the latch letting go, fifteen plates swinging down on their hinges almost
+    # together, a hollow ring off the shaft's casing, and the last plate knocking against the wall it hangs on.
+    n = seconds(1.6)
+    t = times(n)
+    out = np.zeros(n)
+    latch = band(rng.standard_normal(n), 1800, 6000) * np.exp(-t / .006) * .9
+    out += latch
+    for k in range(9):
+        at = .05 + k * .018 + rng.uniform(0, .01)
+        clank = band(rng.standard_normal(n), 300, 2400) * np.exp(-np.clip(t - at, 0, None) / .03) * (t >= at)
+        out += clank * (.7 - k * .05)
+    ring = (np.sin(2 * np.pi * 142 * t) * .5 + np.sin(2 * np.pi * 377 * t) * .3 + np.sin(2 * np.pi * 611 * t) * .15)
+    out += ring * np.exp(-np.clip(t - .06, 0, None) / .45) * (t >= .06) * .45
+    knock = band(rng.standard_normal(n), 200, 1200) * np.exp(-np.clip(t - .9, 0, None) / .02) * (t >= .9) * .5
+    return out + knock
+
+
+def mend():
+    # 0.4.664: one second of the arms at work over the table: two small servos whining up and down out of step, the tick of fine joints,
+    # and twice a soft drawn sound, thread pulled through.
+    n = seconds(1.0)
+    t = times(n)
+    whine = np.zeros(n)
+    for f0, rate, phase in ((1900, 3.1, 0.0), (2600, 4.3, 1.3)):
+        f = f0 * (1 + .08 * np.sin(2 * np.pi * rate * t + phase))
+        whine += np.sin(2 * np.pi * np.cumsum(f) / RATE) * (.12 + .06 * np.sin(2 * np.pi * rate * t + phase))
+    ticks = np.zeros(n)
+    for at in np.arange(.03, 1.0, .11) + rng.uniform(-.01, .01, 9):
+        ticks += band(rng.standard_normal(n), 2500, 8000) * np.exp(-np.clip(t - at, 0, None) / .003) * (t >= at) * .4
+    pull = np.zeros(n)
+    for at in (.25, .7):
+        env = np.clip((t - at) / .05, 0, 1) * np.clip((at + .22 - t) / .12, 0, 1)
+        pull += band(rng.standard_normal(n), 900, 3800) * env * .35
+    edge = np.clip(t / .03, 0, 1) * np.clip((t[-1] - t) / .05, 0, 1)
+    return (whine + ticks + pull) * edge
+
+
+MAKERS = {'hum': hum, 'tick': tick, 'hatch': hatch, 'mend': mend}
 
 
 def main():
