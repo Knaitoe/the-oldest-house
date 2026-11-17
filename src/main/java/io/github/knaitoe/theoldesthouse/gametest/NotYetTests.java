@@ -359,6 +359,8 @@ public final class NotYetTests {
         NotYetTrial.advance(p.getUUID(),Math.max(0,(thousandths-now)*len/1000+1));
     }
     private static int cotStage(ServerLevel l,BlockPos b,BlockPos head){return stage(l,b,head);}
+    /** The reader's own account, as words. */
+    private static String pages(ServerPlayer p,LiteraryTests.Fixture f){return LiteraryTexts.ending(p.getGameProfile().getName(),P,f.own(p,P)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).reduce("",(x,y)->x+" "+y).replaceAll("\\s+"," ");}
 
     /**
      * 0.4.665: lying down, and getting up. A reader the machine has not mended lies on nothing: a cot is only a cot to them. One it has
@@ -456,14 +458,30 @@ public final class NotYetTests {
             var own=f.own(p,P);
             h.assertTrue(own.getBoolean("StayedDown")&&!NotYetTrial.lying(p.getUUID()),"it looked away: they stayed down");
             h.assertTrue(NotYetSite.doorOpen(l,b),"the far door opens");
-            h.assertTrue(p.getTicksFrozen()==0&&cotStage(l,b,mine)==NotYetBlock.PLAIN,"the cold gone, the cot cool");
+            h.assertTrue(p.getTicksFrozen()==0&&cotStage(l,b,mine)==NotYetBlock.MADE,"the cold gone, the cot cool and made up tight: "+cotStage(l,b,mine));
+            h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("stayed_down"),"its account is ready: "+own);
             leaveBed(p);
         }).thenIdle(2).thenExecute(()->{
             var own=f.own(p,P);
             h.assertTrue(own.getInt("GotUp")==0,"getting up after does not count as getting up");
+            h.assertTrue(cotStage(l,b,mine)==NotYetBlock.MADE&&cotStage(l,b,NotYetSite.WARD_COTS.get(1))==NotYetBlock.PLAIN,"their cot stays made once they are up, and only theirs");
             f.click(p,P,mine);
+            h.assertTrue(p.containerMenu instanceof LiteraryVignettes.Pages,"the drawer under their own cot holds the account");
+            p.closeContainer();
             h.assertFalse(NotYetTrial.lying(p.getUUID()),"lying down again, it does not bother");
-            h.assertTrue(NotYet.told(f.own(p,P)).contains(NotYetTexts.NOT_YOU),"not you, not now");
+            var why=NotYet.told(f.own(p,P));var seen=told(p);
+            h.assertTrue(why.contains(NotYetTexts.NOT_YOU)&&seen.contains(NotYetTexts.DRAWER),"not you, not now; and the drawer slides out: "+why+" / "+seen);
+            var text=pages(p,f);
+            h.assertTrue(text.contains("Moss")&&text.contains("It was not.")&&text.contains("the man from the long room")&&text.contains("STAYED DOWN")&&text.contains("MENDED: TWO"),"the account is what happened: "+text);
+            h.assertFalse(text.contains("got up once")||text.contains("lying in the ward with me"),"and not what did not: "+text);
+            f.source(p,P);f.read(p,P,mine);
+            h.assertTrue(f.own(p,P).getBoolean("Completed")&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.NOT_YET),"read through after the chart, it is theirs: "+f.own(p,P));
+            // The long room's three: one thing more to a reader who stayed down.
+            NotYet.ensure(l,b);
+        }).thenWaitUntil(()->{for(int who=0;who<NotYet.PEOPLE;who++)h.assertTrue(NotYet.find(l,b,who)!=null,"the three in their cots");})
+        .thenExecute(()->{
+            for(int who=0;who<NotYet.PEOPLE;who++){var a=NotYet.find(l,b,who);NotYet.talk(p,a,f.own(p,P));
+                h.assertTrue(a.getCustomName()!=null&&a.getCustomName().getString().equals(NotYetTexts.stayed(who,p)),"each says one thing more to one who stayed: "+a.getCustomName());}
             p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-60.5,180,0);
         }).thenIdle(NotYetTrial.DOOR_HELD+20).thenExecute(()->{
             h.assertTrue(NotYetSite.doorOpen(l,b),"open while one who stayed down is near it");
@@ -506,6 +524,10 @@ public final class NotYetTests {
             var lies=NotYetTrial.lies(own);
             h.assertTrue(lies.get(lies.size()-1).getString("Line").equals(line)&&lies.get(lies.size()-1).getBoolean("True"),"and that one was so");
             h.assertTrue(NotYetTrial.lying(a.getUUID()),"they are still lying down");
+            // What each one's account would say: the other by name, where the machine used them, and which line was true.
+            String an=a.getGameProfile().getName(),cn=c.getGameProfile().getName();var mine=pages(a,f);var theirs=pages(c,f);
+            h.assertTrue(mine.contains("It hurt "+cn+" where they lay")&&mine.contains("When "+cn+" got up, it told me so. That was true.")&&mine.contains("The screens said "+cn+" had got up and was standing at the door. "+cn+" had not.")&&mine.contains("it called "+cn+" from the far end of the ward"),"the one still lying: "+mine);
+            h.assertTrue(theirs.contains("It hurt me where I lay, and told "+an+" that they could stop it."),"the one hurt: "+theirs);
             leaveBed(a);
             done();h.succeed();
         });

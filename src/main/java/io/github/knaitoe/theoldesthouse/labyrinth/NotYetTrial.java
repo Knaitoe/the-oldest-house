@@ -20,6 +20,7 @@ import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -53,6 +54,8 @@ public final class NotYetTrial {
 
     static final class Trial {
         final UUID id;final BlockPos base,head;long start;final int length;boolean asked;int fired;int calls;
+        /** 0.4.666: the readers who lay down in the same ward while this one lay there, for the account. */
+        final java.util.Set<String> beside=new java.util.LinkedHashSet<>();
         Trial(UUID id,BlockPos base,BlockPos head,long start,int length){this.id=id;this.base=base;this.head=head;this.start=start;this.length=length;}
         boolean fire(int bit){if((fired&bit)!=0)return false;fired|=bit;return true;}
     }
@@ -119,6 +122,7 @@ public final class NotYetTrial {
         if(!p.isSleeping()){gotUp(p,t);return;}
         var own=NotYetMending.own(p);
         int k=(int)Math.min(1000,(now-t.start)*1000/t.length);long e=now-t.start;boolean burn=false,kill=false;
+        if(e%20==0)for(var o:others(p,b))if(lying(o.getUUID()))t.beside.add(o.getGameProfile().getName());
         // 1. The cot heats: the coils under the mattress glow, the frame ticks, and it burns a little every two seconds.
         if(k>=HEAT_FROM&&k<HEAT_TO){
             if(t.fire(1)){cot(l,b,t.head,NotYetBlock.HEATING);NotYet.cue(p,NotYetTexts.HEAT);}
@@ -137,7 +141,7 @@ public final class NotYetTrial {
         if(k>=HURT_TO-20&&t.fire(256))hurtOther(p,t,own,2);
         // 5. It lets the cold in, and then it kills them, and refuses that death where they lie.
         if(k>=COLD_FROM&&k<1000){
-            if(t.fire(512)){vents(p,b,true);NotYet.cue(p,NotYetTexts.COLD);Kept.machine(p,NotYetTexts.WARM);NotYet.told(own,NotYetTexts.WARM);}
+            if(t.fire(512)){own.putBoolean("Cold",true);vents(p,b,true);NotYet.cue(p,NotYetTexts.COLD);Kept.machine(p,NotYetTexts.WARM);NotYet.told(own,NotYetTexts.WARM);}
             p.setTicksFrozen(Math.min(p.getTicksRequiredToFreeze()+40,Math.max(p.getTicksFrozen(),(int)((k-COLD_FROM)*(p.getTicksRequiredToFreeze()+40L)/(BLOW-COLD_FROM)))));
         }
         if(k>=BLOW&&t.fire(1024))kill=true;
@@ -151,8 +155,11 @@ public final class NotYetTrial {
     }
     static void call(ServerPlayer p,Trial t,CompoundTag own){
         var others=others(p,t.base);String line;
-        if(!others.isEmpty()){var o=others.get(t.calls%others.size());line=NotYetTexts.callOther(o.getGameProfile().getName());}
-        else{var lost=Kept.lost(p);line=lost.isEmpty()?NotYetTexts.CALL_SELF:NotYetTexts.callLost(lost.get(lost.size()-1-Math.min(t.calls,lost.size()-1)));}
+        String name;
+        if(!others.isEmpty()){var o=others.get(t.calls%others.size());name=o.getGameProfile().getName();line=NotYetTexts.callOther(name);own.putBoolean("CalledOthers",true);}
+        else{var lost=Kept.lost(p);name=lost.isEmpty()?"":lost.get(lost.size()-1-Math.min(t.calls,lost.size()-1));line=lost.isEmpty()?NotYetTexts.CALL_SELF:NotYetTexts.callLost(name);if(!lost.isEmpty())own.putBoolean("CalledLost",true);}
+        // 0.4.666: the names called, for the account (an empty name is the reader's own).
+        var called=own.getList("Called",net.minecraft.nbt.Tag.TAG_STRING);boolean had=false;for(int i=0;i<called.size();i++)had|=called.getString(i).equals(name);if(!had){called.add(StringTag.valueOf(name));own.put("Called",called);}
         t.calls++;
         NotYet.cue(p,line);heard(own,line);
         var far=t.base.offset(0,1,NotYetSite.WARD_N+2);
@@ -163,12 +170,12 @@ public final class NotYetTrial {
         if(others.isEmpty()){
             NotYetMending.screens(p,t.base,NotYetBlock.DOOR_OPEN);
             Kept.machine(p,NotYetTexts.DOOR_IS_OPEN);NotYet.told(own,NotYetTexts.DOOR_IS_OPEN);
-            told(own,NotYetTexts.DOOR_IS_OPEN,NotYetSite.doorOpen(p.serverLevel(),t.base));
+            told(own,NotYetTexts.DOOR_IS_OPEN,NotYetSite.doorOpen(p.serverLevel(),t.base),"");
         }else{
             var o=others.get(0);var line=NotYetTexts.gotUpLie(o.getGameProfile().getName());
             NotYetMending.screens(p,t.base,NotYetBlock.SOMEONE);
             Kept.machine(p,line);NotYet.told(own,line);
-            told(own,line,!lying(o.getUUID()));
+            told(own,line,!lying(o.getUUID()),o.getGameProfile().getName());
         }
     }
     static void hurtOther(ServerPlayer p,Trial t,CompoundTag own,int stroke){
@@ -178,14 +185,16 @@ public final class NotYetTrial {
         if(!victims.isEmpty()){
             for(var o:victims){
                 if(stroke==0){var line=NotYetTexts.thatIs(o.getGameProfile().getName());Kept.machine(p,line);NotYet.told(own,line);
-                    var oo=NotYetMending.own(o);var them=NotYetTexts.couldStop(p.getGameProfile().getName());Kept.machine(o,them);NotYet.told(oo,them);NotYetMending.save(o,oo);}
+                    var oo=NotYetMending.own(o);var them=NotYetTexts.couldStop(p.getGameProfile().getName());Kept.machine(o,them);NotYet.told(oo,them);
+                    // 0.4.666: for the accounts: whom it hurt to get this reader up, and for whom that one was hurt.
+                    remember(own,"Used",o.getGameProfile().getName());remember(oo,"HurtFor",p.getGameProfile().getName());NotYetMending.save(o,oo);}
                 o.invulnerableTime=0;o.hurt(o.damageSources().generic(),3F);
             }
             return;
         }
         // Alone: the machine shows them the man in the long room, on the screen over their cot.
         var screen=t.base.offset(NotYetSite.screen(t.head));
-        if(stroke==0){NotYetMending.screens(p,t.base,NotYetBlock.NOISE);Kept.machine(p,NotYetTexts.I_WILL_STOP);NotYet.told(own,NotYetTexts.I_WILL_STOP);NotYet.cue(p,NotYetTexts.ON_THE_SCREEN);}
+        if(stroke==0){own.putBoolean("ScreenMan",true);NotYetMending.screens(p,t.base,NotYetBlock.NOISE);Kept.machine(p,NotYetTexts.I_WILL_STOP);NotYet.told(own,NotYetTexts.I_WILL_STOP);NotYet.cue(p,NotYetTexts.ON_THE_SCREEN);}
         p.connection.send(new ClientboundSoundPacket(NotYetRegistry.GROAN,SoundSource.HOSTILE,screen.getX()+.5,screen.getY()+.5,screen.getZ()+.5,.8F,.85F+stroke*.04F,p.getRandom().nextLong()));
         if(stroke==2){NotYet.cue(p,NotYetTexts.STAY_DOWN_HEARD);heard(own,NotYetTexts.STAY_DOWN_HEARD);NotYetMending.words(p,t.base,true);}
     }
@@ -210,7 +219,7 @@ public final class NotYetTrial {
         NotYetMending.save(p,own);
         var name=p.getGameProfile().getName();
         for(var o:List.copyOf(TRIALS.values())){if(!o.base.equals(t.base))continue;var r=p.server.getPlayerList().getPlayer(o.id);if(r==null)continue;
-            var ro=NotYetMending.own(r);var line=NotYetTexts.gotUpTrue(name);Kept.machine(r,line);NotYet.told(ro,line);told(ro,line,true);NotYetMending.save(r,ro);}
+            var ro=NotYetMending.own(r);var line=NotYetTexts.gotUpTrue(name);Kept.machine(r,line);NotYet.told(ro,line);told(ro,line,true,name);NotYetMending.save(r,ro);}
     }
     /** Out of the place while lying (carried off, or the place gone): no trial, no credit, and nothing keeps them down. */
     static void abandon(ServerPlayer p,Trial t){TRIALS.remove(t.id);restore(p,t);if(p.isSleeping())p.stopSleeping();}
@@ -220,6 +229,14 @@ public final class NotYetTrial {
         TRIALS.remove(t.id);restore(p,t);
         var l=p.serverLevel();var b=t.base;var own=NotYetMending.own(p);
         own.putBoolean("StayedDown",true);own.putLong("StayedAt",l.getGameTime());own.putInt("StayedLength",t.length);own.putInt("QuietVisit",own.getInt("Visits"));
+        // 0.4.666: what the account is written from, as the House had it at the moment the machine looked away: what it read of home and
+        // of the reader's years, whether they had let the Kept's four go, and who lay down beside them.
+        var d=LabyrinthData.get(p.server);
+        own.putString("HomeRead",HouseRead.value(d,p.getUUID(),HouseRead.Trait.HOME,true));
+        own.putInt("CounterKind",NotYet.counterKind(d,p.getUUID()));
+        own.putBoolean("TookFour",NotYet.tookFour(p));
+        var beside=new net.minecraft.nbt.ListTag();for(var name:t.beside)beside.add(StringTag.valueOf(name));own.put("Beside",beside);
+        LiteraryVignettes.ready(p,PLACE,own,"stayed_down");
         NotYetMending.save(p,own);
         p.connection.send(new ClientboundStopSoundPacket(null,null));
         p.connection.send(new ClientboundSoundPacket(NotYetRegistry.QUIET,SoundSource.AMBIENT,p.getX(),p.getY()+1,p.getZ(),1F,1F,p.getRandom().nextLong()));
@@ -227,6 +244,9 @@ public final class NotYetTrial {
         if(!NotYetSite.doorOpen(l,b)){NotYetSite.door(l,b,true);l.playSound(null,b.offset(NotYetSite.FAR_DOOR),NotYetRegistry.SLIDE.get(),SoundSource.BLOCKS,1F,1F);}
         DOORS.put(b.asLong(),0);
         NotYet.cue(p,NotYetTexts.QUIET);
+        // 0.4.666: their cot is made, tight, and kept made; the account is in the drawer under it.
+        cot(l,b,t.head,NotYetBlock.MADE);
+        l.playSound(null,b.offset(t.head),SoundEvents.CHISELED_BOOKSHELF_PICKUP,SoundSource.BLOCKS,.5F,.7F);
     }
     /** The cot, the lamp, the cold and the screens as they were. */
     static void restore(ServerPlayer p,Trial t){
@@ -270,8 +290,13 @@ public final class NotYetTrial {
     /** What this reader heard during the trial, the last twelve, for the account. */
     static void heard(CompoundTag own,String line){var list=own.getList("TrialHeard",net.minecraft.nbt.Tag.TAG_STRING);list.add(StringTag.valueOf(line));while(list.size()>12)list.remove(0);own.put("TrialHeard",list);}
     /** What the machine told this reader of the others, and whether it was so, the last twelve: the House knows both. */
-    static void told(CompoundTag own,String line,boolean wasSo){
-        var list=own.getList("Lies",net.minecraft.nbt.Tag.TAG_COMPOUND);var row=new CompoundTag();row.putString("Line",line);row.putBoolean("True",wasSo);list.add(row);while(list.size()>12)list.remove(0);own.put("Lies",list);
+    static void told(CompoundTag own,String line,boolean wasSo,String about){
+        var list=own.getList("Lies",net.minecraft.nbt.Tag.TAG_COMPOUND);var row=new CompoundTag();row.putString("Line",line);row.putBoolean("True",wasSo);row.putString("About",about);list.add(row);while(list.size()>12)list.remove(0);own.put("Lies",list);
     }
+    /** A name added once to one of the record's lists. */
+    static void remember(CompoundTag own,String key,String name){
+        var list=own.getList(key,net.minecraft.nbt.Tag.TAG_STRING);for(int i=0;i<list.size();i++)if(list.getString(i).equals(name))return;list.add(StringTag.valueOf(name));own.put(key,list);
+    }
+    public static List<String> names(CompoundTag own,String key){var list=own.getList(key,net.minecraft.nbt.Tag.TAG_STRING);var out=new ArrayList<String>();for(int i=0;i<list.size();i++)out.add(list.getString(i));return out;}
     public static List<CompoundTag> lies(CompoundTag own){var list=own.getList("Lies",net.minecraft.nbt.Tag.TAG_COMPOUND);var out=new ArrayList<CompoundTag>();for(int i=0;i<list.size();i++)out.add(list.getCompound(i));return out;}
 }

@@ -117,6 +117,7 @@ STORY_ICONS = {
     'ones_already_inside': NS + ':lodging_key',
     'a_little_longer': NS + ':longer_tea',
     'a_sort_of_thing': 'minecraft:white_dye',
+    'not_yet': 'minecraft:white_bed',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

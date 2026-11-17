@@ -83,7 +83,31 @@ public final class NotYet {
             own.putInt("InvitedVisit",visit);Kept.machine(p,NotYetTexts.INVITE);told(own,NotYetTexts.INVITE);
             var mine=NotYetMending.cot(own);if(mine!=null)NotYetTrial.lamp(p.serverLevel(),b,mine,true);
         }
+        // 0.4.666: a reader who stayed down has their cot made, and it stays made for them.
+        if(own.getBoolean("StayedDown")&&!NotYetTrial.lying(p.getUUID())){var mine=NotYetMending.cot(own);if(mine!=null)NotYetTrial.cot(p.serverLevel(),b,mine,NotYetBlock.MADE);}
         NotYetMending.reader(p,b,own);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.666: after
+    /** Where this reader's account is: the drawer under their own cot (its head), or the ward's first cot for a reader given none. */
+    public static BlockPos drawer(CompoundTag own){var mine=NotYetMending.cot(own);return mine==null?NotYetSite.ENDING:mine;}
+    /**
+     * A hand on a ward cot. To a reader who stayed down, their own cot opens its drawer on the account, and the machine says, once a visit,
+     * that it does not want them now. Anything else a cot does (lying down, another's cot, what a cot is like) is as it was.
+     */
+    public static boolean cotClick(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own,BlockPos at){
+        var st=p.serverLevel().getBlockState(b.offset(rel));
+        if(!NotYetBlock.is(st,NotYetBlock.Kind.COT)&&!NotYetBlock.is(st,NotYetBlock.Kind.COT_FOOT))return false;
+        var mine=NotYetMending.cot(own);
+        if(own.getBoolean("Ready")&&mine!=null&&mine.equals(NotYetTrial.cotAt(rel))&&!p.isSpectator()){
+            if(own.getInt("DrawerVisit")!=own.getInt("Visits")){
+                own.putInt("DrawerVisit",own.getInt("Visits"));Kept.machine(p,NotYetTexts.NOT_YOU);told(own,NotYetTexts.NOT_YOU);cue(p,NotYetTexts.DRAWER);
+                p.serverLevel().playSound(null,b.offset(mine),net.minecraft.sounds.SoundEvents.CHISELED_BOOKSHELF_PICKUP,SoundSource.BLOCKS,.5F,.7F);
+            }
+            LiteraryVignettes.open(p,PLACE,own,"Ending",LiteraryTexts.ending(p,PLACE,own),at);
+            return true;
+        }
+        return click(p,b,rel,own);
     }
 
     /** The one lying in this cot of the long room, if their body is there. */
@@ -139,6 +163,8 @@ public final class NotYet {
         int who=a.phase()-FIRST;
         if(own.getInt("Mended")==0){cue(p,switch(who){case INES->NotYetTexts.INES;case BRAM->NotYetTexts.BRAM;default->NotYetTexts.ODILE;});return;}
         String line;
+        // 0.4.666: to a reader who stayed down, each of the three says one thing more, and after that says it again.
+        if(own.getBoolean("StayedDown")){line=NotYetTexts.stayed(who,p);own.putInt("Stayed"+who,own.getInt("Stayed"+who)+1);a.say(NotYetTexts.NAMES[who],line);a.speaks(line);return;}
         if(!own.getBoolean("Rule")){line=NotYetTexts.rule(who,p);own.putBoolean("Rule",true);own.putInt("RuleFrom",who);}
         else{int heard=own.getInt("Heard"+who);line=NotYetTexts.after(who,heard);own.putInt("Heard"+who,heard+1);}
         a.say(NotYetTexts.NAMES[who],line);a.speaks(line);
