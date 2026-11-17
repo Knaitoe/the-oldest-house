@@ -28,7 +28,7 @@ public final class StaircaseSoundscape {
             var whale=LabyrinthPlaces.placeBounds(HouseSightlineState.origin(),LabyrinthPlace.WHALE);
             if(whale!=null&&whale.isInside(mc.player.blockPosition())){event.setSound(null);return;}
         }
-        if(!StaircaseScore.at(HouseSightlineState.origin(),mc.player.blockPosition()))return;
+        if(!StaircaseScore.at(HouseSightlineState.origin(),mc.player.blockPosition())&&!StaircaseScore.foot())return;
         var id=sound.getLocation();if(!id.getNamespace().equals("minecraft")||id.getPath().endsWith(".step"))return;
         var source=sound.getSource();
         // Creatures' own idle voices (entity.*.ambient) are gameplay warnings and companions: they stay.
