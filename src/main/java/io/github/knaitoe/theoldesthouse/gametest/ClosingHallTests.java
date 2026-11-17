@@ -181,7 +181,7 @@ public final class ClosingHallTests {
                 h.assertTrue(ClosingHall.stage(set(f))==9,"and the hall shuts");
                 h.assertTrue(p.isDeadOrDying(),"on the reader: a real death");
                 var own=f.own(p,P);h.assertTrue(own.getString("WentBack209").equals("Chad")&&own.getBoolean("Ready")&&own.getString("Outcome").equals("went_back"),"the interview is ready, for whenever they come back to read it");
-                var text=ClosingHallTexts.accountText("Reader",own);h.assertTrue(text.contains("Nobody came out last")&&text.contains("gone back for Chad")&&text.contains("Daisy was through"),"Karen says nobody came out last, and who went back for whom");
+                var text=ClosingHallTexts.accountText("Reader",own);h.assertTrue(text.contains("who came out last. Nobody did.")&&text.contains("gone back for Chad")&&text.contains("Daisy was through"),"Karen says nobody came out last, and who went back for whom");
             }).thenSucceed();
     }
     @AfterBatch(batch="closing_back") public static void backDone(ServerLevel l){close();}
