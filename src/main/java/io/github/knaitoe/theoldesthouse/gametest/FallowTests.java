@@ -475,4 +475,73 @@ public final class FallowTests {
         }).thenWaitUntil(()->h.assertTrue(Fallow.stranger(b)==Fallow.GONE&&Fallow.find(l,b,Fallow.STRANGER)==null,"up the track into the wheat, and gone where nobody saw: "+Fallow.stranger(b)))
         .thenExecute(()->{done();h.succeed();});
     }
+
+    /**
+     * 0.4.674, the four minutes: the tone and the card, the lids sliding off both shafts, the readers committed; Harlan holding the
+     * cellar doors until one reader takes them from him; Faye at the lift's lever until the other takes her by the arm and leads her,
+     * then down to Opal; Otis carrying Opal and her bean down; Boyd at the rig; the doors pulled shut, Opal counting, and the light, kept
+     * by each reader as where it found them, and both taken out by the House.
+     */
+    @GameTest(template="empty",batch="fallow_strike",timeoutTicks=6000)
+    public static void theFourMinutes(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        f.chunks.hold(l,new AABB(b.getX()-30,b.getY()-8,b.getZ()-118,b.getX()+30,b.getY()+8,b.getZ()-80));
+        var p=f.player("fallow_strike_doors",P);var q=f.player("fallow_strike_faye",P);
+        var cx=FallowSite.PAD_A.getX();var cz=FallowSite.PAD_A.getZ();
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            f.at(p,P,3.5,0,-2.5);f.at(q,P,2.5,0,-2.5);
+            f.look(p,b.offset(0,1,20));f.look(q,b.offset(0,1,20));
+            // The way each came in, for the House to take them back by after the light: south of the station, past its scene.
+            for(var r:new ServerPlayer[]{p,q})f.data().pushReturn(r.getUUID(),new LabyrinthData.Waypoint(l.dimension(),Vec3.atBottomCenterOf(b.offset(0,0,24)),0F,false));
+        }).thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)!=null&&Fallow.find(l,b,Fallow.GIRL)!=null&&Fallow.find(l,b,Fallow.WOMAN)!=null,"the afternoon is on"))
+        .thenExecute(()->{
+            l.setBlock(b.offset(Fallow.BEAN_AT),FallowBlock.of(FallowBlock.Kind.BEAN,Direction.WEST,0),3);
+            told(p);FallowStrike.begin(b);
+        }).thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=1,"the tone comes on: "+FallowStrike.since(b)))
+        .thenExecute(()->{
+            h.assertTrue(stage(l,b,FallowSite.TV)==FallowBlock.CARD,"the television shows its card");
+            h.assertTrue(told(p).contains(FallowTexts.TONE),"the ball game stops for the tone");
+            h.assertTrue(Fallow.keeper(b)==Fallow.STRIKE,"Harlan is off his afternoon");
+            h.assertFalse(Fallow.locked(p),"nobody is held yet");
+            FallowStrike.skip(b,FallowStrike.LIDS-1);
+        }).thenWaitUntil(()->h.assertTrue(FallowStrike.slid(b)==FallowSite.LID_SLIDE,"both lids slide all the way: "+FallowStrike.slid(b)))
+        .thenExecute(()->{
+            h.assertTrue(fitting(l,b,new BlockPos(cx+FallowSite.LID_HALF+FallowSite.LID_SLIDE,-1,cz),FallowBlock.Kind.PAD),"the lid lies over to the east of its seat");
+            h.assertTrue(l.getBlockState(b.offset(cx-1,-1,cz)).isAir()&&l.getBlockState(b.offset(cx-1,-3,cz)).isAir(),"its seat is a mouth over an empty shaft");
+            h.assertTrue(l.getBlockState(b.offset(cx-1,-1,cz+FallowSite.LID_HALF)).is(FallowRegistry.material("apron")),"with a rim at its end");
+            h.assertTrue(Fallow.locked(p)&&LiteraryVignettes.retreatLocked(q),"from the lids, nobody leaves by the House's door");
+        }).thenWaitUntil(()->h.assertTrue(FallowStrike.harlan(b)==FallowStrike.HOLDING,"Harlan runs to the cellar doors and holds them: "+FallowStrike.harlan(b)))
+        .thenExecute(()->{
+            h.assertTrue(Fallow.cellarOpen(l,b),"he has them open");
+            told(p);use(p,b,new BlockPos(FallowSite.WELL_W,0,FallowSite.WELL_S),new BlockPos(-12,0,-9));
+            h.assertTrue(FallowStrike.harlan(b)==FallowStrike.GOING_DOWN&&Fallow.cellarOpen(l,b),"a hand on the doors near him takes them, and they stay open");
+            h.assertTrue(told(p).contains(FallowTexts.TAKEN_DOORS)&&f.own(p,P).getBoolean("HeldDoors"),"the reader holding them is kept");
+        }).thenWaitUntil(()->h.assertTrue(FallowStrike.faye(b)==FallowStrike.AT_CAR,"Faye runs to the car's lever: "+FallowStrike.faye(b)))
+        .thenExecute(()->{
+            var faye=Fallow.find(l,b,Fallow.WOMAN);f.at(q,P,14.5,0,-9.5);told(q);LiteraryVignettes.talk(q,faye);
+            h.assertTrue(FallowStrike.faye(b)==FallowStrike.LED&&told(q).contains(FallowTexts.FAYE_TAKEN),"the other reader takes her by the arm");
+            h.assertTrue(said(faye).equals(FallowTexts.FAYE_WHERE),"and she asks after Opal: "+said(faye));
+            f.at(q,P,12.5,0,-14.5);
+        }).thenWaitUntil(()->h.assertTrue(Fallow.find(l,b,Fallow.WOMAN).distanceTo(q)<3,"she comes after the reader: "+Fallow.find(l,b,Fallow.WOMAN).position().subtract(Vec3.atLowerCornerOf(b))))
+        .thenExecute(()->f.at(q,P,-12.5,-3,-13.5))
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.faye(b)==FallowStrike.FAYE_BELOW,"and down the steps to Opal once the reader is below: "+FallowStrike.faye(b)+" "+Fallow.find(l,b,Fallow.WOMAN).position().subtract(Vec3.atLowerCornerOf(b))))
+        .thenExecute(()->h.assertTrue(f.own(q,P).getBoolean("BroughtFaye")&&!f.own(p,P).getBoolean("BroughtFaye"),"the one who brought her is kept, the other not"))
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.otis(b)==FallowStrike.OTIS_BELOW,"Otis carries Opal down: "+FallowStrike.otis(b)+" "+Fallow.find(l,b,Fallow.DRIVER).position().subtract(Vec3.atLowerCornerOf(b))))
+        .thenExecute(()->{
+            var girl=Fallow.find(l,b,Fallow.GIRL);var r=girl.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(!girl.isPassenger()&&FallowSite.inCellar(r),"set down below, by the cot: "+r);
+            h.assertTrue(girl.getMainHandItem().is(FallowRegistry.BEAN_CUP.get())&&l.getBlockState(b.offset(Fallow.BEAN_AT)).isAir(),"with her bean, taken up off the forecourt");
+        }).thenWaitUntil(()->h.assertTrue(FallowStrike.harlan(b)==FallowStrike.BELOW&&FallowStrike.boyd(b)==FallowStrike.AT_RIG,"Harlan below, Boyd at the rig's door: "+FallowStrike.harlan(b)+" "+FallowStrike.boyd(b)))
+        .thenExecute(()->{f.at(p,P,-10.5,0,-4.5);FallowStrike.skip(b,FallowStrike.LIGHT-205);})
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.counted(b)==FallowTexts.COUNTING.length,"at the last, Opal counts: "+FallowStrike.counted(b)))
+        .thenExecute(()->h.assertFalse(Fallow.cellarOpen(l,b),"the doors are pulled shut before the light"))
+        .thenWaitUntil(()->h.assertTrue(FallowStrike.since(b)>=FallowStrike.LIGHT+2,"the light"))
+        .thenExecute(()->{
+            h.assertTrue(f.own(p,P).getString("AtLight").equals("outside")&&f.own(q,P).getString("AtLight").equals("cellar"),"each reader kept where it found them: "+f.own(p,P).getString("AtLight")+" "+f.own(q,P).getString("AtLight"));
+            h.assertTrue(f.own(p,P).getInt("Strikes")==1&&f.own(q,P).getInt("Strikes")==1,"once each");
+            h.assertTrue(stage(l,b,FallowSite.TV)==FallowBlock.DARK,"the television is dark");
+        }).thenWaitUntil(()->h.assertTrue(!FallowSite.inScene(p.position().subtract(Vec3.atLowerCornerOf(b)))||p.level()!=l,"the reader out in it is taken out by the House"))
+        .thenWaitUntil(()->h.assertTrue(!FallowSite.inScene(q.position().subtract(Vec3.atLowerCornerOf(b)))||q.level()!=l,"and the one below, after the dark"))
+        .thenExecute(()->{done();h.succeed();});
+    }
 }

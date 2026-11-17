@@ -1101,6 +1101,8 @@ public final class LiteraryRenderers {
                     leftArm.y=rightArm.y=body.y+2*c;leftArm.z=rightArm.z=body.z+2*sn;
                     rightArm.xRot=-.55F;rightArm.yRot=-.25F;rightArm.zRot=0;leftArm.xRot=-.5F;leftArm.yRot=.3F;leftArm.zRot=0;
                 }
+                // 0.4.674: both arms under the child he carries, forearms crossed at her, the head up to see where he is going.
+                case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.CARRY->{rightArm.xRot=leftArm.xRot=-1.05F;rightArm.yRot=-.5F;leftArm.yRot=.5F;rightArm.zRot=leftArm.zRot=0;head.xRot=-.1F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.POUR->{
                     float tip=net.minecraft.util.Mth.sin(age*.08F)*.05F;
                     rightArm.xRot=-1.25F;rightArm.yRot=-.2F;rightArm.zRot=.35F+tip;leftArm.xRot=-.95F;leftArm.yRot=.35F;leftArm.zRot=0;head.xRot=.35F;

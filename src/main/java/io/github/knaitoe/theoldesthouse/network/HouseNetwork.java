@@ -66,6 +66,7 @@ public final class HouseNetwork {
                 .playToClient(LastSeenFolderPayload.TYPE,LastSeenFolderPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LastSeenFolderScreen.accept(payload)))
                 .playToClient(LastSeenDrawerPayload.TYPE,LastSeenDrawerPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LastSeenFolderScreen.drawer(payload)))
                 .playToClient(LastSeenTimePayload.TYPE,LastSeenTimePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.LastSeenClient.accept(payload)))
+                .playToClient(FallowStrikePayload.TYPE,FallowStrikePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.FallowStrikeClient.accept(payload)))
                 .playToClient(WorkPrintFilmPayload.TYPE,WorkPrintFilmPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WorkPrintClient.film(payload)))
                 .playToClient(WorkPrintHauntPayload.TYPE,WorkPrintHauntPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WorkPrintClient.haunt(payload)))
                 .playToClient(WayOutPayload.TYPE,WayOutPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.WayOutClient.accept(payload)))

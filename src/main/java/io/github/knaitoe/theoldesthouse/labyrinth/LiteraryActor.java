@@ -103,6 +103,9 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     @Override protected net.minecraft.world.phys.Vec3 getPassengerAttachmentPoint(Entity passenger,EntityDimensions dimensions,float partial){if(role()==FATHER&&passenger instanceof net.minecraft.world.entity.animal.Rabbit)return new net.minecraft.world.phys.Vec3(0,.8,.4).yRot(-getYRot()*(float)Math.PI/180);if(scene.equals(BorrascaStory.PLACE.id())&&BorrascaStory.worker(role(),phase())
             &&passenger instanceof LiteraryActor child&&child.role()==BORRASCA_KIMBER)
         return new net.minecraft.world.phys.Vec3(0,.92,.48).yRot(-getYRot()*(float)Math.PI/180);
+        // 0.4.674: Otis carrying Opal down to the cellar, held at his chest (FallowStrike).
+        if(role()==STRANGER&&phase()==Fallow.FIRST+Fallow.DRIVER&&passenger instanceof LiteraryActor girl&&girl.role()==STRANGER&&Fallow.child(girl.phase()))
+            return new net.minecraft.world.phys.Vec3(0,.78,.42).yRot(-getYRot()*(float)Math.PI/180);
         // 0.4.545: a reader riding the house's Tilly where June leads her stands where she stands (PellTilly).
         if(pellStandIn())return passenger.getVehicleAttachmentPoint(this);
         return super.getPassengerAttachmentPoint(passenger,dimensions,partial);}

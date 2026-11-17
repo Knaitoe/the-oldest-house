@@ -47,6 +47,9 @@ public final class FallowRegistry {
         BELL=sound("fallow.bell");
     /** 0.4.673, the afternoon: the register ringing up a sale, a wrench working under the car, coins left on the counter. */
     public static final DeferredHolder<SoundEvent,SoundEvent> REGISTER=sound("fallow.register"),WRENCH=sound("fallow.wrench"),COINS=sound("fallow.coins");
+    /** 0.4.674, the four minutes: the radio's tone, the lids grinding open, a launch, a siren far off, the light, the ground shaking. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> TONE=sound("fallow.tone"),LIDS=sound("fallow.lids"),LAUNCH=sound("fallow.launch"),
+        SIREN=sound("fallow.siren"),BLAST=sound("fallow.blast"),RUMBLE=sound("fallow.rumble");
     /**
      * 0.4.673: what the afternoon's people carry, never a reader: Opal's bean in its cup (drawn from its block's model), the quart of milk
      * Faye buys, the bottle of pop the stranger buys and the cup of coffee Otis pours.

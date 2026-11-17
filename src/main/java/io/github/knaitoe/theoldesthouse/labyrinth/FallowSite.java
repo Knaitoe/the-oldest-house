@@ -43,7 +43,7 @@ public final class FallowSite {
     /** The keeper's trailer on its blocks: its floor is a block up. */
     public static final int TRAILER_W=-24,TRAILER_E=-21,TRAILER_S=-3,TRAILER_N=-14;
     /** The storm cellar: the doors over the stair well, and the low room under the yard (floor at -4, people at -3, ceiling at -1). */
-    public static final int CELLAR_W=-18,CELLAR_E=-9,CELLAR_S=-11,CELLAR_N=-18,CELLAR_FLOOR=-4,WELL_W=-14,WELL_E=-13,WELL_S=-8,WELL_N=-10;
+    public static final int CELLAR_W=-18,CELLAR_E=-9,CELLAR_S=-11,CELLAR_N=-18,CELLAR_FLOOR=-4,WELL_W=-14,WELL_E=-13,WELL_S=-8,WELL_N=-11;
     /** The cot's head and foot, the crock of water, the lantern on its hook. */
     public static final BlockPos COT_HEAD=new BlockPos(CELLAR_E-1,CELLAR_FLOOR+1,-15),CROCK=new BlockPos(CELLAR_W+1,CELLAR_FLOOR+1,CELLAR_N+1),
         LANTERN=new BlockPos(-13,-2,-14);
@@ -52,6 +52,10 @@ public final class FallowSite {
     /** The two pads in the wheat, each a fenced square thirteen across, its lid five across in the middle; their tracks from the road. */
     public static final BlockPos PAD_A=new BlockPos(-20,0,-90),PAD_B=new BlockPos(20,0,-108);
     public static final int PAD_HALF=6,LID_HALF=2;
+    /** 0.4.674: how far each lid slides east off its seat, a column at a time; the shaft under the seat's west three columns, three
+     * across and four deep, its floor at y -6; where something stands in it, its foot. */
+    public static final int LID_SLIDE=3,SHAFT_TOP=-2,SHAFT_FLOOR=-6;
+    public static Vec3 shaft(BlockPos pad){return new Vec3(pad.getX()-.5,SHAFT_FLOOR+1,pad.getZ()+.5);}
     /** The House's door at the back of the store; the store's front door; the door into the garage; the trailer's door. */
     public static final BlockPos FRONT_DOOR=new BlockPos(0,0,STORE_N),GARAGE_DOOR=new BlockPos(STORE_E,0,-5),TRAILER_DOOR=new BlockPos(TRAILER_E,1,-8);
     /** The first paper, the keeper's note by the register; where each reader's account will be, under the counter by the till. */
@@ -216,14 +220,46 @@ public final class FallowSite {
             if(z==cz+h&&(x==cx||x==cx+1)){set(l,b,x,0,z,fit(FallowBlock.Kind.PAD,Direction.SOUTH,2));continue;}
             set(l,b,x,0,z,fit(FallowBlock.Kind.PAD,run,post?1:0));
         }
-        for(int x=cx-LID_HALF;x<=cx+LID_HALF;x++)for(int z=cz-LID_HALF;z<=cz+LID_HALF;z++){
-            boolean edge=Math.abs(x-cx)==LID_HALF||Math.abs(z-cz)==LID_HALF;
-            Direction out=Math.abs(z-cz)==LID_HALF?(z>cz?Direction.SOUTH:Direction.NORTH):(x>cx?Direction.EAST:Direction.WEST);
-            set(l,b,x,-1,z,fit(FallowBlock.Kind.PAD,edge?out:Direction.NORTH,edge?5:6));
+        // 0.4.674: under the lid's seat, a shaft three across and four deep, walled and floored in concrete, empty.
+        for(int x=cx-LID_HALF-1;x<=cx+1;x++)for(int z=cz-LID_HALF;z<=cz+LID_HALF;z++){
+            boolean wall=x==cx-LID_HALF-1||x==cx+1||Math.abs(z-cz)==LID_HALF;
+            set(l,b,x,SHAFT_FLOOR,z,mat("apron"));
+            for(int y=SHAFT_FLOOR+1;y<=SHAFT_TOP;y++)set(l,b,x,y,z,wall?mat("apron"):AIR);
         }
+        for(int x=cx-LID_HALF;x<=cx+LID_HALF+LID_SLIDE;x++)for(int z=cz-LID_HALF;z<=cz+LID_HALF;z++)set(l,b,x,-1,z,lidAt(c,x,z,0));
         for(int y=0;y<4;y++)set(l,b,cx-h+1,y,cz-h+1,fit(FallowBlock.Kind.PAD,Direction.SOUTH,3));
         set(l,b,cx-h+1,4,cz-h+1,fit(FallowBlock.Kind.PAD,Direction.SOUTH,4));
-        set(l,b,cx+h-2,0,cz,fit(FallowBlock.Kind.PAD,Direction.WEST,7));
+        // The hatch box west of the lid, clear of where the lid runs.
+        set(l,b,cx-h+2,0,cz+3,fit(FallowBlock.Kind.PAD,Direction.EAST,7));
+    }
+    /**
+     * 0.4.674: a pad's lid, slid this many columns east of its seat (0 to LID_SLIDE). The lid lies on the gravel's level, seamed round its
+     * edge; the part of its seat it has uncovered is the shaft's open mouth, with a concrete rim at either end; the gravel it has not
+     * yet reached is gravel. Nothing is set unless the whole of it is loaded.
+     */
+    public static boolean lid(ServerLevel l,BlockPos b,BlockPos c,int slid){
+        int cx=c.getX(),cz=c.getZ();
+        if(!l.isLoaded(b.offset(cx-LID_HALF,-1,cz-LID_HALF))||!l.isLoaded(b.offset(cx+LID_HALF+LID_SLIDE,-1,cz+LID_HALF)))return false;
+        for(int x=cx-LID_HALF;x<=cx+LID_HALF+LID_SLIDE;x++)for(int z=cz-LID_HALF;z<=cz+LID_HALF;z++){
+            var st=lidAt(c,x,z,slid);var at=b.offset(x,-1,z);if(!l.getBlockState(at).equals(st))l.setBlock(at,st,3);
+        }
+        return true;
+    }
+    /** What lies at a cell of a pad's lid and its run, at the gravel's level, with the lid slid so far. */
+    static BlockState lidAt(BlockPos c,int x,int z,int slid){
+        int cx=c.getX(),cz=c.getZ(),lx=x-slid;
+        if(Math.abs(lx-cx)<=LID_HALF){
+            boolean edge=Math.abs(lx-cx)==LID_HALF||Math.abs(z-cz)==LID_HALF;
+            Direction out=Math.abs(z-cz)==LID_HALF?(z>cz?Direction.SOUTH:Direction.NORTH):(lx>cx?Direction.EAST:Direction.WEST);
+            return fit(FallowBlock.Kind.PAD,edge?out:Direction.NORTH,edge?5:6);
+        }
+        if(x<cx-LID_HALF+slid)return Math.abs(z-cz)==LID_HALF?mat("apron"):AIR;
+        return mat("gravel");
+    }
+    /** How far a pad's lid stands slid, read from the blocks: the first of its seat's columns that is not lid. */
+    public static int slid(ServerLevel l,BlockPos b,BlockPos c){
+        for(int k=0;k<=LID_SLIDE;k++)if(FallowBlock.is(l.getBlockState(b.offset(c.getX()-LID_HALF+k,-1,c.getZ())),FallowBlock.Kind.PAD))return k;
+        return LID_SLIDE;
     }
     static void pads(ServerLevel l,BlockPos b){pad(l,b,PAD_A);pad(l,b,PAD_B);}
 
@@ -358,9 +394,9 @@ public final class FallowSite {
         set(l,b,STORE_W-1,0,-2,fit(FallowBlock.Kind.TRAILER,Direction.NORTH,6));
         // The cellar's doors, two flat leaves on a low concrete curb, over a well of steps going down to the north.
         for(int z=WELL_S;z>=WELL_N;z--){
-            int seg=WELL_S-z;
-            set(l,b,WELL_W,0,z,fit(FallowBlock.Kind.CELLAR,Direction.NORTH,seg==0?0:seg==1?1:2));
-            set(l,b,WELL_E,0,z,fit(FallowBlock.Kind.CELLAR,Direction.NORTH,seg==0?3:seg==1?4:5));
+            int seg=z==WELL_S?0:z==WELL_N?2:1;
+            set(l,b,WELL_W,0,z,fit(FallowBlock.Kind.CELLAR,Direction.NORTH,seg));
+            set(l,b,WELL_E,0,z,fit(FallowBlock.Kind.CELLAR,Direction.NORTH,seg+3));
         }
     }
 
@@ -373,15 +409,18 @@ public final class FallowSite {
             for(int y=CELLAR_FLOOR+1;y<=-2;y++)set(l,b,x,y,z,wall?mat("cellar_stone"):AIR);
             set(l,b,x,-1,z,mat("cellar_roof"));
         }
-        // The well: stone either side, three steps, open overhead to the doors, and the gap into the room. The first step is a block
-        // below the yard and the last is on the cellar's floor, so a body coming off it into the room has the room's own headroom.
+        // The well: stone either side, open overhead to the doors, three steps each a half step at a time from the yard's own level, and
+        // at the foot a landing on the cellar's floor in the gap through its south wall, still under the doors, so a body comes off the
+        // last step with open air over its head and walks on into the room under its roof (0.4.674: the steps began a full block below
+        // the yard, which a body could drop down but not walk, nor climb without a jump).
         var steps=FallowRegistry.CELLAR_STAIRS.get().defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH);
         for(int z=WELL_S;z>=WELL_N;z--){
-            int step=CELLAR_FLOOR+2-(WELL_S-z);
+            int step=z==WELL_N?CELLAR_FLOOR:-1-(WELL_S-z);
             for(int y=CELLAR_FLOOR;y<=-1;y++){set(l,b,WELL_W-1,y,z,mat("cellar_stone"));set(l,b,WELL_E+1,y,z,mat("cellar_stone"));}
-            for(int x=WELL_W;x<=WELL_E;x++)for(int y=CELLAR_FLOOR;y<=-1;y++)set(l,b,x,y,z,y<step?mat("cellar_stone"):y==step?steps:AIR);
+            for(int x=WELL_W;x<=WELL_E;x++)for(int y=CELLAR_FLOOR;y<=-1;y++)set(l,b,x,y,z,y<step?mat("cellar_stone"):y==step?(z==WELL_N?mat("cellar_floor"):steps):AIR);
         }
-        for(int x=WELL_W;x<=WELL_E;x++)for(int y=CELLAR_FLOOR+1;y<=-2;y++)set(l,b,x,y,CELLAR_S,AIR);
+        // A fieldstone lintel over the gap: the roof's edge there would show the yard's earth to anyone looking down the well.
+        for(int x=WELL_W;x<=WELL_E;x++)set(l,b,x,-1,WELL_N-1,mat("cellar_stone"));
         // Shelves along the west wall, the cot along the east, the crock in the far corner, the lantern hung from the middle of the roof.
         for(int z=CELLAR_S-1;z>=CELLAR_N+2;z--){
             set(l,b,CELLAR_W+1,CELLAR_FLOOR+1,z,fit(FallowBlock.Kind.SHELF,Direction.EAST,0));
