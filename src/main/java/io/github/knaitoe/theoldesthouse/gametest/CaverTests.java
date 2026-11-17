@@ -57,7 +57,9 @@ public final class CaverTests {
             for(int x=((int)bounds.minX-1)>>4;x<=((int)bounds.maxX+1)>>4;x++)for(int z=((int)bounds.minZ-1)>>4;z<=((int)bounds.maxZ+1)>>4;z++)l.getChunkSource().removeRegionTicket(TicketType.PORTAL,new net.minecraft.world.level.ChunkPos(x,z),3,b);
             var s=l.getServer();s.overworld().getDataStorage().set("the_oldest_house",oldHouse);s.overworld().getDataStorage().set("the_oldest_house_labyrinth",oldData);s.overworld().getDataStorage().set("the_oldest_house_mother",oldMother);LabyrinthBuilder.clearAll();}
     }
-    private static Fixture work,journals,escape,cleanup,upgrade,route,breath,line,repair,air,crawls;
+    private static Fixture work,journals,escape,cleanup,upgrade,route,breath,line,repair,air,crawls,turned,turnedAtRubble;
+    @AfterBatch(batch="caver_turned") public static void cleanTurned(ServerLevel l){if(turned!=null){turned.close();turned=null;}}
+    @AfterBatch(batch="caver_turned_rubble") public static void cleanTurnedAtRubble(ServerLevel l){if(turnedAtRubble!=null){turnedAtRubble.close();turnedAtRubble=null;}}
     @AfterBatch(batch="caver_air") public static void cleanAir(ServerLevel l){if(air!=null){air.close();air=null;}}
     @AfterBatch(batch="caver_route") public static void cleanRoute(ServerLevel l){if(route!=null){route.close();route=null;}}
     @AfterBatch(batch="caver_breath") public static void cleanBreath(ServerLevel l){if(breath!=null){breath.close();breath=null;}}
@@ -162,6 +164,72 @@ public final class CaverTests {
             h.assertTrue(pages==8&&CaverVignette.journal(f.data(),p.getUUID()).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==8,"the echoes take later trips, not one");
             CaverVignette.onArrive(p,LabyrinthPlace.HARRIGAN);CaverVignette.onArrive(p,LabyrinthPlace.HARRIGAN);
             h.assertTrue(f.own(p).getInt("EchoArrivals")==7&&CaverVignette.journal(f.data(),p.getUUID()).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size()==9&&WitnessAccount.count(f.data(),p.getUUID())==count,"the seventh later arrival adds the last page and nothing else");h.succeed();
+        });
+    }
+    /**
+     * 0.4.658, the owner: "If you leave Ted the Caver after placing a torch at the mouth of the squeeze, the next visit could
+     * show your torch in the same spot and a second one just beyond where you stopped." The reader sets a torch at the mouth,
+     * crawls six cells in and walks out; their torch stays, and the House stands its own on the next cell, but not while
+     * anyone could see it go in, and nobody may take it. Turning back at the same place again adds nothing; a reader who has
+     * finished is never answered.
+     */
+    @GameTest(template="empty",batch="caver_turned",timeoutTicks=900)
+    public static void turningBackLeavesTheReadersTorchAndTheHousesJustBeyond(GameTestHelper h){
+        turned=new Fixture(h,34300);var f=turned;f.open();var p=f.player();var peer=f.player();
+        int stop=6;var mouth=f.b.offset(CaverCave.APERTURE);var beyond=f.b.offset(CaverCave.SQUEEZE.get(stop+1));
+        int[] phase={0},clock={0},along={0};var s=f.l.getServer();
+        h.onEachTick(()->{
+            clock[0]++;if(clock[0]<10)return;
+            if(phase[0]==0){
+                f.at(p,.5,-3,-21.5);p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(Items.TORCH,4));
+                h.assertTrue(f.use(p,CaverCave.APERTURE.below(),Direction.UP,InteractionHand.MAIN_HAND).consumesAction()&&f.l.getBlockState(mouth).is(Blocks.TORCH)
+                        &&p.getUUID().equals(CaverVignette.torchOwner(f.data(),mouth)),"the reader sets their own torch at the mouth of the squeeze");
+                p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);p.setShiftKeyDown(true);CaverVignette.playerTick(p);phase[0]=1;return;}
+            if(phase[0]==1){CaverVignette.setBreath(s,10);CaverVignette.playerTick(p);
+                if(along[0]<=stop){along[0]=step(f,p,CaverCave.SQUEEZE,along[0]);return;}
+                h.assertTrue(f.own(p).getInt("Reached")==CaverCave.WAY.indexOf(CaverCave.SQUEEZE.get(stop))+1,"how far the reader has crawled is kept: "+f.own(p).getInt("Reached"));
+                // Someone is crawling just beyond where the reader stops, and the reader turns back and walks out.
+                f.at(peer,3.5,-3,-28.5);p.setShiftKeyDown(false);f.at(p,.5,0,40);phase[0]=2;clock[0]=0;return;}
+            if(phase[0]==2){if(clock[0]<3)return;
+                h.assertTrue(!CaverVignette.crawling(p)&&f.own(p).contains("TurnedBack")&&f.l.getBlockState(beyond).isAir(),"the House does not set its torch where someone could see it go in");
+                f.at(peer,.5,0,-3.5);phase[0]=3;clock[0]=0;return;}
+            if(phase[0]==3){
+                if(!f.l.getBlockState(beyond).is(Blocks.TORCH)){h.assertTrue(clock[0]<120,"once nobody can see the place, the House sets its torch");return;}
+                h.assertTrue(CaverVignette.HOUSE.equals(CaverVignette.torchOwner(f.data(),beyond))&&!f.own(p).contains("TurnedBack")&&f.own(p).getLongArray("Beyond").length==1,"one torch, the House's own, just beyond where the reader stopped");
+                h.assertTrue(f.l.getBlockState(mouth).is(Blocks.TORCH)&&p.getUUID().equals(CaverVignette.torchOwner(f.data(),mouth)),"the reader's own torch is still where they set it");
+                for(int i=0;i<CaverCave.WAY.size();i++){var at=f.b.offset(CaverCave.WAY.get(i));if(!at.equals(beyond)&&!at.equals(mouth))h.assertTrue(!f.l.getBlockState(at).is(Blocks.TORCH),"no other torch on the way down: "+CaverCave.WAY.get(i));}
+                f.at(peer,2.5,-3,-28.5);h.assertTrue(!CaverVignette.mayBreak(peer,beyond)&&!peer.gameMode.destroyBlock(beyond)&&f.l.getBlockState(beyond).is(Blocks.TORCH),"nobody may take the House's torch");
+                f.reload();h.assertTrue(f.own(p).getLongArray("Beyond").length==1&&CaverVignette.HOUSE.equals(CaverVignette.torchOwner(f.data(),beyond)),"the House's torch is kept across a reload");
+                // A second visit, turned back at the same place: the House's torch is already there.
+                f.at(peer,.5,0,-3.5);f.at(p,.5,0,-3.5);phase[0]=4;clock[0]=0;return;}
+            if(phase[0]==4){CaverVignette.playerTick(p);if(clock[0]==2){var cell=CaverCave.SQUEEZE.get(stop);f.at(p,cell.getX()+.5,-3,cell.getZ()+.5);}
+                if(clock[0]<4)return;f.at(p,.5,0,40);phase[0]=5;clock[0]=0;return;}
+            if(phase[0]==5){if(clock[0]<3)return;
+                h.assertTrue(!f.own(p).contains("TurnedBack")&&f.own(p).getLongArray("Beyond").length==1,"turning back at the same place again adds nothing");
+                // One who has finished the cave is never answered.
+                f.edit(p,o->o.putBoolean("Escaped",true));f.at(p,.5,0,-3.5);phase[0]=6;clock[0]=0;return;}
+            if(phase[0]==6){CaverVignette.playerTick(p);if(clock[0]==2){var cell=CaverCave.SQUEEZE.get(stop+4);f.at(p,cell.getX()+.5,-3,cell.getZ()+.5);}
+                if(clock[0]<4)return;f.at(p,.5,0,40);phase[0]=7;clock[0]=0;return;}
+            if(clock[0]<3)return;
+            h.assertTrue(!f.own(p).contains("TurnedBack")&&f.own(p).getLongArray("Beyond").length==1&&!f.l.getBlockState(f.b.offset(CaverCave.SQUEEZE.get(stop+5))).is(Blocks.TORCH),"a reader who has finished leaves nothing to answer");
+            h.succeed();
+        });
+    }
+    /** 0.4.658: turned back at the packed rubble, the House's torch is the first place past it, out of sight until the rubble is dug. */
+    @GameTest(template="empty",batch="caver_turned_rubble",timeoutTicks=300)
+    public static void turningBackAtTheRubbleLeavesTheHousesTorchBehindIt(GameTestHelper h){
+        turnedAtRubble=new Fixture(h,34900);var f=turnedAtRubble;var p=f.player();int[] phase={0},clock={0};
+        h.onEachTick(()->{
+            clock[0]++;if(clock[0]<10)return;
+            if(phase[0]==0){f.at(p,.5,-3,-21.5);CaverVignette.playerTick(p);
+                h.assertTrue(f.own(p).getInt("Reached")==CaverCave.WAY.indexOf(new BlockPos(0,-3,-22))+1,"the reader stood at the face of the rubble: "+f.own(p).getInt("Reached"));
+                f.at(p,.5,0,40);phase[0]=1;clock[0]=0;return;}
+            if(clock[0]<3)return;
+            var behind=f.b.offset(CaverCave.SQUEEZE.get(CaverCave.RUBBLE));
+            h.assertTrue(f.l.getBlockState(behind).is(Blocks.TORCH)&&CaverVignette.HOUSE.equals(CaverVignette.torchOwner(f.data(),behind)),"the House's torch stands past the rubble");
+            for(int i=0;i<CaverCave.RUBBLE;i++)h.assertTrue(CaverCave.isRubble(f.l.getBlockState(f.b.offset(CaverCave.rubbleCell(i)))),"the rubble is as the reader left it");
+            h.assertTrue(f.data().state(CaverVignette.ID).getInt("Work")==0,"no work on the rubble is invented");
+            h.succeed();
         });
     }
     @GameTest(template="empty",batch="caver_cleanup",timeoutTicks=100)

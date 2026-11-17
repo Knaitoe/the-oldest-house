@@ -57,6 +57,32 @@ public final class CaverCave {
     public static boolean crawl(BlockPos r){return SQUEEZE.contains(r)||CRAWL.contains(r);}
     public static boolean bell(BlockPos r){return BELLS.contains(r);}
     /**
+     * 0.4.658: the way down in order, as floor cells, from the passage below the ladder through the squeeze, the bowl to the
+     * stone, the passage behind it and the second crawl to the low chamber. {@link #GIVE} is how far to either side of a step
+     * still counts as standing on it: the approach and the bowl are wider than the crawls. How far a reader has come is the
+     * last step they have stood on (see {@link CaverVignette#remember}).
+     */
+    public static final java.util.List<BlockPos> WAY;
+    private static final int[] GIVE;
+    static{
+        var cells=new java.util.ArrayList<BlockPos>();var give=new java.util.ArrayList<Integer>();
+        for(int z=-12;z>=-22;z--){cells.add(new BlockPos(0,-3,z));give.add(z>=-18?1:3);}
+        for(var c:SQUEEZE){cells.add(c);give.add(0);}
+        for(int[] c:new int[][]{{0,-34},{0,-35},{0,-36},{0,-37},{0,-38},{1,-39},{2,-40},{3,-41},{4,-42}}){cells.add(new BlockPos(c[0],-3,c[1]));give.add(6);}
+        for(int z=-43;z>=-46;z--){cells.add(new BlockPos(4,-3,z));give.add(1);}
+        for(var c:CRAWL){cells.add(c);give.add(0);}
+        // The low chamber: its mouth, then anywhere further in.
+        cells.add(new BlockPos(2,-3,-53));give.add(0);cells.add(new BlockPos(4,-3,-54));give.add(0);
+        WAY=java.util.List.copyOf(cells);GIVE=give.stream().mapToInt(Integer::intValue).toArray();
+    }
+    /** How far along the way a floor cell lies: the index of the last step it stands on, or -1 off the way. */
+    public static int along(BlockPos c){
+        if(chamber(c.getX(),-3,c.getZ()))return c.getX()==2&&c.getZ()==-53?WAY.size()-2:WAY.size()-1;
+        int best=-1;
+        for(int i=0;i<WAY.size();i++){var w=WAY.get(i);if(w.getZ()==c.getZ()&&Math.abs(w.getX()-c.getX())<=GIVE[i])best=i;}
+        return best;
+    }
+    /**
      * The new crawls' template inside the two areas they wind through: open for a crawl or bell cell, rock otherwise. Outside
      * those areas, or in the low chamber and its ceiling, it says nothing (null).
      */

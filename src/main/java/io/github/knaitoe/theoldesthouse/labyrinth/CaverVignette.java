@@ -105,6 +105,54 @@ public final class CaverVignette {
         if(!torches.contains(key))return;torches.remove(key);state.put(TORCHES,torches);d.setState(ID,state);}
     /** A torch set before ownership was recorded (an older cave's) can be taken by whoever is there. */
     private static boolean ownsTorch(ServerPlayer p,BlockPos at){var owner=torchOwner(LabyrinthData.get(p.server),at);return owner==null||owner.equals(p.getUUID());}
+    /** 0.4.658: the setter recorded for the House's own torches, which are nobody's to take (as the lectern's journal is nobody's). */
+    public static final UUID HOUSE=new UUID(0,0);
+    /** At most this many of the House's torches for one reader, however often they turn back. */
+    public static final int BEYOND=8;
+    /** How many steps past where a reader stopped the House looks for a place to stand its torch: past the packed rubble or the stone. */
+    private static final int LOOK_ON=6;
+    /**
+     * 0.4.658, the owner: "Let rooms remember where you turned back. If you leave Ted the Caver after placing a torch at the
+     * mouth of the squeeze, the next visit could show your torch in the same spot and a second one just beyond where you
+     * stopped." A reader who walks out alive before they have finished leaves the House how far down they came ("Reached",
+     * kept from visit to visit until they turn back); their own torches stay where they set them, as they always have.
+     */
+    private static void turnedBack(ServerPlayer p){
+        if(!p.isAlive()||p.isSpectator())return;var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());
+        int reached=own.getInt("Reached");if(!own.getBoolean("Active")||own.getBoolean("Escaped")||reached<=0)return;
+        own.putInt("TurnedBack",reached);own.remove("Reached");save(d,p.getUUID(),own);
+        remember(p.server,p.getUUID());
+    }
+    /**
+     * Stands the House's own torch at the first step just beyond where the reader turned back that can hold one (past rubble,
+     * the stone, or a torch a reader set there), once nobody can see the place it goes; tried again until then. If the House's
+     * torch already stands there, there is nothing to add. Never for a reader who has finished, and at most {@link #BEYOND}.
+     */
+    public static void remember(MinecraftServer s,UUID id){
+        var d=LabyrinthData.get(s);var own=personal(d,id);if(!own.contains("TurnedBack"))return;
+        var beyond=own.getLongArray("Beyond");
+        if(own.getBoolean("Escaped")||beyond.length>=BEYOND){own.remove("TurnedBack");save(d,id,own);return;}
+        var b=base(s);var l=s.getLevel(NovelRooms.dimension(LabyrinthPlace.TED_CAVER));if(b==null||l==null)return;
+        int from=own.getInt("TurnedBack");
+        for(int i=from;i<Math.min(from+LOOK_ON,CaverCave.WAY.size());i++){
+            var at=b.offset(CaverCave.WAY.get(i));if(!l.isLoaded(at))return;
+            var state=l.getBlockState(at);
+            if(torch(state)){if(HOUSE.equals(torchOwner(d,at)))break;continue;}
+            var lit=Blocks.TORCH.defaultBlockState();if(!state.isAir()||!lit.canSurvive(l,at))continue;
+            if(watched(l,at))return;
+            l.setBlock(at,lit,net.minecraft.world.level.block.Block.UPDATE_ALL);
+            var all=d.state(ID);var torches=all.getCompound(TORCHES);torches.putUUID(Long.toString(at.asLong()),HOUSE);all.put(TORCHES,torches);d.setState(ID,all);
+            var marks=Arrays.copyOf(beyond,beyond.length+1);marks[beyond.length]=at.asLong();own.putLongArray("Beyond",marks);
+            break;
+        }
+        own.remove("TurnedBack");save(d,id,own);
+    }
+    /** Nobody may see the House set a torch: not anyone with a clear line to the place, nor anyone near enough to see its light come. */
+    private static boolean watched(ServerLevel l,BlockPos at){var point=Vec3.atCenterOf(at);
+        for(var p:l.players()){var eye=p.getEyePosition();double dd=eye.distanceToSqr(point);if(dd<144)return true;if(dd>HouseWatchers.RANGE*HouseWatchers.RANGE)continue;
+            var hit=l.clip(new net.minecraft.world.level.ClipContext(eye,point,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+            if(hit.getType()==net.minecraft.world.phys.HitResult.Type.MISS||hit.getBlockPos().equals(at))return true;}
+        return false;}
     /** Runs after every protection: a torch that really stands is recorded as its setter's. */
     public static void onPlace(BlockEvent.EntityPlaceEvent e){
         if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!allowsPlacing(p,e.getPos(),e.getPlacedBlock()))return;
@@ -299,12 +347,17 @@ public final class CaverVignette {
         var b=base(s);var cave=s.getLevel(NovelRooms.dimension(LabyrinthPlace.TED_CAVER));
         if(b!=null&&cave!=null){boolean occupied=false;for(var p:cave.players())if(p.isAlive()&&inside(p)){occupied=true;break;}if(occupied)breathe(cave,b);}
         for(var l:s.getAllLevels())for(var p:List.copyOf(l.players()))playerTick(p);
+        // 0.4.658: a torch the House could not yet set unseen is tried again.
+        if(s.getTickCount()%100==0){var people=LabyrinthData.get(s).state(ID).getCompound("Players");
+            for(var key:List.copyOf(people.getAllKeys()))if(people.getCompound(key).contains("TurnedBack"))remember(s,UUID.fromString(key));}
     }
     public static void playerTick(ServerPlayer p){
-        if(!inside(p)){if(crawling(p)||ACTIVE.contains(p.getUUID()))depart(p);return;}
+        if(!inside(p)){if(crawling(p)||ACTIVE.contains(p.getUUID())){turnedBack(p);depart(p);}return;}
         enter(p);var b=base(p.server);var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID());var r=rel(p,b);
         long now=p.serverLevel().getGameTime();if(own.getLong("LastTick")==now)return;own.putLong("LastTick",now);
         int breath=breathing(p.server);var c=cell(r);
+        // 0.4.658: how far down the reader has come since they last turned back.
+        int along=CaverCave.along(c);if(along+1>own.getInt("Reached"))own.putInt("Reached",along+1);
         // Only rubble keeps a body out of a crawl cell; a torch set on its floor makes no air pocket. A body already crouched
         // under the chamber's low roof starts the crawl at that mouth without needing the key.
         boolean tight=low(r)&&(CaverCave.crawl(c)&&!CaverCave.isRubble(p.serverLevel().getBlockState(b.offset(c)))
