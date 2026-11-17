@@ -1,0 +1,58 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "m": "the_oldest_house:block/last_seen/fence_mesh",
+    "u": "the_oldest_house:block/last_seen/fence_tube",
+    "f": "the_oldest_house:block/last_seen/fence_foot",
+    "particle": "the_oldest_house:block/last_seen/fence_tube"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        2,
+        7.75
+      ],
+      "to": [
+        16,
+        16,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m"
+        },
+        "south": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        2,
+        7.25
+      ],
+      "to": [
+        16,
+        3,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u"
+        },
+        "south": {
+          "texture": "#u"
+        },
+        "up": {
+          "texture": "#u"
+        },
+        "down": {
+          "texture": "#u"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

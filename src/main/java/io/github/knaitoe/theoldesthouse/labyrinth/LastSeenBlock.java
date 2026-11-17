@@ -37,7 +37,9 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         COUNTER,CARD,CHAIR,SHELF,POSTER,POSTER_B,TABLE,DESK,LOUVRE,TUBE,
         RAILING,GATE,LAMP_POST,BENCH,FOUNTAIN,KIOSK,TRUNK,LEAVES,PLAY,BANDSTAND,
-        SHELTER,SHUTTER;
+        SHELTER,SHUTTER,
+        // 0.4.669: the city's wire fence round the playground (docs/LAST_SEEN_0_4_669.md).
+        FENCE;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -47,7 +49,9 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
     /** Stages of a gate leaf, and of Nora's drawer. */
     public static final int SHUT=0,CHAINED=1,OPEN=2,LOCKED=0,UNLOCKED=1,DRAWN=2;
     /** Stages of a lamp post. */
-    public static final int FOOT=0,SHAFT=1,LIT=2,DARK=3;
+    public static final int FOOT=0,SHAFT=1,LIT=2,DARK=3,NOTICE=4;
+    /** Stages of the city's fence: a panel's lower half on its concrete foot, its upper half, and the same at a corner, with a post. */
+    public static final int PANEL=0,PANEL_TOP=1,CORNER=2,CORNER_TOP=3,PANEL_MID=4,PANEL_MID_TOP=5;
     public LastSeenBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.COUNTER).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing){return of(kind,facing,0);}
     public static BlockState of(Kind kind,Direction facing,int stage){return LastSeenRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(7,stage)));}
@@ -77,7 +81,7 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
             case TUBE->Block.box(2,13,6,14,16,10);
             case RAILING->stage==1?Block.box(6,0,6,10,16,10):t(f,0,0,7,16,16,9);
             case GATE->t(f,0,0,7,16,16,9);
-            case LAMP_POST->stage==FOOT?Block.box(5,0,5,11,16,11):stage==SHAFT?Block.box(6.5,0,6.5,9.5,16,9.5):Block.box(3,0,3,13,13,13);
+            case LAMP_POST->stage==FOOT?Block.box(5,0,5,11,16,11):stage==SHAFT?Block.box(6.5,0,6.5,9.5,16,9.5):stage==NOTICE?Shapes.or(Block.box(6.5,0,6.5,9.5,16,9.5),t(f,5,5,6,11,13,6.5)):Block.box(3,0,3,13,13,13);
             case BENCH->t(f,0,0,2,16,15,14);
             case FOUNTAIN->stage==2?Block.box(3,0,3,13,16,13):stage==3?Block.box(1,0,1,15,6,15):t(f,0,0,0,16,8,16);
             case KIOSK->Shapes.block();
@@ -87,6 +91,7 @@ public final class LastSeenBlock extends HorizontalDirectionalBlock {
             case BANDSTAND->switch(stage){case 0->Block.box(6,0,6,10,16,10);case 1->t(f,0,0,7,16,12,9);case 2,4->Block.box(0,15,0,16,16,16);default->t(f,0,0,8,16,8,16);};
             case SHELTER->switch(stage){case 1->Block.box(0,13,0,16,16,16);case 2->Block.box(7,0,7,9,16,9);case 3->t(f,0,0,8,16,8,14);default->t(f,0,0,7,16,16,9);};
             case SHUTTER->Shapes.block();
+            case FENCE->stage==CORNER||stage==CORNER_TOP?Shapes.or(t(f,7,0,7,9,16,9),t(f,9,0,7,16,16,9),t(f,7,0,9,9,16,16)):t(f,0,0,7,16,16,9);
         };
     }
     /** What stands in the way: the furniture, the railings and gates (a shut gate), the fountain, the kiosk, the trunks, the bandstand's posts and

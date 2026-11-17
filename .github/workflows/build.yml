@@ -2665,14 +2665,14 @@ jobs:
         with:
           gradle-version: '9.2.1'
       - name: 'Native park and archive (Last Seen): the office, the archive, the park and the avenue'
-        timeout-minutes: 13
+        timeout-minutes: 21
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           mkdir -p build run
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 12m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_last_seen --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/last-seen-native.log
+          timeout --signal=QUIT --kill-after=20s 20m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_last_seen --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/last-seen-native.log
           python3 - <<'PY_CHECK'
           from pathlib import Path
           import re

@@ -21,6 +21,8 @@ public final class LastSeenRegistry {
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     /** 0.4.668: a child's folder, carried out of the archive (LastSeenFolder). */
     public static final DeferredItem<LastSeenFolder> FOLDER=ITEMS.registerItem("last_seen_folder",LastSeenFolder::new,new net.minecraft.world.item.Item.Properties().stacksTo(1));
+    /** 0.4.669: the coat Tomás's grandmother brings him, carried folded over her arm until she puts it round him. Nobody else holds it. */
+    public static final DeferredItem<net.minecraft.world.item.Item> COAT=ITEMS.registerSimpleItem("last_seen_coat",new net.minecraft.world.item.Item.Properties().stacksTo(1));
     private static BlockBehaviour.Properties fixed(Block like){return BlockBehaviour.Properties.ofFullCopy(like).strength(-1,3600000).noLootTable();}
     private static final java.util.Map<String,DeferredBlock<Block>> MATERIALS=new java.util.LinkedHashMap<>();
     /**

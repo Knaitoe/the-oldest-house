@@ -2064,5 +2064,6 @@
   "block.the_oldest_house.last_seen_house_c": "Painted Render",
   "block.the_oldest_house.last_seen_road_line": "Road Marking",
   "block.the_oldest_house.last_seen_crossing": "Crossing Stripe",
-  "item.the_oldest_house.last_seen_folder": "Folder"
+  "item.the_oldest_house.last_seen_folder": "Folder",
+  "item.the_oldest_house.last_seen_coat": "Coat"
 }

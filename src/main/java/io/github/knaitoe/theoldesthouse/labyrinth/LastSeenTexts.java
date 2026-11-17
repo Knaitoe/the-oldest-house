@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
  * here once: the posters show them, and so do their folders. Every line is flagged to the owner in its part's doc.
  * <p>0.4.668, part 2 (docs/LAST_SEEN_0_4_668.md): the folders, the shelves' letters, the day's pile, Nora's rule, Luz at the door, and
  * the first of them at the fountain.
+ * <p>0.4.669, part 3 (docs/LAST_SEEN_0_4_669.md): the second day, the eight, the families, the city, and dusk.
  */
 public final class LastSeenTexts {
     private LastSeenTexts(){}
@@ -126,6 +127,82 @@ public final class LastSeenTexts {
     public static final String AT_RIM="She stands at the fountain's rim, facing the office. She does not blink.",
         COLD="Her hand is as cold as the fountain's stone.",NOT_HERS="She looks at the face on it, and then away.",
         WAITING="I was waiting where they told me to.",GIVES_BACK="She gives the folder back.";
+
+    // ------------------------------------------------------------------------------------------------ 0.4.669, more of them
+    /** The second day: the desk lamp left on since the morning; the park lamps at dusk; Luz at the door, once she has said the rest. */
+    public static final String LAMP_LATE="A desk lamp, on. Nobody has turned it off since the morning.",
+        LAMP_POST_DUSK="A park lamp. Its globe is lit.",
+        LUZ_DOOR="They don't come to the door. Not one of them has.";
+    /** Which of the ten are girls, for the few lines that need she or he. */
+    static final boolean[] GIRL={true,false,true,false,true,false,true,false,true,false};
+    static String pronoun(int child){return GIRL[child]?"She":"He";}
+    /** Coming near each of the eight on the second day, once. The first of them keeps her own line. */
+    public static String near(int child){
+        return switch(child){
+            case LastSeen.ROCIO->AT_RIM;
+            case 1->"Tomás stands at the railing across from the bus stop, facing it. He does not blink.";
+            case 2->"Micaela stands by the gate, facing it. She does not blink.";
+            case 3->"Brian stands outside the kiosk, its shutter down behind him. He does not blink.";
+            case 4->"Daiana stands by the bench under the plane trees. She does not blink.";
+            case 5->"Lautaro stands at the playground, facing the swings. One knee is scraped, and it is still wet. He does not blink.";
+            case 6->"Abril stands alone on the bandstand. She does not blink.";
+            case 7->"Joel stands at the corner of the railing, facing the far side of the avenue. He does not blink.";
+            default->CHILDREN[child]+" is not here.";
+        };
+    }
+    /** What each says, given their own folder, once they have looked at it: the one thing. */
+    public static String oneThing(int child,boolean ran){
+        return switch(child){
+            case LastSeen.ROCIO->WAITING;
+            case 1->"Is it still the same day?";
+            case 2->"This is the gate. I went out this way.";
+            case 3->ran?"Nobody's coming for me. You know how that is.":"Nobody's coming for me. I knew that before.";
+            case 4->"Does he know I'm here?";
+            case 5->"I fell on the way. It hasn't stopped.";
+            case 6->"We waited in a line. Then they said we could go.";
+            case 7->"Is that my mom, over there?";
+            default->"";
+        };
+    }
+    public static String cold(int child,boolean coat){
+        if(child==LastSeen.ROCIO)return COLD;
+        return coat?"Under the coat, Tomás's hand is just as cold.":CHILDREN[child]+"'s hand is colder than the day.";
+    }
+    public static String notTheirs(int child){return child==LastSeen.ROCIO?NOT_HERS:CHILDREN[child]+" looks at the face on it, and then away.";}
+    public static String givesBack(int child){return child==LastSeen.ROCIO?GIVES_BACK:CHILDREN[child]+" gives the folder back.";}
+    /** Food held out: taken, held, never eaten. */
+    public static String fed(int child){return CHILDREN[child]+" takes it and holds it, and does not eat.";}
+    public static String stillHolding(int child){return CHILDREN[child]+" is still holding what someone gave "+(GIRL[child]?"her":"him")+", and has not eaten it.";}
+    /** Nora on the second day: her rule to a reader who has not heard it, then the day's two lines; after the man from the city, her answer;
+     * and holding a folder whose child has not come back. */
+    public static final String NORA_EIGHT="There are eight of them out there today. Every one of them has a folder in here.",
+        NORA_EACH="Take each one their own. Put it back after.",
+        NORA_CLOSED="He wants them closed. A folder stays open.",
+        NORA_NOT_BACK="That one hasn't come back. Put it back on its shelf. It stays open.",
+        NORA_OPEN="They stay open.";
+    public static final String PATRICIA_PHONE="The phone hasn't stopped. Everyone wants to know if one of them is theirs.",
+        LUZ_COUNTED="I counted eight from the door this morning. Then I counted again.",
+        LUZ_COAT="A grandmother came in by the gate. She brought a coat.";
+    /** The families. Tomás's grandmother; Daiana's father; Joel's mother, on the far pavement. Brian's never come. */
+    public static final String[] FAMILY_NAMES={"Mr. Ocampo","Tomás's grandmother","Daiana's father","Joel's mother"};
+    public static String family(int who,int heard){
+        return switch(who){
+            case LastSeen.OCAMPO->heard==0?"I'm from the city. You'll want to keep away from them.":"Don't feed them. It's on the notices.";
+            case LastSeen.GRAN->heard%2==0?"He was always cold, even in summer. I brought his coat.":"His hands are like ice. They'll warm up.";
+            case LastSeen.FATHER->heard==0?"I'm taking her home for an hour. I'll bring her back.":"I said I'd bring her back.";
+            default->heard%2==0?"Is he eating? Tell me if he's eating.":"I can see him from here.";
+        };
+    }
+    public static final String COAT_ON="Tomás's grandmother puts the coat round his shoulders. He lets her.",
+        FATHER_COME="Come on.",
+        FATHER_TAKES="Daiana's father takes her by the wrist and walks her out of the park.",
+        FATHER_BACK="Daiana's father brings her back to the gate, and leaves her there.",
+        OCAMPO_FILE="A child who comes back is a closed file.",
+        OCAMPO_CLOSE="Close them, Nora. All of them.",
+        DUSK="The light is going. In the park, the children have all turned to face the avenue.";
+    /** The city's fence round the playground, and its notice on the lamp posts. */
+    public static final String FENCE="A wire fence on concrete feet, put up round the playground. It is too high to climb.",
+        NOTICE="A notice taped round the post: DO NOT APPROACH. DO NOT FEED. It is signed by the city.";
 
     /** The account. Nothing asks for it until part 5; it says only what anybody could see of the place. */
     public static ItemStack account(String name,CompoundTag own){
