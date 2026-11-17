@@ -2,7 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.662** gives a reader alone the other half of that suggestion: now and then, deep in the House, the hall they have just left is on a monitor high on the wall of the next one, empty, with a clock running, and a few seconds later footprints come into it one after another along the way they walked, out to the door they left by, while the monitor gives out the footsteps. Then the picture breaks up and the screen goes dark. It is drawn by that reader's own game alone. `docs/HALL_FEED_0_4_662.md`.
+Development candidate **0.4.663** begins *Not Yet* (part 1: the ward), the third of the three vignettes the owner approved on 17 November. Deep in the machine, past a hatch in the floor of its passage, is a ward of cots under lamps, a window painted with a field and a sun that does not move, and a wall of digits standing at nought. Off it is a mending table under a ring of arms. Beyond it, in a long room, three people the machine has mended too often lie with their eyes open. Nothing happens yet, and the House does not deal it until a reader can lie down. `docs/NOT_YET_0_4_663.md`.
+
+Previous: 0.4.662 gave a reader alone the other half of that suggestion: now and then, deep in the House, the hall they have just left is on a monitor high on the wall of the next one, empty, with a clock running, and a few seconds later footprints come into it one after another along the way they walked, out to the door they left by, while the monitor gives out the footsteps. Then the picture breaks up and the screen goes dark. It is drawn by that reader's own game alone. `docs/HALL_FEED_0_4_662.md`.
 
 Previous: 0.4.661 gave readers together different things to swear they heard: stopped in a hall, one may hear the other's footsteps carry on round the corner while the other hears a door shut behind the first. `docs/HEARD_APART_0_4_661.md`.
 

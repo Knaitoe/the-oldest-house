@@ -1,0 +1,269 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "a": "the_oldest_house:block/not_yet/arm_steel",
+    "t": "the_oldest_house:block/not_yet/tool",
+    "particle": "the_oldest_house:block/not_yet/arm_steel"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        15,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a"
+        },
+        "south": {
+          "texture": "#a"
+        },
+        "east": {
+          "texture": "#a"
+        },
+        "west": {
+          "texture": "#a"
+        },
+        "up": {
+          "texture": "#a"
+        },
+        "down": {
+          "texture": "#a"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        11,
+        7
+      ],
+      "to": [
+        9,
+        15,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a"
+        },
+        "south": {
+          "texture": "#a"
+        },
+        "east": {
+          "texture": "#a"
+        },
+        "west": {
+          "texture": "#a"
+        },
+        "up": {
+          "texture": "#a"
+        },
+        "down": {
+          "texture": "#a"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        9.5,
+        6.5
+      ],
+      "to": [
+        9.5,
+        11,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a"
+        },
+        "south": {
+          "texture": "#a"
+        },
+        "east": {
+          "texture": "#a"
+        },
+        "west": {
+          "texture": "#a"
+        },
+        "up": {
+          "texture": "#a"
+        },
+        "down": {
+          "texture": "#a"
+        }
+      }
+    },
+    {
+      "from": [
+        7.25,
+        1,
+        6
+      ],
+      "to": [
+        8.75,
+        9.5,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a"
+        },
+        "south": {
+          "texture": "#a"
+        },
+        "east": {
+          "texture": "#a"
+        },
+        "west": {
+          "texture": "#a"
+        },
+        "up": {
+          "texture": "#a"
+        },
+        "down": {
+          "texture": "#a"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          9.5,
+          7
+        ],
+        "axis": "x",
+        "angle": -22.5
+      }
+    },
+    {
+      "from": [
+        7,
+        -1,
+        2.5
+      ],
+      "to": [
+        9,
+        1.5,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a",
+          "uv": [
+            7,
+            13.5,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#a",
+          "uv": [
+            7,
+            13.5,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#a",
+          "uv": [
+            11.5,
+            13.5,
+            13.5,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#a",
+          "uv": [
+            2.5,
+            13.5,
+            4.5,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#a"
+        },
+        "down": {
+          "texture": "#a"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        -12,
+        3
+      ],
+      "to": [
+        8.5,
+        -1,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            7.5,
+            1,
+            8.5,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            7.5,
+            1,
+            8.5,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#t",
+          "uv": [
+            12,
+            1,
+            13,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#t",
+          "uv": [
+            3,
+            1,
+            4,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          -1,
+          3.5
+        ],
+        "axis": "y",
+        "angle": 45
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

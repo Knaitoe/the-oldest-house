@@ -6554,5 +6554,32 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.king.crown_fills"
+  },
+  "not_yet.hum": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:not_yet/hum",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.not_yet.hum"
+  },
+  "not_yet.tick": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:not_yet/tick",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.not_yet.tick"
+  },
+  "bleed.not_yet": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/not_yet",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.not_yet"
   }
 }

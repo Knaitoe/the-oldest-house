@@ -123,6 +123,7 @@ final class CoopAccounts {
         together(CORNER_HOUSE,with("%s {was} on the street with me."));
         together(BLACK_CITY,with("%s {was} on the ice with me."));
         together(KEPT,with("%s walked the machine with me."));
+        together(NOT_YET,with("%s was in the ward with me, in another cot."));
         together(LAST_ORDERS,with("%s {was} in the bar with me."));
         together(BIKE_NIGHT,with("%s {was} out on a bike that night too."));
         together(PELL_HOUSE,PELL);

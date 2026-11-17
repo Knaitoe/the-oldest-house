@@ -116,6 +116,8 @@ public enum DoorBleed {
     CORNER_HOUSE(new Spec().drawn(1).light(0xFFFFF0,Rhythm.STEADY).sound("bleed.corner_house")),
     BLACK_CITY(new Spec().drawn(2).air(Air.SNOW).sound("bleed.black_city")),
     KEPT(new Spec().drawn(1).light(0xFF5A2A,Rhythm.BEAT).rate(.5F).glow(.6F).sound("bleed.kept")),
+    // 0.4.663: the ward's hum under the door, and a strip of its light, steady.
+    NOT_YET(new Spec().light(0xD8E2DC,Rhythm.STEADY).glow(.4F).sound("bleed.not_yet")),
     LAST_ORDERS(new Spec().drawn(1).light(0xFFB14F,Rhythm.STEADY).glow(.5F).sound("bleed.last_orders")),
     BIKE_NIGHT(new Spec().drawn(1).light(0xFF9A2E,Rhythm.CANDLE).glow(.7F).sound("bleed.bike_night")),
     PELL_HOUSE(new Spec().drawn(1).light(0xFFE8B0,Rhythm.STEADY).glow(.5F).sound("bleed.pell_house")),

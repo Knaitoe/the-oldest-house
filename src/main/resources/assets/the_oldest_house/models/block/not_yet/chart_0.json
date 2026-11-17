@@ -1,0 +1,70 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/not_yet/board",
+    "b": "the_oldest_house:block/not_yet/board",
+    "c": "the_oldest_house:block/not_yet/chart",
+    "particle": "the_oldest_house:block/not_yet/chart"
+  },
+  "elements": [
+    {
+      "from": [
+        3.5,
+        2,
+        15
+      ],
+      "to": [
+        12.5,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        3,
+        14.5
+      ],
+      "to": [
+        11.5,
+        13,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c"
+        },
+        "east": {
+          "texture": "#c"
+        },
+        "west": {
+          "texture": "#c"
+        },
+        "up": {
+          "texture": "#c"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

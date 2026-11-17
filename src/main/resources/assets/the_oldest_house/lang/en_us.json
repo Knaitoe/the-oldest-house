@@ -2025,5 +2025,12 @@
   "item.the_oldest_house.king_crown": "A Crown",
   "subtitles.the_oldest_house.king.introduced": "Something at the table fills in",
   "subtitles.the_oldest_house.king.crowned": "A crown comes down",
-  "subtitles.the_oldest_house.king.crown_fills": "A crown fills in"
+  "subtitles.the_oldest_house.king.crown_fills": "A crown fills in",
+  "block.the_oldest_house.not_yet_fitting": "Ward Fitting",
+  "block.the_oldest_house.not_yet_tile": "Ward Tile",
+  "block.the_oldest_house.not_yet_wall": "Ward Wall",
+  "block.the_oldest_house.not_yet_dado": "Ward Dado",
+  "subtitles.the_oldest_house.not_yet.hum": "The ward hums",
+  "subtitles.the_oldest_house.not_yet.tick": "A counter turns over",
+  "subtitles.the_oldest_house.bleed.not_yet": "A ward hums and a counter turns over, behind a door"
 }

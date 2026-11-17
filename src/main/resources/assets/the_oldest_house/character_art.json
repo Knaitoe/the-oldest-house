@@ -1600,6 +1600,30 @@
     "phase": 227
   },
   {
+    "name": "literary_notyet_ines",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 240
+  },
+  {
+    "name": "literary_notyet_bram",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 241
+  },
+  {
+    "name": "literary_notyet_odile",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 242
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

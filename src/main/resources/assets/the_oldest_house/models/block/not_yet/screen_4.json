@@ -1,0 +1,48 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "h": "the_oldest_house:block/not_yet/housing",
+    "f": "the_oldest_house:block/not_yet/screen_static",
+    "particle": "the_oldest_house:block/not_yet/housing"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        3,
+        12
+      ],
+      "to": [
+        14,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        },
+        "down": {
+          "texture": "#h"
+        }
+      }
+    }
+  ]
+}
