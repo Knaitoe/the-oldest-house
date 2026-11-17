@@ -63,7 +63,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_','literary_king','literary_notyet_','literary_lastseen_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_','literary_king','literary_notyet_','literary_lastseen_','literary_fallow_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -131,6 +131,9 @@ def entries():
     # 0.4.667, Last Seen: the ten who come back to the park and the three at the archive, on two hundred and forty-three to fifty-five.
     for name,phase in (('rocio',243),('tomas',244),('micaela',245),('brian',246),('daiana',247),('lautaro',248),('abril',249),('joel',250),('yanina',251),('santino',252),('nora',253),('patricia',254),('luz',255)):
         rows.append({'name':'literary_lastseen_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # 0.4.672, Fallow: the five at the station and the stranger, on two hundred and sixty-three to sixty-eight.
+    for name,phase in (('harlan',263),('faye',264),('opal',265),('boyd',266),('otis',267),('stranger',268)):
+        rows.append({'name':'literary_fallow_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
     # Speak Up (0.4.327): Joan, Pat, Dell and Ruth on stranger phases ninety to ninety-three.
     for name,phase in (('joan',90),('pat',91),('dell',92),('ruth',93)):
         rows.append({'name':'literary_supper_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})

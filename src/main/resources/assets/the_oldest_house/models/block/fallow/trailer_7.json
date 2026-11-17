@@ -1,0 +1,85 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/fallow/trailer_window",
+    "s": "the_oldest_house:block/fallow_trailer",
+    "m": "the_oldest_house:block/fallow/hitch_metal",
+    "c": "the_oldest_house:block/fallow/cinder",
+    "p": "the_oldest_house:block/fallow/propane",
+    "o": "the_oldest_house:block/fallow/post_wood",
+    "l": "the_oldest_house:block/fallow/clothes",
+    "r": "the_oldest_house:block/fallow/line_rope",
+    "b": "the_oldest_house:block/fallow/barrel",
+    "a": "the_oldest_house:block/fallow/ash",
+    "f": "the_oldest_house:block/fallow/field_fence",
+    "g": "the_oldest_house:block/fallow/galv",
+    "particle": "the_oldest_house:block/fallow/field_fence"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        7.75
+      ],
+      "to": [
+        16,
+        14,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            0,
+            2,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            16,
+            2,
+            0,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        7.25
+      ],
+      "to": [
+        1,
+        14.5,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

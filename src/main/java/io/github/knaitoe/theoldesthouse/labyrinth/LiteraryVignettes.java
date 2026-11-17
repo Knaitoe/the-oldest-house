@@ -127,6 +127,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.NOT_YET&&!NotYet.dealable(d,p))return false;
         // 0.4.668: Last Seen is dealt from depth eight.
         if(place==LabyrinthPlace.LAST_SEEN&&!LastSeen.dealable(d,p))return false;
+        // 0.4.672: Fallow is not dealt until part 2.
+        if(place==LabyrinthPlace.FALLOW&&!Fallow.dealable(d,p))return false;
         // 0.4.218: the street is dealt only to a reader who has a companion following them.
         if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;
         // 0.4.209: the dark halls' horrors are dealt only in the dark band.
@@ -182,6 +184,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.KEPT){Kept.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.NOT_YET){NotYet.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_SEEN){LastSeen.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.FALLOW){Fallow.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_ORDERS){LastOrders.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.BIKE_NIGHT){BikeNight.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.PELL_HOUSE){PellHouse.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
@@ -305,6 +308,7 @@ public final class LiteraryVignettes {
             case KEPT->handled=Kept.click(p,b,rel,own);
             case NOT_YET->handled=NotYet.click(p,b,rel,own);
             case LAST_SEEN->handled=LastSeen.click(p,b,rel,own);
+            case FALLOW->handled=Fallow.click(p,b,rel,own);
             case LAST_ORDERS->handled=LastOrders.click(p,b,rel,own);
             case BIKE_NIGHT->handled=BikeNight.click(p,b,rel,own);
             case PELL_HOUSE->handled=PellHouse.click(p,b,rel,own);
@@ -394,6 +398,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
         else if(place==LabyrinthPlace.NOT_YET){if(NotYet.is(actor))NotYet.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_SEEN){if(LastSeen.is(actor))LastSeen.talk(p,actor,own);else if(LastSeen.corner(actor))LastSeen.cornerHand(p,actor,own);}
+        else if(place==LabyrinthPlace.FALLOW){if(Fallow.is(actor))Fallow.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);
         else if(place==LabyrinthPlace.TALL_GRASS)TallGrass.talk(p,actor);
         else if(place==LabyrinthPlace.GROWING_THINGS)GrowingThings.talk(p,actor);
@@ -504,7 +509,7 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();MarshSupper.clearAll();Drawing.clearAll();Corner.clearAll();BlackCity.clearAll();Kept.clearAll();NotYetMending.clearAll();NotYetTrial.clearAll();LastSeen.clearAll();LastOrders.clearAll();BikeNight.clearAll();PellHouse.clearAll();LodgingHouse.clearAll();LongerRowan.clearAll();TallGrass.clearAll();GrowingThings.clearAll();LastCrossing.clearAll();Pinehook.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();LastSwimmer.clearAll();PeopleLights.clearAll();PlaceForYou.clearAll();SecondPerson.clearAll();DeerRoad.clearAll();StateRoute.clearAll();Talk.clearAll();SourceMark.clearAll();VacantPossession.clearAll();}
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();MarshSupper.clearAll();Drawing.clearAll();Corner.clearAll();BlackCity.clearAll();Kept.clearAll();NotYetMending.clearAll();NotYetTrial.clearAll();LastSeen.clearAll();Fallow.clearAll();LastOrders.clearAll();BikeNight.clearAll();PellHouse.clearAll();LodgingHouse.clearAll();LongerRowan.clearAll();TallGrass.clearAll();GrowingThings.clearAll();LastCrossing.clearAll();Pinehook.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();LastSwimmer.clearAll();PeopleLights.clearAll();PlaceForYou.clearAll();SecondPerson.clearAll();DeerRoad.clearAll();StateRoute.clearAll();Talk.clearAll();SourceMark.clearAll();VacantPossession.clearAll();}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}

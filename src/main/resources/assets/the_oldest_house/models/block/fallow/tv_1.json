@@ -1,0 +1,266 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "f": "the_oldest_house:block/fallow/tv_1",
+    "w": "the_oldest_house:block/fallow/tv_case",
+    "m": "the_oldest_house:block/fallow/chrome",
+    "l": "the_oldest_house:block/fallow/hitch_metal",
+    "particle": "the_oldest_house:block/fallow/tv_case"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        3,
+        4
+      ],
+      "to": [
+        14,
+        13,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        2,
+        8
+      ],
+      "to": [
+        9,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        1,
+        14
+      ],
+      "to": [
+        11,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        13,
+        9
+      ],
+      "to": [
+        8,
+        19,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            8,
+            0,
+            8.5,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#m",
+          "uv": [
+            7.5,
+            0,
+            8,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#m",
+          "uv": [
+            6.5,
+            0,
+            7,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#m",
+          "uv": [
+            9,
+            0,
+            9.5,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          13,
+          9
+        ]
+      }
+    },
+    {
+      "from": [
+        8,
+        13,
+        9
+      ],
+      "to": [
+        8.5,
+        19,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            7.5,
+            0,
+            8,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#m",
+          "uv": [
+            8,
+            0,
+            8.5,
+            6
+          ]
+        },
+        "east": {
+          "texture": "#m",
+          "uv": [
+            6.5,
+            0,
+            7,
+            6
+          ]
+        },
+        "west": {
+          "texture": "#m",
+          "uv": [
+            9,
+            0,
+            9.5,
+            6
+          ]
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          13,
+          9
+        ]
+      }
+    },
+    {
+      "from": [
+        3,
+        5,
+        3.9
+      ],
+      "to": [
+        10.5,
+        11.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            2,
+            3,
+            10,
+            12
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 10,
+        "sky_light": 0
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

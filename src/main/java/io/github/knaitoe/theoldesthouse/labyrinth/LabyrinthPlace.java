@@ -723,7 +723,11 @@ public enum LabyrinthPlace {
     /** 0.4.667, Last Seen (LastSeen, docs/LAST_SEEN_0_4_667.md): a municipal office at the edge of a city park, its counter and its poster
      * wall, its archive of folders on steel shelves, and the park in the morning with the avenue past its railing (LastSeenSite). This
      * part, the place. Not dealt until part 2. */
-    LAST_SEEN("last_seen",Kind.RECURRING,244,new BoundingBox(-42,-4,-110,26,16,0),literaryEntry());
+    LAST_SEEN("last_seen",Kind.RECURRING,244,new BoundingBox(-42,-4,-110,26,16,0),literaryEntry()),
+    /** 0.4.672, Fallow (Fallow, docs/FALLOW_0_4_672.md): a gas station and grocery on a two-lane road through wheat to the edge of sight,
+     * its garage with a car up on the lift, the keeper's trailer and storm cellar behind it, a farmhouse across the road and two fenced pads
+     * out in the field (FallowSite). This part, the place. Not dealt until part 2. */
+    FALLOW("fallow",Kind.RECURRING,245,new BoundingBox(-56,-6,-136,56,16,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

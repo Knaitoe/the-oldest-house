@@ -1,0 +1,258 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/fallow/rig_paint",
+    "d": "the_oldest_house:block/fallow/rig_door",
+    "c": "the_oldest_house:block/fallow/rig_cab_side",
+    "v": "the_oldest_house:block/fallow/windshield",
+    "g": "the_oldest_house:block/fallow/grille",
+    "y": "the_oldest_house:block/fallow/tyre_tread",
+    "h": "the_oldest_house:block/fallow/hub",
+    "l": "the_oldest_house:block/fallow/headlight",
+    "m": "the_oldest_house:block/fallow/chrome",
+    "k": "the_oldest_house:block/fallow/box_frame",
+    "s": "the_oldest_house:block/fallow/sleeper_side",
+    "f": "the_oldest_house:block/fallow/mud_flap",
+    "particle": "the_oldest_house:block/fallow/rig_paint"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        16,
+        0,
+        0
+      ],
+      "to": [
+        30,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p",
+          "uv": [
+            2,
+            13,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#p",
+          "uv": [
+            0,
+            13,
+            14,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            14,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        3,
+        1
+      ],
+      "to": [
+        7,
+        4,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      },
+      "neoforge_data": {
+        "block_light": 6,
+        "sky_light": 0
+      }
+    },
+    {
+      "from": [
+        15,
+        3,
+        1
+      ],
+      "to": [
+        17,
+        4,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            0,
+            12,
+            2,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#l",
+          "uv": [
+            14,
+            12,
+            16,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            14,
+            1,
+            16,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#l",
+          "uv": [
+            14,
+            14,
+            16,
+            15
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 6,
+        "sky_light": 0
+      }
+    },
+    {
+      "from": [
+        25,
+        3,
+        1
+      ],
+      "to": [
+        27,
+        4,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            5,
+            12,
+            7,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#l",
+          "uv": [
+            9,
+            12,
+            11,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l",
+          "uv": [
+            9,
+            1,
+            11,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#l",
+          "uv": [
+            9,
+            14,
+            11,
+            15
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 6,
+        "sky_light": 0
+      }
+    }
+  ]
+}

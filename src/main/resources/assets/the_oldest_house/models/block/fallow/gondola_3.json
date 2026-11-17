@@ -1,0 +1,67 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/fallow/gondola_2",
+    "e": "the_oldest_house:block/fallow/gondola_end",
+    "t": "the_oldest_house:block/fallow/gondola_top",
+    "particle": "the_oldest_house:block/fallow/gondola_end"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        3
+      ],
+      "to": [
+        15,
+        8,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#t",
+          "uv": [
+            0,
+            0,
+            16,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#e",
+          "uv": [
+            3,
+            8,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#e",
+          "uv": [
+            3,
+            8,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#e"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    }
+  ]
+}

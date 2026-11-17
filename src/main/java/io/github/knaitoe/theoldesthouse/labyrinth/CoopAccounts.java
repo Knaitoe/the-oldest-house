@@ -129,6 +129,8 @@ final class CoopAccounts {
         // 0.4.671: Last Seen. Each finds their own folder in the drawer; the others' are under it.
         together(LAST_SEEN,party("%s had been to Nora's drawer before me, and I had already seen the face on that folder.",
             "When I shut the drawer, %s {was} still out in the empty park."));
+        // 0.4.672: Fallow. Part 1 is the place alone; the afternoon and what it asks come in later parts.
+        together(FALLOW,with("%s {was} at the station with me."));
         together(LAST_ORDERS,with("%s {was} in the bar with me."));
         together(BIKE_NIGHT,with("%s {was} out on a bike that night too."));
         together(PELL_HOUSE,PELL);

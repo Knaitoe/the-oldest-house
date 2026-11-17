@@ -882,6 +882,18 @@ def last_seen(r):
     return im
 
 
+WHEAT_HEAD = (['.a.', 'aba', 'aba', '.a.', '.c.'], ['a.a', '.b.', 'aba', '.c.'], ['.a', 'ab', 'ba', '.c'])
+WHEAT_PAL = [dict(a=0xD6BC72, b=0xB89A52, c=0x9C8848), dict(a=0xCCB066, b=0xAE904A, c=0x8E7A40)]
+
+
+def fallow(r):
+    im = canvas(2)
+    drift(im, r, [(0xBFA878, 4), (0xA8946A, 2), (0x8E7C58, 1)], 8, body=.55)   # road dust blown under the door
+    needles(im, r, [0xD8C07A, 0xC4A860, 0xE2CC8A, 0xB0964E], 16, (3, 6), near=.55)   # straw and chaff off the cut
+    strew(im, r, [(rows, WHEAT_PAL) for rows in WHEAT_HEAD], 5, near=.6)   # heads of wheat, whole
+    return im
+
+
 DRAWN = {
     'goatman': goatman, 'ted_caver': ted_caver, 'zampano_courtyard': zampano_courtyard, 'whale': whale, 'barn_well': barn_well, 'plain': plain,
     'holloway_camp': holloway_camp, 'wallpaper_nursery': wallpaper_nursery, 'hill_nursery': hill_nursery, 'miniatures': miniatures,
@@ -895,7 +907,7 @@ DRAWN = {
     'vacant_possession': vacant_possession, 'second_person': second_person, 'deer_road': deer_road, 'state_route': state_route,
     'marsh_supper': marsh_supper, 'tall_grass': tall_grass, 'growing_things': growing_things, 'pinehook': pinehook,
     'the_drawing': the_drawing, 'corner_house': corner_house, 'black_city': black_city, 'kept': kept, 'last_orders': last_orders,
-    'bike_night': bike_night, 'pell_house': pell_house, 'ones_inside': ones_inside,
+    'bike_night': bike_night, 'pell_house': pell_house, 'ones_inside': ones_inside, 'fallow': fallow,
 }
 
 
