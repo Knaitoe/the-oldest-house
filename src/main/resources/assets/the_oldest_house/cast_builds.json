@@ -1,0 +1,1694 @@
+{
+ "borrasca_worker_two": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "finale_witness": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "harrigan_mourner_0": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "harrigan_mourner_1": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "harrigan_mourner_2": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "holloway": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "hotel_bartender": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "hotel_dancer": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "hotel_dancer_dress": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "hotel_porter": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "hotel_scarred_guest": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "lake_boy": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "lake_boy_1": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "lake_boy_2": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "lake_boy_3": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "lake_congregant": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "lake_congregant_1": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "lake_congregant_3": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "lake_preacher": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_bar_denny": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_bar_hollis": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_bar_marla": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_bar_russ": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_bar_wade": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_bike_duff": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_bike_gus": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_bike_gus_bare": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_bike_ray": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_brother": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_calder_cap": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_calder_denim": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_calder_ghost": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_calder_ghost_day": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_calder_letterman": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_calder_monster": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_calder_monster_day": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_calder_mummy": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_calder_mummy_day": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_calder_pumpkin": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_calder_pumpkin_day": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_calder_robot": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_calder_robot_day": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_calder_scarecrow": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_calder_scarecrow_day": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_calder_stock": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_calder_vampire": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_calder_vampire_day": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_closing_chad": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_closing_daisy": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_coffin_woman": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_corner_luli": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_corner_nacho": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_corner_nacho_grown": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_corner_romina": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_costume_brooke": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_costume_danny": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_costume_hank": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_costume_kaylee": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_costume_lyle": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_costume_owen": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_costume_pip": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_costume_ron": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_costume_rosa": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_costume_shelly": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_costume_tina": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_costume_wes": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_crew_0": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_crew_2": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_crew_3": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_crossing_vera": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_dancer": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_drawing_albright": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_drawing_bess": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_drawing_dale": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_drawing_dunn": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_drawing_nell": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_drawing_ricky": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_drawing_rudd": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_drisking_ames": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_drisking_corley": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_drisking_dorsey": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_drisking_dutch": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_drisking_earl": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_drisking_fenn": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_drisking_gus": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_drisking_hollis": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_drisking_kurt": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_drisking_lorna": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_drisking_merle": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_drisking_odell": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_drisking_pruitt": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_drisking_rowe": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_drisking_roy": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_drisking_sherry": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_drisking_vern": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_drisking_webb": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_fallow_boyd": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_fallow_faye": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_fallow_opal": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_fallow_otis": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_fallow_stranger": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_father": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_father_bandaged": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_father_mangled": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_flat_agent": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_flat_dev": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_flat_hannah": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_flat_iris": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_flat_sam": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_grass_driver": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_guest_0": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_guest_1": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_guest_2": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_guest_3": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_hollow_ghost_b": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_hollow_ghost_c": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_hollow_ghoul": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_hollow_goblin": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_hollow_rider": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_hollow_witch": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_hollow_wolf": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_kept_petra": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_kept_silas": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_kept_tamsin": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_kept_wendell": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_killer": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_king": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_king_cat": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_king_caterpillar": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_king_dee": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_king_dum": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_king_guard": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_king_hearts_king": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_king_herald": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_king_knight": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_king_queen": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_kitchen_holloway": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_lady": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_lake_theo": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_lake_wax": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_lastseen_abril": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_lastseen_brian": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_lastseen_daiana": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_lastseen_father": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_lastseen_joel": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_lastseen_lautaro": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_lastseen_luz": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_lastseen_man_a": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_lastseen_man_b": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_lastseen_man_c": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_lastseen_micaela": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_lastseen_mother": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_lastseen_nora": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_lastseen_ocampo": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_lastseen_patricia": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_lastseen_rocio": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_lastseen_santino": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_lastseen_yanina": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_lodging_dan": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_lodging_dan_cut": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_lodging_dan_prick": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_lodging_daniel": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_lodging_daniel_cut": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_lodging_daniel_prick": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_lodging_failed_dress": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_lodging_failed_post": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_lodging_failed_shirt": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_lodging_rae": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_longer_rowan_man": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_longer_rowan_man_coat": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_longer_rowan_woman": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_longer_rowan_woman_coat": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_marsh_corinne": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_marsh_del": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_marsh_nana": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_marsh_royce": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_miniature_mother": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_mother": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_movie_bobby": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_movie_dot": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_movie_jamie": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_movie_june": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_movie_lynn": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_movie_ray": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_night_operator": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_night_operator_bare": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_notyet_bram": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_notyet_ines": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_notyet_odile": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_old_man": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_orders_benny": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_orders_cass": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_orders_ferris": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_orders_hob": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_orders_ott": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_orders_stranger": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_paw_messenger": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_paw_ruth": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_paw_sergeant": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_paw_will": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_people_kelly": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_people_mark": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_people_stan": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_pinehook_coverall": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_pinehook_jude": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_pinehook_len": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_pinehook_masked": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_pinehook_nina": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_pitt_brad": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_place_kit": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_place_mara": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_polybius_a": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_polybius_kid_a": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_polybius_kid_b": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_polybius_kid_c": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_polybius_teen": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_red_figure": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_replacement": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_stranger_1": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_stranger_2": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_stranger_3": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_supper_dell": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_supper_joan": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_supper_pat": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_supper_ruth": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_swimmer_attendant": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_swimmer_swimmer": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_usher_roderick": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_vacant_tenant": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_visitor": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_window_cleaner": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_winter_bud": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_winter_clay": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_winter_hank": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "nightclub_dancer_braids": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "nightclub_dancer_braids_despair": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "nightclub_dancer_braids_unsure": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "nightclub_dancer_brick": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "nightclub_dancer_brick_despair": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "nightclub_dancer_brick_unsure": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "nightclub_dancer_copper": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "nightclub_dancer_copper_despair": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "nightclub_dancer_copper_unsure": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "nightclub_dancer_female": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "nightclub_dancer_female_despair": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "nightclub_dancer_female_unsure": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "nightclub_dancer_male": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "nightclub_dancer_male_despair": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "nightclub_dancer_male_unsure": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "nightclub_dancer_silver": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "nightclub_dancer_silver_despair": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "nightclub_dancer_silver_unsure": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "nightclub_dancer_vest": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "nightclub_dancer_vest_despair": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "nightclub_dancer_vest_unsure": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "nightclub_dj": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "nightclub_dj_despair": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "nightclub_dj_unsure": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "seance_daughter": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "seance_father": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "seance_medium": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "seance_mother": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "stanley_bartender": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "stanley_dancer": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "stanley_dancer_dress": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "stanley_pianist": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "stanley_porter": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "stanley_scarred_guest": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "trailer_child_1": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "trailer_child_2": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "trailer_child_3": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "trailer_child_4": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "trailer_child_5": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "trailer_child_6": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "trailer_child_8": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "uncanny_bent_neck": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "uncanny_peeler": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "uncanny_peeler_exhausted": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "uncanny_second_waitress": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "uncanny_second_waitress_split": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "uncanny_visitor": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "uncanny_waitress": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ }
+}

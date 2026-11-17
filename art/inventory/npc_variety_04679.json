@@ -1,0 +1,1135 @@
+{
+ "release": "0.4.679",
+ "request": "\"Once you're finished, can you do a pass over each vignette and work to vary the npcs? Their faces, hairstyles, and even body compositions?\"",
+ "note": "Each sheet supersedes only its own previous approved painting. Its size is kept, and its opacity changes only on the head's second layer, where the new cuts carry their volume.",
+ "repainted": [
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/finale_witness.png",
+   "previous_sha256": "6d66c63cdac3463372aa9d5ff23f2d9671be2b86e2f07113d8164650edede232",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "41d40bbeafea1e00c700d36b9b3a93105faf85229eccfa10fd6783e8d593adc2",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan.png",
+   "previous_sha256": "4fe3e9abe8339de04240ae0e533f431f6068fdaa553297126963e6f4a330f2e4",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "2c582d8771dae3d470adf13188497b5aae5517e0cde2ac95315203613bc358aa",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_dead.png",
+   "previous_sha256": "1801846604238bf205cca28b0721f73d401ba535054c44549761b15d74d3fe21",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "a0b5948db9544021ac3a7c8ea9acf4bf3ac196501f31085e0ac490ab8c63160f",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_0.png",
+   "previous_sha256": "f085fa4de8b9bed22c915dda7ee4f3ab313e6d916949d8e58d329f20eb889723",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "a794a11859bcdad545fcfb09a8ecc6b0fcb9fc6d549ecd79e64378dba3a5be8a",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_1.png",
+   "previous_sha256": "290b2c1451c2f3c4c3e0cd3a69b98c63e178c2f2bde06f31c56ddc96c4f71737",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "8e4744ced860590af17da7199fbbde2ec8bbba44b78f0ee3c84b60e2d8454389",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/harrigan_mourner_2.png",
+   "previous_sha256": "d2cb31f53bce43ef5a649d5280cf5ad0415da5a46cc5543796c1a0879588200f",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "79bc0b2267b7f87784f0f016b78f6a0827fcb5b8c98beb523e6e6b80775223e1",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/holloway.png",
+   "previous_sha256": "3cd96b11e92a5e7811367b723796c18f2f7deb633d04c6cb36436adb044e7ff0",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "faffa0b155b82b585ca2feacdd0eb16bcfdfed5b4b9f1a885d8419096a41e23e",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_bartender.png",
+   "previous_sha256": "1c352c4269a6f5f9448274cd9b153151ab69b5f564feced0668100c22de3ccf8",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "17ac0692f53d9519a016e7fb1bed9d61e568647509709f0177afaa165d517c72",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_dancer.png",
+   "previous_sha256": "62a6f73d01f02cc9261ea7c43e464bca653866617f7f3ff5077cb13c24a31d8c",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "558a72fc8d3db354451531d7cdeed7df49a2b50a0071b9ab06a3edd391cd0e78",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_dancer_dress.png",
+   "previous_sha256": "5f4616f0a5e6ca4a9d293f35d3f5969137dc143c6aca390d4bbdf1e7c7e53efc",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "22c92ab0ed9bfaeef3e9bb32219de0877ad37a23527acc19469024a04064f279",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_pianist.png",
+   "previous_sha256": "2a21775058461322eef11932dc204935bce85752f7ef4cae7cfb3e6300b9b886",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "0c02256828f51de8ac35f8e8a960fa84013b1f1439e626251f6cc1bc6caa28a9",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_porter.png",
+   "previous_sha256": "ee81d407c1cda413bc75f9becc6ff0c0b5d80ec4226a0930b45f9cd55f798b09",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "99d76abb0ad75bb0257b252da9bc9b13e8954cb61bdade7d1afa372abfc85d77",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/hotel_scarred_guest.png",
+   "previous_sha256": "292c5cacc090020f18c38339716f582126ece2e333c2c2c2d80ed4288cac9fcb",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "fc53bacb9fc7e3ab797ef90e410b94b95477e2f2445fc4a549da3599c07924fa",
+   "alpha_sha256": "dc4080e79dc877b76c8be904a05e420d63050d7f00ceefeaf8baa174da98048a",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy.png",
+   "previous_sha256": "f7ae6eaad2978a27f4f324a193060fdff581f4e815be5ba020025ace2203b2d5",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "80bc5b3c96f2a1bc82e1fdd9b8c7888d0bad6eb1bfd87c3c28dfc40b1ade96f2",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy_1.png",
+   "previous_sha256": "6c93cf421bf626804379a2ab308ab2989444f1892ffb575ed5009ae878d30308",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "4f198e266c09a60cd38b97308d8c03550f8a60bb1b3893a01735f46432367ff3",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy_2.png",
+   "previous_sha256": "2a07419069d8e65293ece696a91cc74a38d245ae3d837b231fc6c45e25285f8d",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "a61a012b0af2fe80ed4979b00204c9187efcd09d98f419536eb60e588aa0b698",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_boy_3.png",
+   "previous_sha256": "cd1c1c64ef60a286ac61fb9a6cd73ec420c029065296f706c87356e4db41328a",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "9ed0a46f447fab875a340fad923d0dd441f3d5dfd78dff2e847778d8ab19d1d9",
+   "alpha_sha256": "0ee3a84aaf6043d85e9b25a74f701669e6996d1df6a3442b26aeca7c2df8c0e2",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant.png",
+   "previous_sha256": "d3b79e094e9afe04694394edd81590efd68d0dbfec869f68ded6125c72f64ac6",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "38006184805c2fbb3b5e630fee09a7bdac644c8a8a8b6dca929339b75e96d513",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_1.png",
+   "previous_sha256": "a71c804d38e3716a9df13c1836470200fd702632e882286d91819d4acf82f7ce",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "2eccd00a53ff86e55f9542bb75165ddd9c6628cd941a921b2d93ca99431a285e",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_2.png",
+   "previous_sha256": "7f948ead7f3fec3649f054713aad1aa6de11e2e62a9e27137d0ab57007cecfa5",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "b72a51abda1adca38c6decf6f19f743a229e7a6cad1ef8370380de91ea24ad14",
+   "alpha_sha256": "9f570c2dc979f8f27a290f24ce89e16e5445e00e3d145942b5d4d11e8716eee1",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_congregant_3.png",
+   "previous_sha256": "5e8cf67f41cc6e58c4e69eb038317289bca59dc24a8f455818425cb324092497",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "bd43a03a8cdb4ff063f0b3aaf5932d8811284c06b506f88f765c218a425d6207",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/lake_preacher.png",
+   "previous_sha256": "1fda2e0d2adfcce9fe464b1482a411b0dbbd7112da73893c5d593d8a55ea4f44",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "5452eea0490787036dcab10e59fdb49d4d31ada634e0363f0d9b104bc8e06849",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_denny.png",
+   "previous_sha256": "d7a6341f20bfde035e2b5f0fed721fe39c5c0886c339909f0168161dfd19ad99",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "8b424cc1a43a64d98eb24e29339255ccd3f3e477da4ebf980b8f6d9c3e5e214d",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_hollis.png",
+   "previous_sha256": "bdbcc6ac82706ea1cb1d58d79c07d6e8a12926ae2cd7b912ae23409e6491d0e0",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "b7185c5efb8dc8ef86f488835f476be248e4d6a364821bd63b7a32036436bbdb",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_marla.png",
+   "previous_sha256": "0ae8ef4f9c94484b6e085cf1d7c889d4b08541077bebc048cc540b55e55ff972",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "01a0adb5e9e158fe6b1b3df03767cf5a9fb0e67fb2e9647ea3808a148768bd77",
+   "alpha_sha256": "276a905923713109c47d289f7b7d4d9c3a21fd659c00f65a114cbf9741792b73",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_russ.png",
+   "previous_sha256": "6b4795a0cce2778dbff4ed41c233f64ecbee46632b34b0e2ee3f57205730e42a",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "4e9ba46fd45ea9d3d4835779ae3cea39408171a2a147b3e096707f62de9212f3",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_bar_wade.png",
+   "previous_sha256": "5ea295e9da84adc1e2d6991f72165633756a985a4c7444505099edb6bee1ef94",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "5dee04082623ed9b65c5d1b16d02084861f21960e6b453950e82b0322f0a3855",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_brother.png",
+   "previous_sha256": "19d84ceba9bc0f3d7a9eb39168f4e1ce29a49e94694c7b44ecba88384ee2e739",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "7fa2fad2ba09a84d1f90eda71fcab1f38378f95cac29349814e7538d08b1ce62",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_coffin_woman.png",
+   "previous_sha256": "0f746f998ae24cc3fb0685bc5a51bfa8fc88221b3637e98e4789947a63de55df",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "4019331bae3ebb0515eae51eb0bf0dffd40b3b33da92117ff70eedafae8747e7",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_0.png",
+   "previous_sha256": "4b84b5bb106dcd14949c6a68e799ede9a23dd4b2cc1464c14266bc3dcd989e8d",
+   "previous_alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "sha256": "97e841d7f02b62c67de3c87161cf011cbf67f3ab9cc83ab38bebd3c1636de78f",
+   "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "alpha_outside_hat_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_1.png",
+   "previous_sha256": "bc1c82be34016d4a7e09a8e53167b2dbf7623760c4bc2217e91eed097f4369e8",
+   "previous_alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "sha256": "3a56dec3adffb6ca1d0eb0234a14e9b203b575b9a044d0cf949f1f12b3b1cb9e",
+   "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "alpha_outside_hat_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_2.png",
+   "previous_sha256": "3da8c0891ca8b3c640fc44f1ae05e8fd1988d42b34f45a6ac694583ecc789474",
+   "previous_alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "sha256": "c6495635deedcb2111e508366922b6c4b600fd76dba729c5a05cb0803e316984",
+   "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "alpha_outside_hat_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_crew_3.png",
+   "previous_sha256": "22c0ec7d6865e478319bf1036b91dea8e2799559683e60bb3f612fe94f1ec9f8",
+   "previous_alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "sha256": "50670fed54fb181bc4f718c763184e4c2cb07e0ebe91860e51693cd5da6e1e10",
+   "alpha_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "alpha_outside_hat_sha256": "01fe686543974f0e1ae604fcd50d768b151b12aa68c8e81d66096aae1139b2fb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_dancer.png",
+   "previous_sha256": "33bbcb473db3e86c7b3f20f1c2efd1f6bf9a4ef8b6d3da211d57cc09991f9e0e",
+   "previous_alpha_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45",
+   "sha256": "9359092331f3900dcaa2752440fdcb8d664ec05934461f78cb645087c9ee7489",
+   "alpha_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45",
+   "alpha_outside_hat_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father.png",
+   "previous_sha256": "5114f0aba30ba26d24a78c1ad188a7a1f7da57194b1f86d52550271f3d39429a",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "8cf7d7bf825fe5924a9a2671bf35bfba4c22a09e3218f1e6a479c30bc0a1f901",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_bandaged.png",
+   "previous_sha256": "ac005f680c54a97cc9852ecca9baaeb286ac625c102d1ee2cd046c1ca6e23638",
+   "previous_alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+   "sha256": "68857d68e88760917ce36dff8e90571301ad110f29592615416a43dc8c32979b",
+   "alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+   "alpha_outside_hat_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_father_mangled.png",
+   "previous_sha256": "4da626a497516a127f6e424eb5f5a88d31a6bff10960dca4f78ca564fa64a0aa",
+   "previous_alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+   "sha256": "bcb5379db4e7fcddd60f02c096cc98eb59d264c7c4dc08af23a1c56387914d96",
+   "alpha_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+   "alpha_outside_hat_sha256": "256029aeb4401a29aea14d51e866dec2920f2ab54f768b00ce48304389e64b37",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_0.png",
+   "previous_sha256": "d9b2a65911670b65af6f8502c6d40fa7ca96198524f7787c7e97bfe4b7b222af",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "45ba72b3c8655a8564abbfd28bf00e1be88b26b60c82759782377b75d22974bd",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_1.png",
+   "previous_sha256": "8110d9cb98edff53e939d2eec3fa375c2856aca600e1fa636c2d72f9878ce37c",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "2eb45ead3445adde71755935d3d35627fd4fe9e7dca286684b80d2164616c4b9",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_2.png",
+   "previous_sha256": "e6da21deb35048d2a7fa2b13cbb8f3bbff44678beeb070564ddc4b641e7ed700",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "15d37526a27576f0695523e3e653a1393ad4839472329d21430c5569bd40bb0b",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_guest_3.png",
+   "previous_sha256": "4d91479961ead2a7451eff1c648c3ca8a6dec21d93c49d6f5e53b6326aedfa66",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "c7acebc6024f86b488d303f1c5aa40a1b047b0d1cef2285041178e16742af62f",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_killer.png",
+   "previous_sha256": "e4badf2ea665d0e2615e8de1daa315106c1aacebc0f3088968ca79139f7a5d8f",
+   "previous_alpha_sha256": "5f8ddf7cd659b5e9104c5206cf6f278b4fa5cedb4af5327c72bd63ddb5f0c746",
+   "sha256": "d04cec97c524f2403590d61c27c4cb5a578bed0abb21ab3b0cff192994f0e6d8",
+   "alpha_sha256": "5f8ddf7cd659b5e9104c5206cf6f278b4fa5cedb4af5327c72bd63ddb5f0c746",
+   "alpha_outside_hat_sha256": "5f8ddf7cd659b5e9104c5206cf6f278b4fa5cedb4af5327c72bd63ddb5f0c746",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_lady.png",
+   "previous_sha256": "0ae5860b4de0b7bf4cf061c3f0d331b8f500e939c5b9d2638f2c0b2a65a02126",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "fbd412422ad23bd75f663096dc16d00854b2799bcd7aaf76eb8624ada0b30b73",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_lake_wax.png",
+   "previous_sha256": "d9111d245ce50f1c0bb588d15b5c3b9c2a66f5d0ec5005b238a7a830c1180198",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "6607e56530fa10201665319656d4475e36669b38f84918d0885ca4a5ab6507ce",
+   "alpha_sha256": "7d4118aaaecb106806a4cf009207d2d23fba2948c9a9b73e313b78685c157a49",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_mother.png",
+   "previous_sha256": "eb723ef7139bd6d91fbae524ef038ee5554d26f9f4f0db8eab26f5558ca448b0",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "e644ee44a6fc7c9edb707809c6c28bd3436f0b4177b52773d9d5419f85885a64",
+   "alpha_sha256": "276a905923713109c47d289f7b7d4d9c3a21fd659c00f65a114cbf9741792b73",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_old_man.png",
+   "previous_sha256": "e644db767614e81b45130e655eaa9a793be8b42b335630924fb31804304e4b1a",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "cbb2b01460be8ba8ef8959117ae69963be1201f89804e717637205feb0035714",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_messenger.png",
+   "previous_sha256": "26302180375374237d7566d2265e7b5585557bac16af2f98bd35831cddd937bd",
+   "previous_alpha_sha256": "0f7443c03b2199f58b44a2af8c02744db79ddebf567a2c1e4d9cf8c3f1ba19e6",
+   "sha256": "d4066f0947b696d30dac88c3819bdbee262533338fd9f7fbd6257ac26c26150c",
+   "alpha_sha256": "0f7443c03b2199f58b44a2af8c02744db79ddebf567a2c1e4d9cf8c3f1ba19e6",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_ruth.png",
+   "previous_sha256": "5373d5e6ff9563deed05187d4a284a2942dea8ae0f7dce27d42bbf7222abad1d",
+   "previous_alpha_sha256": "412f2896861debff6e8b46a6d54b4c37ce0a049633c5e4c25016a9dc4ac6f4b7",
+   "sha256": "d8d12b4cb9abe51e807e08f0cf9b7155d67e10ee3f99d28d2de9dfbe3c907832",
+   "alpha_sha256": "4b6c70e335b52544474c6017ac7f6029b15251457d832178526aa8efb85ac48b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_sergeant.png",
+   "previous_sha256": "4ed205335a20e249427348246d611eca537d8bc45db1ca4725a53a3a28577f4b",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "b5a63946565161447605c939f185c6e6a35eb9ab9da5e9cd6b670e340d389f59",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_walter.png",
+   "previous_sha256": "7fc24624e5212490af2a3e3bfd837ca1777996a4b4245cf4e05326f22728e0f4",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "d5cde30e51104e2e063fe690228e61421419cce6ff6b540a5550754bf3aa73c4",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_paw_will.png",
+   "previous_sha256": "91527b1520b50dac0ae375deb58d01d526a4a0234055ecc4348842d28a66480d",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "91adb29b91a00667430a0613be0ca74af29a5cb6dd00c07051ae41a04eb04779",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_red_figure.png",
+   "previous_sha256": "0b6448356de064effee2d27cd59a19fa043f4e51c1799c8c26c568975bd348ff",
+   "previous_alpha_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45",
+   "sha256": "3d5441352656fb97de4db830f76724fe58d869b3eae819b7cc1824c1d44594cf",
+   "alpha_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45",
+   "alpha_outside_hat_sha256": "60f1ff6641f6c613eccecf3c71b17099c564824e9e32487ad35260d0ee68af45",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_0.png",
+   "previous_sha256": "e5914ff3e29195977898ab42a06231e531d125f05c46fa40d7334ce4c5b39771",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "35824d6ffadd20c58e23e12e609d6b2873d743bacd1a98a7eb6d7b436bd3ef25",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_1.png",
+   "previous_sha256": "5fa93fb0926ea1c9ef50a14d8555d5f30cc0b712ec74582171d78a106898d586",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "08191b9b51e2776cd22d1b6b4ce32343c6a742828ff2b4e87dc26d8d2066609f",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_2.png",
+   "previous_sha256": "923b692d57f360e44d5a84c9c5407ea1693b9e98c4c79f86b4d0137a3da3e053",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "0ad5b63fef5e0640d724b8530244e0c04eb6f394f3b38a25588d08fd085e89bf",
+   "alpha_sha256": "276a905923713109c47d289f7b7d4d9c3a21fd659c00f65a114cbf9741792b73",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_stranger_3.png",
+   "previous_sha256": "99c8f7347c6961b4dd88ffe051a8e25c1ed99a14c583101d06ba95dd60262ddd",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "3c574f92f7af1c2d31d3fa518d051a8fed1ff0cde4f957b2d930deccb50e9c85",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/literary_visitor.png",
+   "previous_sha256": "f2f66660dbb718b3de9e58fde9219a6b0fc131b9c487d71add5d2bd3d0cafb4a",
+   "previous_alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "sha256": "91d30b75ecc130bd9501dcea4ce9c526ed5de721538a9edfea8b02cb37851829",
+   "alpha_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "alpha_outside_hat_sha256": "9495092a8aef88e35edabfe92be87835f08cee9919629e41ef8b7655765e9e6b",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_braids.png",
+   "previous_sha256": "2624ccf03257592dc9982e57db4436f143e3e74995a6153a62fca69d8f74aef6",
+   "previous_alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "sha256": "0751dc0303dc081f50685aa2d2ea7b6d3b87a26d96e6540e534d70b1b7e3394e",
+   "alpha_sha256": "0690393314090e39987ea0997025fc764200aee34947cf845c316309523bb1b8",
+   "alpha_outside_hat_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_braids_despair.png",
+   "previous_sha256": "c1a02fbf4ef6538d1ac6b76a52dd45161430db110b44663a633d59d4108e9d75",
+   "previous_alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "sha256": "3a2fcf567c5772489a8a42ceb29aea20b3cfc96277e65ad9e94d112e713c15f7",
+   "alpha_sha256": "0690393314090e39987ea0997025fc764200aee34947cf845c316309523bb1b8",
+   "alpha_outside_hat_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_brick.png",
+   "previous_sha256": "8d9d7d42e4568e7f1f3a85ef146cf3f389c9e42cad11c91ab7f8e03d18ece63f",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "e4806042a1dfc932806fe97265664f9488827320a3036fafece8f99d6be95bcf",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_brick_despair.png",
+   "previous_sha256": "a51a5d12f74983e88c3839fec7aa60ea3796724c8abf04277724e372eb97ad04",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "42fd631944ccc458faf156e7e4fc7a8edcd08476c2a27ffd96952f8c3ae839bc",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_copper.png",
+   "previous_sha256": "bb15b1f85eeddb46b16a89bef18612ce6f6522750971a36f382eb9ba7e0d447a",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "5577b1e997d40d941dd47eae2d163f3e435944f344d26518dbeb65d87294612e",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_copper_despair.png",
+   "previous_sha256": "da07545bb2ee6e03fee04915bca2b69b66a1cbb9c965e6e38615e6b552911a9f",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "b0c30aa261ca24d4cc5b82c48c63c786a127f135546c94708ad590d3e7acf4c3",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_female.png",
+   "previous_sha256": "8a1f5e0a6fe5c2fb6b4255c70d65d8c0e30527183bd15e6562aef00fde3cb397",
+   "previous_alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "sha256": "33ccab328070c292bf12a0645df054ebd52710ee7fcb4c0c7e4f995b9c8d256f",
+   "alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "alpha_outside_hat_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_female_despair.png",
+   "previous_sha256": "3dc82d56c49b9d69f311ad308e10175deaba3259464c36292a44830a4415e53b",
+   "previous_alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "sha256": "a7c1306a635aba9fa1cec294c940fedb759720955bfb9b263ed53c3748bbddbc",
+   "alpha_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "alpha_outside_hat_sha256": "ab8326fce5d1436af0bc7f1ba13f834497313a1c1f2662e5823a8f4647869180",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_male.png",
+   "previous_sha256": "d183ef8930a9489272b9f24fe413bb75d9a762573343802a3fbec86f47cf89c8",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "80d9f7a56b219bf49f93a701c89cc0c90d257c70a3e46a3c5f1c86b3ef41c4be",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_male_despair.png",
+   "previous_sha256": "482bb517d0bb9986cd3f883d5ddd5d09b1ee9d59487516de23222dae8b9809c5",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "05e71ef4f9c8c40f92dac5ab3296009776c7b094cfa1ae8d92af87bf5feb4092",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_mustard.png",
+   "previous_sha256": "a33ddccedb73fd2ec7b76d7dea2d5aa77ad79b36b94cc12764d9863a373210b2",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "30f23f630ecbcf982185b887e19a43df055601a7cb8a981e0e410b41071347be",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_mustard_despair.png",
+   "previous_sha256": "fb690ab1665f476f1ba8c0134a0c7148495e6446c7ec750db823e6ac44fa6a44",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "f33254e738b0b021e528b154d1dc311ab1b6df3def954597fb1a99e116a8dfd5",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_silver.png",
+   "previous_sha256": "4cef5fad81f3dec377eaa680ec4e7a7f80e179d345acaf4d4ccf4155727da828",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "8b2f4746e4f5594e2343c2cb915883dcc268507dc4bd80f15c5f0162c48436ef",
+   "alpha_sha256": "eea37631122b579805ba830570155ee228184ce23227a70fefbcdc77c93330f7",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_silver_despair.png",
+   "previous_sha256": "6ae046f5ee3a1e133847311ce09ab520d06e7745c57218cff41bccdb43160f1d",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "6ff766bc7836aa17711d3c6cdafe46cf7e8ff2aac72bd87aeee934946fa87471",
+   "alpha_sha256": "eea37631122b579805ba830570155ee228184ce23227a70fefbcdc77c93330f7",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dancer_vest.png",
+   "previous_sha256": "c3e03761537025a62d90e6b7b22af96965f7a6d565bdd7cacc3b84610dfe5170",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "d68978e906a06a42b0d144fad68921121d9025291e1742845b98bf94796c15b0",
+   "alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dj.png",
+   "previous_sha256": "07bf39a862f454464faf9a0a3971928b9badba18c291c0fe4eea599fe3a84bf7",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "3efbf50b283983369e9a326a2d8d4e8888aada322cf01920fcb2fd25d9077bb6",
+   "alpha_sha256": "5051fddddb0c9fe6194327667b1e051278db13822d5df9ce87a7d2afec344089",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dj_despair.png",
+   "previous_sha256": "81321b1f2d064a85f791326695919880c235a0c03bf725f120f4c800c8ce2215",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "6ba1674d857bea8662e4ab8e674d07c854a93948fb27402732ccce90ce0a0005",
+   "alpha_sha256": "5051fddddb0c9fe6194327667b1e051278db13822d5df9ce87a7d2afec344089",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/nightclub_dj_head0490.png",
+   "previous_sha256": "07bf39a862f454464faf9a0a3971928b9badba18c291c0fe4eea599fe3a84bf7",
+   "previous_alpha_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "sha256": "3efbf50b283983369e9a326a2d8d4e8888aada322cf01920fcb2fd25d9077bb6",
+   "alpha_sha256": "5051fddddb0c9fe6194327667b1e051278db13822d5df9ce87a7d2afec344089",
+   "alpha_outside_hat_sha256": "3608a5d876714915c5bceb70161f67d48ce2765c7074793354f30b7e33e0b066",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_daughter.png",
+   "previous_sha256": "20d846c229224011d7bf83f2c45c191561baf3333e8c3f6254511eeb590fd932",
+   "previous_alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "sha256": "8ca8de333b8eed416326840bff3fc5d560a1ed997727b6b0dad40e274b84a60f",
+   "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "alpha_outside_hat_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_father.png",
+   "previous_sha256": "8d831255994e2dc9e5da72c29a2ac67cb34d869198603332e82c1e7bc376186c",
+   "previous_alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "sha256": "0a06de5da9366240aa05f528d10b978079a78dc14b046a829717774cd0b106be",
+   "alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "alpha_outside_hat_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_medium.png",
+   "previous_sha256": "bd56e5ee85dc127b3d00f5b273be98bf70b7cdbcdb3da71a6b88a3acd35241fb",
+   "previous_alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "sha256": "ec2c7bc765842232db3a1fc0de80c38b86acc3075c2212bacde5fba9f33b1136",
+   "alpha_sha256": "db963f03d9fb8a2289ebbb0085131d78bbcc2a4486fb6bfdd528b6703e116178",
+   "alpha_outside_hat_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/seance_mother.png",
+   "previous_sha256": "325621bd24db5bba8807a071054d2a3864653fc04172b90f023ac2c0b007cfe4",
+   "previous_alpha_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "sha256": "cf834de21de046253d3ba10715736802d79fbb3c48c1a7a8f93aba6a0411fc59",
+   "alpha_sha256": "cadc87de74899e80ac8beec46e0366742effce59861f46731865e72af90faee3",
+   "alpha_outside_hat_sha256": "7d8341447da453224fead307c626c75a9baa526cbbb1b6696761644a14defd70",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_bartender.png",
+   "previous_sha256": "1c352c4269a6f5f9448274cd9b153151ab69b5f564feced0668100c22de3ccf8",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "405c7fbf3ddfd46ef158a6846543e855c48954160f72f46c441a29ec0f39c9c5",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_dancer.png",
+   "previous_sha256": "62a6f73d01f02cc9261ea7c43e464bca653866617f7f3ff5077cb13c24a31d8c",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "309f7e6968cb739e9807892d8bcf255a8a22d3ce15cc6f3427563d994bf9d5c5",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_dancer_dress.png",
+   "previous_sha256": "5f4616f0a5e6ca4a9d293f35d3f5969137dc143c6aca390d4bbdf1e7c7e53efc",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "436cb05e041c4940382634e5a36ee322cd9378752e9249e2b54ca724fa42e56f",
+   "alpha_sha256": "49cd2009a196bb32a6e231b6407422f7749c27bbac353d9552873a79ef7f3476",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_pianist.png",
+   "previous_sha256": "2a21775058461322eef11932dc204935bce85752f7ef4cae7cfb3e6300b9b886",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "221b88ff56434b6128c9ab28a838a4b134515061a3b4bb798dd0975869538c64",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_porter.png",
+   "previous_sha256": "ee81d407c1cda413bc75f9becc6ff0c0b5d80ec4226a0930b45f9cd55f798b09",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "5c0b05277a6115db9a10c17447abd86c44dd3f40c3bb541fcbe3cada4ae99fb5",
+   "alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/stanley_scarred_guest.png",
+   "previous_sha256": "292c5cacc090020f18c38339716f582126ece2e333c2c2c2d80ed4288cac9fcb",
+   "previous_alpha_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "sha256": "93695d5967cc090a7ef0f0b42ea2807fd7091ad5ae6dbaf81cb56e584f2564a4",
+   "alpha_sha256": "dc4080e79dc877b76c8be904a05e420d63050d7f00ceefeaf8baa174da98048a",
+   "alpha_outside_hat_sha256": "f3781ce4514ceb8d1a55137d70fcf977b6e2a6eb099208be01fe896b8e0f2ddb",
+   "size": [
+    512,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_0.png",
+   "previous_sha256": "9f0a0f4f9b2b223d5858aea0232dd219946cce29bea941254da5bca02eab3cf1",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "25913adfe3ffa86b301941b2b0f98b4add7cc0efa09d1d9524282d7698fb1fc9",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_1.png",
+   "previous_sha256": "bb55d44c908124d669b1f9aa4f719c5cbe217ba444c2a35edb9f07db503b274e",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "e397120686169a8d260019968a5d6bda78b7e801be1c4d5a471bccc28d595a84",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_2.png",
+   "previous_sha256": "4f2bb61beb40c956a62cd17205658e8e69c0d5b3e62c6f5708b6b70a947f5db3",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "c248f744977aad972699a2504705a495a0dbba1c30dc6f6a99bc5e572ea005fb",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_3.png",
+   "previous_sha256": "94f1a9bccdfd1fbc71b8bfb4b07c5f778f17638cc0c44a28dfbef56fb14c2d80",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "b0d38ea41a27a7a0bcf5a28db5bc8dffa173173bb6dfddf076ff3d225085e56e",
+   "alpha_sha256": "0ee3a84aaf6043d85e9b25a74f701669e6996d1df6a3442b26aeca7c2df8c0e2",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_4.png",
+   "previous_sha256": "85a5f4ce65082b177f083999818396414df63b0534fd4ea9aa739c3593715c4b",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "5de6182ad4c04d5eddc97ccbc417c68090ca964ee31a7d0098c88026e28f0ed2",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_5.png",
+   "previous_sha256": "f83a05cc31d24d7e39f7e8078e56c02bc328201cf5112ef667570b18787eb1ac",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "b7c9d10a741a3c896fc6e0e7d11b10362a6dbbdd9cfb444d5fd84d81818fd6ab",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_6.png",
+   "previous_sha256": "fa7c6191f7b54292b0361f822afe4c6fb6f9a0473f239d28794ea52d2421c1e6",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "f9a4a703a7e0aee9105e7b89e7c0fe0c93fa051eec0ee053021be3794eda4e3c",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_7.png",
+   "previous_sha256": "d4b1c48adaf6d4c28b581164e360abb7cc999d511359514d04386fb766836a97",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "0e221c033ebdbafc85661517033d9a3f6a6fb39501ba9da970a6211a57a4c6fb",
+   "alpha_sha256": "a6e46abc9dc819014f9e33cca6de32e185241db5f97481041eeb7f74430816aa",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  },
+  {
+   "path": "src/main/resources/assets/the_oldest_house/textures/entity/trailer_child_8.png",
+   "previous_sha256": "fd4086ba20826f04395d9b6aa3ab31d8e7bbcfc46cdeeccdc35594307f349b77",
+   "previous_alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "sha256": "7acb3e250a1ef9835caa91184229233c5e0d86284d89e72f854d61b43e8d885f",
+   "alpha_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "alpha_outside_hat_sha256": "46fbbe403c81e44e507384c20bb1d60cfe91a6744ddab0f7f6ddbdfb9323ab45",
+   "size": [
+    256,
+    256
+   ]
+  }
+ ]
+}

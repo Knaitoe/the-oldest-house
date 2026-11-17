@@ -30,6 +30,7 @@ ELK_REVIEW=ROOT/'art/inventory/elk_eyes_04656.json'
 ELK_PATHS={'src/main/resources/assets/the_oldest_house/textures/entity/literary_elk'+sheet+'.png' for sheet in ('','_wounded','_carcass','_carcass_skinned')}
 GIRL_REVIEW=ROOT/'art/inventory/clap_girl_04656.json'
 STAIR_REVIEW=ROOT/'art/inventory/staircase_stone_04657.json'
+NPC_REVIEW=ROOT/'art/inventory/npc_variety_04679.json'
 GIRL_PATH='src/main/resources/assets/the_oldest_house/textures/entity/clap_ghost_girl.png'
 GIRL_MODEL=ROOT/'art/clap_ghost_girl.model.json'
 # The slim player model's two layers: head and hat, body and jacket, each arm and its sleeve (three pixels wide), each leg and its trouser.
@@ -99,7 +100,18 @@ def reviewed_repaints(review):
         prior=current[path]
         assert row['previous_sha256']==prior['sha256'] and row['previous_alpha_sha256']==prior['alpha_sha256'],('Previous review of the elk changed',path)
         assert row['size']==prior['size'] and row['alpha_sha256']==prior['alpha_sha256'],('The elk\'s opacity changed with its eyes',path)
-    return {**current,**elk}
+    current={**current,**elk}
+    # 0.4.679, the owner: "Once you're finished, can you do a pass over each vignette and work to vary the npcs? Their faces,
+    # hairstyles, and even body compositions?" (tools/paint_character_skins.py, vary_cast). Each sheet supersedes only its own previous
+    # approved painting. Its size is kept, and its opacity changes only on the head's second layer, where a new cut carries its volume
+    # (held when the record was written; alpha_outside_hat_sha256 is the opacity everywhere else).
+    npc={r['path']:r for r in json.loads(NPC_REVIEW.read_text())['repainted']}
+    assert npc and not any('/borrasca_' in path or '/ghosts_' in path for path in npc)
+    for path,row in npc.items():
+        prior=current[path]
+        assert row['previous_sha256']==prior['sha256'] and row['previous_alpha_sha256']==prior['alpha_sha256'],('Previous review changed',path)
+        assert row['size']==prior['size'],('A varied sheet changed its atlas size',path)
+    return {**current,**npc}
 
 
 def main():

@@ -19,6 +19,7 @@
     "PlayerPatMixin",
     "LazySectionBuffersMixin",
     "HouseMobRenderMixin",
+    "CastBuildMixin",
     "GhostsPickMixin",
     "GhostsLecternMixin",
     "DeathPortraitRenderMixin",
