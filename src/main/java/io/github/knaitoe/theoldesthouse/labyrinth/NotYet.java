@@ -45,7 +45,7 @@ public final class NotYet {
 
     /** A reader in: the three are put in their cots if they are not there, and the ward hums once round them. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        var l=p.serverLevel();ensure(l,b);
+        var l=p.serverLevel();ensure(l,b);SITES.add(b.asLong());
         own.putInt("Visits",own.getInt("Visits")+1);
         l.playSound(null,b.offset(0,1,-20),NotYetRegistry.HUM.get(),SoundSource.AMBIENT,.6F,1F);
         NotYetMending.state(p,own);
@@ -116,6 +116,22 @@ public final class NotYet {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(at).inflate(2),x->is(x)&&x.phase()==FIRST+who))if(a.isAlive())return a;
         return null;
     }
+    /**
+     * Run 1700: the three are made when their cots' entity sections are loaded. On arrival the long room can still be unloaded,
+     * forty and more blocks from the door; so while a reader is anywhere in the ward the three are looked for again every second.
+     */
+    static final java.util.Set<Long> SITES=java.util.concurrent.ConcurrentHashMap.newKeySet();
+    @SubscribeEvent public static void keepThree(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){
+        var server=e.getServer();
+        if(SITES.isEmpty()||server.getTickCount()%20!=7)return;
+        var l=server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        for(long site:List.copyOf(SITES)){
+            var b=BlockPos.of(site);
+            if(l.players().stream().anyMatch(p->!p.isSpectator()&&p.isAlive()&&p.distanceToSqr(Vec3.atCenterOf(b))<96*96))ensure(l,b);
+            else SITES.remove(site);
+        }
+    }
+    @SubscribeEvent public static void stopped(net.neoforged.neoforge.event.server.ServerStoppedEvent e){SITES.clear();}
     /** Each of the three is made lying in their cot if they are not there; nothing is made while the long room's entities are unloaded. */
     public static void ensure(ServerLevel l,BlockPos b){
         for(int who=0;who<PEOPLE;who++){

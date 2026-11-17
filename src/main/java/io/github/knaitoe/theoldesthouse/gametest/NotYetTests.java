@@ -125,8 +125,12 @@ public final class NotYetTests {
             h.assertTrue(walk.contains(new BlockPos(0,0,-55))&&walk.contains(new BlockPos(-6,0,-60)),"the long room, through the arch");
             h.assertFalse(walk.stream().anyMatch(c->c.getZ()<=NotYetSite.FAR_DOOR.getZ()),"not past the far door");
             h.assertFalse(walk.stream().anyMatch(c->c.getY()<-1),"not down the shaft");
+            // Run 1700: the long room is forty blocks and more from the door; in the full suite nothing else holds it loaded.
+            var box=new AABB(b.offset(NotYetSite.PEOPLE_COTS[0]));for(var cot:NotYetSite.PEOPLE_COTS)box=box.minmax(new AABB(b.offset(cot)));
+            f.chunks.hold(l,box.inflate(3));
             NotYet.ensure(l,b);
-        }).thenWaitUntil(()->{
+        }).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the long room's entity sections are loaded"))
+        .thenWaitUntil(()->{
             for(int who=0;who<NotYet.PEOPLE;who++){var a=NotYet.find(l,b,who);h.assertTrue(a!=null&&a.hasPose(Pose.SLEEPING),"the "+who+"th lies in the cot: "+a);}
         }).thenExecute(()->{
             NotYet.ensure(l,b);
