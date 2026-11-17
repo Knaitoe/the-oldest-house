@@ -126,6 +126,7 @@ final class CoopAccounts {
         // 0.4.666: Not Yet. Each lies down on their own cot, and the machine looks away from each in turn.
         together(NOT_YET,party("%s had stayed down before me. The far door had been opened once already, and had shut again.",
             "When the far door slid open for me, %s {was} still lying under a lamp in the ward."));
+        together(LAST_SEEN,with("%s {was} in the park with me that morning."));
         together(LAST_ORDERS,with("%s {was} in the bar with me."));
         together(BIKE_NIGHT,with("%s {was} out on a bike that night too."));
         together(PELL_HOUSE,PELL);

@@ -1,0 +1,46 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/last_seen/glass",
+    "r": "the_oldest_house:block/last_seen/roof_sheet",
+    "i": "the_oldest_house:block/last_seen/tube_steel",
+    "s": "the_oldest_house:block/last_seen/stop_sign",
+    "p": "the_oldest_house:block/last_seen/perforated",
+    "particle": "the_oldest_house:block/last_seen/tube_steel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        13,
+        0
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        },
+        "south": {
+          "texture": "#r"
+        },
+        "east": {
+          "texture": "#r"
+        },
+        "west": {
+          "texture": "#r"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

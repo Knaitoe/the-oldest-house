@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "s": "the_oldest_house:block/last_seen/stone",
+    "f": "the_oldest_house:block/last_seen/fountain_top",
+    "b": "the_oldest_house:block/last_seen/basin",
+    "particle": "the_oldest_house:block/last_seen/stone"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

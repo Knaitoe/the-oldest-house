@@ -1,0 +1,48 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/last_seen/poster_12",
+    "particle": "the_oldest_house:block/last_seen/poster_12"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        15.6
+      ],
+      "to": [
+        15,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p",
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

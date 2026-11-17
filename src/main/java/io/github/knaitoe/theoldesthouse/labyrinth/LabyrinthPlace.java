@@ -719,7 +719,11 @@ public enum LabyrinthPlace {
     /** 0.4.663, Not Yet (NotYet, docs/NOT_YET_0_4_663.md): deeper in the Kept's machine, a ward where it mends what it breaks: a passage
      * over a hatch, cots under lamps on jointed arms, a painted window, a counter of years, the mending table under its arms, and a long
      * room of three it has mended too often (NotYetSite). This part, the place. Not dealt until part 3. */
-    NOT_YET("not_yet",Kind.RECURRING,243,new BoundingBox(-20,-12,-67,12,8,0),literaryEntry());
+    NOT_YET("not_yet",Kind.RECURRING,243,new BoundingBox(-20,-12,-67,12,8,0),literaryEntry()),
+    /** 0.4.667, Last Seen (LastSeen, docs/LAST_SEEN_0_4_667.md): a municipal office at the edge of a city park, its counter and its poster
+     * wall, its archive of folders on steel shelves, and the park in the morning with the avenue past its railing (LastSeenSite). This
+     * part, the place. Not dealt until part 2. */
+    LAST_SEEN("last_seen",Kind.RECURRING,244,new BoundingBox(-42,-4,-110,26,16,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {
