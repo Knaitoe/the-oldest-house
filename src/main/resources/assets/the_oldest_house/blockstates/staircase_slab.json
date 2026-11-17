@@ -1,13 +1,58 @@
 {
   "variants": {
-    "type=bottom": {
-      "model": "the_oldest_house:block/staircase_slab"
-    },
-    "type=top": {
-      "model": "the_oldest_house:block/staircase_slab_top"
-    },
-    "type=double": {
-      "model": "the_oldest_house:block/staircase_stone"
-    }
+    "type=bottom": [
+      {
+        "model": "the_oldest_house:block/staircase_slab",
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_slab_deep",
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_slab_worn",
+        "weight": 2
+      }
+    ],
+    "type=top": [
+      {
+        "model": "the_oldest_house:block/staircase_slab_top",
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_slab_top_deep",
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_slab_top_worn",
+        "weight": 2
+      }
+    ],
+    "type=double": [
+      {
+        "model": "the_oldest_house:block/staircase_stone",
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_deep",
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_worn",
+        "weight": 2
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_cracked",
+        "weight": 1
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_chipped",
+        "weight": 1
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_flecked",
+        "weight": 2
+      }
+    ]
   }
 }

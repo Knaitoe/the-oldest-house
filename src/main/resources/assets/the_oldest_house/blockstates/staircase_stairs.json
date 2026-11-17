@@ -1,224 +1,864 @@
 {
   "variants": {
-    "facing=east,half=bottom,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 0,
-      "uvlock": true
-    },
-    "facing=east,half=bottom,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 270,
-      "uvlock": true
-    },
-    "facing=east,half=bottom,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 0,
-      "uvlock": true
-    },
-    "facing=east,half=bottom,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 270,
-      "uvlock": true
-    },
-    "facing=east,half=bottom,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 0,
-      "uvlock": true
-    },
-    "facing=east,half=top,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 0,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=east,half=top,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 0,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=east,half=top,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 90,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=east,half=top,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 0,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=east,half=top,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 90,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=south,half=bottom,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 90,
-      "uvlock": true
-    },
-    "facing=south,half=bottom,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 0,
-      "uvlock": true
-    },
-    "facing=south,half=bottom,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 90,
-      "uvlock": true
-    },
-    "facing=south,half=bottom,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 0,
-      "uvlock": true
-    },
-    "facing=south,half=bottom,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 90,
-      "uvlock": true
-    },
-    "facing=south,half=top,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 90,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=south,half=top,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 90,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=south,half=top,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 180,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=south,half=top,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 90,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=south,half=top,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 180,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=west,half=bottom,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 180,
-      "uvlock": true
-    },
-    "facing=west,half=bottom,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 90,
-      "uvlock": true
-    },
-    "facing=west,half=bottom,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 180,
-      "uvlock": true
-    },
-    "facing=west,half=bottom,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 90,
-      "uvlock": true
-    },
-    "facing=west,half=bottom,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 180,
-      "uvlock": true
-    },
-    "facing=west,half=top,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 180,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=west,half=top,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 180,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=west,half=top,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 270,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=west,half=top,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 180,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=west,half=top,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 270,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=north,half=bottom,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 270,
-      "uvlock": true
-    },
-    "facing=north,half=bottom,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 180,
-      "uvlock": true
-    },
-    "facing=north,half=bottom,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 270,
-      "uvlock": true
-    },
-    "facing=north,half=bottom,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 180,
-      "uvlock": true
-    },
-    "facing=north,half=bottom,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 270,
-      "uvlock": true
-    },
-    "facing=north,half=top,shape=straight": {
-      "model": "the_oldest_house:block/staircase_stairs",
-      "y": 270,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=north,half=top,shape=inner_left": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 270,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=north,half=top,shape=inner_right": {
-      "model": "the_oldest_house:block/staircase_stairs_inner",
-      "y": 0,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=north,half=top,shape=outer_left": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 270,
-      "uvlock": true,
-      "x": 180
-    },
-    "facing=north,half=top,shape=outer_right": {
-      "model": "the_oldest_house:block/staircase_stairs_outer",
-      "y": 0,
-      "uvlock": true,
-      "x": 180
-    }
+    "facing=east,half=bottom,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=bottom,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=bottom,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=bottom,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=bottom,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=top,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=top,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=top,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=top,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=east,half=top,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=bottom,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=bottom,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=bottom,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=bottom,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=bottom,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=top,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=top,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=top,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=top,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=north,half=top,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=bottom,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=bottom,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=bottom,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 0,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 0,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 0,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=bottom,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=bottom,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=top,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=top,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=top,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=top,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=south,half=top,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "x": 180,
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=bottom,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=bottom,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=bottom,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 90,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 90,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 90,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=bottom,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=bottom,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=top,shape=inner_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=top,shape=inner_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_deep",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_inner_worn",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=top,shape=outer_left": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=top,shape=outer_right": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_deep",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_outer_worn",
+        "x": 180,
+        "y": 270,
+        "uvlock": true,
+        "weight": 2
+      }
+    ],
+    "facing=west,half=top,shape=straight": [
+      {
+        "model": "the_oldest_house:block/staircase_stairs",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_deep",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stairs_worn",
+        "x": 180,
+        "y": 180,
+        "uvlock": true,
+        "weight": 2
+      }
+    ]
   }
 }

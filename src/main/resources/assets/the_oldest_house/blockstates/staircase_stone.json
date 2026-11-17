@@ -1,7 +1,30 @@
 {
   "variants": {
-    "": {
-      "model": "the_oldest_house:block/staircase_stone"
-    }
+    "": [
+      {
+        "model": "the_oldest_house:block/staircase_stone",
+        "weight": 4
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_deep",
+        "weight": 3
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_worn",
+        "weight": 2
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_cracked",
+        "weight": 1
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_chipped",
+        "weight": 1
+      },
+      {
+        "model": "the_oldest_house:block/staircase_stone_flecked",
+        "weight": 2
+      }
+    ]
   }
 }

@@ -137,7 +137,10 @@ def native_shapes():
         write(f'models/block/ward_{name}.json',{'parent':'minecraft:block/'+name,'textures':{'bottom':'the_oldest_house:block/ward/ceiling','top':'the_oldest_house:block/ward/floor_gray','side':'the_oldest_house:block/ward/enamel'}})
     # Native stair rotations and hinges come from the existing vanilla-shaped staircase mapping.
     data=json.loads((A/'blockstates/staircase_stairs.json').read_text())
-    for entry in data['variants'].values():
+    for key,entry in list(data['variants'].items()):
+        if isinstance(entry,list):
+            # 0.4.657: the staircase's stairs pick among its flags; the ward's have one, turned as the first is.
+            entry={k:v for k,v in entry[0].items() if k!='weight'};data['variants'][key]=entry
         suffix=entry['model'].split('/')[-1]
         entry['model']='the_oldest_house:block/ward_'+('inner_stairs' if 'inner' in suffix else 'outer_stairs' if 'outer' in suffix else 'stairs')
     write('blockstates/institute_stairs.json',data)

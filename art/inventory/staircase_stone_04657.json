@@ -1,0 +1,16 @@
+{
+  "authorization": "Owner, 16 November 2026: \"Feel free to rework the texture of the staircase too\".",
+  "tool": "tools/draw_stair_well_art.py",
+  "note": "The treads' stone was a photograph-like texture at eight times the native size. It is drawn at sixteen pixels as a stone flag, one to a block; the block state picks among it and five other flags (a shade deeper, a shade worn, cracked, chipped, flecked), which are new and not in the 0.4.100 catalogue. Its stairs and slabs pick among the three plain flags.",
+  "repainted": [
+    {
+      "path": "src/main/resources/assets/the_oldest_house/textures/block/staircase_stone.png",
+      "review_04100_sha256": "b8fdc7709421bc294331b2e0c17486e61fb0c904ffcc28c454b747d8bb95542e",
+      "sha256": "98e1ab43e708afefb9fd27857b79c8ee9517362644e54ff76c6b7f5a44415548",
+      "size": [
+        16,
+        16
+      ]
+    }
+  ]
+}

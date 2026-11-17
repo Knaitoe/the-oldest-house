@@ -1,7 +1,21 @@
 {
   "variants": {
-    "": {
-      "model": "the_oldest_house:block/stair_well_middle"
-    }
+    "": [
+      {
+        "model": "the_oldest_house:block/stair_well_middle"
+      },
+      {
+        "model": "the_oldest_house:block/stair_well_middle_1"
+      },
+      {
+        "model": "the_oldest_house:block/stair_well_middle_2"
+      },
+      {
+        "model": "the_oldest_house:block/stair_well_middle_3"
+      },
+      {
+        "model": "the_oldest_house:block/stair_well_middle_4"
+      }
+    ]
   }
 }
