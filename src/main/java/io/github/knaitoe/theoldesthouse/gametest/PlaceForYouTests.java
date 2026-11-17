@@ -108,15 +108,84 @@ public final class PlaceForYouTests {
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("SatDone")&&f.own(p,P).getBoolean("Ready"),"sat with her long enough; the house opened"))
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("KitLeft")&&PlaceForYou.actor(l,b,"kit")==null,"Kit gone from the road once out of sight"))
             .thenExecute(()->{var own=f.own(p,P);h.assertTrue(own.getString("Outcome").equals("opened_the_house")&&own.getBoolean("PromiseKept"),"the house opened, and the promise kept");
+                h.assertTrue(own.getBoolean("Knocked")&&own.getBoolean("VoiceHeard")&&own.getBoolean("TheoSilent")&&own.getInt("BargainMax")==0,"0.4.686: the knock on the propped door's frame, the voice by the gate, and its silence; no bargain, since the picture was already down");
                 p.stopRiding();f.read(p,P,LiteraryRooms.ending(P));})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"the account read"))
             .thenExecute(()->{h.assertTrue(f.data().isCompleted(P.id()),"the story resolved");
                 var text=account(f,p);
-                h.assertTrue(text.contains("talked as if I had lived there")&&text.contains("cleared the plates")&&text.contains("asked to be on my own")&&text.contains("laid out again")&&text.contains("I gave it back to Kit")&&text.contains("\"I'll sit with you tonight.\" I did.")&&text.contains("I held it")&&text.contains("it stopped")&&text.contains("hall chair")&&text.contains("Kit went out through the gate")&&text.contains("try it, and see")&&text.contains("as far as the road"),"the account says what this reader did and was told: "+text);
+                h.assertTrue(text.contains("talked as if I had lived there")&&text.contains("cleared the plates")&&text.contains("asked to be on my own")&&text.contains("laid out again")&&text.contains("I gave it back to Kit")&&text.contains("\"I'll sit with you tonight.\" I did.")&&text.contains("I held it")&&text.contains("it stopped")&&text.contains("hall chair")&&text.contains("Kit went out through the gate")&&text.contains("try it, and see")&&text.contains("as far as the road")&&text.contains("somebody knocked at the front door")&&text.contains("said her name once more"),"the account says what this reader did and was told: "+text);
             })
             .thenSucceed();
     }
     @AfterBatch(batch="place_guest") public static void guestDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.686 (docs/A_PLACE_FOR_YOU_0_4_686.md): somebody at the door. A reader who asked Mara for the other room asks Kit at the gate what
+     * help they want; the front door swings shut and somebody knocks; Mara, and Alex and Ren, are asked their own questions; through the
+     * door the voice asks after the spare key and answers who it is and what is for supper; opened, there is nobody on the step. While it
+     * stands open the gap in the household's pictures fills as the reader looks at it, their chair goes from the table, Ren says what it
+     * would cost, and Ren asks if they have met; shut, things go back. Propped open with the picture down, the voice stops, and only then
+     * does Mara decide.
+     */
+    @GameTest(template="empty",batch="place_knock",timeoutTicks=7000)
+    public static void somebodyAtTheDoor(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_knock",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{
+                say(h,p,"Thank you. I'll stay for supper.");f.source(p,P);
+                // The evening as it stands after a confrontation in the other room.
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.OPEN);own.putString("Confront","private");own.putString("First","Ren");own.putString("Helper","Ren");
+                own.putString("Activity","tea");own.putBoolean("ActivityDone",true);own.putBoolean("Acknowledged",true);own.putBoolean("TheoTold",true);own.putString("Promise","listen");
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                at(f,p,.5,0,-14.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("KitGoing")&&PlaceForYou.actor(l,b,"kit")!=null,"Kit going, the bag over a shoulder"))
+            .thenExecute(()->{talk(f,p,"kit");h.assertTrue(Talk.waiting(p,"kit_gate"),"Kit on the way out: "+Talk.key(p));
+                say(h,p,"What do you need from me?");h.assertTrue(f.own(p,P).getBoolean("AskedKit")&&f.own(p,P).getString("KitWants").equals("gate"),"Kit asked what help they want: the gate left open");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Knocked")&&!PlaceForYouSite.doorOpen(l,b),"with Kit out through the gate, the front door swings shut, and somebody knocks"))
+            .thenExecute(()->{
+                talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"mara_knock")&&Talk.lines(p).get(0).contains("He never knocked"),"Mara, at the knock: "+Talk.lines(p));
+                say(h,p,"Do you want them to stay");h.assertTrue(Talk.lines(p).stream().anyMatch(t->t.contains("Unable to leave. That's the true answer.")),"her answer, after the other room: "+Talk.lines(p));
+                say(h,p,"Is it him?");say(h,p,"I'll leave you be.");
+                talk(f,p,"ren");h.assertTrue(Talk.waiting(p,"peers"),"Alex and Ren together: "+Talk.key(p));
+                say(h,p,"Will you two go together");say(h,p,"Stay with me a minute.");
+                var own=f.own(p,P);h.assertTrue(own.getString("AskedMara").equals("private")&&own.getBoolean("AskedIsHim")&&own.getBoolean("AskedPeers")&&!own.getBoolean("CostHeard"),"each asked their own question; nobody has said the cost yet");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door")&&Talk.lines(p).contains("A voice: Mara? Is the spare key still where it was? It isn't under the step."),"through the door, the voice: "+Talk.lines(p));
+                say(h,p,"Who is this?");h.assertTrue(Talk.lines(p).stream().anyMatch(t->t.startsWith("A voice: It's Theo.")),"it says it is Theo: "+Talk.lines(p));
+                say(h,p,"What's for supper?");say(h,p,"Open the door.");
+                h.assertTrue(PlaceForYouSite.doorOpen(l,b)&&f.own(p,P).getBoolean("DoorAnswered")&&!Talk.waiting(p),"opened: nobody on the step");
+                // In the sitting room, looking at the household's pictures over the sideboard.
+                at(f,p,-5.5,0,-17.5,180,-24);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Bargain")>=1&&PlaceForYouSite.picturesFilled(l,b),"while the door stands open, the gap in the row fills as the reader looks at it"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Bargain")>=2&&!PlaceForYouSite.readerChair(l,b),"then the reader's chair goes from the table while they are out of the kitchen"))
+            .thenExecute(()->at(f,p,6.5,0,-18.5,90,0))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("ChairSeen")&&f.own(p,P).getBoolean("CostHeard"),"the empty place seen, and Ren says what letting him in would cost"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Forgot")&&f.own(p,P).getString("Forgetter").equals("Ren")&&f.own(p,P).getInt("BargainMax")==3,"Ren, the first they sat with, asks if they have met"))
+            .thenExecute(()->{at(f,p,.5,0,-13.5,0,0);
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door_open"),"a hand on the open door");say(h,p,"Shut it.");
+                h.assertTrue(!PlaceForYouSite.doorOpen(l,b)&&f.own(p,P).getBoolean("Shut"),"shut on it");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("Bargain")==0&&!PlaceForYouSite.picturesFilled(l,b)&&PlaceForYouSite.readerChair(l,b),"shut, the pictures and the chair go back as they were"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door")&&Talk.lines(p).contains("A voice: It's only me. It's cold out here."),"the voice again: "+Talk.lines(p));
+                say(h,p,"Open the door.");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door_open"),"the open door");say(h,p,"Set the hall chair against it.");
+                h.assertTrue(f.own(p,P).getBoolean("Propped")&&PlaceForYouSite.doorOpen(l,b),"propped open with the hall chair");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&!Talk.waiting(p),"the chair holds it");
+                at(f,p,6.5,0,-14.5,90,0);h.assertTrue(click(f,p,PlaceForYouSite.FRIDGE)&&f.own(p,P).getBoolean("PictureDown"),"the picture down off the fridge");
+                h.assertFalse(Talk.waiting(p,"mara_end"),"Mara does not decide while the voice is still there");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("TheoSilent"),"the way out open and the picture down: the voice says her name once more, and stops"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("MaraEnd").equals("gate")&&f.own(p,P).getString("RenEnd").equals("goes"),"then Mara sees Kit to the gate, and Ren goes with her"))
+            .thenExecute(()->{talk(f,p,"alex");h.assertTrue(Talk.waiting(p,"alex_end"),"Alex is going");say(h,p,"No. Good luck.");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready")&&f.own(p,P).getString("Outcome").equals("opened_the_house"),"the house opened"))
+            .thenExecute(()->f.read(p,P,LiteraryRooms.ending(P)))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"the account read"))
+            .thenExecute(()->{var text=account(f,p);
+                for(var said:java.util.List.of("To leave the gate open behind them","somebody knocked at the front door","spare key","He said Theo","Whatever she had made","nobody on the step",
+                        "a man in a work shirt came into the gap","My chair went from the table","Ren asked if we had met","if she let him in","I shut the door on it",
+                        "Unable to leave, she said","sounded like him","Alex was going to the coast","said her name once more"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_knock") public static void knockDone(ServerLevel l){close();}
 
     @GameTest(template="empty",batch="place_road",timeoutTicks=7000)
     public static void aReaderTheHouseKnowsTakesTheRoad(GameTestHelper h){

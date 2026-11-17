@@ -50,6 +50,9 @@ public final class PlaceForYou {
         final BlockPos base;long tick;int empty;boolean spawned;
         @Nullable UUID mara,kit,alex,ren;
         int repeatAt=-1,bagAt=-1,swapAt=-1,sinkAt=-1,slam,radio,kitGoneAt=-1,alexGoneAt=-1,maraGoneAt=-1,sitFor,doorCool,routineSound;
+        // 0.4.686 (PlaceForYouDoor): when the knock comes, when the voice speaks from the gate, how long the door has stood open or shut,
+        // when a forgetting is taken back and by whom, when the voice last spoke, and how many times it has knocked again.
+        int knockAt=-1,voiceAt=-1,openFor,shutFor,forgetAt=-1,knocks;long lastVoice=-1000;String forgetter="Mara";
         final Map<UUID,Long> said=new HashMap<>();
         House(BlockPos b){base=b;}
     }
@@ -253,7 +256,7 @@ public final class PlaceForYou {
             cue(p,"Kit's door is a cupboard door. Painted shut, shelves behind it. As if it always was.");own.putBoolean("DoorTaken",true);save(p,own);}
         if(own.getBoolean("Delayed")&&!own.getBoolean("ChairTaken")&&own.getBoolean("DoorTaken")&&!PlaceForYouSite.inKitchen(r)){PlaceForYouSite.kitsChair(l,b,false);own.putBoolean("ChairTaken",true);save(p,own);}
         // The road taken once the house's trouble has been seen: asked once each time the reader gets to its end.
-        if(own.getBoolean("Acknowledged")&&ch>=BAG&&ch<=DINNER&&!own.getBoolean("Ready")){
+        if(own.getBoolean("Acknowledged")&&ch>=BAG&&ch<=OPEN&&!own.getBoolean("Ready")){
             if(PlaceForYouSite.roadEnd(r)){if(!own.getBoolean("RoadAsked")&&!Talk.waiting(p)){own.putBoolean("RoadAsked",true);save(p,own);roadAsk(p,h);}}
             else if(own.getBoolean("RoadAsked")&&!PlaceForYouSite.onRoad(r)){own.remove("RoadAsked");save(p,own);}
         }
@@ -505,7 +508,9 @@ public final class PlaceForYou {
         var b=h.base;
         // Kit goes as soon as the house is being opened, out through the gate with the bag; gone from the road once nobody is watching.
         if(!own.getBoolean("KitGoing")){kitGoes(p,h);own=own(p);}
-        boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown");
+        // 0.4.686: somebody at the door (PlaceForYouDoor); nobody decides anything until the voice has stopped.
+        PlaceForYouDoor.tick(l,h,p,own,r);own=own(p);
+        boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getBoolean("TheoSilent");
         if(ready&&own.getString("MaraEnd").isEmpty()&&!Talk.waiting(p)&&PlaceForYouSite.inKitchen(r)&&!own.getBoolean("MaraAsked")){own.putBoolean("MaraAsked",true);save(p,own);maraDecides(p,h);}
         if(own.getString("MaraEnd").equals("sat")&&!own.getBoolean("SatDone")){
             if(p.getVehicle() instanceof SeatEntity&&PlaceForYouSite.inKitchen(r)){if(++h.sitFor>=160){own.putBoolean("SatDone",true);own.putBoolean("PromiseKept",true);save(p,own);above(h,actor(l,h,"Mara"),"I'll stay a while. I'll try it, and see.");}}
@@ -538,7 +543,7 @@ public final class PlaceForYou {
     }
     static void roadAsk(ServerPlayer p,House h){
         Talk.begin(p,"road","The road");Talk.line(p,"","The road goes on into the trees both ways. Behind you, the house, and the people in it.");
-        Talk.ask(p,Talk.act("Keep walking.",q->{edit(q,o->o.putString("Confront","road"));finish(q,"took_the_road");Talk.end(q);})
+        Talk.ask(p,Talk.act("Keep walking.",q->{edit(q,o->{if(o.getInt("Chapter")==OPEN)o.putBoolean("LeftOpen",true);else o.putString("Confront","road");});finish(q,"took_the_road");Talk.end(q);})
             ,Talk.act("Go back.",q->Talk.end(q)));
     }
     /** Readies the account in the mailbox by the gate. */
@@ -566,9 +571,14 @@ public final class PlaceForYou {
             case BAG->{if(own.getInt("BagStage")==2&&!own.getBoolean("BagOpened")){edit(p,o->o.putBoolean("BagOpened",true));bagExchange(p,h,own);}else above(h,a,who.equals("Kit")?"It's my bag.":"Not now.");}
             case SINK->{if(who.equals("Mara"))sink(p,h);else above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
             case DINNER->{if(who.equals("Mara")&&!own.getBoolean("SpoonTaken"))spoon(p,h);else if(own.getBoolean("SpoonTaken"))confront(p,h);else above(h,a,"Sit down.");}
-            case OPEN->{if(who.equals("Mara")&&own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getString("MaraEnd").isEmpty()){edit(p,o->o.putBoolean("MaraAsked",true));maraDecides(p,h);}
-                else if(who.equals("Alex")&&own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getString("AlexEnd").isEmpty()){edit(p,o->o.putBoolean("AlexAsked",true));alexGoes(p,h);}
-                else above(h,a,who.equals("Kit")?"Go on. I'm right behind you.":"The door first.");}
+            case OPEN->{boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getBoolean("TheoSilent");boolean knocking=own.getBoolean("Knocked")&&!own.getBoolean("TheoSilent");
+                // 0.4.686 (N9): before the threshold, each is asked their own question.
+                if(who.equals("Kit")&&own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")&&!own.getBoolean("AskedKit"))PlaceForYouDoor.kit(p,h);
+                else if(who.equals("Mara")&&ready&&own.getString("MaraEnd").isEmpty()){edit(p,o->o.putBoolean("MaraAsked",true));maraDecides(p,h);}
+                else if(who.equals("Alex")&&ready&&own.getString("AlexEnd").isEmpty()){edit(p,o->o.putBoolean("AlexAsked",true));alexGoes(p,h);}
+                else if(who.equals("Mara")&&knocking)PlaceForYouDoor.mara(p,h);
+                else if((who.equals("Alex")||who.equals("Ren"))&&knocking)PlaceForYouDoor.peers(p,h);
+                else above(h,a,who.equals("Kit")?"Go on. I'm right behind you.":knocking?(who.equals("Mara")?"I can't be the one who answers it.":"I'm not answering it."):"The door first.");}
             default->above(h,a,"...");
         }
     }
@@ -612,7 +622,7 @@ public final class PlaceForYou {
             cue(p,"Two cups.");return true;}
         if(kind==PlaceForYouBlock.Kind.RADIO){l.playSound(null,b.offset(rel),SoundEvents.NOTE_BLOCK_HARP.value(),SoundSource.BLOCKS,.4F,.9F);cue(p,"A song from before. You almost know it.");return true;}
         if(kind==PlaceForYouBlock.Kind.PHOTO){cue(p,"A man half turned from the camera, in a work shirt. Somebody has dusted the frame and nothing else.");if(!own.getBoolean("TheoNamed"))edit(p,o->o.putBoolean("SawTheo",true));return true;}
-        if(kind==PlaceForYouBlock.Kind.PICTURES){cue(p,"The household, in a row. There's a gap in the row, the width of one person.");return true;}
+        if(kind==PlaceForYouBlock.Kind.PICTURES){cue(p,PlaceForYouSite.picturesFilled(l,b)?"The household, in a row, and in the gap a man in a work shirt.":"The household, in a row. There's a gap in the row, the width of one person.");return true;}
         if(kind==PlaceForYouBlock.Kind.GLASS){cue(p,switch(s.getValue(PlaceForYouBlock.STAGE)){case 1->"The hall glass, turned to face the wallpaper.";case 2->"The hall glass, with a cloth over it.";default->"The hall glass.";});return true;}
         if(kind==PlaceForYouBlock.Kind.CUPBOARD){
             if(ch==DINNER&&!own.getBoolean("CupboardOpened")){edit(p,o->o.putBoolean("CupboardOpened",true));cue(p,"Shelves. Kit's things, folded. Kit is behind you in the hall, saying your name like it's the second time.");above(h,actor(l,h,"Kit"),"Hey. Hey. I'm here.");return true;}
@@ -628,6 +638,9 @@ public final class PlaceForYou {
         if(kind==PlaceForYouBlock.Kind.CARD)return false;
         // The front door: held against the house's closing it, or propped open with the hall chair to open the house.
         if(rel.equals(PlaceForYouSite.FRONT_DOOR)||rel.equals(PlaceForYouSite.FRONT_DOOR.above())){
+            // 0.4.686: the hall chair holds a propped door; after the knock, a hand on the door is an answer to whoever knocked.
+            if(ch==OPEN&&own.getBoolean("Propped")){cue(p,"The hall chair holds it open.");return true;}
+            if(ch==OPEN&&own.getBoolean("Knocked")&&!own.getBoolean("TheoSilent")){PlaceForYouDoor.door(p,h);return true;}
             if(ch==OPEN&&!own.getBoolean("Propped")&&PlaceForYouSite.inHouse(rel(p.position(),b))){PlaceForYouSite.propped(l,b,true);edit(p,o->o.putBoolean("Propped",true));cue(p,"You set the hall chair against it. It stays.");checkOpen(p,h);return true;}
             if(ch==DINNER&&h.slam>0&&!own.getBoolean("DoorHeld")){PlaceForYouSite.frontDoor(l,b,true);edit(p,o->o.putBoolean("DoorHeld",true));cue(p,"You hold it. It pulls once against your hand, and stops.");return true;}
             return false;}
@@ -639,7 +652,7 @@ public final class PlaceForYou {
         if(rel.equals(PlaceForYouSite.KIT_DOOR)||rel.equals(PlaceForYouSite.KIT_DOOR.above())){if(!own.getBoolean("DoorTaken")){cue(p,"Kit's door. It's Kit's room.");return true;}return false;}
         return false;
     }
-    static void checkOpen(ServerPlayer p,House h){var own=own(p);if(own.getBoolean("Propped")&&own.getBoolean("PictureDown"))cue(p,"The way out is open, and your picture is down. Now they decide for themselves.");}
+    static void checkOpen(ServerPlayer p,House h){var own=own(p);if(own.getBoolean("Propped")&&own.getBoolean("PictureDown"))cue(p,"The way out is open, and your picture is down.");}
     static void giveBag(ServerPlayer p,House h,String who){
         release(p,null);var l=p.serverLevel();var b=h.base;
         if(who.equals("Kit")){edit(p,o->{o.putString("BagWhere","kit");o.putBoolean("Acknowledged",true);});above(h,actor(l,h,"Kit"),"Thanks. I'll set it by the gate myself this time.");PlaceForYouSite.bag(l,b,"gate");}

@@ -155,14 +155,17 @@ public final class PlaceForYouTexts {
             case "kit"->t.append("I told Kit to go while I kept the others talking.\n\n");
             default->{}
         }
+        t.append(threshold(own));
         if(outcome.equals("took_the_road")){
-            t.append("I said it was more than I could take on, and went out through the gate onto the road.");
+            t.append(own.getBoolean("LeftOpen")?"I left them to it, and went out through the gate onto the road.":"I said it was more than I could take on, and went out through the gate onto the road.");
+            if(own.getBoolean("LeftOpen")&&own.getBoolean("Knocked")&&!own.getBoolean("TheoSilent"))t.append(" Somebody was still asking for Mara at the door.");
             if(own.getString("Promise").equals("company"))t.append(" I had told Mara I would sit with her tonight.");
             if(own.getBoolean("KitLeft"))t.append(" Kit was already outside.");
             t.append(" The house stayed exactly as I left it.");
             return t.toString();
         }
         t.append("I set the hall chair against the front door, and took my picture down off the fridge.");
+        if(own.getBoolean("TheoSilent"))t.append(" After that the voice past the gate said her name once more, and stopped.");
         if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Kit went out through the gate with the bag.");
         switch(own.getString("MaraEnd")){
             case "sat"->t.append(" Mara asked me to sit with her before she decided. I did. She said she would stay a while, and try it, and see.");
@@ -177,6 +180,35 @@ public final class PlaceForYouTexts {
         t.append(own.getString("RenEnd").equals("goes")?" Ren went with them as far as the bend.":" Ren stayed with Mara.");
         t.append(own.getBoolean("LightOff")?"\n\nThe last one out turned off the kitchen light.":"\n\nWhen I looked back from the road, the kitchen light was on, and one chair was empty.");
         return t.toString();
+    }
+    /** 0.4.686: Kit asked on the way out, and somebody at the door (PlaceForYouDoor): what the reader asked, saw and was told. */
+    static String threshold(CompoundTag own){
+        var t=new StringBuilder();
+        if(own.getBoolean("AskedKit"))t.append(own.getString("KitWants").equals("alone")?"Before Kit went, I asked what they needed from me. To do that part on their own, they said.":"Before Kit went, I asked what they needed from me. To leave the gate open behind them, they said.");
+        if(own.getBoolean("Knocked")){
+            if(t.length()>0)t.append(" ");
+            t.append("Then somebody knocked at the front door. Mara said nobody knocks there; everybody just comes in.");
+            if(own.getBoolean("VoiceHeard"))t.append(" A man's voice asked whether the spare key was still where it was. It wasn't under the step.");
+            if(own.getBoolean("AskedWho"))t.append(" I asked who he was. He said Theo, and asked who I was.");
+            if(own.getBoolean("AskedSupper"))t.append(" I asked what was for supper. Whatever she had made, he said; she always made too much.");
+            if(own.getBoolean("AskedWhere"))t.append(" I asked where he had been. Out, he said. He had said he would be back for supper.");
+            if(own.getBoolean("DoorAnswered"))t.append(" I opened the door. There was nobody on the step.");
+            int seen=own.getInt("BargainMax");
+            if(seen>=1)t.append(" While the door stood open, a man in a work shirt came into the gap in the household's pictures.");
+            if(seen>=2)t.append(" My chair went from the table.");
+            if(own.getBoolean("Forgot")){String who=own.getString("Forgetter");t.append(" "+who+" asked if we had met, and then said "+pron(who)+" knew me.");}
+            if(own.getBoolean("CostHeard"))t.append(" Ren said that if she let him in, she would have the old evening back, and nobody would remember this one.");
+            if(own.getBoolean("Shut"))t.append(" I shut the door on it, and in a while the pictures and the table were as they had been.");
+            switch(own.getString("AskedMara")){
+                case "private"->t.append(" I asked Mara whether she wanted them to stay, or wanted them unable to leave. Unable to leave, she said, and she wished it were the other.");
+                case "kit"->t.append(" I asked Mara whether she wanted them to stay, or wanted them unable to leave. She said she had always known Kit would go.");
+                case "open","road"->t.append(" I asked Mara whether she wanted them to stay, or wanted them unable to leave. She said she had wanted them to want to stay, and had stopped asking.");
+                default->{}
+            }
+            if(own.getBoolean("AskedIsHim"))t.append(" I asked her if it was him. She said it sounded like him.");
+            if(own.getBoolean("AskedPeers"))t.append(" Alex was going to the coast, and Ren was staying near Mara. They didn't have to want the same thing.");
+        }
+        return t.length()==0?"":t+"\n\n";
     }
     public static ItemStack account(String reader,CompoundTag own){
         var pages=new ArrayList<Component>(styled(HouseWriting.WritingStyle.PLAIN,afterwards(reader,own)));

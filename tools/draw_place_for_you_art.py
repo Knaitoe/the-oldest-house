@@ -275,13 +275,19 @@ def theo():
     return im
 
 
-def pictures():
+def pictures(theo_in=False):
     im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
     # Three frames: a long field, the household in a row, and a small dark one nobody looks at.
     fill(im, 0, 1, 9, 7, '#3a2c22'); fill(im, 1, 2, 8, 6, '#9ab0c4'); fill(im, 1, 4, 8, 6, '#6a8a4a')
-    fill(im, 6, 8, 16, 15, '#3a2c22'); fill(im, 7, 9, 15, 14, '#cbbd9a')
-    for x in (8, 10, 12, 14):
-        fill(im, x, 10, x + 1, 13, '#5a4a3a'); dot(im, x, 10, '#c89a7a')
+    # 0.4.686: the household's frame wider, the four of them standing a pace apart with a gap in the middle the width of one person:
+    # Mara (grey hair, plum cardigan), Kit (brown hair, green), then the gap, then Alex (dark hair, slate) and Ren (fair, ochre).
+    fill(im, 3, 8, 16, 16, '#3a2c22'); fill(im, 4, 9, 15, 15, '#cbbd9a'); fill(im, 4, 14, 15, 15, '#b8a888')
+    people = [(5, '#9a948c', '#7a4a5a'), (7, '#6a4a2e', '#4a6a4a'), (11, '#2e2622', '#5a5a7a'), (13, '#c8a868', '#8a6a3a')]
+    if theo_in:
+        # The gap filled: a man in the work shirt of the photograph on the sideboard, standing where nobody stood.
+        people.append((9, '#4a3a2a', '#5a6a7a'))
+    for x, hair, clothes in people:
+        dot(im, x, 9, hair); dot(im, x, 10, '#c89a7a'); fill(im, x, 11, x + 1, 13, clothes); dot(im, x, 13, '#3a3026')
     fill(im, 11, 1, 15, 6, '#3a2c22'); fill(im, 12, 2, 14, 5, '#2a2622')
     return im
 
@@ -377,7 +383,7 @@ def textures():
         'brass': new(base='#c8a040', seed=2609, spread=4), 'folded': folded(), 'card': card(), 'plate_full': plate(True),
         'plate_empty': plate(False), 'china': new(base='#f0ede4', seed=2610, spread=2), 'kettle': kettle(), 'cup': cup(False),
         'tea': cup(True), 'radio': radio(), 'theo': theo(), 'frame': new(base='#3a2c22', seed=2611, spread=2),
-        'card_back': new(base='#a8946c', seed=2612, spread=3), 'pictures': pictures(), 'cupboard_0': cupboard(False),
+        'card_back': new(base='#a8946c', seed=2612, spread=3), 'pictures': pictures(), 'pictures_theo': pictures(True), 'cupboard_0': cupboard(False),
         'cupboard_1': cupboard(True), 'steel': new(base='#c4c8cc', seed=2613, spread=3), 'counter': counter(), 'worktop': worktop(),
         'basin': basin(), 'stove': stove(), 'hob_0': hob(False), 'hob_1': hob(True), 'hooks': hooks(),
         'coat_a': coat('#3a4a5a', 2614), 'coat_b': coat('#7a5a3a', 2615), 'glass': glass(), 'cover': cloth_cover(),
@@ -441,6 +447,8 @@ def fitting_models():
     m['photo_1'] = model([element([4, 0, 3], [12, 1, 13], {'up': 'b', 'down': 't', 'north': 'f', 'south': 'f', 'east': 'f', 'west': 'f'})],
                          {'t': 'theo', 'b': 'card_back', 'f': 'frame'}, 'card_back')
     m['pictures_0'] = model([element([0, 0, 15], [16, 16, 15.5], {'north': 'p'}, uv={'north': [0, 0, 16, 16]})], {'p': 'pictures'}, 'pictures')
+    # 0.4.686: the same pictures with the gap in the household's row filled.
+    m['pictures_1'] = model([element([0, 0, 15], [16, 16, 15.5], {'north': 'p'}, uv={'north': [0, 0, 16, 16]})], {'p': 'pictures_theo'}, 'pictures_theo')
     for stage in range(2):
         m[f'cupboard_{stage}'] = model([element([0, 0, 0], [16, 16, 16], {'all': 'e', 'north': f'c', 'south': f'c'})], {'c': f'cupboard_{stage}', 'e': 'cupboard_1'}, f'cupboard_{stage}')
     m['spoon_0'] = model([element([7.5, 0, 2], [8.5, 0.5, 11], {'all': 's'}), element([6.5, 0, 11], [9.5, 0.75, 14], {'all': 's'})], {'s': 'steel'}, 'steel')
@@ -464,7 +472,7 @@ def fitting_models():
 
 
 KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'pictures', 'cupboard', 'routine', 'spoon', 'counter', 'stove', 'hooks', 'glass']
-STAGES = {'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3}
+STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0')]
