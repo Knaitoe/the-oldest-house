@@ -291,7 +291,7 @@ public final class KingTests {
         .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)>=KingBrothers.FIGHT,"they dress, then fight: "+KingBrothers.battle(b)))
         // 0.4.648: the dream goes on every server tick; the reader's own record takes in what they saw at their next quarter second.
         .thenWaitUntil(()->h.assertTrue(KingSleep.stirs(b)>=2&&f.own(p,P).getBoolean("KingSawBattle"),"a battle beside him stirs him twice, and the reader saw it: "+KingSleep.stirs(b)))
-        .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)==KingBrothers.GONE&&KingBrothers.find(l,b,KingBrothers.DUM)==null,"then the shadow, and they run"))
+        .thenWaitUntil(()->h.assertTrue(KingBrothers.battle(b)==KingBrothers.GONE&&KingBrothers.find(l,b,KingBrothers.DUM)==null,"then the shadow, and they run: battle "+KingBrothers.battle(b)+", stirs "+KingSleep.stirs(b)+(KingSleep.waking(b)?", waking":"")+(KingBrothers.find(l,b,KingBrothers.DUM)!=null?", one still here":"")))
         .thenExecute(()->{
             beside(p,l,b);KingBreath.STATES.put(p.getUUID(),KingBreath.THING);
             KingSleep.stir(l,b,p,f.own(p,P),KingSleep.WAKE_AT);
