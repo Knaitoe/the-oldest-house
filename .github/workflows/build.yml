@@ -176,6 +176,7 @@ jobs:
           python3 tools/generate_last_crossing_audio.py --check
           python3 tools/generate_operator_audio.py --check
           python3 tools/draw_trace_fittings.py --check
+          python3 tools/draw_hall_feed.py --check
           python3 tools/generate_staircase_leak_assets.py --check
           python3 tools/draw_hall_art.py --check
           python3 tools/draw_stone_hall_art.py --check
@@ -1155,6 +1156,8 @@ jobs:
           for view in front side back dim fixtures-0 fixtures-1 fixtures-2 fixtures-3 gestures keepsakes style gentleman bike arcade feeding devoured orrery comic names signs-0 signs-1 papers seats cards-0 cards-1 cards-2 homes fight letter standins supper dog faces; do test -s build/font-smoke/native-borrasca-$view.png; done
           test -s build/font-smoke/hall-changes-passed.txt
           test -s build/font-smoke/native-hall-changes.png
+          test -s build/font-smoke/hall-feed-passed.txt
+          test -s build/font-smoke/native-hall-feed.png
           # Every architecture export has a rendered page, and every vignette (vignettes.txt, from the places) has an export: nothing here is a hand-kept count.
           for file in build/architecture-proof/*.json; do test -s "build/font-smoke/scenes/$(basename "$file" .json).png"; done
           python3 - <<'PY'
