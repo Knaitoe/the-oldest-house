@@ -1381,4 +1381,83 @@ public final class ExplorationPassTests {
             h.succeed();
         });
     }
+
+    /** 0.4.662 (docs/HALL_FEED_0_4_662.md): a hall watched for a reader alone, shown on a monitor in the next hall they come into. */
+    @GameTest(template="empty",batch="hall_feed",timeoutTicks=400)
+    public static void aWatchedHallIsShownOnAMonitorInTheNextHall(GameTestHelper h){
+        var l=HouseTestLevel.get(h.getLevel().getServer());var at=new BlockPos(634000,64,634000);
+        var lease=new NativeTestChunks();lease.hold(l,new AABB(at).inflate(20,6,30));
+        var p=NativeTestPlayers.survival(h,"feed_reader");var shallow=NativeTestPlayers.survival(h,"feed_shallow");var watcher=NativeTestPlayers.survival(h,"feed_watcher");watcher.setGameMode(GameType.SPECTATOR);
+        var d=LabyrinthData.get(h.getLevel().getServer());var all=List.of(p,shallow,watcher);boolean[] done={false};
+        Runnable cleanup=()->{
+            for(var r:all){HallFeed.forget(r.getUUID());d.clearReturns(r.getUUID());NativeTestPlayers.remove(r);}HallFeed.force=false;
+            for(int x=-2;x<=14;x++)for(int y=-1;y<=3;y++)for(int z=-3;z<=26;z++)l.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);lease.close();
+        };
+        h.runAfterDelay(399,()->{if(!done[0]){done[0]=true;cleanup.run();}});
+        h.onEachTick(()->{if(done[0]||!lease.ready())return;done[0]=true;
+            try{
+                // Hall A: three wide, three high, along +x. Room B to the south: seven by seven, three high.
+                for(int x=-2;x<=14;x++)for(int y=-1;y<=3;y++)for(int z=-3;z<=26;z++)l.setBlock(at.offset(x,y,z),Blocks.STONE_BRICKS.defaultBlockState(),2);
+                for(int y=0;y<=2;y++){for(int x=0;x<=12;x++)for(int z=-1;z<=1;z++)l.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);for(int x=0;x<=6;x++)for(int z=18;z<=24;z++)l.setBlock(at.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);}
+                h.assertTrue(HallFeed.hall(LabyrinthPlace.STRAIGHT_HALL)&&!HallFeed.hall(LabyrinthPlace.EXPLORER_CAMP)&&!HallFeed.hall(null),"the same ordinary halls as readers together hear things apart in");
+                java.util.function.Consumer<ServerPlayer> inA=r->{r.teleportTo(l,at.getX()+1.5,at.getY(),at.getZ()+.5,-90,0);r.connection.resetPosition();};
+                java.util.function.Consumer<ServerPlayer> inB=r->{r.teleportTo(l,at.getX()+1.5,at.getY(),at.getZ()+21.5,-90,0);r.connection.resetPosition();};
+                for(var r:all)inA.accept(r);
+                long t=l.getGameTime();
+                h.assertTrue(!HallFeed.ready(p,t),"a reader at the House's first doors is never watched");
+                for(var r:List.of(p,watcher))for(int i=0;i<HallFeed.DEPTH;i++)d.pushReturn(r.getUUID(),new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,new Vec3(i,64,0),0F,true,false));
+                h.assertTrue(HallFeed.ready(p,t)&&!HallFeed.ready(watcher,t)&&!HallFeed.ready(shallow,t),"six crossings deep, a reader may be; a spectator and a reader not yet six in may not");
+                HallFeed.force=true;
+                h.assertTrue(!HallFeed.arrive(l,p,LabyrinthPlace.STRAIGHT_HALL,false,t)&&!HallFeed.arrive(l,p,LabyrinthPlace.EXPLORER_CAMP,true,t)&&HallFeed.force,"not with someone else in the hall, nor outside the ordinary halls");
+                h.assertTrue(HallFeed.arrive(l,p,LabyrinthPlace.STRAIGHT_HALL,true,t)&&HallFeed.watching(p.getUUID())!=null,"alone in an ordinary hall, it is watched");
+                var cam=HallFeed.watching(p.getUUID()).camera();
+                h.assertTrue(cam.y>at.getY()+2&&cam.y<at.getY()+3&&cam.x<p.getX()&&cam.x>at.getX()&&Math.abs(cam.z-p.getZ())<.01,"the camera hangs under the ceiling, set back towards the door behind the reader: "+cam);
+                p.getPersistentData().putLong(HallFeed.LAST,t);
+                h.assertTrue(!HallFeed.ready(p,t+HallFeed.REST-1)&&HallFeed.ready(p,t+HallFeed.REST),"fifteen minutes before it can be again");
+                // The monitor's wall: room B, five and a half blocks ahead of a reader come in facing the far wall.
+                inB.accept(p);
+                var spot=HallFeed.spot(l,p);
+                h.assertTrue(spot!=null&&spot.cell().equals(at.offset(6,2,21))&&spot.facing()==Direction.WEST,"on the wall the reader faces, two above their feet, its screen to them: "+spot);
+                l.setBlock(at.offset(7,2,21),Blocks.GLASS.defaultBlockState(),2);
+                var aside=HallFeed.spot(l,p);
+                h.assertTrue(aside!=null&&!aside.cell().equals(at.offset(6,2,21))&&HallFeed.fits(l,aside.cell(),aside.facing()),"never on glass; on a wall a little to one side instead: "+aside);
+                l.setBlock(at.offset(7,2,21),Blocks.STONE_BRICKS.defaultBlockState(),2);l.setBlock(at.offset(6,2,21),Blocks.LANTERN.defaultBlockState().setValue(net.minecraft.world.level.block.LanternBlock.HANGING,true),2);
+                h.assertTrue(!HallFeed.fits(l,at.offset(6,2,21),Direction.WEST),"nor where something already hangs");
+                l.setBlock(at.offset(6,2,21),Blocks.AIR.defaultBlockState(),2);
+                for(int x=0;x<=6;x++)for(int z=18;z<=24;z++)l.setBlock(at.offset(x,2,z),Blocks.STONE_BRICKS.defaultBlockState(),2);
+                h.assertTrue(HallFeed.spot(l,p)==null,"a hall two high has no wall high enough");
+                for(int x=0;x<=6;x++)for(int z=18;z<=24;z++)l.setBlock(at.offset(x,2,z),Blocks.AIR.defaultBlockState(),2);
+                // Leaving. The reader's own record holds the next arrival back, so each case below starts from a hall armed by hand.
+                Runnable arm=()->{p.getPersistentData().remove(HallFeed.LAST);HallFeed.force=true;inA.accept(p);h.assertTrue(HallFeed.arrive(l,p,LabyrinthPlace.STRAIGHT_HALL,true,t),"armed again");p.getPersistentData().putLong(HallFeed.LAST,t);inB.accept(p);};
+                arm.run();
+                h.assertTrue(!HallFeed.moved(l,p,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,true,true,t+HallFeed.STAY-1)&&HallFeed.watching(p.getUUID())==null&&HallFeed.showing(p.getUUID())==null,"too soon out of the hall, there is nothing to show, and it is forgotten");
+                arm.run();
+                h.assertTrue(!HallFeed.moved(l,p,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,false,true,t+HallFeed.STAY),"not if someone else was left in the hall");
+                arm.run();
+                h.assertTrue(!HallFeed.moved(l,p,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,true,false,t+HallFeed.STAY),"not into a hall someone else is in");
+                arm.run();
+                h.assertTrue(!HallFeed.moved(l,p,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.EXPLORER_CAMP,true,true,t+HallFeed.STAY),"not into the camp or a story");
+                arm.run();
+                h.assertTrue(!HallFeed.moved(l,p,LabyrinthPlace.CROSS_HALL,LabyrinthPlace.BENT_HALL,true,true,t+HallFeed.STAY),"not from a hall that was not the watched one");
+                arm.run();
+                h.assertTrue(HallFeed.moved(l,p,LabyrinthPlace.STRAIGHT_HALL,LabyrinthPlace.BENT_HALL,true,true,t+100)&&HallFeed.showing(p.getUUID())==LabyrinthPlace.BENT_HALL&&HallFeed.watching(p.getUUID())==null,"alone, out of the watched hall into another, long enough after: it is shown there");
+                h.assertTrue(p.getPersistentData().getLong(HallFeed.LAST)==t+100,"and kept as when it last was");
+                h.assertTrue(!HallFeed.moved(l,p,LabyrinthPlace.BENT_HALL,LabyrinthPlace.STRAIGHT_HALL,true,true,t+200)&&HallFeed.showing(p.getUUID())==null&&HallFeed.watching(p.getUUID())==null,"leaving that hall, the monitor is gone, and nothing is watched within the fifteen minutes");
+                // The footprints: the way walked, on along +x then round to +z, a mark every two-fifths of a block.
+                var marks=new ArrayList<HallFeed.Mark>();var step=net.minecraft.sounds.SoundEvents.STONE_STEP;
+                for(int i=0;i<=50;i++)marks.add(new HallFeed.Mark(new Vec3(i*.4,64,0),step,1,1));
+                for(int i=1;i<=20;i++)marks.add(new HallFeed.Mark(new Vec3(20,64,i*.4),step,1,1));
+                var prints=HallFeed.walked(marks,HallFeed.STRIDE,HallFeed.LENGTH);
+                h.assertTrue(prints.size()>=9&&prints.size()<=11,"a print each stride over the last sixteen blocks: "+prints.size());
+                h.assertTrue(prints.getFirst().at().x>=20-(HallFeed.LENGTH-8)-.5,"only the last of the way: "+prints.getFirst().at());
+                for(int i=1;i<prints.size();i++){
+                    h.assertTrue(prints.get(i).left()!=prints.get(i-1).left(),"feet turn about");
+                    h.assertTrue(prints.get(i).at().distanceTo(prints.get(i-1).at())<=HallFeed.STRIDE+.01,"a stride apart, or less across the corner");
+                }
+                var last=prints.getLast();h.assertTrue(last.at().x==20&&last.heading().z>.99&&last.at().z<=8,"round the corner the last of them point the way the reader went: "+last);
+                h.assertTrue(HallFeed.walked(marks.subList(0,4),HallFeed.STRIDE,HallFeed.LENGTH).isEmpty(),"a step or two is no footprints");
+            }finally{cleanup.run();}
+            h.succeed();
+        });
+    }
 }

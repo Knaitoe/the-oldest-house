@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.661** gives readers together different things to swear they heard. When two readers deep in the House stop in the same hall, a few steps apart, one may hear the other's footsteps carry on down the hall and round the corner, while the other hears a door shut softly somewhere behind the first. Each hears only their own, nothing is said about it, and only comparing tells them. `docs/HEARD_APART_0_4_661.md`.
+Development candidate **0.4.662** gives a reader alone the other half of that suggestion: now and then, deep in the House, the hall they have just left is on a monitor high on the wall of the next one, empty, with a clock running, and a few seconds later footprints come into it one after another along the way they walked, out to the door they left by, while the monitor gives out the footsteps. Then the picture breaks up and the screen goes dark. It is drawn by that reader's own game alone. `docs/HALL_FEED_0_4_662.md`.
 
-Previous: 0.4.660 answered the owner's question about fanfare at the foot of the great staircase: none. The descent's score and growls stop there, and after five seconds' quiet the creature growls once, from the cell. `docs/STAIR_FOOT_0_4_660.md`.
+Previous: 0.4.661 gave readers together different things to swear they heard: stopped in a hall, one may hear the other's footsteps carry on round the corner while the other hears a door shut behind the first. `docs/HEARD_APART_0_4_661.md`.
 
 Development candidate **0.4.642** gives A sort of thing its sleeper's breath (part 2): one breath for the whole country, the edge of the filled land moving a block with it, and how much of a thing each reader is, from too much of one (rooted beside him on his in-breath) to a line that walks through hedges and brooks, shown on the reader's own body (as it is, flat with no shadow, or in pencil outline) and in their feet. Not dealt yet. See [docs/SLEEPING_KING_0_4_642.md](docs/SLEEPING_KING_0_4_642.md).
 

@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 17 candidate 0.4.662 (docs/HALL_FEED_0_4_662.md): where a reader's own game shows them something nobody else sees, is it drawn by that game alone, out of reach of being walked into, and gone when they leave? Does it hang only where something real would hang (a solid wall, not glass, not over what is already there, not in a room too low), and is nothing shown at all when there is nowhere fit? Is what it shows made only of what that reader really did?
+
 November 17 candidate 0.4.661 (docs/HEARD_APART_0_4_661.md): where readers together are given different things, is each thing ordinary on its own, sent to its own reader alone and never played in the world, so only comparing tells them? Does a sound that walks keep to floor a body could walk on, never through a wall and never back at the one who hears it? Is it rare, deep enough in the House, and once for a stop, with spectators never one of a pair?
 
 November 17 candidate 0.4.660 (docs/STAIR_FOOT_0_4_660.md): where a long stretch ends, is the end marked by what stops rather than by something new, and is what does come (a sound, a light) the story's own, heard or seen once by each reader and never repeated? Does a line meant to be acted on come where it can be acted on, and is it kept the moment it is shown?
