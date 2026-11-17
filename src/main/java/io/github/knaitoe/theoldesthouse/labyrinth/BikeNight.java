@@ -117,7 +117,7 @@ public final class BikeNight {
         Night(BlockPos b){base=b;for(var make:NightBike.Make.values())at[make.ordinal()]=b.offset(BikeNightSite.bikeAt(make));}
     }
     private static final Map<Long,Night> NIGHTS=new HashMap<>();
-    public static void clearAll(){NIGHTS.clear();BikeNightFold.clear();}
+    public static void clearAll(){NIGHTS.clear();BikeNightFold.clear();BikeNightWay.clear();}
     /** 0.4.513: how many readers a town takes: one to a bike. More get a town of their own (SceneInstances.crowd). */
     public static final int RIDERS=NightBike.Make.values().length;
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
@@ -317,6 +317,7 @@ public final class BikeNight {
             CalderEvening.tick(l,n,here);
             CalderCarts.tick(l,n,here);
             BikeNightGraveyard.tick(l,n,here);
+            BikeNightWay.tick(l,n,here);
             BikeNightHollow.tick(l,n,here);
             // 0.4.521: after the Hollow has seen who is through its back gate, the fold carries them.
             BikeNightFold.tick(l,n,here);

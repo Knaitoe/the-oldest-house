@@ -22,7 +22,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <ul>
  * <li>CHAINLINK: one block of chain-link fence on the block's middle line. Stage 0 the lower block, 1 the upper; 2 and 3 the same
  * two with the wire cut and pulled back, which is a hole a child on a bike goes through.</li>
- * <li>BLEACHER: a bleacher's plank on its frame. The plank is all that is stood on; under a raised one there is room to ride.</li>
+ * <li>BLEACHER: a row of the bleachers, its seat plank and footboard (0.4.675: the footboard in front and lower, as it is sat at). Stage
+ * 0 a plain length, 1 where a steel frame stands under the row; 2 the frame's leg on down under a row, 3 its foot at the ground. The
+ * seat plank is all that is stood on; under a raised row there is room to ride, but not through a leg.</li>
  * <li>PUMPKIN: a carved pumpkin, lit from inside. Its stage is its face.</li>
  * <li>AWNING: an awning over a shop's front. Its stage is its stripe.</li>
  * <li>HYDRANT, MAILBOX, CART: a fire hydrant, a post box, a grocery cart.</li>
@@ -56,6 +58,8 @@ public final class CalderTownBlock extends HorizontalDirectionalBlock {
     public static final int LOWER=0,UPPER=1,TORN=2,TORN_UPPER=3;
     /** A dumpster's lid thrown back (added to its half); what a crate, a heap of boxes or a wall's unit can be. */
     public static final int OPEN=2,MILK_CRATE=1,PALLET=2,PALLET_STOOD=3,FLAT=2,METER=0,COOLER=1,BULB=2,VENT=3,PUDDLE=3;
+    /** 0.4.675: a bleacher row, plain or where a frame stands under it; the frame's leg under a row, and its foot. */
+    public static final int SEAT=0,SEAT_FRAMED=1,LEG=2,LEG_FOOT=3;
     public CalderTownBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.CHAINLINK).setValue(STAGE,0));}
     public static BlockState of(Kind kind,Direction facing,int stage){return BikeNightRegistry.TOWN.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing).setValue(STAGE,Math.max(0,Math.min(3,stage)));}
     public static boolean is(BlockState s,Kind kind){return s.is(BikeNightRegistry.TOWN.get())&&s.getValue(KIND)==kind;}
@@ -67,7 +71,7 @@ public final class CalderTownBlock extends HorizontalDirectionalBlock {
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case CHAINLINK->MarshBlock.turned(f,0,0,7,16,16,9);
-            case BLEACHER->MarshBlock.turned(f,0,13,4,16,15,13);
+            case BLEACHER->s.getValue(STAGE)>=LEG?MarshBlock.turned(f,7,0,14,9,16,15.6):MarshBlock.turned(f,0,13,6.5,16,15,15.5);
             case PUMPKIN->Block.box(3,0,3,13,9,13);
             case AWNING->MarshBlock.turned(f,0,4,0,16,12,16);
             case HYDRANT->Block.box(5,0,5,11,12,11);

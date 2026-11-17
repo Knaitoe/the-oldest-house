@@ -195,10 +195,13 @@ public final class LastCrossing {
         if(!list.contains(job)){list.add(job);own.putString("Jobs",String.join(",",list));if(own.getString("Job").isEmpty())own.putString("Job",job);save(p,own);}}
     static void addName(ServerPlayer p,String key,String who){var own=own(p);var list=new ArrayList<>(Arrays.asList(own.getString(key).isEmpty()?new String[0]:own.getString(key).split(",")));
         if(!list.contains(who)){list.add(who);own.putString(key,String.join(",",list));save(p,own);}}
-    /** Vera says something: over her head, and on the action bar of every reader in reach of her voice. */
+    /**
+     * Vera says something, for every reader in reach of her voice. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. While her body is not there (before she is made,
+     * or after), the words come on the action bar alone, as the House's other unseen voices do.
+     */
     static void speak(ServerLevel l,Run r,String line,double reach){
-        var a=actor(l,r.vera);if(a!=null){a.say(line);a.speaks(line);}
-        var from=a==null?world(r.base,LastCrossingSite.VERA_PORCH):a.position();
+        var a=actor(l,r.vera);if(a!=null){a.say("Vera",line);a.speaks(line);return;}
+        var from=world(r.base,LastCrossingSite.VERA_PORCH);
         for(var p:readers(l,r.base))if(p.position().distanceToSqr(from)<reach*reach)p.displayClientMessage(Component.literal("Vera: “"+line+"”").withStyle(ChatFormatting.GRAY),true);
     }
     static void speak(ServerLevel l,Run r,String line){speak(l,r,line,14);}

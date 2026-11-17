@@ -7,6 +7,7 @@ import io.github.knaitoe.theoldesthouse.network.ShallowsCuePayload;
 import io.github.knaitoe.theoldesthouse.network.ShallowsSwingPayload;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
@@ -30,7 +31,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,value=Dist.CLIENT)
 public final class ShallowsClient {
-    private record Cue(String line,int mood,long start,long until){}
+    private record Cue(String who,String line,int mood,long start,long until){}
     private static final Map<Integer,Cue> CUES=new HashMap<>();
     private static boolean left,right,held;private static long released=-1000;private static int phase=-1;
     @Nullable private static LakeWitchEntity cached;
@@ -38,10 +39,11 @@ public final class ShallowsClient {
 
     public static void accept(ShallowsCuePayload payload){
         var mc=Minecraft.getInstance();if(mc.level==null||payload.entity()<0)return;long now=mc.level.getGameTime();
+        if(!registered){SpeechCaptions.voices(ShallowsClient::voices);registered=true;}
         var old=CUES.get(payload.entity());
         // A reaction without words keeps a line already being said over the same head.
-        String line=payload.line().isEmpty()&&old!=null&&old.until()>now?old.line():payload.line();
-        CUES.put(payload.entity(),new Cue(line,payload.mood(),now,now+payload.ticks()));
+        boolean keep=payload.line().isEmpty()&&old!=null&&old.until()>now;
+        CUES.put(payload.entity(),new Cue(keep?old.who():payload.who(),keep?old.line():payload.line(),payload.mood(),now,now+payload.ticks()));
     }
     private static @Nullable Cue cue(Entity e){
         var mc=Minecraft.getInstance();var cue=CUES.get(e.getId());
@@ -85,10 +87,19 @@ public final class ShallowsClient {
         // Sneaking stays: it is how the reader lets go of her.
         input.forwardImpulse=input.leftImpulse=0;input.up=input.down=input.left=input.right=input.jumping=false;
     }
-    /** Each line shows over whoever says it, for this reader only. */
-    @SubscribeEvent public static void nameTag(RenderNameTagEvent e){
-        var cue=cue(e.getEntity());if(cue==null||cue.line().isEmpty())return;
-        e.setContent(Component.literal(cue.line()));e.setCanRender(TriState.TRUE);
+    private static boolean registered;
+    /**
+     * Each line is this reader's caption, with the speaker's name, from where the speaker stands (0.4.675, owner: "doubled dialogue":
+     * it was a nameplate over the head and a copy in chat).
+     */
+    static List<SpeechCaptions.Voice> voices(){
+        var mc=Minecraft.getInstance();if(mc.level==null||CUES.isEmpty())return List.of();var out=new java.util.ArrayList<SpeechCaptions.Voice>();
+        for(var en:CUES.entrySet()){
+            var cue=en.getValue();if(cue.line().isEmpty()||cue.until()<mc.level.getGameTime())continue;
+            var e=mc.level.getEntity(en.getKey());if(e==null)continue;
+            out.add(new SpeechCaptions.Voice(e.getEyePosition(),cue.who(),Component.literal(cue.line())));
+        }
+        return out;
     }
     private static float swing(float partial){var g=girl();return g==null?0:g.swingAt(partial);}
     /** Which way the lake lies for the local reader: -1, on their left, at her wrists; 1, on their right, at her feet (0.4.157). */

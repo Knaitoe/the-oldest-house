@@ -276,6 +276,19 @@ LOOKS = {
     'literary_calder_mummy': Look('#d2a888','#2a211b','close','#ddd6c2','#ddd6c2','tee','#b9b09a',eyes='#4a5a3a',sleeve=11,costume='wraps'),
     'literary_calder_cat': Look('#e0bc9f','#1a1818','ponytail','#1c1c20','#1c1c20','knit','#3a3a40',eyes='#5a7a4a',sleeve=11,costume='cat'),
     'literary_calder_scarecrow': Look('#d6ac8c','#c9a24a','messy','#7a5a3a','#3e5a78','flannel','#c8a23a',eyes='#56677a',sleeve=10,costume='scarecrow patches'),
+    # 0.4.675 (owner: "maybe render them without costumes too? After the scene has shifted to day"): the ten in costume, the morning
+    # after, in what they wore under it: each the same face, hair and build, the costume and its print gone. The client wears these
+    # for a reader whose night has turned to dawn (client.LiteraryRenderers, BikeNightMistClient.morning).
+    'literary_calder_ghost_day': Look('#dcb090','#6a4a2c','short','#5a7a9a','#3e4652','tee','#cfcdc4',eyes='#4a5a6a',sleeve=4,face_style='child',shoes='#34343a'),
+    'literary_calder_skeleton_day': Look('#e2ba9c','#2a2320','short','#3e4a3a','#2e3440','hoodie','#9a9e8a',eyes='#4a5a3a',sleeve=11,face_style='child',shoes='#17171a'),
+    'literary_calder_pumpkin_day': Look('#d8a888','#8a5a2e','messy','#a8463a','#3e5a34','tee','#2a2a2a',eyes='#4f6a7a',mark='freckles',sleeve=4,face_style='child',shoes='#d6d2c6'),
+    'literary_calder_vampire_day': Look('#ece2da','#141416','short','#4a4f58','#2e3440','jacket','#9aa0a8',eyes='#5a3a3a',sleeve=11,face_style='child',shoes='#17171a'),
+    'literary_calder_monster_day': Look('#c99a7a','#1e1d1c','short','#8a3a2e','#3e4652','flannel','#d8c8a8',sleeve=10),
+    'literary_calder_skull_day': Look('#d9b090','#3a2a1e','long','#3a3d44','#22242a','tee','#9a9ea4',eyes='#4a5a4a',sleeve=4),
+    'literary_calder_robot_day': Look('#d8ae8e','#4a3324','short','#6a7a5a','#5a5e66','crew','#d8d0b8',sleeve=10),
+    'literary_calder_mummy_day': Look('#d2a888','#2a211b','close','#8a6a4a','#3b4656','tee','#b9b09a',eyes='#4a5a3a',sleeve=11),
+    'literary_calder_cat_day': Look('#e0bc9f','#1a1818','ponytail','#6a5a7a','#26282e','knit','#d8d0c8',eyes='#5a7a4a',sleeve=11),
+    'literary_calder_scarecrow_day': Look('#d6ac8c','#c9a24a','messy','#7a5a3a','#3e5a78','flannel','#c8a23a',eyes='#56677a',sleeve=10),
     'literary_calder_letterman': Look('#d8ae8e','#5a3a24','short','#2f4a8a','#3b4656','jacket','#e8e2d2',eyes='#56677a',mark='movie_letter',sleeve=10),
     'literary_calder_denim': Look('#c48e6c','#2a1e18','long','#5a7a9a','#26282e','jacket','#e8e0c8',eyes='#3a2e26',sleeve=10),
     # And two on the other car's hood: a striped sweater, and a hood with a ball cap.

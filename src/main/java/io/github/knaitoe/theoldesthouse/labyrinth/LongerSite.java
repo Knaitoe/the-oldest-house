@@ -121,6 +121,8 @@ public final class LongerSite {
         var air=Blocks.AIR.defaultBlockState();
         box(l,b,-2,-1,-6,2,4,0,mat("corridor"));box(l,b,-1,0,-6,1,3,-1,air);
         box(l,b,-1,-1,-6,1,-1,-1,mat("runner"));box(l,b,-1,4,-6,1,4,-1,mat("ceiling"));
+        // The runner goes on under the House's door, which the builder opens through the corridor's end wall.
+        set(l,b,0,-1,0,mat("runner"));
         set(l,b,0,3,-4,light(7));
     }
 

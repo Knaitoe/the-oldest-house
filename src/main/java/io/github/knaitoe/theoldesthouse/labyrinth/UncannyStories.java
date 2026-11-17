@@ -232,7 +232,7 @@ public final class UncannyStories {
         if(stage>=2&&(own.getBoolean("MealServed")||stage==3))UncannyDiner.pressure(p,fake,b,own);
         if(stage==2&&own.getInt("DinerFollowed201")>=UncannyDiner.FOLLOWED_UNTIL_SHE_CHANGES){
             transformWaitress(p,fake,own,"followed");stage=3;own.putInt("UncannyStage",stage);
-            fake.say("Sit down.");p.displayClientMessage(Component.literal("“Sit down.”"),true);
+            fake.say(WAITRESS,"Sit down.");
         }
         if(stage==3&&age-own.getInt("DinerTransformAge133")>=280&&!own.getBoolean("Ready")){
             DinerWalk.follow(fake,p.position(),.15);
@@ -241,7 +241,9 @@ public final class UncannyStories {
         boolean front=p.getZ()>b.getZ()-2&&Math.abs(p.getX()-b.getX())<2;
         if(own.getBoolean("SawSecond")&&front){own.putBoolean("Refused",!own.getBoolean("MealEaten127"));ready(p,LabyrinthPlace.SECOND_WAITRESS,own,own.getBoolean("MealEaten127")?"left_after_tasting_the_meal":own.getBoolean("MealServed")?"left_the_plate_and_walked_out":"left_before_the_plate");}
     }
-    private static void ask(ServerPlayer p,LiteraryActor fake,CompoundTag own){own.putBoolean("AskedMeal",true);fake.say("How's your meal?");p.displayClientMessage(Component.literal("“How’s your meal?”"),true);}
+    private static void ask(ServerPlayer p,LiteraryActor fake,CompoundTag own){own.putBoolean("AskedMeal",true);fake.say(WAITRESS,"How's your meal?");}
+    /** 0.4.675 (owner: "doubled dialogue"): her lines are her caption, with this name, and not quoted again in the action bar. */
+    public static final String WAITRESS="Waitress";
     public static void ate(ServerPlayer p,ItemStack s){
         var c=s.get(DataComponents.CUSTOM_DATA);if(c==null||!c.copyTag().hasUUID("UncannyMealOwner")||!c.copyTag().getUUID("UncannyMealOwner").equals(p.getUUID())||!LiteraryVignettes.inside(p,LabyrinthPlace.SECOND_WAITRESS))return;
         var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.SECOND_WAITRESS);if(failed(own)||own.getBoolean("Completed"))return;
@@ -375,7 +377,7 @@ public final class UncannyStories {
     public static void talk(ServerPlayer p,LiteraryActor a,LabyrinthPlace place,CompoundTag own){
         if(!LiteraryVignettes.participant(p)||!LiteraryVignettes.inside(p,place))return;
         if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_WAITRESS)UncannyDiner.talk(p,a,LiteraryVignettes.base(p,place),own);
-        if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&own.getBoolean("AskedMeal")&&!own.getBoolean("Ready")){String line=own.getBoolean("MealEaten127")?"There. That wasn’t so hard, was it?":"You haven’t even tasted it. Tell me what’s wrong.";a.say(line);p.displayClientMessage(Component.literal("“"+line+"”"),true);}
+        if(place==LabyrinthPlace.SECOND_WAITRESS&&a.role()==LiteraryActor.UNCANNY_FALSE_WAITRESS&&own.getBoolean("AskedMeal")&&!own.getBoolean("Ready")){String line=own.getBoolean("MealEaten127")?"There. That wasn’t so hard, was it?":"You haven’t even tasted it. Tell me what’s wrong.";a.say(WAITRESS,line);}
         if(place==LabyrinthPlace.LAYERED_MAN&&a.role()==LiteraryActor.UNCANNY_PEELER&&!UncannyCellar.askToLeave(p,LiteraryVignettes.base(p,place),own))CellarDialogue.worker(p,own);
     }
     public static boolean locked(ServerPlayer p){if(!LiteraryVignettes.inside(p,LabyrinthPlace.MISSING_SLEEP))return false;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.MISSING_SLEEP);return own.getInt("Sleeps")>0&&!own.getBoolean("BlockedDoor")&&!failed(own)&&!own.getBoolean("Completed");}

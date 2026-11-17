@@ -31,13 +31,31 @@ final class NativeTestPlayers {
         p.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);CONNECTIONS.put(p.getUUID(),connection);CHANNELS.put(p.getUUID(),channel);
         return p;
     }
+    /**
+     * What the player has been shown since the last look: chat and the action bar, and (0.4.675) every caption said within their
+     * hearing, as "Name: “line”" or "“line”". A person's line is a caption (client.SpeechCaptions), not a chat copy, since the owner's
+     * note on doubled dialogue; this is what a reader near them would see, as the copies were.
+     */
     static java.util.List<String> messages(ServerPlayer p){
         var channel=CHANNELS.get(p.getUUID());channel.runPendingTasks();var out=new java.util.ArrayList<String>();
         Object packet;while((packet=channel.readOutbound())!=null){
             if(packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket chat)out.add(chat.content().getString());
             io.netty.util.ReferenceCountUtil.release(packet);
         }
+        var heard=CAPTIONS.remove(p.getUUID());if(heard!=null)out.addAll(heard);
         return out;
+    }
+    /** Captions said within each test player's hearing, not yet read by {@link #messages}. */
+    private static final Map<UUID,java.util.List<String>> CAPTIONS=new java.util.concurrent.ConcurrentHashMap<>();
+    /** How far a caption is seen (client.SpeechCaptions.HEARD). */
+    private static final double HEARD=24;
+    static{
+        io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.SAID.add((a,text)->{
+            if(!(a.level() instanceof net.minecraft.server.level.ServerLevel l))return;
+            String who=a.speaker();String line=(who==null||who.isBlank()?"":who+": ")+"“"+text+"”";
+            for(var p:l.players())if(CHANNELS.containsKey(p.getUUID())&&p.distanceToSqr(a)<HEARD*HEARD&&a.broadcastToPlayer(p))
+                CAPTIONS.computeIfAbsent(p.getUUID(),k->new java.util.concurrent.CopyOnWriteArrayList<>()).add(line);
+        });
     }
     static java.util.List<net.minecraft.network.protocol.game.ClientboundSoundPacket> sounds(ServerPlayer p){
         var channel=CHANNELS.get(p.getUUID());channel.runPendingTasks();
@@ -59,6 +77,6 @@ final class NativeTestPlayers {
     static void remove(ServerPlayer p){
         p.server.getPlayerList().remove(p);var connection=CONNECTIONS.remove(p.getUUID());
         if(connection!=null)connection.disconnect(Component.literal("Native test complete"));
-        var channel=CHANNELS.remove(p.getUUID());if(channel!=null)channel.finishAndReleaseAll();
+        var channel=CHANNELS.remove(p.getUUID());if(channel!=null)channel.finishAndReleaseAll();CAPTIONS.remove(p.getUUID());
     }
 }

@@ -60,6 +60,8 @@ public final class BikeNightMistClient {
     }
     /** How far this reader's sky is on its way to dawn, from nothing to one. */
     public static float dawn(){return dawn;}
+    /** 0.4.675: it is morning for this reader (more than half way to dawn): the town's people are out of their costumes. */
+    public static boolean morning(){return dawn>.5F;}
     /** How much the mist is over everything, from nothing to one. */
     public static float over(float partial){return Mth.lerp(partial,oOver,over);}
     private static boolean active(){var mc=Minecraft.getInstance();return mc.level!=null&&mc.level==world&&mc.player!=null;}

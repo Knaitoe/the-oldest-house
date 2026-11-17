@@ -64,28 +64,28 @@
       "model": "the_oldest_house:block/calder_town/bleacher_0"
     },
     "facing=north,kind=bleacher,stage=1": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0"
+      "model": "the_oldest_house:block/calder_town/bleacher_1"
     },
     "facing=north,kind=bleacher,stage=2": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0"
+      "model": "the_oldest_house:block/calder_town/bleacher_2"
     },
     "facing=north,kind=bleacher,stage=3": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0"
+      "model": "the_oldest_house:block/calder_town/bleacher_3"
     },
     "facing=east,kind=bleacher,stage=0": {
       "model": "the_oldest_house:block/calder_town/bleacher_0",
       "y": 90
     },
     "facing=east,kind=bleacher,stage=1": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_1",
       "y": 90
     },
     "facing=east,kind=bleacher,stage=2": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_2",
       "y": 90
     },
     "facing=east,kind=bleacher,stage=3": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_3",
       "y": 90
     },
     "facing=south,kind=bleacher,stage=0": {
@@ -93,15 +93,15 @@
       "y": 180
     },
     "facing=south,kind=bleacher,stage=1": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_1",
       "y": 180
     },
     "facing=south,kind=bleacher,stage=2": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_2",
       "y": 180
     },
     "facing=south,kind=bleacher,stage=3": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_3",
       "y": 180
     },
     "facing=west,kind=bleacher,stage=0": {
@@ -109,15 +109,15 @@
       "y": 270
     },
     "facing=west,kind=bleacher,stage=1": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_1",
       "y": 270
     },
     "facing=west,kind=bleacher,stage=2": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_2",
       "y": 270
     },
     "facing=west,kind=bleacher,stage=3": {
-      "model": "the_oldest_house:block/calder_town/bleacher_0",
+      "model": "the_oldest_house:block/calder_town/bleacher_3",
       "y": 270
     },
     "facing=north,kind=pumpkin,stage=0": {

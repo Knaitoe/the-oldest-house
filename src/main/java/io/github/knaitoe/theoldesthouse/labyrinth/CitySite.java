@@ -235,12 +235,16 @@ public final class CitySite {
     }
 
     // ------------------------------------------------------------------------------------------------ the camp
+    /** The huts' roofs: a whole board's depth, so the snow on them lies on them. */
+    static final BlockState ROOF=Blocks.SPRUCE_SLAB.defaultBlockState().setValue(net.minecraft.world.level.block.SlabBlock.TYPE,net.minecraft.world.level.block.state.properties.SlabType.DOUBLE);
     static void hut(ServerLevel l,BlockPos b){
         var boards=mat("boards");
         box(l,b,HUT_W,-1,HUT_N,HUT_E,-1,HUT_S,boards);
         box(l,b,HUT_W,0,HUT_N,HUT_E,3,HUT_N,boards);box(l,b,HUT_W,0,HUT_N,HUT_W,3,HUT_S,boards);box(l,b,HUT_E,0,HUT_N,HUT_E,3,HUT_S,boards);
         box(l,b,HUT_W,0,HUT_S,HUT_E,3,HUT_S,boards);
-        box(l,b,HUT_W-1,4,HUT_N-1,HUT_E+1,4,HUT_S,Blocks.SPRUCE_SLAB.defaultBlockState());
+        // 0.4.675 (owner: "snow floats above house"): a bottom slab left half a block of air under the snow on it. The roof is the
+        // slab's double, so the snow lies on the boards.
+        box(l,b,HUT_W-1,4,HUT_N-1,HUT_E+1,4,HUT_S,ROOF);
         box(l,b,HUT_W-1,5,HUT_N-1,HUT_E+1,5,HUT_S,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,2));
         box(l,b,HUT_W+1,0,HUT_N+1,HUT_E-1,3,HUT_S-1,AIR);
         set(l,b,HUT_DOOR,Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.NORTH).setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));
@@ -282,7 +286,7 @@ public final class CitySite {
         set(l,b,-8,1,-18,fit(CityBlock.Kind.CRATE,Direction.NORTH));
         // The mess hut: its door, the way on, faces the camp.
         box(l,b,-17,-1,-34,-9,-1,-28,boards);box(l,b,-17,0,-34,-9,3,-28,boards);box(l,b,-16,0,-33,-10,3,-29,AIR);
-        box(l,b,-18,4,-35,-8,4,-27,Blocks.SPRUCE_SLAB.defaultBlockState());box(l,b,-18,5,-35,-8,5,-27,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,2));
+        box(l,b,-18,4,-35,-8,4,-27,ROOF);box(l,b,-18,5,-35,-8,5,-27,Blocks.SNOW.defaultBlockState().setValue(SnowLayerBlock.LAYERS,2));
         set(l,b,ONWARD,AIR);set(l,b,ONWARD.above(),AIR);
         set(l,b,-15,1,-28,Blocks.GLASS_PANE.defaultBlockState());set(l,b,-11,1,-28,Blocks.GLASS_PANE.defaultBlockState());
     }

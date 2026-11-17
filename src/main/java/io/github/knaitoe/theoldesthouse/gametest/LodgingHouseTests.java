@@ -69,6 +69,27 @@ public final class LodgingHouseTests {
         return seen;
     }
     /** A body standing on top of a stair's tread here has the room above it to stand up. */
+    /**
+     * 0.4.675 (owner: "basement in ones already inside is unreachable. Stairs are too high."): an upright body walks the back stair the
+     * way a reader does, a twentieth of a block at a time: across at the height it stands at, stepping up no more than the game lets a
+     * body step, then down onto whatever is under it. Null if it gets from {@code fromZ} to {@code toZ} and ends with its feet at
+     * {@code endFeet}; otherwise where it stopped. A tread's own headroom is not enough: the head meets what is over the next one first.
+     */
+    private static String walkStair(ServerLevel l,BlockPos b,double x,double fromZ,double toZ,double feet,double endFeet){
+        double step=toZ<fromZ?-.05:.05,z=fromZ,y=b.getY()+feet;
+        while(step<0?z>toZ:z<toZ){
+            double nz=z+step;
+            if(!l.noCollision(body(b,x,nz,y))){
+                if(!l.noCollision(body(b,x,nz,y+.6)))return String.format("stopped at z %.2f with its feet at %.2f",nz,y-b.getY());
+                y+=.6;
+            }
+            while(y>b.getY()+LodgingSite.CELLAR_SLAB&&l.noCollision(body(b,x,nz,y-.05)))y-=.05;
+            z=nz;
+        }
+        return Math.abs(y-b.getY()-endFeet)<.1?null:String.format("ended with its feet at %.2f",y-b.getY());
+    }
+    private static AABB body(BlockPos b,double x,double z,double feet){return new AABB(b.getX()+x-.3,feet+.001,b.getZ()+z-.3,b.getX()+x+.3,feet+1.8,b.getZ()+z+.3);}
+
     private static boolean headroom(ServerLevel l,BlockPos b,BlockPos tread){var at=b.offset(tread);return l.noCollision(new AABB(at.getX()+.3,at.getY()+1.01,at.getZ()+.2,at.getX()+.9,at.getY()+2.8,at.getZ()+.8));}
 
     /**
@@ -98,6 +119,8 @@ public final class LodgingHouseTests {
             for(int i=0;i<5;i++)h.assertTrue(headroom(l,b,new BlockPos(3,i,LodgingSite.STAIR_FOOT-i)),"room to stand on the main stair's tread "+i);
             h.assertTrue(LodgingSite.CELLAR_TREADS==4,"four treads down to the cellar, a cell lower each");
             for(int i=0;i<LodgingSite.CELLAR_TREADS;i++){var s=l.getBlockState(b.offset(0,LodgingSite.GROUND_SLAB-i,LodgingSite.CELLAR_STAIR_TOP-i));h.assertTrue(s.is(LodgingRegistry.CELLAR_STAIR.get())&&s.getValue(StairBlock.FACING)==Direction.SOUTH&&headroom(l,b,new BlockPos(0,LodgingSite.GROUND_SLAB-i,LodgingSite.CELLAR_STAIR_TOP-i)),"the back stair's tread "+i+", clear");}
+            var downStair=walkStair(l,b,.5,-16.5,-23.5,LodgingSite.GROUND,LodgingSite.CELLAR);h.assertTrue(downStair==null,"a body walks down the back stair upright to the cellar floor: "+downStair);
+            var upStair=walkStair(l,b,.5,-23.5,-16.5,LodgingSite.CELLAR,LodgingSite.GROUND);h.assertTrue(upStair==null,"and back up it to the well's floor: "+upStair);
             h.assertTrue(fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-1),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(3,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-1),LodgingBlock.Kind.RAIL)
                 &&fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-2),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(2,LodgingSite.UPPER,LodgingSite.STAIR_FOOT-3),LodgingBlock.Kind.RAIL)&&fitting(l,b,new BlockPos(1,0,LodgingSite.STAIR_FOOT),LodgingBlock.Kind.BANISTER),"the gallery's rail round the well, and the newel at the stair's foot");
             for(int y=LodgingSite.CELLAR;y<=LodgingSite.UPPER+3;y++)h.assertTrue(fitting(l,b,new BlockPos(LodgingSite.PASS_W,y,LodgingSite.LADDER_Z),LodgingBlock.Kind.LADDER)&&fitting(l,b,new BlockPos(LodgingSite.PASS_E,y,LodgingSite.LADDER_Z),LodgingBlock.Kind.LADDER),"the ladders at the side passages' ends, at "+y);

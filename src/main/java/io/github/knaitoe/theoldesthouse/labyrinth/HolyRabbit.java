@@ -149,7 +149,7 @@ public final class HolyRabbit {
             float yaw=(float)Math.toDegrees(Math.atan2(-(rabbit.getX()-father.getX()),rabbit.getZ()-father.getZ()));father.setYRot(yaw);father.setYHeadRot(yaw);father.yBodyRot=yaw;
             int wait=own.getInt("RabbitWait0501")+5;own.putInt("RabbitWait0501",wait);
             if(wait%200==5){String line=day==1?"Look. By the snow. Look at him before I go.":"He came back. Go on, look at him.";
-                father.say(line);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+90);p.displayClientMessage(Component.literal("Father: "+line),false);}
+                father.say("Father",line);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+90);}
             return true;
         }
         int t=own.getInt("HarvestTicks0491")+5;own.putInt("HarvestTicks0491",t);father.gesture(2);LiteraryMotion.stop(father);
@@ -173,7 +173,7 @@ public final class HolyRabbit {
             father.appearance(LiteraryActor.FATHER,own.getBoolean("LastHunt0490")?4:Math.min(3,night));
             father.gesture(ticks<100?(night<3?1:3):0);
             if(own.getBoolean("LastHunt0490"))lastHunt(p,father,b,own,ticks);else if(!harvest(p,father,rabbit,b,own,night))walk(father,b,own,night,ticks);
-            if(ticks==15&&rabbit!=null){String name=own.getString("RabbitName");String line=night==1?"There. By the snow. The little one from your dream.":night==2?"Look. "+name+"'s there again. Same brown ear.":"He's there. I can see him. You'll have to look for yourself today.";father.say(line);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+100);p.displayClientMessage(Component.literal("Father: "+line),false);}
+            if(ticks==15&&rabbit!=null){String name=own.getString("RabbitName");String line=night==1?"There. By the snow. The little one from your dream.":night==2?"Look. "+name+"'s there again. Same brown ear.":"He's there. I can see him. You'll have to look for yourself today.";father.say("Father",line);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+100);}
             if(!own.getBoolean("LastHunt0490")&&drowse>=320&&father.distanceToSqr(p)<36){nip(p,p.damageSources().mobAttack(father),1);own.putInt("Drowse",0);father.say("Stay with me.");}
             if(night>=3&&ticks>=120&&!father.isInvisible()&&p.distanceToSqr(father)<64&&HouseWatchers.sees(p,father.position().add(.18,.45,0)))own.putBoolean("WoundSeen0488",true);
         }

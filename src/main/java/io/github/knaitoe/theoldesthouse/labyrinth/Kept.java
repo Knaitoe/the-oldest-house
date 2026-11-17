@@ -11,9 +11,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -98,16 +95,20 @@ public final class Kept {
     static Vec3 world(BlockPos b,Vec3 r){return new Vec3(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     static void sound(ServerLevel l,BlockPos at,SoundEvent e,float volume,float pitch){l.playSound(null,at,e,SoundSource.NEUTRAL,volume,pitch);}
-    /** The machine, in its own hand: across the middle of the reader's view, under nothing. */
+    /**
+     * The machine, in its own hand: across the middle of the reader's view, under nothing. 0.4.675 (owner: "it doesn't fit into the
+     * screen"): wrapped to the view (KeptVoiceClient), not the vanilla subtitle, which never wraps; up as long as the line takes to read.
+     */
     static void machine(ServerPlayer p,String line){
-        p.connection.send(new ClientboundSetTitlesAnimationPacket(6,70,20));p.connection.send(new ClientboundSetTitleTextPacket(Component.empty()));
-        p.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal(line).withStyle(ChatFormatting.WHITE)));
+        io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.KeptVoicePayload(line,Math.max(96,Dialogue.ticks(line)+26)));
         p.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(KeptRegistry.WAKE,SoundSource.BLOCKS,p.getX(),p.getY()+1,p.getZ(),.5F,1F,p.getRandom().nextLong()));
     }
-    /** One of them says something: over their head, and in the action bar for readers near enough to hear it. */
+    /**
+     * One of them says something: the caption with their name, for whoever is near enough to hear it. 0.4.675 (owner: "doubled
+     * dialogue"): the action bar no longer repeats it under the caption.
+     */
     static void speak(ServerLevel l,Scene d,int who,String line){
-        var a=actor(l,d.cast[who]);if(a==null)return;a.say(line);a.speaks(line);d.said.put(a.getUUID(),d.tick);
-        for(var r:readers(l,d.base))if(r.distanceToSqr(a)<20*20)r.displayClientMessage(Component.literal(KeptTexts.NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        var a=actor(l,d.cast[who]);if(a==null)return;a.say(KeptTexts.NAMES[who],line);a.speaks(line);d.said.put(a.getUUID(),d.tick);
     }
     static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
         var out=new ArrayList<ServerPlayer>();
@@ -129,13 +130,47 @@ public final class Kept {
     static boolean loaded(ServerLevel l,Scene d){var at=d.base.offset(0,0,-12);return l.isLoaded(at)&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(at));}
     static void send(Scene d,int who,Vec3... points){d.routes.put(who,new ArrayList<>(List.of(points)));d.leg.put(who,0);}
     static boolean busy(Scene d,int who){return d.routes.containsKey(who);}
+    /**
+     * Each of them a step along their route. 0.4.675 (owner: "keep the npcs in the kept from stacking on top of the other"): all four
+     * were sent up the one aisle at once and walked into one another. Now they go in file: one waits while another of them, ahead of
+     * them by their order, is within a pace in front; and one who is standing in the way is walked round, not through.
+     */
     static void walk(ServerLevel l,Scene d){
         for(var who:List.copyOf(d.routes.keySet())){
             var a=actor(l,d.cast[who]);if(a==null){d.routes.remove(who);continue;}
             var route=d.routes.get(who);int i=d.leg.get(who);
             if(i>=route.size()){d.routes.remove(who);d.leg.remove(who);continue;}
             var target=world(d.base,route.get(i));
-            if(SceneFootpaths.walk(a,target,.1)||a.position().distanceToSqr(target)<.09)d.leg.put(who,i+1);
+            var step=clearOf(l,d,who,a,target);if(step==null)continue;
+            if(SceneFootpaths.walk(a,step,.1)&&step==target||a.position().distanceToSqr(target)<.09)d.leg.put(who,i+1);
+        }
+    }
+    /** How near two of them stand, at the closest. */
+    static final double PACE=1.1;
+    /**
+     * Where {@code who} steps for {@code target} this tick: the target; null to wait (one of the others walking ahead of them, and before
+     * them in the file, is within a pace in front); or a point to one side of one standing in the way.
+     */
+    @Nullable static Vec3 clearOf(ServerLevel l,Scene d,int who,LiteraryActor a,Vec3 target){
+        var to=target.subtract(a.position());var flat=new Vec3(to.x,0,to.z);double far=flat.length();if(far<.05)return target;var dir=flat.scale(1/far);
+        for(int other=0;other<4;other++){
+            if(other==who)continue;var o=actor(l,d.cast[other]);if(o==null)continue;
+            var rel=o.position().subtract(a.position());double ahead=rel.x*dir.x+rel.z*dir.z,side=rel.x*dir.z-rel.z*dir.x;
+            if(ahead<=0||ahead>Math.min(far+.3,PACE+.4)||Math.abs(side)>.8)continue;
+            if(busy(d,other)){if(other<who)return null;continue;}
+            // Standing in the way: go round on whichever side they are not.
+            double sign=side>=0?-1:1;return a.position().add(dir.scale(Math.min(far,PACE))).add(new Vec3(dir.z,0,-dir.x).scale(sign*.9));
+        }
+        return target;
+    }
+    /** 0.4.675: any two of them standing closer than a body's width ease apart, the later in order giving way. */
+    static void apart(ServerLevel l,Scene d){
+        for(int x=0;x<4;x++)for(int y=x+1;y<4;y++){
+            var a=actor(l,d.cast[x]);var b=actor(l,d.cast[y]);if(a==null||b==null||a.gesture()==SIT||b.gesture()==SIT)continue;
+            var rel=b.position().subtract(a.position());double flat=Math.sqrt(rel.x*rel.x+rel.z*rel.z);if(flat>=.7||Math.abs(rel.y)>1.5)continue;
+            var push=flat<.01?new Vec3(y%2==0?1:-1,0,0):new Vec3(rel.x/flat,0,rel.z/flat);
+            var next=b.position().add(push.scale(.06));
+            if(l.noCollision(b,b.getBoundingBox().move(push.scale(.06))))b.setPos(next.x,next.y,next.z);
         }
     }
     /** Heads turn to whoever is nearest; sitting, they look across the corridor. */
@@ -162,7 +197,7 @@ public final class Kept {
             if(here.isEmpty()){if(++d.empty>=EMPTY_RESET&&loaded(l,d)){reset(l,d);SCENES.remove(d.base.asLong());}continue;}
             d.empty=0;
             if(d.fresh){if(!loaded(l,d))continue;d.fresh=false;start(l,d);}
-            walk(l,d);
+            walk(l,d);apart(l,d);
             if(d.tick%2==0)look(l,d,here);
             bodies(l,d,here);
             if(d.tick%10==0){var at=where(here,d.base);KeptSite.chairs(l,d.base,at.stream().filter(KeptSite::inHall).toList());if(d.awake<=0&&KeptSite.screens(l,d.base,at,7)>0&&d.tick%40==0)sound(l,here.get(0).blockPosition(),KeptRegistry.WAKE.get(),.3F,1.2F);}

@@ -9,7 +9,8 @@ public final class HolyRabbitDialogue {
     private HolyRabbitDialogue(){}
     private static boolean once(CompoundTag own,int bit){int mask=own.getInt("RabbitDialogue0490");if((mask&bit)!=0)return false;own.putInt("RabbitDialogue0490",mask|bit);return true;}
     private static String name(CompoundTag own){String name=own.getString("RabbitName");return name.isBlank()?"Slaney":name;}
-    private static void voice(ServerPlayer p,LiteraryActor father,String words){if(father!=null){father.say(words);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+100);}p.displayClientMessage(Component.literal("Father: "+words),false);}
+    /** 0.4.675 (owner: "doubled dialogue"): his caption, with his name; in chat only while he is not there to say it. */
+    private static void voice(ServerPlayer p,LiteraryActor father,String words){if(father!=null){father.say("Father",words);father.getPersistentData().putLong("SayUntil0488",p.level().getGameTime()+100);}else p.displayClientMessage(Component.literal("Father: "+words),false);}
     public static void tick(ServerPlayer p,LiteraryActor father,CompoundTag own,int night,int ticks){
         if(night==1&&ticks>=15&&once(own,1))p.displayClientMessage(Component.literal("Before you woke, a small rabbit sat beside you in the hollow. One ear had a brown tip. You can still remember its warmth."),false);
         // As in Jones's story, the boy names the rabbit and the boy believes it will come back; Father goes along with it.

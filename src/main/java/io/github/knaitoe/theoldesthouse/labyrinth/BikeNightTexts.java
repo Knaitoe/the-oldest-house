@@ -222,6 +222,12 @@ public final class BikeNightTexts {
     /** What a reader is told when the gate is opened and when the three are sent after them; and what the open gate is, looked at. */
     public static final String GATE_OPENED="Three bikes come in at the gate. It stands open behind them.";
     public static final String GET_THEM_CUE="They are going for their bikes. The gate is open, and yours is where you left it.";
+    /**
+     * 0.4.675 (owner: "the players need guidance towards the cemetery", on a bike and off it): a reader in the town who is not getting
+     * nearer the cemetery is told which way Calder Hill lies and what to make for (BikeNightWay). %s is the side, then the place.
+     */
+    public static final String WAY_RIDE="The cemetery on Calder Hill is %s. Ride for %s.",WAY_FOOT="The cemetery on Calder Hill is %s. Run for %s.";
+    public static final String AHEAD="ahead",LEFT="to your left",RIGHT="to your right",BEHIND="behind you";
     public static final String GATE_OPEN="The gate stands open. The chain hangs from one leaf, and the padlock is gone.";
     /** Tully: at his padlock, at Gus's cap, in it, and what starts the chase. */
     public static final String TULLY_GATE="Who chained this up? Oh, right. Me.";
@@ -298,12 +304,24 @@ public final class BikeNightTexts {
         {"Leave 'em alone, Duff!","Duff! We know where you live!"}};
     public static final String[] NO_CUTTING={"Back of the line, Tully.","No cutting, Ray-Ray.","The line starts back there, Duff."};
     public static final String[] CUT_BACK={"I'm not even in your line!","Move! They're getting away!","I don't want to see your movie!"};
+    /** 0.4.675: the line's word against cutting, and what it is to a reader who comes up on a bike (CalderPeople.talk). */
+    public static final String LINE_NO_CUTTING="No cutting.",LINE_NO_CUTTING_BIKE="No cutting. Not even on a bike.";
     public static final String[][] PEOPLE_TALK={
         {"We've done the whole court. Nearly.","The house at the top gives whole bars."},
         {"We can't go past the corner.","I got two the same. Want to swap?"},
-        {"It's the late show. The one with the hands.","We've been here since seven.","No cutting. Not even on a bike."},
+        {"It's the late show. The one with the hands.","We've been here since seven.",LINE_NO_CUTTING},
         {"The lot's closed. We're only sitting.","You should see what those three did to the swings."},
         {"Forty-one carts. I count them every night.","We're shut. I'm only bringing these in."}};
+    /**
+     * 0.4.675 (owner: "change dialogue for morning humans"): the same people, the next morning, to a reader whose night has turned to
+     * dawn. The costumes are off (the client draws them in their plain clothes).
+     */
+    public static final String[][] PEOPLE_MORNING={
+        {"My mom says we have to come in now.","I ate all the peanut ones in bed."},
+        {"We stayed out all night. Don't tell.","My mask's still on the porch somewhere."},
+        {"They never opened the doors.","Were you out all night too?"},
+        {"Somebody should drive us home.","Is it Saturday already?"},
+        {"Morning. We open at eight.","Forty-one carts. Every one of them back."}};
     /**
      * 0.4.488, the grocery's stock boy: what he says when his chain of carts has waited a while for a reader in its way; when a
      * reader rides through the gap in it; and to each of the three who is in its way.
@@ -344,6 +362,8 @@ public final class BikeNightTexts {
         for(var lot:CHEERS)all.addAll(List.of(lot));
         for(var lot:BOOS)all.addAll(List.of(lot));
         for(var lot:PEOPLE_TALK)all.addAll(List.of(lot));
+        for(var lot:PEOPLE_MORNING)all.addAll(List.of(lot));
+        all.add(LINE_NO_CUTTING_BIKE);
         return all;
     }
     /** A hand on another bike, by a reader whose own the three have had. */

@@ -215,10 +215,9 @@ public final class Pinehook {
     static String name(ServerPlayer p){return p.getGameProfile().getName();}
     static void mark(ServerPlayer p,String key){var own=own(p);if(own.getBoolean(key))return;own.putBoolean(key,true);save(p,own);}
     static void note(ServerPlayer p,String key,String value){var own=own(p);own.putString(key,value);save(p,own);}
-    /** One of the cast says something: over their head, and on the action bar of every reader in earshot. */
+    /** One of the cast says something, for every reader in earshot. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. */
     static void speak(ServerLevel l,Run r,@Nullable UUID who,String speaker,String line,double reach){
-        var a=actor(l,who);if(a==null)return;a.say(line);a.speaks(line);
-        for(var p:readers(l,r.base))if(p.position().distanceToSqr(a.position())<reach*reach)p.displayClientMessage(Component.literal(speaker+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        var a=actor(l,who);if(a==null)return;a.say(speaker,line);a.speaks(line);
     }
     static void speak(ServerLevel l,Run r,@Nullable UUID who,String speaker,String line){speak(l,r,who,speaker,line,16);}
 

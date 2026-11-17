@@ -76,8 +76,9 @@ public final class LakeHouseTess {
         if(p.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)){
             p.displayClientMessage(Component.literal(LakeHousePartner.mouths(partner)).withStyle(ChatFormatting.ITALIC),true);if(a!=null)a.appearance(a.role(),3);return;
         }
-        p.displayClientMessage(Component.literal(partner.name+": “"+text+"”"),false);
-        if(a!=null){a.say(text);a.getPersistentData().putLong("LakeSayUntil",p.level().getGameTime()+100);}
+        // 0.4.675 (owner: "doubled dialogue"): the caption, with her name; in chat only while she is not there to say it.
+        if(a!=null){a.say(partner.name,text);a.getPersistentData().putLong("LakeSayUntil",p.level().getGameTime()+100);}
+        else p.displayClientMessage(Component.literal(partner.name+": “"+text+"”"),false);
     }
     private static void move(LiteraryActor a,Vec3 to,double step){
         LakeHouseSwimNavigation.move(a,to,step);

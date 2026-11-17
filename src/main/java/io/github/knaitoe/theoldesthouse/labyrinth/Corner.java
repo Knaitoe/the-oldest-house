@@ -100,10 +100,9 @@ public final class Corner {
     static Vec3 world(BlockPos b,Vec3 r){return new Vec3(b.getX()+r.x,b.getY()+r.y,b.getZ()+r.z);}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
     static void sound(ServerLevel l,BlockPos at,SoundEvent e,float volume,float pitch){l.playSound(null,at,e,SoundSource.NEUTRAL,volume,pitch);}
-    /** One of them says something: over their head, and in the action bar for readers near enough to hear it. */
+    /** One of them says something, for whoever is near enough to hear it. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. */
     static void speak(ServerLevel l,Day d,int who,String line){
-        var a=actor(l,d.cast[who]);if(a==null)return;a.say(line);a.speaks(line);d.said.put(a.getUUID(),d.tick);
-        for(var r:readers(l,d.base))if(r.distanceToSqr(a)<20*20)r.displayClientMessage(Component.literal(NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        var a=actor(l,d.cast[who]);if(a==null)return;a.say(NAMES[who],line);a.speaks(line);d.said.put(a.getUUID(),d.tick);
     }
     static void everyone(ServerLevel l,Day d,String line){for(var r:readers(l,d.base))cue(r,line);}
     static void witnessed(ServerLevel l,Day d,java.util.function.BiConsumer<ServerPlayer,CompoundTag> fact){for(var r:readers(l,d.base)){var own=own(r);fact.accept(r,own);save(r,own);}}

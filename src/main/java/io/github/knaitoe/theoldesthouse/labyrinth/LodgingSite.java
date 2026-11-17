@@ -40,8 +40,9 @@ public final class LodgingSite {
     public static final int ROOM_W=-14,ROOM_E=14,ROOM_N=-29;
     /** The hall, x -3 to 3, from the door to z -12; the back passage across the house, z -13 to -15. */
     public static final int HALL_N=-12,BACK_S=-13,BACK_N=-15,BACK_WALL=-16;
-    /** The back stair's well, x -1 to 1 from z -17 to -19, and its north wall. */
-    public static final int WELL_N=-19,WELL_WALL=-20;
+    /** The back stair's well, x -1 to 1 from z -17 to -20, and its north wall: deep enough that a body walking down the stair upright
+     *  keeps its head under the well's ceiling until it is below the scullery's floor. */
+    public static final int WELL_N=-20,WELL_WALL=-21;
     /** The upstairs gallery, x -3 to 3 to z -15; the narrow corridor north of it, x -1 to 1, to z -28. */
     public static final int GALLERY_N=-15;
     /** The guest rooms, one to six: three west (x -13 to -5) and three east (x 5 to 13), each from z0 to z1. */
@@ -261,10 +262,10 @@ public final class LodgingSite {
         set(l,b,2,UPPER,STAIR_FOOT-1,fit(Kind.RAIL,Direction.WEST,1));set(l,b,3,UPPER,STAIR_FOOT-1,fit(Kind.RAIL,Direction.SOUTH,0));
         set(l,b,2,UPPER,STAIR_FOOT-2,fit(Kind.RAIL,Direction.WEST,0));set(l,b,2,UPPER,STAIR_FOOT-3,fit(Kind.RAIL,Direction.WEST,0));
         // The back stair down, x -1 to 1: four treads descending north from the well's floor, the first set into it, the floor open over
-        // the next two so a body going down has its head clear.
+        // the next three so a body going down upright has its head clear.
         var down=LodgingRegistry.CELLAR_STAIR.get().defaultBlockState().setValue(StairBlock.FACING,Direction.SOUTH);
         for(int i=0;i<CELLAR_TREADS;i++)for(int x=-1;x<=1;x++)set(l,b,x,GROUND_SLAB-i,CELLAR_STAIR_TOP-i,down);
-        box(l,b,-1,GROUND_SLAB,CELLAR_STAIR_TOP-1,1,GROUND_SLAB,CELLAR_STAIR_TOP-2,AIR);
+        box(l,b,-1,GROUND_SLAB,CELLAR_STAIR_TOP-1,1,GROUND_SLAB,CELLAR_STAIR_TOP-3,AIR);
         // Bricked in underneath, as a stair down a cellar is.
         for(int i=0;i<CELLAR_TREADS-1;i++)box(l,b,-1,CELLAR,CELLAR_STAIR_TOP-i,1,GROUND_SLAB-1-i,CELLAR_STAIR_TOP-i,mat("brick"));
         // The ladders at the side passages' front ends, from the cellar's floor to the upper passage, up against the front wall.

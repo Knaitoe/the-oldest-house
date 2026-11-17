@@ -149,10 +149,9 @@ public final class LastOrders {
         for(var p:l.players())if(LiteraryVignettes.participant(p)&&LiteraryVignettes.current(p)==PLACE&&b.equals(LiteraryVignettes.base(p,PLACE)))out.add(p);
         return out;
     }
-    /** One of them says something: over their head, and on the action bar of readers near enough to hear it. */
+    /** One of them says something, for whoever is near enough to hear it. 0.4.675 (owner: "doubled dialogue"): the caption, with the name, and no copy of it in the action bar. */
     static void speak(ServerLevel l,Scene d,int who,String line){
-        var a=actor(l,d.cast[who]);if(a==null)return;a.say(line);a.speaks(line);d.said.put(a.getUUID(),d.tick);
-        for(var r:readers(l,d.base))if(r.distanceToSqr(a)<16*16)r.displayClientMessage(Component.literal(LastOrdersTexts.NAMES[who]+": “"+line+"”").withStyle(ChatFormatting.GRAY),true);
+        var a=actor(l,d.cast[who]);if(a==null)return;a.say(LastOrdersTexts.NAMES[who],line);a.speaks(line);d.said.put(a.getUUID(),d.tick);
     }
     static List<UUID> readersAt(PoolTables.Table t){var out=new ArrayList<UUID>();for(var id:t.seats)if(!PoolTables.REGULAR.equals(id))out.add(id);return out;}
     static List<UUID> readersAt(DartBoards.Board b){var out=new ArrayList<UUID>();for(var id:b.seats)if(!DartBoards.regular(id))out.add(id);return out;}
