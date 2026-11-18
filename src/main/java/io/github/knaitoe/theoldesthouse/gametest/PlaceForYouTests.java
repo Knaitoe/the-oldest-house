@@ -494,6 +494,92 @@ public final class PlaceForYouTests {
     @AfterBatch(batch="place_believe") public static void believeDone(ServerLevel l){close();}
 
     /**
+     * 0.4.695, friends or more than that, asked again: on the landing the reader says "Then let's have something of our own." Alex asks
+     * what kind; the reader says more than that, and Alex, who met them only tonight, doesn't know them well enough yet and asks to be
+     * asked again before the night is out. At dinner Alex raises it, once; the reader asks again; yes. The account says each step; the
+     * other answers' sentences come from the record.
+     */
+    @GameTest(template="empty",batch="place_bond_again",timeoutTicks=4000)
+    public static void theBondAskedAgain(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_bond_again",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);var own=f.own(p,P);own.putBoolean("RoomDeclined",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);at(f,p,-4.5,0,-18.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"alex")!=null,"Alex in the house"))
+            .thenExecute(()->{talk(f,p,"alex");say(h,p,"Show me.");at(f,p,-1.5,PlaceForYouSite.UP,-21.5,0,0);})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"older"),"the pictures shown on the landing: "+Talk.key(p)))
+            .thenExecute(()->{
+                h.assertFalse(PlaceForYouBond.offers(f.own(p,P)),"Alex doesn't offer first: they only met tonight");
+                say(h,p,"Then let's have something of our own.");
+                var own=f.own(p,P);h.assertTrue(own.getInt("OlderStage")==3&&own.getString("OlderSaid").equals("close"),"the landing answered: "+own.getString("OlderSaid"));
+                h.assertTrue(Talk.lines(p).contains("Alex: All right. Something of our own. Starting tonight.")&&Talk.lines(p).contains("Alex: As friends, or more than that?"),"Alex asks what kind: "+Talk.lines(p));
+                h.assertTrue(Talk.waiting(p)&&Talk.replies(p).equals(java.util.List.of("As friends.","More than that, if you want it too.","I don't know yet.")),"three answers: "+Talk.replies(p));
+                say(h,p,"More than that, if you want it too.");
+                h.assertTrue(Talk.lines(p).contains("Alex: I don't know you well enough to say yes to that yet.")&&Talk.lines(p).contains("Alex: Ask me again before the night's out."),"not known well enough yet: "+Talk.lines(p));
+                own=f.own(p,P);h.assertTrue(own.getString("Bond").equals("asked")&&!Talk.waiting(p),"to be asked again, and the exchange closed: "+own.getString("Bond"));
+                // Dinner.
+                own.putInt("Chapter",PlaceForYou.DINNER);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                talk(f,p,"alex");
+                h.assertTrue(Talk.waiting(p,"bond_again")&&Talk.lines(p).contains("Alex: You were going to ask me something again."),"Alex raises it at dinner: "+Talk.key(p)+" "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).equals(java.util.List.of("I'm asking again.","Friends is enough.","Not now.")),"three answers: "+Talk.replies(p));
+                say(h,p,"I'm asking again.");
+                h.assertTrue(Talk.lines(p).contains("Alex: All right. Yes."),"yes: "+Talk.lines(p));
+                own=f.own(p,P);h.assertTrue(own.getString("Bond").equals("romance")&&own.getBoolean("AskedAgain"),"settled: "+own.getString("Bond"));
+                talk(f,p,"alex");h.assertFalse(Talk.waiting(p,"bond_again"),"raised once only: "+Talk.key(p));
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("I said we should have something of our own.","Alex asked if I meant as friends, or more than that.","Alex didn't know me well enough to say yes to that yet","Later I asked again, and Alex said yes."))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                // The other answers, from the record alone.
+                var other=own.copy();other.putString("Bond","friend");other.remove("AskedAgain");
+                h.assertTrue(PlaceForYouBond.account(other).endsWith(" I said as friends."),"as friends: "+PlaceForYouBond.account(other));
+                other.putString("Bond","unsure");h.assertTrue(PlaceForYouBond.account(other).endsWith(" I said I didn't know yet."),"unsure: "+PlaceForYouBond.account(other));
+                other.putString("Bond","asked");h.assertTrue(PlaceForYouBond.account(other).endsWith(" I didn't."),"never asked again: "+PlaceForYouBond.account(other));
+                other.putBoolean("AskedAgain",true);other.putString("Bond","friend");h.assertTrue(PlaceForYouBond.account(other).endsWith(" Later I said friends was enough."),"friends was enough: "+PlaceForYouBond.account(other));
+                other.putString("Bond","asked");h.assertTrue(PlaceForYouBond.account(other).endsWith(" Later Alex reminded me, and I said not now."),"not now: "+PlaceForYouBond.account(other));
+                other.remove("AskedAgain");other.putString("OlderGuide","Ren");other.putString("Bond","romance");
+                h.assertTrue(PlaceForYouBond.account(other).endsWith(" I said more than that, if Ren wanted it too, and Ren did."),"Ren keeps no pronoun: "+PlaceForYouBond.account(other));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_bond_again") public static void bondAgainDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.695, friends or more than that, offered: the House's read points at men and the reader stood under the eaves with Alex. On the
+     * landing Alex offers first; the reader says they would like that too. Once Alex has said where he is going, he says the landing
+     * doesn't decide it. The account says so.
+     */
+    @GameTest(template="empty",batch="place_bond_offer",timeoutTicks=4000)
+    public static void theBondOffered(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_bond_offer",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);var own=f.own(p,P);own.putBoolean("RoomDeclined",true);
+                var snap=own.getCompound("Snap");snap.putBoolean("Read",true);snap.putString("Stood","man");snap.putString("Drawn","MEN");own.put("Snap",snap);
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);at(f,p,-4.5,0,-18.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"alex")!=null,"Alex in the house"))
+            .thenExecute(()->{var own=f.own(p,P);h.assertTrue(PlaceForYouOlder.guide(own).equals("Alex")&&PlaceForYouOlder.shared(own).equals("eaves")&&PlaceForYouBond.offers(own),"Alex, met under the eaves, and the read toward him");
+                talk(f,p,"alex");say(h,p,"Show me.");at(f,p,-1.5,PlaceForYouSite.UP,-21.5,0,0);})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"older"),"the pictures shown on the landing: "+Talk.key(p)))
+            .thenExecute(()->{
+                say(h,p,"Then let's have something of our own.");
+                h.assertTrue(Talk.lines(p).contains("Alex: I'd like it to be more than friends. If you would.")&&!Talk.lines(p).contains("Alex: As friends, or more than that?"),"Alex offers first: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).equals(java.util.List.of("I'd like that too.","I didn't mean it that way.","I don't know yet.")),"three answers: "+Talk.replies(p));
+                say(h,p,"I'd like that too.");
+                var own=f.own(p,P);h.assertTrue(Talk.lines(p).contains("Alex: Then that's ours.")&&own.getString("Bond").equals("romance")&&own.getBoolean("BondOffered"),"settled: "+own.getString("Bond"));
+                h.assertFalse(own.getBoolean("BondEndSaid"),"nothing said about the end yet");
+                // Alex says where he is going.
+                own.putString("AlexEnd","walk");LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                var a=PlaceForYou.actor(l,b,"alex");at(f,p,a.getX()-b.getX()+1,a.getY()-b.getY(),a.getZ()-b.getZ(),90,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("BondEndSaid"),"Alex says the landing doesn't decide where he goes"))
+            .thenExecute(()->{
+                var own=f.own(p,P);var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("Alex said, \"I'd like it to be more than friends. If you would.\" I said I would.","At the end Alex said that what we had said on the landing didn't decide where he went."))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                var other=own.copy();other.putString("Bond","friend");other.remove("BondEndSaid");
+                h.assertTrue(PlaceForYouBond.account(other).endsWith("Friends, then, Alex said, and that was no smaller."),"not meant that way: "+PlaceForYouBond.account(other));
+                other.putString("Bond","unsure");h.assertTrue(PlaceForYouBond.account(other).endsWith("We didn't have to know tonight, Alex said."),"unsure: "+PlaceForYouBond.account(other));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_bond_offer") public static void bondOfferDone(ServerLevel l){close();}
+
+    /**
      * 0.4.694, the reassurance: with somebody at the door, the reader asks Mara if it is him, then tells her it is. She asks them to
      * stand with her; she goes to the front door and waits; with the reader beside her she opens it and calls him, and the voice by the
      * gate answers. Ren asks whether the reader believes it or wants it to be. Later, with the house opened and the voice gone quiet, she

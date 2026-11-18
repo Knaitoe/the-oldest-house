@@ -193,6 +193,8 @@ public final class PlaceForYouTexts {
         if(own.getInt("OlderStage")>=3){t.append(PlaceForYouOlder.account(own));
             // 0.4.694: the dog's name asked for.
             var belief=PlaceForYouBelief.beliefAccount(own);if(!belief.isEmpty())t.append(" ").append(belief);
+            // 0.4.695: friends, or more than that.
+            var bond=PlaceForYouBond.account(own);if(!bond.isEmpty())t.append(" ").append(bond);
             t.append("\n\n");}
         if(own.getInt("Chapter")>=PlaceForYou.DINNER){
             t.append("When we sat down again, the table was laid exactly as it had been.");
