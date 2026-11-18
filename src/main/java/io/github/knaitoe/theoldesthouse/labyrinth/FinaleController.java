@@ -535,7 +535,10 @@ public final class FinaleController {
         return List.of(HouseWriting.book("Loose pages","?",HouseWriting.WritingStyle.WILL,List.of("I have been reading your account.\n\nThis page was not there when you left. Neither was the handwriting beneath it.")),
                 HouseWriting.book("Unnumbered page","?",HouseWriting.WritingStyle.ZAMPANO,List.of("A room outside the survey: "+unseen.replace('_',' ')+".\n\nThe inventory is incomplete. It always was.")));
     }
-    /** Sixty days on, round the reader's home (HomeBed), and nowhere on a neighbour's district; nothing grows for a reader with none of their own. */
+    /**
+     * Sixty days on, round the reader's home (HomeBed), and nowhere on a neighbour's district; nothing grows for a reader with none of
+     * their own. A vine spreads, so none is planted where it could spread onto a district in a step: next to one, above or below it.
+     */
     public static void overgrowBase(ServerPlayer player,CompoundTag record){
         BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);if(home==null)return;
         ServerLevel level=player.server.overworld();
@@ -549,9 +552,15 @@ public final class FinaleController {
             else if(level.canSeeSky(p))for(Direction direction:Direction.Plane.HORIZONTAL){
                 BlockPos support=p.relative(direction);if(!level.getBlockState(support).isFaceSturdy(level,support,direction.getOpposite()))continue;
                 var vine=Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(direction),true);
-                if(vine.canSurvive(level,p))level.setBlock(p,vine,FLAGS);break;
+                if(vine.canSurvive(level,p)&&!besideDistrict(level,p))level.setBlock(p,vine,FLAGS);break;
             }
         }
+    }
+    /** Whether any of the 26 cells round {@code p}, where a vine there could spread in a step, is on a neighbour's district. */
+    private static boolean besideDistrict(ServerLevel level,BlockPos p){
+        if(!Neighbours.anyDistrict())return false;
+        for(BlockPos q:BlockPos.betweenClosed(p.offset(-1,-1,-1),p.offset(1,1,1)))if(Neighbours.districtLand(level,q))return true;
+        return false;
     }
     private static void installGuideGoal(TamableAnimal pet){
         if(!GUIDE_GOALS.add(pet))return;

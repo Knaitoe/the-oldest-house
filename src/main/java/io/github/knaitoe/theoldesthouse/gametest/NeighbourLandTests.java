@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseBuilder;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
@@ -17,9 +18,13 @@ import io.github.knaitoe.theoldesthouse.labyrinth.NovelRooms;
 import io.github.knaitoe.theoldesthouse.labyrinth.OwnLight;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.HomeBed;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
@@ -51,8 +56,9 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 /**
  * The House never edits a neighbour's district (docs/NEIGHBOURS.md, R2). The districts are installed here as A Reaping would send
  * them, without A Reaping. The manor is never sited within eight blocks of one, nor on a lot with anything built on it, below the
- * highest ground or in front; the elk, Your Own Light, the finale's chest and overgrowth and the hotel tab leave district land alone;
- * and the House tells its neighbour where its own lot is. Every case works on ground far from every other case's.
+ * highest ground, in front, or under the lot where its foundations would run down to it; the elk, Your Own Light, the finale's chest
+ * and overgrowth and the hotel tab leave district land alone; a neighbour is handed positions it may keep; and the House tells its
+ * neighbour where its own lot is. Every case works on ground far from every other case's.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -166,6 +172,15 @@ public final class NeighbourLandTests {
                             && !HouseSpawnManager.isNaturalGround(Blocks.COBBLESTONE.defaultBlockState())
                             && !HouseSpawnManager.isNaturalGround(Blocks.OAK_FENCE.defaultBlockState()),
                     "tilled ground, a path, cobblestone and a fence are things somebody made");
+            h.assertTrue(Stream.of(Blocks.LILY_PAD, Blocks.MANGROVE_ROOTS, Blocks.CAVE_VINES, Blocks.CAVE_VINES_PLANT, Blocks.BIG_DRIPLEAF,
+                                    Blocks.BIG_DRIPLEAF_STEM, Blocks.SMALL_DRIPLEAF, Blocks.SMALL_AMETHYST_BUD, Blocks.AMETHYST_CLUSTER, Blocks.BONE_BLOCK,
+                                    Blocks.KELP_PLANT, Blocks.SEA_PICKLE, Blocks.BRAIN_CORAL_BLOCK, Blocks.BEE_NEST)
+                            .allMatch(block -> HouseSpawnManager.isNaturalGround(block.defaultBlockState())),
+                    "what the world grows or leaves in swamps, lush caves, geodes, the sea and the ground is the ground, and so is a bees' nest");
+            h.assertTrue(!HouseSpawnManager.isNaturalGround(Blocks.BEEHIVE.defaultBlockState())
+                            && !HouseSpawnManager.isNaturalGrowth(Blocks.BEE_NEST.defaultBlockState())
+                            && !HouseSpawnManager.isNaturalGrowth(Blocks.LILY_PAD.defaultBlockState()),
+                    "a hive somebody made is built, and what is only not built is not cleared for the House either");
             h.assertTrue(HouseSpawnManager.isNaturalGround(Blocks.GRASS_BLOCK.defaultBlockState())
                             && HouseSpawnManager.isNaturalGround(Blocks.DIRT.defaultBlockState())
                             && HouseSpawnManager.isNaturalGround(Blocks.STONE.defaultBlockState())
@@ -221,6 +236,82 @@ public final class NeighbourLandTests {
             var again = HouseSpawnManager.survey(level, anchor);
             h.assertTrue(first.equals(again.origin()), "with the lot as it was, the site is as it was: " + again.describe());
         });
+    }
+
+    @GameTest(template = "empty", batch = "neighbour_dip", timeoutTicks = 1200)
+    public static void anythingTheFoundationsWouldRunDownToUnderTheLotBlocksTheSite(GameTestHelper h) {
+        BlockPos origin = new BlockPos(92600, 120, -92600);
+        onGround(h, origin.offset(HouseLayout.CENTER_X, 0, HouseLayout.CENTER_Z), 48, level -> {
+            HouseLayout.Box s = HouseLayout.SITE;
+            // A raised stone plot under the whole lot, its top a row under the floor course and eight rows deep, open above.
+            fill(level, origin.offset(s.x0(), -8, s.z0()), origin.offset(s.x1(), -1, s.z1()), Blocks.STONE);
+            h.assertTrue(HouseBuilder.canBuildAt(level, origin) && HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "the plot is open, and nothing is built on it");
+
+            // A dip as deep as the open pass takes, its foot a row under the cellar's floor: the foundations run down it and stop on
+            // what lies at the bottom, burying it, and tilled ground under them turns to dirt.
+            BlockPos dip = origin.offset(10, 0, 10);
+            fill(level, dip.below(5), dip.below(), Blocks.AIR);
+            BlockPos foot = dip.below(6);
+            h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "an empty dip is only the shape of the ground");
+            for (Block built : new Block[]{Blocks.OAK_FENCE, Blocks.FARMLAND}) {
+                level.setBlock(foot, built.defaultBlockState(), Block.UPDATE_CLIENTS);
+                h.assertTrue(origin.getY() - level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, dip.getX(), dip.getZ()) == HouseBuilder.MAX_SITE_RELIEF
+                                && HouseBuilder.canBuildAt(level, origin),
+                        "with " + built + " at its foot the dip is as deep as the open pass takes, and nothing stands in the House's way");
+                h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, origin), built + " at the foot of the dip is something built under the lot");
+            }
+            level.setBlock(foot, Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+            fill(level, dip.below(5), dip.below(), Blocks.STONE);
+
+            // A dip as deep as the rough pass takes: the foundations' whole run, with a fence at its foot.
+            BlockPos deep = origin.offset(4, 0, 22);
+            fill(level, deep.below(8), deep.below(), Blocks.AIR);
+            BlockPos deepFoot = deep.below(HouseLayout.SUPPORT_RUN + 1);
+            level.setBlock(deepFoot, Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_CLIENTS);
+            h.assertTrue(origin.getY() - level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, deep.getX(), deep.getZ()) == HouseLayout.SUPPORT_RUN,
+                    "the deep dip is as deep as the rough pass takes");
+            h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "a fence at the foot of the deepest dip any pass takes is something built under the lot");
+            level.setBlock(deepFoot, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            fill(level, deep.below(8), deep.below(), Blocks.STONE);
+
+            // A cave under the cellar's floor, the ground over it whole: the cellar is dug whatever the ground, and its foundations run
+            // down the cave.
+            BlockPos cellar = origin.offset(22, 0, 18);
+            h.assertTrue(HouseLayout.CELLAR.box().contains(22, -1, 18), "the column is under the cellar");
+            fill(level, cellar.below(8), cellar.below(6), Blocks.AIR);
+            BlockPos caveFloor = cellar.below(10);
+            level.setBlock(caveFloor, Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_CLIENTS);
+            h.assertTrue(level.getBlockState(cellar.below(5)).is(Blocks.STONE) && level.getBlockState(cellar.below()).is(Blocks.STONE), "the ground over the cave is whole");
+            h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "a fence on the floor of a cave under the cellar is something built under the lot");
+            level.setBlock(caveFloor, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            fill(level, cellar.below(8), cellar.below(6), Blocks.STONE);
+
+            // A fence sealed in the ground under the floor course, where no run gets to: not the House's to bury, and the site stands.
+            BlockPos sealed = origin.offset(6, -7, 6);
+            level.setBlock(sealed, Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_CLIENTS);
+            h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "a fence sealed in the ground below where the runs stop leaves the site be");
+            level.setBlock(sealed, Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+            h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "with the plot as it was, nothing is built on it");
+        });
+    }
+
+    @GameTest(template = "empty", batch = "neighbour_positions")
+    public static void aNeighbourIsHandedPositionsItMayKeep(GameTestHelper h) {
+        ServerLevel level = h.getLevel();
+        List<BlockPos> kept = new ArrayList<>();
+        Runnable keeping = Neighbours.installDistrictForTesting((l, pos) -> {
+            kept.add(pos);
+            return false;
+        });
+        try {
+            Neighbours.districtLandIn(level, new BoundingBox(0, 0, 0, 4, 4, 4));
+            Neighbours.districtLand(level, new BlockPos.MutableBlockPos(1, 2, 3));
+        } finally {
+            keeping.run();
+        }
+        h.assertTrue(kept.size() == 28 && kept.stream().noneMatch(pos -> pos instanceof BlockPos.MutableBlockPos) && new HashSet<>(kept).size() == 28,
+                "every position a neighbour is asked about is its own to keep: " + kept.size() + " asked, " + new HashSet<>(kept).size() + " kept apart");
+        h.succeed();
     }
 
     @GameTest(template = "empty", batch = "neighbour_house_land")
@@ -305,6 +396,16 @@ public final class NeighbourLandTests {
                 NativeTestPlayers.remove(p);
             }
         }));
+    }
+
+    /** The first cell south of {@code from} that the sixty mornings' overgrowth tries for a vine (one cell in eleven). */
+    private static BlockPos vineCell(BlockPos from) {
+        for (int i = 0; i < 11; i++) {
+            if (Math.floorMod(from.south(i).asLong(), 11) == 0) {
+                return from.south(i);
+            }
+        }
+        throw new IllegalStateException("no cell the overgrowth tries south of " + from);
     }
 
     private static ChestBlockEntity chest(ServerLevel level, BlockPos at) {
@@ -446,10 +547,18 @@ public final class NeighbourLandTests {
                 for (BlockPos at : BlockPos.betweenClosed(min, max)) {
                     before.put(at.immutable(), level.getBlockState(at));
                 }
+                // A stone a step off the district with an open cell between where a vine would go, and one well off it.
+                BlockPos besideIt = vineCell(base.offset(max.getX() - base.getX() + 1, 2, -3));
+                BlockPos offIt = vineCell(base.offset(max.getX() - base.getX() + 5, 2, -3));
+                for (BlockPos cell : new BlockPos[]{besideIt, offIt}) {
+                    level.setBlock(cell.east(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                }
                 Runnable west = district(level, min, max);
                 FinaleController.overgrowBase(p, record);
                 west.run();
                 h.assertTrue(level.getBlockState(mine).getValue(CropBlock.AGE) == ((CropBlock) Blocks.WHEAT).getMaxAge(), "the crop off the district ripens");
+                h.assertTrue(level.getBlockState(offIt).is(Blocks.VINE), "a vine grows on a stone off the district");
+                h.assertTrue(level.getBlockState(besideIt).isAir(), "and none where it could spread onto the district in a step");
                 for (var entry : before.entrySet()) {
                     h.assertTrue(level.getBlockState(entry.getKey()).equals(entry.getValue()), "nothing on the district is changed: " + entry.getKey());
                 }

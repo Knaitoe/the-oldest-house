@@ -36,11 +36,14 @@ import net.neoforged.neoforge.common.Tags;
  * logs, player-placed leaves or anything with a block entity in its way is
  * rejected in every pass, and so is one with anything built anywhere on its
  * lot ({@link HouseLayout#SITE}): below the highest ground, down to the
- * cellar's floor, where the floor would bury it and the cellar cut it, and in
- * front, where the steps come down and the finale's demolition reaches. No
- * site lies within {@link Neighbours#MARGIN} blocks of a neighbour's district
- * (docs/NEIGHBOURS.md). Candidates reaching into chunks that are not loaded
- * are skipped; as a last resort a few near ones are loaded.
+ * cellar's floor, where the floor would bury it and the cellar cut it; under
+ * the lot, wherever the foundations and supports would run down to it and
+ * bury it; and in front, where the steps come down and the finale's
+ * demolition reaches. No site's envelope (the design's, {@link
+ * HouseLayout#ENVELOPE}) lies within {@link Neighbours#MARGIN} blocks of a
+ * neighbour's district (docs/NEIGHBOURS.md).
+ * Candidates reaching into chunks that are not loaded are skipped; as a last
+ * resort a few near ones are loaded.
  */
 public final class HouseSpawnManager {
     private static final int MIN_DISTANCE = 32;
@@ -166,7 +169,7 @@ public final class HouseSpawnManager {
 
                     BlockPos origin = new BlockPos(originX, maxY, originZ);
                     boolean clear = pass.clearTrees() ? onlyNatureInTheWay(level, origin) : HouseBuilder.canBuildAt(level, origin);
-                    if (!clear || !nothingBuiltOnTheLot(level, origin)) {
+                    if (!clear) {
                         built++;
                         continue;
                     }
@@ -177,7 +180,11 @@ public final class HouseSpawnManager {
                     }
                     int score = (maxY - minY) * 30 + water * 60 + distance;
                     if (score < bestScore) {
-                        // A neighbour's answer is asked last, and only of a site that would be chosen.
+                        // The whole lot is read, and a neighbour asked, only of a site that would be chosen.
+                        if (!nothingBuiltOnTheLot(level, origin)) {
+                            built++;
+                            continue;
+                        }
                         if (nearDistrict(level, origin)) {
                             district++;
                             continue;
@@ -198,12 +205,18 @@ public final class HouseSpawnManager {
     // The lot and the neighbours
 
     /**
-     * Nothing anyone built stands anywhere on the lot ({@link HouseLayout#SITE}): not above the highest ground, not below it down to
-     * the cellar's floor, where low walls, fences, sheds and tilled ground would be buried under the floor and cut by the cellar, and
-     * not in front, where the steps come down. Only air, ground and growth the world put there itself.
+     * Nothing anyone built stands anywhere on the lot ({@link HouseLayout#SITE}) or under it where the House would reach it: not above
+     * the highest ground; not below it down to the cellar's floor, where low walls, fences, sheds and tilled ground would be buried
+     * under the floor and cut by the cellar; not further down a dip, a pond or a cave, as far as a foundation or a support would run
+     * through it, nor on what that run would stop on and bury; and not in front, where the steps come down. Only air, ground and
+     * growth the world put there itself.
      */
     public static boolean nothingBuiltOnTheLot(ServerLevel level, BlockPos origin) {
         HouseLayout.Box site = HouseLayout.SITE;
+        int floor = origin.getY() + site.y0();
+        // A run starts a row under the lot at the lowest (under the cellar, the lowest step and the jetty's ladder) and is followed
+        // so in every column; what it stops on is a row under its last.
+        int deepest = Math.max(level.getMinBuildHeight(), origin.getY() + HouseLayout.LOWEST_SUPPORT_Y - 1);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int x = site.x0(); x <= site.x1(); x++) {
             for (int z = site.z0(); z <= site.z1(); z++) {
@@ -211,9 +224,18 @@ public final class HouseSpawnManager {
                 int worldZ = origin.getZ() + z;
                 // Above the highest block of a column there is only air.
                 int top = Math.min(origin.getY() + site.y1(), level.getHeight(Heightmap.Types.WORLD_SURFACE, worldX, worldZ) - 1);
-                for (int y = origin.getY() + site.y0(); y <= top; y++) {
+                for (int y = floor; y <= top; y++) {
                     if (!isNaturalGround(level.getBlockState(pos.set(worldX, y, worldZ)))) {
                         return false;
+                    }
+                }
+                for (int y = floor - 1; y >= deepest; y--) {
+                    BlockState state = level.getBlockState(pos.set(worldX, y, worldZ));
+                    if (!isNaturalGround(state)) {
+                        return false;
+                    }
+                    if (!HouseShell.runsThrough(state)) {
+                        break;
                     }
                 }
             }
@@ -222,7 +244,7 @@ public final class HouseSpawnManager {
     }
 
     /**
-     * Whether a neighbour's district lies within {@link Neighbours#MARGIN} blocks of the House's envelope ({@link HouseLayout#ENVELOPE})
+     * Whether a neighbour's district lies within {@link Neighbours#MARGIN} blocks of the design's envelope ({@link HouseLayout#ENVELOPE})
      * with its origin at {@code origin}.
      */
     public static boolean nearDistrict(ServerLevel level, BlockPos origin) {
@@ -339,12 +361,33 @@ public final class HouseSpawnManager {
 
     /**
      * The ground as the world made it, or growth on it: stone, dirt, sand, gravel, clay, terracotta, snow and ice, ores, bedrock,
-     * water and lava, and {@link #isNaturalGrowth}. Tilled ground, paths, cobblestone, planks and anything with a block entity are
-     * not.
+     * water and lava, and {@link #isNaturalGrowth}; and what the world grows or leaves in swamps, lush caves, geodes, the sea and the
+     * ground: lily pads, mangrove roots, cave vines, dripleaf, amethyst, fossil bone, kelp, sea pickles and coral, and the bees' own
+     * nests (which nobody can make: a hive somebody made is a beehive). Tilled ground, paths, cobblestone, planks and anything else
+     * with a block entity are not. None of these is cleared for the House (that is {@link #isNaturalGrowth}'s to say); they are only
+     * not taken for something built.
      */
     public static boolean isNaturalGround(BlockState state) {
         return state.isAir()
                 || isNaturalGrowth(state)
+                || state.is(Blocks.LILY_PAD)
+                || state.is(Blocks.MANGROVE_ROOTS)
+                || state.is(BlockTags.CAVE_VINES)
+                || state.is(Blocks.BIG_DRIPLEAF)
+                || state.is(Blocks.BIG_DRIPLEAF_STEM)
+                || state.is(Blocks.SMALL_DRIPLEAF)
+                || state.is(Blocks.SMALL_AMETHYST_BUD)
+                || state.is(Blocks.MEDIUM_AMETHYST_BUD)
+                || state.is(Blocks.LARGE_AMETHYST_BUD)
+                || state.is(Blocks.AMETHYST_CLUSTER)
+                || state.is(Blocks.BONE_BLOCK)
+                || state.is(Blocks.KELP)
+                || state.is(Blocks.KELP_PLANT)
+                || state.is(Blocks.SEA_PICKLE)
+                || state.is(BlockTags.CORALS)
+                || state.is(BlockTags.CORAL_BLOCKS)
+                || state.is(BlockTags.WALL_CORALS)
+                || state.is(Blocks.BEE_NEST)
                 || state.is(BlockTags.OVERWORLD_CARVER_REPLACEABLES)
                 || state.is(BlockTags.SCULK_REPLACEABLE)
                 || state.is(BlockTags.SNOW)
