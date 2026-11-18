@@ -189,6 +189,8 @@ LOOKS = {
     # A Place for You (0.4.257): Mara in her cardigan over a work dress, her hair pinned up; Kit in a jacket for going.
     'literary_place_mara': Look('#cfa088','#5c4030','bun','#6a7a5c','#3c3632','cardigan','#d8cbb0',eyes='#4e5a4c',age=1),
     'literary_place_kit': Look('#d8b098','#2e2620','messy','#3a4c6a','#2e3238','jacket','#c89a44',eyes='#4a5a6a'),
+    # 0.4.688: Theo, let in: Mara's brother, her eyes; the work shirt of his photograph, its collar showing; tired, a day's shadow.
+    'literary_place_theo': Look('#c99a7c','#4a3a2a','short','#5a6a7a','#3a3632','flannel','#d8d0c0',eyes='#4e5a4c',age=1,beard='shadow'),
     # 0.4.264, Johnny Truant: tired skin, a worn face a little uneven, stubble, a worn jacket, ink on his hands. The leer is the same face
     # with the eye on its showing side narrowed and that corner of the mouth pulled up, tight.
     'literary_truant': Look('#c49a80','#3b2f28','messy','#4f4840','#33343a','jacket','#7d6f5c',eyes='#4f5650',age=1,beard='stubble',mark='truant'),

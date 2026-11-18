@@ -108,10 +108,22 @@ public final class HouseReadKitchenClient {
     }
     /** The picture on the upper door, under a magnet: the page, then its colours. */
     static void hung(CompoundTag read,PoseStack pose,MultiBufferSource out,int light){
+        if("theo".equals(read.getString("Photo"))){photo(pose,out,light);return;}
         page(pose,out.getBuffer(RenderType.entityCutoutNoCull(SHEET)),15.05f,0xffffff,light);colours(read,pose,out,light,true);
         box(pose,out.getBuffer(RenderType.entityCutoutNoCull(CRAYON)),6.5f/16,11.8f/16,15f/16,8f/16,12.8f/16,15.6f/16,0xc4473a,light);
     }
     private static final float PX0=2.5f/16,PX1=11.5f/16,PY0=3f/16,PY1=12f/16;
+    /** 0.4.688 (A Place for You): Theo's photograph from the chest of drawers, under the magnet where the reader's picture was: a white border, the print inside it. */
+    static final ResourceLocation THEO=tex("block/place/theo");
+    static void photo(PoseStack pose,MultiBufferSource out,int light){
+        var p=pose.last();
+        rect(p,out.getBuffer(RenderType.entityCutoutNoCull(SHEET)),3.5f/16,4f/16,10.5f/16,11.5f/16,15.05f/16,0xffffff,light);
+        rect(p,out.getBuffer(RenderType.entityCutoutNoCull(THEO)),4f/16,5f/16,10f/16,11f/16,15.08f/16,0xffffff,light);
+        box(pose,out.getBuffer(RenderType.entityCutoutNoCull(CRAYON)),6.5f/16,11.3f/16,15f/16,8f/16,12.3f/16,15.6f/16,0xc4473a,light);
+    }
+    private static void rect(PoseStack.Pose p,VertexConsumer vc,float x0,float y0,float x1,float y1,float z,int rgb,int light){
+        vertex(p,vc,x0,y0,z,0,1,rgb,0,0,1,light);vertex(p,vc,x1,y0,z,1,1,rgb,0,0,1,light);vertex(p,vc,x1,y1,z,1,0,rgb,0,0,1,light);vertex(p,vc,x0,y1,z,0,0,rgb,0,0,1,light);
+    }
     /** A page standing on the fridge's front face, its top edge up. */
     private static void page(PoseStack pose,VertexConsumer vc,float z,int rgb,int light){
         var p=pose.last();float zz=z/16;

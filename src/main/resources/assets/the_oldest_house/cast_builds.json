@@ -1265,6 +1265,12 @@
   "limbs": 1.1,
   "shoulders": 1.14
  },
+ "literary_place_theo": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
  "literary_polybius_a": {
   "depth": 0.84,
   "height": 1.02,

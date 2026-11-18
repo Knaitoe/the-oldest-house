@@ -72,7 +72,7 @@ final class PlaceForYouDoor {
         }
         // With the way out open and the reader's picture down, the voice says her name once more, and stops.
         own=PlaceForYou.own(p);
-        if(ready(own)&&own.getBoolean("VoiceHeard")&&now-h.lastVoice>=LAST_WORD&&!Talk.waiting(p)){
+        if(ready(own)&&own.getBoolean("VoiceHeard")&&!own.getBoolean("TheoUp")&&now-h.lastVoice>=LAST_WORD&&!Talk.waiting(p)){
             cue(p,"From somewhere past the gate: \"...Mara?\" Then nothing more.");
             PlaceForYou.edit(p,o->o.putBoolean("TheoSilent",true));
         }
@@ -131,6 +131,10 @@ final class PlaceForYouDoor {
         if(!PlaceForYouSite.inHouse(PlaceForYou.rel(p.position(),b))){cue(p,"There's nobody on the step. Whoever knocked is somewhere past the gate.");return;}
         if(PlaceForYouSite.doorOpen(l,b)){
             Talk.begin(p,"door_open","The front door");
+            // 0.4.688: with Theo's photograph up where the reader's was, and the cost said aloud, the reader can tell him to come in.
+            if(PlaceForYouInvite.canInvite(own)){Talk.ask(p,Talk.reply("Come in, Theo.",q->PlaceForYouInvite.invite(q,h)),Talk.act("Shut it.",q->{PlaceForYouSite.frontDoor(q.serverLevel(),b,false);
+                    q.serverLevel().playSound(null,b.offset(PlaceForYouSite.FRONT_DOOR),SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,.8F,1F);PlaceForYou.edit(q,o->o.putBoolean("Shut",true));Talk.end(q);cue(q,"You shut it.");})
+                ,Talk.act("Leave it open.",Talk::end));return;}
             Talk.ask(p,Talk.act("Set the hall chair against it.",q->{PlaceForYouSite.propped(q.serverLevel(),b,true);PlaceForYou.edit(q,o->o.putBoolean("Propped",true));Talk.end(q);
                     cue(q,"You set the hall chair against it. It stays.");PlaceForYou.checkOpen(q,h);})
                 ,Talk.act("Shut it.",q->{PlaceForYouSite.frontDoor(q.serverLevel(),b,false);q.serverLevel().playSound(null,b.offset(PlaceForYouSite.FRONT_DOOR),SoundEvents.WOODEN_DOOR_CLOSE,SoundSource.BLOCKS,.8F,1F);
@@ -148,6 +152,7 @@ final class PlaceForYouDoor {
         if(!own.getBoolean("AskedWho"))replies.add(Talk.reply("Who is this?",q->{voice(q,h,"It's Theo. Who's that? She didn't say anyone was over.");PlaceForYou.edit(q,o->o.putBoolean("AskedWho",true));doorReplies(q,h);}));
         if(!own.getBoolean("AskedSupper"))replies.add(Talk.reply("What's for supper?",q->{voice(q,h,"Whatever she's made. She always makes too much.");PlaceForYou.edit(q,o->o.putBoolean("AskedSupper",true));doorReplies(q,h);}));
         if(!own.getBoolean("AskedWhere"))replies.add(Talk.reply("Where have you been?",q->{voice(q,h,"Out. I said I'd be back for supper. I'm back for supper.");PlaceForYou.edit(q,o->o.putBoolean("AskedWhere",true));doorReplies(q,h);}));
+        if(PlaceForYouInvite.canInvite(own))replies.add(Talk.reply("Come in, Theo.",q->PlaceForYouInvite.invite(q,h)));
         replies.add(Talk.act("Open the door.",q->{var l=q.serverLevel();PlaceForYouSite.frontDoor(l,b,true);l.playSound(null,b.offset(PlaceForYouSite.FRONT_DOOR),SoundEvents.WOODEN_DOOR_OPEN,SoundSource.BLOCKS,.8F,1F);
             PlaceForYou.edit(q,o->o.putBoolean("DoorAnswered",true));h.voiceAt=(int)h.tick+VOICE_DELAY;Talk.end(q);
             cue(q,"Nobody on the step. The path, the gate, the road.");}));

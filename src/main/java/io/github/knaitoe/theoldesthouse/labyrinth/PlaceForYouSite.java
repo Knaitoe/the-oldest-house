@@ -213,6 +213,11 @@ public final class PlaceForYouSite {
         set(l,b,THEO_PLATE,fit(PLATE,Direction.NORTH,0));
         set(l,b,SINK_TOP,set?Blocks.AIR.defaultBlockState():fit(PLATE,Direction.NORTH,2));
     }
+    public static boolean cardThere(ServerLevel l,BlockPos b){return PlaceForYouBlock.is(l.getBlockState(b.offset(CARD)),PlaceForYouBlock.Kind.CARD);}
+    /** 0.4.688: Theo's photograph standing on the chest of drawers, or taken up. */
+    public static void photo(ServerLevel l,BlockPos b,boolean there){set(l,b,PHOTO,there?fit(PlaceForYouBlock.Kind.PHOTO,Direction.SOUTH,0):Blocks.AIR.defaultBlockState());}
+    /** 0.4.688: Theo's photograph under the magnet on the fridge door, where the reader's picture was. */
+    public static void theoPhoto(ServerLevel l,BlockPos b){var t=new CompoundTag();t.putString("Photo","theo");picture(l,b,t,true);}
     public static void card(ServerLevel l,BlockPos b,boolean there){set(l,b,CARD,there?fit(PlaceForYouBlock.Kind.CARD,Direction.EAST,0):Blocks.AIR.defaultBlockState());}
     /** Kit's door, or the cupboard door it becomes. */
     public static void kitsDoor(ServerLevel l,BlockPos b,boolean cupboard){
@@ -257,6 +262,6 @@ public final class PlaceForYouSite {
     public static void reset(ServerLevel l,BlockPos b,CompoundTag drawing){
         table(l,b,true);card(l,b,true);bag(l,b,"none");kitsDoor(l,b,false);kitsChair(l,b,true);cups(l,b,false);kettle(l,b,true);spoon(l,b,false);
         kitchenLight(l,b,true);propped(l,b,false);routine(l,b,-1);picture(l,b,drawing,true);gate(l,b,false);
-        pictures(l,b,false);readerChair(l,b,true);
+        pictures(l,b,false);readerChair(l,b,true);photo(l,b,true);
     }
 }

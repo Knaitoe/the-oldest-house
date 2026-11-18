@@ -27,9 +27,9 @@ public final class PlaceForYouRegistry {
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<PlaceForYouBlock>> FITTING_TYPE=CODECS.register("pfy_fitting",()->PlaceForYouBlock.CODEC);
     public static final DeferredBlock<PlaceForYouBlock> FITTING=BLOCKS.registerBlock("pfy_fitting",PlaceForYouBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion());
-    /** What a reader carries for the household: Kit's bag (custom model data 1), the serving spoon (2), a plate (3), the cups (4). */
+    /** What a reader carries for the household: Kit's bag (custom model data 1), the serving spoon (2), a plate (3), the cups (4), Theo's photograph (5, 0.4.688). */
     public static final DeferredItem<Item> CARRIED=ITEMS.registerSimpleItem("pfy_carried",new Item.Properties().stacksTo(1));
-    public static final int BAG=1,SPOON=2,PLATE=3,CUPS=4;
+    public static final int BAG=1,SPOON=2,PLATE=3,CUPS=4,PHOTO=5;
     private PlaceForYouRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }
