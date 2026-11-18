@@ -76,30 +76,38 @@ public final class ElkFollows {
     private static void hint(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);}
 
     // ------------------------------------------------------------------------------------------------ the record
-    /** A kind the men count, and how they say one of it and many. */
-    record Kind(EntityType<?> type,String one,String many){}
+    /** A kind the men count: the creatures it takes in, how they say one of it and many, and how many the reader has killed. */
+    record Kind(List<EntityType<?>> types,String one,String many){
+        int killed(ServerPlayer p){int n=0;for(var type:types)n+=p.getStats().getValue(Stats.ENTITY_KILLED.get(type));return n;}
+    }
     /**
-     * The kinds the men count: the animals of the reader's world, in the order they name them, then any game a neighbour lists in
-     * {@code #the_oldest_house:hunted} (the owner, 17 November: "Yes, the house counts kills from the game"; docs/NEIGHBOURS.md), by its
-     * own name.
+     * How the men say a neighbour's game, one or many, whatever it is: the House's own words, never the game's own name for it, which the
+     * House cannot read before it is said (it may name a colour or an age, or come in another language).
+     */
+    static final String GAME="head of game";
+    /**
+     * The kinds the men count: the animals of the reader's world, in the order they name them, then, as one kind, all the game a
+     * neighbour lists in {@code #the_oldest_house:hunted} (the owner, 17 November: "Yes, the house counts kills from the game";
+     * docs/NEIGHBOURS.md).
      */
     static List<Kind> counted(){
-        var kinds=new ArrayList<Kind>();
-        for(var e:COUNTED)kinds.add(new Kind(e.getKey(),single(e.getValue()),e.getValue()));
-        for(EntityType<?> type:BuiltInRegistries.ENTITY_TYPE)if(type.is(Neighbours.HUNTED)&&COUNTED.stream().noneMatch(e->e.getKey()==type)){String one=name(type);kinds.add(new Kind(type,one,plural(one)));}
+        var kinds=new ArrayList<Kind>();var game=new ArrayList<EntityType<?>>();
+        for(var e:COUNTED)kinds.add(new Kind(List.of(e.getKey()),single(e.getValue()),e.getValue()));
+        for(EntityType<?> type:BuiltInRegistries.ENTITY_TYPE)if(type.is(Neighbours.HUNTED)&&COUNTED.stream().noneMatch(e->e.getKey()==type))game.add(type);
+        if(!game.isEmpty())kinds.add(new Kind(game,GAME,GAME));
         return kinds;
     }
     /** Game: an animal, or a creature a neighbour lists as game ({@code #the_oldest_house:hunted}). */
     static boolean game(Entity e){return e instanceof Animal||e.getType().is(Neighbours.HUNTED);}
     /** Every animal the reader has killed in their world, by the game's own count. */
-    public static int kills(ServerPlayer p){int n=0;for(var k:counted())n+=p.getStats().getValue(Stats.ENTITY_KILLED.get(k.type()));return n;}
+    public static int kills(ServerPlayer p){int n=0;for(var k:counted())n+=k.killed(p);return n;}
     /**
      * What the men say of the reader's record: the two kinds they have killed most, named back to them with their name in
      * between; or, for a reader who has killed none, the accusation faltering.
      */
     public static String accusation(ServerPlayer p){
         var counts=new ArrayList<Map.Entry<Kind,Integer>>();
-        for(var k:counted()){int n=p.getStats().getValue(Stats.ENTITY_KILLED.get(k.type()));if(n>0)counts.add(Map.entry(k,n));}
+        for(var k:counted()){int n=k.killed(p);if(n>0)counts.add(Map.entry(k,n));}
         if(counts.isEmpty())return "Never even shot a deer, %s? Then why'd it look at you?";
         counts.sort((a,b)->b.getValue()-a.getValue());
         String first=capital(words(counts.get(0).getValue()))+" "+said(counts.get(0));
@@ -108,19 +116,6 @@ public final class ElkFollows {
     }
     private static String said(Map.Entry<Kind,Integer> count){return count.getValue()==1?count.getKey().one():count.getKey().many();}
     static String single(String plural){return switch(plural){case "sheep"->"sheep";case "foxes"->"fox";case "wolves"->"wolf";default->plural.endsWith("s")?plural.substring(0,plural.length()-1):plural;};}
-    /** A neighbour's creature by its own name, as the game gives it, or by its id where the game has no name for it. */
-    static String name(EntityType<?> type){
-        String name=type.getDescription().getString();
-        if(name.isBlank()||name.equals(type.getDescriptionId()))name=BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath().replace('_',' ');
-        return name.toLowerCase(Locale.ROOT);
-    }
-    /** Many of a creature, as the men would say it. */
-    static String plural(String one){
-        for(String same:new String[]{"deer","sheep","fish","moose","elk","bison","salmon","cod","trout"})if(one.endsWith(same))return one;
-        if(one.endsWith("s")||one.endsWith("x")||one.endsWith("z")||one.endsWith("ch")||one.endsWith("sh"))return one+"es";
-        if(one.length()>1&&one.endsWith("y")&&"aeiou".indexOf(one.charAt(one.length()-2))<0)return one.substring(0,one.length()-1)+"ies";
-        return one+"s";
-    }
     static String capital(String s){return s.isEmpty()?s:Character.toUpperCase(s.charAt(0))+s.substring(1);}
     /** A count as the men would say it, in words up to nine hundred and ninety-nine. */
     static String words(int n){

@@ -66,6 +66,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -412,6 +413,20 @@ public final class NotOwnWorldTests {
                 var axe = new ItemEntity(nether, p.getX(), p.getY(), p.getZ(), new ItemStack(Items.IRON_AXE));
                 NeoForge.EVENT_BUS.post(new ItemTossEvent(axe, p));
                 h.assertTrue(WeaponHistory.identity(axe.getItem()) == null, "nor a weapon let fall");
+                // An arrow loosed there leaves the bow, and the arrow, without the House's mark.
+                ItemStack bow = new ItemStack(Items.BOW);
+                p.setItemInHand(InteractionHand.MAIN_HAND, bow);
+                var loosed = new Arrow(nether, p, new ItemStack(Items.ARROW), bow);
+                nether.addFreshEntity(loosed);
+                h.assertTrue(WeaponHistory.identity(bow) == null && !loosed.getPersistentData().hasUUID(WeaponHistory.ORIGINAL), "nor a bow whose arrow is loosed there");
+                loosed.discard();
+                listed(nether, false, () -> {
+                    var again = new Arrow(nether, p, new ItemStack(Items.ARROW), bow);
+                    nether.addFreshEntity(again);
+                    h.assertTrue(WeaponHistory.identity(bow) != null && again.getPersistentData().hasUUID(WeaponHistory.ORIGINAL),
+                            "out of the tag the bow and its arrow carry the original's mark, as anywhere of their own");
+                    again.discard();
+                });
                 p.setItemInHand(InteractionHand.MAIN_HAND, sword);
                 listed(nether, false, () -> {
                     NeoForge.EVENT_BUS.post(new AttackEntityEvent(p, target));

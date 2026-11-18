@@ -10,6 +10,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.FinaleController;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryCopies;
 import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes;
 import io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays;
 import io.github.knaitoe.theoldesthouse.labyrinth.TallyCounterItem;
@@ -40,12 +41,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -213,6 +218,35 @@ public final class LeftAloneTests {
         });
     }
 
+    // ------------------------------------------------------------------------------------------------ the copied homes
+    /**
+     * A copied home takes the animals, frames and stands round the home bed, and never a neighbour's own people: while pigs are listed
+     * in {@code #left_alone} a pig is not taken, and a wolf is, and what is kept of the wolf carries none of its NeoForge data, a
+     * neighbour's or the House's, which the wolf keeps. Out of the tag the pig is taken as any animal is.
+     */
+    @GameTest(template = "empty")
+    public static void theCopiedHomesLeaveANeighboursPeopleOut(GameTestHelper h) {
+        var pig = h.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
+        var wolf = h.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(3, 2, 1));
+        try {
+            wolf.getPersistentData().putString("a_reaping_kin", "the district's");
+            wolf.getPersistentData().putBoolean(Hillary.INTRO_DONE, true);
+            NeighbourTags.listed(EntityType.PIG.builtInRegistryHolder(), Neighbours.LEFT_ALONE, true, () -> {
+                h.assertTrue(!LiteraryCopies.captures(pig), "a pig is not taken while pigs are in #left_alone");
+                h.assertTrue(LiteraryCopies.captures(wolf), "the wolf beside it is");
+            });
+            CompoundTag kept = LiteraryCopies.captured(wolf);
+            h.assertTrue(kept != null && !kept.contains("NeoForgeData") && !kept.contains("UUID") && kept.getString("id").equals("minecraft:wolf"),
+                    "what is kept of the wolf carries none of its NeoForge data: " + kept);
+            h.assertTrue(wolf.getPersistentData().contains("a_reaping_kin"), "which the wolf keeps");
+            h.assertTrue(LiteraryCopies.captures(pig), "out of the tag the pig is taken as any animal is");
+        } finally {
+            pig.discard();
+            wolf.discard();
+        }
+        h.succeed();
+    }
+
     // ------------------------------------------------------------------------------------------------ Harrigan and the counter
     /** Harrigan's call refuses a neighbour's people, by kind or by name; out of the tag a zombie is fair game, as it always was. */
     @GameTest(template = "empty")
@@ -241,10 +275,12 @@ public final class LeftAloneTests {
             p.teleportTo(h.getLevel(), at.getX() + .5, at.getY(), at.getZ() + .5, 0F, 0F);
             Mob zombie = h.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(4, 2, 4));
             try {
-                h.assertTrue(TallyCounterItem.nearbyHostiles(p, 16).contains(zombie), "a zombie is out there");
-                NeighbourTags.listed(EntityType.ZOMBIE.builtInRegistryHolder(), Neighbours.LEFT_ALONE, true,
-                        () -> h.assertTrue(TallyCounterItem.nearbyHostiles(p, 16).isEmpty(), "but not while its kind is in #left_alone"));
-                h.assertTrue(TallyCounterItem.nearbyHostiles(p, 16).contains(zombie), "out of it again the zombie is counted");
+                h.assertTrue(TallyCounterItem.nearbyHostiles(p, 16).contains(zombie) && TallyCounterItem.hostile(zombie, p), "a zombie is out there, and hostile");
+                NeighbourTags.listed(EntityType.ZOMBIE.builtInRegistryHolder(), Neighbours.LEFT_ALONE, true, () -> {
+                    h.assertTrue(TallyCounterItem.nearbyHostiles(p, 16).isEmpty(), "but not counted while its kind is in #left_alone");
+                    h.assertTrue(!TallyCounterItem.hostile(zombie, p), "nor hostile, to wake a keeper or click behind it");
+                });
+                h.assertTrue(TallyCounterItem.nearbyHostiles(p, 16).contains(zombie) && TallyCounterItem.hostile(zombie, p), "out of it again the zombie is counted, and hostile");
             } finally {
                 zombie.discard();
                 NativeTestPlayers.remove(p);
@@ -298,10 +334,19 @@ public final class LeftAloneTests {
     }
 
     // ------------------------------------------------------------------------------------------------ game
+    /** Whether meat falling from {@code killed}, killed by the reader, is spoiled as it falls (the elk's drops, fired as the game does). */
+    private static boolean spoiled(GameTestHelper h, ServerPlayer p, LivingEntity killed) {
+        var meat = new ItemEntity(h.getLevel(), killed.getX(), killed.getY(), killed.getZ(), new ItemStack(Items.BEEF, 2));
+        var drops = new ArrayList<ItemEntity>(List.of(meat));
+        ElkFollows.drops(new LivingDropsEvent(killed, h.getLevel().damageSources().playerAttack(p), drops, true));
+        return drops.size() == 1 && drops.getFirst().getItem().is(Items.ROTTEN_FLESH) && drops.getFirst().getItem().getCount() == 2;
+    }
+
     /**
      * The owner's decision, "the house counts kills from the game": a neighbour's game animals, listed in {@code #hunted}, are counted
-     * by the elk's men beside the animals of the reader's world, by the game's own statistics, named by their own name; one killed in
-     * the reader's world while she follows them is owed in kind. Out of the tag a bat is nobody's game.
+     * by the elk's men beside the animals of the reader's world, by the game's own statistics, and said in the House's own words, never
+     * the game's name for them; one killed in the reader's world while she follows them is owed in kind, and its meat spoils as it falls.
+     * Out of the tag a bat is nobody's game.
      */
     @GameTest(template = "empty", batch = "left_alone_hunted", timeoutTicks = 200)
     public static void theElkCountsANeighboursGameAsGame(GameTestHelper h) {
@@ -318,15 +363,17 @@ public final class LeftAloneTests {
             h.assertTrue(!first.isAlive() && ElkFollows.kills(p) == 0 && ElkFollows.accusation(p).startsWith("Never even shot a deer"),
                     "out of the tag a bat is nobody's game: " + ElkFollows.accusation(p));
             h.assertTrue(LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND) == 0, "and is owed nothing in kind");
+            h.assertTrue(!spoiled(h, p, first), "and what falls from it does not spoil");
 
             NeighbourTags.bind(bat, Neighbours.HUNTED, true);
-            h.assertTrue(ElkFollows.kills(p) == 1 && ElkFollows.accusation(p).equals("One bat, %s. We counted."),
+            h.assertTrue(ElkFollows.kills(p) == 1 && ElkFollows.accusation(p).equals("One head of game, %s. We counted."),
                     "listed in #hunted, the bat already killed is counted by the game's own record: " + ElkFollows.accusation(p));
             var second = h.spawnWithNoFreeWill(EntityType.BAT, new BlockPos(4, 3, 4));
             second.hurt(h.getLevel().damageSources().playerAttack(p), 100);
             h.assertTrue(!second.isAlive() && LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND) == 1,
                     "one killed while she follows is owed in kind");
-            h.assertTrue(ElkFollows.kills(p) == 2 && ElkFollows.accusation(p).equals("Two bats, %s. We counted."), "and counted: " + ElkFollows.accusation(p));
+            h.assertTrue(spoiled(h, p, second), "and its meat spoils as it falls");
+            h.assertTrue(ElkFollows.kills(p) == 2 && ElkFollows.accusation(p).equals("Two head of game, %s. We counted."), "and counted: " + ElkFollows.accusation(p));
         } finally {
             NeighbourTags.bind(bat, Neighbours.HUNTED, false);
             LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.ELK_LOT, new CompoundTag());
