@@ -248,7 +248,9 @@ public final class HallwayVariants {
         for(int x=-16;x<=16;x++)for(int z=-43;z<=-1;z++)
             if(BuildBlocks.state(l,b.offset(x,-1,z)).equals(gravel))set(l,b,x,-1,z,Blocks.DIRT_PATH.defaultBlockState());
         for(int x=-14;x<=14;x++)if(Math.abs(x)>1)set(l,b,x,0,-42,Blocks.SPRUCE_FENCE.defaultBlockState());
-        bulb(l,b,-7,2,-38);bulb(l,b,1,3,-42);
+        // 0.4.713 (run 1735): the gate's bulb was over the open gateway with nothing to hang from; it stands on the gatepost now,
+        // raised to a post by YardLights.
+        bulb(l,b,-7,2,-38);bulb(l,b,2,3,-42);
     }
     public static final BlockPos LINE_LAMP = new BlockPos(3,4,-18);
     private static void line(ServerLevel l,BlockPos b,LabyrinthPlace p) {

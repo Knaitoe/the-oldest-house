@@ -42,8 +42,12 @@ public final class ExplorationPassTests {
             for(int seed=0;seed<300;seed++){
                 d.setDryDeals(p,0);LabyrinthDealer.dealPlace(d,p,room,RandomSource.create(seed));
                 for(var id:map(d,p,room).values()){var destination=LabyrinthPlace.byId(id);
-                    // 0.4.208: from sixteen the dark halls join the stone ones; both are the deep ordinary halls.
-                    if(LabyrinthPacing.ordinary(destination))h.assertTrue(StoneHalls.isStone(destination)||at>=DarkHalls.DARK_DEPTH&&DarkHalls.isDark(destination),"new ordinary halls are stone at depth "+at+": "+id);
+                    // 0.4.208: from sixteen the dark halls join the stone ones; both are the deep ordinary halls. 0.4.713: the owner's
+                    // hallway variants (0.4.685) are the walk's own for their part of it: the stone galleries and vaults from nine, the
+                    // dark ones from sixteen, the yards out of doors; the early plaster variants never come this deep.
+                    if(LabyrinthPacing.ordinary(destination))h.assertTrue(StoneHalls.isStone(destination)||at>=DarkHalls.DARK_DEPTH&&DarkHalls.isDark(destination)
+                        ||HallwayVariants.is(destination)&&(HallwayVariants.yard(destination)||HallwayVariants.firstDepth(destination)>=LabyrinthPacing.STONE_DEPTH),
+                        "new ordinary halls are stone, or a variant for this part of the walk, at depth "+at+": "+id);
                 }
             }
         }
