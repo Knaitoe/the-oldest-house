@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md): questions for
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md): questions for knowledge learned by watching. Is it given only to a reader who could see it happen, and not to one elsewhere in the house? Does what was learned outlast the thing being undone? Can a shared change (a wedge) be undone by anybody, and is the undoing visible to everyone?
 
+November 18 candidate 0.4.702 (docs/THE_LIST_0_4_702.md): people placed on seats and ledges with nothing solid under their own cell (stands, a catwalk). Are they held where they are put, a second later as well as at once? Is there one of each in the whole place after every arrival and reload? Does someone behind glass answer a hand on the glass, since a reader cannot reach them? Does each reader hear their own first line?
+
 November 18 candidate 0.4.701 (docs/THE_LIST_0_4_701.md): a place that runs south of its door. Do the place's lookup bounds (`LabyrinthPlaces.placeBounds`) and its presence bounds (`IndianLakeRooms.bounds`) reach every part a reader can stand in? A hand tried in the farthest corner says so. Does a fence hold from inside as well as out, with its gaps and guards the only ways through? Do moving machines take their angles from the level's time, so the sound lands on the stroke every client draws?
 
 November 18 candidate 0.4.700 (docs/THE_LIST_0_4_700.md): a place that grows. When a scene's bounds widen, is every edge test and every cell the old builder left untouched (cotton in a fence's gap, a crop in a gate) checked against the new ground? Does every flat roof have its walls carried up through the gravel and a ceiling inside? Does every board read from behind as well as in front?

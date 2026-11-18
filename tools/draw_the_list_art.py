@@ -2255,10 +2255,14 @@ def speaker():
 
 
 def order_window():
+    # 0.4.702: the sliding window shut, glass a reader sees the stand through (Jenna at the drawer behind it); the frame, the
+    # aluminum where the two panes meet, a streak or two, and the red band under the sill.
     im = new('#efe9d8', 9465, 2)
-    fill(im, 1, 2, 15, 12, '#f8e6a8')
+    fill(im, 1, 2, 15, 12, '#000000', 0)
     for y in range(2, 12):
         dot(im, 8, y, ALUM)
+    for x, y in ((3, 4), (4, 3), (11, 9), (12, 8), (13, 7)):
+        dot(im, x, y, '#dfe8ec')
     fill(im, 0, 12, 16, 16, '#c8402a')
     for x in range(3, 13):
         dot(im, x, 13, '#efe9d8')
@@ -2438,9 +2442,11 @@ def drivein_model(stage):
         glow(e[1:2], 12)
         return model(e, t, 'menu_board', render=None)
     if stage == 4:
-        e = glow([element([0, 0, 8], [16, 16, 16], {'north': 'o', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g', 'south': 'g'})], 12)
+        # The pane is a pixel thick and its glass is clear, so the stand shows through it from the lot and the lot from the stand.
+        e = glow([element([0, 0, 8], [16, 16, 9], {'north': 'o', 'south': 'o', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'},
+                          uv={'east': [8, 0, 9, 16], 'west': [7, 0, 8, 16], 'up': [0, 8, 16, 9], 'down': [0, 7, 16, 8]})], 12)
         e.append(element([0, 5, 4], [16, 6, 8], {'all': 't'}))
-        return model(e, t, 'order_window', render=None)
+        return model(e, t, 'order_window', render='cutout')
     if stage == 5:
         return model([element([0, 0, 1], [16, 15, 16], {'north': 't', 'south': 't', 'east': 't', 'west': 't', 'up': 'f', 'down': 't'})], t, 'fryer', render=None)
     if stage == 6:
@@ -3057,16 +3063,17 @@ def notebook():
 
 
 def amber_window():
-    # Her window from the street: the blind pulled up, the desk lamp on, the corner of a poster and the shelf behind it.
+    # 0.4.702: her window, glass the yard sees through to her at her desk in her lamp's light. A double-hung sash painted white, the
+    # meeting rail across the middle, the blind rolled up under the head with its cord hanging; clear panes with a streak or two.
     im = new(None)
-    fill(im, 0, 0, 16, 16, '#e8e6de')
-    fill(im, 1, 1, 15, 15, '#c89a58')
-    fill(im, 1, 1, 15, 3, '#d8d0b8')
-    for y in range(4, 10):
-        dot(im, 2, y, '#7a5a3a'); dot(im, 3, y, '#7a5a3a')
-    fill(im, 9, 4, 14, 9, '#2a2020'); dot(im, 11, 6, '#c84a3a'); dot(im, 12, 6, '#efe9d8')
-    fill(im, 5, 10, 9, 13, '#ffe8a8')
-    fill(im, 1, 13, 15, 15, '#5a4030')
+    frame, shadow = '#e8e6de', '#bdb9ac'
+    fill(im, 0, 0, 16, 1, frame); fill(im, 0, 15, 16, 16, frame); fill(im, 0, 0, 1, 16, frame); fill(im, 15, 0, 16, 16, frame)
+    fill(im, 1, 14, 15, 15, shadow); fill(im, 1, 1, 2, 15, shadow)
+    fill(im, 1, 7, 15, 9, frame); fill(im, 1, 8, 15, 9, shadow)
+    fill(im, 1, 1, 15, 3, '#d8d0b8'); fill(im, 1, 3, 15, 4, '#b8ae94')
+    dot(im, 8, 4, '#b8ae94'); dot(im, 8, 5, '#d8d0b8')
+    for x, y in ((4, 5), (5, 4), (11, 12), (12, 11), (13, 10)):
+        dot(im, x, y, '#dfe8ec')
     return im
 
 

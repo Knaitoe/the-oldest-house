@@ -1784,6 +1784,102 @@
     "phase": 268
   },
   {
+    "name": "literary_list_amber",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 269
+  },
+  {
+    "name": "literary_list_jenna",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 270
+  },
+  {
+    "name": "literary_list_janice",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 271
+  },
+  {
+    "name": "literary_list_deek",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 272
+  },
+  {
+    "name": "literary_list_wes",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 273
+  },
+  {
+    "name": "literary_list_mel",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 274
+  },
+  {
+    "name": "literary_list_lesley",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 275
+  },
+  {
+    "name": "literary_list_shannon",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 276
+  },
+  {
+    "name": "literary_list_stace",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 277
+  },
+  {
+    "name": "literary_list_deputy",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 278
+  },
+  {
+    "name": "literary_list_mother",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 279
+  },
+  {
+    "name": "literary_list_father",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 280
+  },
+  {
     "name": "literary_supper_joan",
     "logical": 128,
     "model": "literary",

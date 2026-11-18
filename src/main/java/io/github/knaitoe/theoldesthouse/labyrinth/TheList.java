@@ -37,6 +37,8 @@ public final class TheList {
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         own.putInt("Visits",own.getInt("Visits")+1);
         ACTIVE.computeIfAbsent(b.asLong(),k->new Site(b));
+        // 0.4.702: the town's people, at their places.
+        TheListPeople.ensure(p.serverLevel(),b);
         p.serverLevel().playSound(null,b.offset(-10,1,2),TheListRegistry.INSECTS.get(),SoundSource.AMBIENT,.5F,1F);
     }
 
@@ -74,6 +76,10 @@ public final class TheList {
             cue(p,open?TheListTexts.GATE_OPEN:TheListTexts.GATE_SHUT);
             return true;
         }
+        // 0.4.702: a knuckle on Amber's window, or on the drive-in's order window, is answered from inside.
+        if(TheListBlock.is(st,TheListBlock.Kind.AMBER)&&st.getValue(TheListBlock.STAGE)==6&&TheListPeople.knock(p,b,TheListPeople.AMBER,TheListTexts.KNOCK_AMBER,own))return true;
+        if(TheListBlock.is(st,TheListBlock.Kind.DRIVEIN)&&st.getValue(TheListBlock.STAGE)==4&&TheListPeople.knock(p,b,TheListPeople.JENNA,TheListTexts.KNOCK_ORDER,own))return true;
+        if(TheListBlock.is(st,TheListBlock.Kind.BED)&&rel.getX()<TheListSite.PARENTS_E&&TheListSite.inHouse(Vec3.atCenterOf(rel))){cue(p,TheListTexts.PARENTS_BED);return true;}
         String line=TheListTexts.thing(st.getValue(TheListBlock.KIND),st.getValue(TheListBlock.STAGE));
         if(line==null)return false;
         cue(p,line);
@@ -125,6 +131,8 @@ public final class TheList {
             if(s.tick%5==0)for(int[] at:TheListSite.SPRINKLERS)spray(l,s.base,at,s.tick);
             if(s.tick%90==45&&out){var at=sprinklerNear(r);if(at!=null)play(l,s.base.offset(at),TheListRegistry.SPRINKLER.get(),.55F);}
             pasture(l,s,here);
+            // 0.4.702: whoever's place has loaded since is put there.
+            if(s.tick%100==50)TheListPeople.ensure(l,s.base);
         }
     }
     /**

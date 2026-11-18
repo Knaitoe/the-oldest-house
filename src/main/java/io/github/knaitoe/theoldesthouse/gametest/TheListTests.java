@@ -325,6 +325,82 @@ public final class TheListTests {
         .thenExecute(()->{done();h.succeed();});
     }
 
+    private static String said(LiteraryActor a){return a.getCustomName()==null?"":a.getCustomName().getString();}
+    /**
+     * 0.4.702: the town's people at their places by night, one of each, held where they are: Amber in her desk chair facing her window,
+     * Jenna behind the order window, Janice at the return slot, Deek and Wes on the home bench, Mel and Lesley on the top row of the
+     * stands, Shannon on the bus bench, Stace on the catwalk at the rail, the deputy outside the substation, and the reader's parents
+     * asleep in their bed. Each one's words are each reader's own: a first line, then a second, then the second again; a second reader
+     * hears the first line for themselves. A knuckle on Amber's window or the order window is answered through the glass. A hand on
+     * the parents is a cue to that reader alone, as is a hand on their bed.
+     */
+    @GameTest(template="empty",batch="the_list_people",timeoutTicks=2400)
+    public static void theTownsPeopleAtTheirPlaces(GameTestHelper h){
+        var f=place(h);var p=f.player("list_people",P);var peer=f.player("list_people_peer",P);var l=f.level(P);var b=f.base(P);
+        var town=new AABB(b.getX()+TheListSite.WEST,b.getY()-4,b.getZ()+TheListSite.NORTH,b.getX()+TheListSite.EAST+1,b.getY()+40,b.getZ()+TheListSite.SOUTH+1);
+        h.startSequence().thenWaitUntil(()->{
+            TheListPeople.ensure(l,b);
+            for(int who=0;who<TheListPeople.CAST;who++)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+who+" at "+TheListPeople.AT[who].toShortString());
+        }).thenIdle(20).thenExecute(()->{
+            for(int who=0;who<TheListPeople.CAST;who++){
+                int phase=TheListPeople.FIRST+who;
+                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,town,a->a.role()==LiteraryActor.STRANGER&&a.phase()==phase).size()==1,"one of "+who+" in the town, none doubled");
+                var a=TheListPeople.find(l,b,who);var at=b.offset(TheListPeople.AT[who]);
+                double up=who==TheListPeople.STACE?2/16.0:who>=TheListPeople.MOTHER?TheListPeople.SLEEPER_Y:0;
+                h.assertTrue(a.position().distanceTo(new Vec3(at.getX()+.5,at.getY()+up,at.getZ()+.5))<.05,who+" held at their place after a second: "+a.position()+" for "+at.toShortString());
+            }
+            int[][] seats={{TheListPeople.AMBER,10,Direction.SOUTH.get2DDataValue()},{TheListPeople.DEEK,8,Direction.EAST.get2DDataValue()},{TheListPeople.WES,8,Direction.EAST.get2DDataValue()},
+                {TheListPeople.MEL,8,Direction.EAST.get2DDataValue()},{TheListPeople.LESLEY,8,Direction.EAST.get2DDataValue()},{TheListPeople.SHANNON,8,Direction.NORTH.get2DDataValue()}};
+            for(var seat:seats){
+                var s=ActorSeat.of(TheListPeople.find(l,b,seat[0]));
+                h.assertTrue(s!=null&&s.seatHeight()==seat[1]&&s.facing()==Direction.from2DDataValue(seat[2]),seat[0]+" sits, facing the right way: "+s);
+            }
+            for(int who:new int[]{TheListPeople.JENNA,TheListPeople.JANICE,TheListPeople.STACE,TheListPeople.DEPUTY}){
+                var a=TheListPeople.find(l,b,who);
+                h.assertTrue(ActorSeat.of(a)==null&&a.getPose()!=net.minecraft.world.entity.Pose.SLEEPING,who+" stands");
+            }
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(TheListPeople.find(l,b,TheListPeople.STACE).getYRot()-Direction.WEST.toYRot()))<1,"Stace looks out over the town");
+            for(int who:new int[]{TheListPeople.MOTHER,TheListPeople.FATHER}){
+                var a=TheListPeople.find(l,b,who);
+                h.assertTrue(a.getPose()==net.minecraft.world.entity.Pose.SLEEPING&&a.getSleepingPos().orElse(BlockPos.ZERO).equals(b.offset(TheListPeople.AT[who]))
+                    &&fitting(l,b,TheListPeople.AT[who],Kind.BED,0),who+" asleep, the head on a pillow of their bed");
+            }
+            // Out among them, each one's lines are each reader's own.
+            for(int who:new int[]{TheListPeople.JANICE,TheListPeople.DEEK,TheListPeople.WES,TheListPeople.MEL,TheListPeople.LESLEY,TheListPeople.SHANNON,TheListPeople.STACE,TheListPeople.DEPUTY}){
+                var a=TheListPeople.find(l,b,who);var rel=a.position().subtract(Vec3.atLowerCornerOf(b));
+                var front=Vec3.directionFromRotation(0,a.getYRot()).scale(1.5);
+                f.at(p,P,rel.x+front.x,rel.y,rel.z+front.z);LiteraryVignettes.talk(p,a);
+                h.assertTrue(said(a).equals(TheListTexts.said(who,0)),"the first reader hears "+TheListTexts.NAMES[who]+"'s first line: "+said(a));
+                f.at(peer,P,rel.x+front.x,rel.y,rel.z+front.z);LiteraryVignettes.talk(peer,a);
+                h.assertTrue(said(a).equals(TheListTexts.said(who,0)),"and so does the second, for themselves: "+said(a));
+                f.at(p,P,rel.x+front.x,rel.y,rel.z+front.z);LiteraryVignettes.talk(p,a);
+                h.assertTrue(said(a).equals(TheListTexts.said(who,1))&&!TheListTexts.said(who,1).equals(TheListTexts.said(who,0)),"the first, asking again, hears the second: "+said(a));
+                LiteraryVignettes.talk(p,a);h.assertTrue(said(a).equals(TheListTexts.said(who,1)),"and the second again after that");
+            }
+            // Through the glass: a knuckle on Amber's window, and on the order window.
+            Object[][] windows={{TheListPeople.AMBER,new BlockPos(TheListSite.AMBER_DESK.getX(),1,TheListSite.AMBER_S),new BlockPos(TheListSite.AMBER_DESK.getX(),0,TheListSite.AMBER_S+2),TheListTexts.KNOCK_AMBER},
+                {TheListPeople.JENNA,new BlockPos(35,1,-133),new BlockPos(35,0,-131),TheListTexts.KNOCK_ORDER}};
+            for(var w:windows){
+                int who=(int)w[0];var glass=(BlockPos)w[1];var stand=(BlockPos)w[2];var cue=(String)w[3];var a=TheListPeople.find(l,b,who);
+                cues(p);cues(peer);
+                use(p,b,glass,stand);
+                h.assertTrue(cues(p).contains(cue)&&said(a).equals(TheListTexts.said(who,0)),TheListTexts.NAMES[who]+" answers a knock through the glass: "+said(a));
+                h.assertTrue(cues(peer).isEmpty(),"the knock's cue is that reader's own");
+                use(peer,b,glass,stand);h.assertTrue(said(a).equals(TheListTexts.said(who,0)),"a second reader's knock gets their own first line");
+                use(p,b,glass,stand);h.assertTrue(said(a).equals(TheListTexts.said(who,1)),"the first reader's second knock, the second line");
+            }
+            // The reader's parents say nothing; a hand on them, or on their bed, is a cue to that reader alone.
+            cues(p);cues(peer);
+            var mother=TheListPeople.find(l,b,TheListPeople.MOTHER);var father=TheListPeople.find(l,b,TheListPeople.FATHER);
+            f.at(p,P,-9.5,0,-15.5);LiteraryVignettes.talk(p,mother);LiteraryVignettes.talk(p,father);
+            var c=cues(p);
+            h.assertTrue(c.contains(TheListTexts.MOTHER)&&c.contains(TheListTexts.FATHER)&&said(mother).isEmpty()&&said(father).isEmpty(),"the parents asleep, a cue each: "+c);
+            use(p,b,new BlockPos(-10,0,-15),new BlockPos(-8,0,-15));
+            h.assertTrue(cues(p).contains(TheListTexts.PARENTS_BED),"their bed is theirs, not the reader's");
+            h.assertTrue(cues(peer).isEmpty(),"nothing of it to the other reader");
+        }).thenExecute(()->{done();h.succeed();});
+    }
+
     /**
      * 0.4.701: the pasture south of town. Barbed wire on cedar posts all round, a braced post at each corner, the wire gap shut in the north
      * fence; the county road coming in over the cattle guard; the stock tank holding water inside its walls, the windmill's pipe over the
