@@ -480,6 +480,9 @@ public final class Fallow {
         }
         var a=find(l,s.base,s.customer);if(a==null)return;
         int who=s.customer;
+        // 0.4.693 (run 1718): a customer a reader is talking to finishes answering before going on with the purchase. Turned to the machine,
+        // the counter or his place while his answer was still up, he looked away from the reader he was answering.
+        if((a.addressee()!=null||a.saying())&&s.strike.toneAt<0)return;
         switch(s.buying){
             case TO_PICK->{if(!busy(s,who)){faceTo(a,s.world(pickFrom(who)));a.gesture(who==DRIVER?POUR:REACH);s.buying=PICKING;s.buyingAt=s.tick;}}
             case PICKING->{

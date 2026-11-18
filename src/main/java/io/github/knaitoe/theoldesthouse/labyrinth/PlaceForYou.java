@@ -71,7 +71,7 @@ public final class PlaceForYou {
         House(BlockPos b){base=b;}
     }
     private static final Map<Long,House> HOUSES=new HashMap<>();
-    public static void clearAll(){HOUSES.clear();}
+    public static void clearAll(){HOUSES.clear();PlaceForYouPromise.clear();}
 
     // ------------------------------------------------------------------------------------------------ for tests
     @Nullable static House house(BlockPos b){return HOUSES.get(b.asLong());}
@@ -171,6 +171,8 @@ public final class PlaceForYou {
         PlaceForYouBack.marks(own,m);
         // 0.4.692: Kit waiting about the letter; Mara on the porch with the bag, Kit at the gate.
         PlaceForYouLetter.marks(own,m);
+        // 0.4.693: Mara in the hall, looking for a reader who promised to sit with her.
+        PlaceForYouPromise.marks(own,m);
         return m;
     }
     /**
@@ -320,6 +322,8 @@ public final class PlaceForYou {
         PlaceForYouBack.tick(l,h,p,own(p),r);PlaceForYouOlder.after(l,h,p,own(p),r);
         // 0.4.692: the letter and the porch.
         PlaceForYouLetter.tick(l,h,p,own(p),r);
+        // 0.4.693: the promise broken.
+        PlaceForYouPromise.tick(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -550,26 +554,30 @@ public final class PlaceForYou {
     static void spoon(ServerPlayer p,House h){
         Talk.begin(p,"spoon","Mara");line(p,h,"Mara","Take this off me. Would you? I can't seem to put it down.");
         Talk.ask(p,Talk.act("Take the spoon.",q->{PlaceForYouSite.spoon(q.serverLevel(),h.base,true);edit(q,o->o.putBoolean("SpoonTaken",true));line(q,h,"Mara","Thank you. Thank you. Sit down, all of you, it's getting cold.");Talk.end(q);
-                if(own(q).getString("Promise").equals("company"))edit(q,o->o.putBoolean("PromiseKept",true));})
+                if(own(q).getString("Promise").equals("company")&&!own(q).getBoolean("Missed"))edit(q,o->o.putBoolean("PromiseKept",true));})
             ,Talk.act("Leave it.",q->{line(q,h,"Mara","There's one more.");Talk.end(q);}));
     }
     static void confront(ServerPlayer p,House h){
         var own=own(p);Talk.begin(p,"confront","At the table");line(p,h,"Mara","Sit down, all of you. It's getting cold.");
-        Talk.ask(p,Talk.reply("I'd like to say this to everyone.",q->{
+        var replies=new ArrayList<Talk.Reply>();
+        replies.add(Talk.reply("I'd like to say this to everyone.",q->{
                 var o=own(q);var said=new ArrayList<String>();
                 if(o.getBoolean("BagSeen"))said.add("The bag keeps coming back in.");if(o.getBoolean("DoorTaken"))said.add("Kit's door isn't a door any more.");
                 said.add("The table's laid the same as before.");if(o.getBoolean("Repeated"))said.add("The things you put out for me put themselves back out.");
                 Talk.line(q,"",String.join(" ",said));line(q,h,"Kit","Thank you.");
                 line(q,h,"Mara","I only wanted one more evening like this one. That's all it's ever been. One more.");line(q,h,"Ren","It's been a lot more than one.");line(q,h,"Alex","I'd like to see a morning. I don't mind whose.");
                 line(q,h,"Mara","What would you have me do?");
-                Talk.ask(q,Talk.reply("Let them go. Let yourself go, too.",z->confronted(z,h,"open")),Talk.reply("Let Kit go. The rest of you can decide for yourselves.",z->confronted(z,h,"open")));})
-            ,Talk.reply("Mara, can we talk in the other room?",q->{line(q,h,"Mara","...All right.");
+                Talk.ask(q,Talk.reply("Let them go. Let yourself go, too.",z->confronted(z,h,"open")),Talk.reply("Let Kit go. The rest of you can decide for yourselves.",z->confronted(z,h,"open")));}));
+        // 0.4.693: a reader who heard about Theo can make her tell them.
+        if(own.getBoolean("TheoTold"))replies.add(PlaceForYouPromise.confession(h));
+        replies.add(Talk.reply("Mara, can we talk in the other room?",q->{line(q,h,"Mara","...All right.");
                 line(q,h,"Mara","You've seen it, then. It's the evening I keep. They're in it.");
                 Talk.ask(q,Talk.reply("They want to leave. You can let them.",z->{line(z,h,"Mara","Would you open the door for me? I don't think I can be the one.");confronted(z,h,"private");})
-                    ,Talk.reply("You could leave too.",z->{line(z,h,"Mara","Would you open the door for me? I don't think I can be the one.");confronted(z,h,"private");}));})
-            ,Talk.reply("Kit, go now. I'll keep them talking.",q->{line(q,h,"Kit","Now? Now. Right.");line(q,h,"Mara","Was that— Kit? Was that the door?");confronted(q,h,"kit");})
-            ,Talk.reply("This is more than I can take on. I'm going to go.",q->{line(q,h,"Mara","Oh. Yes. Of course you are.");line(q,h,"Kit","Hold the gate on your way out?");
+                    ,Talk.reply("You could leave too.",z->{line(z,h,"Mara","Would you open the door for me? I don't think I can be the one.");confronted(z,h,"private");}));}));
+        replies.add(Talk.reply("Kit, go now. I'll keep them talking.",q->{line(q,h,"Kit","Now? Now. Right.");line(q,h,"Mara","Was that— Kit? Was that the door?");confronted(q,h,"kit");}));
+        replies.add(Talk.reply("This is more than I can take on. I'm going to go.",q->{line(q,h,"Mara","Oh. Yes. Of course you are.");line(q,h,"Kit","Hold the gate on your way out?");
                 edit(q,o->{o.putString("Confront","road");o.putInt("Chapter",ROAD);});Talk.end(q);cue(q,"The gate, and the road.");}));
+        Talk.ask(p,replies.toArray(Talk.Reply[]::new));
     }
     static void confronted(ServerPlayer p,House h,String how){
         edit(p,o->{o.putString("Confront",how);o.putInt("Chapter",OPEN);});Talk.end(p);
@@ -609,7 +617,11 @@ public final class PlaceForYou {
     static void maraDecides(ServerPlayer p,House h){
         var own=own(p);Talk.begin(p,"mara_end","Mara");
         if(own.getString("Confront").equals("private")){line(p,h,"Mara","I'll see Kit to the gate. Just to the gate.");edit(p,o->{o.putString("MaraEnd","gate");o.putString("RenEnd","goes");});line(p,h,"Ren","I'll come too. As far as the bend.");Talk.end(p);return;}
-        if(own.getString("Promise").equals("company")){line(p,h,"Mara","Will you sit with me a minute? Before I decide.");
+        // 0.4.693: after the confession was used, she would rather be on her own for it.
+        if(own.getBoolean("UsedConfession")){line(p,h,"Mara","I'll stay. I'd rather be on my own for it.");edit(p,o->{o.putString("MaraEnd","stays");o.putString("RenEnd","stays");});Talk.end(p);return;}
+        // After a broken promise she asks differently, or not at all.
+        if(own.getString("Promise").equals("company")&&PlaceForYouPromise.ask(own)==null){line(p,h,"Mara","I'll decide this one on my own. It's still my kitchen.");edit(p,o->{o.putString("MaraEnd","stays");o.putString("RenEnd","stays");});Talk.end(p);return;}
+        if(own.getString("Promise").equals("company")){line(p,h,"Mara",PlaceForYouPromise.ask(own));
             Talk.ask(p,Talk.reply("Yes. I said I would.",q->{edit(q,o->{o.putString("MaraEnd","sat");o.putString("RenEnd","stays");});line(q,h,"Mara","Sit, then. Anywhere. Not that one.");Talk.end(q);cue(q,"Sit down at the table with her.");})
                 ,Talk.reply("I can't. I'm sorry.",q->{edit(q,o->{o.putString("MaraEnd","stays");o.putString("RenEnd","stays");});line(q,h,"Mara","No. That's all right. It's still my kitchen.");Talk.end(q);}));return;}
         line(p,h,"Mara","I'll stay. For now. It's still my kitchen.");line(p,h,"Ren","I'll stay with her.");edit(p,o->{o.putString("MaraEnd","stays");o.putString("RenEnd","stays");});Talk.end(p);
@@ -638,7 +650,7 @@ public final class PlaceForYou {
         if(held==PlaceForYouRegistry.BAG&&(who.equals("Kit")||who.equals("Mara"))){giveBag(p,h,who);return;}
         // 0.4.692: the letter back in Kit's hand; the letter and the porch.
         if(held==PlaceForYouRegistry.LETTER&&who.equals("Kit")){PlaceForYouLetter.give(p,h);return;}
-        if(PlaceForYouLetter.talk(p,h,who,a))return;
+        if(PlaceForYouLetter.talk(p,h,who,a)||PlaceForYouPromise.talk(p,h,who,a))return;
         if(Talk.resume(p,"first_"+who)||Talk.resume(p,Talk.key(p)))return;
         switch(ch){
             case APPROACH->{if(who.equals("Alex"))Talk.begin(p,"alex_road","Alex");else if(who.equals("Kit"))Talk.begin(p,"kit_porch","Kit");else{above(h,a,"Come in, come in.");return;}

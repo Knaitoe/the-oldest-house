@@ -176,7 +176,7 @@ public final class PlaceForYouTexts {
                 t.append(" She hadn't been bringing him back. She had been keeping the evening from getting to the part where he wasn't here. She didn't want another conversation in an empty kitchen.");
             }else t.append("At the sink Mara told me about her brother, Theo, who used to dry and put everything in the wrong cupboard. She said she didn't want another conversation in an empty kitchen.");
             switch(own.getString("Promise")){
-                case "company"->t.append(" I told her: \"I'll sit with you tonight.\""+(own.getBoolean("PromiseKept")?" I did.":outcome.equals("took_the_road")?" I didn't.":""));
+                case "company"->t.append(" I told her: \"I'll sit with you tonight.\""+(own.getBoolean("Missed")?"":own.getBoolean("PromiseKept")?" I did.":outcome.equals("took_the_road")?" I didn't.":""));
                 case "listen"->t.append(" I listened, and didn't promise anything.");
                 case "kit"->t.append(" I asked her what Kit wanted. She said she knew what Kit wanted.");
                 case "keeping"->t.append(" I told her she was keeping all of them. She said she was keeping the evening, and they were in it, and that it wasn't fair and it was true.");
@@ -188,6 +188,8 @@ public final class PlaceForYouTexts {
         if(own.getInt("BackStage")>=1)t.append(backPassage(own)).append("\n\n");
         // 0.4.692: what became of Kit's letter.
         {var letter=PlaceForYouLetter.letterAccount(own);if(!letter.isEmpty())t.append(letter).append("\n\n");}
+        // 0.4.693: the promise, broken.
+        {var promise=PlaceForYouPromise.promiseAccount(own);if(!promise.isEmpty())t.append(promise).append("\n\n");}
         if(own.getInt("OlderStage")>=3)t.append(PlaceForYouOlder.account(own)).append("\n\n");
         if(own.getInt("Chapter")>=PlaceForYou.DINNER){
             t.append("When we sat down again, the table was laid exactly as it had been.");
@@ -198,7 +200,7 @@ public final class PlaceForYouTexts {
             t.append("\n\n");
         }
         switch(own.getString("Confront")){
-            case "open"->t.append("I said it to everyone at the table. Mara said she had only wanted one more evening like this one. Ren said it had been a lot more than one.\n\n");
+            case "open"->t.append(own.getBoolean("UsedConfession")?PlaceForYouPromise.confessionAccount(own)+"\n\n":"I said it to everyone at the table. Mara said she had only wanted one more evening like this one. Ren said it had been a lot more than one.\n\n");
             case "private"->t.append("I asked Mara to talk in the other room. She said she wasn't keeping anyone. She was keeping the evening, and they were in it.\n\n");
             case "kit"->t.append("I told Kit to go while I kept the others talking.\n\n");
             default->{}
@@ -220,7 +222,9 @@ public final class PlaceForYouTexts {
         switch(own.getString("MaraEnd")){
             case "sat"->t.append(" Mara asked me to sit with her before she decided. I did. She said she would stay a while, and try it, and see.");
             case "gate"->t.append(" Mara walked Kit to the gate. Just to the gate, she said. Then she kept going.");
-            default->t.append(" Mara stayed. It was still her kitchen, she said.");
+            default->t.append(own.getBoolean("UsedConfession")?" Mara stayed. She'd rather be on her own for it, she said."
+                :own.getString("PromiseAnswer").equals("kit")?" Mara decided that one on her own, and stayed. It was still her kitchen, she said."
+                :" Mara stayed. It was still her kitchen, she said.");
         }
         switch(own.getString("AlexEnd")){
             case "walk"->t.append(" Alex was going to see whether the bus still ran to the coast. I walked with him as far as the road.");
