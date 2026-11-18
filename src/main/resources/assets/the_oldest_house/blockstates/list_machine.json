@@ -9,6 +9,9 @@
     "facing=north,machine=cable": {
       "model": "the_oldest_house:block/the_list/pumpjack_cable"
     },
+    "facing=north,machine=brake": {
+      "model": "the_oldest_house:block/the_list/pumpjack_brake"
+    },
     "facing=east,machine=windmill": {
       "model": "the_oldest_house:block/the_list/windmill_4",
       "y": 90
@@ -19,6 +22,10 @@
     },
     "facing=east,machine=cable": {
       "model": "the_oldest_house:block/the_list/pumpjack_cable",
+      "y": 90
+    },
+    "facing=east,machine=brake": {
+      "model": "the_oldest_house:block/the_list/pumpjack_brake",
       "y": 90
     },
     "facing=south,machine=windmill": {
@@ -33,6 +40,10 @@
       "model": "the_oldest_house:block/the_list/pumpjack_cable",
       "y": 180
     },
+    "facing=south,machine=brake": {
+      "model": "the_oldest_house:block/the_list/pumpjack_brake",
+      "y": 180
+    },
     "facing=west,machine=windmill": {
       "model": "the_oldest_house:block/the_list/windmill_4",
       "y": 270
@@ -43,6 +54,10 @@
     },
     "facing=west,machine=cable": {
       "model": "the_oldest_house:block/the_list/pumpjack_cable",
+      "y": 270
+    },
+    "facing=west,machine=brake": {
+      "model": "the_oldest_house:block/the_list/pumpjack_brake",
       "y": 270
     }
   }

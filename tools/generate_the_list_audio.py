@@ -11,7 +11,8 @@ turning in its trench, and the seed going.
 Part 4a (0.4.708) is the hunt: one of the names screaming as they run. Part 4a-2 (0.4.709) is the catch: a struggle in the slasher's
 grip, the hay hook going in and torn out, and the catch in a throat as it goes in. Part 4b-1 (0.4.711) is the boards: a heel
 stamped down on an aluminum plank of the stands, and something giving under it. Part 4b-2 (0.4.713) is the line: the valve's wheel
-turned and the water knocking down the pipe, and a riser going through someone.
+turned and the water knocking down the pipe, and a riser going through someone. Part 4d-1 (0.4.716) is the pumpjack: its band brake hauled
+on or knocked off, and its motor labouring against a stall.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -56,6 +57,8 @@ ROWS = {
     'burner': ('Burners catch', 12),
     'car_door': ('A car door slams', 32),
     'car_open': ('A car door opens', 12),
+    'brake': ('A brake bites', 16),
+    'strain': ('A motor strains', 24),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -680,11 +683,50 @@ def car_open():
     return clack + creak
 
 
+def brake():
+    # A pumpjack's band brake: the lever's ratchet clacking over its teeth, then the band biting on the drum with a dry squeal that
+    # drops as the gears slow, and the counterweights settling with a dull knock.
+    n = seconds(1.3)
+    t = times(n)
+    ratchet = np.zeros(n)
+    for k in range(4):
+        x = t - k * .035
+        ratchet += band(rng.standard_normal(n), 2000, 7000) * np.exp(-np.clip(x, 0, None) / .005) * (x >= 0) * (.9 - .15 * k)
+    y = t - .16
+    f0 = 900 - 380 * np.clip(y / .7, 0, 1)
+    phase = 2 * np.pi * np.cumsum(f0) / RATE
+    squeal = (np.sin(phase) + .4 * np.sin(2 * phase)) * (1 + .3 * np.sin(2 * np.pi * 23 * t))
+    squeal = band(squeal + .3 * rng.standard_normal(n), 500, 4000) * np.clip(y / .05, 0, 1) * np.exp(-np.clip(y, 0, None) / .45) * (y >= 0) * .55
+    grind = band(rng.standard_normal(n), 300, 1800) * np.clip(y / .05, 0, 1) * np.exp(-np.clip(y, 0, None) / .35) * (y >= 0) * .3
+    z = t - .9
+    knock = np.sin(2 * np.pi * (60 - 20 * np.clip(z / .1, 0, 1)) * z) * np.exp(-np.clip(z, 0, None) / .09) * (z >= 0) * .9
+    knock += band(rng.standard_normal(n), 60, 400) * np.exp(-np.clip(z, 0, None) / .05) * (z >= 0) * .5
+    return ratchet + squeal + grind + knock
+
+
+def strain():
+    # The pumpjack's motor labouring against a stall: a low electric hum pulled down under load and wavering, the belt slipping on its
+    # sheave in squeaking bursts, and the gearbox's teeth grinding as it tries and tries again.
+    n = seconds(2.0)
+    t = times(n)
+    env = np.clip(t / .08, 0, 1) * np.clip((2.0 - t) / .25, 0, 1)
+    f0 = 52 + 4 * np.sin(2 * np.pi * 1.7 * t) + 2 * np.sin(2 * np.pi * 4.3 * t)
+    phase = 2 * np.pi * np.cumsum(f0) / RATE
+    hum = (np.sin(phase) + .5 * np.sin(2 * phase) + .3 * np.sin(3 * phase)) * env * .55
+    hum += band(rng.standard_normal(n), 80, 300) * env * .25
+    bursts = np.clip(np.sin(2 * np.pi * 2.6 * t), 0, None) ** 3
+    slip = band(np.sign(np.sin(2 * np.pi * (1300 + 200 * np.sin(2 * np.pi * 7 * t)) * t)) * .5 + rng.standard_normal(n) * .3, 900, 4500)
+    slip = slip * bursts * env * .3
+    grind = band(rng.standard_normal(n), 400, 2500) * (rng.random(n) < .5) * (.5 + .5 * np.sin(2 * np.pi * 5.1 * t)) * env * .28
+    return hum + slip + grind
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
           'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
           'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack,
-          'valve': valve, 'riser': riser, 'fryer': fryer, 'burner': burner, 'car_door': car_door, 'car_open': car_open}
+          'valve': valve, 'riser': riser, 'fryer': fryer, 'burner': burner, 'car_door': car_door, 'car_open': car_open,
+          'brake': brake, 'strain': strain}
 
 
 def main():

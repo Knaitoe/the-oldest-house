@@ -1174,6 +1174,17 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.SLAMMED->{low(18F,.8F,-.1F);
                     rightArm.xRot=-.15F;rightArm.yRot=0;rightArm.zRot=.1F;leftArm.xRot=-1.45F;leftArm.yRot=0;leftArm.zRot=-.12F;
                     head.xRot=.75F;head.yRot=.3F;head.zRot=.35F;}
+                // 0.4.716, the pumpjack. On the knees beside its gearbox, bowed right over with the head down on the ground in the
+                // weight's slot, the crown toward the gearbox and the cheek on the ground; the arms out flat to either side pushing to
+                // lift, the head twisting against the hold.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.PUMPED->{float w=net.minecraft.util.Mth.sin(age*1.1F),v=net.minecraft.util.Mth.cos(age*.85F);
+                    low(18F,1.69F+w*.02F,-.1F);
+                    rightArm.xRot=-.55F+w*.15F;leftArm.xRot=-.55F-w*.15F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=1.3F+v*.08F;leftArm.zRot=-1.3F+v*.08F;
+                    head.xRot=1.69F+v*.04F;head.yRot=0;head.zRot=1.2F+w*.12F;}
+                // Still there: sunk flat, the weight down on the head; the arms gone slack out along the ground.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.PINNED->{low(17.5F,1.72F,-.08F);
+                    rightArm.xRot=-.2F;rightArm.yRot=0;rightArm.zRot=1.42F;leftArm.xRot=-.6F;leftArm.yRot=0;leftArm.zRot=-1.38F;
+                    head.xRot=1.72F;head.yRot=0;head.zRot=1.28F;}
                 default->{}
             }
             hat.copyFrom(head);

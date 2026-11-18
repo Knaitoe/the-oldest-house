@@ -4019,13 +4019,29 @@ def pumpjack_model(stage):
         # The carrier bar on the polished rod, the rod clamp over it; the rod runs down 45 pixels into the stuffing box and the well.
         e = [part([7.4, -16, 7.4], [8.6, 30, 8.6], 'o', faces=SIDES), part([4, 27, 7], [12, 29, 9], 'n'), part([7, 29, 7], [9, 31, 9], 'n')]
         return model(e, t, 'polished')
-    # The gearbox on the skid with the crank's shaft through it, the belt guard, and the motor behind on its own base.
-    e = [part([3.5, 3, 2], [12.5, 22, 14], 'p'), part([4, 16, 3], [12, 23.5, 13], 'p'), part([0, 0, -16], [3, 3, 32], 'k', faces=SIDES + ('up',)),
-         part([13, 0, -16], [16, 3, 32], 'k', faces=SIDES + ('up',)), part([3, 0, 0], [13, 3, 30], 'k', faces=('up',)),
+    # The gearbox on the skid with the crank's shaft through it, the belt guard, and the motor behind on its own base. 0.4.716: the skid's
+    # rails stop either side of where the weights swing lowest, so that each weight passes through a slot to the ground (and anything
+    # laid there is under it); and on the gearbox's cap the brake: a drum, and the cheeks and pin the lever turns on (the lever itself is
+    # pumpjack_brake, drawn by the renderer about the pin at 10, 25, 10.5).
+    e = [part([3.5, 3, 2], [12.5, 22, 14], 'p'), part([4, 16, 3], [12, 23.5, 13], 'p'),
+         part([0, 0, -16], [3, 3, 0], 'k', faces=SIDES + ('up',)), part([0, 0, 18], [3, 3, 32], 'k', faces=SIDES + ('up',)),
+         part([13, 0, -16], [16, 3, 0], 'k', faces=SIDES + ('up',)), part([13, 0, 18], [16, 3, 32], 'k', faces=SIDES + ('up',)),
+         part([3, 0, 0], [13, 3, 30], 'k', faces=('up',)),
+         part([5, 23.5, 8.5], [8, 26.5, 12.5], 'n'), part([4.6, 24, 9], [8.4, 26, 12], 'q'),
+         part([8.4, 23.5, 9.5], [9.2, 27, 11.5], 'n'), part([10.8, 23.5, 9.5], [11.6, 27, 11.5], 'n'), part([8.2, 24.5, 10], [11.8, 25.5, 11], 'g'),
          part([5, 3, 19], [12, 13, 30], 'm'), part([4, 5, 30], [13, 11, 31.5], 'm'), part([12, 7, 24], [17.5, 9, 26], 'g'),
          part([12.5, 13, 7], [17.5, 15, 9], 'g'),
          part([17.5, 4, 5], [20, 19, 28], {'east': 'x', 'west': 'p', 'north': 'p', 'south': 'p', 'up': 'p', 'down': 'p'})]
     return model(e, t, 'pj_paint')
+
+
+def pumpjack_brake():
+    """0.4.716: the brake's lever, about its pin at (8, 8, 8): a galvanized bar up from the pin with a worn grip at its end and the latch's
+    rod down the front of it. The renderer turns it back toward the motor (off) or pulls it up (on)."""
+    t = {'g': 'galv', 'q': 'pj_worn', 'n': 'weight_iron'}
+    e = [part([7.4, 7, 7.4], [8.6, 16, 8.6], 'g'), part([7, 15, 7], [9, 18, 9], 'q'), part([7.3, 9, 6.6], [8.7, 14, 7.2], 'n'),
+         part([7, 7, 7], [9, 9, 9], 'n')]
+    return model(e, t, 'galv')
 
 
 def pumpjack_saddle():
@@ -4083,7 +4099,7 @@ def pasture_models():
         m[f'battery_{s}'] = battery_model(s)
     for s in range(5):
         m[f'stock_{s}'] = stock_model(s)
-    m['pumpjack_saddle'] = pumpjack_saddle(); m['pumpjack_cable'] = pumpjack_cable()
+    m['pumpjack_saddle'] = pumpjack_saddle(); m['pumpjack_cable'] = pumpjack_cable(); m['pumpjack_brake'] = pumpjack_brake()
     return m
 
 
@@ -4675,6 +4691,8 @@ def textures():
     # 0.4.714: the face, scalded in the fryer.
     out['entity/the_list/burn.png'] = burn()
     out['entity/the_list/crush.png'] = crush()
+    # 0.4.716: the side of the head, under the pumpjack's weight.
+    out['entity/the_list/flat.png'] = flat()
     for i in (1, 2, 3):
         out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
         out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
@@ -5281,6 +5299,52 @@ def burn():
     return half.resize((512, 256), Image.NEAREST)
 
 
+def flat():
+    # 0.4.716, the pumpjack: the side of the head the weight came down on, over the five's own skins (512 by 256, painted two pixels to
+    # a dot). Bowed over with the left cheek on the ground, the right side of the head is uppermost: the whole of it (u 0 to 8, v 8 to 16)
+    # crushed, dark and split, wet through the middle; the hair over it (u 32 to 40) soaked and matted; the edges of the face, the top
+    # and the back where they meet it caught; blood from the right eye, the nose and the mouth; and the lower half of the left side,
+    # lying in it.
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    rnd = random.Random(97161)
+    bruise, dark = '#5b2a3a', '#3d2030'
+    for x0, cover in ((0, 1.0), (64, .8)):
+        for x in range(x0, x0 + 16):
+            for y in range(16, 32):
+                cx, cy = x - x0 - 7.5, y - 23.5
+                d = (cx * cx * .6 + cy * cy) ** .5 / 8
+                if d < .55 and rnd.random() < (.92 - d * .4) * cover:
+                    dot(half, x, y, BLOOD_DEEP if rnd.random() < .35 else BLOOD_WET)
+                elif d < 1.0 and rnd.random() < (.75 - d * .45) * cover:
+                    dot(half, x, y, rnd.choice((dark, bruise, BLOOD_DRY)))
+        # Splits out from the middle.
+        for k in range(5):
+            x, y = x0 + 7 + rnd.randint(-1, 1), 23 + rnd.randint(-1, 1)
+            dx, dy = rnd.choice(((1, 0), (-1, 0), (1, 1), (-1, -1), (0, 1), (1, -1)))
+            for _ in range(rnd.randint(3, 6)):
+                x += dx
+                y += dy
+                if x0 <= x < x0 + 16 and 16 <= y < 32 and rnd.random() < .9 * cover:
+                    dot(half, x, y, BLOOD_DEEP)
+    # Where the face, the top and the back meet the right side.
+    for xs, ys in (((16, 17), range(16, 32)), ((16, 17), range(0, 16)), ((62, 63), range(16, 32))):
+        for x in xs:
+            for y in ys:
+                if rnd.random() < .55:
+                    dot(half, x, y, rnd.choice((BLOOD_WET, BLOOD_DRY, bruise)))
+    # The right eye, the nose and the mouth, on the face's own rows.
+    for x, y0, y1 in ((19, 24, 30), (20, 24, 31), (23, 26, 31), (24, 26, 31), (21, 28, 32), (22, 28, 32)):
+        for y in range(y0, y1):
+            if rnd.random() < .7:
+                dot(half, x, y, BLOOD_WET if y < 29 else BLOOD_DRY)
+    # The left side, lying in it.
+    for x in range(32, 48):
+        for y in range(25, 32):
+            if rnd.random() < .35 + (y - 25) * .08:
+                dot(half, x, y, BLOOD_WET if rnd.random() < .6 else BLOOD_DRY)
+    return half.resize((512, 256), Image.NEAREST)
+
+
 def crush():
     # 0.4.715, the car door: where it came down on the back of the head, over the five's own skins (512 by 256, painted two pixels to
     # a dot). Worn on the knees at the car, bent toward it with the head in at the door, so the back of the head is uppermost and the
@@ -5535,7 +5599,7 @@ def files():
     # the pumpjack's saddle.
     machine = {}
     for facing, y in FACING_Y.items():
-        for kind, name in (('windmill', 'windmill_4'), ('pumpjack', 'pumpjack_saddle'), ('cable', 'pumpjack_cable')):
+        for kind, name in (('windmill', 'windmill_4'), ('pumpjack', 'pumpjack_saddle'), ('cable', 'pumpjack_cable'), ('brake', 'pumpjack_brake')):
             v = {'model': NS + f'block/the_list/{name}'}
             if y:
                 v['y'] = y
@@ -5612,6 +5676,11 @@ def main():
     def crushed(x0, x1, y0, y1):
         return sum(cr.getpixel((x, y))[3] > 0 for x in range(x0, x1) for y in range(y0, y1))
     assert crushed(96, 128, 32, 64) >= 120 and crushed(224, 256, 32, 64) >= 60 and crushed(128, 160, 80, 84) >= 20
+    # 0.4.716: the pumpjack's mark is on the right side of the head and its hair, and only on the head.
+    fl = images['entity/the_list/flat.png']
+    def flattened(x0, x1, y0, y1):
+        return sum(fl.getpixel((x, y))[3] > 0 for x in range(x0, x1) for y in range(y0, y1))
+    assert flattened(0, 32, 32, 64) >= 300 and flattened(128, 160, 32, 64) >= 150 and flattened(0, 512, 64, 256) == 0
     # 0.4.711: the neck's mark is on the nape and the collar behind, and nowhere else.
     nk = images['entity/the_list/neck.png']
     def inked(x0, x1, y0, y1):

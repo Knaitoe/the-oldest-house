@@ -74,6 +74,8 @@ public final class TheList {
         if(TheListBlock.is(st,TheListBlock.Kind.LINE)&&TheListLine.hand(p,b,rel))return true;
         // 0.4.714: the fryer's knob turns for anyone; held one of the five near it, the slasher's hand on it is theirs.
         if(TheListBlock.is(st,TheListBlock.Kind.FRYER)&&TheListFryer.hand(p,b,rel))return true;
+        // 0.4.716: a pumpjack's gearbox: its brake for anyone; held one of the five near it, the slasher's hand on it is theirs.
+        if(TheListBlock.is(st,TheListBlock.Kind.PUMPJACK)&&st.getValue(TheListBlock.STAGE)==7&&TheListJack.hand(p,b,rel))return true;
         // The wire gap opens and shuts by hand, all three of its cells together, for everyone.
         if(TheListBlock.is(st,TheListBlock.Kind.PASTURE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
             boolean open=st.getValue(TheListBlock.STAGE)==2;
@@ -162,6 +164,8 @@ public final class TheList {
             TheListFryer.tick(l,s.base,here);
             // 0.4.715: the drive-in car, told where it stands, and its door swung.
             TheListCar.tick(l,s.base,here);
+            // 0.4.716: a pumpjack stalled on what was put in its weight's way.
+            TheListJack.tick(l,s.base,here);
         }
     }
     /**
@@ -175,7 +179,8 @@ public final class TheList {
         if(TheListMachines.creaks(time,head)&&anyNear(here,s.base,head,40))play(l,head,TheListRegistry.WINDMILL.get(),1.2F);
         for(int i=0;i<TheListSite.JACKS.length;i++){
             var at=s.base.offset(TheListSite.jackMachine(i));
-            if(TheListMachines.knocks(time,at)&&anyNear(here,s.base,at,36))play(l,at,TheListRegistry.PUMPJACK.get(),1.1F);
+            // 0.4.716: at the well's own tick, which its brake holds; never asked of a well whose ground is not loaded.
+            if(anyNear(here,s.base,at,36)&&l.isLoaded(at)&&TheListMachines.knocks(l.getBlockEntity(at),time,at))play(l,at,TheListRegistry.PUMPJACK.get(),1.1F);
         }
         if(s.tick%6!=0)return;
         for(var p:here){
