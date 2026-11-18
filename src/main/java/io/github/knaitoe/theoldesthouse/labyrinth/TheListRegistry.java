@@ -87,7 +87,8 @@ public final class TheListRegistry {
     /** 0.4.715: the drive-in car's door, slammed (shut, or on someone) and opened. */
     public static final DeferredHolder<SoundEvent,SoundEvent> CAR_DOOR=sound("the_list.car_door"),CAR_OPEN=sound("the_list.car_open");
     /** 0.4.716: a pumpjack's brake hauled on or knocked off, and its motor labouring against a stall. */
-    public static final DeferredHolder<SoundEvent,SoundEvent> BRAKE=sound("the_list.brake"),STRAIN=sound("the_list.strain");
+    public static final DeferredHolder<SoundEvent,SoundEvent> BRAKE=sound("the_list.brake"),STRAIN=sound("the_list.strain"),
+        DUNK=sound("the_list.dunk");
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     /** 0.4.709: blood thrown off the hay hook and dripping, drawn by the client (TheListBloodParticles). */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> BLOOD=

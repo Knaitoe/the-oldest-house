@@ -235,6 +235,26 @@ public final class TheListTexts {
     public static final String[] FOUND_JACK_BODY=FOUND_BODY.clone();
     static{FOUND_JACK_BODY[TheListPeople.SHANNON]="That's %s. That's %s at the pumpjack.";}
     public static final String FOUND_JACK="%s kneels at a pumpjack, the head under its weight.";
+    // ------------------------------------------------------------------------------------------------ 0.4.717: the stock tank
+    /** What each of the five says, forced over the stock tank's rim with the head going under. */
+    public static final String[] TANK=new String[TheListPeople.CAST];
+    static {
+        TANK[TheListPeople.DEEK]="Not the water. Come on. Not the water.";TANK[TheListPeople.WES]="I can't swim! You know I can't swim!";
+        TANK[TheListPeople.MEL]="Let go of my hair! Let go!";TANK[TheListPeople.LESLEY]="It's in my mouth! It's in my mouth!";
+        TANK[TheListPeople.SHANNON]="Jenna! Jenna, the tank! I'm at the tank!";
+    }
+    /** To the slasher: forcing one of them over the rim; the head come up; put back under; the last time; and still. */
+    public static final String INTO_TANK="You force %s over the rim of the tank and push the head under the water.",
+        TANK_UP="The head comes up out of the water, gasping.",TANK_AGAIN="You push the head back under.",
+        TANK_LAST="You push the head back under. This time you hold it there.",
+        TANK_STILL="The water stops moving round the head. %s goes still.";
+    /** To anyone else's hand on one held under, or on the wall there; to anyone's hand on the wall where one is drowned. */
+    public static final String TANK_HELD="%s is held over the rim of the tank, the head under the water.",
+        TANK_STILLWATER="%s hangs over the rim, the head under the water. Nothing moves in it.";
+    /** One drowned at the tank, come across: by the rest of the five (Shannon's own line says where), and by a reader who is not the slasher. */
+    public static final String[] FOUND_TANK_BODY=FOUND_BODY.clone();
+    static{FOUND_TANK_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the tank.";}
+    public static final String FOUND_TANK="%s hangs over the rim of the stock tank, the head under the water.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

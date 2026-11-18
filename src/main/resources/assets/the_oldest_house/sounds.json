@@ -7292,5 +7292,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.strain"
+  },
+  "the_list.dunk": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/dunk",
+        "attenuation_distance": 20
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.dunk"
   }
 }

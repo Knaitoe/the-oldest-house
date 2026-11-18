@@ -1185,6 +1185,24 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.PINNED->{low(17.5F,1.72F,-.08F);
                     rightArm.xRot=-.2F;rightArm.yRot=0;rightArm.zRot=1.42F;leftArm.xRot=-.6F;leftArm.yRot=0;leftArm.zRot=-1.38F;
                     head.xRot=1.72F;head.yRot=0;head.zRot=1.28F;}
+                // 0.4.717, the stock tank. Pressed against its wall and bent over the rim from the hips, the head pushed down under the
+                // water; the hands on the rim either side shoving to lift, the head twisting against the hold, the feet scrabbling.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.DUNKED->{float w=net.minecraft.util.Mth.sin(age*1.4F),v=net.minecraft.util.Mth.cos(age*1.1F);
+                    low(10.7F,2F+w*.04F,0F);
+                    rightLeg.xRot=.25F+w*.3F;leftLeg.xRot=.25F-w*.3F;
+                    rightArm.xRot=.35F+v*.15F;leftArm.xRot=.35F-v*.15F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=.55F+w*.1F;leftArm.zRot=-.55F+w*.1F;
+                    head.xRot=2.6F+v*.08F;head.yRot=w*.35F;head.zRot=0;}
+                // Come up: the head and shoulders up out of the water, thrown back, gasping; the hands braced on the rim.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.SURFACED->{float w=net.minecraft.util.Mth.sin(age*2.2F);
+                    low(10.7F,.75F,0F);
+                    rightLeg.xRot=.2F;leftLeg.xRot=.25F;
+                    rightArm.xRot=-.6F;leftArm.xRot=-.6F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=.35F;leftArm.zRot=-.35F;
+                    head.xRot=-.55F+w*.08F;head.yRot=0;head.zRot=0;}
+                // Still: slumped over the rim, the head under the water, both arms hanging down into it.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.SUNK->{low(10.4F,2.05F,0F);
+                    rightLeg.xRot=.18F;leftLeg.xRot=.12F;
+                    rightArm.xRot=-.15F;rightArm.yRot=0;rightArm.zRot=.08F;leftArm.xRot=-.25F;leftArm.yRot=0;leftArm.zRot=-.06F;
+                    head.xRot=2.7F;head.yRot=.15F;head.zRot=.1F;}
                 default->{}
             }
             hat.copyFrom(head);

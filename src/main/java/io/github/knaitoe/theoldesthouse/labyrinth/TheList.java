@@ -76,6 +76,8 @@ public final class TheList {
         if(TheListBlock.is(st,TheListBlock.Kind.FRYER)&&TheListFryer.hand(p,b,rel))return true;
         // 0.4.716: a pumpjack's gearbox: its brake for anyone; held one of the five near it, the slasher's hand on it is theirs.
         if(TheListBlock.is(st,TheListBlock.Kind.PUMPJACK)&&st.getValue(TheListBlock.STAGE)==7&&TheListJack.hand(p,b,rel))return true;
+        // 0.4.717: a straight cell of the stock tank's wall, under the slasher's hand with hold of one of the five, is theirs.
+        if(TheListBlock.is(st,TheListBlock.Kind.STOCK)&&TheListTank.hand(p,b,rel))return true;
         // The wire gap opens and shuts by hand, all three of its cells together, for everyone.
         if(TheListBlock.is(st,TheListBlock.Kind.PASTURE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
             boolean open=st.getValue(TheListBlock.STAGE)==2;
