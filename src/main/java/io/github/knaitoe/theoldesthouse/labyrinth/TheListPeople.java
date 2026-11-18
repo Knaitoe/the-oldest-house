@@ -88,19 +88,23 @@ public final class TheListPeople {
     public record Spot(BlockPos at,Direction facing){}
     public static @Nullable Spot spot(int phase,int who){
         int i=-1;for(int k=0;k<TheListNight.FIVE.length;k++)if(TheListNight.FIVE[k]==who)i=k;
-        if(i>=0&&phase!=TheListNight.NONE){
+        if(i>=0&&phase!=TheListNight.NONE&&phase<TheListNight.HOME2){
             if(phase==TheListNight.PARTY||phase==TheListNight.RIDE)return new Spot(TheListNight.AT_TANK[i],TheListNight.FACE_TANK[i]);
             if(phase==TheListNight.SEED||phase==TheListNight.SHUT)return new Spot(TheListNight.AT_GIN[i],TheListNight.FACE_GIN[i]);
             return null;
         }
         // 0.4.707: from the cut until first light Amber is up at her window, over the street.
         if(who==AMBER&&phase==TheListNight.AFTER)return new Spot(TheListNight.AT_WINDOW,Direction.SOUTH);
+        // 0.4.720: on night two she is in her den, in front of the television, until she sets off for the field.
+        if(who==AMBER&&phase>=TheListNight.HOME2)return new Spot(TheListDen.DEN_AT,Direction.WEST);
         return new Spot(AT[who],FACING[who]);
     }
     /** One of the town's people near where they are now; a second of the same is let go. 0.4.708: one the hunt has sent running or hiding
      * is wherever the hunt has them. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
         if(TheListHunt.holds(b,who))return TheListHunt.actor(l,b,who);
+        // 0.4.720: Amber, out on night two's tests, is wherever she has got to.
+        if(TheListDen.holds(l.getServer(),b,who)){for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.phase()==FIRST+who&&x.isAlive()))return a;return null;}
         var s=spot(TheListNight.phase(l.getServer(),b),who);if(s==null)return null;
         LiteraryActor found=null;
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(s.at())).inflate(6),x->is(x)&&x.phase()==FIRST+who&&x.isAlive())){if(found==null)found=a;else a.discard();}
@@ -129,7 +133,7 @@ public final class TheListPeople {
             // 0.4.708: one the hunt has sent running or hiding is left where they are. 0.4.714: Jenna, once the fryer has been used, is
             // left to her corner.
             if(who==JENNA&&TheListHunt.fryerUsed(b))cornered(l,b);
-            else if(!TheListHunt.holds(b,who))place(a,at,who,s.facing());
+            else if(!TheListHunt.holds(b,who)&&!TheListDen.holds(l.getServer(),b,who))place(a,at,who,s.facing());
             // Mel has the camera out from the party until the seed house, and through a hunt until she lets it fall (0.4.709); Amber, at her window after the cut, a page out of a notebook
             // (0.4.707); nobody else holds anything.
             var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b)&&!TheListHunt.dropped(b,MEL))?LiteraryRegistry.CAMCORDER.get()

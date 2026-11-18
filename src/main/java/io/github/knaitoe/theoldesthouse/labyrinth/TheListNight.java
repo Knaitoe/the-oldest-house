@@ -62,7 +62,9 @@ public final class TheListNight {
     public static final double RATE=1/3.0;
     public static final int NONE=0,PARTY=1,RIDE=2,SEED=3,SHUT=4,AFTER=5,DONE=6;
     /** The phases' names, for an operator. */
-    public static final String[] NAMES={"none","party","ride","seed house","shut","after","first light"};
+    public static final String[] NAMES={"none","party","ride","seed house","shut","after","first light","night two, home","night two, the den","night two, to the field","night two, the field","night two, ran"};
+    /** 0.4.720, night two (TheListDen): home at ten, Amber's den, her walk to the field, the field, and the first rule written. */
+    public static final int HOME2=7,DEN=8,TO_FIELD=9,FIELD=10,RAN=11;
     /** The hour on a clock, from the game's own day time: "2:00 am". */
     public static String hour(long time){
         if(time<0)return "no night";
@@ -176,6 +178,9 @@ public final class TheListNight {
         var n=night(p.server,b);
         boolean owed=LiteraryVignettes.participant(p)&&own.getInt("Night")<1;
         if(n==null||n.phase==NONE){if(owed&&!quiet(p.server,b))begin(p,b);return;}
+        // 0.4.720: the one who went in, back in a town whose night one is over, and night two begins round them.
+        if(TheListDen.owed(p,n,own)){TheListDen.begin(p,n);return;}
+        if(n.phase>=HOME2){TheListDen.hour(p,n);return;}
         if(n.phase==DONE&&owed&&TheList.readers(p.serverLevel(),b).stream().allMatch(q->q==p)){end(p.serverLevel(),b);begin(p,b);return;}
         if(n.phase==PARTY)TheList.cue(p,TheListTexts.PARTY_HEARD);
         boolean running=n.phase==PARTY||n.phase==RIDE||n.phase==AFTER;
@@ -194,7 +199,7 @@ public final class TheListNight {
     public static void end(ServerLevel l,BlockPos b){
         var n=night(l.getServer(),b);
         if(n!=null){cars(l,n,false);}
-        props(l,b,false);seedHouse(l,b,true,true);
+        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);
         NIGHTS.remove(b.asLong());
         var d=LabyrinthData.get(l.getServer());int copy=copy(l.getServer(),b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);w.remove("Night");LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
         TheListPeople.ensure(l,b);
@@ -228,7 +233,7 @@ public final class TheListNight {
             case SHUT->changed=shut(l,n,here);
             case AFTER->{n.time=Math.min(LIGHT,n.time+RATE);changed=after(l,n,here);}
             case DONE->changed=light(l,n,here);
-            default->{}
+            default->{if(n.phase>=HOME2)changed=TheListDen.tick(l,n,here);}
         }
         if(changed){save(l.getServer(),n);TheListPeople.ensure(l,b);send(l,n,true);}
         else{if(n.since%100==0)save(l.getServer(),n);send(l,n,false);}
@@ -236,8 +241,8 @@ public final class TheListNight {
     /** The clock (and the shake) to everyone in town, spectators too: on a change, and once a second. */
     static void send(ServerLevel l,Night n,boolean now){
         if(!now&&++n.sent%20!=0)return;
-        boolean running=n.phase==PARTY||n.phase==RIDE||n.phase==AFTER;
-        float rate=(float)(running&&n.time<(n.phase==AFTER?LIGHT:TWO)?RATE:0);
+        boolean running=n.phase==PARTY||n.phase==RIDE||n.phase==AFTER||n.phase>=HOME2;
+        float rate=(float)(running&&n.time<(n.phase==AFTER||n.phase>=HOME2?LIGHT:TWO)?RATE:0);
         boolean shaking=n.phase==SHUT&&n.since>=AUGER&&n.since<CUT;
         var house=Vec3.atLowerCornerOf(n.base).add(DOOR_X+.5,0,(TheListSite.SEED_N+TheListSite.SEED_S)/2.0);
         for(var q:inTown(l,n.base)){
@@ -285,6 +290,8 @@ public final class TheListNight {
     static boolean talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         var b=TheListBody.town(p);if(b==null)return false;
         var n=night(p.server,b);if(n==null)return false;
+        // 0.4.720: on night two, Amber is the den's.
+        if(TheListDen.talk(p,a,n,own))return true;
         int who=TheListPeople.who(a);
         // 0.4.707: Amber, at her window from the cut until first light, has one thing to say through the glass.
         if(who==TheListPeople.AMBER&&n.phase==AFTER){a.sayTo(p,TheListTexts.NAMES[who],TheListTexts.AMBER_AFTER);a.speaks(TheListTexts.AMBER_AFTER);return true;}

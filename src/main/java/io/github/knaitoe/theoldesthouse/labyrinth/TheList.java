@@ -58,6 +58,8 @@ public final class TheList {
             if(held!=null&&TheListHunt.bolted(b,held)){if(!TheListBody.strike(p,b,rel))cue(p,TheListTexts.BOLTED);return true;}
             if(!st.is(TheListRegistry.HOUSE_DOOR.get()))return false;
             var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
+            // 0.4.720: Amber's back door on night two.
+            if(TheListDen.door(p,b,lower,own))return true;
             if(TheListSite.inHouse(Vec3.atCenterOf(lower))||lower.equals(TheListSite.FRONT_DOOR))return false;
             // 0.4.705: with the slasher's body, a hand on a locked door is a blow; the third gives.
             if(TheListBody.strike(p,b,rel))return true;
@@ -127,7 +129,7 @@ public final class TheList {
     public static boolean active(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     public static int clock(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.tick;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){ACTIVE.clear();}
-    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();}
+    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();TheListDen.clearAll();}
     /**
      * Every few seconds while someone is in town, its night, each heard where it is: crickets near a reader who is outdoors, a dog behind
      * the back fence nearest them, the drive-in's nearest speaker post to anyone on that stretch of Main Street, the loose tin on whichever

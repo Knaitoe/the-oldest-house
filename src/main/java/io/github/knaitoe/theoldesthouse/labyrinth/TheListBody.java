@@ -360,6 +360,8 @@ public final class TheListBody {
             var to=near.position().subtract(p.position());yaw=(float)Math.toDegrees(Math.atan2(-to.x,to.z));
             strength=(float)(1-best/PULL);
             if(lit(p,l))strength*=.35F;
+            // 0.4.720: Amber's notebook in hand holds it off too.
+            if(TheListDen.holding(p))strength*=.5F;
             if(Math.abs(Mth.wrapDegrees(yaw-p.getYHeadRot()))>110)strength*=.5F;
         }
         live.pulled=near==null?null:near.getUUID();live.pullYaw=yaw;live.pull=strength;

@@ -2081,4 +2081,91 @@ public final class TheListTests {
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.TheListMarksPayload m&&m.player().equals(who.getUUID()))last=m.blood();
         return last;
     }
+
+    /** The pages of a written book, as plain text. */
+    private static List<String> pages(net.minecraft.world.item.ItemStack s){
+        var out=new ArrayList<String>();var c=s.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);
+        if(c!=null)for(var page:c.pages())out.add(page.raw().getString());
+        return out;
+    }
+    private static net.minecraft.world.item.ItemStack notebook(ServerPlayer p){
+        var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(TheListDen.isNotebook(inv.getItem(i)))return inv.getItem(i);
+        return net.minecraft.world.item.ItemStack.EMPTY;
+    }
+    /**
+     * 0.4.720: night two, as far as Amber's first test. Begun round the one who went in: ten o'clock, Amber in her den. The other reader's
+     * hand on her back door finds it locked; the one who went in's opens it, and the den begins. Talked to, she humors them: the rules, the
+     * notebook (theirs alone, the tapes' rules in it), the first test. The other reader is only told to keep it down. She goes; set down at
+     * the field's south end zone, she waits until the one who went in is beside her, counts three and runs the field's length. Kept up
+     * with, she says it is not fair and writes the first rule down: it is in their record and in the notebook they carry, and holding the
+     * notebook is holding it. Ended, Amber's doors are shut and the night is gone.
+     */
+    @GameTest(template="empty",batch="the_list_den",timeoutTicks=6000)
+    public static void nightTwoDen(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_den",P);var peer=f.player("list_den_peer",P);
+        hold(f,b,TheListDen.DEN_AT,BlockPos.containing(TheListDen.END_S),BlockPos.containing(TheListDen.END_N),new BlockPos(TheListSite.FIELD_X,0,TheListSite.FIELD_Z));
+        List<String> seen=new ArrayList<>();
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);cues(p);
+            h.assertTrue(TheListDen.begin(p,b),"night two begins round the one who went in");
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.HOME2&&TheListNight.time(s,b)==TheListNight.TEN,"ten o'clock, at home");
+            h.assertTrue(cues(p).contains(TheListTexts.HOME2),"told where Amber said");
+            h.assertTrue(TheListBody.has(p),"the body is theirs");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);h.assertTrue(near(l,b,TheListPeople.AMBER,Vec3.atBottomCenterOf(TheListDen.DEN_AT)),"waiting for Amber in her den");})
+        .thenExecute(()->{
+            cues(peer);f.click(peer,P,TheListSite.AMBER_BACK);
+            h.assertTrue(cues(peer).contains(TheListTexts.AMBER_DOOR)&&TheListNight.phase(s,b)==TheListNight.HOME2&&shut(l,b,TheListSite.AMBER_BACK),"the other reader's hand finds her back door locked");
+            cues(p);f.click(p,P,TheListSite.AMBER_BACK);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.DEN&&!shut(l,b,TheListSite.AMBER_BACK),"the one who went in has it open: "+TheListNight.NAMES[TheListNight.phase(s,b)]);
+            h.assertTrue(cues(p).contains(TheListTexts.BACK_DOOR_OPENS),"told so");
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            f.at(p,P,DEN_STAND.x,0,DEN_STAND.z);f.at(peer,P,DEN_STAND.x+1,0,DEN_STAND.z);
+            LiteraryVignettes.talk(peer,amber);
+            h.assertTrue(TheListTexts.DEN_OTHER.equals(said(amber))&&notebook(peer).isEmpty(),"the other reader is told to keep it down, and given nothing");
+            LiteraryVignettes.talk(p,amber);h.assertTrue(TheListTexts.DEN[1].equals(said(amber)),"the rules: "+said(amber));
+            cues(p);LiteraryVignettes.talk(p,amber);
+            h.assertTrue(TheListTexts.DEN[2].equals(said(amber))&&cues(p).contains(TheListTexts.NOTEBOOK_GIVEN),"the notebook");
+            var book=notebook(p);
+            h.assertTrue(!book.isEmpty()&&pages(book).size()==1&&pages(book).get(0).contains("from the tapes"),"the notebook is theirs, the tapes' rules in it: "+pages(book));
+            LiteraryVignettes.talk(p,amber);h.assertTrue(TheListTexts.DEN[3].equals(said(amber))&&TheListNight.phase(s,b)==TheListNight.DEN,"the first test");
+            LiteraryVignettes.talk(p,amber);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.TO_FIELD,"she sets off: "+TheListNight.NAMES[TheListNight.phase(s,b)]);
+            LiteraryVignettes.talk(p,amber);h.assertTrue(TheListTexts.ON_THE_WAY.equals(said(amber)),"on the way she says where");
+            h.assertTrue(f.own(p,P).getBoolean("Notebook"),"the record keeps the notebook given");
+        }).thenWaitUntil(()->{var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(amber!=null&&amber.position().distanceTo(Vec3.atBottomCenterOf(b.offset(TheListDen.DEN_AT)))>2,"waiting for Amber to walk off");})
+        .thenExecute(()->{
+            TheListDen.atField(l,b);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.FIELD,"at the field");
+            var end=TheListDen.END_S;f.at(p,P,end.x+2,0,end.z);
+        }).thenWaitUntil(()->h.assertTrue(TheListDen.running(b),"waiting for her count and the run"))
+        .thenWaitUntil(()->{
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            if(amber!=null&&TheListNight.phase(s,b)==TheListNight.FIELD){var at=amber.position().subtract(Vec3.atLowerCornerOf(b));f.at(p,P,at.x+1.5,0,at.z+2.5);}
+            seen.addAll(cues(p));
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.RAN,"waiting for the far end, kept up with: "+(amber==null?"nowhere":amber.position().subtract(Vec3.atLowerCornerOf(b))));
+        }).thenExecute(()->{
+            seen.addAll(cues(p));
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(amber!=null&&amber.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(TheListDen.END_N)<1,"she ran the field's length");
+            h.assertTrue(TheListTexts.RAN_KEPT.equals(said(amber))&&seen.contains(TheListTexts.RULE_WRITTEN),"not fair, and the rule written: "+said(amber)+" / "+seen);
+            h.assertTrue(TheListDen.rules(p)==1,"the record keeps the first rule");
+            var book=notebook(p);
+            h.assertTrue(pages(book).size()==2&&pages(book).get(1).contains(TheListTexts.RULES[0].substring(0,20)),"the notebook they carry has it: "+pages(book));
+            var inv=p.getInventory();int slot=inv.findSlotMatchingItem(book);
+            var kept=inv.getItem(20).copy();inv.setItem(20,book.copy());inv.setItem(slot,kept);
+            h.assertFalse(TheListDen.holding(p),"packed away, it is not held");
+            inv.selected=0;var first=inv.getItem(0).copy();inv.setItem(0,inv.getItem(20).copy());inv.setItem(20,first);
+            h.assertTrue(TheListDen.holding(p),"in hand it is held");
+            LiteraryVignettes.talk(p,amber);h.assertTrue(TheListTexts.NEXT_DOOR.equals(said(amber)),"the next test is the field house's door");
+            TheListNight.end(l,b);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.NONE&&shut(l,b,TheListSite.AMBER_BACK)&&shut(l,b,TheListSite.AMBER_FRONT),"ended, her doors shut");
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+    /** Where a reader stands in Amber's den to talk to her: between her and the couch. */
+    private static final Vec3 DEN_STAND=new Vec3(-5.5,0,-80.5);
 }
