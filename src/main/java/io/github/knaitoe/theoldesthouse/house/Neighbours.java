@@ -76,10 +76,15 @@ public final class Neighbours {
 
     /**
      * Whether any neighbour's district holds at {@code pos}: its land, its worksites and their margin. Any number of neighbours may
-     * say, and one is enough. A neighbour whose answer throws is taken as not holding, and said once in the log.
+     * say, and one is enough. A neighbour whose answer throws is taken as not holding, and said once in the log. A neighbour is
+     * handed a position of its own, which it may keep: never a cursor the House moves on.
      */
     public static boolean districtLand(ServerLevel level, BlockPos pos) {
-        return holds(DISTRICTS, level, pos) || holds(TEST_DISTRICTS, level, pos);
+        if (!anyDistrict()) {
+            return false;
+        }
+        BlockPos at = pos.immutable();
+        return holds(DISTRICTS, level, at) || holds(TEST_DISTRICTS, level, at);
     }
 
     /** Whether any neighbour has said where its districts are (or a case has installed one). With none, nothing is district land. */
