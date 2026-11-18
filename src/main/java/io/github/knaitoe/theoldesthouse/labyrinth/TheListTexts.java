@@ -25,6 +25,9 @@ public final class TheListTexts {
     /** 0.4.701: the pasture's wire gap, opened and shut by hand; the two machines. */
     public static final String GAP_OPEN="You lift the loop off the post and lay the gap back on the grass.",
         GAP_SHUT="You stretch the gap across and drop the loop back over the post.",
+        // 0.4.701: a yard's gate, by hand.
+        GATE_OPEN="You lift the latch and swing the gate open. Its hinge complains.",
+        GATE_SHUT="You swing the gate to. The latch drops into its fork.",
         WINDMILL_HEAD="The windmill's head, up on its tower. The wheel goes round in front of it.",
         JACK_BEARING="The beam's bearing on top of the post. The horsehead rises and falls over the well.";
 
@@ -51,7 +54,7 @@ public final class TheListTexts {
             case MESQUITE->switch(stage){case 0,1->"Mesquite. The bark is ridged and the thorns are long.";case 4->"A low branch. There's a thorn in it as long as a finger.";default->"Small leaves, a lot of them. The branches are mostly thorn.";};
             case WEED->switch(stage){case 0->"A tumbleweed, caught here till the wind changes.";case 1->"Broomweed, dry, gone to seed.";case 2->"A tuft of grass, dead at the top.";case 3->"Goatheads. One goes straight into your thumb.";case 4->"Prickly pear. You keep your hand off it.";default->null;};
             case POLE->switch(stage){case 5->"The street light hums. Bugs go round it.";case 6->"A transformer on the pole. It ticks.";default->"A pole, creosote and splinters. Staples in it where flyers were.";};
-            case FENCE->switch(stage){case 1->"A fence post, set in a lump of concrete.";case 2->"The gate's latch lifts. Its hinge complains.";default->"Chain-link. It gives a little and rings along its length.";};
+            case FENCE->stage==1?"A fence post, set in a lump of concrete.":"Chain-link. It gives a little and rings along its length.";
             case SIGNPOST->switch(stage){case 0->"South Ninth and Avenue K.";case 1->"Main Street and Avenue K.";case 2->"South Seventh and Avenue K.";case 3->"A stop sign. Somebody has shot at it.";case 4->"The bus stops here. The schedule on it has been torn off.";case 5->"The crossbuck at the tracks. The paint is coming off it in flakes.";default->null;};
             case TRACK->"The rail is still warm from the day.";
             case MAILBOX->"The flag's down. There's nothing in it.";

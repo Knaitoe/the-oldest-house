@@ -934,6 +934,13 @@ def fence_model(stage):
              element([0, 0, 7.5], [16, 1, 8.5], {'all': 'g'}), element([0, 13, 7.5], [16, 14, 8.5], {'all': 'g'}),
              element([0, 1, 7.5], [1, 13, 8.5], {'all': 'g'}), element([15, 1, 7.5], [16, 13, 8.5], {'all': 'g'}),
              element([14, 7, 6.5], [17, 8, 9.5], {'all': 'g'})]
+    if stage == 3:
+        # 0.4.701: the gate swung open on its hinge at the west post, out the way it faces: the same frame and mesh, along the cell's west edge
+        # and on past it, the latch fork at its far end.
+        e = [element([0.5, 0.5, -7.5], [0.5, 13.5, 7.5], {'east': 'm', 'west': 'm'}),
+             element([0, 0, -8], [1, 1, 8], {'all': 'g'}), element([0, 13, -8], [1, 14, 8], {'all': 'g'}),
+             element([0, 1, 7], [1, 13, 8], {'all': 'g'}), element([0, 1, -8], [1, 13, -7], {'all': 'g'}),
+             element([-1, 7, -9], [2, 8, -6], {'all': 'g'})]
     return model(e, t, 'chainlink')
 
 
@@ -4091,7 +4098,7 @@ def fitting_models():
         m[f'mesquite_{s}'] = mesquite_model(s); m[f'weed_{s}'] = weed_model(s)
     for s in range(7):
         m[f'pole_{s}'] = pole_model(s)
-    for s in range(3):
+    for s in range(4):
         m[f'fence_{s}'] = fence_model(s)
     for s in range(6):
         m[f'signpost_{s}'] = signpost_model(s)
@@ -4186,7 +4193,7 @@ KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'ma
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
          'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
          'pasture', 'stock', 'windmill', 'pumpjack', 'battery']
-STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 3, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
+STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
           'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,

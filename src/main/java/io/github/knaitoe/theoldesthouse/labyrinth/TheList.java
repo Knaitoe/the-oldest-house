@@ -66,6 +66,14 @@ public final class TheList {
             cue(p,open?TheListTexts.GAP_OPEN:TheListTexts.GAP_SHUT);
             return true;
         }
+        // 0.4.701: a yard's gate swings open and shut by hand, for everyone; the cue is the reader's own.
+        if(TheListBlock.is(st,TheListBlock.Kind.FENCE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
+            boolean open=st.getValue(TheListBlock.STAGE)==2;
+            l.setBlock(b.offset(rel),st.setValue(TheListBlock.STAGE,open?3:2),3);
+            l.playSound(null,b.offset(rel),open?net.minecraft.sounds.SoundEvents.FENCE_GATE_OPEN:net.minecraft.sounds.SoundEvents.FENCE_GATE_CLOSE,SoundSource.BLOCKS,.7F,.9F);
+            cue(p,open?TheListTexts.GATE_OPEN:TheListTexts.GATE_SHUT);
+            return true;
+        }
         String line=TheListTexts.thing(st.getValue(TheListBlock.KIND),st.getValue(TheListBlock.STAGE));
         if(line==null)return false;
         cue(p,line);

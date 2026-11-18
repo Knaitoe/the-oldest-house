@@ -768,7 +768,8 @@ public final class TheListSite {
         set(l,b,0,0,s+2,fit(Kind.FENCE,Direction.NORTH,2));
         // Out back: the step down to the alley, her trash can.
         for(int z=n-1;z>=ALLEY_S+1;z--){set(l,b,0,-1,z,mat("sidewalk"));set(l,b,0,0,z,AIR);}
-        set(l,b,0,0,-91,fit(Kind.FENCE,Direction.NORTH,2));
+        // 0.4.701: her back gate stands open onto the alley, one step out from the back door, so the door has somewhere to open onto.
+        set(l,b,0,0,AMBER_N-1,fit(Kind.FENCE,Direction.NORTH,3));
         set(l,b,2,0,ALLEY_S+1,fit(Kind.LOT,Direction.SOUTH,2));
     }
 
