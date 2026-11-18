@@ -65,6 +65,8 @@ public final class PlaceForYou {
         int theoLeg,inviteAt=-1,careAt=-1,kitNightAt=-1;
         // 0.4.689 (PlaceForYouRoom): when the last fold was made, or the drawer opened.
         int roomAt=-1;
+        // 0.4.699: where each of them last stood still, and since when; for one who has stood in the same place on the way to their mark.
+        final Map<UUID,double[]> still=new HashMap<>();
         // 0.4.690 (PlaceForYouBack): when the catch was drawn with nothing holding the door, and since when a refused Kit has been unwatched.
         int backAt=-1,backSince=-1;
         final Map<UUID,Long> said=new HashMap<>();
@@ -218,6 +220,13 @@ public final class PlaceForYou {
                 ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,.3,0))
                 ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,a.getEyeHeight(),0));
         double far=a.position().distanceToSqr(to);
+        // 0.4.699 (run 1723: Mara on the edge of the stair's first tread, half over the hall floor, where a route found no way on and she
+        // stood for good): one who has not moved for two seconds on the way to their mark, while nobody sees them, is set down on the floor
+        // at their feet, a little toward where they were going, and goes on from there.
+        var now=a.position();var last=h.still.get(a.getUUID());
+        if(last==null||now.distanceToSqr(last[0],last[1],last[2])>.01){h.still.put(a.getUUID(),new double[]{now.x,now.y,now.z,h.tick});}
+        else if(h.tick-(long)last[3]>=40&&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())&&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))
+                &&setDown(l,h,a,to)){h.still.remove(a.getUUID());return;}
         if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
         else if(seat&&far<6.25&&slideClear(l,a,to)){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
         else{
@@ -233,6 +242,19 @@ public final class PlaceForYou {
             }
             SceneFootpaths.walk(a,step==null?to:new Vec3(b.getX()+step.x,b.getY()+step.y,b.getZ()+step.z),.12);
         }
+    }
+
+    /** Down onto the floor of the storey at the walker's feet, up to half a block on toward where they are going, if they fit there. */
+    static boolean setDown(ServerLevel l,House h,LiteraryActor a,Vec3 to){
+        var b=h.base;var rel=a.position().subtract(b.getX(),b.getY(),b.getZ());
+        double floor=rel.y>=PlaceForYouSite.UP-.6?PlaceForYouSite.UP:0;
+        // No more than a step down: someone halfway up the stair stays on it.
+        if(rel.y-floor>1.2)return false;
+        var toward=new Vec3(to.x-a.getX(),0,to.z-a.getZ());if(toward.lengthSqr()>1e-4)toward=toward.normalize().scale(Math.min(.5,toward.length()));
+        var dest=new Vec3(a.getX()+toward.x,b.getY()+floor,a.getZ()+toward.z);
+        if(Math.abs(dest.y-a.getY())<.05&&toward.lengthSqr()<1e-4)return false;
+        if(!l.noCollision(a,a.getBoundingBox().move(dest.subtract(a.position()))))return false;
+        a.moveTo(dest.x,dest.y,dest.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);return true;
     }
 
     // ------------------------------------------------------------------------------------------------ what the House remembers
