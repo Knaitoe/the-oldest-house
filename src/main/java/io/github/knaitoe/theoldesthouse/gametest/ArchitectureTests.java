@@ -340,6 +340,7 @@ public final class ArchitectureTests {
             h.assertTrue(looseAndSteps.isEmpty(),"every scene sets its small things on something, has nothing to climb inside a doorway, and leaves its own doorway clear: "+looseAndSteps);
             for(var hazard:LabyrinthPlace.values())if(HazardVariety.added(hazard))export(interior,LabyrinthPlaces.base(origin,hazard),hazard);
             for(var connector:List.of(LabyrinthPlace.TENSION_ROOMS,LabyrinthPlace.YARD_DITCH,LabyrinthPlace.YARD_CLOTHESLINE,LabyrinthPlace.YARD_SURVEY,LabyrinthPlace.YARD_SURVEY_DEEP,LabyrinthPlace.YARD_FLOOD,LabyrinthPlace.YARD_REUNION,LabyrinthPlace.YARD_LONG_DRIVE,LabyrinthPlace.YARD_PORCH_TURN,LabyrinthPlace.YARD_JOISTS,LabyrinthPlace.YARD_STOCK,LabyrinthPlace.YARD_WINDBREAK,LabyrinthPlace.YARD_DITCH_FLOOD,LabyrinthPlace.YARD_STORM_FIELD,LabyrinthPlace.SPEAK_UP))export(HouseTestLevel.get(server,NovelRooms.dimension(connector)),LabyrinthPlaces.base(origin,connector),connector);
+            for(var hall:HallwayVariants.PLACES)export(HouseTestLevel.get(server,NovelRooms.dimension(hall)),LabyrinthPlaces.base(origin,hall),hall);
             for(var yard:TruantYard.PLACES)export(HouseTestLevel.get(server,NovelRooms.dimension(yard)),LabyrinthPlaces.base(origin,yard),yard);
             Nightclub.build(interior,LabyrinthPlaces.base(origin,LabyrinthPlace.NIGHTCLUB));
             LabyrinthBuilder.registerDoors(LabyrinthData.get(server),LabyrinthPlace.NIGHTCLUB,LabyrinthPlaces.base(origin,LabyrinthPlace.NIGHTCLUB));
@@ -794,6 +795,7 @@ public final class ArchitectureTests {
         JsonArray palette=new JsonArray(),blocks=new JsonArray();Map<BlockState,Integer> lookup=new LinkedHashMap<>();
         int minX=r.minX(),maxX=r.maxX(),minZ=r.minZ(),maxZ=r.maxZ(),minY=Math.max(-1,r.minY()),maxY=Math.min(4,r.maxY());
         if(HazardVariety.added(scene)){minY=r.minY();maxY=r.maxY()-1;}
+        if(HallwayVariants.is(scene)){minY=r.minY();maxY=Math.max(4,r.maxY()-2);}
         if(scene==LabyrinthPlace.GOATMAN){minZ=-79;maxZ=-45;}
         if(scene==LabyrinthPlace.HOLLOWAY_CAMP)minZ=-24;
         if(scene==LabyrinthPlace.TED_CAVER){minZ=-8;minY=-1;}
