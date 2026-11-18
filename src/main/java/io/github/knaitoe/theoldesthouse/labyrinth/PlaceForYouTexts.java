@@ -76,6 +76,7 @@ public final class PlaceForYouTexts {
     public static String ended(String outcome,CompoundTag own){
         if(outcome.equals("took_the_road"))return "The road goes on into the trees. Behind you, the house is exactly as you left it.";
         if(outcome.equals("kept_a_place"))return "Your chair is pulled out from the table. The supper is still warm.";
+        if(outcome.equals("invited_the_past"))return "Theo is in his place at the table. There isn't one for you.";
         return own.getBoolean("LightOff")?"The kitchen light goes out. Nobody is left to switch it on.":"The kitchen light is still on. One chair is empty.";
     }
 
@@ -166,6 +167,7 @@ public final class PlaceForYouTexts {
             return t.toString();
         }
         if(outcome.equals("kept_a_place")){t.append(kept(own));return t.toString();}
+        if(outcome.equals("invited_the_past")){t.append(invited(own));return t.toString();}
         t.append("I set the hall chair against the front door, and took my picture down off the fridge.");
         if(own.getBoolean("TheoSilent"))t.append(" After that the voice past the gate said her name once more, and stopped.");
         if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Kit went out through the gate with the bag.");
@@ -209,6 +211,35 @@ public final class PlaceForYouTexts {
         if(!own.getString("AlexEnd").isEmpty())t.append(" Alex's chair stayed empty.");
         if(own.getBoolean("DoorClosed"))t.append(" The hall chair was back in the hall, and the front door was shut.");
         t.append("\n\nWhen I left, my chair was still pulled out from the table.");
+        return t.toString();
+    }
+    /** 0.4.688: the past let in (PlaceForYouInvite): the photograph, the invitation, Theo, and the evening that doesn't know the reader. */
+    static String invited(CompoundTag own){
+        var t=new StringBuilder();
+        t.append("I had taken my picture down off the fridge. I put Theo's photograph up where it had been, and told him to come in.");
+        t.append(" He came along the road and in at the gate, and straight in without knocking, and dropped his keys under the hall glass.");
+        if(own.getBoolean("KitNight"))t.append(" Kit passed him at the gate. They said goodnight to each other.");
+        t.append(" Mara said, \"There you are.\"");
+        if(own.getBoolean("AlexOut")||own.getBoolean("RenOut")){
+            t.append(own.getBoolean("AlexOut")&&own.getBoolean("RenOut")?" After that Alex and Ren weren't in the house.":own.getBoolean("AlexOut")?" After that Alex wasn't in the house.":" After that Ren wasn't in the house.");
+            if(own.getBoolean("RenOut")&&own.getBoolean("AskedPeers"))t.append(" Ren had said they were staying near her.");
+        }
+        if(own.getBoolean("MaraStranger")){
+            t.append(" Mara asked me if she could help me with something.");
+            switch(own.getString("InviteSaid")){
+                case "me"->t.append(" I told her it was me. She said she didn't think we'd met.");
+                case "who"->t.append(" I asked who he was. Theo, she said, her brother, and late, the way he always was.");
+                case "go"->t.append(" I said I'd go. She told me to mind the gate.");
+                default->{}
+            }
+        }
+        if(own.getBoolean("CareHeard")){
+            t.append(" She told him his things were out in the bathroom.");
+            t.append(own.getBoolean("CareSeen")?" It was my "+routine(own.getCompound("Snap").getInt("Routine"))+", the one she had laid out for me.":" She had put them out for me.");
+        }
+        if(own.getBoolean("WrongSeen"))t.append(" He dried a cup and put it away in the right cupboard. Mara said he always put them in the wrong one. Then she told him to sit down before it got cold.");
+        if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Kit had already gone.");
+        t.append(own.getBoolean("LeftEarly")?"\n\nI went out while they were still talking. Nobody asked where I was going.":"\n\nWhen I left, Theo was in his place at the table.");
         return t.toString();
     }
     /** 0.4.686: Kit asked on the way out, and somebody at the door (PlaceForYouDoor): what the reader asked, saw and was told. */

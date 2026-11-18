@@ -37,26 +37,32 @@ public final class PlaceForYou {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.PLACE_FOR_YOU;
     /** The cast, on stranger phases: Mara, Kit, and the two strangers from the shelter in their own faces at the reader's age (Alex 67-69, Ren 70-72). */
     public static final int MARA=65,KIT=66,ALEX=67,REN=70;
-    public static boolean cast(int phase){return phase>=MARA&&phase<=REN+2;}
+    public static boolean cast(int phase){return phase>=MARA&&phase<=REN+2||phase==THEO;}
+    /** 0.4.688 (PlaceForYouInvite): Theo, let in, on stranger phase two hundred and thirty-eight, in his own painted face. */
+    public static final int THEO=238;
     public static boolean alex(int phase){return phase>=ALEX&&phase<=ALEX+2;}
     public static boolean ren(int phase){return phase>=REN&&phase<=REN+2;}
     /** The evening's chapters. */
     public static final int APPROACH=0,WELCOME=1,SUPPER=2,BATHROOM=3,BAG=4,SINK=5,DINNER=6,OPEN=7,ROAD=8,DONE=9;
     /** 0.4.687 (PlaceForYouKeep): the reader's picture put back up, and the evening kept with them in it. */
     public static final int KEEP=10;
+    /** 0.4.688 (PlaceForYouInvite): Theo's photograph up where the reader's picture was, and Theo let in. */
+    public static final int INVITE=11;
     static final String TAG="PlaceForYou257";
     public static final int EMPTY_RESET=200;
 
     /** One house's evening, in memory: its people and the timers between beats. Facts live in the reader's record. */
     static final class House {
         final BlockPos base;long tick;int empty;boolean spawned;
-        @Nullable UUID mara,kit,alex,ren;
+        @Nullable UUID mara,kit,alex,ren,theo;
         int repeatAt=-1,bagAt=-1,swapAt=-1,sinkAt=-1,slam,radio,kitGoneAt=-1,alexGoneAt=-1,maraGoneAt=-1,sitFor,doorCool,routineSound;
         // 0.4.686 (PlaceForYouDoor): when the knock comes, when the voice speaks from the gate, how long the door has stood open or shut,
         // when a forgetting is taken back and by whom, when the voice last spoke, and how many times it has knocked again.
         int knockAt=-1,voiceAt=-1,openFor,shutFor,forgetAt=-1,knocks;long lastVoice=-1000;String forgetter="Mara";
         // 0.4.687 (PlaceForYouKeep): when the kept evening's present beat began, and when the familiar gesture last came.
         int keepAt=-1,gestureAt=-1;
+        // 0.4.688 (PlaceForYouInvite): which leg of his way in Theo is on, when the present beat began, when the care was said, when Kit said goodnight.
+        int theoLeg,inviteAt=-1,careAt=-1,kitNightAt=-1;
         final Map<UUID,Long> said=new HashMap<>();
         House(BlockPos b){base=b;}
     }
@@ -65,7 +71,7 @@ public final class PlaceForYou {
 
     // ------------------------------------------------------------------------------------------------ for tests
     @Nullable static House house(BlockPos b){return HOUSES.get(b.asLong());}
-    @Nullable public static LiteraryActor actor(ServerLevel l,BlockPos b,String who){var h=house(b);if(h==null)return null;return actor(l,switch(who){case "mara"->h.mara;case "kit"->h.kit;case "alex"->h.alex;default->h.ren;});}
+    @Nullable public static LiteraryActor actor(ServerLevel l,BlockPos b,String who){var h=house(b);if(h==null)return null;return actor(l,switch(who){case "mara"->h.mara;case "kit"->h.kit;case "alex"->h.alex;case "theo"->h.theo;default->h.ren;});}
     public static int chapter(ServerPlayer p){return own(p).getInt("Chapter");}
 
     // ------------------------------------------------------------------------------------------------ records, speech
@@ -82,11 +88,17 @@ public final class PlaceForYou {
 
     // ------------------------------------------------------------------------------------------------ the cast
     @Nullable static LiteraryActor actor(ServerLevel l,@Nullable UUID id){if(id==null)return null;var e=l.getEntity(id);return e instanceof LiteraryActor a&&a.isAlive()?a:null;}
-    @Nullable static LiteraryActor actor(ServerLevel l,House h,String who){return actor(l,switch(who){case "Mara"->h.mara;case "Kit"->h.kit;case "Alex"->h.alex;case "Ren"->h.ren;default->null;});}
-    static String who(LiteraryActor a){int phase=a.phase();return phase==MARA?"Mara":phase==KIT?"Kit":alex(phase)?"Alex":ren(phase)?"Ren":"";}
+    @Nullable static LiteraryActor actor(ServerLevel l,House h,String who){return actor(l,switch(who){case "Mara"->h.mara;case "Kit"->h.kit;case "Alex"->h.alex;case "Ren"->h.ren;case "Theo"->h.theo;default->null;});}
+    static String who(LiteraryActor a){int phase=a.phase();return phase==MARA?"Mara":phase==KIT?"Kit":alex(phase)?"Alex":ren(phase)?"Ren":phase==THEO?"Theo":"";}
     @Nullable static LiteraryActor spawn(ServerLevel l,BlockPos b,UUID reader,int phase){
         var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
         a.bind(PLACE,reader);a.appearance(LiteraryActor.STRANGER,phase);a.moveTo(b.getX()+.5,b.getY(),b.getZ()-14.5,0,0);
+        return l.addFreshEntity(a)?a:null;
+    }
+    /** 0.4.688: made where it is first to stand, facing that way, rather than in the hall. */
+    @Nullable static LiteraryActor spawn(ServerLevel l,BlockPos b,UUID reader,int phase,Vec3 at,float yaw){
+        var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return null;
+        a.bind(PLACE,reader);a.appearance(LiteraryActor.STRANGER,phase);a.moveTo(b.getX()+at.x,b.getY()+at.y,b.getZ()+at.z,yaw,0);a.setYHeadRot(yaw);a.setYBodyRot(yaw);
         return l.addFreshEntity(a)?a:null;
     }
     static AABB bounds(BlockPos b){return new AABB(b.offset(-18,-3,-34).getCenter(),b.offset(18,18,0).getCenter()).inflate(1);}
@@ -138,6 +150,14 @@ public final class PlaceForYou {
             if(own.getString("RenEnd").equals("goes"))m.put("Ren",own.getBoolean("MaraGone")?Mark.gone():stand(-.5,-6.5,0));
             PlaceForYouKeep.seat(own,m);
         }
+        // 0.4.688: the past let in. Kit, already gone, stays gone, and goes on up the road; Alex and Ren keep their places until the house
+        // has them gone unseen; Mara goes to the hall to meet him, then back to the table.
+        if(ch==INVITE||ch==DONE&&own.getString("Outcome").equals("invited_the_past")){
+            m.put("Kit",own.getBoolean("KitLeft")||own.getBoolean("Rewritten")?Mark.gone():stand(2.5,-1.2,90));
+            if(own.getBoolean("AlexOut"))m.put("Alex",Mark.gone());
+            if(own.getBoolean("RenOut"))m.put("Ren",Mark.gone());
+            if(!own.getBoolean("Rewritten"))m.put("Mara",stand(.5,-16.5,0));
+        }
         return m;
     }
     /**
@@ -162,22 +182,26 @@ public final class PlaceForYou {
             if(a==null){a=spawn(l,b,p.getUUID(),switch(who){case "Mara"->MARA;case "Kit"->KIT;case "Alex"->ALEX+Math.min(2,own.getCompound("Snap").getInt("CastAge"));default->REN+Math.min(2,own.getCompound("Snap").getInt("CastAge"));});if(a==null)continue;
                 switch(who){case "Mara"->h.mara=a.getUUID();case "Kit"->h.kit=a.getUUID();case "Alex"->h.alex=a.getUUID();default->h.ren=a.getUUID();}
                 a.moveTo(b.getX()+mark.at().x,b.getY()+mark.at().y,b.getZ()+mark.at().z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());continue;}
-            var to=new Vec3(b.getX()+mark.at().x,b.getY()+mark.at().y,b.getZ()+mark.at().z);
-            if(a.position().distanceToSqr(to)<.09){a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());if(!Talk.waiting(p))a.setYHeadRot(mark.yaw());continue;}
-            // 0.4.560 (the standard cast checks): put straight there only while the reader sees neither them nor the place; else on
-            // foot, and the last of the way into a chair is a short slide over a few ticks rather than a jump into it. 0.4.561: the
-            // place is looked at from the legs up to the head, not at one height (a reader looking down at the stove saw Ren arrive).
-            boolean seat=l.getBlockState(BlockPos.containing(to)).getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
-            boolean watched=io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))
-                    ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,.3,0))
-                    ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,a.getEyeHeight(),0));
-            double far=a.position().distanceToSqr(to);
-            if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
-            else if(seat&&far<6.25&&slideClear(l,a,to)){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
-            else SceneFootpaths.walk(a,to,.12);
+            place(l,h,p,a,mark);
         }
         // Nameplates fade after a while.
-        for(var who:List.of("Mara","Kit","Alex","Ren")){var a=actor(l,h,who);if(a==null)continue;var at=h.said.get(a.getUUID());if(at!=null&&!a.saying()){a.setCustomNameVisible(false);h.said.remove(a.getUUID());}}
+        for(var who:List.of("Mara","Kit","Alex","Ren","Theo")){var a=actor(l,h,who);if(a==null)continue;var at=h.said.get(a.getUUID());if(at!=null&&!a.saying()){a.setCustomNameVisible(false);h.said.remove(a.getUUID());}}
+    }
+    /** Moves one of them toward their mark: straight there while nobody sees it, else on foot, the last of the way into a chair a short slide. */
+    static void place(ServerLevel l,House h,ServerPlayer p,LiteraryActor a,Mark mark){
+        var b=h.base;var to=new Vec3(b.getX()+mark.at().x,b.getY()+mark.at().y,b.getZ()+mark.at().z);
+        if(a.position().distanceToSqr(to)<.09){a.setYRot(mark.yaw());a.setYBodyRot(mark.yaw());if(!Talk.waiting(p))a.setYHeadRot(mark.yaw());return;}
+        // 0.4.560 (the standard cast checks): put straight there only while the reader sees neither them nor the place; else on
+        // foot, and the last of the way into a chair is a short slide over a few ticks rather than a jump into it. 0.4.561: the
+        // place is looked at from the legs up to the head, not at one height (a reader looking down at the stove saw Ren arrive).
+        boolean seat=l.getBlockState(BlockPos.containing(to)).getBlock() instanceof io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock;
+        boolean watched=io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))
+                ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,1.5,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,.3,0))
+                ||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,to.add(0,a.getEyeHeight(),0));
+        double far=a.position().distanceToSqr(to);
+        if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
+        else if(seat&&far<6.25&&slideClear(l,a,to)){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
+        else SceneFootpaths.walk(a,to,.12);
     }
 
     // ------------------------------------------------------------------------------------------------ what the House remembers
@@ -257,7 +281,9 @@ public final class PlaceForYou {
             case OPEN->open(l,h,p,own,r);
             case ROAD->{if(PlaceForYouSite.onRoad(r)){finish(p,"took_the_road");}}
             case KEEP->PlaceForYouKeep.tick(l,h,p,own,r);
-            case DONE->{if(own.getString("Outcome").equals("kept_a_place"))PlaceForYouKeep.after(l,h,p,own,r);}
+            case INVITE->PlaceForYouInvite.tick(l,h,p,own,r);
+            case DONE->{if(own.getString("Outcome").equals("kept_a_place"))PlaceForYouKeep.after(l,h,p,own,r);
+                else if(own.getString("Outcome").equals("invited_the_past"))PlaceForYouInvite.after(l,h,p,own,r);}
             default->{}
         }
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
@@ -594,7 +620,8 @@ public final class PlaceForYou {
                 else if((who.equals("Alex")||who.equals("Ren"))&&knocking)PlaceForYouDoor.peers(p,h);
                 else above(h,a,who.equals("Kit")?"Go on. I'm right behind you.":knocking?(who.equals("Mara")?"I can't be the one who answers it.":"I'm not answering it."):"The door first.");}
             case KEEP->PlaceForYouKeep.talk(p,h,who,a);
-            default->above(h,a,"...");
+            case INVITE->PlaceForYouInvite.talk(p,h,who,a);
+            default->{if(ch==DONE&&own.getString("Outcome").equals("invited_the_past"))PlaceForYouInvite.talk(p,h,who,a);else above(h,a,"...");}
         }
     }
 
@@ -612,6 +639,7 @@ public final class PlaceForYou {
         if(PlaceForYouSite.SHUT_DOORS.stream().anyMatch(d->d.equals(rel)||d.above().equals(rel))){cue(p,"Shut. Not tonight.");return true;}
         if(rel.equals(PlaceForYouSite.BACK_DOOR)||rel.equals(PlaceForYouSite.BACK_DOOR.above())){cue(p,"The back door's catch is stiff, and the cupboard stands in front of it.");return true;}
         if(held==PlaceForYouRegistry.BAG)return putBag(p,h,rel);
+        if(held==PlaceForYouRegistry.PHOTO)return PlaceForYouInvite.carried(p,h,rel);
         if(held==PlaceForYouRegistry.PLATE){if(rel.equals(PlaceForYouSite.SINK)||rel.equals(PlaceForYouSite.SINK_TOP)){release(p,b);int n=own.getInt("Plates")+1;edit(p,o->o.putInt("Plates",n));
                 l.setBlock(b.offset(PlaceForYouSite.SINK_TOP),PlaceForYouBlock.of(PlaceForYouBlock.Kind.PLATE,net.minecraft.core.Direction.NORTH,n>=2?2:1),3);l.playSound(null,b.offset(PlaceForYouSite.SINK),SoundEvents.DECORATED_POT_INSERT,SoundSource.BLOCKS,.6F,1.4F);
                 if(n>=3)activityDone(p,h,"Mara","I've heated it up once already, you know. Tonight. It was better the first time.");else cue(p,"In the sink. "+(3-n)+" more.");return true;}
@@ -636,6 +664,8 @@ public final class PlaceForYou {
                 activityDone(p,h,"Ren","Cups are in the— no. The— hang on. I've lived here weeks. Haven't I?");return true;}
             cue(p,"Two cups.");return true;}
         if(kind==PlaceForYouBlock.Kind.RADIO){l.playSound(null,b.offset(rel),SoundEvents.NOTE_BLOCK_HARP.value(),SoundSource.BLOCKS,.4F,.9F);cue(p,"A song from before. You almost know it.");return true;}
+        // 0.4.688: once the voice has asked at the door, Theo's photograph can be taken up to the fridge (PlaceForYouInvite).
+        if(kind==PlaceForYouBlock.Kind.PHOTO&&ch==OPEN&&own.getBoolean("VoiceHeard")&&!own.getBoolean("TheoSilent")&&!own.getBoolean("Ready")){PlaceForYouInvite.photo(p,h);return true;}
         if(kind==PlaceForYouBlock.Kind.PHOTO){cue(p,"A man half turned from the camera, in a work shirt. Somebody has dusted the frame and nothing else.");if(!own.getBoolean("TheoNamed"))edit(p,o->o.putBoolean("SawTheo",true));return true;}
         if(kind==PlaceForYouBlock.Kind.PICTURES){cue(p,PlaceForYouSite.picturesFilled(l,b)?"The household, in a row, and in the gap a man in a work shirt.":"The household, in a row. There's a gap in the row, the width of one person.");return true;}
         if(kind==PlaceForYouBlock.Kind.GLASS){cue(p,switch(s.getValue(PlaceForYouBlock.STAGE)){case 1->"The hall glass, turned to face the wallpaper.";case 2->"The hall glass, with a cloth over it.";default->"The hall glass.";});return true;}
@@ -662,8 +692,10 @@ public final class PlaceForYou {
         // The fridge: the reader's picture, taken down to open the house.
         if(rel.equals(PlaceForYouSite.FRIDGE)||rel.equals(PlaceForYouSite.FRIDGE.above())){
             // 0.4.687: with the picture already down, it can go back up, and the evening is kept (PlaceForYouKeep).
+            if(ch==OPEN&&own.getBoolean("TheoUp")&&!own.getBoolean("Ready")){PlaceForYouInvite.fridge(p,h);return true;}
             if(ch==OPEN&&own.getBoolean("PictureDown")&&!own.getBoolean("Ready")){PlaceForYouKeep.fridge(p,h);return true;}
             if(ch==OPEN&&!own.getBoolean("PictureDown")){PlaceForYouSite.picture(l,b,own.getCompound("Snap").getCompound("Drawing"),false);edit(p,o->o.putBoolean("PictureDown",true));cue(p,"You take your picture down off the fridge.");checkOpen(p,h);return true;}
+            if(own.getBoolean("TheoUp")&&PlaceForYouSite.pictureUp(l,b)){cue(p,"Theo's photograph, under the magnet.");return true;}
             cue(p,PlaceForYouSite.pictureUp(l,b)?(own.getCompound("Snap").contains("Drawing")?"Your picture, on their fridge.":"A pencil figure on the fridge door, with no face yet. It's your place they've drawn."):"The fridge door, bare.");return true;}
         // Kit's door, before it is taken: Kit's room is Kit's.
         if(rel.equals(PlaceForYouSite.KIT_DOOR)||rel.equals(PlaceForYouSite.KIT_DOOR.above())){if(!own.getBoolean("DoorTaken")){cue(p,"Kit's door. It's Kit's room.");return true;}return false;}
@@ -693,6 +725,7 @@ public final class PlaceForYou {
     /** Takes back whatever the reader carries; a bag carried off goes back by Kit's chair, a plate to the sink. */
     static void release(ServerPlayer p,@Nullable BlockPos b){
         int held=0;for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);var c=s.get(DataComponents.CUSTOM_DATA);if(s.is(PlaceForYouRegistry.CARRIED.get())&&c!=null&&c.copyTag().contains(TAG)){held=c.copyTag().getInt(TAG);p.getInventory().setItem(i,ItemStack.EMPTY);}}
+        if(b!=null&&held==PlaceForYouRegistry.PHOTO){var l=p.server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(b.offset(PlaceForYouSite.PHOTO)))PlaceForYouSite.photo(l,b,true);}
         if(b!=null&&held==PlaceForYouRegistry.BAG){var l=p.server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(b.offset(PlaceForYouSite.BAG_KITCHEN))){PlaceForYouSite.bag(l,b,"gate");edit(p,o->{if(o.getString("BagWhere").isEmpty())o.putString("BagWhere","gate");});cue(p,"Not past the gate. You leave the bag inside it.");}}
     }
 }

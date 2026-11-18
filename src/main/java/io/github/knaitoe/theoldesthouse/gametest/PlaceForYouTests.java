@@ -231,6 +231,64 @@ public final class PlaceForYouTests {
     }
     @AfterBatch(batch="place_keep") public static void keepDone(ServerLevel l){close();}
 
+    /**
+     * 0.4.688, invite the past (E3): somebody knocks and the door is opened; Ren is asked what letting him in would cost; the reader's
+     * picture comes down, Theo's photograph goes up in its place, and the reader tells him to come in. He walks in from the road, made
+     * where nobody sees it; Mara knows him; Alex and Ren are gone the moment nobody is looking at them; Mara doesn't know the reader; she
+     * tells him his things are out; he puts a cup in the right cupboard and she lets it go. The account says so, and not the opened house.
+     */
+    @GameTest(template="empty",batch="place_invite",timeoutTicks=9000)
+    public static void invitingThePast(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_invite",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{
+                say(h,p,"It's good to be back.");f.source(p,P);
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.OPEN);own.putString("Confront","open");own.putString("First","Mara");own.putString("Helper","Mara");
+                own.putString("Activity","radio");own.putBoolean("ActivityDone",true);own.putBoolean("Acknowledged",true);own.putString("Promise","listen");
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                at(f,p,.5,0,-14.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Knocked"),"somebody knocks once Kit is out of the gate"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door"),"through the door: "+Talk.key(p));say(h,p,"Open the door.");
+                h.assertTrue(PlaceForYouSite.doorOpen(l,b),"the door open");
+                talk(f,p,"ren");h.assertTrue(Talk.waiting(p,"peers"),"Alex and Ren: "+Talk.key(p));say(h,p,"What happens if she lets him in?");say(h,p,"Stay with me a minute.");
+                h.assertTrue(f.own(p,P).getBoolean("CostHeard"),"the cost said aloud before anything is decided");
+                h.assertTrue(click(f,p,PlaceForYouSite.PHOTO)&&Talk.waiting(p,"photo")&&Talk.replies(p).equals(java.util.List.of("Leave it.")),"with the reader's picture still up, there is no taking the photograph: "+Talk.replies(p));
+                say(h,p,"Leave it.");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRIDGE)&&f.own(p,P).getBoolean("PictureDown"),"the reader's picture down off the fridge");
+                h.assertTrue(click(f,p,PlaceForYouSite.PHOTO)&&Talk.waiting(p,"photo"),"Theo's photograph: "+Talk.key(p));say(h,p,"Take it.");
+                h.assertTrue(PlaceForYou.holding(p)==PlaceForYouRegistry.PHOTO&&!PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.PHOTO)),PlaceForYouBlock.Kind.PHOTO),"carried off the chest of drawers");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRIDGE)&&f.own(p,P).getBoolean("TheoUp")&&PlaceForYouSite.pictureUp(l,b)&&PlaceForYou.holding(p)==0,"up on the fridge, where the reader's picture was");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door_open")&&Talk.replies(p).contains("Come in, Theo."),"the open door offers the invitation: "+Talk.replies(p));
+                say(h,p,"Come in, Theo.");
+                h.assertTrue(f.own(p,P).getInt("Chapter")==PlaceForYou.INVITE,"invited");
+                // In the hall, facing into the house: neither end of the road in sight.
+                at(f,p,.5,0,-16.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"theo")!=null,"Theo, made at an end of the road nobody can see"))
+            .thenExecute(()->{var theo=PlaceForYou.actor(l,b,"theo");h.assertTrue(Math.abs(theo.getX()-b.getX())>14,"out among the trees at the road's end: "+theo.position());})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Rewritten"),"he comes straight in"))
+            .thenExecute(()->at(f,p,.5,0,-13.2,0,0))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("AlexOut")&&f.own(p,P).getBoolean("RenOut"),"Alex and Ren were never in the old evening: gone while nobody looks"))
+            .thenExecute(()->at(f,p,6.5,0,-14.5,90,10))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MaraStranger"),"Mara doesn't know the reader"))
+            .thenExecute(()->{talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"invite_mara"),"Mara: "+Talk.key(p));say(h,p,"It's me.");
+                h.assertTrue(Talk.lines(p).contains("Mara: I'm sorry. I don't think we've met."),"she doesn't think they've met: "+Talk.lines(p));})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CareHeard"),"his things are out in the bathroom"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CupAway")&&f.own(p,P).getBoolean("WrongSeen"),"the cup, in the right cupboard"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready")&&f.own(p,P).getString("Outcome").equals("invited_the_past"),"the past let in"))
+            .thenExecute(()->{h.assertFalse(PlaceForYouSite.readerChair(l,b),"no place at the table for the reader");at(f,p,5.5,0,-24.5,180,20);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CareSeen"),"the reader's things, laid out for him"))
+            .thenExecute(()->f.read(p,P,LiteraryRooms.ending(P)))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"the account read"))
+            .thenExecute(()->{var text=account(f,p);
+                for(var said:java.util.List.of("put Theo's photograph up where it had been","straight in without knocking","Mara said, \"There you are.\"","Alex and Ren weren't in the house",
+                        "She said she didn't think we'd met","his things were out in the bathroom","the one she had laid out for me","the right cupboard","Theo was in his place at the table"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                h.assertFalse(text.contains("hall chair against the front door")||text.contains("I put it back up"),"and neither the opened house nor the kept evening: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_invite") public static void inviteDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="place_road",timeoutTicks=7000)
     public static void aReaderTheHouseKnowsTakesTheRoad(GameTestHelper h){
         var f=fixture(h);var p=f.player("place_family",P);var b=f.base(P);var l=f.level(P);

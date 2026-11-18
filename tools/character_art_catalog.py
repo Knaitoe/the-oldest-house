@@ -108,6 +108,8 @@ def entries():
     # A Place for You (0.4.257): Mara on stranger phase sixty-five, Kit on sixty-six (Alex and Ren wear the shelter strangers' own skins).
     for name,phase in (('mara',65),('kit',66)):
         rows.append({'name':'literary_place_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # And Theo (0.4.688), let in, on stranger phase two hundred and thirty-eight.
+    rows.append({'name':'literary_place_theo','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':238})
     # Johnny Truant (0.4.264): his tired face on stranger phase seventy-three, the leer round the corner on seventy-four.
     rows.append({'name':'literary_truant','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':73})
     rows.append({'name':'literary_truant_leer','logical':128,'model':'literary','role':'STRANGER','number':0,'phase':74})

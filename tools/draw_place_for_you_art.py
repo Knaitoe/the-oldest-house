@@ -265,13 +265,27 @@ def radio():
 
 
 def theo():
-    # A small, faded portrait: a man in a work shirt, half turned, not quite looking at the camera.
+    # A small, faded portrait: a man in a work shirt, half turned, not quite looking at the camera. The wall behind him and the edge of a
+    # doorframe; his face turned a little to his right, one ear showing, a side parting, two days of stubble along the jaw; the shirt's
+    # collar open; the print gone pale at the corners.
     im = new(base='#b8a888', seed=2592, spread=3)
-    fill(im, 5, 3, 11, 9, '#c89a7a')
-    fill(im, 5, 2, 11, 4, '#4a3a2a')
-    dot(im, 7, 6, '#3a3026'); dot(im, 9, 6, '#3a3026')
-    fill(im, 3, 10, 13, 16, '#5a6a7a')
-    fill(im, 7, 10, 9, 13, '#d8d0c0')
+    fill(im, 0, 0, 3, 16, '#a89878'); fill(im, 3, 0, 4, 16, '#968866')
+    fill(im, 6, 3, 12, 10, '#c89a7a')
+    fill(im, 6, 2, 12, 4, '#4a3a2a'); dot(im, 12, 3, '#4a3a2a'); dot(im, 6, 4, '#4a3a2a'); dot(im, 9, 2, '#5c4a36')
+    dot(im, 5, 5, '#b8886a'); dot(im, 5, 6, '#b8886a')
+    dot(im, 8, 5, '#3a3026'); dot(im, 10, 5, '#3a3026')
+    dot(im, 9, 6, '#b08262'); dot(im, 9, 7, '#a87a5c')
+    fill(im, 8, 8, 11, 9, '#9a6e56')
+    for x, y in ((6, 8), (7, 9), (8, 9), (11, 9), (11, 8), (10, 9)):
+        dot(im, x, y, '#a88466')
+    fill(im, 8, 10, 10, 11, '#b8886a')
+    fill(im, 2, 11, 15, 16, '#5a6a7a')
+    for x in range(2, 15, 3):
+        for y in range(11, 16):
+            dot(im, x, y, '#4e5e6e')
+    fill(im, 7, 11, 11, 12, '#d8d0c0'); dot(im, 8, 12, '#d8d0c0'); dot(im, 10, 12, '#d8d0c0'); dot(im, 9, 12, '#b8886a')
+    for x, y in ((0, 0), (1, 0), (0, 1), (15, 0), (14, 0), (15, 1), (0, 15), (0, 14), (1, 15), (15, 15), (14, 15), (15, 14)):
+        dot(im, x, y, '#d0c4a6')
     return im
 
 
@@ -475,7 +489,8 @@ KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'p
 STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
-CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0')]
+# 0.4.688: Theo's photograph, carried from the chest of drawers to the fridge.
+CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0'), ('photo', 'photo_0')]
 DISPLAY = {
     'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.625, 0.625, 0.625]},
     'ground': {'rotation': [0, 0, 0], 'translation': [0, 3, 0], 'scale': [0.25, 0.25, 0.25]},
