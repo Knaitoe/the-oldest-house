@@ -187,6 +187,50 @@ public final class PlaceForYouTests {
     }
     @AfterBatch(batch="place_knock") public static void knockDone(ServerLevel l){close();}
 
+    /** 0.4.687 (docs/A_PLACE_FOR_YOU_0_4_687.md): the picture put back up keeps the evening. Kit is not brought back; Alex, who sat
+     *  with the reader first and has said nothing about going, sits beside them; a new question gets the old answer; the gesture comes
+     *  again; the reader's things are laid out again in the bathroom; the account says each. */
+    @GameTest(template="empty",batch="place_keep",timeoutTicks=7000)
+    public static void keepingAPlace(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_keep",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{
+                say(h,p,"It's good to be back.");f.source(p,P);
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.OPEN);own.putString("Confront","open");own.putString("First","Alex");own.putString("Helper","Alex");
+                own.putString("Activity","radio");own.putBoolean("ActivityDone",true);own.putBoolean("Acknowledged",true);own.putString("Promise","listen");
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                at(f,p,6.5,0,-14.5,90,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("KitGoing"),"Kit going, out through the gate"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.FRIDGE)&&f.own(p,P).getBoolean("PictureDown")&&!PlaceForYouSite.pictureUp(l,b),"the picture down off the fridge");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRIDGE)&&Talk.waiting(p,"fridge"),"a hand on the fridge again offers to put it back: "+Talk.key(p));
+                say(h,p,"Put your picture back up.");
+                var own=f.own(p,P);
+                h.assertTrue(own.getInt("Chapter")==PlaceForYou.KEEP&&own.getBoolean("Kept")&&!own.getBoolean("PictureDown")&&PlaceForYouSite.pictureUp(l,b)&&PlaceForYouSite.readerChair(l,b),"the picture back up, the evening kept, the reader's chair at the table");
+                h.assertTrue(HouseSitting.sit(p,b.offset(PlaceForYouSite.READER_CHAIR))&&p.getVehicle()!=null,"the reader sits down in their chair");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("KeepStage")>=1&&f.own(p,P).getString("Beside").equals("Alex"),"Alex, the first they sat with, is beside them: "+f.own(p,P).getString("Beside")))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("KeepStage")>=2,"the familiar gesture"))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"keep_ask"),"Mara, to be asked something new: "+Talk.key(p)))
+            .thenExecute(()->{
+                say(h,p,"What are we doing tomorrow?");
+                var own=f.own(p,P);var old=PlaceForYouTexts.detailLine(own.getString("Detail"),own.getCompound("Snap"));
+                h.assertTrue(own.getString("KeepAsked").equals("tomorrow")&&own.getString("OldAnswer").equals(old)&&Talk.lines(p).contains("Mara: "+old),"a new question, and the answer she gave at the door: "+Talk.lines(p));})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("GestureAgain"),"the gesture again, the same way, with the same words"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready")&&f.own(p,P).getString("Outcome").equals("kept_a_place"),"the evening kept"))
+            .thenExecute(()->{var kit=PlaceForYou.actor(l,b,"kit");h.assertTrue(f.own(p,P).getBoolean("KitLeft")||kit==null||kit.position().z>b.getZ()-12,"Kit is not sat back down");
+                p.stopRiding();at(f,p,5.5,0,-24.5,180,20);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("RoutineAgain")&&PlaceForYouSite.routineOut(l,b),"the reader's things laid out again in the bathroom, untouched"))
+            .thenExecute(()->f.read(p,P,LiteraryRooms.ending(P)))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Completed"),"the account read"))
+            .thenExecute(()->{var text=account(f,p);
+                for(var said:java.util.List.of("I put it back up","Alex sat down next to me","the last of the jug","I asked Mara what we were doing tomorrow",
+                        "It was what she had said when I came in","did it again, the same way","laid out again, untouched","Nobody set a place for Kit","my chair was still pulled out"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                h.assertFalse(text.contains("hall chair against the front door"),"and not the opened house's: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_keep") public static void keepDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="place_road",timeoutTicks=7000)
     public static void aReaderTheHouseKnowsTakesTheRoad(GameTestHelper h){
         var f=fixture(h);var p=f.player("place_family",P);var b=f.base(P);var l=f.level(P);
