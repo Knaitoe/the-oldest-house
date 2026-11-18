@@ -625,6 +625,61 @@ public final class PlaceForYouTests {
     @AfterBatch(batch="place_after") public static void afterDone(ServerLevel l){close();}
 
     /**
+     * 0.4.697, the direction of care: the House reads this reader as one to be looked after (ANALOG). Between supper and dinner, in the
+     * kitchen, Mara says so over her head. The next time the reader talks to her with nothing else to say, she says she has put them
+     * by the stove and will cut their supper up; the reader asks to choose where they sit, and she lets them. It isn't asked again.
+     * When everyone sits down she keeps the answer; at the table she turns it back on them. The account and the Witness line say so.
+     * The other reads, and a reader the House was asked not to read, from the record.
+     */
+    @GameTest(template="empty",batch="place_age",timeoutTicks=4000)
+    public static void theDirectionOfCare(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_age",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");Talk.end(p);var own=f.own(p,P);
+                var snap=own.getCompound("Snap");snap.putBoolean("Read",true);snap.putString("Age","ANALOG");own.put("Snap",snap);
+                own.putInt("Chapter",PlaceForYou.SUPPER);own.putBoolean("Talked_Mara",true);own.putString("Activity","radio");
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                h.assertTrue(PlaceForYouAge.kind(own).equals("ANALOG")&&PlaceForYouAge.speaker("ANALOG").equals("Mara")&&!own.getBoolean("AgeShown"),"read as one to be looked after, and nothing said of it yet");
+                at(f,p,6.5,0,-15.5,180,0);})
+            .thenWaitUntil(()->{var m=PlaceForYou.actor(l,b,"mara");h.assertTrue(f.own(p,P).getBoolean("AgeShown")&&m!=null&&m.saidWithin(PlaceForYouAge.shown("ANALOG"),200),"in the kitchen, Mara says it over her head: shown "+f.own(p,P).getBoolean("AgeShown")+" mara "+(m==null?"none":m.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))));})
+            .thenExecute(()->{
+                talk(f,p,"mara");
+                h.assertTrue(Talk.waiting(p,"age")&&Talk.lines(p).contains("Mara: I've put you nearest the stove, it's warmest. And I'll cut your supper up for you. It's easier."),"the next word with her is the exchange: "+Talk.key(p)+" "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).equals(java.util.List.of("I can manage, thank you.","Thank you.","Let me choose where I sit.")),"three answers: "+Talk.replies(p));
+                say(h,p,"Let me choose where I sit.");
+                h.assertTrue(Talk.lines(p).contains("Mara: ...Choose, then.")&&f.own(p,P).getString("AgeAnswer").equals("chose")&&!Talk.waiting(p),"she lets them choose: "+Talk.lines(p));
+                talk(f,p,"mara");var m=PlaceForYou.actor(l,b,"mara");
+                h.assertTrue(!Talk.waiting(p)&&m!=null&&m.saidWithin("Eat something.",5),"not asked again; her own word instead: waiting "+Talk.waiting(p)+" "+Talk.key(p));
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.DINNER);own.putBoolean("SpoonTaken",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("AgeTableSaid").equals("Sit where you like. You wanted to choose.")&&f.own(p,P).getString("AgeTableWho").equals("Mara"),"when everyone sits, she keeps the answer: "+f.own(p,P).getString("AgeTableSaid")))
+            .thenExecute(()->{
+                var m=PlaceForYou.actor(l,b,"mara");h.assertTrue(m!=null&&m.saidWithin("Sit where you like. You wanted to choose.",40),"over her head");
+                talk(f,p,"mara");var lines=Talk.lines(p);int open=lines.indexOf("Mara: Sit down, all of you. It's getting cold.");
+                h.assertTrue(Talk.waiting(p,"confront")&&open>=0&&lines.indexOf("Mara: You wanted to choose. Then choose.")==open+1,"at the table she turns it back on them: "+lines);
+                h.assertTrue(Talk.replies(p).contains("I'd like to say this to everyone.")&&Talk.replies(p).contains("This is more than I can take on. I'm going to go."),"the table's answers are all still there: "+Talk.replies(p));
+                Talk.end(p);var own=f.own(p,P);
+                var age="Mara put me nearest the stove and said she would cut my supper up for me. I asked to choose where I sat, and she let me. Later, at the table, Mara said, \"Sit where you like. You wanted to choose.\" When it came to deciding, Mara said, \"You wanted to choose. Then choose.\"";
+                h.assertTrue(PlaceForYouAge.account(own).equals(age),"the account's paragraph: "+PlaceForYouAge.account(own));
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);h.assertTrue(text.contains(age),"in the account: "+text);
+                var story=WitnessAccount.Story.PLACE_FOR_YOU.text;h.assertTrue(PlaceForYouAge.witness(own,story).equals(story+" They meant to look after me, and I chose where I sat."),"the Witness line: "+PlaceForYouAge.witness(own,story));
+                // The other reads, from the record.
+                var e=new net.minecraft.nbt.CompoundTag();var snap=new net.minecraft.nbt.CompoundTag();snap.putBoolean("Read",true);snap.putString("Age","DIGITAL");e.put("Snap",snap.copy());e.putBoolean("AgeShown",true);
+                h.assertTrue(PlaceForYouAge.table(e).equals("I've put clean sheets on your bed. For tonight, and after.")&&PlaceForYouAge.lever(e).equals("You came home. Don't make me watch you leave it twice.")&&PlaceForYouAge.account(e).endsWith("I never answered her."),"come back, never answered: "+PlaceForYouAge.account(e));
+                e.putString("AgeAnswer","corrected");
+                h.assertTrue(PlaceForYouAge.table(e).equals("This place of yours. Is it warm? Tell me it's warm.")&&PlaceForYouAge.witness(e,"X").equals("X They had kept my room, and I told them I had a place of my own."),"come back, with a place of their own");
+                snap.putString("Age","TRANSITIONAL");e.put("Snap",snap.copy());e.remove("AgeAnswer");
+                h.assertTrue(PlaceForYouAge.speaker("TRANSITIONAL").equals("Ren")&&PlaceForYouAge.tableSpeaker(e).equals("Alex")&&PlaceForYouAge.lever(e).equals("Go on. You're the one who decides things here. Decide this."),"the one who manages it: Ren asks, Alex presses at the table");
+                e.putString("AgeAnswer","corrected");
+                h.assertTrue(PlaceForYouAge.tableSpeaker(e).equals("Ren")&&PlaceForYouAge.lever(e).equals("Ren and Alex told me about Kit. I know you put them up to it.")&&PlaceForYouAge.account(e).contains("I said Ren and Alex should tell her together"),"given back to the two of them: "+PlaceForYouAge.account(e));
+                snap.putString("Age","");e.put("Snap",snap.copy());e.remove("AgeAnswer");
+                h.assertTrue(PlaceForYouAge.kind(e).equals("guest")&&PlaceForYouAge.speaker("guest").equals("Alex")&&PlaceForYouAge.lever(e).equals("You're one of us now. Alex said so.")&&PlaceForYouAge.tableSpeaker(e).equals("Mara"),"read but unsettled: a guest");
+                snap.putBoolean("Read",false);e.put("Snap",snap.copy());
+                h.assertTrue(PlaceForYouAge.kind(e).isEmpty()&&PlaceForYouAge.account(e).isEmpty()&&PlaceForYouAge.witness(e,"X").equals("X")&&PlaceForYouAge.lever(e).isEmpty(),"asked not to read: nothing assumed");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_age") public static void ageDone(ServerLevel l){close();}
+
+    /**
      * 0.4.694, the reassurance: with somebody at the door, the reader asks Mara if it is him, then tells her it is. She asks them to
      * stand with her; she goes to the front door and waits; with the reader beside her she opens it and calls him, and the voice by the
      * gate answers. Ren asks whether the reader believes it or wants it to be. Later, with the house opened and the voice gone quiet, she

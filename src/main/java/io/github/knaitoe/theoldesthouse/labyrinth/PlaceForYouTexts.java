@@ -145,6 +145,8 @@ public final class PlaceForYouTexts {
             case "radio"->t.append("I sat with Alex by the radio. It only played songs from before.\n\n");
             default->{}
         }
+        // 0.4.697: what the household assumed of me, and what I said to it.
+        {var age=PlaceForYouAge.account(own);if(!age.isEmpty())t.append(age).append("\n\n");}
         String helper=own.getString("Helper");
         switch(own.getString("Care")){
             case "help"->t.append("In the bathroom I asked "+helper+" to help me, and "+pron(helper)+" did. ");

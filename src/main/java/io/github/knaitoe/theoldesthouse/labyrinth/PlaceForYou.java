@@ -335,6 +335,8 @@ public final class PlaceForYou {
         PlaceForYouBond.tick(l,h,p,own(p),r);
         // 0.4.696: the house kept as the ending left it.
         PlaceForYouAfter.tick(l,h,p,own(p),r);
+        // 0.4.697: what the household assumes, made aloud, and kept when they sit down.
+        PlaceForYouAge.tick(l,h,p,own(p),r);PlaceForYouAge.dinner(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -569,7 +571,7 @@ public final class PlaceForYou {
             ,Talk.act("Leave it.",q->{line(q,h,"Mara","There's one more.");Talk.end(q);}));
     }
     static void confront(ServerPlayer p,House h){
-        var own=own(p);Talk.begin(p,"confront","At the table");line(p,h,"Mara","Sit down, all of you. It's getting cold.");
+        var own=own(p);Talk.begin(p,"confront","At the table");line(p,h,"Mara","Sit down, all of you. It's getting cold.");PlaceForYouAge.confront(p,h,own);
         var replies=new ArrayList<Talk.Reply>();
         replies.add(Talk.reply("I'd like to say this to everyone.",q->{
                 var o=own(q);var said=new ArrayList<String>();
@@ -673,13 +675,13 @@ public final class PlaceForYou {
             case WELCOME->{if(who.equals("Mara")&&!own.getBoolean("WelcomeOpened")){edit(p,o->o.putBoolean("WelcomeOpened",true));welcome(p,h);}else above(h,a,"Go on, she's waiting for you.");}
             case SUPPER->{if(!own.getBoolean("Talked_"+who))first(p,h,who);
                 else if(own.getString("Activity").isEmpty()){Talk.begin(p,"offer_"+who,who);offerActivity(p,h,who);}
-                else above(h,a,switch(who){case "Mara"->"Eat something.";case "Kit"->"Don't mind me.";case "Alex"->"Still here.";default->"Mm?";});}
-            case BAG->{if(own.getInt("BagStage")==2&&!own.getBoolean("BagOpened")){edit(p,o->o.putBoolean("BagOpened",true));bagExchange(p,h,own);}else above(h,a,who.equals("Kit")?"It's my bag.":"Not now.");}
+                else if(!PlaceForYouAge.talk(p,h,who,a))above(h,a,switch(who){case "Mara"->"Eat something.";case "Kit"->"Don't mind me.";case "Alex"->"Still here.";default->"Mm?";});}
+            case BAG->{if(own.getInt("BagStage")==2&&!own.getBoolean("BagOpened")){edit(p,o->o.putBoolean("BagOpened",true));bagExchange(p,h,own);}else if(!PlaceForYouAge.talk(p,h,who,a))above(h,a,who.equals("Kit")?"It's my bag.":"Not now.");}
             case SINK->{if(PlaceForYouRoom.talk(p,h,who,a)||PlaceForYouBack.talk(p,h,who,a)||PlaceForYouOlder.talk(p,h,who,a))return;
                 // 0.4.689: upstairs first, if the reader will; the sink is still there for one who would rather talk there.
                 if(who.equals("Mara")){if(own.getInt("RoomStage")==0&&!own.getBoolean("RoomDeclined"))PlaceForYouRoom.ask(p,h);else sink(p,h);}
-                else above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
-            case DINNER->{if(PlaceForYouBack.talk(p,h,who,a))return;if(who.equals("Mara")&&!own.getBoolean("SpoonTaken"))spoon(p,h);else if(own.getBoolean("SpoonTaken"))confront(p,h);else above(h,a,"Sit down.");}
+                else if(!PlaceForYouAge.talk(p,h,who,a))above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
+            case DINNER->{if(PlaceForYouBack.talk(p,h,who,a))return;if(who.equals("Mara")&&!own.getBoolean("SpoonTaken"))spoon(p,h);else if(own.getBoolean("SpoonTaken"))confront(p,h);else if(!PlaceForYouAge.talk(p,h,who,a))above(h,a,"Sit down.");}
             case OPEN->{boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getBoolean("TheoSilent");boolean knocking=own.getBoolean("Knocked")&&!own.getBoolean("TheoSilent");
                 // 0.4.686 (N9): before the threshold, each is asked their own question.
                 if(who.equals("Kit")&&own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")&&!own.getBoolean("AskedKit"))PlaceForYouDoor.kit(p,h);
@@ -690,7 +692,7 @@ public final class PlaceForYou {
                 else above(h,a,who.equals("Kit")?"Go on. I'm right behind you.":knocking?(who.equals("Mara")?"I can't be the one who answers it.":"I'm not answering it."):"The door first.");}
             case KEEP->PlaceForYouKeep.talk(p,h,who,a);
             case INVITE->PlaceForYouInvite.talk(p,h,who,a);
-            default->{if(ch==DONE&&own.getString("Outcome").equals("invited_the_past"))PlaceForYouInvite.talk(p,h,who,a);else above(h,a,"...");}
+            default->{if(ch==DONE&&own.getString("Outcome").equals("invited_the_past"))PlaceForYouInvite.talk(p,h,who,a);else if(!PlaceForYouAge.talk(p,h,who,a))above(h,a,"...");}
         }
     }
 
