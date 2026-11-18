@@ -12,6 +12,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.ElkFollows;
 import io.github.knaitoe.theoldesthouse.labyrinth.FeetUp;
 import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanHaunt;
 import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanVignette;
+import io.github.knaitoe.theoldesthouse.labyrinth.HarriganPhones;
 import io.github.knaitoe.theoldesthouse.labyrinth.HarriganVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.HotelVignette;
 import io.github.knaitoe.theoldesthouse.labyrinth.Keepsakes;
@@ -24,6 +25,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes;
 import io.github.knaitoe.theoldesthouse.labyrinth.NotYetMending;
 import io.github.knaitoe.theoldesthouse.labyrinth.OwnLight;
 import io.github.knaitoe.theoldesthouse.labyrinth.OwnLightLate;
+import io.github.knaitoe.theoldesthouse.labyrinth.PhoneSounds;
 import io.github.knaitoe.theoldesthouse.labyrinth.PolybiusPrize;
 import io.github.knaitoe.theoldesthouse.labyrinth.PrizeWear;
 import io.github.knaitoe.theoldesthouse.labyrinth.SelfAddressedEnvelopeItem;
@@ -32,6 +34,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.Storeroom;
 import io.github.knaitoe.theoldesthouse.labyrinth.TallyCounterItem;
 import io.github.knaitoe.theoldesthouse.labyrinth.WeaponHistory;
 import io.github.knaitoe.theoldesthouse.labyrinth.WorkPrint;
+import io.github.knaitoe.theoldesthouse.network.LateBodiesPayload;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +51,9 @@ import net.minecraft.gametest.framework.BeforeBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.BundlePacket;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -422,11 +428,45 @@ public final class NotOwnWorldTests {
                 h.assertTrue(OwnLightLate.late(p) && !OwnLightLate.late(nether.getServer()).contains(p.getUUID()),
                         "late, but not drawn late in the Games");
                 listed(nether, false, () -> h.assertTrue(OwnLightLate.late(nether.getServer()).contains(p.getUUID()), "out of the tag, drawn late"));
+                // Everyone is told on the tick they come out of the Games, and on the tick they go back in, not at the next second's sync.
+                OwnLightLate.sync(nether.getServer());
+                NativeTestPlayers.packets(p);
+                into(p, h.getLevel(), h.absolutePos(new BlockPos(1, 2, 1)));
+                NativeTestPlayers.flush(p);
+                List<LateBodiesPayload> out = lateness(p);
+                h.assertTrue(!out.isEmpty() && out.get(out.size() - 1).readers().contains(p.getUUID()),
+                        "out of the Games, they are drawn late from the tick they arrive: " + out);
+                into(p, nether, spot);
+                NativeTestPlayers.flush(p);
+                List<LateBodiesPayload> in = lateness(p);
+                h.assertTrue(!in.isEmpty() && !in.get(in.size() - 1).readers().contains(p.getUUID()),
+                        "and back in, not from the tick they arrive: " + in);
 
                 // Harrigan's line and the film: no service there, and the film does not follow them in.
                 h.assertTrue(HarriganVignette.noService(p) && !WorkPrint.followsHere(p), "in the Games no call comes or goes, and the film is not with them");
                 listed(nether, false, () -> h.assertTrue(!HarriganVignette.noService(p) && WorkPrint.followsHere(p),
                         "out of the tag the phone has service and the film follows, as anywhere away from the Overworld"));
+                // A night ring begun in their own world, and they are taken into the Games while it rings: nothing more rings there, and it
+                // is a missed call in the thread, without a word, for them to find when they open the phone.
+                rings(d, p, 3);
+                NativeTestPlayers.packets(p);
+                HarriganPhones.ringing(p);
+                NativeTestPlayers.flush(p);
+                List<String> heard = rung(p);
+                CompoundTag phone = HarriganVignette.playerState(d, p.getUUID());
+                var thread = HarriganVignette.phoneState(p, null).getList("Thread", 10);
+                h.assertTrue(heard.isEmpty() && phone.getInt("RingsLeft0188") == 0 && !thread.isEmpty()
+                        && thread.getCompound(thread.size() - 1).getString("Text").equals("Missed call · Mr. Harrigan"),
+                        "a ring under way rings no more in the Games, and goes to a missed call: heard " + heard + ", left " + phone.getInt("RingsLeft0188"));
+                listed(nether, false, () -> {
+                    rings(d, p, 3);
+                    HarriganPhones.ringing(p);
+                    NativeTestPlayers.flush(p);
+                    List<String> rang = rung(p);
+                    h.assertTrue(rang.size() == 1 && HarriganVignette.playerState(d, p.getUUID()).getInt("RingsLeft0188") == 2,
+                            "out of the tag it rings on: heard " + rang);
+                });
+                rings(d, p, 0);
 
                 // The Goatman: it is not with them there, and does not eat with them.
                 CompoundTag all = d.state(GoatmanVignette.ID), players = all.getCompound("Players");
@@ -441,38 +481,42 @@ public final class NotOwnWorldTests {
                 p.getInventory().add(new ItemStack(Items.BREAD, 3));
                 h.assertTrue(GoatmanHaunt.haunted(d, p.getUUID()) && !GoatmanHaunt.hauntsHere(d, p), "haunted, but it is not with them in the Games");
                 listed(nether, false, () -> h.assertTrue(GoatmanHaunt.hauntsHere(d, p), "out of the tag, it would be"));
+
+                // Bly's Lady: near water in the Games she does not come for them.
+                nether.setBlock(spot.offset(3, -1, 0), Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
+                CompoundTag bly = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE);
+                bly.putBoolean(BlyFollows.FOLLOWS, true);
+                LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
+                h.assertTrue(!BlyFollows.carry(p) && !BlyFollows.carrying(p), "near water in the Games she does not take their arm");
+                listed(nether, false, () -> h.assertTrue(BlyFollows.carry(p) && BlyFollows.carrying(p), "out of the tag she does"));
+                // Taken into another world while she has them, she lets go on her next step: she walks nobody anywhere in another world.
+                // She no longer follows, so the step cannot begin another carry where they stand.
+                bly = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE);
+                bly.putBoolean(BlyFollows.FOLLOWS, false);
+                LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
+                into(p, h.getLevel(), h.absolutePos(new BlockPos(1, 2, 1)));
+                Vec3 there = p.position();
+                h.assertTrue(BlyFollows.carrying(p), "the carry is still hers as they arrive");
+                BlyFollows.tick(new ServerTickEvent.Post(() -> true, nether.getServer()));
+                h.assertTrue(!BlyFollows.carrying(p) && p.level() == h.getLevel() && p.position().distanceTo(there) < .01,
+                        "in the world they were taken to, her carry is let go and they stand where they are: carrying=" + BlyFollows.carrying(p)
+                                + " at " + p.position() + " in " + p.level().dimension().location());
+                // Back into the Games, for the Goatman's rounds.
+                into(p, nether, spot);
             } catch (RuntimeException e) {
                 NativeTestPlayers.remove(p);
                 throw e;
             }
-            // Two of its rounds in the Games: nothing is eaten and nothing is glimpsed.
-            h.runAfterDelay(45, () -> {
+            // Two of its rounds in the Games (it goes round on each twentieth tick, after this tick's cases): nothing is eaten and nothing
+            // is glimpsed.
+            int from = nether.getServer().getTickCount();
+            SceneReady.when(h, () -> rounds(from, nether.getServer().getTickCount()) >= 2 ? null : "two of the Goatman's rounds since tick " + from, 1, 100, () -> {
                 try {
                     CompoundTag goat = GoatmanVignette.personal(d, p.getUUID());
-                    h.assertTrue(p.getInventory().countItem(Items.BREAD) == 3 && goat.getInt("Eaten") == 0 && goat.getLong("NextGlimpse") == 0L,
+                    h.assertTrue(p.level() == nether && p.getInventory().countItem(Items.BREAD) == 3 && goat.getInt("Eaten") == 0 && goat.getLong("NextGlimpse") == 0L,
                             "two of its rounds in the Games, and nothing is eaten or glimpsed: bread " + p.getInventory().countItem(Items.BREAD) + ", " + goat);
                     h.assertTrue(nether.getEntitiesOfClass(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanFigure.class, p.getBoundingBox().inflate(24)).isEmpty(),
                             "nothing stands at the edge of their sight there");
-
-                    // Bly's Lady: near water in the Games she does not come for them.
-                    nether.setBlock(spot.offset(3, -1, 0), Blocks.WATER.defaultBlockState(), Block.UPDATE_ALL);
-                    CompoundTag bly = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE);
-                    bly.putBoolean(BlyFollows.FOLLOWS, true);
-                    LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
-                    h.assertTrue(!BlyFollows.carry(p) && !BlyFollows.carrying(p), "near water in the Games she does not take their arm");
-                    listed(nether, false, () -> h.assertTrue(BlyFollows.carry(p) && BlyFollows.carrying(p), "out of the tag she does"));
-                    // Taken into another world while she has them, she lets go on her next step: she walks nobody anywhere in another world.
-                    // She no longer follows, so the step cannot begin another carry where they stand.
-                    bly = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE);
-                    bly.putBoolean(BlyFollows.FOLLOWS, false);
-                    LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
-                    into(p, h.getLevel(), h.absolutePos(new BlockPos(1, 2, 1)));
-                    Vec3 there = p.position();
-                    h.assertTrue(BlyFollows.carrying(p), "the carry is still hers as they arrive");
-                    BlyFollows.tick(new ServerTickEvent.Post(() -> true, nether.getServer()));
-                    h.assertTrue(!BlyFollows.carrying(p) && p.level() == h.getLevel() && p.position().distanceTo(there) < .01,
-                            "in the world they were taken to, her carry is let go and they stand where they are: carrying=" + BlyFollows.carrying(p)
-                                    + " at " + p.position() + " in " + p.level().dimension().location());
                 } finally {
                     CompoundTag all = d.state(GoatmanVignette.ID), players = all.getCompound("Players");
                     CompoundTag goat = players.getCompound(p.getUUID().toString());
@@ -485,6 +529,52 @@ public final class NotOwnWorldTests {
                 h.succeed();
             });
         });
+    }
+
+    /**
+     * The Goatman's rounds that have surely gone by between a case's tick {@code from} and its tick {@code now}: it goes round on every
+     * twentieth tick, after the tick's cases, so a round on {@code from} itself or on {@code now} is not counted.
+     */
+    private static int rounds(int from, int now) {
+        return Math.max(0, Math.floorDiv(now - 1, 20) - Math.floorDiv(from, 20));
+    }
+
+    /** Sets how many rings are left of Harrigan's night call for this reader. */
+    private static void rings(LabyrinthData d, ServerPlayer p, int left) {
+        CompoundTag line = HarriganVignette.playerState(d, p.getUUID());
+        line.putInt("RingsLeft0188", left);
+        HarriganVignette.savePlayerState(d, p.getUUID(), line);
+    }
+
+    /** His rings this reader has heard since last asked. */
+    private static List<String> rung(ServerPlayer p) {
+        List<String> out = new ArrayList<>();
+        for (var sound : NativeTestPlayers.sounds(p)) {
+            if (sound.getSound().value() == PhoneSounds.HIS_RING.get()) {
+                out.add(sound.getSound().value().getLocation().toString());
+            }
+        }
+        return out;
+    }
+
+    /** Who is late, as each payload this reader's game was sent since last asked told it. */
+    private static List<LateBodiesPayload> lateness(ServerPlayer p) {
+        List<LateBodiesPayload> out = new ArrayList<>();
+        for (Packet<?> packet : NativeTestPlayers.packets(p)) {
+            collect(packet, out);
+        }
+        return out;
+    }
+
+    private static void collect(Packet<?> packet, List<LateBodiesPayload> out) {
+        if (packet instanceof ClientboundCustomPayloadPacket custom && custom.payload() instanceof LateBodiesPayload late) {
+            out.add(late);
+        }
+        if (packet instanceof BundlePacket<?> bundle) {
+            for (var child : bundle.subPackets()) {
+                collect(child, out);
+            }
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ keepsakes and artifacts
@@ -673,6 +763,8 @@ public final class NotOwnWorldTests {
                     CompoundTag own = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.NOT_YET);
                     h.assertTrue(!NotYetMending.held(p) && own.getInt("Mended") == 1 && own.contains("CountFrom"),
                             "out of the ward's world, the mending is finished at once, with its seam: " + own);
+                    h.assertTrue(NotYetMending.cot(own) != null,
+                            "and with their cot, as one who wakes on it has, so the machine has one to keep them on when they lie down: " + own);
                     h.assertTrue(p.level() == nether && p.position().distanceTo(stood) < .5 && !p.isSleeping(),
                             "and they are left where they are, standing, never laid on a table there: " + p.position());
                 } finally {
