@@ -24,6 +24,12 @@ public final class TownCar extends Entity implements Voiced {
     /** 0.4.706, The list's night one: one that stands parked with its lights on anyway, at a party in a pasture. */
     private static final EntityDataAccessor<Boolean> LIT=SynchedEntityData.defineId(TownCar.class,EntityDataSerializers.BOOLEAN);
     /**
+     * 0.4.715, The list's drive-in car (TheListCar): one whose driver's door opens, and how far out from shut it stands, in degrees.
+     * Only that one takes a hand: the rest are not even pickable.
+     */
+    private static final EntityDataAccessor<Boolean> WORKING=SynchedEntityData.defineId(TownCar.class,EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> DOOR=SynchedEntityData.defineId(TownCar.class,EntityDataSerializers.FLOAT);
+    /**
      * The four that drive: a station wagon with wood panels, a pickup, a long sedan, and a muscle car with its windows down. And two
      * that stand parked all night (0.4.485): a sedan and a pickup in other paint.
      */
@@ -41,13 +47,22 @@ public final class TownCar extends Entity implements Voiced {
     private long told;private int spokenFor;
     /** On the client: how far it has rolled, for its wheels. */
     private double rolled,rolledBefore;
+    /** On the client: the door's angle last tick and this one, for drawing it between them. */
+    private float doorBefore,doorNow;
 
     public TownCar(EntityType<? extends TownCar> type,Level level){super(type,level);noPhysics=true;setNoGravity(true);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){b.define(KIND,0);b.define(LIT,false);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){b.define(KIND,0);b.define(LIT,false);b.define(WORKING,false);b.define(DOOR,0F);}
     /** Whether its headlights are on: always for one that drives; for one that stands parked, only when it is told so. */
     public boolean lit(){return !parked()||entityData.get(LIT);}
     public void lit(boolean on){entityData.set(LIT,on);}
     public int kind(){return entityData.get(KIND);}
+    /** 0.4.715: whether its driver's door opens (The list's drive-in car), and how far out from shut it stands. */
+    public boolean working(){return entityData.get(WORKING);}
+    public void working(boolean on){if(working()!=on)entityData.set(WORKING,on);}
+    public float door(){return entityData.get(DOOR);}
+    public void door(float angle){if(door()!=angle)entityData.set(DOOR,angle);}
+    /** On the client, the door's angle between the last tick and this. */
+    public float doorAt(float partial){return Mth.lerp(partial,doorBefore,doorNow);}
     public void kind(int kind){entityData.set(KIND,Mth.clamp(kind,0,KINDS-1));setBoundingBox(makeBoundingBox());}
     /**
      * 0.4.487: one that stands parked is a thing in the way, as a wall is. A body does not go through it, somebody can stand on it,
@@ -71,7 +86,7 @@ public final class TownCar extends Entity implements Voiced {
     @Override public String speaker(){return "";}
     @Override public void tick(){
         super.tick();
-        if(level().isClientSide){rolledBefore=rolled;rolled+=Math.hypot(getX()-xo,getZ()-zo);if(parked())setBoundingBox(makeBoundingBox());return;}
+        if(level().isClientSide){rolledBefore=rolled;rolled+=Math.hypot(getX()-xo,getZ()-zo);doorBefore=doorNow;doorNow=door();if(parked())setBoundingBox(makeBoundingBox());return;}
         if(spokenFor>0&&--spokenFor==0)setCustomNameVisible(false);
         if(level().getGameTime()-told>LEFT_ALONE)discard();
     }
@@ -86,7 +101,19 @@ public final class TownCar extends Entity implements Voiced {
     }
     @Override protected void readAdditionalSaveData(CompoundTag tag){}
     @Override protected void addAdditionalSaveData(CompoundTag tag){}
-    @Override public boolean isPickable(){return false;}
+    /** 0.4.715: only The list's drive-in car takes a hand, for its door (TheListCar.hand). */
+    @Override public boolean isPickable(){return working();}
+    @Override public net.minecraft.world.InteractionResult interact(net.minecraft.world.entity.player.Player p,net.minecraft.world.InteractionHand hand){
+        if(!working()||p.isSpectator())return net.minecraft.world.InteractionResult.PASS;
+        if(hand==net.minecraft.world.InteractionHand.MAIN_HAND&&p instanceof net.minecraft.server.level.ServerPlayer sp)TheListCar.hand(sp,this);
+        return net.minecraft.world.InteractionResult.sidedSuccess(level().isClientSide);
+    }
+    /** A blow on it is a hand on it: nothing is hurt. */
+    @Override public boolean skipAttackInteraction(Entity by){
+        if(!working())return false;
+        if(by instanceof net.minecraft.server.level.ServerPlayer sp&&!sp.isSpectator())TheListCar.hand(sp,this);
+        return true;
+    }
     @Override public boolean canBeHitByProjectile(){return false;}
     @Override public boolean shouldRenderAtSqrDistance(double distance){return distance<160*160;}
     @Override public AABB getBoundingBoxForCulling(){return getBoundingBox().inflate(LONG,.4,LONG);}

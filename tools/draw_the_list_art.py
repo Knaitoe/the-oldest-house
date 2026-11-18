@@ -4674,6 +4674,7 @@ def textures():
     out['entity/the_list/gut.png'] = gut()
     # 0.4.714: the face, scalded in the fryer.
     out['entity/the_list/burn.png'] = burn()
+    out['entity/the_list/crush.png'] = crush()
     for i in (1, 2, 3):
         out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
         out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
@@ -5280,6 +5281,59 @@ def burn():
     return half.resize((512, 256), Image.NEAREST)
 
 
+def crush():
+    # 0.4.715, the car door: where it came down on the back of the head, over the five's own skins (512 by 256, painted two pixels to
+    # a dot). Worn on the knees at the car, bent toward it with the head in at the door, so the back of the head is uppermost and the
+    # blood runs down off it: a dented band across the back of the head (u 24 to 32, v 8 to 16), the skin split along it, dark round
+    # it, wet in the split; the hair over it (u 56 to 64) matted and soaked; runs from it down either side of the back of the head to
+    # the nape and onto the collar behind (the body's back, u 32 to 40 from v 20, and the coat's, u 82.4 to 91.2 from v 32.8); the
+    # back edges of the head's sides (u 0 to 1 and 23 to 24) caught; and blood from the nose and mouth on the face's lower rows.
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    rnd = random.Random(97151)
+    bruise, dark = '#5b2a3a', '#3d2030'
+
+    def heavy(x, x0, x1):
+        return 1 - abs(x - (x0 + x1 - 1) / 2) / ((x1 - x0) / 2)
+    # The dent: a band two to three dots high across the back of the head, a little above its middle, and on the hair over it.
+    for x0, cover in ((48, 1.0), (112, .75)):
+        for x in range(x0 + 1, x0 + 15):
+            w = heavy(x, x0 + 1, x0 + 15)
+            top = 20 + int(rnd.random() < .3)
+            for y in range(top - 2, top + 5):
+                d = abs(y - top - 1)
+                if d <= 1 and rnd.random() < (.7 + .3 * w) * cover:
+                    dot(half, x, y, BLOOD_DEEP if d == 0 and rnd.random() < .5 else BLOOD_WET)
+                elif rnd.random() < (.5 * w + .2) * cover / (d or 1):
+                    dot(half, x, y, dark if rnd.random() < .5 * w else bruise)
+        # Runs down from the dent to the nape, more toward the middle.
+        for ox in (-5, -2, 1, 4):
+            x = x0 + 8 + ox
+            for y in range(24, 32):
+                if rnd.random() < .18:
+                    x = max(x0 + 1, min(x0 + 14, x + rnd.choice((-1, 1))))
+                if rnd.random() < .85 * cover:
+                    dot(half, x, y, BLOOD_WET if y < 28 else BLOOD_DRY)
+    # The back edges of the head's sides, where the runs go round.
+    for x in (0, 1, 46, 47):
+        for y in range(19, 32):
+            if rnd.random() < .45 - (y - 19) * .02:
+                dot(half, x, y, rnd.choice((BLOOD_WET, BLOOD_DRY, bruise)))
+    # The face: from the nose and the mouth down to the chin.
+    for x in (21, 22, 25, 26):
+        for y in range(26, 32):
+            if rnd.random() < .6:
+                dot(half, x, y, BLOOD_WET if y < 29 else BLOOD_DRY)
+    # The collar behind: soaked along the top of the back and the coat's, run down a little from it.
+    for x0, x1, top in ((64, 80, 40), (165, 182, 66)):
+        for x in range(x0 + 1, x1 - 1):
+            w = heavy(x, x0 + 1, x1 - 1)
+            if rnd.random() < .5 + .5 * w:
+                dot(half, x, top, BLOOD_WET if rnd.random() < .6 else BLOOD_DEEP)
+            if rnd.random() < .35 * w:
+                dot(half, x, top + 1, BLOOD_DRY)
+    return half.resize((512, 256), Image.NEAREST)
+
+
 def neck():
     # 0.4.711, the boards: where the plank came down across the back of the neck, over the five's own skins (512 by 256, painted two
     # pixels to a dot). It is only ever worn bent over a row, head down under the next one, so the blood runs toward the head: a crease
@@ -5553,6 +5607,11 @@ def main():
     wd = images['entity/the_list/wound.png']
     assert wd.getpixel((301, 141))[3] > 0 and wd.getpixel((104, 90))[3] > 0 and wd.getpixel((10, 10))[3] == 0
     assert all(275 <= x <= 310 and 131 <= y <= 199 or 80 <= x < 112 and 80 <= y < 128 for x in range(512) for y in range(256) if wd.getpixel((x, y))[3])
+    # 0.4.715: the car door's mark is across the back of the head and its hair, with blood at the collar behind.
+    cr = images['entity/the_list/crush.png']
+    def crushed(x0, x1, y0, y1):
+        return sum(cr.getpixel((x, y))[3] > 0 for x in range(x0, x1) for y in range(y0, y1))
+    assert crushed(96, 128, 32, 64) >= 120 and crushed(224, 256, 32, 64) >= 60 and crushed(128, 160, 80, 84) >= 20
     # 0.4.711: the neck's mark is on the nape and the collar behind, and nowhere else.
     nk = images['entity/the_list/neck.png']
     def inked(x0, x1, y0, y1):

@@ -7256,5 +7256,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.burner"
+  },
+  "the_list.car_door": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/car_door",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.car_door"
+  },
+  "the_list.car_open": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/car_open",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.car_open"
   }
 }

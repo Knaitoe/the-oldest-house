@@ -31,6 +31,14 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     public static final float FRONT=-10,BACK=26,ACROSS=8,AXLE=21,HUB=5.5F,RADIUS=5.5F,OUT=13,OUT_WIDE=12.5F;
     private static final ModelResourceLocation[][] BODY=new ModelResourceLocation[TownCar.CARS][],LIT=new ModelResourceLocation[TownCar.CARS][];
     private static final ModelResourceLocation WHEEL=BikeLook.standalone("calder_car/wheel"),WHEEL_WIDE=BikeLook.standalone("calder_car/wheel_wide");
+    /**
+     * 0.4.715, The list's drive-in car: the blue sedan's body with its driver's door cut out of it, its two halves, and the door, drawn
+     * turned about its hinge. The door's model was moved into a model's reach by DOOR_DX and DOOR_DZ (tools/draw_calder_cars.py); its
+     * hinge is at HINGE_X, HINGE_Z in the car's own pixels.
+     */
+    private static final ModelResourceLocation[] OPEN={BikeLook.standalone("calder_car/blue_open_front"),BikeLook.standalone("calder_car/blue_open_back")};
+    private static final ModelResourceLocation DOOR=BikeLook.standalone("calder_car/blue_door");
+    public static final float DOOR_DX=3,DOOR_DZ=24,HINGE_X=13,HINGE_Z=-15;
     static{
         for(int k=0;k<TownCar.CARS;k++){
             String name="calder_car/"+TownCar.NAMES[k];
@@ -43,6 +51,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
         for(var pair:BODY)for(var m:pair)to.accept(m);
         for(var pair:LIT)for(var m:pair)to.accept(m);
         to.accept(WHEEL);to.accept(WHEEL_WIDE);
+        for(var m:OPEN)to.accept(m);to.accept(DOOR);
     }
     /** Any of them that is missing, for the proof. */
     static java.util.List<ModelResourceLocation> missing(){
@@ -55,22 +64,33 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     @Override public ResourceLocation getTextureLocation(TownCar car){return InventoryMenu.BLOCK_ATLAS;}
     @Override public void render(TownCar car,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
         shadowRadius=car.kind()==TownCar.CART?.4F:1.3F;
-        draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),car.kind(),Mth.rotLerp(partial,car.yRotO,car.getYRot()),car.rolled(partial),light,car.lit());
+        draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),car.kind(),Mth.rotLerp(partial,car.yRotO,car.getYRot()),car.rolled(partial),light,car.lit(),car.working()?car.doorAt(partial):0);
         super.render(car,yaw,partial,pose,buffers,light);
     }
 
     /** A car standing on the road at the pose's origin, its nose toward yaw, having rolled that many blocks. */
     public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light){draw(pose,out,kind,yaw,rolled,light,kind<TownCar.MOVING);}
     /** 0.4.706: and with its lights on or off, whatever it is: The list's pickup stands in the pasture with its lights on. */
-    public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light,boolean lit){
+    public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light,boolean lit){draw(pose,out,kind,yaw,rolled,light,lit,0);}
+    /** 0.4.715: and the blue sedan with its driver's door that far out from shut, in degrees. */
+    public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light,boolean lit,float door){
         if(kind==TownCar.CART){cart(pose,out,yaw,light);return;}
+        boolean open=kind==TownCar.BLUE&&door>.5F;
         kind=Mth.clamp(kind,0,TownCar.CARS-1);
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));
         for(int half=0;half<2;half++){
             pose.pushPose();pose.translate(-(half==0?FRONT:BACK)/16F,0,-ACROSS/16F);
             // 0.4.487: one that stands parked has its lights off: its lamps are drawn in the night's own light, as the rest of it is.
-            part(pose,out,BODY[kind][half],light);part(pose,out,LIT[kind][half],lit?LightTexture.FULL_BRIGHT:light);
+            part(pose,out,open?OPEN[half]:BODY[kind][half],light);part(pose,out,LIT[kind][half],lit?LightTexture.FULL_BRIGHT:light);
+            pose.popPose();
+        }
+        if(open){
+            // Out from its hinge: the back edge swings out to the car's left.
+            pose.pushPose();
+            pose.translate(HINGE_X/16F,0,HINGE_Z/16F);pose.mulPose(Axis.YP.rotationDegrees(-door));pose.translate(-HINGE_X/16F,0,-HINGE_Z/16F);
+            pose.translate(-DOOR_DX/16F,0,-DOOR_DZ/16F);
+            part(pose,out,DOOR,light);
             pose.popPose();
         }
         float angle=rolled/(RADIUS/16F);

@@ -160,6 +160,8 @@ public final class TheList {
             TheListLine.tick(l,s.base,here);
             // 0.4.714: the fryer, while its oil is hot.
             TheListFryer.tick(l,s.base,here);
+            // 0.4.715: the drive-in car, told where it stands, and its door swung.
+            TheListCar.tick(l,s.base,here);
         }
     }
     /**

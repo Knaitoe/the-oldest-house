@@ -1541,6 +1541,131 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.715, the car door (docs/THE_LIST_0_4_715.md): the blue sedan parked in its stall at the drive-in, nobody in it, its door shut.
+     * Another reader opens its door, is told so and hears the latch, and slams it shut again; a hand on the far side of the car is a
+     * look at it. Deek taken from behind on the home bench and brought to the car, held by its door. Shut, a hand on the door opens
+     * it and he is still held; open, a hand on it forces him down at it with the head in: the slasher told, his words, on the knees by
+     * the door facing in, held with no retreat and no walk, the other reader hearing him. A hand from the other reader, on him or on
+     * the door: the head is caught. The slasher's hand: the door is slammed and lands on him a moment after, stopping short of shut
+     * and coming to rest against him; blood under it; a hand straight after does nothing. The second, after a wait: something gives,
+     * the back of the head marked, blood on the slasher. The third: still, the slasher told, the other reader told a scream stopped,
+     * the kill kept by the slasher, the hold let go, the door resting against him; a hand on the door will not shut it. The other
+     * reader, looking, finds him at the car. Ended: the door shut and Deek back, unmarked.
+     */
+    @GameTest(template="empty",batch="the_list_car",timeoutTicks=6000)
+    public static void theCarDoor(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_car",P);var peer=f.player("list_car_peer",P);
+        int D=TheListPeople.DEEK;var car=BlockPos.containing(TheListCar.AT);
+        hold(f,b,TheListPeople.AT[D],car);
+        List<net.minecraft.network.protocol.Packet<?>> theirs=new ArrayList<>();
+        h.startSequence().thenExecute(()->f.at(peer,P,TheListCar.AT.x+.3,0,TheListCar.AT.z-2.2))
+        .thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the town");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+            h.assertTrue(TheListCar.car(l,b)!=null,"waiting for the car in its stall");
+        }).thenExecute(()->{
+            var c=TheListCar.car(l,b);
+            h.assertTrue(c.kind()==TownCar.BLUE&&c.working()&&c.isPickable()&&!c.lit()&&c.position().distanceTo(Vec3.atLowerCornerOf(b).add(TheListCar.AT))<.01&&TheListCar.angle(b)==0,
+                "the sedan stands in its stall, lights off, its door shut: "+c.position().subtract(Vec3.atLowerCornerOf(b)));
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+            sent(peer);cues(peer);
+            c.interact(peer,InteractionHand.MAIN_HAND);
+            var got=sent(peer);
+            h.assertTrue(cuesIn(got).contains(TheListTexts.CAR_OPENED)&&sound(got,TheListRegistry.CAR_OPEN.get()),"the other reader opens the door, told so and hearing the latch");
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(TheListCar.open(b)&&TheListCar.car(l,b).door()==TheListCar.OPEN,"the door stands open: "+TheListCar.angle(b));
+            TheListCar.hand(peer,TheListCar.car(l,b));
+            h.assertTrue(cues(peer).contains(TheListTexts.CAR_SHUT),"and shuts it");
+        }).thenIdle(5).thenExecute(()->{
+            h.assertTrue(TheListCar.angle(b)==0&&sound(sent(peer),TheListRegistry.CAR_DOOR.get()),"slammed shut, and heard: "+TheListCar.angle(b));
+            f.at(peer,P,TheListCar.AT.x,0,TheListCar.AT.z+1.6);cues(peer);
+            TheListCar.hand(peer,TheListCar.car(l,b));
+            h.assertTrue(cues(peer).contains(TheListTexts.CAR_LOOK)&&TheListCar.angle(b)==0,"on the far side, a hand on the car is a look at it");
+            f.at(peer,P,TheListCar.AT.x+1.4,0,TheListCar.AT.z-2.2);
+            // Deek taken from behind on the bench, and the slasher brought to the car with him.
+            var deek=TheListPeople.find(l,b,D);
+            f.at(p,P,TheListPeople.AT[D].getX()-1.5,0,TheListPeople.AT[D].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,D));
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,TheListCar.AT.x-.65,0,TheListCar.AT.z-2.4);
+        }).thenIdle(2).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.position().distanceTo(TheListCar.kneel(b))<=TheListCar.REACH,"held by the door: "+where(l,b,D));
+            cues(p);
+            TheListCar.hand(p,TheListCar.car(l,b));
+            h.assertTrue(cues(p).contains(TheListTexts.CAR_OPENED)&&TheListHunt.state(b,D)==TheListHunt.State.HELD,"shut, a hand on it opens it, and he is still held");
+        }).thenIdle(10).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(TheListCar.open(b),"open");
+            sent(peer);cues(peer);
+            TheListCar.hand(p,TheListCar.car(l,b));
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.CAR&&deek.gesture()==TheListHunt.DOORED,"forced down at the door: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.INTO_DOOR,"Deek")),"the slasher is told");
+            h.assertTrue(TheListTexts.DOOR[D].equals(said(deek)),"his words: "+said(deek));
+            h.assertTrue(deek.position().distanceTo(TheListCar.kneel(b))<.05&&Math.abs(net.minecraft.util.Mth.wrapDegrees(deek.getYRot()-TheListCar.KNEEL_YAW))<1,
+                "on the knees by the door, facing in: "+deek.position().subtract(TheListCar.kneel(b))+" "+deek.getYRot());
+            h.assertTrue(TheListHunt.holding(p)&&LiteraryVignettes.retreatLocked(p),"still his, and no retreat");
+            h.assertTrue(p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)==0,"and he holds him there");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.SCREAM.get()),"the other reader hears him");
+            LiteraryVignettes.talk(peer,deek);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.DOOR_HELD,"Deek"))&&TheListHunt.state(b,D)==TheListHunt.State.CAR,"a hand on him: the head is caught");
+            TheListCar.hand(peer,TheListCar.car(l,b));
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.DOOR_HELD,"Deek"))&&TheListCar.open(b),"and on the door: the same, the door left where it is");
+            cues(p);
+            TheListCar.hand(p,TheListCar.car(l,b));
+            h.assertTrue(TheListHunt.slams(b,D)==0&&TheListCar.swinging(b),"slammed: on its way down");
+        }).thenIdle(4).thenExecute(()->{
+            h.assertTrue(TheListHunt.slams(b,D)==1&&cues(p).contains(TheListTexts.SLAMS[0]),"it lands on him, and the slasher is told: "+TheListHunt.slams(b,D));
+            float at=TheListCar.angle(b);
+            h.assertTrue(at>=TheListCar.HIT&&at<=TheListCar.HIT+11.01F,"stopped short of shut: "+at);
+            h.assertTrue(sound(sent(peer),TheListRegistry.CAR_DOOR.get()),"the other reader hears it");
+            h.assertTrue(stain(l,TheListCar.under(b),TheListHunt.DROPS),"blood under the door");
+            TheListCar.hand(p,TheListCar.car(l,b));
+        }).thenIdle(6).thenExecute(()->{
+            h.assertTrue(TheListHunt.slams(b,D)==1&&TheListCar.angle(b)==TheListCar.HIT,"a hand straight after does nothing; the door rests against him: "+TheListHunt.slams(b,D)+" "+TheListCar.angle(b));
+        }).thenIdle(TheListHunt.SLAM_GAP).thenExecute(()->{
+            cues(p);TheListCar.hand(p,TheListCar.car(l,b));
+        }).thenIdle(9).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(TheListHunt.slams(b,D)==2&&cues(p).contains(TheListTexts.SLAMS[1]),"again: something gives: "+TheListHunt.slams(b,D));
+            h.assertTrue((deek.marks()&TheListHunt.CRUSH)!=0&&TheListBody.blood(p)>=1,"the back of the head marked, and blood on the slasher: "+TheListBody.blood(p));
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.CAR,"he is still there");
+        }).thenIdle(TheListHunt.SLAM_GAP).thenExecute(()->{
+            cues(p);cues(peer);TheListCar.hand(p,TheListCar.car(l,b));
+        }).thenIdle(13).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(TheListHunt.dead(b,D)&&deek.gesture()==TheListHunt.SLAMMED,"he goes still: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.SLAMS[2],"Deek")),"the slasher is told");
+            h.assertTrue(cues(peer).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")),"the other reader is told a scream stopped");
+            h.assertTrue((TheListBody.kills(p)&1<<D)!=0,"the slasher's record keeps him");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the body walks and may leave");
+            h.assertTrue(TheListCar.angle(b)==TheListCar.HIT&&deek.position().distanceTo(TheListCar.kneel(b))<.05,"the door resting against him, where he knelt");
+            TheListCar.hand(p,TheListCar.car(l,b));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.CAR_STOPPED,"Deek"))&&TheListCar.angle(b)==TheListCar.HIT,"a hand on the door will not shut it");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Deek")),"a hand on him after: he does not move");
+            // The other reader, looking at his back at the car.
+            var back=deek.position().add(0,.7,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-back.x,back.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(back.y,Math.sqrt(back.x*back.x+back.z*back.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_CAR,"Deek")),"the other reader finds him at the car");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            h.assertTrue(TheListCar.angle(b)==0,"ended, the door shut");
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.marks()==0&&deek.gesture()==TheListHunt.STILL,"and he is back, unmarked: "+where(l,b,D));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Whether these packets drew a particle of this kind. */
     private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;

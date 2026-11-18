@@ -1163,6 +1163,17 @@ public final class LiteraryRenderers {
                     rightLeg.xRot=.14F;leftLeg.xRot=.1F;
                     rightArm.xRot=.08F;rightArm.yRot=0;rightArm.zRot=.14F;leftArm.xRot=-1.68F;leftArm.yRot=0;leftArm.zRot=-.3F;
                     head.xRot=1.85F;head.yRot=.15F;head.zRot=.1F;}
+                // 0.4.715, the car door. On the knees beside the car, bent toward it with the head pushed in at the open door, the
+                // hands flat on the car's side either side of the opening pushing back, the head turning against the hold.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.DOORED->{float w=net.minecraft.util.Mth.sin(age*1.0F),v=net.minecraft.util.Mth.cos(age*.8F);
+                    low(18F,.62F+w*.04F,-.1F);
+                    rightArm.xRot=-1.25F+v*.1F;leftArm.xRot=-1.25F-v*.1F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=.45F+w*.08F;leftArm.zRot=-.45F+w*.08F;
+                    head.xRot=.55F+v*.08F;head.yRot=w*.35F;head.zRot=0;}
+                // Still there: slumped against the car on the knees, the door shut on the head; one arm hanging down the car's side, the
+                // other fallen in over the sill, the head down and turned.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.SLAMMED->{low(18F,.8F,-.1F);
+                    rightArm.xRot=-.15F;rightArm.yRot=0;rightArm.zRot=.1F;leftArm.xRot=-1.45F;leftArm.yRot=0;leftArm.zRot=-.12F;
+                    head.xRot=.75F;head.yRot=.3F;head.zRot=.35F;}
                 default->{}
             }
             hat.copyFrom(head);
