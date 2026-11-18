@@ -240,11 +240,15 @@ public final class LakeHouseStory {
     }
     private static void releaseLift(UUID id){var lift=LIFTS.remove(id);if(lift==null)return;lift.display().discard();if(lift.reader().connection!=null&&lift.reader().serverLevel().hasChunkAt(lift.at()))view(lift.reader(),lift.at(),lift.reader().serverLevel().getBlockState(lift.at()));}
     private static void releaseTouch(UUID id){var a=TOUCHES.remove(id);if(a==null)return;if(a.cue()!=null)a.cue().discard();if(a.reader().serverLevel()==a.level()&&a.level().hasChunkAt(a.at()))view(a.reader(),a.at(),a.level().getBlockState(a.at()));}
-    /** A real morning wake at home, once. Footsteps and dripping are sent only to the reader; no home blocks change. */
+    /**
+     * A real morning wake at home, once: in a bed of their own (HomeBed), which the footprints then lead to. Footsteps and dripping
+     * are sent only to the reader; no home blocks change.
+     */
     @SubscribeEvent public static void waking(PlayerWakeUpEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p)||p.isSpectator()||p.level().dimension()!=net.minecraft.world.level.Level.OVERWORLD||!HouseDays.isMorningWake(p))return;
+        var bed=io.github.knaitoe.theoldesthouse.opening.HomeBed.asleepAtHome(p);if(bed==null)return;
         var own=own(p);if(!own.getBoolean("HomePending")||own.getBoolean("HomeSeen"))return;
-        own.putBoolean("HomeSeen",true);own.putBoolean("HomePending",false);own.putInt("HomeSteps",120);save(p,own);
+        own.putBoolean("HomeSeen",true);own.putBoolean("HomePending",false);own.putInt("HomeSteps",120);own.putLong("HomeBed",bed.asLong());save(p,own);
         p.displayClientMessage(Component.literal("Water drips from the ceiling. Wet footprints stop beside the bed."),false);
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
@@ -255,7 +259,7 @@ public final class LakeHouseStory {
         for(var p:e.getServer().getPlayerList().getPlayers()){
             if(!LakeHouse.inside(p)){releaseVision(p);var b=VIEWS.remove(p.getUUID());if(b!=null&&p.serverLevel().dimension()==HouseDimensions.OUTSIDE)for(var rel:LakeHouseInterior.LAMPS){var at=b.offset(rel);if(p.serverLevel().hasChunkAt(at))view(p,at,p.serverLevel().getBlockState(at));}}
             if(now%5!=0)continue;var own=own(p);int t=own.getInt("HomeSteps");if(t>0&&p.level().dimension()==net.minecraft.world.level.Level.OVERWORLD){
-                var bed=p.getRespawnPosition()==null?p.blockPosition():p.getRespawnPosition();var door=bed;
+                var bed=own.contains("HomeBed")?BlockPos.of(own.getLong("HomeBed")):io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(p.blockPosition());var door=bed;
                 double nearest=Double.MAX_VALUE;
                 for(int x=-8;x<=8;x++)for(int z=-8;z<=8;z++){var at=bed.offset(x,0,z);if(p.serverLevel().hasChunkAt(at)&&p.serverLevel().getBlockState(at).getBlock() instanceof DoorBlock&&at.distSqr(bed)<nearest){door=at;nearest=at.distSqr(bed);}}
                 double progress=1-t/120.0;var at=Vec3.atCenterOf(door).lerp(Vec3.atCenterOf(bed),progress);

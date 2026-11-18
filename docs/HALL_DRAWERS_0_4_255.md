@@ -14,7 +14,9 @@ hall, so they stand only in new worlds.
 
 - **The House's own things.** Every item of this mod.
 - **Things the House made.** Any item carrying custom data. In ordinary play only the House makes those: letters, originals, the
-  Floorboards hatchet and the rest.
+  Floorboards hatchet and the rest. Since docs/NEIGHBOURS.md R7, the House's own stamps alone (a weapon's identity and the mark of a
+  copy, the Mother's marks of who carried a thing and since when) do not count, since they are written on outside things too; the
+  reader's favourite weapon, the one the finale would arm them with, passes as their own.
 - **Food and drink.** Anything with food on it, potions you drink, milk, honey and ominous bottles. Chorus fruit is not let in,
   because eating it moves you.
 - **Lights.** Torches, soul torches, lanterns, soul lanterns and candles.
@@ -42,7 +44,9 @@ each reader, saved with the world.
   world. It remembers the last 256 stacks.
 
 Two stacks count as the same thing if they match in every component except wear, so a sword used a little is still the reader's
-sword.
+sword. Since docs/NEIGHBOURS.md R7 the House's later stamps do not count either: the Mother's marks of who carried a thing, and a
+weapon's identity unless both stacks carry one (then it must be the same). The House looks for an exact match first, identity and all,
+and only then for the same thing stamped since.
 
 ## The crossings
 
@@ -75,7 +79,8 @@ back, it comes off. Every change is written straight back, so nothing is lost or
 
 **Set down in the manor.** A reader's own thing tossed in the manor is followed. Picked up again in the manor, it is loose in the
 picker's hands. Picked up past the hall, it goes back to its owner's drawer: "The House takes it back to the chest of drawers in the
-front hall."
+front hall." The reader's favourite weapon is followed too (docs/NEIGHBOURS.md R7): picked up past the hall by its own reader while it
+is still their favourite, it stays with them; otherwise it is like their other things.
 
 ## Tests
 

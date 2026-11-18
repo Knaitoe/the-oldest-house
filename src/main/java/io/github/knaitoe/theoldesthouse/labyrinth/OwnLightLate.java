@@ -27,9 +27,12 @@ public final class OwnLightLate {
 
     public static boolean late(ServerPlayer p){return OwnLight.own(p).getBoolean(KEY);}
     static void begin(net.minecraft.nbt.CompoundTag own){own.putBoolean(KEY,true);}
-    /** The readers who are late now, among those online. */
+    /**
+     * The readers who are drawn late now, among those online. In a neighbour's world that is not their own (docs/NEIGHBOURS.md R3) a
+     * reader is not drawn late; it waits for them, and they are again once they are back.
+     */
     public static List<UUID> late(MinecraftServer server){
-        var out=new ArrayList<UUID>();for(var p:server.getPlayerList().getPlayers())if(late(p))out.add(p.getUUID());return out;
+        var out=new ArrayList<UUID>();for(var p:server.getPlayerList().getPlayers())if(late(p)&&!io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level()))out.add(p.getUUID());return out;
     }
     public static void sync(MinecraftServer server){
         var now=late(server);if(now.equals(sent))return;sent=List.copyOf(now);var payload=new LateBodiesPayload(now);
@@ -41,6 +44,8 @@ public final class OwnLightLate {
         own.remove(KEY);OwnLight.save(p,own);sync(p.server);
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){if(e.getServer().getTickCount()%20==11)sync(e.getServer());}
+    /** Into a neighbour's world that is not their own and out of it, everyone is told on the tick they arrive, not up to a second later. */
+    @SubscribeEvent public static void changedWorld(PlayerEvent.PlayerChangedDimensionEvent e){if(e.getEntity() instanceof ServerPlayer p)sync(p.server);}
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p&&p.connection!=null)HousePackets.send(p,new LateBodiesPayload(late(p.server)));}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){sent=List.of();}
 }

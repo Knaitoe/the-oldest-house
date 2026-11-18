@@ -115,9 +115,16 @@ public final class ArtifactTests {
             h.assertTrue(p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS,100)),"the blindfold carried in the pack does nothing");p.removeEffect(MobEffects.BLINDNESS);
             p.setItemInHand(InteractionHand.OFF_HAND,own(p,Kind.BLINDFOLD));
             h.assertTrue(!p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS,100))&&!p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,100)),"in the off hand, nothing blinds them");
-            // The key tag: a night's sleep in their world, and they wake fed.
-            p.getFoodData().setFoodLevel(4);NeoForge.EVENT_BUS.post(new PlayerWakeUpEvent(p,false,false));
-            h.assertTrue(p.getFoodData().getFoodLevel()==20,"the key tag's keeper wakes fed");
+            // The key tag: a night's sleep in their world, in a bed of their own, and they wake fed; a night in a bed on a district's land
+            // (a neighbour's, as A Reaping would say it) leaves them as hungry as that place keeps them.
+            var bed=h.absolutePos(new BlockPos(10,1,1));NovelRooms.bed(l,bed,Blocks.WHITE_BED,net.minecraft.core.Direction.NORTH);
+            var district=io.github.knaitoe.theoldesthouse.house.Neighbours.installDistrictForTesting((level,pos)->level==l&&pos.closerThan(bed,3));
+            try{p.getFoodData().setFoodLevel(4);p.startSleeping(bed);NeoForge.EVENT_BUS.post(new PlayerWakeUpEvent(p,false,false));
+                h.assertTrue(p.getFoodData().getFoodLevel()==4,"a night in a bed on a district's land does not feed the key tag's keeper");}
+            finally{district.run();}
+            NeoForge.EVENT_BUS.post(new PlayerWakeUpEvent(p,false,false));
+            h.assertTrue(p.getFoodData().getFoodLevel()==20,"the key tag's keeper wakes fed in a bed of their own");
+            p.stopSleeping();p.teleportTo(l,at.x,at.y,at.z,0,0);
             // Bud's note: ice grips and powder snow bears; the ticket stub: a stronger stroke.
             h.assertTrue(Artifacts.friction(p,.98F)==Artifacts.NOTE_GRIP&&Artifacts.friction(other,.98F)==.98F&&Artifacts.friction(p,.6F)==.6F,"ice grips under the note's keeper like ordinary ground");
             h.assertTrue(Artifacts.snowBears(p)&&!Artifacts.snowBears(other),"powder snow bears the note's keeper");
@@ -131,11 +138,12 @@ public final class ArtifactTests {
             h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SNEAKING_SPEED)-.6)<1e-6,"crawling with the stone, twice the pace: "+p.getAttributeValue(Attributes.SNEAKING_SPEED));
             p.setPose(Pose.STANDING);tick(p);
             h.assertTrue(Math.abs(p.getAttributeValue(Attributes.SNEAKING_SPEED)-.3)<1e-6,"standing again, it goes");
-            // The photograph near their bed, and the bracelet on two-thirds of a stomach: they mend.
-            p.setRespawnPosition(l.dimension(),p.blockPosition(),0,true,false);p.setHealth(10);p.getFoodData().setFoodLevel(20);tick(p);
+            // The photograph near their bed (their home: HomeBed), and the bracelet on two-thirds of a stomach: they mend.
+            p.setRespawnPosition(l.dimension(),bed.north(),0,true,false);p.setHealth(10);p.getFoodData().setFoodLevel(20);tick(p);
             h.assertTrue(p.getHealth()==11,"near their bed, the photograph's keeper mends: "+p.getHealth());
-            p.setRespawnPosition(l.dimension(),p.blockPosition().offset(100,0,0),0,true,false);p.getFoodData().setFoodLevel(15);p.setHealth(10);tick(p);
+            p.teleportTo(l,at.x+40,at.y,at.z+40,0,0);p.getFoodData().setFoodLevel(15);p.setHealth(10);tick(p);
             h.assertTrue(p.getHealth()==11,"away from it, on fifteen of twenty, the bracelet mends them: "+p.getHealth());
+            p.teleportTo(l,at.x,at.y,at.z,0,0);
             other.setHealth(10);other.getFoodData().setFoodLevel(15);tick(other);
             h.assertTrue(other.getHealth()==10,"neither works for anyone else");
         }finally{NativeTestPlayers.remove(p);NativeTestPlayers.remove(other);}
@@ -224,12 +232,14 @@ public final class ArtifactTests {
         h.assertTrue(held(refused,Kind.DOOR_KEY).size()==1&&held(refused,Kind.PHOTO).isEmpty()&&held(left,Kind.PHOTO).size()==1&&held(left,Kind.DOOR_KEY).isEmpty(),"refusing gives the key, leaving the photograph");
         var key=held(refused,Kind.DOOR_KEY).get(0);var lore=key.get(DataComponents.LORE);
         h.assertTrue(Artifacts.mine(key,refused,Kind.DOOR_KEY)&&lore!=null&&lore.lines().stream().anyMatch(line->line.getString().equals(Kind.DOOR_KEY.line)),"the key is theirs and says what it does");
-        var bed=h.absolutePos(new BlockPos(2,1,2));
+        var bed=h.absolutePos(new BlockPos(2,1,2));NovelRooms.bed(l,bed,Blocks.WHITE_BED,net.minecraft.core.Direction.NORTH);
         var night=NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(refused,bed,net.minecraft.world.entity.player.Player.BedSleepingProblem.NOT_SAFE));
         var other=NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(left,bed,net.minecraft.world.entity.player.Player.BedSleepingProblem.NOT_SAFE));
         h.assertTrue(night.getProblem()==null&&other.getProblem()==net.minecraft.world.entity.player.Player.BedSleepingProblem.NOT_SAFE,"with the key, monsters nearby do not keep them from a bed");
         refused.setHealth(6);NeoForge.EVENT_BUS.post(new PlayerWakeUpEvent(refused,false,false));
-        h.assertTrue(refused.getHealth()==refused.getMaxHealth(),"and they wake mended");
+        h.assertTrue(refused.getHealth()==6,"out of bed, nothing mends them");
+        refused.startSleeping(bed);NeoForge.EVENT_BUS.post(new PlayerWakeUpEvent(refused,false,false));refused.stopSleeping();
+        h.assertTrue(refused.getHealth()==refused.getMaxHealth(),"and they wake mended in a bed of their own");
         // The cost: in their own bed, one night in three, the family wakes them before dawn.
         long family=-1,quiet=-1;for(long d=0;d<40&&(family<0||quiet<0);d++){if(Artifacts.familyNight(refused.getUUID(),d)){if(family<0)family=d;}else if(quiet<0)quiet=d;}
         refused.setRespawnPosition(l.dimension(),bed,0,true,false);refused.startSleeping(bed);left.setRespawnPosition(l.dimension(),bed,0,true,false);left.startSleeping(bed);

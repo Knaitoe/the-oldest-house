@@ -226,6 +226,8 @@ public final class MinotaurEntity extends PathfinderMob {
         if(source.getDirectEntity() instanceof net.minecraft.world.entity.projectile.Projectile projectile){
             CompoundTag provenance=projectile.getPersistentData();original=required!=null&&provenance.hasUUID(WeaponHistory.ORIGINAL)&&required.equals(provenance.getUUID(WeaponHistory.ORIGINAL));
         }
+        // What dealt the blow, by its damage source: another mod's projectile carries the bow that loosed it, and a blow its weapon.
+        if(!original){ItemStack weapon=source.getWeaponItem();original=weapon!=null&&!weapon.isEmpty()&&WeaponHistory.wounds(weapon,required);}
         if(!original){FinaleController.words(player,blockPosition().above(),"The edge passes through. This is not the one you used.");return false;}
         FinaleController.wound(player,this);return true;
     }

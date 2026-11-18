@@ -275,18 +275,23 @@ public final class Storeroom {
         LiteraryVignettes.ready(q,PLACE,own,"did_not_turn_round");save(q,own);
         cue(q,"The door opens behind you as you back into it. You don't turn round. You don't turn round until you are out.");
     }
-    /** The thing on the tag, a few days after it was taken: on the reader's bed, or in their pocket if they have no bed. */
-    static void returns(MinecraftServer s){
-        for(var p:s.getPlayerList().getPlayers()){var own=own(p);if(!own.contains("Return210"))continue;
-            long day=p.serverLevel().getDayTime()/24000;if(day<own.getLong("ReturnDay210"))continue;
-            var item=ItemStack.parseOptional(p.registryAccess(),own.getCompound("Return210"));var bed=p.getRespawnPosition();
-            if(bed!=null&&p.level().dimension().equals(p.getRespawnDimension())&&p.blockPosition().closerThan(bed,32)){
-                var e=new ItemEntity(p.serverLevel(),bed.getX()+.5,bed.getY()+.7,bed.getZ()+.5,item);e.setDeltaMovement(Vec3.ZERO);p.serverLevel().addFreshEntity(e);
-                cue(p,"Something has been left on your bed.");}
-            else if(day>=own.getLong("ReturnDay210")+2){LiteraryVignettes.give(p,item);cue(p,"It was in your pocket. You are sure it wasn't, a moment ago.");}
-            else continue;
-            own.remove("Return210");own.remove("ReturnDay210");own.putBoolean("Returned210",true);save(p,own);
-        }
+    /** The thing on the tag, a few days after it was taken: on the reader's home bed (HomeBed), or in their pocket if they have none. */
+    static void returns(MinecraftServer s){for(var p:s.getPlayerList().getPlayers())returnTo(p);}
+    /**
+     * This reader's thing on the tag, if it is due: on their home bed, or in their pocket two days on. The pocket waits while they are in
+     * a neighbour's world that is not their own (docs/NEIGHBOURS.md R3), and finds them when they are back. Public for the tests.
+     */
+    public static boolean returnTo(ServerPlayer p){
+        var own=own(p);if(!own.contains("Return210"))return false;
+        long day=p.serverLevel().getDayTime()/24000;if(day<own.getLong("ReturnDay210"))return false;
+        var item=ItemStack.parseOptional(p.registryAccess(),own.getCompound("Return210"));var bed=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);
+        if(bed!=null&&p.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&p.blockPosition().closerThan(bed,32)){
+            var e=new ItemEntity(p.serverLevel(),bed.getX()+.5,bed.getY()+.7,bed.getZ()+.5,item);e.setDeltaMovement(Vec3.ZERO);p.serverLevel().addFreshEntity(e);
+            cue(p,"Something has been left on your bed.");}
+        else if(day>=own.getLong("ReturnDay210")+2&&!io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level())){LiteraryVignettes.give(p,item);cue(p,"It was in your pocket. You are sure it wasn't, a moment ago.");}
+        else return false;
+        own.remove("Return210");own.remove("ReturnDay210");own.putBoolean("Returned210",true);save(p,own);
+        return true;
     }
     public static boolean locked(ServerPlayer p){if(!inside(p))return false;var b=base(p);if(b==null)return false;return running(set(p.server))&&StoreroomSite.inStore(rel(p,b));}
     /** Test hook: changes the shared state directly. */

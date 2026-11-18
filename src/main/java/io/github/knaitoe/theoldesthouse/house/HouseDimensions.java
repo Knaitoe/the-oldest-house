@@ -39,4 +39,12 @@ public final class HouseDimensions {
     public static boolean isHouseDimension(ResourceKey<Level> dimension) {
         return dimension.equals(INTERIOR) || dimension.equals(OUTSIDE) || dimension.equals(BETWEEN);
     }
+
+    /**
+     * The reader's own world: none of the House's dimensions, and none a neighbour says is not theirs
+     * ({@link Neighbours#NOT_OWN_WORLD}, docs/NEIGHBOURS.md R3). Without a neighbour, anywhere outside the House.
+     */
+    public static boolean ownWorld(Level level) {
+        return !isHouseDimension(level.dimension()) && !Neighbours.notOwnWorld(level);
+    }
 }

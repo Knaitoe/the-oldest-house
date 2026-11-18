@@ -52,7 +52,7 @@ public final class HarriganPhoneItem extends Item {
                 .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("If his phone rests in the casket, yours can reach him.")
                 .withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Use it to open it. Outside the House: call him, or text him a name.")
+        tooltip.add(Component.literal("Use it to open it. Out in your world: call him, or text him a name.")
                 .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Try a hostile species, such as zombie. One a day.")
                 .withStyle(ChatFormatting.DARK_GRAY));
@@ -70,7 +70,7 @@ public final class HarriganPhoneItem extends Item {
             tooltip.add(Component.literal("His phone. Your spare phone remains yours.").withStyle(ChatFormatting.GRAY));
             tooltip.add(Component.literal("Keep this as a keepsake, or take it to his funeral.").withStyle(ChatFormatting.DARK_GRAY));
             tooltip.add(Component.literal("Hold it and use it on the casket to lay it beside him.").withStyle(ChatFormatting.DARK_GRAY));
-            tooltip.add(Component.literal("Then your own phone may reach him outside the House.").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.literal("Then your own phone may reach him out in your world.").withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 

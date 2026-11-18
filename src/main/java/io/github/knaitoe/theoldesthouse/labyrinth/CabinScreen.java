@@ -10,7 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,8 +39,8 @@ public final class CabinScreen {
     private CabinScreen(){}
 
     public static boolean pending(UUID reader,String key){return JOBS.containsKey(reader+"/"+key);}
-    /** The reader's home: their own bed in the Overworld, or where the world first put them. */
-    public static BlockPos home(ServerPlayer p){var bed=p.getRespawnPosition();return bed!=null&&p.getRespawnDimension().equals(Level.OVERWORLD)?bed:p.server.overworld().getSharedSpawnPos();}
+    /** The reader's home: their own bed in the Overworld (HomeBed), or where the world first put them. */
+    public static BlockPos home(ServerPlayer p){return io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElseGet(()->p.server.overworld().getSharedSpawnPos());}
     public static void requestHome(ServerPlayer p){request(p.server,p.getUUID(),HOME,null,p.server.overworld(),home(p));}
     /** False when the room has nowhere to be pictured; the caller keeps a dark screen instead. */
     public static boolean requestRoom(ServerPlayer p,LabyrinthPlace room,String key){

@@ -278,7 +278,6 @@ public final class FinaleController {
         if(world.hasUUID("WoundedCreature"))record.putUUID("Creature",world.getUUID("WoundedCreature"));
         else if(world.hasUUID("CagedCreature"))record.putUUID("Creature",world.getUUID("CagedCreature"));
         if(world.getBoolean("MinotaurWounded"))FinaleCollapse.wounded(player,origin,record);
-        if(player.getRespawnPosition()!=null)record.putLong("Base",player.getRespawnPosition().asLong());record.putString("BaseDimension",player.getRespawnDimension().location().toString());
         FinaleArchitecture.seal(player.serverLevel(),origin,true);FinaleArchitecture.openCell(player.serverLevel(),origin);
         ensureMinotaur(player,origin,record);FinaleProgress.save(player.server,player.getUUID(),record);
         LabyrinthData.get(player.server).clearReturns(player.getUUID());return true;
@@ -441,7 +440,8 @@ public final class FinaleController {
     }
     @SubscribeEvent public static void projectile(EntityJoinLevelEvent event){
         if(!event.getLevel().isClientSide&&event.getEntity() instanceof TamableAnimal pet&&pet.getPersistentData().getBoolean(GUIDE))installGuideGoal(pet);
-        if(event.getLevel().isClientSide||!(event.getEntity() instanceof Projectile projectile)||!(projectile.getOwner() instanceof ServerPlayer player))return;
+        // A weapon is stamped for its projectiles only where the House watches: never in a neighbour's world (docs/NEIGHBOURS.md R3).
+        if(event.getLevel().isClientSide||!(event.getEntity() instanceof Projectile projectile)||!(projectile.getOwner() instanceof ServerPlayer player)||!WeaponHistory.watched(player))return;
         ItemStack used=player.getUseItem();if(!WeaponHistory.weapon(used))used=WeaponHistory.weapon(player.getMainHandItem())?player.getMainHandItem():player.getOffhandItem();
         UUID original=WeaponHistory.stamp(used);if(original!=null)projectile.getPersistentData().putUUID(WeaponHistory.ORIGINAL,original);
     }
@@ -507,34 +507,62 @@ public final class FinaleController {
             }
         }
         if(world.getBoolean("Ended")&&world.contains("CollapsedOrigin")){
-            BlockPos origin=BlockPos.of(world.getLong("CollapsedOrigin"));int cursor=world.getInt("Demolition"),nx=HouseLayout.MAX_X-HouseLayout.MIN_X+1,nz=HouseLayout.MAX_Z-HouseLayout.MIN_Z+1;
-            int total=nx*nz*(HouseLayout.MAX_Y-HouseLayout.MIN_Y+1),end=Math.min(total,cursor+1536);
-            for(;cursor<end;cursor++){int x=HouseLayout.MIN_X+cursor%nx,z=HouseLayout.MIN_Z+(cursor/nx)%nz,y=HouseLayout.MIN_Y+cursor/(nx*nz);BlockPos pos=origin.offset(x,y,z);
+            // The demolition clears the lot the site search found nothing built on, and nothing else (HouseLayout.SITE).
+            BlockPos origin=BlockPos.of(world.getLong("CollapsedOrigin"));var lot=HouseLayout.SITE;int cursor=world.getInt("Demolition"),nx=lot.x1()-lot.x0()+1,nz=lot.z1()-lot.z0()+1;
+            int total=nx*nz*(lot.y1()-lot.y0()+1),end=Math.min(total,cursor+1536);
+            for(;cursor<end;cursor++){int x=lot.x0()+cursor%nx,z=lot.z0()+(cursor/nx)%nz,y=lot.y0()+cursor/(nx*nz);BlockPos pos=origin.offset(x,y,z);
                 var replacement=y<0?Blocks.DIRT.defaultBlockState():y==0?Blocks.GRASS_BLOCK.defaultBlockState():Blocks.AIR.defaultBlockState();server.overworld().setBlock(pos,replacement,FLAGS);
                 if(interior!=null)interior.setBlock(pos,Blocks.AIR.defaultBlockState(),FLAGS);}
             if(cursor!=world.getInt("Demolition")){world.putInt("Demolition",cursor);changed=true;}
         }
         if(changed)LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
     }
-    private static boolean epilogue(ServerPlayer player,CompoundTag record){
-        ServerLevel level=player.server.overworld();BlockPos home=record.contains("Base")&&record.getString("BaseDimension").equals(Level.OVERWORLD.location().toString())?BlockPos.of(record.getLong("Base")):player.blockPosition();
+    /**
+     * The pages left at the reader's home (HomeBed), read when they are delivered; beside the reader if they have none, and then only
+     * once they are in the Overworld: where they stand anywhere else is no place there. The chest stands in the first free cell that
+     * is on no neighbour's district (docs/NEIGHBOURS.md); with none, the pages are left there for the reader as they are: on the bed at
+     * home, and where a reader with no home stands only once they stand where pages can lie ({@link #pagesLie}); until then they wait.
+     */
+    public static boolean epilogue(ServerPlayer player,CompoundTag record){
+        ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);boolean own=home!=null;
+        if(home==null){if(player.serverLevel()!=level)return false;home=player.blockPosition();}
         level.getChunkAt(home);
-        for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())){
+        for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())&&!Neighbours.districtLand(level,candidate)){
             level.setBlock(candidate,Blocks.CHEST.defaultBlockState(),FLAGS);
             if(level.getBlockEntity(candidate) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest){
-                if(FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED){chest.setItem(0,WitnessEnding.epilogue(player));chest.setChanged();return true;}
-                chest.setItem(0,HouseWriting.book("Loose pages","?",HouseWriting.WritingStyle.WILL,List.of("I have been reading your account.\n\nThis page was not there when you left. Neither was the handwriting beneath it.")));
-                String unseen=Arrays.stream(LabyrinthPlace.values()).filter(p->p.isVignette()&&!LabyrinthData.get(player.server).visited(player.getUUID()).contains(p.id())).map(LabyrinthPlace::id).findFirst().orElse("an unmeasured room");
-                chest.setItem(1,HouseWriting.book("Unnumbered page","?",HouseWriting.WritingStyle.ZAMPANO,List.of("A room outside the survey: "+unseen.replace('_',' ')+".\n\nThe inventory is incomplete. It always was.")));chest.setChanged();return true;
+                List<ItemStack> pages=epiloguePages(player,record);for(int i=0;i<pages.size();i++)chest.setItem(i,pages.get(i));chest.setChanged();return true;
             }
         }
-        return false;
+        if(!own&&!pagesLie(level,home))return false;
+        List<ItemStack> pages=epiloguePages(player,record);
+        Vec3 spot=io.github.knaitoe.theoldesthouse.opening.Doorsteps.restingPoint(level,home);
+        for(int i=0;i<pages.size();i++)level.addFreshEntity(io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity.create(level,pages.get(i),spot.add(.14*i-.07*(pages.size()-1),0,0),player.getUUID()));
+        return true;
     }
-    private static void overgrowBase(ServerPlayer player,CompoundTag record){
-        if(!record.contains("Base")||!record.getString("BaseDimension").equals(Level.OVERWORLD.location().toString()))return;
-        ServerLevel level=player.server.overworld();BlockPos home=BlockPos.of(record.getLong("Base"));
+    /**
+     * Whether pages left at {@code at} lie there until the reader takes them: nothing flowing there, and solid ground under them. Never
+     * in water, nor over lava, a cactus or a drop, where a reader with no home may be swimming, riding, gliding or falling when the
+     * pages are due, and where they could be lost before they are taken.
+     */
+    private static boolean pagesLie(ServerLevel level,BlockPos at){
+        return level.getFluidState(at).isEmpty()&&level.getBlockState(at.below()).isSolidRender(level,at.below());
+    }
+    private static List<ItemStack> epiloguePages(ServerPlayer player,CompoundTag record){
+        if(FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED)return List.of(WitnessEnding.epilogue(player));
+        String unseen=Arrays.stream(LabyrinthPlace.values()).filter(p->p.isVignette()&&!LabyrinthData.get(player.server).visited(player.getUUID()).contains(p.id())).map(LabyrinthPlace::id).findFirst().orElse("an unmeasured room");
+        return List.of(HouseWriting.book("Loose pages","?",HouseWriting.WritingStyle.WILL,List.of("I have been reading your account.\n\nThis page was not there when you left. Neither was the handwriting beneath it.")),
+                HouseWriting.book("Unnumbered page","?",HouseWriting.WritingStyle.ZAMPANO,List.of("A room outside the survey: "+unseen.replace('_',' ')+".\n\nThe inventory is incomplete. It always was.")));
+    }
+    /**
+     * Sixty days on, round the reader's home (HomeBed), and nowhere on a neighbour's district; nothing grows for a reader with none of
+     * their own. A vine spreads, so none is planted where it could spread onto a district in a step: next to one, above or below it.
+     */
+    public static void overgrowBase(ServerPlayer player,CompoundTag record){
+        BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);if(home==null)return;
+        ServerLevel level=player.server.overworld();
         // Age only crops and add plants to vacant, supported cells; built blocks stay intact.
         for(BlockPos p:BlockPos.betweenClosed(home.offset(-8,-3,-8),home.offset(8,5,8))){
+            if(Neighbours.districtLand(level,p))continue;
             var state=level.getBlockState(p);
             if(state.getBlock() instanceof CropBlock crop){level.setBlock(p,crop.getStateForAge(crop.getMaxAge()),FLAGS);continue;}
             if(!state.isAir()||Math.floorMod(p.asLong(),11)!=0)continue;
@@ -542,9 +570,15 @@ public final class FinaleController {
             else if(level.canSeeSky(p))for(Direction direction:Direction.Plane.HORIZONTAL){
                 BlockPos support=p.relative(direction);if(!level.getBlockState(support).isFaceSturdy(level,support,direction.getOpposite()))continue;
                 var vine=Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(direction),true);
-                if(vine.canSurvive(level,p))level.setBlock(p,vine,FLAGS);break;
+                if(vine.canSurvive(level,p)&&!besideDistrict(level,p))level.setBlock(p,vine,FLAGS);break;
             }
         }
+    }
+    /** Whether any of the 26 cells round {@code p}, where a vine there could spread in a step, is on a neighbour's district. */
+    private static boolean besideDistrict(ServerLevel level,BlockPos p){
+        if(!Neighbours.anyDistrict())return false;
+        for(BlockPos q:BlockPos.betweenClosed(p.offset(-1,-1,-1),p.offset(1,1,1)))if(Neighbours.districtLand(level,q))return true;
+        return false;
     }
     private static void installGuideGoal(TamableAnimal pet){
         if(!GUIDE_GOALS.add(pet))return;

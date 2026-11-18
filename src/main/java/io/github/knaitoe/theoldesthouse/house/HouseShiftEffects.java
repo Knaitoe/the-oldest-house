@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.house;
 
+import io.github.knaitoe.theoldesthouse.opening.HomeBed;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -17,7 +18,6 @@ import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractCandleBlock;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -542,14 +542,13 @@ public final class HouseShiftEffects {
         return false;
     }
 
-    /** The colour of a player's own bed at home, if one is loaded: the guest bed takes it. */
+    /** The colour of a player's own bed at home (HomeBed), if one is loaded: the guest bed takes it. */
     @Nullable
     private static DyeColor homeBedColour(Context ctx, List<ServerPlayer> players) {
         for (ServerPlayer player : players) {
-            BlockPos respawn = player.getRespawnPosition();
-            if (respawn != null && Level.OVERWORLD.equals(player.getRespawnDimension())
-                    && ctx.overworld().isLoaded(respawn)
-                    && ctx.overworld().getBlockState(respawn).getBlock() instanceof BedBlock home) {
+            BlockPos bed = HomeBed.of(player).orElse(null);
+            if (bed != null && ctx.overworld().isLoaded(bed)
+                    && ctx.overworld().getBlockState(bed).getBlock() instanceof BedBlock home) {
                 return home.getColor();
             }
         }
@@ -565,9 +564,9 @@ public final class HouseShiftEffects {
         Vec3 centre = Vec3.atCenterOf(ctx.at(HouseLayout.CENTER_X, 8, HouseLayout.CENTER_Z));
         Vec3 home = null;
         for (ServerPlayer player : players) {
-            BlockPos respawn = player.getRespawnPosition();
-            if (respawn != null && Level.OVERWORLD.equals(player.getRespawnDimension())) {
-                home = Vec3.atCenterOf(respawn);
+            BlockPos bed = HomeBed.of(player).orElse(null);
+            if (bed != null) {
+                home = Vec3.atCenterOf(bed);
                 break;
             }
         }

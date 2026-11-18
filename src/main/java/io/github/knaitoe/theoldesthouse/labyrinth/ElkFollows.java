@@ -2,18 +2,22 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -59,8 +63,12 @@ public final class ElkFollows {
         Map.entry(EntityType.FOX,"foxes"),Map.entry(EntityType.POLAR_BEAR,"polar bears"),Map.entry(EntityType.PANDA,"pandas"),Map.entry(EntityType.TURTLE,"turtles"),
         Map.entry(EntityType.ARMADILLO,"armadillos"),Map.entry(EntityType.SNIFFER,"sniffers"),Map.entry(EntityType.WOLF,"wolves"),Map.entry(EntityType.CAT,"cats"),
         Map.entry(EntityType.OCELOT,"ocelots"),Map.entry(EntityType.PARROT,"parrots"),Map.entry(EntityType.FROG,"frogs"));
-    /** Where the field found each reader on a restless night. */
-    private static final Map<UUID,Vec3> ANCHOR=new HashMap<>();
+    /** Where the field found a reader on a restless night, and in which world: it never brings them back across worlds. */
+    public record Anchor(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension,Vec3 at){}
+    /** Where the field found each reader on a restless night. Let go when they change worlds (PlayerChangedDimensionEvent). */
+    private static final Map<UUID,Anchor> ANCHOR=new HashMap<>();
+    /** Where the field found this reader tonight, if it has. For the tests. */
+    public static Optional<Anchor> anchor(ServerPlayer p){return Optional.ofNullable(ANCHOR.get(p.getUUID()));}
 
     private static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
     private static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
@@ -68,21 +76,45 @@ public final class ElkFollows {
     private static void hint(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);}
 
     // ------------------------------------------------------------------------------------------------ the record
+    /** A kind the men count: the creatures it takes in, how they say one of it and many, and how many the reader has killed. */
+    record Kind(List<EntityType<?>> types,String one,String many){
+        int killed(ServerPlayer p){int n=0;for(var type:types)n+=p.getStats().getValue(Stats.ENTITY_KILLED.get(type));return n;}
+    }
+    /**
+     * How the men say a neighbour's game, one or many, whatever it is: the House's own words, never the game's own name for it, which the
+     * House cannot read before it is said (it may name a colour or an age, or come in another language).
+     */
+    static final String GAME="head of game";
+    /**
+     * The kinds the men count: the animals of the reader's world, in the order they name them, then, as one kind, all the game a
+     * neighbour lists in {@code #the_oldest_house:hunted} (the owner, 17 November: "Yes, the house counts kills from the game";
+     * docs/NEIGHBOURS.md).
+     */
+    static List<Kind> counted(){
+        var kinds=new ArrayList<Kind>();var game=new ArrayList<EntityType<?>>();
+        for(var e:COUNTED)kinds.add(new Kind(List.of(e.getKey()),single(e.getValue()),e.getValue()));
+        for(EntityType<?> type:BuiltInRegistries.ENTITY_TYPE)if(type.is(Neighbours.HUNTED)&&COUNTED.stream().noneMatch(e->e.getKey()==type))game.add(type);
+        if(!game.isEmpty())kinds.add(new Kind(game,GAME,GAME));
+        return kinds;
+    }
+    /** Game: an animal, or a creature a neighbour lists as game ({@code #the_oldest_house:hunted}). */
+    static boolean game(Entity e){return e instanceof Animal||e.getType().is(Neighbours.HUNTED);}
     /** Every animal the reader has killed in their world, by the game's own count. */
-    public static int kills(ServerPlayer p){int n=0;for(var e:COUNTED)n+=p.getStats().getValue(Stats.ENTITY_KILLED.get(e.getKey()));return n;}
+    public static int kills(ServerPlayer p){int n=0;for(var k:counted())n+=k.killed(p);return n;}
     /**
      * What the men say of the reader's record: the two kinds they have killed most, named back to them with their name in
      * between; or, for a reader who has killed none, the accusation faltering.
      */
     public static String accusation(ServerPlayer p){
-        var counts=new ArrayList<Map.Entry<String,Integer>>();
-        for(var e:COUNTED){int n=p.getStats().getValue(Stats.ENTITY_KILLED.get(e.getKey()));if(n>0)counts.add(Map.entry(e.getValue(),n));}
+        var counts=new ArrayList<Map.Entry<Kind,Integer>>();
+        for(var k:counted()){int n=k.killed(p);if(n>0)counts.add(Map.entry(k,n));}
         if(counts.isEmpty())return "Never even shot a deer, %s? Then why'd it look at you?";
         counts.sort((a,b)->b.getValue()-a.getValue());
-        String first=capital(words(counts.get(0).getValue()))+" "+(counts.get(0).getValue()==1?single(counts.get(0).getKey()):counts.get(0).getKey());
+        String first=capital(words(counts.get(0).getValue()))+" "+said(counts.get(0));
         if(counts.size()==1)return first+", %s. We counted.";
-        return first+", %s. "+capital(words(counts.get(1).getValue()))+" "+(counts.get(1).getValue()==1?single(counts.get(1).getKey()):counts.get(1).getKey())+".";
+        return first+", %s. "+capital(words(counts.get(1).getValue()))+" "+said(counts.get(1))+".";
     }
+    private static String said(Map.Entry<Kind,Integer> count){return count.getValue()==1?count.getKey().one():count.getKey().many();}
     static String single(String plural){return switch(plural){case "sheep"->"sheep";case "foxes"->"fox";case "wolves"->"wolf";default->plural.endsWith("s")?plural.substring(0,plural.length()-1):plural;};}
     static String capital(String s){return s.isEmpty()?s:Character.toUpperCase(s.charAt(0))+s.substring(1);}
     /** A count as the men would say it, in words up to nine hundred and ninety-nine. */
@@ -141,11 +173,12 @@ public final class ElkFollows {
     }
 
     // ------------------------------------------------------------------------------------------------ what she answers
-    private static boolean outside(net.minecraft.world.level.Level l){return !HouseDimensions.isHouseDimension(l.dimension());}
+    /** The reader's own world (HouseDimensions.ownWorld): never the House, nor a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3). */
+    private static boolean outside(net.minecraft.world.level.Level l){return HouseDimensions.ownWorld(l);}
     private static ServerPlayer killer(net.minecraft.world.damagesource.DamageSource s){return s.getEntity() instanceof ServerPlayer p&&!p.isSpectator()?p:null;}
     /** The meat and the hide spoil as they fall. */
     @SubscribeEvent public static void drops(LivingDropsEvent e){
-        if(!(e.getEntity() instanceof Animal)||!outside(e.getEntity().level()))return;var p=killer(e.getSource());if(p==null||!follows(p))return;
+        if(!game(e.getEntity())||!outside(e.getEntity().level()))return;var p=killer(e.getSource());if(p==null||!follows(p))return;
         boolean spoiled=false;
         for(var it=e.getDrops().iterator();it.hasNext();){ItemEntity drop=it.next();var s=drop.getItem();
             if(s.is(Items.LEATHER)||s.is(Items.RABBIT_HIDE)){it.remove();spoiled=true;}
@@ -154,7 +187,7 @@ public final class ElkFollows {
     }
     /** Each animal they kill is counted against them; a young one costs them the night. */
     @SubscribeEvent public static void death(LivingDeathEvent e){
-        if(!(e.getEntity() instanceof Animal a)||!outside(a.level()))return;var p=killer(e.getSource());if(p==null)return;var own=own(p);if(!own.getBoolean(FOLLOWS))return;
+        LivingEntity a=e.getEntity();if(!game(a)||!outside(a.level()))return;var p=killer(e.getSource());if(p==null)return;var own=own(p);if(!own.getBoolean(FOLLOWS))return;
         own.putInt(IN_KIND,own.getInt(IN_KIND)+1);
         if(a.isBaby()){long now=p.server.overworld().getDayTime();own.putLong(CALF_UNTIL,(now/24000L+1)*24000L);hint(p,"That one was young. She will come for your night.");}
         save(p,own);
@@ -166,15 +199,16 @@ public final class ElkFollows {
         e.setProblem(Player.BedSleepingProblem.OTHER_PROBLEM);hint(e.getEntity(),"You can't sleep. Something is standing out in the field, waiting.");
     }
     /**
-     * In kind: one of the reader's own penned animals near where they sleep is gone in the morning, the gate left open. Never a
-     * named, leashed or tamed animal; never one outside a pen. One a morning, for as many as they have killed.
+     * In kind: one of the reader's own penned animals near their home bed (HomeBed) is gone in the morning, the gate left open. Never a
+     * named, leashed or tamed animal; never one outside a pen; never one, nor a gate, on a neighbour's district (docs/NEIGHBOURS.md).
+     * One a morning, for as many as they have killed. A reader with no home of their own loses nothing, and still owes it.
      */
     public static boolean morning(ServerPlayer p){
         var own=own(p);if(own.getInt(IN_KIND)<=0)return false;
-        var l=p.server.getLevel(p.getRespawnDimension());if(l==null)return false;
-        var home=p.getRespawnPosition()!=null?p.getRespawnPosition():l.getSharedSpawnPos();
+        var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);if(home==null)return false;
+        var l=p.server.overworld();
         Animal taken=null;
-        for(var a:l.getEntitiesOfClass(Animal.class,new AABB(home).inflate(32),a->a.isAlive()&&!a.hasCustomName()&&!a.isLeashed()&&!(a instanceof TamableAnimal t&&t.isTame())&&!(a instanceof AbstractHorse h&&h.isTamed())&&penned(l,a.blockPosition())))
+        for(var a:l.getEntitiesOfClass(Animal.class,new AABB(home).inflate(32),a->a.isAlive()&&!a.hasCustomName()&&!a.isLeashed()&&!(a instanceof TamableAnimal t&&t.isTame())&&!(a instanceof AbstractHorse h&&h.isTamed())&&penned(l,a.blockPosition())&&!io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,a.blockPosition())))
             if(taken==null||a.distanceToSqr(Vec3.atCenterOf(home))<taken.distanceToSqr(Vec3.atCenterOf(home)))taken=a;
         if(taken==null)return false;
         var gate=gate(l,taken.blockPosition());
@@ -183,11 +217,22 @@ public final class ElkFollows {
         hint(p,gate!=null?"A gate stands open this morning, and one of your animals is gone. The prints by the gate are not a cow's.":"One of your animals is gone this morning. The prints in the mud are not a cow's.");
         return true;
     }
+    /**
+     * The day's dawn for a reader she follows: the morning in kind, once a day while anything is owed. In a neighbour's world that is not
+     * theirs (docs/NEIGHBOURS.md R3) it waits, and the day is not marked, so it comes at their first dawn back. True if the morning came.
+     */
+    public static boolean dawn(ServerPlayer p,int day){
+        var own=own(p);
+        if(own.getInt(IN_KIND)<=0||own.getInt(IN_KIND_DAY)==day||io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level()))return false;
+        own.putInt(IN_KIND_DAY,day);save(p,own);morning(p);return true;
+    }
     static boolean penned(ServerLevel l,BlockPos at){
         for(var c:BlockPos.betweenClosed(at.offset(-4,-1,-4),at.offset(4,1,4))){var s=l.getBlockState(c);if(s.is(BlockTags.FENCES)||s.is(BlockTags.FENCE_GATES))return true;}return false;
     }
+    /** The gate of the taken animal's pen: the nearest. One on a neighbour's district stays shut, and no other pen's is opened instead. */
     static BlockPos gate(ServerLevel l,BlockPos at){
-        BlockPos best=null;for(var c:BlockPos.betweenClosed(at.offset(-6,-1,-6),at.offset(6,1,6))){if(l.getBlockState(c).getBlock() instanceof FenceGateBlock&&(best==null||c.distSqr(at)<best.distSqr(at)))best=c.immutable();}return best;
+        BlockPos best=null;for(var c:BlockPos.betweenClosed(at.offset(-6,-1,-6),at.offset(6,1,6))){if(l.getBlockState(c).getBlock() instanceof FenceGateBlock&&(best==null||c.distSqr(at)<best.distSqr(at)))best=c.immutable();}
+        return best==null||io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,best)?null:best;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();if(server.getTickCount()%5!=0)return;
@@ -195,7 +240,7 @@ public final class ElkFollows {
         for(var p:server.getPlayerList().getPlayers()){
             if(!p.isAlive()||p.isSpectator()){ANCHOR.remove(p.getUUID());continue;}
             var own=own(p);if(!own.getBoolean(FOLLOWS)){ANCHOR.remove(p.getUUID());continue;}
-            if(dawn&&own.getInt(IN_KIND)>0&&own.getInt(IN_KIND_DAY)!=day){own.putInt(IN_KIND_DAY,day);save(p,own);morning(p);}
+            if(dawn)dawn(p,day);
             field(p);
         }
     }
@@ -203,13 +248,17 @@ public final class ElkFollows {
      * The calf's night: out on open ground in their own world, the reader who walks too far from where the night found them is
      * back where they stood, the herd's eyes in the dark on either side.
      */
-    static void field(ServerPlayer p){
+    public static void field(ServerPlayer p){
         var l=p.serverLevel();
         if(!restless(p)||!outside(l)||!l.isNight()||!l.canSeeSky(p.blockPosition().above())){if(!restless(p))ANCHOR.remove(p.getUUID());return;}
-        var at=ANCHOR.computeIfAbsent(p.getUUID(),id->{hint(p,"The field again.");return p.position();});
+        var anchor=ANCHOR.get(p.getUUID());
+        if(anchor==null||!anchor.dimension().equals(l.dimension())){anchor=new Anchor(l.dimension(),p.position());ANCHOR.put(p.getUUID(),anchor);hint(p,"The field again.");}
+        var at=anchor.at();
         double dx=p.getX()-at.x,dz=p.getZ()-at.z;
         if(dx*dx+dz*dz>FIELD_REACH*FIELD_REACH){p.teleportTo(l,at.x,at.y,at.z,p.getYRot(),p.getXRot());p.fallDistance=0;}
         if(p.tickCount%40==0)for(int side:new int[]{-1,1}){var eye=p.position().add(p.getLookAngle().yRot((float)(side*Math.PI/2.6)).multiply(7,0,7)).add(0,1.4,0);l.sendParticles(p,ParticleTypes.GLOW,true,eye.x,eye.y,eye.z,2,.12,.02,0,0);}
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){ANCHOR.remove(e.getEntity().getUUID());}
+    /** Where the field found them is in the world they left: a night in another world starts from where it finds them there. */
+    @SubscribeEvent public static void changedWorld(PlayerEvent.PlayerChangedDimensionEvent e){ANCHOR.remove(e.getEntity().getUUID());}
 }

@@ -136,7 +136,14 @@ public final class GoatmanHaunt {
         }
         if(server.getTickCount()%20!=0)return;
         var d=LabyrinthData.get(server);
-        for(var p:server.getPlayerList().getPlayers())if(p.isAlive()&&!p.isSpectator()&&haunted(d,p.getUUID())&&!GoatmanVignette.inside(p))haunt(p);
+        for(var p:server.getPlayerList().getPlayers())if(hauntsHere(d,p))haunt(p);
+    }
+    /**
+     * Whether it is with this reader where they are: anywhere but the trailer, and never in a neighbour's world that is not their own
+     * (docs/NEIGHBOURS.md R3). It waits for them, and eats with them again when they are back.
+     */
+    public static boolean hauntsHere(LabyrinthData d,ServerPlayer p){
+        return p.isAlive()&&!p.isSpectator()&&haunted(d,p.getUUID())&&!GoatmanVignette.inside(p)&&!io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level());
     }
     /** A glimpse ends when its time is up, its viewer is gone, or its viewer looks straight at it. */
     private static void figure(ServerLevel level,GoatmanFigure f){

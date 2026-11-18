@@ -1,14 +1,11 @@
 package io.github.knaitoe.theoldesthouse.opening;
 
-import java.util.Optional;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -16,7 +13,10 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** Finds a player's bed, their most-used door and its doorstep. */
+/**
+ * Finds a player's most-used door near their home bed ({@link HomeBed}) and its doorstep. Nothing is set down, and no door is
+ * chosen, on a neighbour's district land.
+ */
 public final class Doorsteps {
     /** How far around the bed to look for a door when none has been used. */
     private static final int NEAREST_DOOR_RADIUS = 16;
@@ -29,22 +29,6 @@ public final class Doorsteps {
     private Doorsteps() {
     }
 
-    /**
-     * The player's respawn position, if it was set by a bed in the Overworld.
-     * An unloaded bed is trusted: it can only have been set by using one.
-     */
-    public static Optional<BlockPos> bedPosition(ServerPlayer player) {
-        BlockPos respawn = player.getRespawnPosition();
-        if (respawn == null || !Level.OVERWORLD.equals(player.getRespawnDimension())) {
-            return Optional.empty();
-        }
-        ServerLevel overworld = player.server.overworld();
-        if (overworld.isLoaded(respawn) && !overworld.getBlockState(respawn).is(BlockTags.BEDS)) {
-            return Optional.empty();
-        }
-        return Optional.of(respawn);
-    }
-
     public static boolean isOrdinaryDoor(BlockState state) {
         return state.getBlock() instanceof DoorBlock;
     }
@@ -52,18 +36,25 @@ public final class Doorsteps {
     /**
      * Where the letter (and later Hillary) is left: the doorstep of the
      * most-used door near the bed, else of the door nearest the bed, else the
-     * floor beside the bed.
+     * floor beside the bed; never on district land. When the most-used door
+     * stands off a district's land but its step is on it, the nearest other
+     * door is tried before the bedside.
      */
     @Nullable
     public static Delivery resolve(ServerLevel level, OpeningPlayerState state, BlockPos bed, int radius) {
-        BlockPos door = mostUsedDoor(level, state, bed, radius);
-        if (door == null) {
-            door = nearestDoor(level, bed);
-        }
+        BlockPos used = mostUsedDoor(level, state, bed, radius);
+        BlockPos door = used != null ? used : nearestDoor(level, bed);
         if (door != null) {
             BlockPos step = doorstep(level, door, bed);
-            if (step != null) {
+            if (step != null && !Neighbours.districtLand(level, step)) {
                 return new Delivery(step, door);
+            }
+            if (step != null && used != null) {
+                BlockPos other = nearestDoor(level, bed, used);
+                BlockPos otherStep = other == null ? null : doorstep(level, other, bed);
+                if (otherStep != null && !Neighbours.districtLand(level, otherStep)) {
+                    return new Delivery(otherStep, other);
+                }
             }
         }
         BlockPos beside = besideBed(level, bed);
@@ -76,7 +67,7 @@ public final class Doorsteps {
         BlockPos best = null;
         int bestCount = 0;
         for (OpeningPlayerState.DoorUse use : state.doorUse()) {
-            if (use.count() <= bestCount || use.pos().distSqr(bed) > radiusSquared) {
+            if (use.count() <= bestCount || use.pos().distSqr(bed) > radiusSquared || Neighbours.districtLand(level, use.pos())) {
                 continue;
             }
             if (!isOrdinaryDoor(level.getBlockState(use.pos()))) {
@@ -90,6 +81,12 @@ public final class Doorsteps {
 
     @Nullable
     public static BlockPos nearestDoor(ServerLevel level, BlockPos bed) {
+        return nearestDoor(level, bed, null);
+    }
+
+    /** The door nearest the bed, off any district's land, other than {@code except}. */
+    @Nullable
+    public static BlockPos nearestDoor(ServerLevel level, BlockPos bed, @Nullable BlockPos except) {
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -101,7 +98,8 @@ public final class Doorsteps {
                         continue;
                     }
                     BlockState state = level.getBlockState(pos);
-                    if (!isOrdinaryDoor(state) || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER) {
+                    if (!isOrdinaryDoor(state) || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER
+                            || pos.equals(except) || Neighbours.districtLand(level, pos)) {
                         continue;
                     }
                     double distance = pos.distSqr(bed);
@@ -152,7 +150,7 @@ public final class Doorsteps {
             for (Direction direction : Direction.Plane.HORIZONTAL) {
                 for (int reach = 1; reach <= 2; reach++) {
                     BlockPos candidate = bed.relative(direction, reach).below(dy);
-                    if (hasRoom(level, candidate)) {
+                    if (hasRoom(level, candidate) && !Neighbours.districtLand(level, candidate)) {
                         return candidate;
                     }
                 }

@@ -169,7 +169,9 @@ public final class HarriganDialogueTests {
         var caller=NativeTestPlayers.survival(h,"phone_caller");var kept=NativeTestPlayers.survival(h,"phone_keeper");var inside=NativeTestPlayers.survival(h,"phone_inside");
         PHONE_READERS.addAll(List.of(caller,kept,inside));
         for(var p:PHONE_READERS)p.getInventory().add(HarriganVignette.phoneFor(p));
-        caller.setRespawnPosition(net.minecraft.world.level.Level.OVERWORLD,caller.blockPosition(),0,true,false);
+        // The caller's home: a bed of their own (HomeBed), where the hostile call is answered.
+        var bed=h.absolutePos(new BlockPos(1,1,1));io.github.knaitoe.theoldesthouse.labyrinth.NovelRooms.bed(h.getLevel(),bed,net.minecraft.world.level.block.Blocks.WHITE_BED,net.minecraft.core.Direction.NORTH);
+        caller.setRespawnPosition(net.minecraft.world.level.Level.OVERWORLD,bed.north(),0,true,false);
         line(data,caller,t->t.putBoolean("Contact",true));line(data,inside,t->t.putBoolean("Contact",true));
         line(data,kept,t->t.putBoolean("KeptHarriganPhone",true));kept.getInventory().add(new ItemStack(LabyrinthRegistry.HARRIGANS_PHONE.get()));
         inside.teleportTo(HouseTestLevel.get(server),0.5,80,0.5,0,0);
@@ -256,7 +258,7 @@ public final class HarriganDialogueTests {
             h.assertTrue(f.player.heard("spare phone")&&f.player.heard("time back home"),"the real gift explains whose phone it is and why its clock matters");
             var owned=f.player.getInventory().items.stream().filter(s->s.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();
             var help=owned.getTooltipLines(Item.TooltipContext.of(f.level),f.player,TooltipFlag.NORMAL).stream().map(Component::getString).toList();
-            h.assertTrue(help.stream().anyMatch(s->s.contains("Outside the House"))&&help.stream().anyMatch(s->s.contains("text him a name"))
+            h.assertTrue(help.stream().anyMatch(s->s.contains("Out in your world"))&&help.stream().anyMatch(s->s.contains("text him a name"))
                     &&help.stream().anyMatch(s->s.contains("Overworld bed")),"the inventory tooltip retains controls, place and delayed effect");
             HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);
         });

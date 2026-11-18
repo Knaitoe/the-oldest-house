@@ -1,5 +1,6 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseExperience;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
@@ -31,6 +32,8 @@ public class KeptBikeItem extends Item {
     /** Ticks between getting off it and getting on again. */
     public static final int WAIT=20;
     public static final String NOT_HERE="Not in here.",NO_ROOM="There is no room for it here.",NOT_YOURS="It isn't yours.";
+    /** In a world that is neither the House nor the reader's own (a neighbour's, docs/NEIGHBOURS.md R3), which is not indoors. */
+    public static final String NOT_OWN_WORLD="Not here.";
 
     public KeptBikeItem(Properties p){super(p);}
 
@@ -52,7 +55,8 @@ public class KeptBikeItem extends Item {
     /** Why it cannot be ridden where this reader is, or null if it can: their own world, or the manor. */
     public static @Nullable String refuse(ServerPlayer p){
         if(LiteraryVignettes.current(p)!=null)return NOT_HERE;
-        return Keepsakes.ownWorld(p)||HouseExperience.inManor(p,p.blockPosition())?null:NOT_HERE;
+        if(Keepsakes.ownWorld(p)||HouseExperience.inManor(p,p.blockPosition()))return null;
+        return HouseDimensions.isHouseDimension(p.level().dimension())?NOT_HERE:NOT_OWN_WORLD;
     }
 
     /** The bike is under its reader, and they are on it. Null if it could not be: they are told why. */

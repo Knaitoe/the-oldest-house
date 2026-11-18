@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
@@ -806,7 +807,9 @@ public final class HarriganVignette {
         }
         LabyrinthData data = LabyrinthData.get(player.server);
         if (noService(player)) {
-            player.displayClientMessage(Component.literal("No service. Calls cannot leave the House; the clock still keeps the time back home.")
+            player.displayClientMessage(Component.literal(HouseDimensions.isHouseDimension(player.level().dimension())
+                    ? "No service. Calls cannot leave the House; the clock still keeps the time back home."
+                    : "No service. The clock still keeps the time back home.")
                     .withStyle(ChatFormatting.DARK_GRAY), true);
         } else if (playerState(data, player.getUUID()).getBoolean("Contact")) {
             explainCalling(player, data);
@@ -819,9 +822,12 @@ public final class HarriganVignette {
     private static final int THREAD = 40;
     static final String GREETING = "This is Harrigan. I don't pick up this phone. If you have a name for me, leave it after the tone.";
 
-    /** Nothing leaves the House: not a call, not a text. The clock still works. */
-    static boolean noService(ServerPlayer player) {
-        return HouseDimensions.isHouseDimension(player.level().dimension());
+    /**
+     * Nothing leaves the House: not a call, not a text. The clock still works. Nor does anything come or go in a neighbour's world that
+     * is not the reader's own (docs/NEIGHBOURS.md R3): no call, no text, no ring. Public for the tests.
+     */
+    public static boolean noService(ServerPlayer player) {
+        return HouseDimensions.isHouseDimension(player.level().dimension()) || Neighbours.notOwnWorld(player.level());
     }
 
     private static boolean usedToday(CompoundTag p, MinecraftServer server) {
@@ -941,6 +947,10 @@ public final class HarriganVignette {
         if (key != null && TheOldestHouse.MOD_ID.equals(key.getNamespace())) {
             return TargetKind.FORBIDDEN;
         }
+        // A neighbour's own people are never his to take (docs/NEIGHBOURS.md R9).
+        if (type.is(io.github.knaitoe.theoldesthouse.house.Neighbours.LEFT_ALONE)) {
+            return TargetKind.FORBIDDEN;
+        }
         if (type == EntityType.ENDER_DRAGON || type == EntityType.WITHER
                 || type == EntityType.ELDER_GUARDIAN || type == EntityType.WARDEN) {
             return TargetKind.FORBIDDEN;
@@ -1025,13 +1035,15 @@ public final class HarriganVignette {
     }
 
     private static void scheduleHostile(ServerPlayer caller, LabyrinthData data, CompoundTag p, long today, ResourceLocation type) {
-        if (!caller.getRespawnDimension().equals(Level.OVERWORLD) || caller.getRespawnPosition() == null) {
+        // The call goes to their home (HomeBed); a reader with none of their own is refused, as one with no bed always was.
+        BlockPos home = io.github.knaitoe.theoldesthouse.opening.HomeBed.of(caller).orElse(null);
+        if (home == null) {
             consumeBlocked(caller, data, p, today);
             return;
         }
         p.putLong("LastCallDay", today);
         p.putString("HostileType", type.toString());
-        p.putLong("HostileBed", caller.getRespawnPosition().asLong());
+        p.putLong("HostileBed", home.asLong());
         p.putLong("HostileDay", today + 1L);
         savePlayerState(data, caller.getUUID(), p);
         acknowledge(caller, data, p);
@@ -1179,7 +1191,7 @@ public final class HarriganVignette {
         savePlayerState(data, player.getUUID(), personal);
         player.displayClientMessage(Component.literal("The door opens on a funeral home now. He lies at the front of the chapel, made ready for his funeral.")
                 .withStyle(ChatFormatting.GRAY), false);
-        player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number outside the House.")
+        player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number out in your world.")
                 .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
     }
 
@@ -1188,7 +1200,7 @@ public final class HarriganVignette {
         if (personal.getBoolean("CallingExplained")) return;
         personal.putBoolean("CallingExplained", true);
         savePlayerState(data, player.getUUID(), personal);
-        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Outside the House, open it to call him, or text him a creature's name.")
+        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Out in your world, open it to call him, or text him a creature's name.")
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("One call a day. Name a hostile species, such as zombie: those creatures within 64 blocks of your Overworld bed die at the next dawn. Keep a bed set as your respawn point.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
@@ -1264,8 +1276,7 @@ public final class HarriganVignette {
         AABB area = new AABB(
                 bed.getX() - KILL_RADIUS, level.getMinBuildHeight(), bed.getZ() - KILL_RADIUS,
                 bed.getX() + KILL_RADIUS + 1.0D, level.getMaxBuildHeight(), bed.getZ() + KILL_RADIUS + 1.0D);
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area,
-                e -> e.getType() == targetType && !e.hasCustomName())) {
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area, e -> sweeps(e, targetType))) {
             entity.hurt(level.damageSources().genericKill(), Float.MAX_VALUE);
         }
 
@@ -1274,6 +1285,14 @@ public final class HarriganVignette {
         p.remove("HostileDay");
         savePlayerState(data, caller.getUUID(), p);
         HarriganPhones.flies(caller);
+    }
+
+    /**
+     * Whether the morning's sweep after a hostile call takes {@code e}: one of the kind named, unnamed, and never one of a neighbour's own
+     * people, though their kind was listed in {@link Neighbours#LEFT_ALONE} only after the call was made (docs/NEIGHBOURS.md R9).
+     */
+    public static boolean sweeps(Entity e, EntityType<?> targetType) {
+        return e.getType() == targetType && !e.hasCustomName() && !Neighbours.leftAlone(e);
     }
 
     private static void spawnGhost(ServerLevel level, ServerPlayer target, UUID owner, int mode, @Nullable UUID playerTarget) {

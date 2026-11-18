@@ -28,6 +28,19 @@ public final class OpeningPlayerState {
         ).apply(instance, DoorUse::new));
     }
 
+    /**
+     * The home bed the reader last woke in on a morning (HomeBed): where, the House's day it became home, how many nights they have
+     * slept in it, and the last of those nights.
+     */
+    public record Home(BlockPos pos, long since, int nights, long lastNight) {
+        public static final Codec<Home> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                BlockPos.CODEC.fieldOf("pos").forGetter(Home::pos),
+                Codec.LONG.optionalFieldOf("since", -1L).forGetter(Home::since),
+                Codec.INT.optionalFieldOf("nights", 0).forGetter(Home::nights),
+                Codec.LONG.optionalFieldOf("last_night", -1L).forGetter(Home::lastNight)
+        ).apply(instance, Home::new));
+    }
+
     public static final Codec<OpeningPlayerState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             OpeningStage.CODEC.optionalFieldOf("stage", OpeningStage.NONE).forGetter(OpeningPlayerState::stage),
             Codec.INT.optionalFieldOf("nights_slept", 0).forGetter(OpeningPlayerState::nightsSlept),
@@ -41,7 +54,8 @@ public final class OpeningPlayerState {
             Codec.BOOL.optionalFieldOf("entered_house", false).forGetter(OpeningPlayerState::enteredHouse),
             Codec.LONG.optionalFieldOf("hillary_day", -1L).forGetter(OpeningPlayerState::hillaryDay),
             Codec.LONG.optionalFieldOf("entered_day", -1L).forGetter(OpeningPlayerState::enteredDay),
-            Codec.INT.optionalFieldOf("entered_time", -1).forGetter(OpeningPlayerState::enteredTime)
+            Codec.INT.optionalFieldOf("entered_time", -1).forGetter(OpeningPlayerState::enteredTime),
+            Home.CODEC.optionalFieldOf("home").forGetter(state -> Optional.ofNullable(state.home))
     ).apply(instance, OpeningPlayerState::new));
 
     private OpeningStage stage = OpeningStage.NONE;
@@ -59,6 +73,8 @@ public final class OpeningPlayerState {
     /** 0.4.671: the House's own day (see HouseCalendar) and the hour of that day when it first took this reader in; -1 if unknown. */
     private long enteredDay = -1L;
     private int enteredTime = -1;
+    @Nullable
+    private Home home;
 
     public OpeningPlayerState() {
     }
@@ -76,7 +92,8 @@ public final class OpeningPlayerState {
             boolean enteredHouse,
             long hillaryDay,
             long enteredDay,
-            int enteredTime
+            int enteredTime,
+            Optional<Home> home
     ) {
         this.stage = stage;
         this.nightsSlept = nightsSlept;
@@ -91,6 +108,7 @@ public final class OpeningPlayerState {
         this.hillaryDay = hillaryDay;
         this.enteredDay = enteredDay;
         this.enteredTime = enteredTime;
+        this.home = home.orElse(null);
     }
 
     public OpeningStage stage() {
@@ -137,6 +155,31 @@ public final class OpeningPlayerState {
     public long hillaryDay() { return hillaryDay; }
     public long enteredDay() { return enteredDay; }
     public int enteredTime() { return enteredTime; }
+
+    /** The home bed the reader last woke in on a morning, or null before any. */
+    @Nullable
+    public Home home() {
+        return home;
+    }
+
+    /**
+     * A morning wake in a home bed. The bed already remembered counts one more night (once a day); any other becomes home today,
+     * with this its first night.
+     */
+    public void wokeAtHome(BlockPos bed, long day) {
+        if (home != null && home.pos().equals(bed)) {
+            if (home.lastNight() != day) {
+                home = new Home(home.pos(), home.since(), home.nights() + 1, day);
+            }
+            return;
+        }
+        home = new Home(bed.immutable(), day, 1, day);
+    }
+
+    /** The remembered home bed is gone: the House forgets it. */
+    public void forgetHome() {
+        home = null;
+    }
 
     public boolean houseDue(long today) {
         return stage.isAtLeast(OpeningStage.HILLARY_ARRIVED)
@@ -218,13 +261,13 @@ public final class OpeningPlayerState {
 
     /**
      * Counts one use of the door whose lower half is at {@code door}. Only
-     * doors within {@code radius} of the respawn position are tracked, and
+     * doors within {@code radius} of the reader's home are tracked, and
      * entries that no longer qualify are dropped.
      */
-    public void recordDoorUse(BlockPos door, BlockPos respawn, int radius) {
+    public void recordDoorUse(BlockPos door, BlockPos home, int radius) {
         long radiusSquared = (long) radius * radius;
-        doorUse.removeIf(use -> use.pos().distSqr(respawn) > radiusSquared);
-        if (door.distSqr(respawn) > radiusSquared) {
+        doorUse.removeIf(use -> use.pos().distSqr(home) > radiusSquared);
+        if (door.distSqr(home) > radiusSquared) {
             return;
         }
 
@@ -267,6 +310,7 @@ public final class OpeningPlayerState {
         hillaryDay = -1L;
         enteredDay = -1L;
         enteredTime = -1;
+        home = null;
     }
 
     public void setStageForTesting(OpeningStage newStage, long day) {

@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -32,8 +33,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 /**
  * The count (0.4.53): what the reader who got the trailer's night right takes home. Nobody saw the Goatman; arithmetic
  * caught it. Inside the House the counter counts what is really there, shows what is hiding or pretending, and clicks
- * on its own when something comes up behind its keeper. Outside, it keeps count while its keeper sleeps, and wakes
- * them when something comes close. It works only for the reader it was left for.
+ * on its own when something comes up behind its keeper. Out in its keeper's own world (HouseDimensions.ownWorld), it
+ * counts what is out there, keeps count while they sleep, and wakes them when something comes close. In a neighbour's
+ * world that is not theirs (docs/NEIGHBOURS.md R3) it clicks and counts nothing. It works only for the reader it was left for.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TallyCounterItem extends Item {
@@ -41,6 +43,8 @@ public final class TallyCounterItem extends Item {
     /** Ten seconds between warnings from behind; one waking each four seconds of sleep at most. */
     public static final int BEHIND_EVERY=200,WATCH_EVERY=80,BEHIND_RANGE=8,WATCH_RANGE=10,COUNT_RANGE=16,OUT_THERE=32;
     private static final Map<UUID,Long> LAST=new HashMap<>();
+    /** A click where the counter keeps no count: in a neighbour's world that is not the reader's own. */
+    public static final String NOT_HERE="It clicks, but the number doesn't turn here.";
     private static final String[] WORDS={"None","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen","Twenty"};
     public TallyCounterItem(Properties properties){super(properties);}
 
@@ -66,15 +70,21 @@ public final class TallyCounterItem extends Item {
             var present=present(p,COUNT_RANGE);
             for(var e:present)if(pretending(e,p))e.addEffect(new MobEffectInstance(MobEffects.GLOWING,100,0,false,false));
             p.displayClientMessage(Component.literal("Click. "+words(present.size())+"."),true);
+        }else if(!HouseDimensions.ownWorld(p.level())){
+            // Not the reader's own world (a neighbour's Games): the number does not turn there, so it counts nobody through the walls.
+            p.displayClientMessage(Component.literal(NOT_HERE),true);
         }else{
             int out=nearbyHostiles(p,OUT_THERE).size();
             p.displayClientMessage(Component.literal("Click. "+words(out)+" out there."),true);
         }
     }
-    /** The box is only the broad search; the number is a distance from the keeper, including height. */
+    /**
+     * The box is only the broad search; the number is a distance from the keeper, including height. A neighbour's own people are never
+     * counted (docs/NEIGHBOURS.md R9).
+     */
     public static List<Mob> nearbyHostiles(ServerPlayer p,double range){
         return p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(range),
-            m->m.isAlive()&&m instanceof Enemy&&m.distanceToSqr(p)<=range*range);
+            m->m.isAlive()&&m instanceof Enemy&&!Neighbours.leftAlone(m)&&m.distanceToSqr(p)<=range*range);
     }
     /** Everything alive that is really here with its keeper, the keeper included; another reader's private visions are not. */
     public static List<LivingEntity> present(ServerPlayer p,double range){
@@ -93,8 +103,8 @@ public final class TallyCounterItem extends Item {
         if(e instanceof GoatmanChild c&&(c.tells()!=0||c.getTags().contains(PRETENDER)))return true;
         return e.isInvisible()||e.getTags().contains(PRETENDER);
     }
-    static boolean hostile(LivingEntity e,ServerPlayer p){
-        if(e instanceof Player)return false;
+    public static boolean hostile(LivingEntity e,ServerPlayer p){
+        if(e instanceof Player||Neighbours.leftAlone(e))return false;
         if(e instanceof GoatmanFigure f)return f.viewer().filter(p.getUUID()::equals).isPresent();
         return e instanceof Enemy||e instanceof Mob m&&m.getTarget()==p;
     }
@@ -103,7 +113,7 @@ public final class TallyCounterItem extends Item {
         var server=event.getServer();if(server.getTickCount()%10!=0)return;
         for(var p:server.getPlayerList().getPlayers())if(p.isAlive()&&!p.isSpectator()&&carries(p))watch(p);
     }
-    /** Inside: something behind its keeper. Outside: something close to a sleeping keeper. */
+    /** Inside: something behind its keeper. In their own world: something close to a sleeping keeper. Nowhere else. */
     public static void watch(ServerPlayer p){
         long now=p.serverLevel().getGameTime();long last=LAST.getOrDefault(p.getUUID(),-100000L);
         if(HouseDimensions.isHouseDimension(p.level().dimension())){
@@ -114,7 +124,7 @@ public final class TallyCounterItem extends Item {
                 if(to.lengthSqr()>BEHIND_RANGE*BEHIND_RANGE||to.lengthSqr()<.01||look.dot(to.normalize())>-.25)continue;
                 LAST.put(p.getUUID(),now);privateClick(p);p.displayClientMessage(Component.literal("Click."),true);return;
             }
-        }else if(p.isSleeping()){
+        }else if(p.isSleeping()&&HouseDimensions.ownWorld(p.level())){
             if(now-last<WATCH_EVERY)return;
             var near=nearbyHostiles(p,WATCH_RANGE);
             if(near.isEmpty())return;
@@ -133,7 +143,7 @@ public final class TallyCounterItem extends Item {
 
     @Override public void appendHoverText(ItemStack stack,TooltipContext context,List<Component> lines,TooltipFlag flag){
         lines.add(Component.literal("In the House it counts what is really there, and clicks when something is behind you.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
-        lines.add(Component.literal("Outside, it keeps count while you sleep.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
+        lines.add(Component.literal("Out in your world, it keeps count while you sleep.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
         lines.add(Component.literal("Only for the one who counted right.").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

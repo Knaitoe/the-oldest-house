@@ -755,13 +755,21 @@ final class HouseShell {
     }
 
     private static void extendSupportToTerrain(HouseCanvas c, int x, int z, int startY, BlockState support) {
-        for (int y = startY; y >= startY - 12; y--) {
-            BlockState current = c.get(x, y, z);
-            if (!current.isAir() && !current.canBeReplaced() && current.getFluidState().isEmpty()) {
+        for (int y = startY; y >= startY - HouseLayout.SUPPORT_RUN; y--) {
+            if (!runsThrough(c.get(x, y, z))) {
                 return;
             }
             c.set(x, y, z, support);
         }
+    }
+
+    /**
+     * Whether a foundation or a support runs down through this block, putting masonry in its place, rather than stopping on it: air,
+     * plants that give way, and anything holding water or lava. The site search follows the same rule down
+     * ({@link HouseSpawnManager#nothingBuiltOnTheLot}).
+     */
+    static boolean runsThrough(BlockState state) {
+        return state.isAir() || state.canBeReplaced() || !state.getFluidState().isEmpty();
     }
 
     // ------------------------------------------------------------------
@@ -789,9 +797,8 @@ final class HouseShell {
                     continue;
                 }
 
-                for (int y = start; y >= start - 12; y--) {
-                    BlockState current = c.get(x, y, z);
-                    if (!current.isAir() && !current.canBeReplaced() && current.getFluidState().isEmpty()) {
+                for (int y = start; y >= start - HouseLayout.SUPPORT_RUN; y--) {
+                    if (!runsThrough(c.get(x, y, z))) {
                         break;
                     }
                     c.set(x, y, z, weathered(x, y, z));

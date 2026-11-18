@@ -23,7 +23,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
-/** Three earned keepsakes. Their effects are outside the House, and work only for their original reader. */
+/**
+ * Three earned keepsakes. Their effects are in the reader's own world (never the House, nor a neighbour's world that is not theirs,
+ * docs/NEIGHBOURS.md R3), and work only for their original reader.
+ */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class LakeHouseArtifactItem extends Item implements Equipable {
     public static final int FLASHLIGHT=0,LIGHT=1,HELMET=2;
@@ -56,7 +59,7 @@ public final class LakeHouseArtifactItem extends Item implements Equipable {
     }
     @SubscribeEvent public static void tick(PlayerTickEvent.Post e){
         if(!(e.getEntity() instanceof ServerPlayer p))return;var id=p.getUUID();
-        if(!p.isAlive()||p.isSpectator()||HouseDimensions.isHouseDimension(p.level().dimension())){restore(id);return;}
+        if(!p.isAlive()||p.isSpectator()||!HouseDimensions.ownWorld(p.level())){restore(id);return;}
         if(helmet(p)){p.setAirSupply(p.getMaxAirSupply());if(p.tickCount%1800==0)ThreeFingers.hear(p,net.minecraft.sounds.SoundEvents.WOOD_STEP,p.blockPosition().above(3),.18F,.65F);}
         boolean holding=List.of(p.getMainHandItem(),p.getOffhandItem()).stream().anyMatch(s->s.is(LakeHouseRegistry.FOUND_FLASHLIGHT.get())&&owned(s,p));
         if(!holding){restore(id);return;}if(p.tickCount%4!=0)return;
