@@ -172,6 +172,27 @@ public final class TheListTexts {
     public static final String[] FOUND_LINE_BODY=FOUND_BODY.clone();
     static{FOUND_LINE_BODY[TheListPeople.SHANNON]="That's %s. That's %s on the sprinkler.";}
     public static final String FOUND_LINE="%s lies across the sprinkler line, not moving.";
+    // ------------------------------------------------------------------------------------------------ 0.4.714: the fryer
+    /** What each of the five says, forced down over the fryer. */
+    public static final String[] FRYER=new String[TheListPeople.CAST];
+    static {
+        FRYER[TheListPeople.DEEK]="Not the grease! Not the grease!";FRYER[TheListPeople.WES]="It's on! It's on, it's on!";
+        FRYER[TheListPeople.MEL]="Please. My face. Not my face.";FRYER[TheListPeople.LESLEY]="Turn it off! Somebody turn it off!";
+        FRYER[TheListPeople.SHANNON]="Jenna, help me! Jenna!";
+    }
+    /** To whoever turns the knob, and to anyone near when the oil comes up to heat. */
+    public static final String FRYER_ON="The burners catch under the oil.",FRYER_OFF="The burners go out.",FRYER_HOT="The fryer's oil starts to smoke.";
+    /** To the slasher: the oil not hot yet; forcing one of them into it; and when it has done it. */
+    public static final String FRYER_NOT_HOT="The oil isn't hot yet.",INTO_FRYER="You force %s down over the fryer and push the face into the oil.",
+        FRYER_STILL="%s goes still. The oil goes on spitting.";
+    /** To anyone else's hand on one held in the oil. */
+    public static final String FRYER_HELD="%s is held down in the oil.";
+    /** Jenna, in the stand, as one of them goes in. */
+    public static final String JENNA_FRYER="Let go of %s! Let go!";
+    /** One dead in the fryer, come across: by the rest of the five (Shannon's own line says where), and by a reader who is not the slasher. */
+    public static final String[] FOUND_FRYER_BODY=FOUND_BODY.clone();
+    static{FOUND_FRYER_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the fryer.";}
+    public static final String FOUND_FRYER="%s is bent over the fryer, face down in the oil.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
@@ -305,6 +326,10 @@ public final class TheListTexts {
                 case 4->"The line turns here into a hose.";case 5->"A hose, flat in the grass.";
                 case 6->"The valve. A wheel on top to open it.";case 7->"The valve, open. The line knocks with water.";
                 default->"Aluminum pipe laid down the sideline, length to length.";};
+            // 0.4.714, the fryer in the drive-in's stand.
+            case FRYER->switch(stage){case 1->"The fryer's on. The oil is warming.";case 2->"The fryer. The oil shimmers and smokes.";
+                case 3->"The fryer, off. The oil has gone dark.";case 4->"The fryer's on. The dark oil is warming.";
+                case 5->"The fryer. The dark oil spits and smokes.";default->"The fryer, off. Two baskets hang over cold oil.";};
         };
     }
 }

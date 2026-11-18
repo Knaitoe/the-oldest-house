@@ -43,6 +43,27 @@ public final class TheListPeople {
      * their seats face; Stace out over the town; the deputy the street. The parents lie as their bed does. */
     private static final Direction[] FACING={Direction.SOUTH,Direction.SOUTH,Direction.NORTH,Direction.EAST,Direction.EAST,Direction.EAST,Direction.EAST,
         Direction.NORTH,Direction.WEST,Direction.NORTH,Direction.EAST,Direction.EAST};
+    /**
+     * 0.4.714: the stand's far corner from the fryer, by the back wall. Once one of the five has been forced into the fryer, Jenna backs
+     * away into it from her window and gets down there, facing the fryer, until the hunt ends.
+     */
+    public static final BlockPos CORNER=new BlockPos(TheListSite.AVE_E+10,0,-140);
+    /** Jenna, walking back from the window to the corner (the hunt's fryer). */
+    static void backAway(LiteraryActor jenna,BlockPos b){
+        jenna.setPose(Pose.STANDING);jenna.gesture(0);
+        BorrascaCast.walk(jenna,Vec3.atBottomCenterOf(b.offset(CORNER)),1.2);
+    }
+    /** In the corner and still walking there no longer: down on her heels, facing the fryer. Each tick of a hunt that has used it. */
+    static void cornered(ServerLevel l,BlockPos b){
+        var jenna=find(l,b,JENNA);if(jenna==null||jenna.getPersistentData().contains("BorrascaSpeed"))return;
+        var at=Vec3.atBottomCenterOf(b.offset(CORNER));
+        if(jenna.position().distanceTo(at)>.5){backAway(jenna,b);return;}
+        if(jenna.gesture()==TheListHunt.COWERING)return;
+        BorrascaCast.stop(jenna);jenna.setNoGravity(true);
+        var d=Vec3.atCenterOf(b.offset(TheListFryer.AT)).subtract(jenna.position());float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z));
+        jenna.moveTo(at.x,at.y,at.z,yaw,0);jenna.setYBodyRot(yaw);jenna.setYHeadRot(yaw);
+        jenna.setPose(Pose.CROUCHING);jenna.gesture(TheListHunt.COWERING);
+    }
     /** How far above its cell each one's feet are: Stace stands on the catwalk's grating, two pixels thick. */
     private static double lift(int who){return who==STACE?2/16.0:0;}
     /** How far above the pillow's cell a sleeper is held: the game's own height for one in bed. */
@@ -105,8 +126,10 @@ public final class TheListPeople {
                 place(a,at,who,s.facing());
                 if(!l.addFreshEntity(a))continue;
             }
-            // 0.4.708: one the hunt has sent running or hiding is left where they are.
-            if(!TheListHunt.holds(b,who))place(a,at,who,s.facing());
+            // 0.4.708: one the hunt has sent running or hiding is left where they are. 0.4.714: Jenna, once the fryer has been used, is
+            // left to her corner.
+            if(who==JENNA&&TheListHunt.fryerUsed(b))cornered(l,b);
+            else if(!TheListHunt.holds(b,who))place(a,at,who,s.facing());
             // Mel has the camera out from the party until the seed house, and through a hunt until she lets it fall (0.4.709); Amber, at her window after the cut, a page out of a notebook
             // (0.4.707); nobody else holds anything.
             var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b)&&!TheListHunt.dropped(b,MEL))?LiteraryRegistry.CAMCORDER.get()
@@ -121,6 +144,9 @@ public final class TheListPeople {
         a.setNoGravity(true);a.setDeltaMovement(Vec3.ZERO);
         if(who==MOTHER||who==FATHER){lie(a,at);return;}
         if(a.getPose()==Pose.SLEEPING){a.stopSleeping();a.setPose(Pose.STANDING);}
+        // 0.4.714: got up from wherever the hunt had them down.
+        if(a.getPersistentData().contains("BorrascaSpeed"))BorrascaCast.stop(a);
+        if(a.getPose()==Pose.CROUCHING)a.setPose(Pose.STANDING);
         float yaw=facing.toYRot();
         a.moveTo(at.getX()+.5,at.getY()+lift(who),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);
     }

@@ -72,6 +72,8 @@ public final class TheList {
         if(TheListBlock.is(st,TheListBlock.Kind.STANDS)&&st.getValue(TheListBlock.STAGE)<2&&TheListHunt.boards(p,b,rel))return true;
         // 0.4.713: the sprinkler line's valve turns for anyone; a riser, under the slasher's hand with hold of one of the five, is theirs.
         if(TheListBlock.is(st,TheListBlock.Kind.LINE)&&TheListLine.hand(p,b,rel))return true;
+        // 0.4.714: the fryer's knob turns for anyone; held one of the five near it, the slasher's hand on it is theirs.
+        if(TheListBlock.is(st,TheListBlock.Kind.FRYER)&&TheListFryer.hand(p,b,rel))return true;
         // The wire gap opens and shuts by hand, all three of its cells together, for everyone.
         if(TheListBlock.is(st,TheListBlock.Kind.PASTURE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
             boolean open=st.getValue(TheListBlock.STAGE)==2;
@@ -156,6 +158,8 @@ public final class TheList {
             TheListHunt.tick(l,s.base,here);
             // 0.4.713: the sprinkler line, while its valve is open.
             TheListLine.tick(l,s.base,here);
+            // 0.4.714: the fryer, while its oil is hot.
+            TheListFryer.tick(l,s.base,here);
         }
     }
     /**

@@ -506,6 +506,10 @@ public final class TheListSite {
      * end, the four risers off it, the elbow level with the end of the home bench, the hose and the valve past the bench, shut. Laid as
      * it was built whenever it is laid: the valve shut and the risers clean. Only where its ground is loaded.
      */
+    /** 0.4.714, the fryer as it was built: off, the oil cold and clean. Only where its ground is loaded. */
+    static void fryer(ServerLevel l,BlockPos b){
+        if(l.isLoaded(b.offset(TheListFryer.AT)))set(l,b,TheListFryer.AT,fit(Kind.FRYER,TheListFryer.FACING,TheListFryer.OFF));
+    }
     static void line(ServerLevel l,BlockPos b){
         for(int z=TheListLine.N;z<=TheListLine.S;z++){
             var rel=new BlockPos(TheListLine.X,0,z);
@@ -969,7 +973,8 @@ public final class TheListSite {
             set(l,b,x,4,z,wall?mat("cinder"):mat("flat_roof"));
         }
         for(int x=sw+2;x<=se-2;x+=2){set(l,b,x,1,ss,fit(Kind.DRIVEIN,Direction.SOUTH,4));}
-        set(l,b,sw+3,0,ss-1,fit(Kind.DRIVEIN,Direction.SOUTH,5));set(l,b,sw+5,0,ss-1,fit(Kind.DRIVEIN,Direction.SOUTH,6));
+        // 0.4.714: the fryer is its own fitting now, its knob to the room (TheListFryer).
+        set(l,b,TheListFryer.AT,fit(Kind.FRYER,TheListFryer.FACING,TheListFryer.OFF));set(l,b,sw+5,0,ss-1,fit(Kind.DRIVEIN,Direction.SOUTH,6));
         set(l,b,se,0,sn+3,AIR);set(l,b,se,1,sn+3,AIR);door(l,b,new BlockPos(se,0,sn+3),Direction.EAST,true);
         set(l,b,sw+4,3,sn+4,fit(Kind.FIXTURE,Direction.NORTH,2));
         // The stalls: a canopy along the lot's east side, posts at every other stall, a menu and speaker at each.

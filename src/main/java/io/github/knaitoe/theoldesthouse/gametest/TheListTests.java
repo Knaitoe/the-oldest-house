@@ -1422,6 +1422,125 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.714, the fryer (docs/THE_LIST_0_4_714.md). Laid off and cold in the drive-in's stand. Another reader lights it: told so, the
+     * burners heard; it comes up hot on its own, and the reader by it is told and sees it bubble; put out again. Deek taken from behind on
+     * the bench and the slasher brought into the stand: held near the cold fryer, a hand on it turns the knob; warming, a hand on it is
+     * told the oil is not hot. Hot: a hand on it forces him in, bent over it with his face in the west vat, his words, the slasher's cue,
+     * the burn, Jenna's shout, the hold kept with no retreat and no walk; the other reader hears the oil and the scream, and a hand on
+     * him does not get him out. The oil has him; put out, the count stops; lit and hot again, he goes still, the oil gone dark, the
+     * slasher told, the other reader told a scream stopped, the kill kept, the hold let go; Jenna has backed into the stand's corner and
+     * got down. The other reader finds him over the fryer. Ended: the fryer laid off and clean, Deek back and unmarked, Jenna at her
+     * window.
+     */
+    @GameTest(template="empty",batch="the_list_fryer",timeoutTicks=6000)
+    public static void theFryer(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_fryer",P);var peer=f.player("list_fryer_peer",P);
+        int D=TheListPeople.DEEK;var fryer=TheListFryer.AT;
+        hold(f,b,TheListPeople.AT[D],fryer);
+        List<net.minecraft.network.protocol.Packet<?>> theirs=new ArrayList<>();
+        int[] fried=new int[1];
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the town");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+            h.assertTrue(TheListPeople.find(l,b,TheListPeople.JENNA)!=null,"waiting for Jenna");
+        }).thenExecute(()->{
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.OFF),"the fryer stands in the stand, off");
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's"))
+        .thenExecute(()->{
+            f.at(peer,P,fryer.getX()+2.5,0,fryer.getZ()-2.5);sent(peer);cues(peer);
+            hand(peer,b,fryer);
+            var got=sent(peer);
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.WARM)&&cuesIn(got).contains(TheListTexts.FRYER_ON),"the other reader lights it, and is told");
+            h.assertTrue(sound(got,TheListRegistry.BURNER.get()),"the burners are heard");
+        }).thenWaitUntil(()->h.assertTrue(TheListFryer.hot(l,b),"it comes up hot on its own"))
+        .thenIdle(6).thenExecute(()->{
+            var got=sent(peer);
+            h.assertTrue(cuesIn(got).contains(TheListTexts.FRYER_HOT),"the reader by it is told the oil is smoking");
+            h.assertTrue(particles(got,net.minecraft.core.particles.ParticleTypes.BUBBLE_POP),"and sees it bubble");
+            hand(peer,b,fryer);
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.OFF)&&cues(peer).contains(TheListTexts.FRYER_OFF),"put out again");
+            // Deek taken from behind on the bench, and the slasher brought into the stand with him.
+            var deek=TheListPeople.find(l,b,D);
+            f.at(p,P,TheListPeople.AT[D].getX()-1.5,0,TheListPeople.AT[D].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,D));
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,fryer.getX()-.5,0,fryer.getZ()-1.5);
+        }).thenIdle(2).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(Vec3.atCenterOf(b.offset(fryer)).distanceTo(deek.position().add(0,.6,0))<=TheListFryer.REACH,"held near the fryer: "+where(l,b,D));
+            cues(p);
+            hand(p,b,fryer);
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.WARM)&&cues(p).contains(TheListTexts.FRYER_ON),"cold, a hand on it turns the knob");
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"and he is still held");
+            hand(p,b,fryer);
+            h.assertTrue(cues(p).contains(TheListTexts.FRYER_NOT_HOT)&&TheListHunt.state(b,D)==TheListHunt.State.HELD,"warming, the oil isn't hot yet");
+            var at=b.offset(fryer);TheListFryer.cameUp(l,at,l.getBlockState(at));
+            h.assertTrue(TheListFryer.hot(l,b),"hot");
+            sent(peer);cues(peer);
+            hand(p,b,fryer);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.FRYER&&deek.gesture()==TheListHunt.FRYING,"forced in: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.INTO_FRYER,"Deek")),"the slasher is told");
+            h.assertTrue(TheListTexts.FRYER[D].equals(said(deek)),"his words: "+said(deek));
+            var stand=Vec3.atLowerCornerOf(b).add(TheListFryer.STAND);
+            h.assertTrue(deek.position().distanceTo(stand)<.05&&Math.abs(net.minecraft.util.Mth.wrapDegrees(deek.getYRot()))<1,"bent over it, facing into it: "+deek.position().subtract(stand)+" "+deek.getYRot());
+            h.assertTrue((deek.marks()&TheListHunt.BURN)!=0,"the face scalded");
+            var jenna=TheListPeople.find(l,b,TheListPeople.JENNA);
+            h.assertTrue(String.format(TheListTexts.JENNA_FRYER,"Deek").equals(said(jenna)),"Jenna shouts at the slasher: "+said(jenna));
+            h.assertTrue(TheListHunt.holding(p)&&LiteraryVignettes.retreatLocked(p),"still his, and no retreat");
+            h.assertTrue(p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)==0,"and he holds him there");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.FRYER.get())&&sound(theirs,TheListRegistry.SCREAM.get()),"the other reader hears the oil, and him");
+            LiteraryVignettes.talk(peer,deek);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FRYER_HELD,"Deek"))&&TheListHunt.state(b,D)==TheListHunt.State.FRYER,"a hand on him does not get him out");
+        }).thenIdle(20).thenExecute(()->{
+            fried[0]=TheListHunt.fried(b,D);
+            h.assertTrue(fried[0]>=15&&TheListHunt.state(b,D)==TheListHunt.State.FRYER,"the oil has him a while: "+fried[0]);
+            h.assertTrue(particles(sent(peer),net.minecraft.core.particles.ParticleTypes.SMOKE),"it smokes");
+            hand(peer,b,fryer);
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.OFF),"the other reader puts it out");
+            fried[0]=TheListHunt.fried(b,D);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(TheListHunt.fried(b,D)==fried[0]&&TheListHunt.state(b,D)==TheListHunt.State.FRYER,"put out, the count stops: "+TheListHunt.fried(b,D));
+            hand(peer,b,fryer);
+            var at=b.offset(fryer);TheListFryer.cameUp(l,at,l.getBlockState(at));
+            cues(peer);cues(p);
+        }).thenIdle(TheListFryer.UNDER+5).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(TheListHunt.dead(b,D)&&deek.gesture()==TheListHunt.FRIED,"he goes still over it: "+where(l,b,D));
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.HOT+TheListFryer.DARK),"the oil gone dark");
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.FRYER_STILL,"Deek")),"the slasher is told");
+            h.assertTrue(cues(peer).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")),"the other reader is told a scream stopped");
+            h.assertTrue((TheListBody.kills(p)&1<<D)!=0,"the slasher's record keeps him");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the body walks and may leave");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Deek")),"a hand on him after: he does not move");
+            var jenna=TheListPeople.find(l,b,TheListPeople.JENNA);
+            h.assertTrue(jenna.position().distanceTo(Vec3.atBottomCenterOf(b.offset(TheListPeople.CORNER)))<.5&&jenna.gesture()==TheListHunt.COWERING
+                &&jenna.getPose()==net.minecraft.world.entity.Pose.CROUCHING,"Jenna backed into the stand's corner and got down: "+jenna.position().subtract(Vec3.atLowerCornerOf(b))+" "+jenna.gesture());
+            // The other reader, looking at his back over the fryer.
+            var back=deek.position().add(0,1,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-back.x,back.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(back.y,Math.sqrt(back.x*back.x+back.z*back.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_FRYER,"Deek")),"the other reader finds him over the fryer");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            h.assertTrue(fitting(l,b,fryer,Kind.FRYER,TheListFryer.OFF),"ended, the fryer laid off and clean");
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.marks()==0&&deek.gesture()==TheListHunt.STILL,"and he is back, unmarked: "+where(l,b,D));
+            var jenna=TheListPeople.find(l,b,TheListPeople.JENNA);
+            h.assertTrue(jenna.blockPosition().equals(b.offset(TheListPeople.AT[TheListPeople.JENNA]))&&jenna.gesture()==0&&jenna.getPose()==net.minecraft.world.entity.Pose.STANDING,"Jenna back at her window, standing");
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Whether these packets drew a particle of this kind. */
     private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;

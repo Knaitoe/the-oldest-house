@@ -52,6 +52,8 @@ ROWS = {
     'crack': ('Something gives', 12),
     'valve': ('A valve wheel squeals', 24),
     'riser': ('A pipe goes in', 16),
+    'fryer': ('Hot oil roars', 24),
+    'burner': ('Burners catch', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -613,11 +615,40 @@ def riser():
     return thud + crunch + wet + band(ring, 400, 4000) * .5
 
 
+def fryer():
+    # Hot oil taking something wet: a sudden roar of sizzle, high and harsh, that eases over a second and a half into a crackling
+    # boil; spits snapping through it; low under it the oil heaving.
+    n = seconds(1.8)
+    t = times(n)
+    env = np.clip(t / .02, 0, 1) * (0.35 + 0.65 * np.exp(-t / .45)) * np.clip((1.8 - t) / .3, 0, 1)
+    roar = band(rng.standard_normal(n), 2200, 9000) * env * .9
+    roar += band(rng.standard_normal(n), 900, 2400) * env * .35
+    pops = (rng.random(n) < .004) * rng.uniform(.4, 1.0, n)
+    crackle = band(np.convolve(pops, np.exp(-np.arange(80) / 12.0), mode='same'), 1500, 7000) * np.clip(t / .3, 0, 1) * 1.6
+    heave = band(rng.standard_normal(n), 60, 260) * (1 + np.sin(2 * np.pi * 5 * t)) * np.clip(t / .2, 0, 1) * np.clip((1.8 - t) / .4, 0, 1) * .35
+    return roar + crackle + heave
+
+
+def burner():
+    # A fryer's thermostat knob turned: the click of its detent, a breath of gas, and the burners catching along the row with a
+    # soft thump, then the flame's low roar settling.
+    n = seconds(1.2)
+    t = times(n)
+    click = band(rng.standard_normal(n), 2500, 8000) * np.exp(-t / .006) * 1.2
+    x = t - .12
+    gas = band(rng.standard_normal(n), 1500, 6000) * np.clip(x / .05, 0, 1) * np.exp(-np.clip(x, 0, None) / .25) * (x >= 0) * .25
+    y = t - .3
+    thump = np.sin(2 * np.pi * (70 - 25 * np.clip(y / .15, 0, 1)) * y) * np.exp(-np.clip(y, 0, None) / .09) * (y >= 0) * 1.1
+    thump += band(rng.standard_normal(n), 80, 700) * np.exp(-np.clip(y, 0, None) / .06) * (y >= 0) * .6
+    roar = band(rng.standard_normal(n), 150, 900) * np.clip(y / .1, 0, 1) * np.clip((1.2 - t) / .4, 0, 1) * (y >= 0) * .3
+    return click + gas + thump + roar
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
           'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
           'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack,
-          'valve': valve, 'riser': riser}
+          'valve': valve, 'riser': riser, 'fryer': fryer, 'burner': burner}
 
 
 def main():
