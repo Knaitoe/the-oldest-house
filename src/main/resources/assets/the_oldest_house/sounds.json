@@ -7157,5 +7157,14 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.seed"
+  },
+  "the_list.scream": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/scream",
+        "attenuation_distance": 64
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.scream"
   }
 }

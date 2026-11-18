@@ -77,6 +77,35 @@ public final class TheListTexts {
         LIGHT_HOUSE="It gets light, and you are home, still on your feet. Down the street a sprinkler comes on.",
         LIGHT_OUT="It gets light, and you are not home yet. A screen door bangs somewhere down the street.",
         LIGHT_OTHER="It gets light over the gin. Sprinklers come on, and a dog starts up somewhere.";
+    // ------------------------------------------------------------------------------------------------ 0.4.708: the hunt
+    /** What each of the five says, by who they are (TheListPeople), as they start to run, when they yell for help, when they turn and
+     * fight, and cornered a second time. */
+    public static final String[] RUN={null,null,null,"No. We saw that door shut.","It's the sack. Deek, it's the sack!","Lesley! Get down off the top!",
+        "Mel, run!",null,null,null,null,null};
+    public static final String[] HELP={null,null,null,"Coach! Somebody get the coach!","Hold the door! Hold it!","Somebody call somebody!",
+        "Up here! Help! Up here!",null,null,null,null,null};
+    public static final String[] FIGHT={null,null,null,"Get off me!","It wasn't me! It was Deek's idea!","Back up. I'll swing it again.",
+        "Don't. Don't!",null,null,null,null,null};
+    public static final String[] COWER={null,null,null,"Okay. Okay. What do you want?","Please. Please.","Here. Take the camera. Take it.",
+        "I wasn't even there. I was by the truck.",null,null,null,null,null};
+    /** Shannon's are by the bench; Jenna lets her into the drive-in's stand. */
+    static {RUN[TheListPeople.SHANNON]="I said open it! I told them!";HELP[TheListPeople.SHANNON]="Jenna! Jenna, open up!";
+        FIGHT[TheListPeople.SHANNON]="I didn't touch it! I said open it!";COWER[TheListPeople.SHANNON]="I'm sorry. I'm sorry.";}
+    public static final String JENNA_IN="Get in. Get in!",JENNA_DOWN="Get down. Stay down.";
+    /** To the slasher, as each of them fights back and puts the body down. */
+    public static final String[] FELLED={null,null,null,"Deek comes up off the floor into you. A shoulder, and you are down.",
+        "Wes swings wild and catches you. You go down.","The camcorder catches you across the sack. You go down.",
+        "A fistful of dirt through the sack's eyeholes. Something takes your knees.","Shannon shoves with both hands. The floor comes up.",
+        null,null,null,null};
+    /** A door shut and bolted behind one of them, to the slasher near it; to anyone's hand on it. */
+    public static final String BOLTED_STEEL="Steel slams. A bolt shoots home.",BOLTED_DOOR="A door slams. The lock turns.",
+        BOLTED="Bolted from the other side.";
+    /** A bolted steel door struck, blow by blow: it takes five. */
+    public static final String[] STEEL_STRIKES={"The steel door booms. It holds.","It booms again. The frame shifts in the block.",
+        "A hinge pin starts out of its knuckle.","The bolt bends in its keeper.","The bolt tears loose, and the door swings in."};
+    /** To anyone else in town, once for each name that yells: where it came from. */
+    public static final String HELP_HEARD="Somewhere to the %s, %s is yelling for help.";
+    public static final String[] COMPASS={"south","southwest","west","northwest","north","northeast","east","southeast"};
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

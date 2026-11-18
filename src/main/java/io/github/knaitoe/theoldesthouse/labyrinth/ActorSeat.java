@@ -48,7 +48,8 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         // 0.4.672: Harlan's stool behind the register in Fallow, eleven pixels up, turned however he sits.
         if(FallowBlock.is(state,FallowBlock.Kind.STOOL))return new ActorSeat(11,null);
         // 0.4.702: The list's people in Amber's desk chair, on the bus bench, the home bench and the stands' planks.
-        if(a.role()==LiteraryActor.STRANGER&&TheListPeople.cast(a.phase())&&TheListBlock.is(state)){
+        // 0.4.708: only while they sit still; running over the stands' planks, or crouched on the ground, they are not sat down.
+        if(a.role()==LiteraryActor.STRANGER&&TheListPeople.cast(a.phase())&&a.gesture()==TheListHunt.STILL&&TheListBlock.is(state)){
             var kind=state.getValue(TheListBlock.KIND);int stage=state.getValue(TheListBlock.STAGE);var f=state.getValue(TheListBlock.FACING);
             if(kind==TheListBlock.Kind.TABLE&&stage==1)return new ActorSeat(10,f);
             if(kind==TheListBlock.Kind.FEED&&(stage==5||stage==6)||kind==TheListBlock.Kind.STANDS&&(stage==0||stage==4))return new ActorSeat(8,f);

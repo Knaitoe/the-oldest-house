@@ -591,6 +591,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.cast(a.phase()))lastSeen(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Fallow.cast(a.phase()))fallow(a.gesture(),age);
             if(io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.pageUp(a))pageUp(age);
+            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.cast(a.phase()))hunted(a.gesture(),age,amount);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.cast(a.phase()))gus(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.cast(a.phase()))bully(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.cast(a.phase()))people(a,a.gesture(),age);
@@ -1090,6 +1091,23 @@ public final class LiteraryRenderers {
          */
         /** 0.4.707: Amber's page held up to her window: the right arm straight out toward the glass and a little to her right, where the
          * window is, the hand steady but for a breath. */
+        /**
+         * 0.4.708, The list's hunt: running, leaned into it, the arms pumping harder than a walk's; crouched in hiding (the game's crouch)
+         * with the arms drawn in round the knees and the head down, the breath going fast in the shoulders; cowering, the arms up over the
+         * head and the face down into them. A swing is the game's own attack swing.
+         */
+        public void hunted(int gesture,float age,float amount){
+            switch(gesture){
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.RUNNING->{body.xRot+=.18F*Math.min(1,amount*1.5F);head.xRot-=.12F*Math.min(1,amount*1.5F);
+                    rightArm.xRot*=1.35F;leftArm.xRot*=1.35F;rightArm.zRot+=.08F;leftArm.zRot-=.08F;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.HIDING->{float b=net.minecraft.util.Mth.sin(age*.55F)*.035F;
+                    rightArm.xRot=-1.05F+b;leftArm.xRot=-1.05F+b;rightArm.yRot=-.42F;leftArm.yRot=.42F;rightArm.zRot=.1F;leftArm.zRot=-.1F;head.xRot=.38F-b;}
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.COWERING->{float b=net.minecraft.util.Mth.sin(age*.7F)*.03F;
+                    rightArm.xRot=-2.55F+b;leftArm.xRot=-2.55F-b;rightArm.yRot=-.25F;leftArm.yRot=.25F;rightArm.zRot=.42F;leftArm.zRot=-.42F;head.xRot=.62F;}
+                default->{}
+            }
+            hat.copyFrom(head);
+        }
         public void pageUp(float age){rightArm.xRot=-1.5F+net.minecraft.util.Mth.sin(age*.05F)*.03F;rightArm.yRot=.55F;rightArm.zRot=0;}
         void fallow(int gesture,float age){
             switch(gesture){

@@ -74,6 +74,8 @@ public final class TheListBody {
     public static final float FLOOR=2F;
     /** A locked door takes three blows, each at least this far apart; blows are forgotten after this long. */
     public static final int STRIKES=3,STRIKE_GAP=8,STRIKE_FORGET=200;
+    /** 0.4.708: a bolted steel door takes five. */
+    public static final int STEEL_STRIKES=5;
     /** How far a name's heart is heard, and anyone else's; how far a name pulls; how far one in town sees the body, and how near to see its face. */
     public static final double NAME_HEART=64,HEART=40,PULL=96,SEES=24,FACE=12;
     /** A heart's beat, calm, racing and asleep, in ticks; a heart races this long after it has seen the body. */
@@ -229,7 +231,7 @@ public final class TheListBody {
         Long next=live.beat.get(id);
         if(next==null){live.beat.put(id,now+Math.floorMod(id.hashCode(),CALM));return;}
         if(now<next)return;
-        boolean racing=!asleep&&live.raced.getOrDefault(id,0L)>now;
+        boolean racing=!asleep&&(live.raced.getOrDefault(id,0L)>now||TheListHunt.scared(e));
         live.beat.put(id,now+(asleep?SLEEPING:racing?RACING:CALM)+p.getRandom().nextInt(3)-1);
         float volume=name?3F:1.6F;if(id.equals(live.pulled))volume*=1.4F;
         float pitch=(racing?1.22F:asleep?.88F:1F)+(p.getRandom().nextFloat()-.5F)*.04F;
@@ -292,12 +294,20 @@ public final class TheListBody {
     }
 
     // ------------------------------------------------------------------------------------------------ down and up
-    static void down(ServerPlayer p,Live live){
+    static void down(ServerPlayer p,Live live){down(p,live,TheListTexts.DOWN);}
+    static void down(ServerPlayer p,Live live,String cue){
         live.down=DOWN;live.cameTo=false;
         still(p);
         p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),TheListRegistry.DOWN.get(),SoundSource.PLAYERS,1F,.95F+p.getRandom().nextFloat()*.1F);
-        TheList.cue(p,TheListTexts.DOWN);
+        TheList.cue(p,cue);
         PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,live.pullYaw,live.pull));
+    }
+    /** 0.4.708: put down by one of the five fighting back (TheListHunt): knocked back from where they stood, then the five seconds of a
+     * fall, with what they did as its cue. Nothing if the body is down already. */
+    public static void felled(ServerPlayer p,String cue,Vec3 from){
+        var live=LIVE.get(p.getUUID());if(live==null||live.down>0)return;
+        p.knockback(.6,from.x-p.getX(),from.z-p.getZ());p.hurtMarked=true;
+        down(p,live,cue);
     }
     /** Face down and still: no walking, no jumping. */
     static void still(ServerPlayer p){
@@ -343,16 +353,28 @@ public final class TheListBody {
     public static boolean strike(ServerPlayer p,BlockPos b,BlockPos rel){
         var live=LIVE.get(p.getUUID());if(live==null||live.down>0)return false;
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
-        if(!st.is(TheListRegistry.HOUSE_DOOR.get()))return false;
+        // 0.4.708: a steel door too, once one of the five has bolted it behind them (TheListHunt); it takes five blows.
+        boolean steel=st.is(TheListRegistry.STEEL_DOOR.get());
+        if(!st.is(TheListRegistry.HOUSE_DOOR.get())&&!steel)return false;
         var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
+        if(steel&&!TheListHunt.bolted(b,lower))return false;
         if(TheListSite.inHouse(Vec3.atCenterOf(lower))||lower.equals(TheListSite.FRONT_DOOR)||lower.equals(TheListSite.ONWARD))return false;
         var at=b.offset(lower);var door=l.getBlockState(at);
-        if(!door.is(TheListRegistry.HOUSE_DOOR.get())||door.getValue(DoorBlock.OPEN))return false;
+        if(!door.is(st.getBlock())||door.getValue(DoorBlock.OPEN))return false;
         long now=l.getGameTime();var blows=BLOWS.get(at.asLong());
         if(blows!=null&&now-blows[1]>STRIKE_FORGET)blows=null;
         if(blows!=null&&now-blows[1]<STRIKE_GAP)return true;
         int n=blows==null?1:(int)blows[0]+1;BLOWS.put(at.asLong(),new long[]{n,now});
         p.swing(InteractionHand.MAIN_HAND,true);
+        if(steel){
+            l.playSound(null,at.getX()+.5,at.getY()+1,at.getZ()+.5,net.minecraft.sounds.SoundEvents.ZOMBIE_ATTACK_IRON_DOOR,SoundSource.BLOCKS,1.4F,.8F+l.getRandom().nextFloat()*.1F);
+            TheList.cue(p,TheListTexts.STEEL_STRIKES[Math.min(n,STEEL_STRIKES)-1]);
+            if(n<STEEL_STRIKES){l.destroyBlockProgress(breaker(at),at,n*2);l.destroyBlockProgress(breaker(at.above()),at.above(),n*2);return true;}
+            BLOWS.remove(at.asLong());
+            l.destroyBlockProgress(breaker(at),at,-1);l.destroyBlockProgress(breaker(at.above()),at.above(),-1);
+            TheListHunt.spring(l,b,lower);
+            return true;
+        }
         l.playSound(null,at.getX()+.5,at.getY()+1,at.getZ()+.5,TheListRegistry.STRIKE.get(),SoundSource.BLOCKS,1.4F,.9F+l.getRandom().nextFloat()*.15F);
         l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,Blocks.STRIPPED_OAK_LOG.defaultBlockState()),at.getX()+.5,at.getY()+1,at.getZ()+.5,6+4*n,.25,.4,.25,.05);
         TheList.cue(p,TheListTexts.STRIKES[Math.min(n,STRIKES)-1]);

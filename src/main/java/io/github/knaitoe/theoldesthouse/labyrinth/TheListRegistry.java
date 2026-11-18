@@ -73,6 +73,8 @@ public final class TheListRegistry {
     /** 0.4.706, night one: the radio at the stock tank, the seed house's door on its rail, its bolt, the auger and the seed. */
     public static final DeferredHolder<SoundEvent,SoundEvent> RADIO=sound("the_list.radio"),SLIDE=sound("the_list.slide"),BOLT=sound("the_list.bolt"),
         AUGER=sound("the_list.auger"),SEED=sound("the_list.seed");
+    /** 0.4.708, the hunt: one of the names screaming as they start to run. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> SCREAM=sound("the_list.scream");
     /** 0.4.705: a house door that has given, split at the lock, a hole punched through its lower panel; it opens and shuts by hand for anyone. */
     public static final DeferredBlock<DoorBlock> BROKEN_DOOR=BLOCKS.register("list_broken_door",()->new DoorBlock(BlockSetType.OAK,fixed(Blocks.OAK_DOOR).noOcclusion()));
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);

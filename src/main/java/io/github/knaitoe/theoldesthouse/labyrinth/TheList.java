@@ -53,6 +53,9 @@ public final class TheList {
     public static boolean click(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
         var l=p.serverLevel();var st=l.getBlockState(b.offset(rel));
         if(st.getBlock() instanceof DoorBlock){
+            // 0.4.708: a door one of the five has bolted behind them opens to nobody's hand; the slasher can strike it.
+            var held=TheListHunt.lower(l,b,rel);
+            if(held!=null&&TheListHunt.bolted(b,held)){if(!TheListBody.strike(p,b,rel))cue(p,TheListTexts.BOLTED);return true;}
             if(!st.is(TheListRegistry.HOUSE_DOOR.get()))return false;
             var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
             if(TheListSite.inHouse(Vec3.atCenterOf(lower))||lower.equals(TheListSite.FRONT_DOOR))return false;
@@ -112,7 +115,7 @@ public final class TheList {
     public static boolean active(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     public static int clock(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.tick;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){ACTIVE.clear();}
-    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();}
+    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();}
     /**
      * Every few seconds while someone is in town, its night, each heard where it is: crickets near a reader who is outdoors, a dog behind
      * the back fence nearest them, the drive-in's nearest speaker post to anyone on that stretch of Main Street, the loose tin on whichever
@@ -145,6 +148,8 @@ public final class TheList {
             if(s.tick%100==50)TheListPeople.ensure(l,s.base);
             // 0.4.706: the town's night, while someone is in it.
             TheListNight.tick(l,s.base,here);
+            // 0.4.708: the hunt, while one is on.
+            TheListHunt.tick(l,s.base,here);
         }
     }
     /**
