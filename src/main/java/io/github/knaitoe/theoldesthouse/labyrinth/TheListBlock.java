@@ -73,6 +73,8 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.706, night one (docs/THE_LIST_0_4_706.md). PARTY, set out at the stock tank for the party and taken up after: a portable radio
  * (0), an ice chest (1), empty cans (2), a camp lantern, lit (3), a blanket on the grass (4), an empty case (5); and the seed house shut:
  * the lamp over its door (6) and the bulb inside it (7), both gone dark.</li>
+ * <li>0.4.710, the hunt (docs/THE_LIST_0_4_710.md). BLOOD, left where it lands: drops (0), a spatter thrown one way (1), a smear dragged
+ * one way (2), a pool (3). Flat on what is under it, walked over, and taken up when the hunt ends.</li>
  * </ul>
  */
 public final class TheListBlock extends HorizontalDirectionalBlock {
@@ -84,7 +86,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
         GIN,BALE,SEED,TOWER,TANK,
         FIELD,STANDS,LOCKER,SCORE,AMBER,LOT,
         PASTURE,STOCK,WINDMILL,PUMPJACK,BATTERY,
-        PARTY;
+        PARTY,BLOOD;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -177,6 +179,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->t(f,0,0,2,16,16,14);case 4->Block.box(0,0,6,16,16,10);default->t(f,6,0,8,10,16,12);};
             case PARTY->switch(stage){case 0->t(f,2,0,6,14,11,10);case 1->t(f,1.5,0,3.5,14.5,9,12.5);case 2->Block.box(3,0,3,13,4,13);case 3->Block.box(5,0,5,11,11.75,11);
                 case 4->Block.box(0,0,0,16,1.25,16);case 5->t(f,3,0,4,13,5,12);case 6->t(f,4,8.5,8,12,13,16);default->Block.box(6.5,11,6.5,9.5,16,9.5);};
+            case BLOOD->Block.box(1,0,1,15,.25,15);
         };
     }
     /** What stands in the way: buildings' fittings, fences and walls, trunks, posts and machines; not crops, weeds, canopies, wires,
@@ -217,6 +220,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->getShape(s,l,p,c);case 4->Shapes.or(t(s.getValue(FACING),-13,0,7,-11,16,9),t(s.getValue(FACING),27,0,7,29,16,9));default->t(s.getValue(FACING),7,0,9,9,13,11);};
             // 0.4.706: the cans, the blanket and the dead lamp and bulb are stepped over or under.
             case PARTY->stage==2||stage==4||stage>=6?Shapes.empty():getShape(s,l,p,c);
+            // 0.4.710: blood is walked through.
+            case BLOOD->Shapes.empty();
             default->getShape(s,l,p,c);
         };
     }

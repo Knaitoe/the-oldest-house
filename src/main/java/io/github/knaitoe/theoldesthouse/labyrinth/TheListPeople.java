@@ -91,6 +91,7 @@ public final class TheListPeople {
      */
     public static void ensure(ServerLevel l,BlockPos b){
         int phase=TheListNight.phase(l.getServer(),b);
+        TheListHunt.leftover(l,b);
         var found=new LiteraryActor[CAST];
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.isAlive())){int w=who(a);if(found[w]==null)found[w]=a;else a.discard();}
         for(int who=0;who<CAST;who++){

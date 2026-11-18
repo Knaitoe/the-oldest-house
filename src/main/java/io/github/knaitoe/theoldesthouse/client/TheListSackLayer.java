@@ -27,7 +27,10 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
  */
 public final class TheListSackLayer extends RenderLayer<AbstractClientPlayer,PlayerModel<AbstractClientPlayer>> {
     public static final ModelLayerLocation LAYER=new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"list_sack"),"main");
-    private static final ResourceLocation SACK=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/sack.png");
+    private static ResourceLocation tex(String name){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/"+name+".png");}
+    private static final ResourceLocation SACK=tex("sack"),TORN=tex("sack_torn"),DIRT=tex("sack_dirt");
+    /** 0.4.710: blood on the sack, three ways (thrown at it once, twice, soaked). */
+    private static final ResourceLocation[] BLOOD={null,tex("sack_blood_1"),tex("sack_blood_2"),tex("sack_blood_3")};
     private final ModelPart sack;
     public TheListSackLayer(PlayerRenderer parent,EntityModelSet models){super(parent);sack=models.bakeLayer(LAYER);}
     public static LayerDefinition layer(){
@@ -40,14 +43,22 @@ public final class TheListSackLayer extends RenderLayer<AbstractClientPlayer,Pla
         return LayerDefinition.create(mesh,64,32);
     }
     /** Draws the sack on a posed head. */
-    public static void draw(ModelPart head,ModelPart sack,PoseStack pose,MultiBufferSource out,int light){
+    public static void draw(ModelPart head,ModelPart sack,PoseStack pose,MultiBufferSource out,int light){draw(head,sack,pose,out,light,0);}
+    /**
+     * 0.4.710: with what has got on it (TheListSack.marks): torn through, it is a sack with the tear cut out of it; dirt and blood are
+     * drawn over it on the same faces.
+     */
+    public static void draw(ModelPart head,ModelPart sack,PoseStack pose,MultiBufferSource out,int light,int marks){
         pose.pushPose();head.translateAndRotate(pose);
-        sack.render(pose,out.getBuffer(RenderType.entityCutoutNoCull(SACK)),light,OverlayTexture.NO_OVERLAY);
+        sack.render(pose,out.getBuffer(RenderType.entityCutoutNoCull((marks&TheListSack.TORN)!=0?TORN:SACK)),light,OverlayTexture.NO_OVERLAY);
+        if((marks&TheListSack.DIRT)!=0)sack.render(pose,out.getBuffer(RenderType.entityCutoutNoCull(DIRT)),light,OverlayTexture.NO_OVERLAY);
+        int blood=marks&TheListSack.BLOOD;
+        if(blood>0)sack.render(pose,out.getBuffer(RenderType.entityCutoutNoCull(BLOOD[blood])),light,OverlayTexture.NO_OVERLAY);
         pose.popPose();
     }
     @Override public void render(PoseStack pose,MultiBufferSource out,int light,AbstractClientPlayer player,float walk,float amount,float partial,float age,float yaw,float pitch){
         if(!TheListSack.worn(player)||player.isInvisible())return;
-        draw(getParentModel().head,sack,pose,out,light);
+        draw(getParentModel().head,sack,pose,out,light,TheListSack.marks(player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD)));
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
     public static final class Registration {

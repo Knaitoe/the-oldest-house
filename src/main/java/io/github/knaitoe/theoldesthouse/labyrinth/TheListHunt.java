@@ -79,6 +79,14 @@ public final class TheListHunt {
     public static final int RAISE=20,KNEES=32,OUT=70,FOLD=86,DONE=110;
     /** How often one held is heard fighting the grip; how far the scream cut short by the hook is told of. */
     static final int STRUGGLE_EVERY=40;
+    /** 0.4.710: the hook's wound, drawn on them from the moment it goes in (LiteraryActor.marks). */
+    public static final int WOUND=1;
+    /** 0.4.710: blood left where it lands, as the fitting's BLOOD stages: drops, a spatter, a smear, a pool. */
+    public static final int DROPS=0,SPATTER=1,SMEAR=2,POOL=3;
+    /** 0.4.710: how far one of the five sees one of the others lying dead, and a reader who is not the slasher, and how near to where
+     * that reader is looking. */
+    public static final double FINDS_BODY=16,READER_FINDS=10;
+    public static final float READER_LOOK=35F;
 
     /** The doors the five bolt behind them: the field house's back door (its west leaf), the press box's, the drive-in stand's. */
     public static final BlockPos FIELD_DOOR=new BlockPos(TheListSite.FIELD_X-1,0,TheListSite.FIELD_HOUSE_S),
@@ -149,10 +157,14 @@ public final class TheListHunt {
         @Nullable UUID killer;
         /** Which way the slasher faced when they took hold: the held one is kept that way from them, wherever the slasher looks after. */
         float pin;
+        /** 0.4.710: which of the others they have come across dead, a bit for each. */
+        int saw;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
         final BlockPos base;final Map<Integer,Runner> runners=new LinkedHashMap<>();final Set<BlockPos> bolted=new HashSet<>(),sprung=new HashSet<>();int tick;
+        /** 0.4.710: which of the dead each reader has come across, a bit for each. */
+        final Map<UUID,Integer> found=new HashMap<>();
         Hunt(BlockPos b){base=b;}
     }
     static final Map<Long,Hunt> HUNTS=new HashMap<>();
@@ -205,6 +217,7 @@ public final class TheListHunt {
     public static void start(ServerLevel l,BlockPos b){
         end(l,b);
         sweep(l,b);
+        tidy(l,b);
         doors(l,b);
         TheListPeople.ensure(l,b);
         var h=new Hunt(b);
@@ -218,10 +231,11 @@ public final class TheListHunt {
         for(var r:h.runners.values()){
             release(l,r);
             if(r.holder!=null){var p=l.getServer().getPlayerList().getPlayer(r.holder);if(p!=null)TheListBody.holding(p,false);}
-            if(l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.gesture(STILL);a.setNoGravity(true);a.holder(null);}
+            if(l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.gesture(STILL);a.setNoGravity(true);a.holder(null);a.marks(0);}
         }
         doors(l,b);
         sweep(l,b);
+        tidy(l,b);
         TheListPeople.ensure(l,b);
     }
     /** The three doors as they were built: shut, and nobody's bolt on them. */
@@ -258,6 +272,7 @@ public final class TheListHunt {
                 case DEAD->{}
             }
         }
+        if(h.tick%5==1)bodies(l,b,h,here);
     }
     /** Whether one sitting at their place has noticed the slasher: seen in front of them (further in light), or heard close by. */
     static boolean notices(ServerLevel l,LiteraryActor a,ServerPlayer s){
@@ -399,6 +414,9 @@ public final class TheListHunt {
         say(a,r.who,TheListTexts.FIGHT[r.who]);
         l.playSound(null,s.getX(),s.getEyeY(),s.getZ(),SoundEvents.PLAYER_ATTACK_KNOCKBACK,SoundSource.NEUTRAL,1F,.8F);
         if(r.who==TheListPeople.LESLEY)s.addEffect(new MobEffectInstance(MobEffects.BLINDNESS,60,0,false,false,false));
+        // 0.4.710: the camcorder tears the sack; the dirt stays in its weave.
+        if(r.who==TheListPeople.MEL)TheListBody.mark(s,TheListSack.TORN);
+        if(r.who==TheListPeople.LESLEY)TheListBody.mark(s,TheListSack.DIRT);
         TheListBody.felled(s,TheListTexts.FELLED[r.who],a.position());
         if(r.state==State.HIDE){
             if(r.way+1<WAYS[r.who].length){r.way++;run(l,b,h,r,a,here,false);}
@@ -559,6 +577,10 @@ public final class TheListHunt {
             l.playSound(null,a.getX(),a.getEyeY(),a.getZ(),TheListRegistry.GASP.get(),SoundSource.NEUTRAL,1F,.95F+l.getRandom().nextFloat()*.1F);
             scream(l,a);
             spray(l,a,s,24);
+            // 0.4.710: the wound on them; drops under them and a spatter where the slasher stands; blood on the slasher.
+            a.marks(a.marks()|WOUND);
+            stain(l,b,a.position(),DROPS,toward(a,s));
+            if(s!=null){stain(l,b,s.position(),SPATTER,toward(a,s));TheListBody.bleed(s);}
             if(s!=null)TheList.cue(s,TheListTexts.HOOK_IN);
             for(var q:here)if(q!=s&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
         }
@@ -566,16 +588,23 @@ public final class TheListHunt {
         if(t>RAISE&&t<OUT&&there)pin(a,s,r.pin,KNELT_AT);
         if(t>RAISE&&t<FOLD&&t%2==0)drip(l,a);
         if(t==KNEES&&s!=null)TheList.cue(s,String.format(TheListTexts.HOOK_KNEES,name));
+        if(t==KNEES)stain(l,b,a.position().add(Vec3.directionFromRotation(0,a.getYRot()).scale(.6)),DROPS,toward(a,s));
         if(t==OUT){
             l.playSound(null,a.getX(),a.getY()+1.2,a.getZ(),TheListRegistry.HOOK_OUT.get(),SoundSource.NEUTRAL,1F,1F);
             spray(l,a,s,14);a.gesture(SLUMPED);
-            if(s!=null){s.swing(InteractionHand.MAIN_HAND,true);TheListBody.bloody(s);TheList.cue(s,String.format(TheListTexts.HOOK_OUT,name));}
+            if(s!=null){s.swing(InteractionHand.MAIN_HAND,true);TheListBody.bloody(s);TheListBody.bleed(s);TheList.cue(s,String.format(TheListTexts.HOOK_OUT,name));
+                stain(l,b,a.position().add(s.position()).scale(.5),SPATTER,toward(a,s));}
         }
         if(t==FOLD){
             // Face down, the knees where they knelt and the head toward the slasher's feet.
-            a.gesture(FALLEN);a.setNoGravity(false);
+            // Dragged down off the knees as they go: a smear from where they knelt, the way they fall.
+            stain(l,b,a.position(),SMEAR,toward(a,s));
+            // The wider box the fallen take is set at the height they knelt at: the game would lift a body whose box grew to the middle
+            // of the old one, and the cast do not fall of themselves.
+            double ground=a.getY();
+            a.gesture(FALLEN);a.setNoGravity(false);a.setPos(a.getX(),ground,a.getZ());
             if(s!=null){
-                float yaw=r.pin;var to=new Vec3(s.getX()-Mth.sin(yaw*Mth.DEG_TO_RAD)*1.6,a.getY(),s.getZ()+Mth.cos(yaw*Mth.DEG_TO_RAD)*1.6);
+                float yaw=r.pin;var to=new Vec3(s.getX()-Mth.sin(yaw*Mth.DEG_TO_RAD)*1.6,ground,s.getZ()+Mth.cos(yaw*Mth.DEG_TO_RAD)*1.6);
                 if(l.noCollision(a,a.getDimensions(a.getPose()).makeBoundingBox(to).deflate(.05)))a.moveTo(to.x,to.y,to.z,a.getYRot(),0);
                 TheListBody.holding(s,false);
             }
@@ -583,8 +612,10 @@ public final class TheListHunt {
         }
         if(t>=DONE){
             r.state=State.DEAD;
-            var by=r.killer==null?null:l.getServer().getPlayerList().getPlayer(r.killer);
-            if(by!=null)TheListBody.killed(by,r.who);
+            // A pool spreading out under the chest.
+            pool(l,b,a.position().add(Vec3.directionFromRotation(0,a.getYRot()).scale(.4)),a.getDirection());
+            // 0.4.710: the kill is theirs even if they have logged off since the hook went in.
+            if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
         }
     }
     /** Blood thrown off the hook: toward the slasher's face, up and out, falling where it falls. */
@@ -599,6 +630,101 @@ public final class TheListHunt {
     }
     /** A drop down the front of them. */
     static void drip(ServerLevel l,LiteraryActor a){l.sendParticles(TheListRegistry.BLOOD.get(),a.getX(),a.getY()+1.0,a.getZ(),1,.1,.05,.1,0);}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
+    /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
+    static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
+        if(s==null)return a.getDirection();var d=s.position().subtract(a.position());
+        return d.horizontalDistanceSqr()<1e-4?a.getDirection():Direction.getNearest(d.x,0,d.z);
+    }
+    /**
+     * Blood left where it lands: in the open cell at a point, over something with a solid top, or over grass, which it replaces until it
+     * is taken up. A heavier stain is never made lighter. Each is kept in the town's record with what was there, so that it is taken up
+     * when the hunt ends, or at the next look after a restart.
+     */
+    static void stain(ServerLevel l,BlockPos b,Vec3 at,int stage,Direction facing){
+        var cell=BlockPos.containing(at.x,at.y+.1,at.z);
+        if(!l.isLoaded(cell))return;
+        var st=l.getBlockState(cell);
+        if(TheListBlock.is(st,TheListBlock.Kind.BLOOD)){
+            if(st.getValue(TheListBlock.STAGE)<stage)l.setBlock(cell,TheListBlock.of(TheListBlock.Kind.BLOOD,facing,stage),3);
+            return;
+        }
+        if(!(st.isAir()||st.canBeReplaced()&&st.getFluidState().isEmpty()))return;
+        var under=cell.below();if(!l.getBlockState(under).isFaceSturdy(l,under,Direction.UP))return;
+        var d=LabyrinthData.get(l.getServer());int copy=TheListNight.copy(l.getServer(),b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);
+        var list=w.getList("Stains",net.minecraft.nbt.Tag.TAG_COMPOUND);
+        var e=new net.minecraft.nbt.CompoundTag();e.putLong("At",cell.subtract(b).asLong());e.put("Was",net.minecraft.nbt.NbtUtils.writeBlockState(st));
+        list.add(e);w.put("Stains",list);LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
+        l.setBlock(cell,TheListBlock.of(TheListBlock.Kind.BLOOD,facing,stage),3);
+    }
+    /**
+     * The pool under the dead, which spreads out on both sides of them: the cell under the chest, and the cells beside it wherever the
+     * chest lies within a third of a block of their edge, each turned a quarter further so that no two lie the same way.
+     */
+    static void pool(ServerLevel l,BlockPos b,Vec3 at,Direction facing){
+        double fx=at.x-Math.floor(at.x),fz=at.z-Math.floor(at.z);
+        int sx=fx<.33?-1:fx>.67?1:0,sz=fz<.33?-1:fz>.67?1:0;
+        stain(l,b,at,POOL,facing);
+        if(sx!=0)stain(l,b,at.add(sx*.5,0,0),POOL,facing.getClockWise());
+        if(sz!=0)stain(l,b,at.add(0,0,sz*.5),POOL,facing.getCounterClockWise());
+        if(sx!=0&&sz!=0)stain(l,b,at.add(sx*.5,0,sz*.5),SMEAR,facing.getOpposite());
+    }
+    /** Every stain the town's record holds taken up, as far as its ground is loaded, and what was there put back. */
+    static void tidy(ServerLevel l,BlockPos b){
+        var d=LabyrinthData.get(l.getServer());int copy=TheListNight.copy(l.getServer(),b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);
+        if(!w.contains("Stains"))return;
+        var list=w.getList("Stains",net.minecraft.nbt.Tag.TAG_COMPOUND);var left=new net.minecraft.nbt.ListTag();
+        for(int i=0;i<list.size();i++){
+            var e=list.getCompound(i);var at=b.offset(BlockPos.of(e.getLong("At")));
+            if(!l.isLoaded(at)){left.add(e);continue;}
+            if(TheListBlock.is(l.getBlockState(at),TheListBlock.Kind.BLOOD))
+                l.setBlock(at,net.minecraft.nbt.NbtUtils.readBlockState(l.holderLookup(net.minecraft.core.registries.Registries.BLOCK),e.getCompound("Was")),3);
+        }
+        if(left.isEmpty())w.remove("Stains");else w.put("Stains",left);
+        LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
+    }
+    /** How many stains the town holds now. */
+    public static int stains(ServerLevel l,BlockPos b){
+        return LiteraryVignettes.shared(LabyrinthData.get(l.getServer()),TheList.PLACE,TheListNight.copy(l.getServer(),b)).getList("Stains",net.minecraft.nbt.Tag.TAG_COMPOUND).size();
+    }
+    /** Stains left from a hunt the server did not see end, taken up while no hunt is on (TheListPeople.ensure). */
+    static void leftover(ServerLevel l,BlockPos b){if(!on(b))tidy(l,b);}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.710: the dead found
+    /**
+     * The dead, come across. Any of the five still on their feet who sees one of the others lying there says so, once for each; one
+     * still at their place screams and runs as well. A reader who is not the slasher, near enough and looking that way with nothing
+     * between, is told who it is, once a hunt for each, and their record keeps that they found them. Spectators find nothing.
+     */
+    static void bodies(ServerLevel l,BlockPos b,Hunt h,List<ServerPlayer> here){
+        for(var d:h.runners.values()){
+            if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
+            var at=body.position().add(0,.3,0);var name=TheListTexts.NAMES[d.who];
+            for(var r:h.runners.values()){
+                if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
+                if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+                if(a.getEyePosition().distanceToSqr(at)>FINDS_BODY*FINDS_BODY||!TheListBody.facing(a.getYHeadRot(),a.getEyePosition(),at,75)||!a.hasLineOfSight(body))continue;
+                r.saw|=1<<d.who;
+                if(r.state==State.CALM)run(l,b,h,r,a,here,true);
+                say(a,r.who,String.format(TheListTexts.FOUND_BODY[r.who],name,name));
+            }
+            for(var q:here){
+                if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
+                int seen=h.found.getOrDefault(q.getUUID(),0);if((seen&1<<d.who)!=0)continue;
+                if(q.getEyePosition().distanceToSqr(at)>READER_FINDS*READER_FINDS||!TheListBody.facing(q.getYHeadRot(),q.getEyePosition(),at,READER_LOOK)||!q.hasLineOfSight(body))continue;
+                h.found.put(q.getUUID(),seen|1<<d.who);
+                TheList.cue(q,String.format(TheListTexts.FOUND_DEAD,name));
+                TheListBody.found(q,d.who);
+            }
+        }
+    }
+    /** For tests: the dead looked for now, rather than on the town's next fifth tick. */
+    public static void look(ServerLevel l,BlockPos b){var h=HUNTS.get(b.asLong());if(h!=null)bodies(l,b,h,TheList.readers(l,b));}
+    /** Which of the dead a reader has come across this hunt, a bit for each. */
+    public static int found(BlockPos b,ServerPlayer p){var h=HUNTS.get(b.asLong());return h==null?0:h.found.getOrDefault(p.getUUID(),0);}
+    /** Whether one of the five has come across another dead. */
+    public static boolean saw(BlockPos b,int who,int dead){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r!=null&&(r.saw&1<<dead)!=0;}
 
     // ------------------------------------------------------------------------------------------------ doors struck
     /** A bolted steel door struck at its fifth blow: the bolt tears out and the door swings in, and nobody bolts it again. */
