@@ -175,6 +175,8 @@ public final class PlaceForYou {
         PlaceForYouPromise.marks(own,m);
         // 0.4.694: Mara by the front door, waiting for the reader who said it was him.
         PlaceForYouBelief.marks(own,m);
+        // 0.4.696: who is in the house on a visit after the account.
+        PlaceForYouAfter.marks(own,m);
         return m;
     }
     /**
@@ -257,7 +259,8 @@ public final class PlaceForYou {
     // ------------------------------------------------------------------------------------------------ arrival
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         var l=p.serverLevel();
-        if(own.getBoolean("Completed")){cue(p,PlaceForYouTexts.AFTER);return;}
+        // 0.4.696: a visit after the account, the house as the reader's ending left it.
+        if(own.getBoolean("Completed")){PlaceForYouAfter.arrive(p,own);return;}
         if(!own.contains("Snap")){
             var snap=snapshot(p);own.put("Snap",snap);own.putInt("Chapter",APPROACH);
             // A fresh evening: the house as it begins, the hall glass and the fridge as this reader left them in the quiet rooms.
@@ -330,6 +333,8 @@ public final class PlaceForYou {
         PlaceForYouBelief.tick(l,h,p,own(p),r);
         // 0.4.695: what was settled on the landing doesn't decide where the guide goes.
         PlaceForYouBond.tick(l,h,p,own(p),r);
+        // 0.4.696: the house kept as the ending left it.
+        PlaceForYouAfter.tick(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -650,7 +655,9 @@ public final class PlaceForYou {
 
     // ------------------------------------------------------------------------------------------------ talking
     public static void talk(ServerPlayer p,LiteraryActor a){
-        var own=own(p);if(!own.contains("Snap")||own.getBoolean("Completed"))return;var b=LiteraryVignettes.base(p,PLACE);var h=b==null?null:house(b);if(h==null)return;
+        var own=own(p);if(!own.contains("Snap"))return;var b=LiteraryVignettes.base(p,PLACE);var h=b==null?null:house(b);if(h==null)return;
+        // 0.4.696: after the account, one thing a visit from each of them, and nothing to decide.
+        if(own.getBoolean("Completed")){String w=who(a);if(!w.isEmpty())PlaceForYouAfter.talk(p,h,w,a);return;}
         String who=who(a);if(who.isEmpty())return;int ch=own.getInt("Chapter");
         int held=holding(p);
         if(held==PlaceForYouRegistry.BAG&&(who.equals("Kit")||who.equals("Mara"))){giveBag(p,h,who);return;}

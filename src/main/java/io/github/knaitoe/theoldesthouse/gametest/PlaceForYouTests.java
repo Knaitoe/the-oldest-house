@@ -580,6 +580,51 @@ public final class PlaceForYouTests {
     @AfterBatch(batch="place_bond_offer") public static void bondOfferDone(ServerLevel l){close();}
 
     /**
+     * 0.4.696, the house afterwards: a reader who took the road comes back after reading the account. The visit is counted; the reader's
+     * chair goes from the table while they aren't looking; Mara is at the sink with her back to the door and only a cue answers; Ren
+     * says one thing and nothing more this visit; the next visit Ren can say it again. Nothing else in the record changes. The other
+     * endings' cues and lines come from the record.
+     */
+    @GameTest(template="empty",batch="place_after",timeoutTicks=3000)
+    public static void theHouseAfterwards(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_after",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{
+                say(h,p,"It's good to be back.");Talk.end(p);
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.DONE);own.putString("Outcome","took_the_road");own.putBoolean("Ready",true);own.putBoolean("Completed",true);
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                h.assertFalse(PlaceForYouAfter.after(f.own(p,P)),"not yet a visit after the account: this is the visit it was read on");
+                at(f,p,.5,0,-13.5,0,0);
+                var again=f.own(p,P);PlaceForYou.arrive(p,b,again);LiteraryVignettes.save(f.data(),p.getUUID(),P,again);
+                var after=f.own(p,P);h.assertTrue(PlaceForYouAfter.after(after)&&after.getInt("AfterVisits")==1,"a visit after the account, counted");
+                h.assertTrue(PlaceForYouSite.readerChair(l,b),"the reader's chair still at the table for now");})
+            .thenWaitUntil(()->h.assertTrue(!PlaceForYouSite.readerChair(l,b),"the reader's chair gone from the table while they weren't looking"))
+            .thenWaitUntil(()->{var mara=PlaceForYou.actor(l,b,"mara");h.assertTrue(mara!=null&&mara.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b)).distanceTo(new net.minecraft.world.phys.Vec3(5.5,0,-20.5))<1.2,"Mara at the sink: "+(mara==null?"none":mara.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))));})
+            .thenExecute(()->{
+                talk(f,p,"mara");var own=f.own(p,P);
+                h.assertTrue(own.getString("AfterSaid").equals("Mara")&&!Talk.waiting(p),"Mara doesn't turn round: a cue, no panel: said "+own.getString("AfterSaid")+" waiting "+Talk.waiting(p)+" "+Talk.key(p));
+                var ren=PlaceForYou.actor(l,b,"ren");talk(f,p,"ren");
+                h.assertTrue(f.own(p,P).getString("AfterSaid").equals("Mara,Ren")&&ren!=null&&ren.saidWithin(PlaceForYouAfter.line(f.own(p,P),"Ren"),40)&&!Talk.waiting(p),"Ren says one thing, over Ren's head: said "+f.own(p,P).getString("AfterSaid")+" ren "+(ren==null?"none":ren.getCustomName())+" waiting "+Talk.waiting(p));
+                talk(f,p,"ren");h.assertTrue(f.own(p,P).getString("AfterSaid").equals("Mara,Ren"),"and nothing more this visit");
+                var before=f.own(p,P);
+                h.assertTrue(before.getString("Outcome").equals("took_the_road")&&before.getBoolean("Completed")&&!before.contains("Bond")&&!before.contains("MaraEnd"),"nothing to decide again");
+                var again=f.own(p,P);PlaceForYou.arrive(p,b,again);LiteraryVignettes.save(f.data(),p.getUUID(),P,again);
+                h.assertTrue(f.own(p,P).getInt("AfterVisits")==2&&f.own(p,P).getString("AfterSaid").isEmpty(),"the next visit, counted, and each of them can say their one thing again");
+                // The other endings, from the record.
+                var e=new net.minecraft.nbt.CompoundTag();e.putBoolean("Completed",true);e.putInt("AfterVisits",1);
+                e.putString("Outcome","opened_the_house");e.putString("MaraEnd","stays");e.putString("RenEnd","stays");
+                h.assertTrue(PlaceForYouAfter.cue(e).equals("The front door stands open, the hall chair against it.")&&PlaceForYouAfter.line(e,"Mara")!=null&&PlaceForYouAfter.line(e,"Alex")==null&&PlaceForYouAfter.line(e,"Kit")==null,"opened, Mara stayed: Kit and Alex gone");
+                e.putString("MaraEnd","gate");e.putString("RenEnd","goes");
+                h.assertTrue(PlaceForYouAfter.cue(e).equals("The front door stands open. The kitchen light is off.")&&PlaceForYouAfter.line(e,"Mara")==null&&PlaceForYouAfter.line(e,"Ren")==null,"opened, everyone gone");
+                e.putString("Outcome","kept_a_place");
+                h.assertTrue(PlaceForYouAfter.line(e,"Ren").equals("Told you she'd make too much.")&&PlaceForYouAfter.line(e,"Alex").equals("Drink that before she fills it again.")&&PlaceForYouAfter.line(e,"Mara").equals("Sit down. It's still warm."),"kept: word for word what they said at that table");
+                e.putString("Outcome","invited_the_past");
+                h.assertTrue(PlaceForYouAfter.line(e,"Theo")!=null&&PlaceForYouAfter.line(e,"Alex")==null&&PlaceForYouAfter.cue(e).startsWith("Keys under the hall glass"),"the past let in: Theo, and nobody who knew the reader");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_after") public static void afterDone(ServerLevel l){close();}
+
+    /**
      * 0.4.694, the reassurance: with somebody at the door, the reader asks Mara if it is him, then tells her it is. She asks them to
      * stand with her; she goes to the front door and waits; with the reader beside her she opens it and calls him, and the voice by the
      * gate answers. Ren asks whether the reader believes it or wants it to be. Later, with the house opened and the voice gone quiet, she
