@@ -10,7 +10,8 @@ Part 3a (0.4.706) is night one: a cheap radio playing at the stock tank, the see
 turning in its trench, and the seed going.
 Part 4a (0.4.708) is the hunt: one of the names screaming as they run. Part 4a-2 (0.4.709) is the catch: a struggle in the slasher's
 grip, the hay hook going in and torn out, and the catch in a throat as it goes in. Part 4b-1 (0.4.711) is the boards: a heel
-stamped down on an aluminum plank of the stands, and something giving under it.
+stamped down on an aluminum plank of the stands, and something giving under it. Part 4b-2 (0.4.713) is the line: the valve's wheel
+turned and the water knocking down the pipe, and a riser going through someone.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -49,6 +50,8 @@ ROWS = {
     'gasp': ('Someone gasps', 12),
     'stamp': ('A plank rings under a stamp', 32),
     'crack': ('Something gives', 12),
+    'valve': ('A valve wheel squeals', 24),
+    'riser': ('A pipe goes in', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -570,10 +573,51 @@ def crack():
     return snap + knock + give + grind
 
 
+def valve():
+    # A gate valve's wheel turned on its standpipe: the stem squeaking in its packing in short pulls of the hand, then water let into a
+    # dry line, a hollow knock as it reaches the first elbow and the rush settling to a hiss down the pipe.
+    n = seconds(2.2)
+    t = times(n)
+    out = np.zeros(n)
+    for k, at in enumerate((.0, .22, .46, .72)):
+        x = t - at
+        on = (x >= 0) & (x < .16)
+        y = np.clip(x / .16, 0, 1)
+        f = 900 + 420 * y + 60 * k
+        out += np.sin(2 * np.pi * f * t + 3 * np.sin(2 * np.pi * 37 * t)) * np.sin(np.pi * y) * on * .32
+        out += band(rng.standard_normal(n), 2000, 5000) * np.sin(np.pi * y) * on * .08
+    x = t - .95
+    knock = np.sin(2 * np.pi * (110 - 30 * np.clip(x / .1, 0, 1)) * x) * np.exp(-np.clip(x, 0, None) / .06) * (x >= 0) * 1.1
+    knock += band(rng.standard_normal(n), 200, 1600) * np.exp(-np.clip(x, 0, None) / .02) * (x >= 0) * .7
+    z = np.clip((t - .9) / .25, 0, 1) * np.clip((2.2 - t) / .4, 0, 1)
+    rush = band(rng.standard_normal(n), 400, 3500) * z * (.7 + .3 * np.sin(2 * np.pi * 9 * t)) * .45
+    hiss = band(rng.standard_normal(n), 3000, 9000) * z * .12
+    return out + knock + rush + hiss
+
+
+def riser():
+    # Someone forced down backward onto a sprinkler riser: the dull thud of a body on it, a short crunch, the wet give of it going
+    # through, and the pipe's own ring, muffled, as the head comes out the front.
+    n = seconds(1.0)
+    t = times(n)
+    thud = band(rng.standard_normal(n), 60, 500) * np.exp(-t / .05) * 1.4
+    thud += np.sin(2 * np.pi * (85 - 30 * np.clip(t / .12, 0, 1)) * t) * np.exp(-t / .08) * .9
+    x = t - .06
+    crunch = band(rng.standard_normal(n), 600, 3200) * (rng.random(n) < .35) * np.exp(-np.clip(x, 0, None) / .05) * (x >= 0) * .8
+    y = t - .1
+    wet = band(rng.standard_normal(n), 250, 1600) * (1 + np.sin(2 * np.pi * 27 * t)) * np.exp(-np.clip(y, 0, None) / .16) * (y >= 0) * .7
+    z = t - .2
+    ring = np.zeros(n)
+    for f, level, decay in ((690, .5, .18), (1730, .3, .12), (3100, .15, .07)):
+        ring += np.sin(2 * np.pi * f * z) * np.exp(-np.clip(z, 0, None) / decay) * (z >= 0) * level
+    return thud + crunch + wet + band(ring, 400, 4000) * .5
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
           'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
-          'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack}
+          'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack,
+          'valve': valve, 'riser': riser}
 
 
 def main():

@@ -80,6 +80,8 @@ public final class TheListRegistry {
         HOOK_OUT=sound("the_list.hook_out"),GASP=sound("the_list.gasp");
     /** 0.4.711, the boards: a heel stamped down on a plank of the stands, and something giving under it. */
     public static final DeferredHolder<SoundEvent,SoundEvent> STAMP=sound("the_list.stamp"),CRACK=sound("the_list.crack");
+    /** 0.4.713, the line: the valve's wheel turned, and a riser going through someone. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> VALVE=sound("the_list.valve"),RISER=sound("the_list.riser");
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     /** 0.4.709: blood thrown off the hay hook and dripping, drawn by the client (TheListBloodParticles). */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> BLOOD=

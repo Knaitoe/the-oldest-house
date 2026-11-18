@@ -79,22 +79,26 @@ public final class TheListMarks {
     /**
      * The hook's wound on one of the five, once it has gone in (TheListHunt.WOUND): torn through the front of whatever they wear under
      * the left collarbone, and blood soaked out round it and run down to the hem; 0.4.711, the boards' mark across the nape and the
-     * collar behind (NECK). Drawn over the cast's own model on the same faces.
+     * collar behind (NECK); 0.4.713, the line's, where the riser went in at the small of the back and out through the belly (GUT). Drawn
+     * over the cast's own model on the same faces.
      */
     static final ResourceLocation WOUND=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/wound.png");
     /** 0.4.711: the boards' mark across the back of the neck, from the second stamp (TheListHunt.NECK). */
     static final ResourceLocation NECK=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/neck.png");
+    /** 0.4.713: through the belly and the small of the back, from the riser (TheListHunt.GUT). */
+    static final ResourceLocation GUT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/gut.png");
     public static final class Wound extends RenderLayer<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor,LiteraryRenderers.CastModel> {
         public Wound(RenderLayerParent<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor,LiteraryRenderers.CastModel> parent){super(parent);}
         public static boolean wounded(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor a){
             return a.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.cast(a.phase())
-                &&(a.marks()&(io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK))!=0;
+                &&(a.marks()&(io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT))!=0;
         }
         @Override public void render(PoseStack pose,MultiBufferSource out,int light,io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
             if(!wounded(a)||a.isInvisible())return;
             int overlay=LivingEntityRenderer.getOverlayCoords(a,0);
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(WOUND)),light,overlay,-1);
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(NECK)),light,overlay,-1);
+            if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(GUT)),light,overlay,-1);
         }
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)
