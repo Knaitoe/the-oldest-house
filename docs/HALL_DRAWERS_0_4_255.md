@@ -79,7 +79,8 @@ back, it comes off. Every change is written straight back, so nothing is lost or
 
 **Set down in the manor.** A reader's own thing tossed in the manor is followed. Picked up again in the manor, it is loose in the
 picker's hands. Picked up past the hall, it goes back to its owner's drawer: "The House takes it back to the chest of drawers in the
-front hall."
+front hall." The reader's favourite weapon is followed too (docs/NEIGHBOURS.md R7): picked up past the hall by its own reader while it
+is still their favourite, it stays with them; otherwise it is like their other things.
 
 ## Tests
 

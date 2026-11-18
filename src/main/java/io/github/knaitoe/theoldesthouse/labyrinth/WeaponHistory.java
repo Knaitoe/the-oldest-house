@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.item.*;
@@ -28,6 +27,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * NeoForge's common tags {@code #c:tools/melee_weapon} and {@code #c:tools/ranged_weapon}, so another mod's weapon can be the reader's
  * favourite and be carried to the Minotaur (the owner, 17 November: "Yes, to favorite weapon"; docs/NEIGHBOURS.md). A use is a vanilla
  * attack, a vanilla bow, crossbow or trident drawn or thrown, or any other blow a weapon deals for the reader, by the damage source.
+ * Nothing else is: a weapon let fall is no use, and the game's item statistics (which count every block mined with a tool) are never
+ * read (docs/NEIGHBOURS.md R7).
  */
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID)
 public final class WeaponHistory {
@@ -135,8 +136,4 @@ public final class WeaponHistory {
         return known ? weapon : null;
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { SWUNG.remove(event.getEntity().getUUID()); }
-    @SubscribeEvent public static void toss(net.neoforged.neoforge.event.entity.item.ItemTossEvent event) {
-        if(event.getPlayer() instanceof ServerPlayer player&&watched(player)&&weapon(event.getEntity().getItem())&&identity(event.getEntity().getItem())==null)
-            record(player,event.getEntity().getItem(),Math.max(1,player.getStats().getValue(Stats.ITEM_USED.get(event.getEntity().getItem().getItem()))));
-    }
 }
