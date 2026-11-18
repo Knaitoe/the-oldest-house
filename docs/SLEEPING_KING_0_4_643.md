@@ -8,8 +8,15 @@ thing"). The pool is 91 sources, and 69 are required.
 
 Tweedledum and Tweedledee stand arm in arm just inside the hedge's gap into his square. They are two new painted skins on stranger
 phases 218 and 219: grown men alike as two buttons, in coats with a white collar. Each collar is lettered in red, DUM and DEE. They face
-along the road, so their linked arms stay round each other, and only their heads turn to a reader within sixteen blocks. When a reader
+along the road, so their linked arms stay round each other, and their heads turn to a reader within sixteen blocks. When a reader
 is near, each points the way with his free arm, in opposite directions.
+
+(Run 1731 found a reader who had gone round behind them, on the King's side, answered by a head turned as far as a head goes, the
+other way. Now a reader more than fifty degrees off the way they face has the two of them shuffle round together, side by side, about
+the middle between their places, eight degrees a tick, until that reader is fifty degrees off; the heads do the rest. With nobody
+within sixteen blocks they shuffle back to facing the gap. `KingTests.theBrothersTurnToAReaderBehindThem` stands a reader behind
+them and checks both heads face the reader, the pair still arm in arm where it stood, and the pair facing the gap again once the
+reader has gone up the road.)
 
 A hand on either of them opens the conversation panel. In three turns they say:
 

@@ -224,6 +224,33 @@ public final class KingTests {
     private static void beside(ServerPlayer p,ServerLevel l,BlockPos b){var k=b.offset(KingSite.KING);p.teleportTo(l,k.getX()-2.5,b.getY(),k.getZ()+.5,0,0);p.setDeltaMovement(Vec3.ZERO);}
 
     /**
+     * Run 1731: a reader who has gone round behind the brothers, on the King's side of them, is turned to. The pair shuffles
+     * round together, still side by side, until their heads can face the reader; with nobody near they face the gap again.
+     */
+    @GameTest(template="empty",batch="king_brothers_turn",timeoutTicks=800)
+    public static void theBrothersTurnToAReaderBehindThem(GameTestHelper h){
+        var f=place(h);var p=f.player("king_behind",P);var l=f.level(P);var b=f.base(P);KingSleep.forget(b);
+        var brothers=b.offset(KingSite.DUM);
+        java.util.function.ToDoubleFunction<LiteraryActor> off=a->Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYHeadRot()-(float)(Math.toDegrees(Math.atan2(p.getZ()-a.getZ(),p.getX()-a.getX()))-90)));
+        h.startSequence().thenExecute(()->{p.teleportTo(l,brothers.getX()+3.5,b.getY(),brothers.getZ(),90,0);King.ensure(l,b);})
+        .thenWaitUntil(()->h.assertTrue(KingBrothers.find(l,b,KingBrothers.DUM)!=null&&KingBrothers.find(l,b,KingBrothers.DEE)!=null,"both brothers stand in the wood"))
+        .thenIdle(40)
+        .thenExecute(()->{
+            var dum=KingBrothers.find(l,b,KingBrothers.DUM);var dee=KingBrothers.find(l,b,KingBrothers.DEE);
+            for(var a:new LiteraryActor[]{dum,dee})
+                h.assertTrue(off.applyAsDouble(a)<=CastConduct.TURN_DEGREES-10,"a brother turns to the reader behind him: head "+a.getYHeadRot()+", body "+a.getYRot()+", "+off.applyAsDouble(a)+" degrees off");
+            h.assertTrue(dum.distanceTo(dee)<1.2&&Math.abs(net.minecraft.util.Mth.wrapDegrees(dum.getYRot()-dee.getYRot()))<1,"still arm in arm, the same way: "+dum.distanceTo(dee)+" apart, "+dum.getYRot()+" and "+dee.getYRot());
+            var mid=dum.position().add(dee.position()).scale(.5);
+            h.assertTrue(mid.distanceTo(Vec3.atBottomCenterOf(brothers).add(0,0,-.5))<.2,"they turn where they stand: "+mid.subtract(Vec3.atBottomCenterOf(b)));
+            // Up the road, more than sixteen blocks off and still in the country.
+            p.teleportTo(l,b.getX()+.5,b.getY(),brothers.getZ()-14.5,90,0);
+        })
+        .thenWaitUntil(()->{var dum=KingBrothers.find(l,b,KingBrothers.DUM);var dee=KingBrothers.find(l,b,KingBrothers.DEE);
+            h.assertTrue(dum!=null&&dee!=null&&Math.abs(net.minecraft.util.Mth.wrapDegrees(dum.getYRot()-90))<1&&dum.getZ()>dee.getZ(),"with nobody near they face the gap again, Tweedledum to the south: "+(dum==null?"gone":dum.getYRot()+" at z "+dum.getZ()+", his brother at z "+dee.getZ()));})
+        .thenSucceed();
+    }
+
+    /**
      * 0.4.643, the brothers, the rattle and his name. The brothers say what a reader is in his dream and what his name is, and that
      * readies their battle; his stirs draw the country in, a depth to every two; a line's hand goes through the rattle and a thing
      * lifts it, which settles the battle; a reader who has heard the brothers says his whole name beside him, the breathing stops,
