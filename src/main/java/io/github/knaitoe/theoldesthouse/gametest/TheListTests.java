@@ -53,6 +53,9 @@ public final class TheListTests {
         return active;
     }
     private static void done(){if(active!=null){active.close();active=null;}}
+    /** Run 1730: in the full suite the town's far places (the field, the pasture) were unloaded under a case that needed them. A case
+     * holds the ground round each place it uses, and waits for it (f.chunks.ready()). */
+    private static void hold(LiteraryTests.Fixture f,BlockPos b,BlockPos... at){var l=f.level(P);for(var a:at)f.chunks.hold(l,new AABB(b.offset(a)).inflate(18));}
     private static boolean is(ServerLevel l,BlockPos b,BlockPos at,net.minecraft.world.level.block.Block block){return l.getBlockState(b.offset(at)).is(block);}
     private static boolean mat(ServerLevel l,BlockPos b,int x,int y,int z,String name){return is(l,b,new BlockPos(x,y,z),TheListRegistry.material(name));}
     private static boolean fitting(ServerLevel l,BlockPos b,BlockPos at,Kind kind){return TheListBlock.is(l.getBlockState(b.offset(at)))&&l.getBlockState(b.offset(at)).getValue(TheListBlock.KIND)==kind;}
@@ -348,7 +351,9 @@ public final class TheListTests {
     public static void theTownsPeopleAtTheirPlaces(GameTestHelper h){
         var f=place(h);var p=f.player("list_people",P);var peer=f.player("list_people_peer",P);var l=f.level(P);var b=f.base(P);
         var town=new AABB(b.getX()+TheListSite.WEST,b.getY()-4,b.getZ()+TheListSite.NORTH,b.getX()+TheListSite.EAST+1,b.getY()+40,b.getZ()+TheListSite.SOUTH+1);
+        hold(f,b,TheListPeople.AT);
         h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the ground round everyone's place");
             TheListPeople.ensure(l,b);
             for(int who=0;who<TheListPeople.CAST;who++)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+who+" at "+TheListPeople.AT[who].toShortString());
         }).thenIdle(20).thenExecute(()->{
@@ -701,9 +706,10 @@ public final class TheListTests {
     public static void nightOneTheSeedHouse(GameTestHelper h){
         var f=place(h);var p=f.player("list_night",P);var peer=f.player("list_night_peer",P);var l=f.level(P);var b=f.base(P);
         var tank=TheListSite.TANK_AT;var s=l.getServer();
+        hold(f,b,tank,TheListNight.PROPS[4],TheListNight.AT_GIN[0],new BlockPos(TheListSite.TOWER_X,0,TheListSite.TOWER_Z),new BlockPos(TheListSite.SEED_W,0,TheListSite.SEED_N));
         h.startSequence().thenExecute(()->{
             f.at(p,P,tank.getX()+2.5,0,tank.getZ()-14.5);f.at(peer,P,tank.getX()-1.5,0,tank.getZ()-9.5);
-        }).thenWaitUntil(()->h.assertTrue(l.isLoaded(b.offset(tank))&&l.isLoaded(b.offset(TheListNight.AT_TANK[3])),"waiting for the tank"))
+        }).thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&l.isLoaded(b.offset(tank))&&l.isLoaded(b.offset(TheListNight.AT_TANK[3])),"waiting for the tank"))
         .thenExecute(()->{
             cues(p);cues(peer);sent(p);sent(peer);
             h.assertTrue(TheListNight.begin(p,b),"night one begins round the reader");
@@ -855,6 +861,134 @@ public final class TheListTests {
         }).thenExecute(()->{
             h.assertTrue(TheListNight.phase(s,b)==TheListNight.DONE,"first light holds");
             TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+
+    private static boolean near(ServerLevel l,BlockPos b,int who,Vec3 at){var a=TheListPeople.find(l,b,who);return a!=null&&a.position().subtract(Vec3.atLowerCornerOf(b)).subtract(at).horizontalDistance()<.6;}
+    private static boolean hid(ServerLevel l,BlockPos b,int who,int way){var a=TheListPeople.find(l,b,who);
+        return TheListHunt.state(b,who)==TheListHunt.State.HIDE&&TheListHunt.way(b,who)==way&&near(l,b,who,TheListHunt.hidingPlace(who,way))&&a.gesture()==TheListHunt.HIDING&&a.getPose()==net.minecraft.world.entity.Pose.CROUCHING;}
+    private static String where(ServerLevel l,BlockPos b,int who){var a=TheListPeople.find(l,b,who);return TheListTexts.NAMES[who]+" "+TheListHunt.state(b,who)+" way "+TheListHunt.way(b,who)+" step "+TheListHunt.step(b,who)+" at "+(a==null?"nowhere":a.position().subtract(Vec3.atLowerCornerOf(b)));}
+    /**
+     * 0.4.708: the hunt. The slasher, with the body, comes near Deek and Wes on their bench: they get up screaming and run, and the
+     * scream sends Mel and Lesley off the stands; Shannon, a block of Main Street away, hears none of it. Each says their own words. The
+     * other reader hears the scream, and a few seconds later is told from which way each name is yelling for help; the slasher is not.
+     * They run at more than a walk. Deek and Wes go through the field house's steel door and it is bolted behind them; Lesley bolts the
+     * press box's (the slasher, near, is told). Mel goes under the stands. Each is crouched where their way ends, and a hidden name's
+     * heart races in the slasher's ears. A bolted door is the other reader's hand only to be told so; the slasher's five blows spring the
+     * steel. Found, Deek fights back once: the slasher goes down with what he did, and Deek runs for his second place; found there, he
+     * cowers, and the slasher stays up. Shannon, come upon at the bus bench, runs to the drive-in's stand: Jenna lets her in and she is
+     * bolted in. Ended, everyone is back at their place and every door is as it was built.
+     */
+    @GameTest(template="empty",batch="the_list_hunt",timeoutTicks=9000)
+    public static void theHunt(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_hunt",P);var peer=f.player("list_hunt_peer",P);
+        hold(f,b,TheListPeople.AT[TheListPeople.DEEK],TheListPeople.AT[TheListPeople.MEL],TheListPeople.AT[TheListPeople.LESLEY],TheListPeople.AT[TheListPeople.SHANNON],
+            new BlockPos(-130,0,-80),new BlockPos(-124,0,-104),new BlockPos(-157,4,-58),new BlockPos(-5,0,-111),new BlockPos(20,0,-115),new BlockPos(38,0,-138));
+        int[] fled={TheListPeople.DEEK,TheListPeople.WES,TheListPeople.MEL,TheListPeople.LESLEY};
+        List<net.minecraft.network.protocol.Packet<?>> mine=new ArrayList<>(),theirs=new ArrayList<>();
+        boolean[] jennaIn={false};
+        var help=TheListTexts.HELP_HEARD.split("%s",-1);
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the ground along every way");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue("north".equals(TheListHunt.compass(Vec3.ZERO,new Vec3(0,0,-10)))&&"east".equals(TheListHunt.compass(Vec3.ZERO,new Vec3(10,0,0)))
+                &&"southwest".equals(TheListHunt.compass(Vec3.ZERO,new Vec3(-10,0,10))),"the compass's words");
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+            h.assertTrue(TheListHunt.on(b),"the hunt is on");
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.CALM&&ActorSeat.of(TheListPeople.find(l,b,who))!=null,TheListTexts.NAMES[who]+" sits at their place");
+            f.at(peer,P,-120.5,0,-75.5);sent(peer);
+            f.at(p,P,-133.5,0,-57.5);sent(p);
+        }).thenWaitUntil(()->{
+            mine.addAll(sent(p));theirs.addAll(sent(peer));
+            for(int who:fled)h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.RUN,"waiting for them to run: "+where(l,b,who));
+        }).thenExecute(()->{
+            h.assertTrue(TheListHunt.state(b,TheListPeople.SHANNON)==TheListHunt.State.CALM,"Shannon, on Main Street, hears none of it");
+            var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
+            h.assertTrue(deek.gesture()==TheListHunt.RUNNING&&TheListHunt.pace(deek)==TheListHunt.PACE&&deek.getPose()==net.minecraft.world.entity.Pose.STANDING&&!deek.isNoGravity()&&ActorSeat.of(deek)==null,"Deek up off the bench and running");
+            for(int who:fled)h.assertTrue(TheListTexts.RUN[who].equals(said(TheListPeople.find(l,b,who))),TheListTexts.NAMES[who]+"'s own words: "+said(TheListPeople.find(l,b,who)));
+            h.assertTrue(sound(theirs,TheListRegistry.SCREAM.get()),"the other reader hears the scream");
+        }).thenWaitUntil(()->{
+            mine.addAll(sent(p));theirs.addAll(sent(peer));
+            var c=cuesIn(theirs);
+            for(int who:fled)h.assertTrue(c.stream().anyMatch(s->s.startsWith(help[0])&&s.endsWith(help[1]+TheListTexts.NAMES[who]+help[2])),"waiting for the other reader to hear "+TheListTexts.NAMES[who]+" yell: "+c);
+        }).thenExecute(()->{
+            h.assertFalse(cuesIn(mine).stream().anyMatch(s->s.startsWith(help[0])),"the slasher is not told who is yelling");
+            for(int who:fled)h.assertTrue(TheListTexts.HELP[who].equals(said(TheListPeople.find(l,b,who)))||TheListHunt.state(b,who)!=TheListHunt.State.RUN,"they yell: "+said(TheListPeople.find(l,b,who)));
+        }).thenWaitUntil(()->{
+            mine.addAll(sent(p));theirs.addAll(sent(peer));
+            for(int who:fled)h.assertTrue(hid(l,b,who,0),"waiting for each to hide: "+where(l,b,TheListPeople.DEEK)+"; "+where(l,b,TheListPeople.WES)+"; "+where(l,b,TheListPeople.MEL)+"; "+where(l,b,TheListPeople.LESLEY));
+        }).thenExecute(()->{
+            h.assertTrue(TheListHunt.bolted(b,TheListHunt.FIELD_DOOR)&&shut(l,b,TheListHunt.FIELD_DOOR)&&shut(l,b,TheListHunt.FIELD_DOOR.east()),"the field house's steel door is shut and bolted behind Deek and Wes");
+            h.assertTrue(TheListHunt.bolted(b,TheListHunt.PRESS_DOOR)&&shut(l,b,TheListHunt.PRESS_DOOR),"the press box's is bolted behind Lesley");
+            h.assertTrue(cuesIn(mine).contains(TheListTexts.BOLTED_STEEL),"the slasher, near the press box, hears it: "+cuesIn(mine));
+            h.assertTrue(sound(mine,TheListRegistry.BOLT.get()),"the bolt is heard");
+            var mel=TheListPeople.find(l,b,TheListPeople.MEL);
+            h.assertTrue(mel.getMainHandItem().is(LiteraryRegistry.CAMCORDER.get()),"Mel keeps the camcorder");
+            mine.addAll(sent(p));mine.clear();
+        }).thenIdle(40).thenExecute(()->{
+            mine.addAll(sent(p));
+            var mel=TheListPeople.find(l,b,TheListPeople.MEL);
+            boolean racing=mine.stream().anyMatch(q->q instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket s&&s.getSound().value()==TheListRegistry.HEART.get()
+                &&Math.abs(s.getX()-mel.getX())<1&&Math.abs(s.getZ()-mel.getZ())<1&&s.getPitch()>1.15F);
+            h.assertTrue(racing,"Mel, hidden, has a racing heart in the slasher's ears");
+            // The other reader's hand on the bolted steel.
+            cues(peer);f.click(peer,P,TheListHunt.FIELD_DOOR);
+            h.assertTrue(cues(peer).contains(TheListTexts.BOLTED)&&shut(l,b,TheListHunt.FIELD_DOOR),"bolted, to the other reader's hand");
+            cues(p);use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98));
+        }).thenIdle(10).thenExecute(()->use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98)))
+        .thenIdle(10).thenExecute(()->use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98)))
+        .thenIdle(10).thenExecute(()->{
+            h.assertTrue(shut(l,b,TheListHunt.FIELD_DOOR)&&TheListHunt.bolted(b,TheListHunt.FIELD_DOOR),"three blows, and it holds");
+            use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98));
+        }).thenIdle(10).thenExecute(()->{
+            use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98));
+            var c=cues(p);
+            for(int i=0;i<TheListBody.STEEL_STRIKES;i++)h.assertTrue(c.contains(TheListTexts.STEEL_STRIKES[i]),"each blow its own cue: "+c);
+            h.assertFalse(shut(l,b,TheListHunt.FIELD_DOOR)||TheListHunt.bolted(b,TheListHunt.FIELD_DOOR),"the fifth springs it");
+            h.assertTrue(l.getBlockState(b.offset(TheListHunt.FIELD_DOOR)).is(TheListRegistry.STEEL_DOOR.get()),"the steel door is still there, swung in");
+            // Found in the showers.
+            f.at(p,P,-115.5,0,-100.5);p.setYRot(-90);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.fought(b,TheListPeople.DEEK),"waiting for Deek to be found: "+where(l,b,TheListPeople.DEEK)))
+        .thenExecute(()->{
+            h.assertTrue(TheListBody.down(p)>0,"the slasher is down");
+            h.assertTrue(cues(p).contains(TheListTexts.FELLED[TheListPeople.DEEK]),"with what Deek did");
+            h.assertTrue(TheListTexts.FIGHT[TheListPeople.DEEK].equals(said(TheListPeople.find(l,b,TheListPeople.DEEK))),"his words as he does it");
+            h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)==TheListHunt.State.RUN&&TheListHunt.way(b,TheListPeople.DEEK)==1,"and he runs for his second place");
+            h.assertTrue(TheListHunt.state(b,TheListPeople.WES)==TheListHunt.State.HIDE,"Wes stays where he is");
+        }).thenWaitUntil(()->h.assertTrue(hid(l,b,TheListPeople.DEEK,1),"waiting for Deek to hide again: "+where(l,b,TheListPeople.DEEK)))
+        .thenWaitUntil(()->h.assertTrue(TheListBody.down(p)==0,"waiting for the slasher to get up"))
+        .thenExecute(()->{
+            f.at(p,P,-131.5,0,-106.5);p.setYRot(90);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)==TheListHunt.State.COWER,"waiting for Deek to be found again: "+where(l,b,TheListPeople.DEEK)))
+        .thenExecute(()->{
+            var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
+            h.assertTrue(TheListTexts.COWER[TheListPeople.DEEK].equals(said(deek))&&deek.gesture()==TheListHunt.COWERING,"found twice, he cowers: "+said(deek));
+            h.assertTrue(TheListBody.down(p)==0,"and does not fight again");
+            // Shannon, come upon at the bus bench.
+            f.at(p,P,-39.5,0,-110.5);
+        }).thenWaitUntil(()->{
+            var jenna=TheListPeople.find(l,b,TheListPeople.JENNA);
+            if(jenna!=null&&TheListTexts.JENNA_IN.equals(said(jenna)))jennaIn[0]=true;
+            h.assertTrue(hid(l,b,TheListPeople.SHANNON,0),"waiting for Shannon to hide in the stand: "+where(l,b,TheListPeople.SHANNON));
+        }).thenExecute(()->{
+            h.assertTrue(jennaIn[0],"Jenna lets her in");
+            h.assertTrue(TheListHunt.bolted(b,TheListHunt.STAND_DOOR)&&shut(l,b,TheListHunt.STAND_DOOR),"the stand's door bolted behind her");
+            h.assertTrue(TheListTexts.JENNA_DOWN.equals(said(TheListPeople.find(l,b,TheListPeople.JENNA))),"Jenna tells her to get down");
+            TheListHunt.end(l,b);
+            h.assertFalse(TheListHunt.on(b),"the hunt is over");
+            for(int who:TheListBody.LISTED){
+                var a=TheListPeople.find(l,b,who);var at=b.offset(TheListPeople.AT[who]);
+                h.assertTrue(a!=null&&a.position().distanceTo(new Vec3(at.getX()+.5,at.getY(),at.getZ()+.5))<.05&&a.gesture()==TheListHunt.STILL&&ActorSeat.of(a)!=null,TheListTexts.NAMES[who]+" back at their place: "+where(l,b,who));
+            }
+            for(var door:new BlockPos[]{TheListHunt.FIELD_DOOR,TheListHunt.FIELD_DOOR.east(),TheListHunt.PRESS_DOOR,TheListHunt.STAND_DOOR})
+                h.assertTrue(shut(l,b,door)&&!TheListHunt.bolted(b,door),"every door as it was built: "+door.toShortString());
+            h.assertTrue(l.getBlockState(b.offset(TheListHunt.FIELD_DOOR)).is(TheListRegistry.STEEL_DOOR.get())&&l.getBlockState(b.offset(TheListHunt.STAND_DOOR)).is(TheListRegistry.HOUSE_DOOR.get()),"steel where steel was");
+            TheListBody.end(p);
             done();h.succeed();
         });
     }

@@ -13,7 +13,8 @@ import net.minecraft.network.chat.Component;
  * and {@code status} says where it stands. 0.4.706: {@code night} begins night one round the operator, as the one Deek picks;
  * {@code night party|seed|shut|after} moves it straight there; {@code night off} ends it and puts the town back. 0.4.707: {@code night light}
  * brings first light, and {@code night off} also holds the town quiet, so that no night begins round anyone coming in until {@code night}
- * begins one. Nothing here changes anyone else's record.
+ * begins one. 0.4.708: {@code hunt} begins the hunt round the operator (given the body, the night put away, the town held quiet), and
+ * {@code hunt off} ends it. Nothing here changes anyone else's record.
  */
 public final class TheListCommands {
     private TheListCommands(){}
@@ -28,7 +29,8 @@ public final class TheListCommands {
                 .then(Commands.literal("seed").executes(c->night(c.getSource(),TheListNight.SEED)))
                 .then(Commands.literal("shut").executes(c->night(c.getSource(),TheListNight.SHUT)))
                 .then(Commands.literal("after").executes(c->night(c.getSource(),TheListNight.AFTER)))
-                .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE))));
+                .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE))))
+            .then(Commands.literal("hunt").executes(c->hunt(c.getSource(),true)).then(Commands.literal("off").executes(c->hunt(c.getSource(),false))));
     }
 
     private static int night(CommandSourceStack source,int phase)throws CommandSyntaxException{
@@ -40,6 +42,19 @@ public final class TheListCommands {
         if(phase>TheListNight.PARTY)TheListNight.jump(l,b,phase);
         int now=TheListNight.phase(p.server,b);
         source.sendSuccess(()->Component.literal("Night one: "+TheListNight.NAMES[now]+", "+TheListNight.hour(TheListNight.time(p.server,b))+". /ghosthouse test the_list night off ends it."),false);
+        return 1;
+    }
+
+    private static int hunt(CommandSourceStack source,boolean on)throws CommandSyntaxException{
+        var p=source.getPlayerOrException();var b=TheListBody.town(p);
+        if(b==null){source.sendFailure(Component.literal("Go through the back door into Lamesa first: /ghosthouse test vignette the_list places its door."));return 0;}
+        var l=p.serverLevel();
+        if(!on){TheListHunt.end(l,b);source.sendSuccess(()->Component.literal("The hunt is over; the five are back at their places and the doors put back."),false);return 1;}
+        if(!TheListBody.give(p)){source.sendFailure(Component.literal("Spectators and the dead are not given the body."));return 0;}
+        if(TheListNight.phase(p.server,b)!=TheListNight.NONE)TheListNight.end(l,b);
+        TheListNight.quiet(p.server,b,true);
+        TheListHunt.start(l,b);
+        source.sendSuccess(()->Component.literal("The hunt is on: the five are at their places and run when they see you. /ghosthouse test the_list hunt off ends it."),false);
         return 1;
     }
 
@@ -58,7 +73,8 @@ public final class TheListCommands {
         for(int who=0;who<TheListTexts.NAMES.length;who++)if((bits&1<<who)!=0&&TheListTexts.NAMES[who]!=null)faced.add(TheListTexts.NAMES[who]);
         String text="The list: body "+(own.getBoolean("Body")?"yes":"no")+"; in town "+(TheListBody.town(p)!=null)+"; walking "+TheListBody.walking(p)
             +"; down "+TheListBody.down(p)+"; sack "+(TheListSack.worn(p)?"worn":TheListBody.hasSack(p)?"carried":"none")
-            +"; pull "+String.format("%.2f",TheListBody.pull(p))+"; seen the face: "+(faced.isEmpty()?"nobody":String.join(", ",faced));
+            +"; pull "+String.format("%.2f",TheListBody.pull(p))+"; seen the face: "+(faced.isEmpty()?"nobody":String.join(", ",faced))
+            +(TheListBody.town(p)!=null?"; hunt: "+TheListHunt.status(TheListBody.town(p)):"");
         source.sendSuccess(()->Component.literal(text),false);
         return 1;
     }

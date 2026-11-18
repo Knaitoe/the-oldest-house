@@ -8,6 +8,7 @@ Part 2 (0.4.705) is the slasher's body: a heart heard through a wall, a locked d
 the body's heavy tread, and the body going down.
 Part 3a (0.4.706) is night one: a cheap radio playing at the stock tank, the seed house's door rolling on its rail, its bolt, the auger
 turning in its trench, and the seed going.
+Part 4a (0.4.708) is the hunt: one of the names screaming as they run.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -39,6 +40,7 @@ ROWS = {
     'bolt': ('A bolt drops', 24),
     'auger': ('An auger turns', 40),
     'seed': ('Seed pours', 16),
+    'scream': ('Someone screams', 64),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -365,6 +367,25 @@ def down():
     return out
 
 
+def scream():
+    # A throat at the top of its range: the pitch thrown up and held, wavering, cracking down at the end, the breath ragged behind it.
+    # A harmonic stack through three formants for an open vowel, so it reads as a voice and not a whistle.
+    n = seconds(1.5)
+    t = times(n)
+    rise = np.clip(t / .12, 0, 1)
+    fall = np.clip((t - 1.05) / .4, 0, 1)
+    f0 = 430 + 260 * rise - 180 * fall ** 1.5 + 18 * np.sin(2 * np.pi * 6.3 * t) + 9 * np.sin(2 * np.pi * 11.1 * t + 1)
+    phase = 2 * np.pi * np.cumsum(f0) / RATE
+    voice = np.zeros(n)
+    for k in range(1, 14):
+        voice += np.sin(k * phase + rng.uniform(0, 2 * np.pi)) / k ** .9
+    voice = band(voice, 600, 1500) * 1.0 + band(voice, 1900, 3200) * .7 + band(voice, 2900, 4200) * .35
+    rough = 1 + .25 * band(rng.standard_normal(n), 30, 90)
+    breath = band(rng.standard_normal(n), 1200, 7000) * .22
+    env = np.clip(t / .05, 0, 1) * np.clip((1.5 - t) / .25, 0, 1)
+    return (voice * rough + breath) * env
+
+
 def radio():
     # Eight seconds of a portable radio on the ground at a party: a two-chord shuffle, a bass walking under it, a snare on the
     # backbeat and a voice singing over it, all through a speaker the size of a hand: nothing low, nothing bright, and the station's
@@ -450,7 +471,7 @@ def seed():
 
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
-          'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed}
+          'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream}
 
 
 def main():

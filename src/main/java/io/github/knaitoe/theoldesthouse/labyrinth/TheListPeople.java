@@ -76,8 +76,10 @@ public final class TheListPeople {
         if(who==AMBER&&phase==TheListNight.AFTER)return new Spot(TheListNight.AT_WINDOW,Direction.SOUTH);
         return new Spot(AT[who],FACING[who]);
     }
-    /** One of the town's people near where they are now; a second of the same is let go. */
+    /** One of the town's people near where they are now; a second of the same is let go. 0.4.708: one the hunt has sent running or hiding
+     * is wherever the hunt has them. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
+        if(TheListHunt.holds(b,who))return TheListHunt.actor(l,b,who);
         var s=spot(TheListNight.phase(l.getServer(),b),who);if(s==null)return null;
         LiteraryActor found=null;
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(s.at())).inflate(6),x->is(x)&&x.phase()==FIRST+who&&x.isAlive())){if(found==null)found=a;else a.discard();}
@@ -102,10 +104,11 @@ public final class TheListPeople {
                 place(a,at,who,s.facing());
                 if(!l.addFreshEntity(a))continue;
             }
-            place(a,at,who,s.facing());
+            // 0.4.708: one the hunt has sent running or hiding is left where they are.
+            if(!TheListHunt.holds(b,who))place(a,at,who,s.facing());
             // Mel has the camera out from the party until the seed house; Amber, at her window after the cut, a page out of a notebook
             // (0.4.707); nobody else holds anything.
-            var want=who==MEL&&phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT?LiteraryRegistry.CAMCORDER.get()
+            var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b))?LiteraryRegistry.CAMCORDER.get()
                 :who==AMBER&&phase==TheListNight.AFTER?net.minecraft.world.item.Items.PAPER:null;
             var held=a.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
             if(want!=null&&!held.is(want))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(want));
