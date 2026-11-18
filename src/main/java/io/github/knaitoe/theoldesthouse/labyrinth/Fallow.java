@@ -288,6 +288,8 @@ public final class Fallow {
     public static void forget(BlockPos b){ACTIVE.remove(b.asLong());}
     /** For tests: Faye and Otis taken as having paid already, so that the man comes. */
     public static void servedAlready(BlockPos b){var s=ACTIVE.get(b.asLong());if(s!=null)s.served|=3;}
+    /** For tests: Faye taken as having paid already, so that Otis is next. */
+    public static void fayeServed(BlockPos b){var s=ACTIVE.get(b.asLong());if(s!=null)s.served|=1;}
     /** For tests: what a reader's chore is this afternoon, or null. */
     public static @Nullable String chore(BlockPos b,UUID reader){var s=ACTIVE.get(b.asLong());return s==null?null:s.chores.get(reader);}
 
