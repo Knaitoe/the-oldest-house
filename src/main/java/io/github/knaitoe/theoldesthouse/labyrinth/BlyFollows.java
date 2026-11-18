@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * Bly's Lady follows the one she held (0.4.189), as she came back for Dani: the room's own hold and carry, smaller, in the
  * reader's world. Once a night, near water in the dark, the dark closes in; they are held a moment and walked a few steps
  * they did not take, and set down at the water's edge, never in it, with wet footprints from the water to where they stood.
- * It never wounds them and never happens in the House. It ends when they wait out a later night at Bly in a shut cupboard.
+ * It never wounds them and never happens in the House, nor in a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3). It ends
+ * when they wait out a later night at Bly in a shut cupboard.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class BlyFollows {
@@ -31,6 +33,8 @@ public final class BlyFollows {
     public static final String FOLLOWS="LadyFollows0189",NIGHT="LadyNight0189",CARRIED="LadyCarried0189";
     /** How near water must be, how long the hold lasts before the carry, and how long the carry takes. */
     public static final int NEAR=6,HOLD=20,CARRY=20;
+    /** How long her dark lasts from the moment she takes their arm. */
+    static final int DARK=HOLD+CARRY+40;
     private record Carry(Vec3 from,Vec3 to,long start){}
     private static final Map<UUID,Carry> CARRIES=new HashMap<>();
 
@@ -57,14 +61,14 @@ public final class BlyFollows {
     }
     /** The hold and the carry: held a moment in the dark, then walked to the water's edge. True if it began. */
     public static boolean carry(ServerPlayer p){
-        var l=p.serverLevel();if(carrying(p)||HouseDimensions.isHouseDimension(l.dimension())||p.isInWater())return false;
+        var l=p.serverLevel();if(carrying(p)||!HouseDimensions.ownWorld(l)||p.isInWater())return false;
         // 0.4.199: Flora's doll, carried, and the Lady passes them by (Artifacts).
         if(Artifacts.carries(p,Artifacts.Kind.DOLL))return false;
         var to=edge(l,p);if(to==null||to.distanceToSqr(p.position())<1)return false;
         CARRIES.put(p.getUUID(),new Carry(p.position(),to,l.getGameTime()));
         // Counted, so the reader's account can say how often she came for them.
         var record=own(p);var t=record.get();t.putInt(CARRIED,t.getInt(CARRIED)+1);record.put(t);
-        p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,HOLD+CARRY+40,0,false,false));
+        p.addEffect(new MobEffectInstance(MobEffects.DARKNESS,DARK,0,false,false));
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,HOLD,9,false,false));
         LiteraryVignettes.heard(p,SoundEvents.PLAYER_SPLASH,BlockPos.containing(to),.5F,.6F);
         p.displayClientMessage(Component.literal("Something wet takes your arm.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
@@ -82,9 +86,22 @@ public final class BlyFollows {
             p.displayClientMessage(Component.literal("You are standing at the water's edge. Wet footprints lead from the water to where you were.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);
         }
     }
+    /** Her dark and her hold lift: only the hidden ones, no longer than she gives, so a dark or a slowness from anything else stays. */
+    static void letGo(ServerPlayer p){
+        var dark=p.getEffect(MobEffects.DARKNESS);
+        if(dark!=null&&hers(dark,DARK,0))p.removeEffect(MobEffects.DARKNESS);
+        var hold=p.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+        if(hold!=null&&hers(hold,HOLD,9))p.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+    }
+    private static boolean hers(MobEffectInstance e,int ticks,int amplifier){
+        return !e.isVisible()&&!e.isAmbient()&&!e.isInfiniteDuration()&&e.getDuration()<=ticks&&e.getAmplifier()==amplifier;
+    }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();
-        for(var p:server.getPlayerList().getPlayers()){var c=CARRIES.get(p.getUUID());if(c!=null){if(!p.isAlive())CARRIES.remove(p.getUUID());else step(p,c);}}
+        // Taken into a world that is not their own while she has them (docs/NEIGHBOURS.md R3), they are let go, and her dark and her hold
+        // with them. Taken anywhere else, she walks them on as she always has.
+        for(var p:server.getPlayerList().getPlayers()){var c=CARRIES.get(p.getUUID());if(c==null)continue;
+            if(!p.isAlive())CARRIES.remove(p.getUUID());else if(Neighbours.notOwnWorld(p.level())){CARRIES.remove(p.getUUID());letGo(p);}else step(p,c);}
         if(server.getTickCount()%20!=0)return;
         long time=server.overworld().getDayTime();int night=(int)(time/24000L);
         for(var p:server.getPlayerList().getPlayers()){

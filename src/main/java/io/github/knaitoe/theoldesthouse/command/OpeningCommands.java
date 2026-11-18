@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseSpawnManager;
-import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
+import io.github.knaitoe.theoldesthouse.opening.HomeBed;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonLetter;
 import io.github.knaitoe.theoldesthouse.opening.NavidsonPhoto;
 import io.github.knaitoe.theoldesthouse.opening.OpeningPlayerState;
@@ -64,13 +64,14 @@ public final class OpeningCommands {
     private static int status(CommandSourceStack source, ServerPlayer player) {
         OpeningPlayerState state = OpeningSequence.state(player);
         long day = OpeningSequence.currentDay(source.getServer());
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
 
         String text = player.getGameProfile().getName() + " | stage=" + state.stage().name().toLowerCase()
                 + ", day=" + day
                 + ", firstJoinDay=" + state.firstJoinDay()
                 + ", nightsSlept=" + state.nightsSlept()
-                + ", bed=" + bed.map(OpeningCommands::format).orElse("none")
+                + ", homeBed=" + bed.map(OpeningCommands::format).orElse("none")
+                + homeSummary(state.home())
                 + ", eligibleDay=" + state.eligibleDay()
                 + ", letterDay=" + state.letterDay()
                 + ", lastMorning=" + state.lastMorningDay()
@@ -80,6 +81,11 @@ public final class OpeningCommands {
                 + photoSummary(OpeningWorldData.get(source.getServer()).photoOf(player.getUUID()));
         source.sendSuccess(() -> Component.literal(text), false);
         return 1;
+    }
+
+    private static String homeSummary(@Nullable OpeningPlayerState.Home home) {
+        return home == null ? ", rememberedHome=none"
+                : ", rememberedHome=" + format(home.pos()) + " since day " + home.since() + " (" + home.nights() + " nights)";
     }
 
     private static String photoSummary(@Nullable OpeningWorldData.PhotoRecord photo) {
@@ -120,7 +126,7 @@ public final class OpeningCommands {
     private static int hillary(CommandSourceStack source, ServerPlayer player) {
         BlockPos at = OpeningSequence.respawnHillary(player);
         if (at == null) {
-            source.sendFailure(Component.literal("No bed or doorstep for Hillary near " + player.getGameProfile().getName() + "."));
+            source.sendFailure(Component.literal("No home bed or doorstep for Hillary near " + player.getGameProfile().getName() + "."));
             return 0;
         }
         source.sendSuccess(() -> Component.literal("Hillary is on " + player.getGameProfile().getName() + "'s doorstep at " + format(at) + "."), true);
@@ -137,15 +143,15 @@ public final class OpeningCommands {
     }
 
     private static int letter(CommandSourceStack source, ServerPlayer player) {
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
         if (bed.isEmpty()) {
-            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no bed respawn point."));
+            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no home bed."));
             return 0;
         }
         long day = OpeningSequence.currentDay(source.getServer());
         NavidsonPhoto.Result photo = takePhoto(source, player, bed.get());
         if (!OpeningSequence.deliverLetter(player, OpeningSequence.state(player), bed.get(), day, photo == null ? null : photo.pixels())) {
-            source.sendFailure(Component.literal("No doorstep near the bed to leave the letter on."));
+            source.sendFailure(Component.literal("No doorstep near the home bed to leave the letter on."));
             return 0;
         }
         source.sendSuccess(() -> Component.literal("Navidson's letter delivered to " + player.getGameProfile().getName() + "."), true);
@@ -154,9 +160,9 @@ public final class OpeningCommands {
 
     /** Photographs the player's house again and hands the snapshot to whoever ran the command. */
     private static int photo(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
         if (bed.isEmpty()) {
-            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no bed respawn point."));
+            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no home bed."));
             return 0;
         }
         NavidsonPhoto.Result photo = takePhoto(source, player, bed.get());
@@ -197,9 +203,9 @@ public final class OpeningCommands {
                     + (origin == null ? "an unknown position" : format(origin)) + "."), false);
             return 1;
         }
-        Optional<BlockPos> bed = Doorsteps.bedPosition(player);
+        Optional<BlockPos> bed = HomeBed.of(player);
         if (bed.isEmpty()) {
-            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no bed respawn point in the Overworld."));
+            source.sendFailure(Component.literal(player.getGameProfile().getName() + " has no home bed in the Overworld."));
             return 0;
         }
         boolean spawned = HouseSpawnManager.ensureSpawnedNear(source.getServer().overworld(), data, bed.get());

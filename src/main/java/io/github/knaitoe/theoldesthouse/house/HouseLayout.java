@@ -32,7 +32,8 @@ public final class HouseLayout {
     public static final int HALL_MIN_X = AXIS_X - 1;
     public static final int HALL_MAX_X = AXIS_X + 1;
 
-    // Bounds of every generated block (roofs, chimneys, bay, approach).
+    // Bounds of every generated block (roofs, chimneys, bay, approach), down to the cellar's floor. Under that floor only the
+    // foundations and supports run down (LOWEST_SUPPORT_Y), and the jetty's ladder may reach one row.
     public static final int MIN_X = -4;
     public static final int MAX_X = 29;
     public static final int MIN_Z = -8;
@@ -46,6 +47,36 @@ public final class HouseLayout {
     public static final int CLEAR_MAX_X = 29;
     public static final int CLEAR_MIN_Z = -3;
     public static final int CLEAR_MAX_Z = 29;
+
+    /**
+     * The House's lot, relative to its origin: MIN..MAX in x, y and z, from the cellar's floor to the chimney tops, steps and chimneys
+     * included. The finale's demolition clears exactly this box. Under it the House sets blocks only where a foundation or a support
+     * runs down through air, plants and water ({@link #SUPPORT_RUN}, never below {@link #LOWEST_SUPPORT_Y}), and, on the water
+     * approach, the jetty's ladder one row down. The site search finds nothing built in the lot, below the highest ground as well as
+     * above, nor anywhere under it that those runs pass through or stop on.
+     */
+    public static final Box SITE = new Box(MIN_X, MIN_Y, MIN_Z, MAX_X, MAX_Y, MAX_Z);
+    /** How many rows below its first a foundation or a support may run down through air, plants that give way and water. */
+    public static final int SUPPORT_RUN = 12;
+    /**
+     * The lowest row the House can set a block in, relative to its origin: a foundation under the cellar's floor, or the support under
+     * the lowest front step, starts a row below the lot and runs {@link #SUPPORT_RUN} rows further. What such a run stops on lies a
+     * row lower still.
+     */
+    public static final int LOWEST_SUPPORT_Y = MIN_Y - 1 - SUPPORT_RUN;
+    /**
+     * How far below the floor course the design's envelope reaches: where the foundations under the floor course end, {@link
+     * #SUPPORT_RUN} rows below their first. It is the design's number (A Reaping's compatibility research), not the House's whole
+     * reach: under the cellar and the lowest front step the supports go down to {@link #LOWEST_SUPPORT_Y}, so a district below those is
+     * kept only {@code MARGIN + FOUNDATION_DEPTH + LOWEST_SUPPORT_Y} rows off (three), not {@link Neighbours#MARGIN}. Districts are
+     * surface land.
+     */
+    public static final int FOUNDATION_DEPTH = 1 + SUPPORT_RUN;
+    /**
+     * The design's envelope in the Overworld, relative to its origin: the lot, down to {@link #FOUNDATION_DEPTH} below the floor course.
+     * No neighbour's district may lie within {@link Neighbours#MARGIN} of it.
+     */
+    public static final Box ENVELOPE = new Box(MIN_X, -FOUNDATION_DEPTH, MIN_Z, MAX_X, MAX_Y, MAX_Z);
 
     /** Rough centre of the whole house, used for spawn projection and observer range. */
     public static final int CENTER_X = 13;

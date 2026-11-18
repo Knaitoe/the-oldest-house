@@ -5,7 +5,8 @@ import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseLayout;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
-import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
+import io.github.knaitoe.theoldesthouse.opening.HomeBed;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -471,9 +472,10 @@ public final class RedRoom {
             if (player.isSpectator()) {
                 continue;
             }
-            BlockPos bed = Doorsteps.bedPosition(player).orElse(null);
+            BlockPos bed = HomeBed.of(player).orElse(null);
             BlockPos feet = player.blockPosition();
-            if (bed == null || !isAtHome(overworld, feet, bed, manor)) {
+            // Time near home counts only off a district's land: a room in the district is never their room at home.
+            if (bed == null || !isAtHome(overworld, feet, bed, manor) || Neighbours.districtLand(overworld, feet)) {
                 continue;
             }
             rooms.record(player.getUUID(), feet, SAMPLE_SECONDS);

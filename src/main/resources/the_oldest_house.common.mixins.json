@@ -20,7 +20,8 @@
     "NotYetSleepMixin",
     "NotYetGetUpMixin",
     "HouseSleepMixin",
-    "HouseSleepAccess"
+    "HouseSleepAccess",
+    "CompoundContainerAccess"
   ],
   "injectors": {
     "defaultRequire": 1

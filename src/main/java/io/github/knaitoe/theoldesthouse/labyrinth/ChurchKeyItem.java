@@ -1,19 +1,24 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
-/** A carried artifact: opens the church in the House, masks its bearer from drowned outside it. */
+/**
+ * A carried artifact: opens the church in the House, masks its bearer from drowned outside it. Never in a neighbour's world that is
+ * not the reader's own (docs/NEIGHBOURS.md R3), as the essay page does nothing there.
+ */
 public final class ChurchKeyItem extends Item {
     public ChurchKeyItem(Properties properties) { super(properties); }
 
     public static boolean protects(ServerPlayer player) {
         if (player.level().dimension().equals(HouseDimensions.INTERIOR)
-                || player.level().dimension().equals(HouseDimensions.BETWEEN)) return false;
+                || player.level().dimension().equals(HouseDimensions.BETWEEN)
+                || Neighbours.notOwnWorld(player.level())) return false;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++)
             if (player.getInventory().getItem(i).is(DrownedTownRegistry.CHURCH_KEY.get())) return true;
         return false;

@@ -74,9 +74,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * measured the way through.</li>
  * <li><b>The photograph with the vulture</b> (plain), held while standing still: monsters more than six blocks off lose track of
  * them. The frame was made by holding still while the bird waited.</li>
- * <li><b>Her compass</b> (Borrasca), used: away from the House it points to where they last fell; in the House, to the Mother's
+ * <li><b>Her compass</b> (Borrasca), used: in their own world it points to where they last fell; in the House, to the Mother's
  * den, where lost things are kept. It found the missing.</li>
- * <li><b>Her name patch</b> (Borrasca), carried: once a House day, dying away from the House keeps what is in their main hand
+ * <li><b>Her name patch</b> (Borrasca), carried: once a House day, dying in their own world keeps what is in their main hand
  * with them, given back when they wake. The names restored to what was left.</li>
  * </ul>
  */
@@ -121,19 +121,19 @@ public final class Keepsakes {
             case "ghosts_set/Film" -> "Played, it keeps the family's voices and whatever else your lens caught. The show used less of it.";
             case "elk_fan/Tooth" -> "Heavier than it looks. In your other hand it keeps your feet under you.";
             case "elk_fan/Lightbulb" -> "It still lights for a little while, if you ask it.";
-            case "bike_night/Bike" -> "Yours now. Away from the House it is under you whenever you want it, and it goes as it went that night.";
+            case "bike_night/Bike" -> "Yours now. Out in your world it is under you whenever you want it, and it goes as it went that night.";
             case "pell_house/CaneTip" -> "Tilly's spare, worn flat on one side. Carried, you hear a cane find the next door before you do.";
             case "holy_rabbit/Knife" -> "Father wasted nothing he killed.";
             case "holy_rabbit/RabbitFoot" -> "Carried, things fall your way a little more often.";
             case "mapping_interior/Bead" -> "One bead, found where he walked. Kept close, it watches over yours.";
             case "crimson_hall/Cylinder0", "crimson_hall/Cylinder1", "crimson_hall/Cylinder2" -> "Played, the voices keep the house. Nothing else comes near it.";
-            case "devils_rock/Diary7" -> "Read it at night, away from the House. The last page knows the way home.";
+            case "devils_rock/Diary7" -> "Read it at night, out in your world. The last page knows the way home.";
             case "usher/RegisterLeaf" -> "Your name among those carried down. The dead read it too.";
             case "elk_lot/Cap" -> "Worn, the herd takes you for one of its own.";
             case "plain/Photo" -> "Held still, nothing far off can keep its eyes on you. The bird waited the same way.";
-            case "borrasca/Compass" -> "She kept it close so she could find her way back. Away from the House it points to where you last fell; inside, to where lost things are kept.";
+            case "borrasca/Compass" -> "She kept it close so she could find her way back. Out in your world it points to where you last fell; inside, to where lost things are kept.";
             case "borrasca/Comic" -> "Patrick's. She had only got halfway through it.";
-            case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall away from the House, what is in your hand stays with you.";
+            case "borrasca/Patch" -> "Her name, sewn in. Once a day, if you fall out in your world, what is in your hand stays with you.";
             case "polybius/ServiceKey" -> "A small round key on a ring, with a paper tag: FREE PLAY. At a crafting table, with planks, a pane of glass and redstone, it opens a cabinet of your own.";
             case "last_orders/Chalk" -> "The house chalk, worn hollow on one side. At a crafting table, with wool, planks and iron, it makes a table of your own.";
             case "last_orders/Darts" -> "Three darts in a tin, their flights flattened from years in a pocket. At a crafting table, with string, planks and a target, it makes a board of your own.";
@@ -152,8 +152,8 @@ public final class Keepsakes {
         lines.add(Component.literal(line).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
         s.set(net.minecraft.core.component.DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lines));
     }
-    /** Their own world: anywhere outside the House's dimensions. */
-    public static boolean ownWorld(ServerPlayer p) { return !HouseDimensions.isHouseDimension(p.level().dimension()); }
+    /** Their own world: anywhere outside the House's dimensions, and never a neighbour's world that is not theirs (HouseDimensions.ownWorld). */
+    public static boolean ownWorld(ServerPlayer p) { return HouseDimensions.ownWorld(p.level()); }
 
     // ------------------------------------------------------------------
     // Carried and worn
@@ -294,13 +294,13 @@ public final class Keepsakes {
     // The diary's last page
     // ------------------------------------------------------------------
 
-    /** Read at night in their world: which way and how far to their bed. */
+    /** Read at night in their world: which way and how far to their home bed (HomeBed). */
     public static String diary(ServerPlayer p) {
         long time = p.serverLevel().getDayTime() % 24000L;
         if (!ownWorld(p) || time < 13000 || time >= 23000) return null;
-        var bed = p.getRespawnPosition();
+        var bed = io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);
         String line;
-        if (bed == null || !p.getRespawnDimension().equals(p.level().dimension())) line = "On the last page, under the last entry: \"I don't know the way from here.\"";
+        if (bed == null || !p.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)) line = "On the last page, under the last entry: \"I don't know the way from here.\"";
         else {
             var d = bed.getCenter().subtract(p.position());
             int blocks = (int) Math.round(Math.hypot(d.x, d.z));
@@ -454,7 +454,7 @@ public final class Keepsakes {
      */
     public static final float CHALK_FALL = 6;
     @SubscribeEvent(priority = EventPriority.LOW) public static void chalkFall(net.neoforged.neoforge.event.entity.living.LivingFallEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || e.getDistance() <= 3 || e.getDistance() > CHALK_FALL || e.getDamageMultiplier() <= 0 || ownWorld(p)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p) || e.getDistance() <= 3 || e.getDistance() > CHALK_FALL || e.getDamageMultiplier() <= 0 || !HouseDimensions.isHouseDimension(p.level().dimension())) return;
         if (!carries(p, LabyrinthPlace.FEET_UP, FeetUp.CHALK_KEY)) return;
         e.setDamageMultiplier(0);var own = record(p);own.putInt("ChalkKept", own.getInt("ChalkKept") + 1);save(p, own);
     }
@@ -464,7 +464,7 @@ public final class Keepsakes {
         if (e.isCanceled() || !(e.getEntity() instanceof ServerPlayer p) || p.level().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY)) return;
         sew(p);
     }
-    /** Dying away from the House with the patch, once a House day: what is in their main hand stays with them. */
+    /** Dying in their own world with the patch, once a House day: what is in their main hand stays with them. */
     public static ItemStack sew(ServerPlayer p) {
         if (!ownWorld(p) || !carries(p, LabyrinthPlace.BORRASCA, "Patch")) return ItemStack.EMPTY;
         var hand = p.getMainHandItem();

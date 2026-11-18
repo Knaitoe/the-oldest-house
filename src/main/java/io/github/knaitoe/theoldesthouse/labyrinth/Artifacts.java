@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -68,8 +69,9 @@ import org.joml.Vector3f;
  *
  * <p>Each is given once, when the room's ending is recorded ({@link WitnessAccount}), and only on the ending that earns it. Like
  * the keepsakes ({@link Keepsakes}) it is marked as its reader's own, works only for them, is offerable to the Mother and adds no
- * Witness credit. "Their world" means outside the House; the House's own dark, hunters and rooms are never touched by an effect
- * that is only for their world.
+ * Witness credit. "Their world" means outside the House, and never a neighbour's world that is not theirs ({@link #ownWorld},
+ * docs/NEIGHBOURS.md R3); the House's own dark, hunters and rooms, and a neighbour's Games, are never touched by an effect that
+ * is only for their world.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Artifacts {
@@ -151,7 +153,8 @@ public final class Artifacts {
         return t.hasUUID(LiteraryVignettes.OWNER)&&t.getUUID(LiteraryVignettes.OWNER).equals(p.getUUID());
     }
     public static boolean carries(Player p,Kind k){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(mine(inv.getItem(i),p,k))return true;return false;}
-    public static boolean ownWorld(Entity e){return !HouseDimensions.isHouseDimension(e.level().dimension());}
+    /** Their own world: never the House, nor a neighbour's world that is not theirs (HouseDimensions.ownWorld). Read on both sides. */
+    public static boolean ownWorld(Entity e){return HouseDimensions.ownWorld(e.level());}
     /** Only the game's own creatures are driven back, slowed or shown; the House's are its own. */
     static boolean vanilla(Entity e){return BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getNamespace().equals("minecraft");}
 
@@ -187,7 +190,8 @@ public final class Artifacts {
         var inst=p.getAttribute(attribute);if(inst==null)return;boolean has=inst.hasModifier(id);
         if(on&&!has)inst.addTransientModifier(new AttributeModifier(id,amount,op));else if(!on&&has)inst.removeModifier(id);
     }
-    static boolean nearBed(ServerPlayer p){var bed=p.getRespawnPosition();return bed!=null&&p.getRespawnDimension().equals(p.level().dimension())&&bed.distSqr(p.blockPosition())<=BED_REACH*BED_REACH;}
+    /** Near their home bed (HomeBed), in the Overworld. */
+    static boolean nearBed(ServerPlayer p){var bed=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);return bed!=null&&p.level().dimension().equals(Level.OVERWORLD)&&bed.distSqr(p.blockPosition())<=BED_REACH*BED_REACH;}
 
     /** The doll keeps phantoms away; in their world the number card keeps witches off and the essay page the drowned. */
     @SubscribeEvent public static void phantoms(PlayerSpawnPhantomsEvent e){if(carries(e.getEntity(),Kind.DOLL))e.setResult(PlayerSpawnPhantomsEvent.Result.DENY);}
@@ -208,7 +212,7 @@ public final class Artifacts {
     }
     /** The scrawled note: in their world, no zombie breaks a door within sixteen blocks of them. */
     @SubscribeEvent public static void doors(LivingDestroyBlockEvent e){
-        if(!(e.getEntity() instanceof Zombie)||!(e.getState().getBlock() instanceof DoorBlock)||!(e.getEntity().level() instanceof ServerLevel l)||HouseDimensions.isHouseDimension(l.dimension()))return;
+        if(!(e.getEntity() instanceof Zombie)||!(e.getState().getBlock() instanceof DoorBlock)||!(e.getEntity().level() instanceof ServerLevel l)||!HouseDimensions.ownWorld(l))return;
         for(var p:l.players())if(p.blockPosition().distSqr(e.getPos())<=SCRAWL_REACH*SCRAWL_REACH&&carries(p,Kind.SCRAWL)){e.setCanceled(true);return;}
     }
     /** The receipt: in their world, food fills one more point. */
@@ -225,9 +229,12 @@ public final class Artifacts {
         if((effect==MobEffects.BLINDNESS.value()||effect==MobEffects.DARKNESS.value())&&mine(p.getOffhandItem(),p,Kind.BLINDFOLD)
                 ||(effect==MobEffects.POISON.value()||effect==MobEffects.HUNGER.value())&&carries(p,Kind.INVITATION))e.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
-    /** The hotel's key tag: waking in their world after a night's sleep, they are fed in full; the front-door key, mended. */
+    /**
+     * The hotel's key tag: waking in their world after a night's sleep, they are fed in full; the front-door key, mended. Only a night
+     * in a bed of their own or one of the manor's (HomeBed): a night where they were put does not undo what that place asks of them.
+     */
     @SubscribeEvent public static void woke(PlayerWakeUpEvent e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||e.wakeImmediately()||e.updateLevel()||!ownWorld(p))return;
+        if(!(e.getEntity() instanceof ServerPlayer p)||e.wakeImmediately()||e.updateLevel()||!ownWorld(p)||!io.github.knaitoe.theoldesthouse.opening.HomeBed.asleepAtHomeOrInManor(p))return;
         if(carries(p,Kind.KEY_TAG)){var food=p.getFoodData();food.setFoodLevel(20);food.setSaturation(Math.max(food.getSaturationLevel(),10F));}
         // The front-door key: they wake mended.
         if(carries(p,Kind.DOOR_KEY))p.setHealth(p.getMaxHealth());
@@ -265,8 +272,12 @@ public final class Artifacts {
         return t.hasUUID(ClassicsVignettes.OWNER)&&t.getUUID(ClassicsVignettes.OWNER).equals(p.getUUID());
     }
     public static boolean planchetteWakes(ServerPlayer p){return (planchette(p.getMainHandItem(),p)||planchette(p.getOffhandItem(),p))&&heardHerOut(p);}
-    /** The nearest thing within sixteen blocks that means them harm and that they cannot see: in the House only what is hunting them. */
+    /**
+     * The nearest thing within sixteen blocks that means them harm and that they cannot see: in the House only what is hunting them.
+     * Nothing in a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3): it points at nothing that stalks them in the Games.
+     */
     public static Mob unseenHarm(ServerPlayer p){
+        if(Neighbours.notOwnWorld(p.level()))return null;
         boolean world=ownWorld(p);Mob best=null;double near=Double.MAX_VALUE;var look=p.getViewVector(1);
         for(var m:p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(PLANCHETTE_REACH),m->m.isAlive()&&(m.getTarget()==p||world&&m instanceof Enemy))){
             var to=m.getEyePosition().subtract(p.getEyePosition());double d=to.lengthSqr();
@@ -307,8 +318,8 @@ public final class Artifacts {
     /** One who would not leave, asleep in their own bed on one of the family's nights, long enough to be woken. */
     public static boolean familyWakes(ServerPlayer p,long day){
         if(!p.isSleeping()||!refused(p)||!familyNight(p.getUUID(),day))return false;
-        var bed=p.getRespawnPosition();var at=p.getSleepingPos().orElse(null);
-        if(bed==null||at==null||!bed.equals(at)||!p.getRespawnDimension().equals(p.level().dimension()))return false;
+        var at=p.getSleepingPos().orElse(null);
+        if(at==null||!p.level().dimension().equals(Level.OVERWORLD)||!io.github.knaitoe.theoldesthouse.opening.HomeBed.isHome(p,at))return false;
         var own=LabyrinthData.get(p.server).stateEntry(STATE,p.getStringUUID());return own.getLong("WokenDay")!=day+1;
     }
     /** Woken before dawn by someone moving about in the house: no night passes. Never hurt. */

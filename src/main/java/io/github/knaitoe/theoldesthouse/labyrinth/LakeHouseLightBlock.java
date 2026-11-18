@@ -57,8 +57,9 @@ public final class LakeHouseLightBlock extends BaseEntityBlock implements Simple
             if(on&&p instanceof ServerPlayer r&&l.getGameTime()%2400==0)ThreeFingers.hear(r,net.minecraft.sounds.SoundEvents.WET_GRASS_STEP,at.below(),.22F,.75F);
         }
     }
+    /** A death in the reader's own world arms the lamp: never one in the House, nor in a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3). */
     @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST)
-    public static void death(LivingDeathEvent e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||HouseDimensions.isHouseDimension(p.level().dimension()))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(own.contains("HomeLight")){own.putBoolean("LightRespawn",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE,own);}}
+    public static void death(LivingDeathEvent e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!HouseDimensions.ownWorld(p.level()))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(own.contains("HomeLight")){own.putBoolean("LightRespawn",true);LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE,own);}}
     @SubscribeEvent(priority=net.neoforged.bus.api.EventPriority.LOWEST)
     public static void respawnPosition(PlayerRespawnPositionEvent e){
         if(!(e.getEntity() instanceof ServerPlayer p)||e.isFromEndFight())return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),LakeHouse.PLACE);if(!own.getBoolean("LightRespawn"))return;
