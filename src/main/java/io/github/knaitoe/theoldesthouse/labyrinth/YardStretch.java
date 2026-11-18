@@ -29,7 +29,7 @@ public final class YardStretch {
 
     /** A gray place of the yard. */
     public static boolean place(@Nullable LabyrinthPlace p) {
-        return p != null && (YardConnectors.any(p) || YardCrossings.is(p) || TruantYard.is(p) || YardStock.is(p) || YardWind.is(p) || YardStorm.is(p)
+        return p != null && (HallwayVariants.yard(p) || YardConnectors.any(p) || YardCrossings.is(p) || TruantYard.is(p) || YardStock.is(p) || YardWind.is(p) || YardStorm.is(p)
                 || p == LabyrinthPlace.YARD_REUNION || p == LabyrinthPlace.YARD_SURVEY || p == LabyrinthPlace.YARD_SURVEY_DEEP
                 || p == LabyrinthPlace.YARD_FLOOD || p == LabyrinthPlace.SPHINX_FIELD);
     }
