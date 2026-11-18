@@ -189,6 +189,15 @@ public final class ElkFollows {
         hint(p,gate!=null?"A gate stands open this morning, and one of your animals is gone. The prints by the gate are not a cow's.":"One of your animals is gone this morning. The prints in the mud are not a cow's.");
         return true;
     }
+    /**
+     * The day's dawn for a reader she follows: the morning in kind, once a day while anything is owed. In a neighbour's world that is not
+     * theirs (docs/NEIGHBOURS.md R3) it waits, and the day is not marked, so it comes at their first dawn back. True if the morning came.
+     */
+    public static boolean dawn(ServerPlayer p,int day){
+        var own=own(p);
+        if(own.getInt(IN_KIND)<=0||own.getInt(IN_KIND_DAY)==day||io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level()))return false;
+        own.putInt(IN_KIND_DAY,day);save(p,own);morning(p);return true;
+    }
     static boolean penned(ServerLevel l,BlockPos at){
         for(var c:BlockPos.betweenClosed(at.offset(-4,-1,-4),at.offset(4,1,4))){var s=l.getBlockState(c);if(s.is(BlockTags.FENCES)||s.is(BlockTags.FENCE_GATES))return true;}return false;
     }
@@ -203,7 +212,7 @@ public final class ElkFollows {
         for(var p:server.getPlayerList().getPlayers()){
             if(!p.isAlive()||p.isSpectator()){ANCHOR.remove(p.getUUID());continue;}
             var own=own(p);if(!own.getBoolean(FOLLOWS)){ANCHOR.remove(p.getUUID());continue;}
-            if(dawn&&own.getInt(IN_KIND)>0&&own.getInt(IN_KIND_DAY)!=day){own.putInt(IN_KIND_DAY,day);save(p,own);morning(p);}
+            if(dawn)dawn(p,day);
             field(p);
         }
     }
