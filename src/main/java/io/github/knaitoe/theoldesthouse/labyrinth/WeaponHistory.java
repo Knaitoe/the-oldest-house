@@ -4,7 +4,9 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseKeeping;
 import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
@@ -14,6 +16,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.Tags;
@@ -26,9 +29,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * Identity belongs to the physical weapon; a House duplicate never inherits it. A weapon is the game's own kind, or another mod's in
  * NeoForge's common tags {@code #c:tools/melee_weapon} and {@code #c:tools/ranged_weapon}, so another mod's weapon can be the reader's
  * favourite and be carried to the Minotaur (the owner, 17 November: "Yes, to favorite weapon"; docs/NEIGHBOURS.md). A use is a vanilla
- * attack, a vanilla bow, crossbow or trident drawn or thrown, or any other blow a weapon deals for the reader, by the damage source.
- * Nothing else is: a weapon let fall is no use, and the game's item statistics (which count every block mined with a tool) are never
- * read (docs/NEIGHBOURS.md R7).
+ * attack that goes through, a vanilla bow, crossbow or trident drawn or thrown, or any other blow a weapon deals for the reader, by the
+ * damage source, once a tick however many it hurts. Nothing else is: a weapon let fall is no use, and the game's item statistics (which
+ * count every block mined with a tool) are never read (docs/NEIGHBOURS.md R7).
  */
 @EventBusSubscriber(modid = TheOldestHouse.MOD_ID)
 public final class WeaponHistory {
@@ -36,6 +39,9 @@ public final class WeaponHistory {
     private static final String STATE = "weapon_history_049";
     /** The tick of each reader's last vanilla attack, already counted, so its own damage is not counted again. */
     private static final Map<UUID, Long> SWUNG = new HashMap<>();
+    /** The weapons each reader's blows were counted for on the tick of their last counted blow: a blow that hurts several is one use. */
+    private static final Map<UUID, Blows> BLOWN = new HashMap<>();
+    private record Blows(long tick, Set<UUID> weapons) {}
     private WeaponHistory() {}
     public static boolean weapon(ItemStack stack) {
         Item item = stack.getItem();
@@ -92,7 +98,8 @@ public final class WeaponHistory {
     public static boolean wounds(ItemStack stack, @Nullable UUID original) { return original != null && original.equals(identity(stack)); }
     /** Nothing is recorded in a neighbour's world that is not the reader's own (docs/NEIGHBOURS.md R3): the House does not watch there. */
     public static boolean watched(ServerPlayer player) { return !Neighbours.notOwnWorld(player.level()); }
-    @SubscribeEvent public static void attack(AttackEntityEvent event) {
+    /** Last, so an attack another listener cancels (another mod's weapon taking the swing for its own) is no use and marks nothing. */
+    @SubscribeEvent(priority = EventPriority.LOWEST) public static void attack(AttackEntityEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         SWUNG.put(player.getUUID(), player.level().getGameTime());
         if (watched(player) && !(event.getTarget() instanceof MinotaurEntity)) record(player, player.getMainHandItem(), 1);
@@ -105,7 +112,8 @@ public final class WeaponHistory {
      * Any other blow a weapon deals for the reader is a use, by its damage source: another mod's melee blow, whose source carries the
      * reader's main hand, and a projectile, whose source carries the weapon that loosed it. Not the damage of a vanilla attack, its sweep
      * included, which was counted as the attack on the same tick; not a vanilla bow's, crossbow's or trident's, counted when drawn or
-     * thrown; not thorns, which the reader's armour deals.
+     * thrown; not thorns, which the reader's armour deals. A weapon's blow is counted once a tick, however many it hurts (another mod's
+     * sweep, a thrust through two, a volley), as a vanilla sweep is one attack.
      */
     @SubscribeEvent public static void blow(LivingDamageEvent.Post event) {
         DamageSource source = event.getSource();
@@ -115,7 +123,15 @@ public final class WeaponHistory {
         if (weapon == null || weapon.isEmpty() || !weapon(weapon) || drawn(weapon)) return;
         if (source.getDirectEntity() == player && Long.valueOf(player.level().getGameTime()).equals(SWUNG.get(player.getUUID()))) return;
         ItemStack dealt = dealtBy(player, weapon);
-        if (dealt != null) record(player, dealt, 1);
+        if (dealt == null) return;
+        long now = player.level().getGameTime();
+        Blows blows = BLOWN.get(player.getUUID());
+        if (blows == null || blows.tick() != now) BLOWN.put(player.getUUID(), blows = new Blows(now, new HashSet<>()));
+        UUID counted = identity(dealt);
+        if (counted != null && blows.weapons().contains(counted)) return;
+        record(player, dealt, 1);
+        counted = identity(dealt);
+        if (counted != null) blows.weapons().add(counted);
     }
     /**
      * The reader's own stack that dealt a blow with {@code weapon}: the one in a hand that is it, or is the same thing wear aside (a
@@ -135,5 +151,8 @@ public final class WeaponHistory {
         }
         return known ? weapon : null;
     }
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { SWUNG.remove(event.getEntity().getUUID()); }
+    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
+        SWUNG.remove(event.getEntity().getUUID());
+        BLOWN.remove(event.getEntity().getUUID());
+    }
 }

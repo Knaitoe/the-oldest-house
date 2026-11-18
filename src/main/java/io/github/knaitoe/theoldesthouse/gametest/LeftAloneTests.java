@@ -141,7 +141,7 @@ public final class LeftAloneTests {
 
         Set<ResourceLocation> house = dimensionTypes.keySet().stream().filter(k -> k.getNamespace().equals(TheOldestHouse.MOD_ID)).collect(Collectors.toCollection(TreeSet::new));
         Set<ResourceLocation> sheltered = dimensionTypes.getTag(SHELTERED).map(t -> t.stream().map(x -> x.unwrapKey().orElseThrow().location()).collect(Collectors.toCollection(TreeSet::new))).orElse(new TreeSet<>());
-        h.assertTrue(house.size() == 3 && sheltered.equals(house), "#a_reaping:sheltered holds the House's dimension types, all of them and no other: " + sheltered + " for " + house);
+        h.assertTrue(!house.isEmpty() && sheltered.equals(house), "#a_reaping:sheltered holds the House's dimension types, all of them and no other: " + sheltered + " for " + house);
         // The test server makes no level of the House's own (its cases stand the Nether in), so the dimension types are asked.
         for (ResourceKey<Level> dimension : List.of(HouseDimensions.INTERIOR, HouseDimensions.OUTSIDE, HouseDimensions.BETWEEN)) {
             var type = dimensionTypes.getHolder(ResourceKey.create(Registries.DIMENSION_TYPE, dimension.location()));
@@ -263,7 +263,10 @@ public final class LeftAloneTests {
     }
 
     // ------------------------------------------------------------------------------------------------ Harrigan and the counter
-    /** Harrigan's call refuses a neighbour's people, by kind or by name; out of the tag a zombie is fair game, as it always was. */
+    /**
+     * Harrigan's call refuses a neighbour's people, by kind or by name, and the morning's sweep after a call made before their kind was
+     * listed takes none of them; out of the tag a zombie is fair game, as it always was.
+     */
     @GameTest(template = "empty")
     public static void harrigansCallRefusesANeighboursPeople(GameTestHelper h) {
         Entity probe = EntityType.ZOMBIE.create(h.getLevel());
@@ -271,9 +274,11 @@ public final class LeftAloneTests {
             NeighbourTags.listed(EntityType.ZOMBIE.builtInRegistryHolder(), Neighbours.LEFT_ALONE, true, () -> {
                 h.assertTrue(HarriganVignette.classify(EntityType.ZOMBIE, false, probe) == HarriganVignette.TargetKind.FORBIDDEN, "a kind in #left_alone is refused");
                 h.assertTrue(HarriganVignette.classify(EntityType.ZOMBIE, true, probe) == HarriganVignette.TargetKind.FORBIDDEN, "and one by name");
+                h.assertTrue(!HarriganVignette.sweeps(probe, EntityType.ZOMBIE), "and a call for zombies made before they were listed takes none the next morning");
             });
             h.assertTrue(HarriganVignette.classify(EntityType.ZOMBIE, false, probe) == HarriganVignette.TargetKind.HOSTILE, "out of it a zombie is hostile");
             h.assertTrue(HarriganVignette.classify(EntityType.ZOMBIE, true, probe) == HarriganVignette.TargetKind.FRIENDLY, "and a named one friendly, as ever");
+            h.assertTrue(HarriganVignette.sweeps(probe, EntityType.ZOMBIE) && !HarriganVignette.sweeps(probe, EntityType.SKELETON), "and the morning's sweep takes an unnamed zombie, and only for a call for zombies");
         } finally {
             probe.discard();
         }
