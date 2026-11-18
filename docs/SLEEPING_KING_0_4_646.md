@@ -30,7 +30,9 @@ Which way a reader left is kept as `KingCourtWay`:
 1. **The Cat's way.** The Cat's head is in the tree on the lawn in the east file (`KingSite.CAT_TREE`). A hand on it opens the panel,
    and the Cat offers to go and be looked at instead (`KingCalledCat`). For thirty seconds its head is over the court, and the court
    looks up at it and argues whether a head with no body can be taken off. Nobody is held while they do. A reader is then what the land
-   makes of them, and as a sort of thing goes out between the guard.
+   makes of them, and as a sort of thing goes out between the guard. (Run 1739: with two readers the one speaking in the argument
+   kept looking up at the Cat, not at the reader ten blocks off. Whoever is speaking in it now turns to the nearest reader within
+   sixteen blocks for the line; the others keep looking up at the Cat.)
 2. **The bottle's way.** The hold makes a reader a thing, and a swallow from the bottle takes them a step under that. A sort of thing
    goes out between the guard without the Cat.
 3. **The cards' way.** A bite of the cake takes a held reader to too much of a thing. Talking to the court then offers one more answer,
