@@ -734,7 +734,8 @@ public final class TheListSite {
         set(l,b,w,1,s-2,fit(Kind.WINDOW,Direction.WEST,0));set(l,b,w+1,1,s-2,AIR);
         // Amber's room.
         set(l,b,AMBER_DESK,fit(Kind.AMBER,Direction.NORTH,3));set(l,b,AMBER_DESK.getX(),0,AMBER_DESK.getZ()-1,fit(Kind.TABLE,Direction.SOUTH,1));
-        set(l,b,AMBER_DESK.getX(),1,s,fit(Kind.AMBER,Direction.SOUTH,6));set(l,b,AMBER_DESK.getX(),1,s-1,AIR);
+        // Her window is two panes over the desk and beside it, so from Seventh she can be seen at it (0.4.707).
+        for(int x=AMBER_DESK.getX();x<=AMBER_DESK.getX()+1;x++){set(l,b,x,1,s,fit(Kind.AMBER,Direction.SOUTH,6));set(l,b,x,1,s-1,AIR);}
         set(l,b,8,1,s,fit(Kind.WINDOW,Direction.SOUTH,0));set(l,b,8,1,s-1,AIR);
         set(l,b,e,1,s-4,fit(Kind.WINDOW,Direction.EAST,0));set(l,b,e-1,1,s-4,AIR);
         set(l,b,e-2,0,s-5,fit(Kind.BED,Direction.WEST,0));set(l,b,e-3,0,s-5,fit(Kind.BED,Direction.WEST,1));

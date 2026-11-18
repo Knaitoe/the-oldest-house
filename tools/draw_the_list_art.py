@@ -4363,6 +4363,8 @@ def textures():
     out['entity/the_list/sack.png'] = sack_skin()
     out['item/list_sack.png'] = sack_item()
     out['gui/list_sack_inside.png'] = sack_inside()
+    # 0.4.707: the page Amber holds up to her window.
+    out['entity/the_list/page.png'] = page()
     return out
 
 
@@ -4469,6 +4471,49 @@ def sack_item():
         0 <= x + dx < 16 and 0 <= y + dy < 16 and px[x + dx, y + dy][3] > 0 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
     for x, y in edge:
         dot(im, x, y, '#4a3a24')
+    return im
+
+
+def page():
+    """A page out of a spiral notebook, held up to a window: torn along the top where the spiral was, faintly ruled, a margin, and
+    three lines of thick marker capitals. The page fills twelve texels by fifteen; the rest is clear."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(7071)
+    paper = '#ebe5d2'
+    for y in range(1, 16):
+        for x in range(2, 14):
+            dot(im, x, y, shade(paper, rnd.randint(-3, 3)))
+    # Torn out along the spiral: the top row ragged, a nub of torn paper left between each hole.
+    for x in range(2, 14):
+        if x % 3 == 1:
+            im.putpixel((x, 1), (0, 0, 0, 0))
+        elif x % 3 == 2:
+            dot(im, x, 1, shade(paper, -14))
+    # Faint rules and the margin.
+    for y in (5, 8, 11, 14):
+        for x in range(2, 14):
+            dot(im, x, y, mix(paper, '#9fb2c8', 0.35))
+    for y in range(2, 16):
+        dot(im, 4, y, mix(paper, '#c87a7a', 0.3))
+    # Marker capitals, two texels high, a texel between letters and two between words; the pen pressed hard, a letter's inside left.
+    ink = '#16130f'
+    for y, words in ((3, (3, 2)), (6, (2, 3)), (9, (4,)), (12, (2, 1))):
+        x = 5
+        for n in words:
+            for _ in range(n):
+                if x + 1 > 12:
+                    break
+                for dy in (0, 1):
+                    dot(im, x, y + dy, ink)
+                if rnd.random() < 0.6 and x + 1 <= 12:
+                    dot(im, x + 1, y + rnd.randint(0, 1), ink)
+                x += 2
+            x += 1
+    # Its right and lower edges a shade down, so it stands off the glass.
+    for y in range(2, 16):
+        dot(im, 13, y, shade(im.getpixel((13, y))[:3], -12) if im.getpixel((13, y))[3] else paper)
+    for x in range(2, 14):
+        dot(im, x, 15, shade(im.getpixel((x, 15))[:3], -12))
     return im
 
 
@@ -4737,6 +4782,9 @@ def main():
     inside = images['gui/list_sack_inside.png']
     assert sum(inside.getpixel((x, y))[3] == 0 for x in range(32, 96) for y in (24, 32, 40)) > 120
     assert images['block/the_list/door_broken_lower.png'].getpixel((11, 4))[3] == 0
+    # 0.4.707: Amber's page is torn at the top, clear outside the sheet, and written on.
+    pg = images['entity/the_list/page.png']
+    assert pg.getpixel((0, 0))[3] == 0 and pg.getpixel((15, 8))[3] == 0 and pg.getpixel((4, 1))[3] == 0 and ink(pg, '#16130f') > 14
     # The tower spells the town across three plates.
     assert all(ink(images[f'block/the_list/tank_{i}.png'], '#2a3e6e') > 8 for i in (1, 2, 3))
     # Cotton stands with its bolls open; the bare stalks have none.

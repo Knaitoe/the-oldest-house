@@ -129,7 +129,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.LAST_SEEN&&!LastSeen.dealable(d,p))return false;
         // 0.4.672: Fallow is not dealt until part 2.
         if(place==LabyrinthPlace.FALLOW&&!Fallow.dealable(d,p))return false;
-        // 0.4.699: The list is not dealt until night one.
+        // 0.4.707: The list is dealt from ten crossings down, to a reader who has not had night one.
         if(place==LabyrinthPlace.THE_LIST&&!TheList.dealable(d,p))return false;
         // 0.4.218: the street is dealt only to a reader who has a companion following them.
         if(place==LabyrinthPlace.REPLACEMENT&&!Replacement.hasCompanion(d,p))return false;

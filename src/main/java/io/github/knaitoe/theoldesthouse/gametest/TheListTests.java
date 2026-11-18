@@ -43,11 +43,13 @@ public final class TheListTests {
     private TheListTests(){}
     private static final LabyrinthPlace P=LabyrinthPlace.THE_LIST;
     private static LiteraryTests.Fixture active;
-    /** Every case shares the one town: a night an earlier case left going (one that failed partway) is ended first. */
+    /** Every case shares the one town: a night an earlier case left going (one that failed partway) is ended first. 0.4.707: and the
+     * town is held quiet, so that no night begins round the case's readers coming in; a case that wants one lets it go or begins it. */
     private static LiteraryTests.Fixture place(GameTestHelper h){
         done();active=new LiteraryTests.Fixture(h);
         var l=active.level(P);var b=active.base(P);
         if(TheListNight.phase(l.getServer(),b)!=TheListNight.NONE)TheListNight.end(l,b);
+        TheListNight.quiet(l.getServer(),b,true);
         return active;
     }
     private static void done(){if(active!=null){active.close();active=null;}}
@@ -134,7 +136,7 @@ public final class TheListTests {
      * A body walks from the House's door through the kitchen, the hall and the front room, but not into the reader's room or out of the
      * front door while they are shut. Out of the front door it walks to South Ninth, the empty house's step, Main Street, the drive-in's lot,
      * the gin road and its crossing, the gin yard, the foot of the tower and the playa; not into a neighbor's house or a store. It is midnight;
-     * the House does not deal it in this part; the account's title fits.
+     * the House deals it only from ten crossings down; the account's title fits.
      */
     @GameTest(template="empty",batch="the_list_place",timeoutTicks=2400)
     public static void lamesaAtMidnight(GameTestHelper h){
@@ -206,7 +208,8 @@ public final class TheListTests {
             open(l,b,TheListSite.FRONT_DOOR,false);
             // The hour, the dealing and the title.
             h.assertTrue(SceneClock.at(f.origin,b.offset(0,0,-60),HouseDimensions.OUTSIDE)==9,"midnight in Lamesa");
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P)||TheList.dealable(f.data(),java.util.UUID.randomUUID()),"the House does not deal it until night one");
+            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P)||TheList.dealable(f.data(),java.util.UUID.randomUUID()),"the House deals it only from ten crossings down");
+            h.assertTrue(TheList.dealable(TheList.DEPTH,0)&&!TheList.dealable(TheList.DEPTH-1,0)&&!TheList.dealable(TheList.DEPTH+5,1),"from ten down, to a reader who has not had night one");
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
             var paper=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);String text=String.join(" ",paper.pages().stream().map(pg->pg.raw().getString()).toList());
             h.assertTrue(text.contains("Plate in the oven")&&text.contains("Lights off")&&paper.pages().size()==4,"the pad by the phone, four notes: "+text);
@@ -789,6 +792,69 @@ public final class TheListTests {
             h.assertTrue(p.getForcedPose()==null&&TheListBody.walking(p),"up, with the body's walk");
             TheListNight.end(l,b);TheListBody.end(p);
             h.assertTrue(TheListNight.phase(s,b)==TheListNight.NONE&&doorShut(l,b)&&fitting(l,b,TheListNight.LAMP,Kind.SEED,6)&&fitting(l,b,TheListNight.BULB,Kind.FIXTURE,3),"ended, the seed house put back");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.707 (docs/THE_LIST_0_4_707.md), part 3b: night one, home. With the town let go, night one begins round the first reader through
+     * the door and a second reader coming in has the same night. After the cut the one who went in comes to under the tower, and Amber is
+     * up at her window with a page out of a notebook: in the street in front of her house the one who went in, the sack on, is told about
+     * the sack, the other reader is asked what happened, and both are given the second page; a knuckle on her glass gets her one word.
+     * The one who went in lies down on their own bed: the black falls on both readers, it is first light, and each is told it in their own
+     * words; each record keeps night one and where they were; neither is dealt the town again until night two; the House's door is theirs;
+     * Amber is back at her desk with nothing in her hands.
+     */
+    @GameTest(template="empty",batch="the_list_home",timeoutTicks=3600)
+    public static void nightOneHome(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        TheListNight.quiet(s,b,false);
+        var p=f.player("list_home",P);var peer=f.player("list_home_peer",P);
+        List<String> seen=new ArrayList<>(),peerSeen=new ArrayList<>();
+        h.startSequence().thenExecute(()->{
+            h.assertTrue(p.getUUID().equals(TheListNight.slasher(s,b))&&TheListNight.phase(s,b)==TheListNight.PARTY,"night one begins round the first reader through the door");
+            h.assertTrue(SceneInstances.copyable(P)&&SceneInstances.party(P)==TheList.PARTY&&TheList.PARTY==5,"the town has copies, five readers to a town");
+            TheListNight.jump(l,b,TheListNight.AFTER);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.has(p)&&TheListBody.down(p)==0&&TheListNight.since(s,b)>TheListNight.WAKE,"waiting for the one who went in to come to and get up"))
+        .thenExecute(()->{
+            h.assertTrue(TheListSack.worn(p),"the sack is on");
+            f.at(p,P,TheListNight.WINDOW.getX()+.5,0,TheListSite.AMBER_S+5.5);f.at(peer,P,TheListNight.WINDOW.getX()+3.5,0,TheListSite.AMBER_S+6.5);
+            cues(p);cues(peer);
+        }).thenWaitUntil(()->{
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(amber!=null&&amber.blockPosition().equals(b.offset(TheListNight.AT_WINDOW))&&amber.getMainHandItem().is(net.minecraft.world.item.Items.PAPER),"waiting for Amber at her window with a page");
+            h.assertTrue(l.noCollision(amber,amber.getBoundingBox().deflate(.05)),"Amber stands clear of her desk and her wall");
+        }).thenWaitUntil(()->{
+            seen.addAll(cues(p));peerSeen.addAll(cues(peer));
+            h.assertTrue(seen.contains(TheListTexts.PAGE_SACK)&&peerSeen.contains(TheListTexts.PAGE_WHAT),"waiting for the first pages: "+seen+" / "+peerSeen);
+            h.assertTrue(seen.contains(TheListTexts.PAGE_TOMORROW)&&peerSeen.contains(TheListTexts.PAGE_TOMORROW),"waiting for the second pages");
+        }).thenExecute(()->{
+            h.assertFalse(seen.contains(TheListTexts.PAGE_WHAT)||peerSeen.contains(TheListTexts.PAGE_SACK),"each reader's pages are their own");
+            h.assertTrue(f.own(p,P).getInt("Pages1")==2&&f.own(peer,P).getInt("Pages1")==2,"each record keeps the pages");
+            f.click(peer,P,TheListNight.WINDOW);
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(TheListTexts.AMBER_AFTER.equals(amber.getCustomName().getString()),"a knuckle on her glass: "+amber.getCustomName().getString());
+            h.assertFalse(TheListNight.phase(s,b)==TheListNight.DONE,"no first light yet");
+            sent(p);sent(peer);
+            f.click(p,P,TheListSite.BED_HEAD);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.DONE&&TheListNight.time(s,b)==TheListNight.LIGHT,"lying down on their own bed, it is first light");
+            var mine=sent(p);var theirs=sent(peer);
+            h.assertTrue(faded(mine)&&faded(theirs),"the black falls on both readers");
+            var clock=night(theirs);h.assertTrue(clock!=null&&clock.time()==TheListNight.LIGHT&&clock.rate()==0,"first light's hour is sent, standing: "+clock);
+            h.assertTrue(f.own(p,P).getInt("Night")==1&&"bed".equals(f.own(p,P).getString("Light1")),"the one who went in keeps night one, in bed: "+f.own(p,P));
+            h.assertTrue(f.own(peer,P).getInt("Night")==1&&"town".equals(f.own(peer,P).getString("Light1")),"the other reader keeps night one, out in the town: "+f.own(peer,P));
+            h.assertFalse(TheList.dealable(TheList.DEPTH+3,f.own(p,P).getInt("Night"))||TheList.dealable(TheList.DEPTH+3,f.own(peer,P).getInt("Night")),"neither is dealt the town again until night two");
+            h.assertFalse(LiteraryVignettes.retreatLocked(p)||LiteraryVignettes.retreatLocked(peer),"the House's door is theirs");
+            seen.clear();peerSeen.clear();
+        }).thenWaitUntil(()->{
+            seen.addAll(cues(p));peerSeen.addAll(cues(peer));
+            h.assertTrue(seen.contains(TheListTexts.LIGHT_BED)&&peerSeen.contains(TheListTexts.LIGHT_OTHER),"waiting to be told it is light: "+seen+" / "+peerSeen);
+        }).thenWaitUntil(()->{
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(amber!=null&&amber.blockPosition().equals(b.offset(TheListPeople.AT[TheListPeople.AMBER]))&&amber.getMainHandItem().isEmpty(),"waiting for Amber back at her desk, the page put down");
+        }).thenExecute(()->{
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.DONE,"first light holds");
+            TheListNight.end(l,b);TheListBody.end(p);
             done();h.succeed();
         });
     }

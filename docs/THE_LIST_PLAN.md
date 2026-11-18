@@ -64,7 +64,7 @@ the narrator's part and has their own House body; nobody in the town carries the
 | 1b | **The rest of the town and its people.** The school's field, the pasture, the neighborhood and Amber's house; everyone at their places by night, each with their own line. Not dealt. |
 | 2 | **The slasher's body.** The walk that never loses ground, doors that give, hearts through walls, the get-up, the mask on and off, the pull. Tried on its own before any night uses it. |
 | 3a | **Night one, to the water tower** (0.4.706). The party at the stock tank, the ride, the seed house, the auger, coming to under the tower with the sack on. Not dealt. |
-| 3b | **Night one, home** (0.4.707). The walk home, Amber at her window, first light, the other readers' night. Dealt from here. |
+| 3b | **Night one, home** (0.4.707, built: `docs/THE_LIST_0_4_707.md`). The walk home, Amber at her window, first light, the other readers' night. Dealt from here. |
 | 4a | **The hunt and the catch.** Names as people (they run, hide, lock doors, call for help and fight back), hearts that give them away, the staged hold and breaking free, the hay hook and its finish, blood, wounds and stains, bodies left and found. |
 | 4b–4e | **The set-piece finishes, by place:** the gin (the press, the auger), the drive-in (the fryer, a car door), the pasture (a pumpjack, the stock tank), the school (the bleachers, a sprinkler line). Each is a staged scene of its own, built for its place. |
 | 5 | **Night two.** Amber's den, the tapes, the tests on the field and the tower, the notebook's rules (some of them wrong), the first name going out. |

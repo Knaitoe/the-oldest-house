@@ -65,6 +65,18 @@ public final class TheListTexts {
     /** After the cut: the one who went in, coming to; anybody else, where they stood. */
     public static final String CAME_TO="You come to under the water tower, face down in the caliche.",
         ALONE="Nobody is left. The trucks are gone. The seed house door is shut, the lamp over it out.";
+    /** 0.4.707, the walk home: Amber's pages at her window, the first for the one who went in (the sack on, or off) or for anyone else,
+     * and the second for everyone. What she says through the glass if knocked for. */
+    public static final String PAGE_SACK="Amber holds a page against her window. In marker: YOU'RE WEARING A FEED SACK.",
+        PAGE_FACE="Amber holds a page against her window. In marker: YOU LOOK LIKE YOU GOT DUG UP.",
+        PAGE_WHAT="Amber holds a page against her window. In marker: WHAT HAPPENED OUT THERE?",
+        PAGE_TOMORROW="She turns it over, writes, and holds it up again: TOMORROW. BACK DOOR. AFTER TEN.",
+        AMBER_AFTER="Go home. And don't knock on the front tomorrow.";
+    /** 0.4.707, first light: in bed, in the house, still out, and for anyone else in town. */
+    public static final String LIGHT_BED="First light at the blinds. Your shoes are still on, and there is caliche on the sheet.",
+        LIGHT_HOUSE="It gets light, and you are home, still on your feet. Down the street a sprinkler comes on.",
+        LIGHT_OUT="It gets light, and you are not home yet. A screen door bangs somewhere down the street.",
+        LIGHT_OTHER="It gets light over the gin. Sprinklers come on, and a dog starts up somewhere.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
