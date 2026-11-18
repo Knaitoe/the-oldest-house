@@ -99,7 +99,8 @@ public final class PlaceForYouOlder {
             default->"That isn't right. I met you tonight, at the table. That's the part that happened.";});
         PlaceForYou.line(p,h,who,shared(own).equals("tonight")?"I liked sitting across from you. That part happened. I don't know where she got the rest."
             :"I liked being there with you. That part happened. I don't know where she got the rest.");
-        Talk.ask(p,Talk.reply("Then let's have something of our own.",q->said(q,h,who,"close","All right. Something of our own. Starting tonight."))
+        // 0.4.695: what kind of something is settled between them before the exchange closes.
+        Talk.ask(p,Talk.reply("Then let's have something of our own.",q->{PlaceForYou.line(q,h,who,"All right. Something of our own. Starting tonight.");settle(q,h,"close");PlaceForYouBond.ask(q,h,who);})
             ,Talk.reply("I'd like to be your friend. That's all.",q->said(q,h,who,"friend","That's plenty, in here."))
             ,Talk.reply("None of that happened. She put me there.",q->said(q,h,who,"challenge","I know. I can hear her doing it while I talk. I'm sorry."))
             ,Talk.reply("I need some room from all this.",q->said(q,h,who,"space","Then take it. I'll go down first. I won't ask you up again."))
@@ -108,9 +109,12 @@ public final class PlaceForYouOlder {
             ,PlaceForYouBelief.remember(h,who));
     }
     static void said(ServerPlayer p,PlaceForYou.House h,String who,String said,String answer){
-        PlaceForYou.line(p,h,who,answer);h.sinkAt=(int)h.tick;
-        PlaceForYou.edit(p,o->{o.putInt("OlderStage",3);o.putString("OlderSaid",said);});
+        PlaceForYou.line(p,h,who,answer);settle(p,h,said);
         Talk.end(p);cue(p,"Your picture is still up between theirs.");
+    }
+    /** The landing's answer recorded, without closing the exchange. */
+    static void settle(ServerPlayer p,PlaceForYou.House h,String said){
+        h.sinkAt=(int)h.tick;PlaceForYou.edit(p,o->{o.putInt("OlderStage",3);o.putString("OlderSaid",said);});
     }
 
     // ------------------------------------------------------------------------------------------------ the picture

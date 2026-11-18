@@ -328,6 +328,8 @@ public final class PlaceForYou {
         PlaceForYouPromise.tick(l,h,p,own(p),r);
         // 0.4.694: the believed past and the reassurance.
         PlaceForYouBelief.tick(l,h,p,own(p),r);
+        // 0.4.695: what was settled on the landing doesn't decide where the guide goes.
+        PlaceForYouBond.tick(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -654,7 +656,7 @@ public final class PlaceForYou {
         if(held==PlaceForYouRegistry.BAG&&(who.equals("Kit")||who.equals("Mara"))){giveBag(p,h,who);return;}
         // 0.4.692: the letter back in Kit's hand; the letter and the porch.
         if(held==PlaceForYouRegistry.LETTER&&who.equals("Kit")){PlaceForYouLetter.give(p,h);return;}
-        if(PlaceForYouLetter.talk(p,h,who,a)||PlaceForYouPromise.talk(p,h,who,a)||PlaceForYouBelief.talk(p,h,who,a))return;
+        if(PlaceForYouLetter.talk(p,h,who,a)||PlaceForYouPromise.talk(p,h,who,a)||PlaceForYouBelief.talk(p,h,who,a)||PlaceForYouBond.talk(p,h,who,a))return;
         if(Talk.resume(p,"first_"+who)||Talk.resume(p,Talk.key(p)))return;
         switch(ch){
             case APPROACH->{if(who.equals("Alex"))Talk.begin(p,"alex_road","Alex");else if(who.equals("Kit"))Talk.begin(p,"kit_porch","Kit");else{above(h,a,"Come in, come in.");return;}
