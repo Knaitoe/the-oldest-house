@@ -7,7 +7,7 @@ The source is in copyright, so only its shape is taken, as with every source: on
 teenager who comes back from a prank gone wrong as a slasher; a best friend who knows the genre's rules, humors them at first, then
 tests the new body with them and tries to keep the people on the list alive; the pull between stopping it and wanting to be
 remembered for it; a final girl; the whole thing told years later as a memoir. No prose, names, characters, events or ending are
-taken. The town is real (Lamesa); everyone in it here is original.
+taken. The town is real (Lamesa). The people carry the novel's names (owner, 17 November); what each says and does here is new.
 
 ## The idea
 
@@ -34,17 +34,27 @@ Lamesa, built outdoors, four nights of one week in July 1989. Caliche roads, mes
 Everything a body can be taken through is built to be used: doors that lock, closets, crawlspaces, cars with keys, the gin's
 machines.
 
-## The people (original)
+## The people (the novel's names; everything they say and do is new)
 
-- **Dee,** the friend. Knows every slasher on the shelf by heart. Thinks the reader is joking, then that the reader is sick, then
-  that the tapes were right. Fills the notebook in as the two of them test things. Spends the nights getting names out of town.
-  What the reader does decides what she does next: help, plead, hide the names from the reader, or give up on the reader.
-- **The five on the list,** the ones at the prank: the one who planned it, the one who filmed it on a camcorder, the one who
-  laughed, the one who tried to stop it too late, the one who drove. Each has a home, a routine, a car or a bike, a way of hiding
-  and a way of fighting back.
-- **Shay,** the final girl. Was not at the prank. Watches the town, works out the rules on her own, and on the fourth night is ready.
-- **The town's adults:** a deputy, the night manager at the drive-in, the video store clerk, the names' parents. On the third night
-  they come out with flashlights.
+The reader takes the narrator's part, so no one in the town is called Tolly Driver; the face on the sack is the reader's own.
+
+- **Amber Big Plume Dennison,** the friend. Knows every slasher on the shelf by heart. Thinks the reader is joking, then that the
+  reader is sick, then that the tapes were right. Fills the notebook in as the two of them test things. Spends the nights getting
+  names out of town. What the reader does decides what she does next: help, plead, hide the names from the reader, or give up on
+  the reader.
+- **The five on the list,** the ones at the prank, each with a home, a routine, a car or a bike, a way of hiding and a way of
+  fighting back:
+  - **Deek Masterson,** who planned it. Out of school a year, still at every party.
+  - **Mel Boanerges,** who filmed it on her father's camcorder. Twirls baton in the marching band.
+  - **Lesley Cantor,** who laughed. Band, clarinet.
+  - **Shannon Larkweather,** who drove. Band, and the only one of the five with her own car.
+  - **Wes Stripling,** who tried to stop it, too late.
+- **Stace Goodkin,** the final girl. Was not at the prank. Watches the town, works out the rules on her own, and on the fourth
+  night is ready.
+- **Jenna Gonzales,** night manager at the drive-in, and **Janice Dickerson,** behind the counter at the video store. Neither is on
+  the list.
+- **The town's adults:** a deputy, the names' parents. On the third night they come out with flashlights. None of them is named.
+- **Justin Joss** is not used.
 
 ## The four nights
 
@@ -53,15 +63,15 @@ Four visits, a night each, a week apart in the town. A night left early is resum
 1. **The prank.** The party at the stock tank. The five talk the reader into the seed house at the gin "to see something". The door
    shuts, the light goes, the auger turns. Nothing. The reader comes to under the water tower at three in the morning with a feed
    sack over their head: eyeholes cut, a face drawn on it in grease pencil by someone at the party, the reader's own face (their
-   House body's hair and look). Walking home, every heart in town is audible. Dee is at her window.
-2. **The rules.** Dee's den, the tapes, the notebook. She does not believe it, and humors it: tests on the football field and the
+   House body's hair and look). Walking home, every heart in town is audible. Amber is at her window.
+2. **The rules.** Amber's den, the tapes, the notebook. She does not believe it, and humors it: tests on the football field and the
    tower (can't run, never falls behind; the locked door; going off the catwalk and getting up; which heart is whose through a
    wall). Each test writes a rule into the notebook; some rules are wrong. Then the first name goes out for a burger, and the pull
    begins.
-3. **What comes back.** The hay hook from the seed house. Thrown into the playa, buried, locked in Dee's trunk: it is on the
+3. **What comes back.** The hay hook from the seed house. Thrown into the playa, buried, locked in Amber's trunk: it is on the
    reader's bed the next time they look. The town knows by now: flyers with the drawn face, a curfew, the deputy's car on the
    caliche roads. Whoever is left on the list hides together in the field house, with the field's lights on.
-4. **The final girl.** Shay has her plan, built on the rules she believes (some true, some not). The night ends at the gin, the
+4. **The final girl.** Stace has her plan, built on the rules she believes (some true, some not). The night ends at the gin, the
    tower or the playa, depending on who is left and where they ran.
 
 ## The slasher's body
@@ -89,20 +99,20 @@ Visceral and staged, the way the tapes do them, in the House's sixteen-pixel loo
   the pumpjack's beam; the drive-in's fryer; a car door; the stock tank; the bleachers; a sprinkler line. Each is a two-body
   animation built for it, with blood thrown at sixteen pixels, wounds painted onto the name's own skin, and stains left on the
   blocks.
-- **After.** The body stays where it fell, posed by how it died, for the night. It is found: the town, Dee and the other names
+- **After.** The body stays where it fell, posed by how it died, for the night. It is found: the town, Amber and the other names
   react, and the next night's town knows.
-- **The friend.** Dee is never on the list. She can be in the way.
+- **The friend.** Amber is never on the list. She can be in the way.
 
 ## With more than one reader
 
-Asymmetric. The first reader through the door is the one who comes back wrong. Every reader after them, up to four, is on Dee's
+Asymmetric. The first reader through the door is the one who comes back wrong. Every reader after them, up to four, is on Amber's
 side: they wake in her den on the second night with the notebook and the tapes.
 
-- **Dee's side:** warn names (names listen to them, and not to the masked one), drive them out of town, hide them, lock and
+- **Amber's side:** warn names (names listen to them, and not to the masked one), drive them out of town, hide them, lock and
   barricade doors, keep a name's heart quiet, knock the slasher down to buy time, and test the rules for real.
-- **The slasher's kills of readers:** a reader on Dee's side can be caught and finished like anyone. They are out for the rest of
-  that night and wake in Dee's den the next night, with everything they carried. It is not a House death.
-- **Alone:** Dee does all of this herself, as a person in the scene.
+- **The slasher's kills of readers:** a reader on Amber's side can be caught and finished like anyone. They are out for the rest of
+  that night and wake in Amber's den the next night, with everything they carried. It is not a House death.
+- **Alone:** Amber does all of this herself, as a person in the scene.
 - **Spectators** see everything and count as watchers; they are never on the list and never caught.
 
 ## The House's read
@@ -120,7 +130,7 @@ One Witness source, the memory kind (the account is the memoir). Every ending re
 - **The list.** Every name dead by the last dawn. The town has a story about it now.
 - **Everyone gone.** Every name out of town alive by the last dawn. The pull has nobody; the reader walks into the playa as it
   lightens.
-- **Stopped.** Shay finishes it, and the reader lets her, or does not get up in time.
+- **Stopped.** Stace finishes it, and the reader lets her, or does not get up in time.
 - **The bus.** The reader is on the dawn bus with the mask in the bag.
 - **The road,** as everywhere.
 
@@ -128,7 +138,7 @@ Most nights end somewhere between: some names dead, some gone. The account says 
 
 ## The account
 
-Written years later, in the reader's own voice, from what the reader did. It names the five and Shay and Dee and says what happened
+Written years later, in the reader's own voice, from what the reader did. It names the five and Stace and Amber and says what happened
 to each; it records the face on the sack, the rules that held and the ones that did not, and the last dawn. It never says what any
 of it proves about the reader.
 
@@ -146,15 +156,15 @@ speakers, the VCR.
 2. The slasher's body: walk, doors, hearts, get-up, mask, pull.
 3. Night one.
 4. The kills: hunt, catch, finishes, blood and wounds, bodies and the town's finding them.
-5. Night two: Dee, the tapes, the tests, the notebook, the first name out.
+5. Night two: Amber, the tapes, the tests, the notebook, the first name out.
 6. Night three: the hook that comes back, the town's hunt, the field house.
-7. Night four: Shay and the endings.
-8. Dee's side for other readers.
+7. Night four: Stace and the endings.
+8. Amber's side for other readers.
 9. The account, the Witness line, the keepsake and the aftermath.
 
 ## Decided (owner, 17 November)
 
 1. **Names:** the book's own. The town is Lamesa and its people are the novel's; their names are taken from the book when it is
-   built, and only the names: what each says and does here is written new. The original names above are placeholders until then.
+   built, and only the names: what each says and does here is written new. Placed above under "The people".
 2. **The finishes:** longer set pieces, not two-to-four-second animations. Each is a staged scene of its own, built for its place.
 3. **Order:** after A Place for You is finished.
