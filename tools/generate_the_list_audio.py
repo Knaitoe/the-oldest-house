@@ -54,6 +54,8 @@ ROWS = {
     'riser': ('A pipe goes in', 16),
     'fryer': ('Hot oil roars', 24),
     'burner': ('Burners catch', 12),
+    'car_door': ('A car door slams', 32),
+    'car_open': ('A car door opens', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -644,11 +646,45 @@ def burner():
     return click + gas + thump + roar
 
 
+def car_door():
+    # A heavy old sedan's door swung shut hard: the latch's double click as it catches, a deep hollow thud of steel against the frame
+    # with the body ringing low under it, the glass in the door rattling once, and the car rocking on its springs.
+    n = seconds(1.1)
+    t = times(n)
+    x = t - .012
+    on = x >= 0
+    latch = band(rng.standard_normal(n), 2500, 8000) * (np.exp(-np.clip(x, 0, None) / .004) + .6 * np.exp(-np.clip(x - .018, 0, None) / .004) * (x >= .018)) * on * 1.1
+    thud = np.sin(2 * np.pi * (95 - 35 * np.clip(x / .12, 0, 1)) * x) * np.exp(-np.clip(x, 0, None) / .07) * on * 1.4
+    thud += band(rng.standard_normal(n), 60, 500) * np.exp(-np.clip(x, 0, None) / .045) * on * .9
+    ring = np.zeros(n)
+    for f, level, decay in ((182, .5, .22), (347, .32, .16), (611, .18, .1)):
+        ring += np.sin(2 * np.pi * f * x + rng.uniform(0, 6.28)) * np.exp(-np.clip(x, 0, None) / decay) * on * level
+    y = t - .05
+    rattle = band(rng.standard_normal(n), 1500, 5000) * (rng.random(n) < .25) * np.exp(-np.clip(y, 0, None) / .04) * (y >= 0) * .35
+    z = t - .12
+    rock = band(rng.standard_normal(n), 120, 600) * (1 + np.sin(2 * np.pi * 3 * t)) * np.exp(-np.clip(z, 0, None) / .25) * (z >= 0) * .12
+    return latch + thud + ring * .6 + rattle + rock
+
+
+def car_open():
+    # The handle pulled and the latch let go with a clack, and the door swung out on its old hinges with a short dry creak.
+    n = seconds(.8)
+    t = times(n)
+    clack = band(rng.standard_normal(n), 1800, 7000) * np.exp(-t / .008) * 1.0
+    clack += np.sin(2 * np.pi * 420 * t) * np.exp(-t / .02) * .4
+    x = t - .1
+    f0 = 520 + 180 * np.sin(np.pi * np.clip(x / .4, 0, 1))
+    phase = 2 * np.pi * np.cumsum(f0) / RATE
+    creak = (np.sign(np.sin(phase)) * .5 + np.sin(phase)) * (rng.random(n) < .5)
+    creak = band(creak, 400, 2600) * np.sin(np.pi * np.clip(x / .4, 0, 1)) * (x >= 0) * (x < .4) * .45
+    return clack + creak
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
           'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
           'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack,
-          'valve': valve, 'riser': riser, 'fryer': fryer, 'burner': burner}
+          'valve': valve, 'riser': riser, 'fryer': fryer, 'burner': burner, 'car_door': car_door, 'car_open': car_open}
 
 
 def main():

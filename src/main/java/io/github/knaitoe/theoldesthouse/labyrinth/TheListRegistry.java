@@ -84,6 +84,8 @@ public final class TheListRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> VALVE=sound("the_list.valve"),RISER=sound("the_list.riser");
     /** 0.4.714, the fryer: hot oil roaring and spitting, and its burners catching. */
     public static final DeferredHolder<SoundEvent,SoundEvent> FRYER=sound("the_list.fryer"),BURNER=sound("the_list.burner");
+    /** 0.4.715: the drive-in car's door, slammed (shut, or on someone) and opened. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> CAR_DOOR=sound("the_list.car_door"),CAR_OPEN=sound("the_list.car_open");
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     /** 0.4.709: blood thrown off the hay hook and dripping, drawn by the client (TheListBloodParticles). */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> BLOOD=

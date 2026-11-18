@@ -193,6 +193,27 @@ public final class TheListTexts {
     public static final String[] FOUND_FRYER_BODY=FOUND_BODY.clone();
     static{FOUND_FRYER_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the fryer.";}
     public static final String FOUND_FRYER="%s is bent over the fryer, face down in the oil.";
+    // ------------------------------------------------------------------------------------------------ 0.4.715: the car door
+    /** What each of the five says, forced down at the car with the head in at its door. */
+    public static final String[] DOOR=new String[TheListPeople.CAST];
+    static {
+        DOOR[TheListPeople.DEEK]="Not the door. Come on, not the door.";DOOR[TheListPeople.WES]="Get my head out! Get my head out of there!";
+        DOOR[TheListPeople.MEL]="Please. You'll break my neck.";DOOR[TheListPeople.LESLEY]="Whose car is this? Somebody's coming back for it!";
+        DOOR[TheListPeople.SHANNON]="Jenna! Jenna, I'm at the cars!";
+    }
+    /** To the slasher: forcing one of them down at the door, and each of the three slams. */
+    public static final String INTO_DOOR="You force %s down on the knees at the car and push the head in at the open door.";
+    public static final String[] SLAMS={"You slam the door. It stops on the head and swings back.","Again. Something gives against the frame.",
+        "Again. %s goes still."};
+    /** To anyone else's hand on one in the door, or on the door; and to anyone's hand on the door with one dead in it. */
+    public static final String DOOR_HELD="%s's head is caught in the car door.",CAR_STOPPED="The door won't shut. %s is in the way.";
+    /** To whoever opens or shuts the door, and to a hand anywhere else on the car. */
+    public static final String CAR_OPENED="The door swings open. Nobody's in the car.",CAR_SHUT="The door slams shut.",
+        CAR_LOOK="A car in its stall, its lights off. Nobody's in it.";
+    /** One dead at the car, come across: by the rest of the five (Shannon's own line says where), and by a reader who is not the slasher. */
+    public static final String[] FOUND_CAR_BODY=FOUND_BODY.clone();
+    static{FOUND_CAR_BODY[TheListPeople.SHANNON]="That's %s. That's %s at the car.";}
+    public static final String FOUND_CAR="%s kneels at a car in the drive-in, the door shut on the head.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

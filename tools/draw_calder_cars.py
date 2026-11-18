@@ -7,6 +7,11 @@ car's paint (plain, and as its side has it, with the bright strip along the belt
 sedan's vinyl roof, the muscle car's striped top, glass, the dark inside of a car, chrome, the grille, a headlight and a tail light
 (both lit: a car here is never seen with them off), the tyre and its hubcap, the underside, and the pumpkins in the pickup's bed.
 
+0.4.715, The list's car door: the blue sedan also comes with its driver's door open. Its body is drawn again with the door cut out of
+its left side (the car's -z, the north side of one facing east), showing the car inside: the floor, the bench seat and its back, the
+wheel, the dash and the far side's lining; and the door is a model of its own, hinged at its front edge (HINGE), with its outside in
+the car's paint, its window, its handle, and its lining and armrest inside, which the game swings open by turning it about the hinge.
+
 A car is four and a half blocks long, and a model's piece may not reach more than a block outside its own block, so each car is two
 models, its front half and its back half, drawn by the game end to end (client/CarLook). No piece is longer than sixteen pixels
 either way: a longer one would have its picture stretched over it, and everything here is sixteen pixels to the block. So a car is
@@ -47,6 +52,11 @@ AXLE, RADIUS, HUB = 21, 5.5, 5.5
 FRONT, BACK, ACROSS = -10, 26, 8
 PAINT = {'wagon': '#c4b188', 'pickup': '#8c392c', 'sedan': '#2e4a3d', 'muscle': '#b5461f', 'blue': '#4f7391', 'white': '#d6d2c6'}
 SLIP = .05
+# 0.4.715: the blue sedan's driver's door, along the car between its back and front edges; where it hinges (x, z); and what is added to
+# the car's own x and z to put the door's model in a model's reach.
+DOOR_X = (-1, 13)
+HINGE = (13, -15)
+DOOR_DX, DOOR_DZ = 3, 24
 
 
 # ---------------------------------------------------------------------------------------------------------------- the pictures
@@ -155,6 +165,27 @@ def under():
     return new('#101012', 48111, 2)
 
 
+def doorcard():
+    """0.4.715: a door's lining: dark vinyl in panels, a seam round them, and the bright trim along its top."""
+    im = new('#262a33', 48114, 3)
+    for y in (4, 10):
+        fill(im, 0, y, 16, y + 1, '#1a1d24')
+    for x in (0, 8):
+        for y in range(4, 16):
+            dot(im, x, y, '#1a1d24')
+    fill(im, 0, 0, 16, 1, '#8e9196')
+    return im
+
+
+def seat():
+    """0.4.715: a bench seat's vinyl, tucked and rolled: pleats along it, each with a lighter crown."""
+    im = new('#2b2f3a', 48115, 3)
+    for x in range(0, 16, 4):
+        for y in range(16):
+            dot(im, x, y, '#1c1f27'); dot(im, x + 2, y, '#363b48')
+    return im
+
+
 def pumpkin():
     im = new('#d9731c', 48112, 4)
     for x in (0, 5, 10, 15):
@@ -180,7 +211,7 @@ def textures():
     out.update({DIR + 'muscle_top.png': striped('muscle', 48140), DIR + 'wood.png': wood(), DIR + 'vinyl.png': vinyl(), DIR + 'glass.png': glass(),
                 DIR + 'inside.png': inside(), DIR + 'chrome.png': chrome(), DIR + 'grille.png': grille(), DIR + 'headlight.png': headlight(),
                 DIR + 'taillight.png': taillight(), DIR + 'tyre.png': tyre(), DIR + 'hubcap.png': hubcap(), DIR + 'under.png': under(),
-                DIR + 'pumpkin.png': pumpkin(), DIR + 'bed.png': bed()})
+                DIR + 'pumpkin.png': pumpkin(), DIR + 'bed.png': bed(), DIR + 'doorcard.png': doorcard(), DIR + 'seat.png': seat()})
     return out
 
 
@@ -237,17 +268,32 @@ class Car:
         self.skin = {'side': kind + '_side', 'end': kind, 'top': kind, 'under': 'under'}
 
 
-def lower(c, top=13, back_top=None, back_from=None):
-    """The body below the windows: a tub between the wheels, and the sides with their arches cut out. The pickup's is lower behind its cab."""
+def lower(c, top=13, back_top=None, back_from=None, door=None):
+    """The body below the windows: a tub between the wheels, and the sides with their arches cut out. The pickup's is lower behind its cab.
+    0.4.715: with a door (its span along the car), the door is cut out of the left side: there only the sill is left, and the tub there
+    is the car's floor."""
     p, skin = c.body, c.skin
     spans = [(-L, L, top)] if back_from is None else [(-L, back_from, back_top), (back_from, L, top)]
     for x0, x1, t in spans:
-        box(p, [x0, 3.5, -10.5], [x1, t, 10.5], {'top': skin['top'], 'under': 'under', 'end': skin['end']})
+        if door:
+            # behind the door, the floor under it, and in front of it; their faces toward the open door are the car's dark inside
+            box(p, [x0, 3.5, -10.5], [door[0], t, 10.5], {'top': skin['top'], 'under': 'under', 'west': skin['end'], 'east': 'inside'})
+            box(p, [door[0], 3.5, -10.5], [door[1], 5, 10.5], {'top': 'inside', 'under': 'under'})
+            box(p, [door[1], 3.5, -10.5], [x1, t, 10.5], {'top': skin['top'], 'under': 'under', 'east': skin['end'], 'west': 'inside'})
+        else:
+            box(p, [x0, 3.5, -10.5], [x1, t, 10.5], {'top': skin['top'], 'under': 'under', 'end': skin['end']})
         cut = sorted({x0, x1} | {v for v in (-AXLE - 7, -AXLE + 7, AXLE - 7, AXLE + 7) if x0 < v < x1})
         for a, b in zip(cut, cut[1:]):
             arch = any(abs((a + b) / 2 - s * AXLE) < 7 for s in (-1, 1))
             if not arch or t > 11.5:
-                both(p, [a, 11.5 if arch else 3.5, 10.5], [b, t, W], skin)
+                lo, hi = [a, 11.5 if arch else 3.5, 10.5], [b, t, W]
+                if not door:
+                    both(p, lo, hi, skin); continue
+                box(p, lo, hi, skin)
+                left = sorted({a, b} | {v for v in door if a < v < b})
+                for u, v in zip(left, left[1:]):
+                    inside = door[0] <= u and v <= door[1]
+                    box(p, [u, lo[1], -W], [v, 5.5 if inside else hi[1], -10.5], skin)
     both(p, [-L - 1.5, 4, -W - .5], [-L, 6.5, 0], 'chrome')      # bumpers, in two halves so that neither is longer than a block
     both(p, [L, 4, -W - .5], [L + 1.5, 6.5, 0], 'chrome')
     box(p, [L, 7.5, -8.5], [L + .3, 12, 8.5], 'grille')
@@ -257,12 +303,20 @@ def lower(c, top=13, back_top=None, back_from=None):
         box(c.lit, [-L - .35, 8, z0], [-L, 11, z1], 'taillight')
 
 
-def cabin(c, x0, x1, back=3, front=3, roof=None, pillars=(), open_sides=False, low=13, mid=17.5, top=21.5):
-    """The glass, in two steps so that the screens lean; its pillars, in the car's paint and a little proud of the glass; and the roof."""
+def cabin(c, x0, x1, back=3, front=3, roof=None, pillars=(), open_sides=False, low=13, mid=17.5, top=21.5, door=None):
+    """The glass, in two steps so that the screens lean; its pillars, in the car's paint and a little proud of the glass; and the roof.
+    0.4.715: with a door, the glass over it has no left side, and nothing between it and the rest of the glass: it is the car's inside."""
     p, skin = c.body, c.skin
     pane = {'side': 'inside' if open_sides else 'glass', 'end': 'glass', 'top': 'glass'}
-    box(p, [x0, low, -14], [x1, mid, 14], pane)
-    box(p, [x0 + back, mid, -14], [x1 - front, top, 14], pane)
+    if door:
+        d0 = door[0] + .2                                  # a little in front of the pillar behind the door, so their ends never share a plane
+        box(p, [x0, low, -14], [d0, mid, 14], {'west': 'glass', 'side': 'glass', 'top': 'glass', 'east': 'inside'})
+        box(p, [d0, low, -14], [x1, mid, 14], {'south': 'glass', 'east': 'glass', 'top': 'glass'})
+        box(p, [x0 + back, mid, -14], [d0, top, 14], {'west': 'glass', 'side': 'glass', 'top': 'glass', 'east': 'inside'})
+        box(p, [d0, mid, -14], [x1 - front, top, 14], {'south': 'glass', 'east': 'glass', 'top': 'glass'})
+    else:
+        box(p, [x0, low, -14], [x1, mid, 14], pane)
+        box(p, [x0 + back, mid, -14], [x1 - front, top, 14], pane)
     for a, b, full in pillars:
         # A pillar at an end of the glass stands a little past it, and none of them ends level with the glass: no two faces share a plane.
         shift = .2 if b == x1 else -.2 if a == x0 else 0
@@ -297,10 +351,47 @@ def pickup(name='pickup', pumpkins=True):
     return c
 
 
-def sedan(name='sedan'):
-    c = Car(name); lower(c)
-    cabin(c, -17, 13, roof='vinyl', pillars=((11, 13, False), (-3, -1, True), (-17, -15, False)))
+def sedan(name='sedan', door=None):
+    c = Car(name); lower(c, door=door)
+    cabin(c, -17, 13, roof='vinyl', pillars=((11, 13, False), (-3, -1, True), (-17, -15, False)), door=door)
+    if door:
+        interior(c, door)
     return c
+
+
+def interior(c, door):
+    """0.4.715: what is seen through the open door: the far side's lining, the bench seat and its back, the wheel on its column, the
+    dash, and the inside of the windscreen and of the roof over the front."""
+    p = c.body; d0, d1 = door
+    box(p, [d0, 5, 10], [d1, 21.4, 10.3], {'north': 'inside'})                               # the far side, lined
+    box(p, [d0, 5, -10.4], [7, 8.5, 9.8], {'top': 'seat', 'north': 'seat', 'east': 'seat'})   # the bench
+    box(p, [-2.6, 8.5, -10.4], [0, 17, 9.8], {'top': 'seat', 'north': 'seat', 'east': 'seat'})  # its back
+    box(p, [8.4, 10.5, -8.6], [9, 16.5, -3.4], {'all': 'vinyl'})                              # the wheel, seen edge on
+    box(p, [9, 12.6, -6.4], [11, 13.4, -5.6], {'all': 'inside'})                              # its column
+    box(p, [11, 10.8, -13.8], [12.6, 13.5, 9.8], {'top': 'vinyl', 'west': 'inside', 'north': 'inside'})   # the dash
+    box(p, [12.6, 13.6, -13.9], [12.8, 17.4, 9.9], {'west': 'inside'})                      # the windscreen, from inside
+    box(p, [9.6, 17.6, -13.9], [9.8, 21.4, 9.9], {'west': 'inside'})
+    box(p, [9.8, 17.3, -13.9], [12.6, 17.45, 9.9], {'down': 'inside'})                       # the step of the screen, from under it
+
+
+def door_parts():
+    """0.4.715: the driver's door, shut, in the car's own space: its panel in the car's paint, the sill's dark band under it and the
+    belt's strip across it as the side has them; its window in its frame; its handle; inside, its lining and armrest."""
+    parts = []; d0, d1 = DOOR_X; skin = {'north': 'blue_side', 'south': 'doorcard', 'top': 'blue', 'end': 'blue', 'under': 'blue'}
+    box(parts, [d0, 5.5, -W], [d1, 13, -12.8], skin)
+    box(parts, [d0, 13, -14.6], [d0 + .8, 20.5, -13.4], {'all': 'blue'})                     # the frame behind the glass
+    box(parts, [d0 + .8, 13, -14.2], [d1 - 2, 17.5, -13.8], {'side': 'glass', 'end': 'glass', 'top': 'glass'})
+    box(parts, [d0 + .8, 17.5, -14.2], [d1 - 3, 20.5, -13.8], {'side': 'glass', 'end': 'glass'})
+    box(parts, [d0, 20.5, -14.6], [d1 - 3, 21.2, -13.4], {'all': 'blue'})                    # the frame over it
+    box(parts, [1.5, 10.5, -W - .35], [4.5, 11.2, -W], {'all': 'chrome'})                     # the handle
+    box(parts, [2, 9, -12.8], [9, 10, -11.8], {'all': 'vinyl'})                               # the armrest
+    box(parts, [8, 11, -12.8], [9, 11.6, -12.6], {'all': 'chrome'})                           # the lever inside
+    out = []
+    for e in parts:
+        f = dict(e); f['from'] = [round(e['from'][0] + DOOR_DX, 3), e['from'][1], round(e['from'][2] + DOOR_DZ, 3)]
+        f['to'] = [round(e['to'][0] + DOOR_DX, 3), e['to'][1], round(e['to'][2] + DOOR_DZ, 3)]
+        out.append(f)
+    return out
 
 
 def muscle():
@@ -358,6 +449,11 @@ def models():
         m[f'{kind}_back'] = model(shifted(c.body, False), kind)
         m[f'{kind}_lit_front'] = model(shifted(c.lit, True), 'headlight')
         m[f'{kind}_lit_back'] = model(shifted(c.lit, False), 'taillight')
+    # 0.4.715: the blue sedan with its driver's door open, and the door.
+    c = sedan('blue', door=DOOR_X)
+    m['blue_open_front'] = model(shifted(c.body, True), 'blue')
+    m['blue_open_back'] = model(shifted(c.body, False), 'blue')
+    m['blue_door'] = model(door_parts(), 'blue')
     m['wheel'] = model(wheel(4), 'tyre')
     m['wheel_wide'] = model(wheel(5), 'tyre')
     return m

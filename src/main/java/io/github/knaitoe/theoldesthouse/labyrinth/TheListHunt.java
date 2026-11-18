@@ -50,8 +50,9 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 public final class TheListHunt {
     private TheListHunt(){}
     /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
-     * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,DEAD}
+     * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; 0.4.714: in the fryer; 0.4.715: the head in a car's
+     * door; dead. */
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,DEAD}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
      * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
      * through the gap under the next, and hanging there dead. */
@@ -60,6 +61,9 @@ public final class TheListHunt {
     public static final int IMPALED=12,SPITTED=13;
     /** 0.4.714, the fryer: bent over it with the face held down in the oil, fighting its edges; and the same, still. */
     public static final int FRYING=14,FRIED=15;
+    /** 0.4.715, the car door: on the knees at a car with the head pushed in at its driver's door, the hands on the car's side pushing;
+     * and slumped there dead, the door shut on the head. */
+    public static final int DOORED=16,SLAMMED=17;
     /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
      * they hear it creeping, crouched. */
     public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
@@ -92,6 +96,10 @@ public final class TheListHunt {
     public static final int GUT=4;
     /** 0.4.714: the face, scalded in the fryer. */
     public static final int BURN=8;
+    /** 0.4.715: the back of the head, where the car door came down on it, from the second slam. */
+    public static final int CRUSH=16;
+    /** 0.4.715: how soon after one slam of the car door the next can come. */
+    public static final int SLAM_GAP=12;
     /** 0.4.711, the boards: how near a plank one held must be for the slasher to force them over it, and how soon after one stamp the
      * next counts. */
     public static final double BOARDS_REACH=3;
@@ -185,6 +193,9 @@ public final class TheListHunt {
         @Nullable BlockPos riser;int water;boolean flowed;
         /** 0.4.714: in the fryer, how long the hot oil has had them. */
         int fried;
+        /** 0.4.715: at the car door: whether it was there they were put (still so dead), how many slams and when the last landed, and
+         * whether one is on its way down. */
+        boolean doored,slamming;int slams,slamAt;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
@@ -251,6 +262,7 @@ public final class TheListHunt {
         doors(l,b);
         TheListSite.line(l,b);
         TheListSite.fryer(l,b);
+        TheListCar.reset(b);
         TheListPeople.ensure(l,b);
         var h=new Hunt(b);
         for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID()));}
@@ -270,6 +282,7 @@ public final class TheListHunt {
         tidy(l,b);
         TheListSite.line(l,b);
         TheListSite.fryer(l,b);
+        TheListCar.reset(b);
         TheListPeople.ensure(l,b);
     }
     /** The three doors as they were built: shut, and nobody's bolt on them. */
@@ -307,6 +320,7 @@ public final class TheListHunt {
                 case BOARDS->boarded(l,b,h,r,a,slashers,here);
                 case LINE->lined(l,b,h,r,a,here);
                 case FRYER->frying(l,b,h,r,a,slashers,here);
+                case CAR->dooring(l,b,h,r,a,slashers,here);
                 case DEAD->{}
             }
         }
@@ -477,6 +491,8 @@ public final class TheListHunt {
             case BOARDS->{if(p.getUUID().equals(r.holder))stamp(l,b,h,r,a,p,here);}
             // 0.4.713: one on the riser does not come off it.
             case LINE->TheList.cue(p,String.format(TheListTexts.PINNED,TheListTexts.NAMES[r.who]));
+            // 0.4.715: a blow on one with the head in the car door is another slam.
+            case CAR->{if(p.getUUID().equals(r.holder))slam(l,b,h,r,a,p);}
             default->{}
         }
     }
@@ -498,6 +514,8 @@ public final class TheListHunt {
         if(r.state==State.LINE){TheList.cue(p,String.format(TheListTexts.PINNED,name));return true;}
         // 0.4.714: one held in the fryer is the slasher's; anyone else's hand does not get them out.
         if(r.state==State.FRYER){if(!p.getUUID().equals(r.holder))TheList.cue(p,String.format(TheListTexts.FRYER_HELD,name));return true;}
+        // 0.4.715: one in the car door: the slasher's hand slams it again; anyone else's finds the head caught.
+        if(r.state==State.CAR){if(p.getUUID().equals(r.holder))slam(p.serverLevel(),b,h,r,a,p);else TheList.cue(p,String.format(TheListTexts.DOOR_HELD,name));return true;}
         if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return r.state!=State.CALM;
         var l=p.serverLevel();var here=TheList.readers(l,b);
         switch(r.state){
@@ -550,7 +568,9 @@ public final class TheListHunt {
     static void loose(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,@Nullable ServerPlayer s,List<ServerPlayer> here){
         var was=r.holder==null?null:l.getServer().getPlayerList().getPlayer(r.holder);
         if(was!=null)TheListBody.holding(was,false);
-        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;
+        // 0.4.715: out of the car door, it is pushed wide as they pull the head out.
+        if(r.doored&&TheListCar.angle(b)<TheListCar.OPEN-1)TheListCar.swing(b,null,new TheListCar.Leg(TheListCar.OPEN,4));
+        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;
         stop(l,a,TheListRegistry.STRUGGLE.get());
         if(s!=null){
             s.knockback(.8,a.getX()-s.getX(),a.getZ()-s.getZ());s.hurtMarked=true;
@@ -892,7 +912,13 @@ public final class TheListHunt {
         r.water++;
         int i=TheListLine.riserAt(r.riser);
         if(i>=0&&r.water%15==0&&r.water<TheListLine.BLEEDS){
-            var lands=TheListLine.falls(b,i,(int)l.getGameTime(),1.6+l.getRandom().nextDouble()*1.8);
+            // Where the spray carries it this time, on open ground it has not already reddened: the first such cell out along the
+            // head's arc from a random reach (round to the nearest if none is further out).
+            double from=1.6+l.getRandom().nextDouble()*1.8;var lands=TheListLine.falls(b,i,(int)l.getGameTime(),from);
+            for(double reach:new double[]{from,from+.9,from-.9,from+1.8,from-1.8,3.4,2.5,1.6}){
+                if(reach<1.2)continue;var at2=TheListLine.falls(b,i,(int)l.getGameTime(),reach);
+                if(fresh(l,at2)){lands=at2;break;}
+            }
             var d=lands.subtract(at);
             stain(l,b,lands,r.water>=30?SPATTER:DROPS,Direction.getNearest(d.x,0,d.z));
         }
@@ -993,6 +1019,125 @@ public final class TheListHunt {
         if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.715: the car door
+    /**
+     * A hand or a blow on the drive-in car's driver's door (TheListCar.hand). With one of the five in it: the slasher's slams it again,
+     * anyone else's finds the head caught. With one dead in it: it will not shut. Otherwise the slasher's, with hold of one of the five
+     * near it and the door standing open, forces them down at it with the head in. True when it was any of these; a shut door, or a
+     * hand that is none of them, is left to the door (TheListCar), which the slasher opens with the other hand.
+     */
+    public static boolean carDoor(ServerPlayer p,BlockPos b){
+        var h=HUNTS.get(b.asLong());if(h==null||p.isSpectator())return false;
+        var l=p.serverLevel();
+        for(var r:h.runners.values()){
+            if(r.state!=State.CAR||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(p.getUUID().equals(r.holder))slam(l,b,h,r,a,p);else TheList.cue(p,String.format(TheListTexts.DOOR_HELD,TheListTexts.NAMES[r.who]));
+            return true;
+        }
+        for(var r:h.runners.values())if(r.state==State.DEAD&&r.doored){TheList.cue(p,String.format(TheListTexts.CAR_STOPPED,TheListTexts.NAMES[r.who]));return true;}
+        if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return false;
+        for(var r:h.runners.values()){
+            if(!p.getUUID().equals(r.holder)||r.state!=State.HELD||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(a.position().distanceTo(TheListCar.kneel(b))>TheListCar.REACH||!TheListCar.open(b))return false;
+            doored(l,b,h,r,a,p,TheList.readers(l,b));
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Forced down at the car: on the knees beside its open driver's door, the head pushed in at it, at its back edge. Their words and a
+     * scream; anyone else on the list near enough hears it. What they had in hand they let fall. The hold is still the slasher's.
+     */
+    static void doored(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,List<ServerPlayer> here){
+        r.state=State.CAR;r.since=0;r.slams=0;r.slamAt=0;r.slamming=false;r.doored=true;r.dropped=true;r.killer=s.getUUID();
+        BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(DOORED);drop(a);
+        atDoor(b,a);
+        TheList.cue(s,String.format(TheListTexts.INTO_DOOR,TheListTexts.NAMES[r.who]));
+        say(a,r.who,TheListTexts.DOOR[r.who]);
+        scream(l,a);
+        heard(l,b,h,r,a,here);
+    }
+    /** Kept on the knees at the door, facing into the car. */
+    static void atDoor(BlockPos b,LiteraryActor a){
+        var at=TheListCar.kneel(b);float yaw=TheListCar.KNEEL_YAW;
+        a.moveTo(at.x,at.y,at.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /** How many times the car door has come down on one of them. */
+    public static int slams(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.slams;}
+    /**
+     * A slam, at least SLAM_GAP ticks after the last has landed and never while one is on its way: the door pulled back wide and
+     * slammed down on the head (TheListCar.slam). What it does is where it lands (slammed).
+     */
+    static void slam(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s){
+        if(r.slams>=3||r.slamming||r.slams>0&&r.since-r.slamAt<SLAM_GAP||TheListCar.swinging(b))return;
+        r.slamming=true;r.killer=s.getUUID();
+        s.swing(InteractionHand.MAIN_HAND,true);
+        var killer=s.getUUID();
+        TheListCar.slam(b,()->slammed(l,b,h,r,a,killer));
+    }
+    /**
+     * Where the door lands. The first: it stops on the head with a crack of steel and bounces, they jerk, and blood drops onto the lot
+     * under the door. The second: something gives against the frame, blood sprays down the car's side and onto the slasher, and the back
+     * of the head is marked. The third: still, the scream stopped, anyone else in town near enough told from which way; slumped at the
+     * car with the door shut on the head, a pool under it, the kill the slasher's.
+     */
+    static void slammed(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,UUID killer){
+        r.slamming=false;
+        if(HUNTS.get(b.asLong())!=h||r.state!=State.CAR||!a.isAlive())return;
+        r.slams++;r.slamAt=r.since;
+        // Under the door every time: the lot there is open, and each slam's blood thickens what the last left (stain).
+        var head=TheListCar.head(b);Vec3 ground=TheListCar.under(b);var here=TheList.readers(l,b);
+        var s=l.getServer().getPlayerList().getPlayer(killer);
+        l.playSound(null,head.x,head.y,head.z,TheListRegistry.CAR_DOOR.get(),SoundSource.NEUTRAL,1.4F,.78F+l.getRandom().nextFloat()*.08F);
+        var name=TheListTexts.NAMES[r.who];
+        // The blood runs in against the car's side, under the door.
+        var facing=Direction.SOUTH;
+        switch(r.slams){
+            case 1->{
+                if(s!=null)TheList.cue(s,TheListTexts.SLAMS[0]);
+                l.sendParticles(TheListRegistry.BLOOD.get(),head.x,head.y,head.z,6,.05,.05,.05,0);
+                if(ground!=null)stain(l,b,ground,DROPS,facing);
+            }
+            case 2->{
+                stop(l,a,TheListRegistry.STRUGGLE.get());
+                l.playSound(null,head.x,head.y,head.z,TheListRegistry.CRACK.get(),SoundSource.NEUTRAL,1F,.9F+l.getRandom().nextFloat()*.1F);
+                if(s!=null)TheList.cue(s,TheListTexts.SLAMS[1]);
+                for(int i=0;i<18;i++){var rand=l.getRandom();
+                    l.sendParticles(TheListRegistry.BLOOD.get(),head.x,head.y,head.z,0,(rand.nextDouble()-.5)*.3,-.05-rand.nextDouble()*.15,-rand.nextDouble()*.2,1);}
+                if(ground!=null)stain(l,b,ground,SPATTER,facing);
+                a.marks(a.marks()|CRUSH);
+                if(s!=null)TheListBody.bleed(s);
+            }
+            default->{
+                stop(l,a,TheListRegistry.SCREAM.get());stop(l,a,TheListRegistry.STRUGGLE.get());
+                if(s!=null)TheList.cue(s,String.format(TheListTexts.SLAMS[2],name));
+                for(var q:here)if(q!=s&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+                a.gesture(SLAMMED);atDoor(b,a);
+                if(ground!=null)pool(l,b,ground,facing);
+                if(s!=null)TheListBody.holding(s,false);
+                r.holder=null;a.holder(null);
+                r.state=State.DEAD;
+                TheListBody.killed(l.getServer(),killer,r.who);
+            }
+        }
+    }
+    /**
+     * At the car door, each tick: kept on the knees with the head in it. Before the second slam they fight it as they fight a grip,
+     * longer while the slasher looks at them, and after the first it takes them twice as long; after the second they cannot. Bleeding
+     * from the head after the first. The slasher gone from the town (or put down), they pull the head out and run, unless it is past that.
+     */
+    static void dooring(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers,List<ServerPlayer> here){
+        atDoor(b,a);
+        if(r.slams>=1&&r.since%4==0){var at=TheListCar.head(b);l.sendParticles(TheListRegistry.BLOOD.get(),at.x,at.y-.1,at.z,1,.04,.02,.04,0);}
+        if(r.slams>=2||r.slamming)return;
+        var s=holder(r,slashers);
+        if(s==null){loose(l,b,h,r,a,null,here);return;}
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+.6,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,1F,1F);
+        float off=Math.abs(Mth.wrapDegrees(yawTo(s.position(),a.position())-s.getYHeadRot()));
+        r.strength+=off>LOOK_AWAY?2:1;
+        if(r.strength>=STRENGTH[r.who]*(r.slams>=1?2:1))loose(l,b,h,r,a,s,here);
+    }
+
     // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
     /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
     static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
@@ -1004,6 +1149,14 @@ public final class TheListHunt {
      * is taken up. A heavier stain is never made lighter. Each is kept in the town's record with what was there, so that it is taken up
      * when the hunt ends, or at the next look after a restart.
      */
+    /** Open ground blood can land on and has not yet: an empty or plant-grown cell over a solid top. */
+    static boolean fresh(ServerLevel l,Vec3 at){
+        var cell=BlockPos.containing(at.x,at.y+.1,at.z);
+        if(!l.isLoaded(cell))return false;
+        var st=l.getBlockState(cell);
+        if(TheListBlock.is(st,TheListBlock.Kind.BLOOD)||!(st.isAir()||st.canBeReplaced()&&st.getFluidState().isEmpty()))return false;
+        var under=cell.below();return l.getBlockState(under).isFaceSturdy(l,under,Direction.UP);
+    }
     static void stain(ServerLevel l,BlockPos b,Vec3 at,int stage,Direction facing){
         var cell=BlockPos.containing(at.x,at.y+.1,at.z);
         if(!l.isLoaded(cell))return;
@@ -1063,23 +1216,24 @@ public final class TheListHunt {
         for(var d:h.runners.values()){
             if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
             // 0.4.711: one hung over a row of the stands is seen by the head under the next plank as well as the body on it.
-            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED;
-            // 0.4.714: one dead in the fryer is seen by the back, bent over it.
-            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
+            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED;
+            // 0.4.714: one dead in the fryer is seen by the back, bent over it; 0.4.715: one at the car door, by the back, slumped at it.
+            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
             for(var r:h.runners.values()){
                 if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
                 if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
                 if(!sight(l,a,a.getYHeadRot(),body,at,head,FINDS_BODY,75))continue;
                 r.saw|=1<<d.who;
                 if(r.state==State.CALM)run(l,b,h,r,a,here,true);
-                say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:fried?TheListTexts.FOUND_FRYER_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
+                say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:fried?TheListTexts.FOUND_FRYER_BODY[r.who]
+                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
             }
             for(var q:here){
                 if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
                 int seen=h.found.getOrDefault(q.getUUID(),0);if((seen&1<<d.who)!=0)continue;
                 if(!sight(l,q,q.getYHeadRot(),body,at,head,READER_FINDS,READER_LOOK))continue;
                 h.found.put(q.getUUID(),seen|1<<d.who);
-                TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:fried?TheListTexts.FOUND_FRYER:TheListTexts.FOUND_DEAD,name));
+                TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:fried?TheListTexts.FOUND_FRYER:slammed?TheListTexts.FOUND_CAR:TheListTexts.FOUND_DEAD,name));
                 TheListBody.found(q,d.who);
             }
         }
@@ -1125,7 +1279,7 @@ public final class TheListHunt {
     static void release(@Nullable ServerLevel l,Runner r){if(r.ticket!=null&&l!=null)l.getChunkSource().removeRegionTicket(TICKET,r.ticket,3,r.id);r.ticket=null;}
 
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){HUNTS.clear();}
-    public static void clearAll(){HUNTS.clear();}
+    public static void clearAll(){HUNTS.clear();TheListCar.clearAll();}
     /** A word for the operator: each one's state, way and step. */
     public static String status(BlockPos b){
         var h=HUNTS.get(b.asLong());if(h==null)return "no hunt";
