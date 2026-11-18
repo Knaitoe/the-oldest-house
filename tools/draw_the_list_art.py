@@ -4693,6 +4693,8 @@ def textures():
     out['entity/the_list/crush.png'] = crush()
     # 0.4.716: the side of the head, under the pumpjack's weight.
     out['entity/the_list/flat.png'] = flat()
+    # 0.4.717: the face of one drowned in the stock tank.
+    out['entity/the_list/drowned.png'] = drowned()
     for i in (1, 2, 3):
         out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
         out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
@@ -5342,6 +5344,45 @@ def flat():
         for y in range(25, 32):
             if rnd.random() < .35 + (y - 25) * .08:
                 dot(half, x, y, BLOOD_WET if rnd.random() < .6 else BLOOD_DRY)
+    return half.resize((512, 256), Image.NEAREST)
+
+
+def drowned():
+    # 0.4.717, the stock tank: the face of one held under until they drowned, over the five's own skins (512 by 256, painted two pixels
+    # to a dot). The face (u 8 to 16, v 8 to 16) gone dull and grey-blue at the lips, the eyes bloodshot, froth at the nose and the mouth
+    # and running from the corner of the mouth; the hair over the face, the top and the sides (the hat layer, u 40 to 64) soaked flat
+    # into dark wet strands that cling, dripping down onto the face.
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    rnd = random.Random(97171)
+    pallor, lip, froth, foam, vein, wet = '#8d9aa0', '#4a5566', '#e8ecea', '#c9d2d0', '#b8232a', '#1b1a1f'
+    for x in range(16, 32):
+        for y in range(16, 32):
+            if rnd.random() < .5:
+                dot(half, x, y, pallor, 110)
+    # Bloodshot: threads into the whites of both eyes.
+    for x, y in ((18, 24), (19, 24), (20, 25), (26, 24), (27, 25), (28, 24)):
+        if rnd.random() < .85:
+            dot(half, x, y, vein)
+    # The lips, and froth at the nose and the mouth, running from the corner of the mouth down the chin.
+    for x in range(20, 28):
+        dot(half, x, 28, lip)
+        if rnd.random() < .6:
+            dot(half, x, 29, lip, 180)
+    for x, y in ((22, 26), (23, 26), (24, 26), (25, 26), (21, 28), (22, 29), (24, 29), (26, 28), (27, 29), (27, 30), (28, 31), (20, 30)):
+        dot(half, x, y, froth if rnd.random() < .6 else foam)
+    # The hair soaked flat: dark strands on the hat layer's front, top and sides, clinging down over the brow, dripping.
+    for x0, x1, y0, y1, cover in ((80, 96, 16, 32, .0), (80, 96, 0, 16, .55), (64, 80, 16, 32, .45), (96, 112, 16, 32, .45), (112, 128, 16, 32, .5)):
+        for x in range(x0, x1):
+            for y in range(y0, y1):
+                if rnd.random() < cover:
+                    dot(half, x, y, wet, 200)
+    for x in range(80, 96):
+        n = rnd.randint(2, 7)
+        for y in range(16, 16 + n):
+            if rnd.random() < .8:
+                dot(half, x, y, wet, 220)
+    for x in (82, 86, 89, 93):
+        dot(half, x, 16 + 8, '#9fb4bd', 160)
     return half.resize((512, 256), Image.NEAREST)
 
 

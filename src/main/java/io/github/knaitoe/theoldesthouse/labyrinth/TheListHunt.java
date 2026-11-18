@@ -51,8 +51,8 @@ public final class TheListHunt {
     private TheListHunt(){}
     /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
      * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; 0.4.714: in the fryer; 0.4.715: the head in a car's
-     * door; 0.4.716: the head under a pumpjack's weight; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,DEAD}
+     * door; 0.4.716: the head under a pumpjack's weight; 0.4.717: held under at the stock tank; dead. */
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,DEAD}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
      * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
      * through the gap under the next, and hanging there dead. */
@@ -67,6 +67,8 @@ public final class TheListHunt {
     /** 0.4.716, the pumpjack: on the knees beside its gearbox, bent over with the head down on the ground in the near weight's slot,
      * fighting to lift it; and the same, still, the weight down on the head. */
     public static final int PUMPED=18,PINNED=19;
+    /** 0.4.717, the stock tank: forced over its rim with the head under; the head up out of it, gasping; still, slumped over it. */
+    public static final int DUNKED=20,SURFACED=21,SUNK=22;
     /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
      * they hear it creeping, crouched. */
     public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
@@ -103,6 +105,8 @@ public final class TheListHunt {
     public static final int CRUSH=16;
     /** 0.4.716: the side of the head, where the pumpjack's weight came down on it. */
     public static final int FLAT=32;
+    /** 0.4.717: the face of one drowned in the stock tank. */
+    public static final int DROWNED=64;
     /** 0.4.715: how soon after one slam of the car door the next can come. */
     public static final int SLAM_GAP=12;
     /** 0.4.711, the boards: how near a plank one held must be for the slasher to force them over it, and how soon after one stamp the
@@ -203,6 +207,9 @@ public final class TheListHunt {
         boolean doored,slamming;int slams,slamAt;
         /** 0.4.716: at a pumpjack: which (-1 if none, kept when dead), and the well's own tick when last looked at. */
         int jack=-1;double crankAt;
+        /** 0.4.717: at the stock tank: the wall cell they were put over (kept when dead) and the way into the water; breath left,
+         * whether the head is under, how long it has been up, and how many times it has gone under. */
+        @Nullable BlockPos tank;Direction tankIn=Direction.NORTH;int breath,surfaced,dunks;boolean under;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
@@ -331,6 +338,7 @@ public final class TheListHunt {
                 case FRYER->frying(l,b,h,r,a,slashers,here);
                 case CAR->dooring(l,b,h,r,a,slashers,here);
                 case JACK->jacking(l,b,h,r,a,slashers,here);
+                case TANK->tanking(l,b,h,r,a,slashers,here);
                 case DEAD->{}
             }
         }
@@ -503,6 +511,8 @@ public final class TheListHunt {
             case LINE->TheList.cue(p,String.format(TheListTexts.PINNED,TheListTexts.NAMES[r.who]));
             // 0.4.715: a blow on one with the head in the car door is another slam.
             case CAR->{if(p.getUUID().equals(r.holder))slam(l,b,h,r,a,p);}
+            // 0.4.717: a blow on one come up out of the tank puts the head back under.
+            case TANK->{if(p.getUUID().equals(r.holder)&&!r.under)dunk(l,b,h,r,a,p);}
             default->{}
         }
     }
@@ -527,6 +537,12 @@ public final class TheListHunt {
         // 0.4.715: one in the car door: the slasher's hand slams it again; anyone else's finds the head caught.
         if(r.state==State.CAR){if(p.getUUID().equals(r.holder))slam(p.serverLevel(),b,h,r,a,p);else TheList.cue(p,String.format(TheListTexts.DOOR_HELD,name));return true;}
         // 0.4.716: one under the weight: the slasher's hand knocks the brake off if it is on; anyone else's finds the head held down.
+        // 0.4.717: one at the stock tank: the slasher's hand puts the head back under once it is up; anyone else's finds them held under.
+        if(r.state==State.TANK){
+            if(p.getUUID().equals(r.holder)){if(!r.under)dunk(p.serverLevel(),b,h,r,a,p);}
+            else TheList.cue(p,String.format(TheListTexts.TANK_HELD,name));
+            return true;
+        }
         if(r.state==State.JACK){
             if(p.getUUID().equals(r.holder)){if(TheListJack.braked(p.serverLevel(),b,r.jack))TheListJack.brake(p.serverLevel(),b,r.jack,false,p);}
             else TheList.cue(p,String.format(TheListTexts.JACK_HELD,name));
@@ -586,7 +602,7 @@ public final class TheListHunt {
         if(was!=null)TheListBody.holding(was,false);
         // 0.4.715: out of the car door, it is pushed wide as they pull the head out.
         if(r.doored&&TheListCar.angle(b)<TheListCar.OPEN-1)TheListCar.swing(b,null,new TheListCar.Leg(TheListCar.OPEN,4));
-        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;r.jack=-1;
+        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;r.jack=-1;r.tank=null;r.under=false;r.dunks=0;r.surfaced=0;
         stop(l,a,TheListRegistry.STRUGGLE.get());
         if(s!=null){
             s.knockback(.8,a.getX()-s.getX(),a.getZ()-s.getZ());s.hurtMarked=true;
@@ -1255,6 +1271,122 @@ public final class TheListHunt {
         if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.717: the stock tank
+    /**
+     * A hand or a blow on a straight cell of the stock tank's wall (TheListTank.hand). Where one of the five is held under: the slasher's
+     * puts the head back under once it is up; anyone else's finds them held there. Where one is dead: still. Otherwise the slasher's, with
+     * hold of one of the five near it, forces them over the rim with the head under the water; false (a look) for anything else.
+     */
+    public static boolean tank(ServerPlayer p,BlockPos b,BlockPos rel,Direction in){
+        var h=HUNTS.get(b.asLong());if(h==null||p.isSpectator())return false;
+        var l=p.serverLevel();
+        for(var r:h.runners.values()){
+            if(r.tank==null||!r.tank.equals(rel))continue;
+            var name=TheListTexts.NAMES[r.who];
+            if(r.state==State.DEAD){TheList.cue(p,String.format(TheListTexts.TANK_STILLWATER,name));return true;}
+            if(r.state!=State.TANK)continue;
+            if(!p.getUUID().equals(r.holder)){TheList.cue(p,String.format(TheListTexts.TANK_HELD,name));return true;}
+            if(!r.under&&l.getEntity(r.id) instanceof LiteraryActor a)dunk(l,b,h,r,a,p);
+            return true;
+        }
+        if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return false;
+        for(var r:h.runners.values()){
+            if(!p.getUUID().equals(r.holder)||r.state!=State.HELD||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(a.position().distanceTo(TheListTank.stand(b,rel,in))>TheListTank.REACH)return false;
+            dunked(l,b,h,r,a,p,rel,in,TheList.readers(l,b));
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Forced over the rim: pressed against the tank's wall and bent over it, the head pushed under the water. Their words, a scream cut
+     * into the water; anyone else on the list near enough hears it. What they had in hand they let fall. The hold is still the slasher's.
+     */
+    static void dunked(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,BlockPos wall,Direction in,List<ServerPlayer> here){
+        r.state=State.TANK;r.since=0;r.tank=wall.immutable();r.tankIn=in;r.breath=TheListTank.BREATH;r.dunks=1;r.under=true;r.surfaced=0;
+        r.strength=0;r.dropped=true;r.killer=s.getUUID();
+        BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(DUNKED);drop(a);
+        over(b,r,a);
+        TheList.cue(s,String.format(TheListTexts.INTO_TANK,TheListTexts.NAMES[r.who]));
+        say(a,r.who,TheListTexts.TANK[r.who]);
+        scream(l,a);
+        heard(l,b,h,r,a,here);
+        splash(l,b,r,true);
+    }
+    /** Kept pressed to the wall, bent over the rim toward the water. */
+    static void over(BlockPos b,Runner r,LiteraryActor a){
+        var at=TheListTank.stand(b,r.tank,r.tankIn);float yaw=TheListTank.yaw(r.tankIn);
+        a.moveTo(at.x,at.y,at.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /** The water over the head thrown up: hard when it goes in, a churn while it is held. */
+    static void splash(ServerLevel l,BlockPos b,Runner r,boolean hard){
+        var at=TheListTank.surface(b,r.tank,r.tankIn);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.SPLASH,at.x,at.y,at.z,hard?24:6,.25,.05,.25,.1);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE_POP,at.x,at.y,at.z,hard?8:3,.2,.02,.2,.02);
+        if(hard)l.playSound(null,at.x,at.y,at.z,TheListRegistry.DUNK.get(),SoundSource.NEUTRAL,1.2F,.95F+l.getRandom().nextFloat()*.1F);
+    }
+    /**
+     * The slasher's hand on one come up gasping: the head back under. The third time it goes under, it does not come up again.
+     */
+    static void dunk(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s){
+        r.dunks++;r.under=true;r.surfaced=0;r.strength=0;
+        a.gesture(DUNKED);over(b,r,a);splash(l,b,r,true);
+        TheList.cue(s,r.dunks>=TheListTank.LAST?TheListTexts.TANK_LAST:TheListTexts.TANK_AGAIN);
+    }
+    /**
+     * At the tank, each tick: kept bent over the rim. Under, the breath goes and the water churns over the head; they fight as they fight
+     * a grip, and the count full brings the head up, gasping, with some breath back (the last time under, they cannot). Up, the slasher
+     * has a moment to put it back under; let alone, they tear loose and run. The breath gone, they drown.
+     */
+    static void tanking(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers,List<ServerPlayer> here){
+        over(b,r,a);
+        var s=holder(r,slashers);
+        if(s==null){loose(l,b,h,r,a,null,here);return;}
+        if(!r.under){
+            if(--r.surfaced<=0)loose(l,b,h,r,a,s,here);
+            return;
+        }
+        r.breath--;
+        if(r.since%5==0)splash(l,b,r,false);
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+.9,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,.8F,.9F);
+        if(r.breath<=0){drowned(l,b,h,r,a,here);return;}
+        if(r.dunks>=TheListTank.LAST)return;
+        float off=Math.abs(Mth.wrapDegrees(yawTo(s.position(),a.position())-s.getYHeadRot()));
+        r.strength+=off>LOOK_AWAY?2:1;
+        if(r.strength>=STRENGTH[r.who])surfaced(l,b,r,a,s);
+    }
+    /** The head up out of the water, gasping, a third of a breath back; the slasher told to put it back. */
+    static void surfaced(ServerLevel l,BlockPos b,Runner r,LiteraryActor a,ServerPlayer s){
+        r.under=false;r.surfaced=TheListTank.SURFACE;r.strength=0;r.breath=Math.min(TheListTank.BREATH,r.breath+TheListTank.BREATH/3);
+        a.gesture(SURFACED);
+        var at=TheListTank.surface(b,r.tank,r.tankIn);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.SPLASH,at.x,at.y+.2,at.z,16,.3,.1,.3,.15);
+        l.playSound(null,a.getX(),a.getY()+1.2,a.getZ(),TheListRegistry.GASP.get(),SoundSource.NEUTRAL,1.1F,1F);
+        TheList.cue(s,TheListTexts.TANK_UP);
+    }
+    /**
+     * Drowned: the churn stops and the water settles round the head; slumped over the rim with the arms hanging into the water. The
+     * scream stopped, anyone else in town near enough told from which way; the face marked, the kill the slasher's, the hold let go.
+     */
+    static void drowned(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        stop(l,a,TheListRegistry.SCREAM.get());stop(l,a,TheListRegistry.STRUGGLE.get());
+        var at=TheListTank.surface(b,r.tank,r.tankIn);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE_POP,at.x,at.y,at.z,12,.25,.02,.25,.01);
+        a.marks(a.marks()|DROWNED);a.gesture(SUNK);over(b,r,a);
+        r.state=State.DEAD;r.under=false;
+        var name=TheListTexts.NAMES[r.who];
+        var killer=r.killer==null?null:l.getServer().getPlayerList().getPlayer(r.killer);
+        if(killer!=null)TheList.cue(killer,String.format(TheListTexts.TANK_STILL,name));
+        for(var q:here)if(q!=killer&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+        if(killer!=null)TheListBody.holding(killer,false);
+        r.holder=null;a.holder(null);
+        if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
+    }
+    /** For tests: one at the tank, whether the head is under, how many times it has gone under, and the breath left (set). */
+    public static boolean under(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r!=null&&r.under;}
+    public static int dunks(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.dunks;}
+    public static void breath(BlockPos b,int who,int left){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);if(r!=null)r.breath=left;}
+
     // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
     /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
     static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
@@ -1333,10 +1465,10 @@ public final class TheListHunt {
         for(var d:h.runners.values()){
             if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
             // 0.4.711: one hung over a row of the stands is seen by the head under the next plank as well as the body on it.
-            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED,pinned=body.gesture()==PINNED;
+            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED,pinned=body.gesture()==PINNED,sunk=body.gesture()==SUNK;
             // 0.4.714: one dead in the fryer is seen by the back, bent over it; 0.4.715: one at the car door, by the back, slumped at it.
             // 0.4.716: one dead at a pumpjack, by the back, bowed over beside the gearbox.
-            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:pinned?.45:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
+            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:pinned?.45:sunk?.9:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
             for(var r:h.runners.values()){
                 if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
                 if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
@@ -1344,7 +1476,7 @@ public final class TheListHunt {
                 r.saw|=1<<d.who;
                 if(r.state==State.CALM)run(l,b,h,r,a,here,true);
                 say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:fried?TheListTexts.FOUND_FRYER_BODY[r.who]
-                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:pinned?TheListTexts.FOUND_JACK_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
+                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:pinned?TheListTexts.FOUND_JACK_BODY[r.who]:sunk?TheListTexts.FOUND_TANK_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
             }
             for(var q:here){
                 if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
@@ -1352,7 +1484,7 @@ public final class TheListHunt {
                 if(!sight(l,q,q.getYHeadRot(),body,at,head,READER_FINDS,READER_LOOK))continue;
                 h.found.put(q.getUUID(),seen|1<<d.who);
                 TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:fried?TheListTexts.FOUND_FRYER:slammed?TheListTexts.FOUND_CAR
-                    :pinned?TheListTexts.FOUND_JACK:TheListTexts.FOUND_DEAD,name));
+                    :pinned?TheListTexts.FOUND_JACK:sunk?TheListTexts.FOUND_TANK:TheListTexts.FOUND_DEAD,name));
                 TheListBody.found(q,d.who);
             }
         }

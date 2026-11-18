@@ -1798,6 +1798,91 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.717, the stock tank: a hand on its wall is a look for anyone without hold of one of the five. Deek taken and brought to it, the
+     * slasher's hand on the wall forces him over the rim with the head under; another reader's hand on him finds him held under. He fights
+     * the head up, gasping, and the slasher's hand puts it back, twice; the third time it stays under, and he drowns there.
+     */
+    @GameTest(template="empty",batch="the_list_tank",timeoutTicks=6000)
+    public static void theTank(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_tank",P);var peer=f.player("list_tank_peer",P);
+        int D=TheListPeople.DEEK;var wall=TheListSite.TANK_AT.offset(0,0,-4);var in=TheListTank.into(wall);
+        hold(f,b,TheListPeople.AT[D],TheListSite.TANK_AT);
+        var stand=TheListTank.stand(b,wall,in==null?net.minecraft.core.Direction.SOUTH:in).subtract(Vec3.atLowerCornerOf(b));
+        h.startSequence().thenExecute(()->f.at(peer,P,stand.x+2.5,0,stand.z-2.5))
+        .thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the town");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(in==net.minecraft.core.Direction.SOUTH,"the north wall leads south into the water: "+in);
+            h.assertTrue(TheListTank.into(TheListSite.TANK_AT.offset(3,0,-3))==null&&TheListTank.into(TheListSite.TANK_AT)==null,"a corner, or the water, is no wall to use");
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+            h.assertFalse(TheListTank.hand(peer,b,wall),"another reader's hand on the wall is a look");
+        }).thenIdle(10).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            f.at(p,P,TheListPeople.AT[D].getX()-1.5,0,TheListPeople.AT[D].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,D));
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,stand.x,0,stand.z-1.3);
+        }).thenIdle(2).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.position().distanceTo(TheListTank.stand(b,wall,in))<=TheListTank.REACH,"held by the tank: "+where(l,b,D));
+            sent(peer);cues(peer);cues(p);
+            h.assertTrue(TheListTank.hand(p,b,wall),"the slasher's hand on the wall");
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.TANK&&deek.gesture()==TheListHunt.DUNKED&&TheListHunt.under(b,D),"forced over the rim, the head under: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.INTO_TANK,"Deek")),"the slasher is told");
+            h.assertTrue(TheListTexts.TANK[D].equals(said(deek)),"his words: "+said(deek));
+            h.assertTrue(deek.position().distanceTo(TheListTank.stand(b,wall,in))<.05,"pressed to the wall: "+deek.position().subtract(TheListTank.stand(b,wall,in)));
+            h.assertTrue(TheListHunt.holding(p)&&LiteraryVignettes.retreatLocked(p),"still his, and no retreat");
+            var got=sent(peer);
+            h.assertTrue(sound(got,TheListRegistry.SCREAM.get())&&sound(got,TheListRegistry.DUNK.get()),"the other reader hears him go under");
+            LiteraryVignettes.talk(peer,deek);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.TANK_HELD,"Deek")),"a hand on him: held under");
+            TheListTank.hand(peer,b,wall);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.TANK_HELD,"Deek"))&&TheListHunt.under(b,D),"and on the wall: held under still");
+        }).thenWaitUntil(()->h.assertFalse(TheListHunt.under(b,D),"waiting for the head to come up: "+where(l,b,D)))
+        .thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.gesture()==TheListHunt.SURFACED&&TheListHunt.state(b,D)==TheListHunt.State.TANK,"the head up, gasping: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(TheListTexts.TANK_UP),"the slasher is told");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.under(b,D)&&TheListHunt.dunks(b,D)==2&&cues(p).contains(TheListTexts.TANK_AGAIN),"the slasher's hand puts it back under");
+        }).thenWaitUntil(()->h.assertFalse(TheListHunt.under(b,D),"waiting for it to come up again: "+where(l,b,D)))
+        .thenExecute(()->{
+            cues(p);
+            h.assertTrue(TheListTank.hand(p,b,wall)&&TheListHunt.under(b,D)&&TheListHunt.dunks(b,D)==3,"a hand on the wall puts it back a third time");
+            h.assertTrue(cues(p).contains(TheListTexts.TANK_LAST),"and the slasher holds it there");
+            TheListHunt.breath(b,D,8);sent(peer);cues(peer);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.dead(b,D),"waiting for him to drown: "+where(l,b,D)))
+        .thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.gesture()==TheListHunt.SUNK&&(deek.marks()&TheListHunt.DROWNED)!=0,"slumped over the rim, drowned: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.TANK_STILL,"Deek")),"the slasher is told");
+            h.assertTrue(cuesIn(sent(peer)).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")),"the other reader is told a scream stopped");
+            h.assertTrue((TheListBody.kills(p)&1<<D)!=0,"the slasher's record keeps him");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the body walks and may leave");
+            TheListTank.hand(peer,b,wall);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.TANK_STILLWATER,"Deek")),"a hand on the wall: he is still");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Deek")),"a hand on him after: he does not move");
+            var back=deek.position().add(0,.9,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-back.x,back.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(back.y,Math.sqrt(back.x*back.x+back.z*back.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_TANK,"Deek")),"the other reader finds him at the tank");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.marks()==0&&deek.gesture()==TheListHunt.STILL,"ended, he is back, unmarked: "+where(l,b,D));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Whether these packets drew a particle of this kind. */
     private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;

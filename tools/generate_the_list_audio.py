@@ -59,6 +59,7 @@ ROWS = {
     'car_open': ('A car door opens', 12),
     'brake': ('A brake bites', 16),
     'strain': ('A motor strains', 24),
+    'dunk': ('Someone is held under water', 20),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -721,12 +722,36 @@ def strain():
     return hum + slip + grind
 
 
+def dunk():
+    # The stock tank: a head forced into the water, the plunge and slap of it, then thrashing under: muffled churning, bursts of bubbles
+    # breaking at the surface, a choked cry pushed out under the water, the rim knocked.
+    n = seconds(1.8)
+    t = times(n)
+    plunge = band(rng.standard_normal(n), 200, 3000) * np.exp(-t / .12) * .9
+    slap = band(rng.standard_normal(n), 800, 6000) * np.exp(-t / .03) * .6
+    env = np.clip((t - .1) / .1, 0, 1) * np.clip((1.8 - t) / .3, 0, 1)
+    churn = band(rng.standard_normal(n), 150, 1200) * (.5 + .5 * np.abs(np.sin(2 * np.pi * 3.1 * t))) * env * .45
+    pops = np.zeros(n)
+    for k in range(18):
+        at = int(rng.uniform(.15, 1.7) * RATE)
+        f = rng.uniform(400, 1400)
+        m = min(n - at, int(.05 * RATE))
+        z = np.arange(m) / RATE
+        pops[at:at + m] += np.sin(2 * np.pi * (f + 6000 * z) * z) * np.exp(-z / .012) * .35
+    y = t - .5
+    cry = np.sin(2 * np.pi * 220 * y + 3 * np.sin(2 * np.pi * 6 * y)) * np.exp(-np.clip(y, 0, None) / .4) * (y >= 0)
+    cry = band(cry, 150, 700) * .35
+    z = t - 1.2
+    knock = np.sin(2 * np.pi * 180 * z) * np.exp(-np.clip(z, 0, None) / .04) * (z >= 0) * .4
+    return plunge + slap + churn + pops + cry + knock
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
           'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
           'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack,
           'valve': valve, 'riser': riser, 'fryer': fryer, 'burner': burner, 'car_door': car_door, 'car_open': car_open,
-          'brake': brake, 'strain': strain}
+          'brake': brake, 'strain': strain, 'dunk': dunk}
 
 
 def main():
