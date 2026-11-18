@@ -2,7 +2,8 @@
 
 Part 1a has the town's own night: crickets in the yards and the cotton, a dog behind a fence a few yards off, the drive-in's
 speakers on Main Street murmuring with nobody in the stalls, a loose sheet of tin on the gin knocking in the wind, a train's horn out past
-the playa, the wind over the flat land, and the water tower ticking as it cools; part 1b (0.4.700) adds a sprinkler working a lawn.
+the playa, the wind over the flat land, and the water tower ticking as it cools; part 1b (0.4.700) adds a sprinkler working a lawn;
+part 1c (0.4.701) the pasture's windmill turning, a pumpjack's stroke and the cattle guard under a reader's feet.
 Nothing in them is frightening yet.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
@@ -21,6 +22,9 @@ ROWS = {
     'wind': ('Wind blows over the flat land', 48),
     'tower': ('The water tower ticks', 24),
     'sprinkler': ('A sprinkler ticks across a lawn', 16),
+    'windmill': ('A windmill turns and creaks', 32),
+    'pumpjack': ('A pumpjack knocks on its downstroke', 32),
+    'guard': ('A cattle guard rattles underfoot', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -192,7 +196,58 @@ def sprinkler():
     return out
 
 
-MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler}
+def windmill():
+    # One turn of a stock-tank windmill in a light wind, about two and a half seconds: the whir of the wheel's sheet blades going round, a
+    # dry squeal of the pump rod in its guide as it rises, the clunk of the rod turning over at the top, and a groan as it goes down.
+    n = seconds(2.5)
+    t = times(n)
+    whir = band(rng.standard_normal(n), 300, 1400) * (.55 + .45 * np.sin(2 * np.pi * 7.2 * t) ** 2) * .35
+    squeal = np.zeros(n)
+    on = (t > .25) & (t < .95)
+    x = np.clip((t - .25) / .7, 0, 1)
+    squeal += np.sin(2 * np.pi * (1650 + 260 * x) * t) * np.sin(np.pi * x) * on * .22
+    squeal += np.sin(2 * np.pi * (2420 + 300 * x) * t) * np.sin(np.pi * x) ** 2 * on * .08
+    clunk = band(rng.standard_normal(n), 120, 900) * np.exp(-np.clip(t - 1.02, 0, None) / .03) * (t > 1.02) * .9
+    clunk += np.sin(2 * np.pi * 180 * (t - 1.02)) * np.exp(-np.clip(t - 1.02, 0, None) / .08) * (t > 1.02) * .4
+    down = (t > 1.15) & (t < 2.2)
+    y = np.clip((t - 1.15) / 1.05, 0, 1)
+    groan = np.sin(2 * np.pi * (240 - 60 * y) * t) * np.sin(np.pi * y) * down * .18 + band(rng.standard_normal(n), 150, 500) * np.sin(np.pi * y) * down * .12
+    edge = np.clip(t / .15, 0, 1) * np.clip((2.5 - t) / .2, 0, 1)
+    return (whir + squeal + clunk + groan) * edge
+
+
+def pumpjack():
+    # One stroke's bottom on a pumpjack: the beam's weight coming down onto the rods, a heavy knock where the slack takes up, the
+    # counterweights' long sigh going round, and the engine's low thrum under it all.
+    n = seconds(3.0)
+    t = times(n)
+    thrum = (np.sin(2 * np.pi * 29 * t) * .5 + np.sin(2 * np.pi * 58 * t) * .25) * (.8 + .2 * np.sin(2 * np.pi * 3.1 * t)) * .3
+    thrum += band(rng.standard_normal(n), 40, 220) * .15
+    knock = band(rng.standard_normal(n), 80, 1200) * np.exp(-np.clip(t - .4, 0, None) / .025) * (t > .4) * 1.2
+    knock += sum(a * np.sin(2 * np.pi * f * (t - .4)) for f, a in ((96, 1), (233, .5), (611, .2))) * np.exp(-np.clip(t - .4, 0, None) / .18) * (t > .4) * .7
+    y = np.clip((t - .55) / 2.0, 0, 1)
+    sigh = band(rng.standard_normal(n), 200, 900) * np.sin(np.pi * y) * (t > .55) * .25
+    creak = np.sin(2 * np.pi * (420 + 90 * y) * t) * np.sin(np.pi * y) ** 3 * (t > .55) * .1
+    edge = np.clip(t / .2, 0, 1) * np.clip((3.0 - t) / .4, 0, 1)
+    return (thrum + knock + sigh + creak) * edge
+
+
+def guard():
+    # A cattle guard under one step: the pipes ring against their crossbars, a hollow knock from the pit under them, a short dull rattle.
+    n = seconds(.8)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((.03, 1.0), (.09, .55), (.16, .3)):
+        x = t - at
+        on = x >= 0
+        out += band(rng.standard_normal(n), 900, 4000) * np.exp(-np.clip(x, 0, None) / .006) * on * level
+        out += sum(a * np.sin(2 * np.pi * f * x) for f, a in ((690, 1), (1180, .5), (1930, .25))) * np.exp(-np.clip(x, 0, None) / .12) * on * level * .4
+    out += band(rng.standard_normal(n), 60, 300) * np.exp(-np.clip(t - .03, 0, None) / .07) * (t > .03) * .6
+    return out
+
+
+MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
+          'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard}
 
 
 def main():

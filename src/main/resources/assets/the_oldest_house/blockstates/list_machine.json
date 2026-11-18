@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,machine=windmill": {
+      "model": "the_oldest_house:block/the_list/windmill_4"
+    },
+    "facing=north,machine=pumpjack": {
+      "model": "the_oldest_house:block/the_list/pumpjack_saddle"
+    },
+    "facing=north,machine=cable": {
+      "model": "the_oldest_house:block/the_list/pumpjack_cable"
+    },
+    "facing=east,machine=windmill": {
+      "model": "the_oldest_house:block/the_list/windmill_4",
+      "y": 90
+    },
+    "facing=east,machine=pumpjack": {
+      "model": "the_oldest_house:block/the_list/pumpjack_saddle",
+      "y": 90
+    },
+    "facing=east,machine=cable": {
+      "model": "the_oldest_house:block/the_list/pumpjack_cable",
+      "y": 90
+    },
+    "facing=south,machine=windmill": {
+      "model": "the_oldest_house:block/the_list/windmill_4",
+      "y": 180
+    },
+    "facing=south,machine=pumpjack": {
+      "model": "the_oldest_house:block/the_list/pumpjack_saddle",
+      "y": 180
+    },
+    "facing=south,machine=cable": {
+      "model": "the_oldest_house:block/the_list/pumpjack_cable",
+      "y": 180
+    },
+    "facing=west,machine=windmill": {
+      "model": "the_oldest_house:block/the_list/windmill_4",
+      "y": 270
+    },
+    "facing=west,machine=pumpjack": {
+      "model": "the_oldest_house:block/the_list/pumpjack_saddle",
+      "y": 270
+    },
+    "facing=west,machine=cable": {
+      "model": "the_oldest_house:block/the_list/pumpjack_cable",
+      "y": 270
+    }
+  }
+}

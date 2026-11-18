@@ -11,6 +11,10 @@ Part 1b (0.4.700) adds the school's field west of town (the turf and its lines, 
 and the press box, the scoreboard, the ticket booth, the concession stand, the field house and its lockers), Amber's house (her den's
 television and VCR, the shelf of rented tapes, her desk at her window) and the things in the neighbors' yards, and a steel door.
 
+Part 1c (0.4.701) adds the pasture south of town: buffalo grass and trodden mud, barbed wire on cedar posts with a wire gap and a cattle
+guard, a stock tank with its windmill (the wheel drawn apart, for its renderer to turn), three pumpjacks (their beam, cranks, pitman arms
+and rod drawn apart for theirs), a tank battery, the lease's sign and the wells' plates, and the machine block's states.
+
 Every title, name and word on a box, a sign or a poster here is made up for this town, except the town's and the county's own names.
 
 Writes the models and block states and the blocks' names. --check verifies everything; --out draws them somewhere else for a look.
@@ -502,7 +506,7 @@ def materials():
             'ceiling': ceiling(), 'tile': tile(), 'store_carpet': store_carpet(), 'storefront': storefront(), 'stucco': stucco(),
             'cinder': cinder(), 'galvanized': galvanized(), 'rusted': rusted(), 'slab': slab(), 'shop_metal': shop_metal(),
             'drive_lot': drive_lot(), 'turf': turf(0), 'turf_dark': turf(1), 'turf_line': turf_line(0), 'turf_side': turf_line(1),
-            'endzone': endzone(), 'track_cinder': track_cinder()}
+            'endzone': endzone(), 'track_cinder': track_cinder(), 'pasture': pasture(), 'mud': mud()}
 
 
 # ------------------------------------------------------------------------------------------------ models
@@ -3363,6 +3367,721 @@ def school_faces():
     return faces
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.701: the pasture
+# South of the reader's back yard and across the cotton: a county road west off Avenue K, a cattle guard in the fence, a pasture of
+# buffalo grass in barbed wire on cedar posts, a stock tank with its windmill, three pumpjacks on their pads and the lease's tank battery.
+# Big pieces reach into the cells round them (models may run from -16 to 32), so their faces carry their own UVs, kept inside the
+# sixteen pixels of their picture.
+
+
+def span_uv(a0, a1):
+    n = a1 - a0
+    if n >= 16:
+        return 0, 16
+    s = a0 % 16
+    if s + n > 16:
+        s = 16 - n
+    return s, s + n
+
+
+def uv_for(face, lo, hi):
+    x0, y0, z0 = lo
+    x1, y1, z1 = hi
+    if face == 'north':
+        u, v = span_uv(16 - x1, 16 - x0), span_uv(16 - y1, 16 - y0)
+    elif face == 'south':
+        u, v = span_uv(x0, x1), span_uv(16 - y1, 16 - y0)
+    elif face == 'east':
+        u, v = span_uv(16 - z1, 16 - z0), span_uv(16 - y1, 16 - y0)
+    elif face == 'west':
+        u, v = span_uv(z0, z1), span_uv(16 - y1, 16 - y0)
+    elif face == 'up':
+        u, v = span_uv(x0, x1), span_uv(z0, z1)
+    else:
+        u, v = span_uv(x0, x1), span_uv(16 - z1, 16 - z0)
+    return [round(u[0], 3), round(v[0], 3), round(u[1], 3), round(v[1], 3)]
+
+
+SIDES = ('north', 'south', 'east', 'west')
+ALL = SIDES + ('up', 'down')
+
+
+def part(lo, hi, tex, faces=ALL, rotation=None):
+    """A box whose every face keeps to its picture, however far it reaches; `tex` is one key or a {face: key} map."""
+    lo = [round(v, 3) for v in lo]; hi = [round(v, 3) for v in hi]
+    t = tex if isinstance(tex, dict) else {f: tex for f in faces}
+    t = {f: k for f, k in t.items() if f in faces}
+    return element(lo, hi, t, uv={f: uv_for(f, lo, hi) for f in t}, rotation=rotation)
+
+
+# ---------------------------------------------------------------- materials
+def pasture():
+    # Buffalo grass grazed short in July: fine curly blades gone half to straw, the dirt showing between them, a pale seed head or two.
+    rnd = random.Random(9701); im = new('#8a8656', 9701, 6)
+    for _ in range(80):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        dot(im, x, y, rnd.choice(['#9d9862', '#a8a06a', '#7a7a4c', '#6f7446', '#b3a873', '#8f8a5a']))
+    for _ in range(14):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        dot(im, x, y, rnd.choice(['#9a7a58', '#8c6c4c']))
+    for x, y in [(4, 3), (11, 10), (2, 12)]:
+        dot(im, x, y, '#c9bd8e'); dot(im, x, y + 1, '#b7aa7c')
+    return im
+
+
+def mud():
+    # The ground round the tank where cattle stand to drink: trodden mud, dried to a crust at the edges, cloven prints pressed into it.
+    rnd = random.Random(9702); im = new('#6e5a44', 9702, 5)
+    speckle(im, rnd, 18, ['#5e4c39', '#7d6850', '#655240'])
+    for x, y in [(3, 3), (10, 5), (5, 11), (12, 12)]:
+        for dx, dy in [(0, 0), (0, 1), (2, 0), (2, 1)]:
+            dot(im, x + dx, y + dy, '#4a3b2c')
+        dot(im, x + 1, y + 2, '#57463a')
+    speckle(im, rnd, 6, ['#8c7a62', '#857158'])
+    return im
+
+
+# ---------------------------------------------------------------- faces
+def cedar():
+    # A cedar fence post: grey stringy bark running up it in twisted strips, a split here and there, darker at the foot.
+    rnd = random.Random(9711); im = new('#7b7065', 9711, 6)
+    for x in range(16):
+        k = (6, -4, 2, -8)[(x + (x // 5)) % 4]
+        for y in range(16):
+            darken(im, x, y, k + rnd.randint(-3, 3))
+    for _ in range(5):
+        x, y = rnd.randrange(16), rnd.randrange(12)
+        for i in range(rnd.randint(2, 4)):
+            dot(im, x, y + i, '#4e463e')
+    for x in range(16):
+        dot(im, x, 15, '#5a5048'); dot(im, x, 14, '#625850')
+    return im
+
+
+def barbed():
+    # Barbed wire: two strands twisted together, rusted; the barbs a little darker and sharp.
+    im = new('#5e4f43', 9712, 6)
+    for x in range(16):
+        dot(im, x, 7 if x % 4 < 2 else 8, '#8a7462')
+    return im
+
+
+def guard_pipe():
+    im = new('#9a9ea0', 9713, 4)
+    for x in range(16):
+        dot(im, x, 0, '#c4c7c8'); dot(im, x, 1, '#b3b6b8'); dot(im, x, 14, '#6d7072'); dot(im, x, 15, '#55585a')
+    rnd = random.Random(9713)
+    for _ in range(4):
+        x = rnd.randrange(16)
+        dot(im, x, 2, '#8a5c3a'); dot(im, x, 3, '#7a5032')
+    return im
+
+
+def guard_pit():
+    rnd = random.Random(9714); im = new('#141210', 9714, 3)
+    speckle(im, rnd, 10, ['#201c18', '#2a241e', '#0e0c0a'])
+    return im
+
+
+def stock_wall(rim):
+    # A round galvanized stock tank: deep vertical corrugations, the zinc gone dull and spotted, a band of white scale along the
+    # water line inside and a rust bloom low on the seams; the rolled rim brighter where hands and chins have worn it.
+    rnd = random.Random(9715 + rim); im = new('#a6abad', 9715 + rim, 4)
+    if rim:
+        for x in range(16):
+            for y in range(16):
+                darken(im, x, y, (8, 2, -6, -12)[y % 4] if y < 8 else -4)
+        speckle(im, rnd, 8, ['#c9cccd', '#d4d7d7', '#8e9294'])
+        return im
+    for x in range(16):
+        k = (10, 4, -6, -12)[x % 4]
+        for y in range(16):
+            darken(im, x, y, k)
+    for x in range(16):
+        dot(im, x, 2, '#d8d6cc'); dot(im, x, 3, '#cbc8bc')
+    for x in range(0, 16, 8):
+        for y in range(9, 16):
+            if rnd.random() < .7:
+                dot(im, x + rnd.randint(0, 1), y, rnd.choice(['#8d5a37', '#9d683f', '#7a4c2f']))
+    speckle(im, rnd, 8, ['#c5c9ca', '#8f9395'])
+    return im
+
+
+def salt():
+    rnd = random.Random(9716); im = new('#d9d0bc', 9716, 5)
+    for x, y in [(5, 5), (6, 5), (7, 6), (8, 6), (9, 7), (6, 7), (7, 7), (8, 8), (7, 8)]:
+        dot(im, x, y, '#b8ac94')
+    speckle(im, rnd, 8, ['#c7bda6', '#e8e1d2', '#a89a80'])
+    return im
+
+
+def tub():
+    rnd = random.Random(9717); im = new('#232220', 9717, 3)
+    for x in range(16):
+        dot(im, x, 0, '#3a3834'); dot(im, x, 1, '#2e2c29')
+    speckle(im, rnd, 6, ['#d9d0bc', '#31302d'])
+    return im
+
+
+def old_hay(top):
+    # A round bale fed down to its last layers and trodden flat: hay gone grey-gold, stems every way, darker where it is wet underneath.
+    rnd = random.Random(9718 + top); im = new('#a08c5a' if top else '#8a7648', 9718 + top, 7)
+    for _ in range(40):
+        x, y = rnd.randrange(16), rnd.randrange(16); c = rnd.choice(['#b9a46c', '#7c6a40', '#c4b07a', '#6e5e3a'])
+        if rnd.random() < .5:
+            dot(im, x, y, c); dot(im, (x + 1) % 16, y, c)
+        else:
+            dot(im, x, y, c); dot(im, x, (y + 1) % 16, c)
+    return im
+
+
+def tower_iron():
+    # The windmill tower's angle iron, galvanized long ago and gone grey and pocked, bolt heads where the girts cross.
+    rnd = random.Random(9719); im = new('#8b8f90', 9719, 5)
+    for y in range(16):
+        dot(im, 0, y, '#a9adae'); dot(im, 15, y, '#6e7273')
+    speckle(im, rnd, 8, ['#7a5236', '#a2a6a7', '#6a6e70'])
+    return im
+
+
+def sail():
+    # A sail of the wheel: galvanized sheet curved a little, its leading edge brighter, rust where the rivets hold it to the arms.
+    im = new('#b3b7b8', 9720, 3)
+    for y in range(16):
+        dot(im, 0, y, '#d6d9da'); dot(im, 1, y, '#c8cbcc'); dot(im, 15, y, '#7d8183')
+    for y in (3, 12):
+        dot(im, 4, y, '#7a5236'); dot(im, 11, y, '#7a5236')
+    return im
+
+
+def head_case():
+    # The windmill's head: the cast housing over its gears, oil weeping from the seam and dried to a crust.
+    rnd = random.Random(9721); im = new('#7d8183', 9721, 4)
+    for x in range(16):
+        dot(im, x, 7, '#5e6264'); dot(im, x, 8, '#9a9ea0')
+    for y in range(8, 16):
+        if rnd.random() < .6:
+            dot(im, 5, y, '#3e3a32'); dot(im, 6, y, '#4a463c')
+    return im
+
+
+def vane():
+    # The tail vane: a broad galvanized sheet on its boom, two stripes of old paint across it, scratched through.
+    rnd = random.Random(9722); im = new('#a9adae', 9722, 4)
+    for x in range(16):
+        dot(im, x, 0, '#7d8183'); dot(im, x, 15, '#7d8183')
+        for y in (5, 6, 10, 11):
+            dot(im, x, y, '#8a2a24' if rnd.random() > .12 else '#a9adae')
+    return im
+
+
+def pier():
+    rnd = random.Random(9723); im = new('#a39e92', 9723, 5)
+    speckle(im, rnd, 12, ['#8e897e', '#b5b0a4', '#7e796f'])
+    return im
+
+
+def pump_iron():
+    im = new('#3d4a3e', 9724, 4)
+    for y in range(16):
+        dot(im, 0, y, '#56645a'); dot(im, 15, y, '#2c362e')
+    return im
+
+
+PJ = '#4f6d6a'
+
+
+def pj_paint(worn):
+    # A pumpjack's paint: an old oxide finish the sun has chalked, rust coming through on every edge and seam, oil run down from the
+    # bearings; `worn` for the horsehead's face where the bridle has rubbed it to bare iron.
+    rnd = random.Random(9725 + worn); im = new(PJ, 9725 + worn, 5)
+    speckle(im, rnd, 14, ['#5d7c78', '#43605d', '#6a8682'])
+    for _ in range(3 + worn * 4):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        for i in range(rnd.randint(2, 5)):
+            dot(im, x, min(15, y + i), rnd.choice(['#7a4c2f', '#8d5a37', '#5e3c26']))
+    if worn:
+        for y in range(16):
+            for x in (6, 7, 8, 9):
+                dot(im, x, y, rnd.choice(['#5c5a56', '#6a6862', '#4e4c48']))
+    for x in range(16):
+        dot(im, x, 0, '#62807c')
+    return im
+
+
+def weight_iron():
+    rnd = random.Random(9726); im = new('#3a3836', 9726, 4)
+    for x in range(16):
+        dot(im, x, 0, '#4c4a47'); dot(im, x, 15, '#2a2826')
+    speckle(im, rnd, 10, ['#5a3a26', '#4a4642', '#2e2c2a'])
+    write(im, 3, 6, '3', TALL, '#565350')
+    return im
+
+
+def cable():
+    im = new('#3c3a36', 9727, 3)
+    for y in range(16):
+        dot(im, 0, y, '#5a5650'); dot(im, 1, (y + 1) % 16, '#4a4842')
+    return im
+
+
+def polished():
+    im = new('#b8bcbd', 9728, 3)
+    for y in range(16):
+        dot(im, 0, y, '#e2e4e4'); dot(im, 1, y, '#d0d3d4'); dot(im, 15, y, '#7e8284')
+    return im
+
+
+def wellhead():
+    # The wellhead's tee and valves, painted once and rusted since; a valve's handwheel stained with oil.
+    rnd = random.Random(9729); im = new('#5f6b5c', 9729, 5)
+    speckle(im, rnd, 14, ['#7a4c2f', '#2e2a24', '#6e7a6a'])
+    return im
+
+
+def motor_case():
+    # The electric motor on the skid: a ribbed housing, its nameplate long gone dark.
+    im = new('#3f4a52', 9730, 4)
+    for x in range(0, 16, 2):
+        for y in range(16):
+            darken(im, x, y, -10)
+    fill(im, 5, 6, 11, 10, '#2a2e30')
+    return im
+
+
+def mesh():
+    # The belt guard's expanded metal: a diamond lattice, the belt's shadow behind it.
+    im = new(None)
+    for x in range(16):
+        for y in range(16):
+            if (x + y) % 4 == 0 or (x - y) % 4 == 0:
+                dot(im, x, y, '#6a7072')
+    return im
+
+
+def skid():
+    rnd = random.Random(9731); im = new('#47433e', 9731, 4)
+    for x in range(16):
+        dot(im, x, 0, '#5c5852'); dot(im, x, 15, '#36332f')
+    speckle(im, rnd, 10, ['#6a4430', '#2c2a26'])
+    return im
+
+
+def tank_steel():
+    # A tank battery's tanks: welded rings of plate painted a dull tan, a seam every few feet, rust run down from the thief hatch
+    # and the walkway brackets.
+    rnd = random.Random(9732); im = new('#b4a48a', 9732, 5)
+    for x in range(16):
+        dot(im, x, 7, '#9c8c72')
+    for y in range(16):
+        dot(im, 0, y, '#a29276')
+    for _ in range(2):
+        x = rnd.randrange(1, 16)
+        for y in range(rnd.randrange(6, 10), 16):
+            if rnd.random() < .55:
+                dot(im, x, y, rnd.choice(['#a07450', '#9a6e4c', '#ad8260']))
+    return im
+
+
+def tank_top():
+    rnd = random.Random(9733); im = new('#a39478', 9733, 5)
+    for i in range(16):
+        dot(im, i, i, '#8e8066'); dot(im, 15 - i, i, '#8e8066')
+    speckle(im, rnd, 8, ['#7a4c2f', '#b9aa8e'])
+    return im
+
+
+def lease_sign():
+    # The lease's sign at the cattle guard: black letters on white, three boards wide, a bullet hole through the last.
+    im = new('#e6e2d8', 9734, 2, size=(48, 16))
+    for x in range(48):
+        dot(im, x, 0, '#2a2a28'); dot(im, x, 15, '#2a2a28')
+    for y in range(16):
+        dot(im, 0, y, '#2a2a28'); dot(im, 47, y, '#2a2a28')
+    centre(im, 2, 'MASSEY', TALL, '#1e1e1c')
+    centre(im, 9, 'DAWSON CO', TALL, '#1e1e1c')
+    dot(im, 41, 4, '#1a1a18'); dot(im, 42, 4, '#3a3a36'); dot(im, 41, 5, '#3a3a36')
+    return im
+
+
+def well_plate(n):
+    # A well's own plate on its post: its number, stencilled.
+    im = new(None)
+    fill(im, 0, 3, 16, 13, '#e6e2d8')
+    for x in range(16):
+        dot(im, x, 3, '#2a2a28'); dot(im, x, 12, '#2a2a28')
+    for y in range(3, 13):
+        dot(im, 0, y, '#2a2a28'); dot(im, 15, y, '#2a2a28')
+    centre(im, 5, str(n), TALL, '#1e1e1c')
+    dot(im, 3, 7, '#1e1e1c'); dot(im, 12, 7, '#1e1e1c')
+    return im
+
+
+# ---------------------------------------------------------------- models
+STRANDS = (4, 9, 14, 19)
+
+
+def wire_strands(z0=7.7, x0=0, x1=16):
+    return [part([x0, y, z0], [x1, y + .6, z0 + .6], 'w', faces=('north', 'south', 'up', 'down')) for y in STRANDS]
+
+
+def barbs(z0=7.7):
+    e = []
+    for i, y in enumerate(STRANDS):
+        for x in (2 + (i % 2) * 2, 8 + (i % 2) * 2, 14 - (i % 2) * 2):
+            e.append(part([x, y - .4, z0 - .4], [x + .6, y + 1, z0 + 1], 'w'))
+    return e
+
+
+def pasture_model(stage):
+    t = {'c': 'cedar', 'w': 'barbed', 'p': 'guard_pipe', 'd': 'guard_pit', 's': 'salt', 'u': 'tub', 'h': 'old_hay', 'k': 'old_hay_top', 'g': 'galv'}
+    if stage == 0:
+        # A cedar post, crooked as cedar grows; the four strands run through it to the spans either side. The wire keeps to the middle
+        # of the fence's row, so a run meets its corner however each is turned.
+        e = [part([6, 0, 6], [10, 22, 10], 'c'), part([6.5, 17, 5.5], [9, 21, 6.5], 'c', faces=('north', 'east', 'west', 'up'))]
+        return model(e + wire_strands(7.7, 0, 6) + wire_strands(7.7, 10, 16), t, 'cedar')
+    if stage == 1:
+        return model(wire_strands() + barbs(), t, 'barbed')
+    if stage == 2:
+        # A wire gap, shut: the strands on three thin stays, the near end's loop over the post's top.
+        e = wire_strands() + [part([x, 1, 7.5], [x + 1, 21, 8.5], 'c') for x in (2, 8, 14)]
+        e.append(part([14, 19.5, 7], [17, 21, 9], 'w'))
+        return model(e, t, 'barbed')
+    if stage == 3:
+        # The gap laid back along the fence: its strands slack on the grass, the stays lying among them.
+        e = [part([0, .2 + i * .3, 3 + i * 2.5], [16, .8 + i * .3, 3.6 + i * 2.5], 'w', faces=('north', 'south', 'up')) for i in range(4)]
+        e += [part([x, 0, 2], [x + 1, 1, 13], 'c', faces=('up', 'east', 'west', 'north', 'south')) for x in (3, 9)]
+        return model(e, t, 'barbed')
+    if stage == 4:
+        # A cattle guard, set where the ground was: pipes across the road over a dark pit, a channel at each side.
+        e = [part([0, 0, 0], [16, 1, 16], 'd', faces=('up',))]
+        e += [part([0, 12, z], [16, 15.5, z + 2.5], 'p', faces=('up', 'north', 'south', 'east', 'west')) for z in (.5, 4.5, 8.5, 12.5)]
+        e += [part([x, 1, 0], [x + 1.5, 12, 16], 'g', faces=('up', 'east', 'west')) for x in (2, 12.5)]
+        return model(e, t, 'guard_pipe')
+    if stage == 5:
+        # A corner post, heavier than the line's, braced by a rail to the next post along and a twisted wire from the rail's far end
+        # down to the corner post's foot; the strands of both runs leave it.
+        e = [part([5, 0, 5], [11, 24, 11], 'c'), part([11, 17, 7], [22, 19.5, 9.5], 'c'),
+             part([16.1, -2, 7.6], [16.9, 22, 8.4], 'w', faces=SIDES, rotation={'angle': 45, 'axis': 'z', 'origin': [16.5, 10, 8]})]
+        e += wire_strands(7.7, 11, 16)
+        e += [part([7.7, y, 11], [8.3, y + .6, 16], 'w', faces=('east', 'west', 'up', 'down')) for y in STRANDS]
+        return model(e, t, 'cedar')
+    if stage == 6:
+        # A mineral block in a rubber tub, licked to a hollow.
+        e = [part([3, 0, 3], [13, 5, 13], 'u'), part([4.5, 4, 4.5], [11.5, 8, 11.5], 's')]
+        return model(e, t, 'salt')
+    # A hay ring: steel bars round what is left of a round bale, trodden flat.
+    e = [part([-12, 0, -12], [28, 3, 28], {'up': 'k', 'north': 'h', 'south': 'h', 'east': 'h', 'west': 'h'}),
+         part([-6, 3, -4], [20, 6, 22], {'up': 'k', 'north': 'h', 'south': 'h', 'east': 'h', 'west': 'h'}), part([0, 6, 2], [14, 8, 15], {'up': 'k', 'north': 'h', 'south': 'h', 'east': 'h', 'west': 'h'})]
+    r = 21
+    for k in range(8):
+        ang = k * 45
+        a = math.radians(ang)
+        cx, cz = 8 + r * math.cos(a), 8 + r * math.sin(a)
+        e.append(part([cx - .7, 0, cz - .7], [cx + .7, 14, cz + .7], 'g', faces=SIDES))
+    # Two rails round the bars, each in eight lengths from bar to bar: laid along a side of the square and turned an eighth about the
+    # ring's middle into place.
+    mid, half = r * .924, r * .383 + .4
+    for y in (6, 13):
+        for side in range(4):
+            for turn in (-22.5, 22.5):
+                if side == 0:
+                    lo, hi = [8 + mid - .6, y, 8 - half], [8 + mid + .6, y + 1.2, 8 + half]
+                elif side == 2:
+                    lo, hi = [8 - mid - .6, y, 8 - half], [8 - mid + .6, y + 1.2, 8 + half]
+                elif side == 1:
+                    lo, hi = [8 - half, y, 8 + mid - .6], [8 + half, y + 1.2, 8 + mid + .6]
+                else:
+                    lo, hi = [8 - half, y, 8 - mid - .6], [8 + half, y + 1.2, 8 - mid + .6]
+                e.append(part(lo, hi, 'g', faces=SIDES + ('up',), rotation={'angle': turn, 'axis': 'y', 'origin': [8, y, 8]}))
+    return model(e, t, 'old_hay_top')
+
+
+def stock_model(stage):
+    t = {'w': 'stock_wall', 'r': 'stock_rim', 'g': 'galv', 'p': 'pump_iron'}
+    wall_s = [part([0, 0, 14], [16, 15, 16], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w'}), part([0, 15, 13], [16, 16.5, 16.5], 'r')]
+    wall_e = [part([14, 0, 0], [16, 15, 16], {'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w'}), part([13, 15, 0], [16.5, 16.5, 16], 'r')]
+    if stage == 0:
+        return model(wall_s, t, 'stock_wall')
+    if stage == 1:
+        return model([wall_s[0], part([14, 0, 0], [16, 15, 14], {'north': 'w', 'east': 'w', 'west': 'w'}), part([0, 15, 13], [16.5, 16.5, 16.5], 'r'),
+                      part([13, 15, 0], [16.5, 16.5, 13], 'r', faces=('up', 'down', 'east', 'west', 'north'))], t, 'stock_wall')
+    if stage == 2:
+        return model([part([14, 0, 14], [16, 15, 16], 'w'), part([13.5, 15, 13.5], [16.5, 16.5, 16.5], 'r')], t, 'stock_wall')
+    if stage == 3:
+        # The windmill's pipe comes in low, rises up the tank's side and over the rim, and its spout hangs over the water.
+        e = list(wall_s)
+        e += [part([7, 4, 0], [9, 6, 11], 'p'), part([6.5, 3.5, 9.5], [9.5, 6.5, 12.5], 'p'), part([7, 6, 10], [9, 19, 12], 'p'),
+              part([7, 17, 12], [9, 19, 21], 'p'), part([6.5, 14, 19], [9.5, 19.5, 22], 'p')]
+        return model(e, t, 'stock_wall')
+    # The windmill's pipe along the ground, a coupling halfway.
+    return model([part([7, 4, 0], [9, 6, 16], 'p'), part([6.5, 3.5, 7], [9.5, 6.5, 9], 'p'), part([7, 0, 7.5], [9, 4, 8.5], 'g', faces=SIDES)], t, 'pump_iron')
+
+
+# The windmill's tower: four legs leaning in from 22 pixels out at the foot to 5 at the top, eleven blocks up; a girt round them at
+# every section's top and an X of rods in each panel. Section k's block stands at y = 3k and draws world heights max(0, 3k-1) to 3k+2.
+TOWER_TOP = 11
+
+
+def leg_offset(y):
+    return 22 - 17 * y / TOWER_TOP
+
+
+def windmill_section(k):
+    t = {'i': 'tower_iron', 'r': 'galv', 'p': 'pump_iron', 'c': 'pier'}
+    yb = 3 * k
+    y0, y1 = max(0, yb - 1), yb + 2
+    e = []
+    step = .25
+    y = y0
+    while y < y1 - 1e-6:
+        d = leg_offset(y + step / 2)
+        for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            cx, cz = 8 + sx * d, 8 + sz * d
+            e.append(part([cx - 1, (y - yb) * 16, cz - 1], [cx + 1, (y + step - yb) * 16, cz + 1], 'i', faces=SIDES))
+        y += step
+    # The girt round the legs at the section's top, a little under it.
+    gy = (y1 - yb) * 16 - 1.5
+    d = leg_offset(y1 - .05)
+    e += [part([8 - d, gy, 8 - d - .5], [8 + d, gy + 1.2, 8 - d + .5], 'i', faces=SIDES + ('up', 'down')),
+          part([8 - d, gy, 8 + d - .5], [8 + d, gy + 1.2, 8 + d + .5], 'i', faces=SIDES + ('up', 'down')),
+          part([8 - d - .5, gy, 8 - d], [8 - d + .5, gy + 1.2, 8 + d], 'i', faces=SIDES + ('up', 'down')),
+          part([8 + d - .5, gy, 8 - d], [8 + d + .5, gy + 1.2, 8 + d], 'i', faces=SIDES + ('up', 'down'))]
+    # An X of rods across each face of the panel, at the steepness nearest the panel's own.
+    ym = (y0 + y1) / 2
+    dm = leg_offset(ym)
+    h = (y1 - y0) * 16
+    w = 2 * dm
+    cy = (ym - yb) * 16
+    if h < w * 1.7:
+        ang, length = 45, min(w, h) * math.sqrt(2)
+    else:
+        ang = 22.5
+        length = min(h, w / math.tan(math.radians(22.5))) / math.cos(math.radians(22.5))
+    length = min(length, 2 * min(cy + 16, 32 - cy))
+    for face, (axis, fixed) in {'north': ('z', 8 - dm), 'south': ('z', 8 + dm), 'west': ('x', 8 - dm), 'east': ('x', 8 + dm)}.items():
+        for sign in (1, -1):
+            if axis == 'z':
+                lo, hi = [8 - .35, cy - length / 2, fixed - .35], [8 + .35, cy + length / 2, fixed + .35]
+                origin = [8, cy, fixed]
+            else:
+                lo, hi = [fixed - .35, cy - length / 2, 8 - .35], [fixed + .35, cy + length / 2, 8 + .35]
+                origin = [fixed, cy, 8]
+            e.append(part(lo, hi, 'r', faces=SIDES, rotation={'angle': sign * ang, 'axis': axis, 'origin': origin}))
+    # The pump rod down the middle.
+    e.append(part([7.6, max(-16, (y0 - yb) * 16), 7.6], [8.4, (y1 - yb) * 16, 8.4], 'r', faces=SIDES))
+    if k == 0:
+        # The pump on its stand pipe at the foot, its spout pipe low along the ground toward the tank.
+        e += [part([6, 0, 6], [10, 12, 10], 'p'), part([5.5, 11, 5.5], [10.5, 13, 10.5], 'p'), part([7, 4, -16], [9, 6, 6], 'p'),
+              part([5, -1, 5], [11, 1, 11], 'c', faces=SIDES + ('up',))]
+    if k == 3:
+        # The platform round the top, its boards on the last girt, under the head.
+        e += [part([-2, 30, -2], [18, 32, 18], {'up': 'r', 'down': 'r', 'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i'})]
+    return model(e, t, 'tower_iron')
+
+
+def windmill_head():
+    # The head on its mast: the gear housing, the shaft boss to the front where the wheel goes on, the tail's root behind.
+    t = {'h': 'head_case', 'r': 'galv', 'i': 'tower_iron'}
+    e = [part([7, -16, 7], [9, 2, 9], 'r', faces=SIDES), part([5, -14, 5], [11, -12, 11], 'i'),
+         part([4, 2, 2], [12, 13, 14], 'h'), part([6, 6, -1], [10, 10, 2], 'h'), part([7, 5, 13], [9, 9, 16], 'r')]
+    return model(e, t, 'head_case')
+
+
+def windmill_wheel():
+    """The wheel, its hub at (8, 8, -2): sixteen sails between an inner and an outer ring, drawn turned about its hub by the renderer."""
+    t = {'b': 'sail', 'r': 'galv', 'h': 'head_case'}
+    e = [part([5, 5, -4.5], [11, 11, .5], 'h')]
+    for k in range(16):
+        theta = k * 22.5
+        raw = 90 * int((theta + 44.9) // 90)
+        rot, base = theta - raw, raw % 360
+        z0 = -3.4 if k % 2 == 0 else -2.6
+        # A sail from radius 6 to 23, four pixels wide, laid along `base` and turned the rest of the way about the hub.
+        if base == 0:
+            lo, hi = [14, 6, z0], [31, 10, z0 + .6]
+        elif base == 180:
+            lo, hi = [-15, 6, z0], [2, 10, z0 + .6]
+        elif base == 90:
+            lo, hi = [6, 14, z0], [10, 31, z0 + .6]
+        else:
+            lo, hi = [6, -15, z0], [10, 2, z0 + .6]
+        r = {'angle': rot, 'axis': 'z', 'origin': [8, 8, -2]} if rot else None
+        e.append(part(lo, hi, 'b', faces=('north', 'south', 'up', 'down', 'east', 'west'), rotation=r))
+        for rad, thick in ((23.2, .8), (13.5, .7)):
+            seg = 2 * math.pi * rad / 16 * .56
+            if base == 0:
+                lo, hi = [8 + rad - thick / 2, 8 - seg, -2.4], [8 + rad + thick / 2, 8 + seg, -1.6]
+            elif base == 180:
+                lo, hi = [8 - rad - thick / 2, 8 - seg, -2.4], [8 - rad + thick / 2, 8 + seg, -1.6]
+            elif base == 90:
+                lo, hi = [8 - seg, 8 + rad - thick / 2, -2.4], [8 + seg, 8 + rad + thick / 2, -1.6]
+            else:
+                lo, hi = [8 - seg, 8 - rad - thick / 2, -2.4], [8 + seg, 8 - rad + thick / 2, -1.6]
+            lo = [max(-16, v) for v in lo]; hi = [min(32, v) for v in hi]
+            e.append(part(lo, hi, 'r', faces=SIDES + ('up', 'down'), rotation=r))
+    return model(e, t, 'sail')
+
+
+def windmill_model(stage):
+    if stage <= 3:
+        return windmill_section(stage)
+    if stage == 4:
+        return windmill_head()
+    if stage == 5:
+        return windmill_wheel()
+    t = {'c': 'pier', 'r': 'galv', 'v': 'vane'}
+    if stage == 6:
+        # A footing at the tower's corner: a concrete pier, the leg's foot bolted to it.
+        return model([part([0, 0, 0], [6, 4, 6], 'c'), part([1, 4, 1], [3.5, 5, 3.5], 'r')], t, 'pier')
+    # The tail behind the head: a boom out to the vane, the vane's sheet on edge, a brace wire to the boom's root.
+    e = [part([7.2, 5.5, -12], [8.8, 7.5, 20], 'r'), part([7.5, -6, 10], [8.5, 18, 30], {'east': 'v', 'west': 'v', 'north': 'r', 'south': 'r', 'up': 'r', 'down': 'r'}),
+         part([7.8, 7, -6], [8.2, 18.5, -5.6], 'r', faces=SIDES, rotation={'angle': 45, 'axis': 'x', 'origin': [8, 12, 2]})]
+    return model(e, t, 'vane')
+
+
+# The pumpjack, laid out about its Samson post A with the horsehead toward the facing: the wellhead three blocks in front, the gearbox
+# and crank two behind, the motor three behind. The walking beam's pivot is 3.25 blocks up; the machine block above the post (at y 2)
+# keeps the turning parts (TheListMachines), which its renderer draws from the models below.
+def pumpjack_model(stage):
+    t = {'p': 'pj_paint', 'q': 'pj_worn', 'k': 'skid', 'n': 'weight_iron', 'c': 'cable', 'o': 'polished', 'w': 'wellhead', 'm': 'motor_case',
+         'x': 'mesh', 'g': 'galv'}
+    if stage == 0:
+        # The wellhead: the casing's flange, the tee, a valve and its handwheel, the flowline off to the side, the stuffing box on top.
+        e = [part([5, 0, 5], [11, 3, 11], 'w'), part([6, 3, 6], [10, 10, 10], 'w'), part([10, 5.5, 7], [16, 7.5, 9], 'w'),
+             part([11, 8, 6], [13, 10, 10], 'w'), part([11.5, 10, 7.5], [12.5, 11, 8.5], 'w'),
+             part([7, 10, 7], [9, 13, 9], 'g'), part([6.5, 12, 6.5], [9.5, 13, 9.5], 'w')]
+        return model(e, t, 'wellhead')
+    if stage == 1:
+        # The Samson post's lower half: two I-beam legs standing, two braces leaning back from the skid to them, the skid under all.
+        # Each brace's foot is on the skid 11 pixels behind its leg, so that at the steepest lean the game allows its top meets the leg.
+        e = []
+        for x0 in (1, 12):
+            e.append(part([x0, 0, 6], [x0 + 3, 32, 10], 'p'))
+            e.append(part([x0 + .5, 0, 20], [x0 + 2.5, 32, 22], 'p', faces=SIDES, rotation={'angle': -22.5, 'axis': 'x', 'origin': [x0 + 1.5, 0, 21]}))
+            e.append(part([x0 - 1, 0, -16], [x0 + 4, 3, 32], 'k', faces=SIDES + ('up',)))
+        e += [part([4, 11, 7], [12, 13, 9], 'p'), part([4, 23, 7], [12, 25, 9], 'p')]
+        return model(e, t, 'pj_paint')
+    if stage == 2:
+        # The walking beam's front half and the horsehead, about a pivot at (8, 8, 32): the beam an I in section, the head's face an arc
+        # three blocks round from the pivot, from 25 degrees under the beam to 12 over it.
+        e = [part([6, 7, -6], [10, 13, 32], 'p'), part([5, 12.5, -6], [11, 13.5, 32], 'p'), part([5, 6.5, -6], [11, 7.5, 32], 'p')]
+        a = -25.0
+        while a < 12 - 1e-6:
+            b = min(12.0, a + 4.6)
+            m = math.radians((a + b) / 2)
+            zf, zb = 32 - 48 * math.cos(m), 32 - 39 * math.cos(m)
+            e.append(part([4, 8 + 48 * math.sin(math.radians(a)), max(-16, zf)], [12, 8 + 48 * math.sin(math.radians(b)), zb],
+                          {'north': 'q', 'east': 'p', 'west': 'p', 'up': 'p', 'down': 'p', 'south': 'p'}))
+            a = b
+        e.append(part([5, 2, -9], [11, 12, -5], 'p'))
+        return model(e, t, 'pj_paint')
+    if stage == 3:
+        # The beam's back half about a pivot at (8, 8, -16), to the equalizer under its end: the cross bar the two pitman arms hang from.
+        e = [part([6, 7, -16], [10, 13, 16], 'p'), part([5, 12.5, -16], [11, 13.5, 16], 'p'), part([5, 6.5, -16], [11, 7.5, 16], 'p'),
+             part([5, 3, 13], [11, 7, 19], 'p'), part([-2, 4.1, 14.5], [18, 7.1, 17.5], 'p'),
+             part([-1.6, 4.4, 14.8], [1.6, 6.8, 17.2], 'n'), part([14.4, 4.4, 14.8], [17.6, 6.8, 17.2], 'n')]
+        return model(e, t, 'pj_paint')
+    if stage == 4:
+        # The cranks and their counterweights about the gearbox's shaft at (8, 8, 8): an arm each side, its pin at the top when the
+        # crank is at nought, the weights hanging opposite.
+        e = [part([3, 7, 7], [13, 9, 9], 'g')]
+        for x0, x1, px0, px1 in ((.5, 3, -1.5, .6), (13, 15.5, 15.4, 17.5)):
+            e += [part([x0, -2, 5.5], [x1, 18, 10.5], 'p'), part([px0, 14.8, 6.8], [px1, 17.2, 9.2], 'g'),
+                  part([x0 - .5, -10, 0], [x1 + .5, 1, 16], 'n'), part([x0 - .2, -12, 3], [x1 + .2, -10, 13], 'n')]
+        return model(e, t, 'weight_iron')
+    if stage == 5:
+        # The two pitman arms, each from its crank pin at the foot (8, 0, 8 is their axis) up to the equalizer, 1.92 blocks long.
+        e = []
+        for cx in (0, 16):
+            e += [part([cx - .9, 0, 7.1], [cx + .9, 30.7, 8.9], 'p'), part([cx - 1.4, -1.4, 6.6], [cx + 1.4, 1.4, 9.4], 'n'),
+                  part([cx - 1.4, 29.3, 6.6], [cx + 1.4, 32, 9.4], 'n')]
+        return model(e, t, 'pj_paint')
+    if stage == 6:
+        # The carrier bar on the polished rod, the rod clamp over it; the rod runs down 45 pixels into the stuffing box and the well.
+        e = [part([7.4, -16, 7.4], [8.6, 30, 8.6], 'o', faces=SIDES), part([4, 27, 7], [12, 29, 9], 'n'), part([7, 29, 7], [9, 31, 9], 'n')]
+        return model(e, t, 'polished')
+    # The gearbox on the skid with the crank's shaft through it, the belt guard, and the motor behind on its own base.
+    e = [part([3.5, 3, 2], [12.5, 22, 14], 'p'), part([4, 16, 3], [12, 23.5, 13], 'p'), part([0, 0, -16], [3, 3, 32], 'k', faces=SIDES + ('up',)),
+         part([13, 0, -16], [16, 3, 32], 'k', faces=SIDES + ('up',)), part([3, 0, 0], [13, 3, 30], 'k', faces=('up',)),
+         part([5, 3, 19], [12, 13, 30], 'm'), part([4, 5, 30], [13, 11, 31.5], 'm'), part([12, 7, 24], [17.5, 9, 26], 'g'),
+         part([12.5, 13, 7], [17.5, 15, 9], 'g'),
+         part([17.5, 4, 5], [20, 19, 28], {'east': 'x', 'west': 'p', 'north': 'p', 'south': 'p', 'up': 'p', 'down': 'p'})]
+    return model(e, t, 'pj_paint')
+
+
+def pumpjack_saddle():
+    # Above the Samson post's legs: their tops, the saddle across them and the pillow blocks the beam's pivot turns in.
+    t = {'p': 'pj_paint', 'n': 'weight_iron'}
+    e = [part([1, 0, 6], [4, 16, 10], 'p'), part([12, 0, 6], [15, 16, 10], 'p'), part([0, 16, 5], [16, 18, 11], 'p'),
+         part([3, 18, 6], [6, 22, 10], 'n'), part([10, 18, 6], [13, 22, 10], 'n')]
+    return model(e, t, 'pj_paint')
+
+
+def pumpjack_cable():
+    """The bridle's two wire ropes, one block tall, stretched by the renderer from the carrier bar up to the horsehead."""
+    t = {'c': 'cable'}
+    return model([part([5.2, 0, 7.6], [6, 16, 8.4], 'c', faces=SIDES), part([10, 0, 7.6], [10.8, 16, 8.4], 'c', faces=SIDES)], t, 'cable')
+
+
+def battery_model(stage):
+    t = {'s': 'tank_steel', 'r': 'tank_top', 'g': 'galv', 'l': 'ladder', 'k': 'skid', 'c': 'cedar', 'b': 'lease_sign', 'n': 'well_plate_1'}
+    if stage in (0, 1):
+        # A tank three blocks across, stood on the ground (0) or its upper half with the roof and the walkway rail (1), rounded from
+        # boxes of plate.
+        lo, hi = (0, 32) if stage == 0 else (-16, 24)
+        e = [part([8 - hx, lo, 8 - hz], [8 + hx, hi, 8 + hz], 's', faces=SIDES) for hx, hz in ((22, 8), (8, 22), (19, 15), (15, 19))]
+        e.append(part([-15, lo, 6], [-13.6, hi, 10], 'l', faces=('west', 'east')))
+        if stage == 1:
+            e += [part([-11, 24, -11], [27, 26, 27], 'r', faces=('up', 'down') + SIDES), part([-6, 26, -6], [22, 28, 22], 'r', faces=('up',) + SIDES),
+                  part([2, 28, 2], [14, 29, 14], 'r', faces=('up',) + SIDES), part([6, 29, 6], [10, 31, 10], 'g')]
+            e += [part([-15, 26, -2], [-14, 31, 18], 'g', faces=SIDES + ('up',)), part([-15, 24, 6], [-13.6, 30, 10], 'l', faces=('west', 'east'))]
+        return model(e, t, 'tank_steel')
+    if stage == 2:
+        # The separator: a vessel lying on two saddles, its gauge and the pipes off its ends.
+        e = [part([-12, 4, 2], [28, 16, 14], 's'), part([-14, 6, 4], [-12, 14, 12], 'r'), part([28, 6, 4], [30, 14, 12], 'r'),
+             part([-6, 0, 3], [-2, 5, 13], 'k'), part([18, 0, 3], [22, 5, 13], 'k'), part([7, 16, 7], [9, 20, 9], 'g'),
+             part([30, 9, 7], [32, 11, 9], 'g')]
+        return model(e, t, 'tank_steel')
+    if stage == 3:
+        return model([], t, 'tank_steel')
+    if stage == 4:
+        # The lease's sign on two posts, three boards wide.
+        e = [part([-13, 0, 7], [-11, 26, 9], 'c'), part([27, 0, 7], [29, 26, 9], 'c'),
+             element([-16, 10, 6], [32, 26, 7], {'north': 'b', 'south': 'c', 'up': 'c', 'down': 'c', 'east': 'c', 'west': 'c'},
+                     uv={'north': [0, 0, 16, 16], 'south': [0, 0, 16, 16], 'up': [0, 0, 16, 1], 'down': [0, 0, 16, 1], 'east': [0, 0, 1, 16], 'west': [0, 0, 1, 16]})]
+        return model(e, {**t, 'b': 'lease_sign'}, 'lease_sign')
+    # A well's number on a short post by its wellhead.
+    n = stage - 4
+    e = [part([7, 0, 9], [9, 13, 11], 'c'), part([0, 10, 8], [16, 20, 9], {'north': 'n', 'south': 'c', 'up': 'c', 'down': 'c', 'east': 'c', 'west': 'c'})]
+    e[1]['faces']['north']['uv'] = [0, 3, 16, 13]
+    return model(e, {**t, 'n': f'well_plate_{n}'}, f'well_plate_{n}')
+
+
+def pasture_models():
+    m = {}
+    for s in range(8):
+        m[f'pasture_{s}'] = pasture_model(s); m[f'windmill_{s}'] = windmill_model(s); m[f'pumpjack_{s}'] = pumpjack_model(s)
+        m[f'battery_{s}'] = battery_model(s)
+    for s in range(5):
+        m[f'stock_{s}'] = stock_model(s)
+    m['pumpjack_saddle'] = pumpjack_saddle(); m['pumpjack_cable'] = pumpjack_cable()
+    return m
+
+
+def pasture_faces():
+    faces = {'cedar': cedar(), 'barbed': barbed(), 'guard_pipe': guard_pipe(), 'guard_pit': guard_pit(), 'stock_wall': stock_wall(0),
+             'stock_rim': stock_wall(1), 'salt': salt(), 'tub': tub(), 'old_hay': old_hay(0), 'old_hay_top': old_hay(1),
+             'tower_iron': tower_iron(), 'sail': sail(), 'head_case': head_case(), 'vane': vane(), 'pier': pier(), 'pump_iron': pump_iron(),
+             'pj_paint': pj_paint(0), 'pj_worn': pj_paint(1), 'weight_iron': weight_iron(), 'cable': cable(), 'polished': polished(),
+             'wellhead': wellhead(), 'motor_case': motor_case(), 'mesh': mesh(), 'skid': skid(), 'tank_steel': tank_steel(),
+             'tank_top': tank_top()}
+    faces['lease_sign'] = lease_sign()
+    for n in (1, 2, 3):
+        faces[f'well_plate_{n}'] = well_plate(n)
+    return faces
+
+
 # ------------------------------------------------------------------------------------------------ the whole set
 def fitting_models():
     m = {}
@@ -3395,6 +4114,7 @@ def fitting_models():
     for s in range(7):
         m[f'tower_{s}'] = tower_model(s); m[f'tank_{s}'] = tank_model(s)
     m.update(school_models())
+    m.update(pasture_models())
     return m
 
 
@@ -3456,6 +4176,7 @@ def textures():
         for col in range(3):
             faces[f'drivein_board_{1 + row * 3 + col}'] = board.crop((col * 16, row * 16, col * 16 + 16, row * 16 + 16))
     faces.update(school_faces())
+    faces.update(pasture_faces())
     for name, im in faces.items():
         out[f'block/the_list/{name}.png'] = im
     return out
@@ -3463,11 +4184,13 @@ def textures():
 
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
-         'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot']
+         'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
+         'pasture', 'stock', 'windmill', 'pumpjack', 'battery']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 3, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
-          'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8}
+          'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
+          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_line': 'Painted Line', 'curb': 'Curb', 'sidewalk': 'Sidewalk',
@@ -3477,11 +4200,11 @@ MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_
                   'store_carpet': 'Video Store Carpet', 'storefront': 'Face Brick', 'stucco': 'Stucco', 'cinder': 'Cinder Block',
                   'galvanized': 'Galvanized Iron', 'rusted': 'Rusted Iron', 'slab': 'Gin Floor', 'shop_metal': 'Shop Siding', 'drive_lot': 'Drive-in Lot',
                   'turf': 'Field Turf', 'turf_dark': 'Mown Turf', 'turf_line': 'Yard Line', 'turf_side': 'Sideline', 'endzone': 'End Zone',
-                  'track_cinder': 'Cinder Track'}
+                  'track_cinder': 'Cinder Track', 'pasture': 'Buffalo Grass', 'mud': 'Trodden Mud'}
 DOORS = {'list_house_door': ('door_house_lower', 'door_house_upper'), 'list_glass_door': ('door_glass_lower', 'door_glass_upper'),
          'list_steel_door': ('door_steel_lower', 'door_steel_upper')}
 NAMES = {'list_fitting': 'Lamesa Fitting', 'list_shingle_stairs': 'Shingle Stairs', 'list_shingle_slab': 'Shingle Slab', 'list_metal_stairs': 'Galvanized Stairs',
-         'list_house_door': 'Panel Door', 'list_glass_door': 'Store Door', 'list_steel_door': 'Steel Door', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
+         'list_house_door': 'Panel Door', 'list_glass_door': 'Store Door', 'list_steel_door': 'Steel Door', 'list_machine': 'Lamesa Machine', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
 
 
 def stair_states(model_name):
@@ -3565,6 +4288,16 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/list_fitting.json'] = {'variants': variants}
+    # 0.4.701: the machines' own block, its still parts drawn by the block and its turning parts by its renderer: the windmill's head and
+    # the pumpjack's saddle.
+    machine = {}
+    for facing, y in FACING_Y.items():
+        for kind, name in (('windmill', 'windmill_4'), ('pumpjack', 'pumpjack_saddle'), ('cable', 'pumpjack_cable')):
+            v = {'model': NS + f'block/the_list/{name}'}
+            if y:
+                v['y'] = y
+            machine[f'facing={facing},machine={kind}'] = v
+    out['blockstates/list_machine.json'] = {'variants': machine}
     return out
 
 

@@ -1,0 +1,221 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "s": "the_oldest_house:block/the_list/tank_steel",
+    "r": "the_oldest_house:block/the_list/tank_top",
+    "g": "the_oldest_house:block/the_list/galv",
+    "l": "the_oldest_house:block/the_list/ladder",
+    "k": "the_oldest_house:block/the_list/skid",
+    "c": "the_oldest_house:block/the_list/cedar",
+    "b": "the_oldest_house:block/the_list/lease_sign",
+    "n": "the_oldest_house:block/the_list/well_plate_1",
+    "particle": "the_oldest_house:block/the_list/lease_sign"
+  },
+  "elements": [
+    {
+      "from": [
+        -13,
+        0,
+        7
+      ],
+      "to": [
+        -11,
+        26,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            11,
+            0,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            3,
+            0,
+            5,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            3,
+            7,
+            5,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            3,
+            7,
+            5,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        27,
+        0,
+        7
+      ],
+      "to": [
+        29,
+        26,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            3,
+            0,
+            5,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            11,
+            0,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#c",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            11,
+            7,
+            13,
+            9
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            11,
+            7,
+            13,
+            9
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -16,
+        10,
+        6
+      ],
+      "to": [
+        32,
+        26,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        },
+        "down": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

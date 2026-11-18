@@ -1,0 +1,154 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "c": "the_oldest_house:block/the_list/cedar",
+    "w": "the_oldest_house:block/the_list/barbed",
+    "p": "the_oldest_house:block/the_list/guard_pipe",
+    "d": "the_oldest_house:block/the_list/guard_pit",
+    "s": "the_oldest_house:block/the_list/salt",
+    "u": "the_oldest_house:block/the_list/tub",
+    "h": "the_oldest_house:block/the_list/old_hay",
+    "k": "the_oldest_house:block/the_list/old_hay_top",
+    "g": "the_oldest_house:block/the_list/galv",
+    "particle": "the_oldest_house:block/the_list/salt"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        5,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#u",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#u",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#u",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#u",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        },
+        "down": {
+          "texture": "#u",
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        4,
+        4.5
+      ],
+      "to": [
+        11.5,
+        8,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            4.5,
+            8,
+            11.5,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            4.5,
+            8,
+            11.5,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            4.5,
+            8,
+            11.5,
+            12
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            4.5,
+            8,
+            11.5,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            4.5,
+            4.5,
+            11.5,
+            11.5
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            4.5,
+            4.5,
+            11.5,
+            11.5
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

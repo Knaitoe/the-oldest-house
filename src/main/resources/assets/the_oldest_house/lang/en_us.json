@@ -2193,5 +2193,11 @@
   "block.the_oldest_house.list_turf_line": "Yard Line",
   "block.the_oldest_house.list_turf_side": "Sideline",
   "block.the_oldest_house.list_endzone": "End Zone",
-  "block.the_oldest_house.list_track_cinder": "Cinder Track"
+  "block.the_oldest_house.list_track_cinder": "Cinder Track",
+  "subtitles.the_oldest_house.the_list.windmill": "A windmill turns and creaks",
+  "subtitles.the_oldest_house.the_list.pumpjack": "A pumpjack knocks on its downstroke",
+  "subtitles.the_oldest_house.the_list.guard": "A cattle guard rattles underfoot",
+  "block.the_oldest_house.list_machine": "Lamesa Machine",
+  "block.the_oldest_house.list_pasture": "Buffalo Grass",
+  "block.the_oldest_house.list_mud": "Trodden Mud"
 }

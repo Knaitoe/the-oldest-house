@@ -20,8 +20,10 @@ public final class IndianLakeRooms {
         var r = DomesticLives.extend(place, place.room());
         // 0.4.656: the King's country holds a reader who has gone through either side hedge (KingSite.OFF_BOARD).
         int side = place == LabyrinthPlace.SLEEPING_KING ? KingSite.OFF_BOARD : 0;
+        // 0.4.701: The list's town runs on south of the House's door, through the back yard and the cotton to the pasture.
+        int south = place == LabyrinthPlace.THE_LIST ? r.maxZ()+1 : 18;
         return new AABB(base.getX()+r.minX()-side, base.getY()+r.minY(), base.getZ()+r.minZ(),
-                base.getX()+r.maxX()+1+side, base.getY()+r.maxY()+1, base.getZ()+18);
+                base.getX()+r.maxX()+1+side, base.getY()+r.maxY()+1, base.getZ()+south);
     }
     public static List<ServerPlayer> visitors(ServerLevel level, BlockPos base, LabyrinthPlace place) {
         AABB bounds = bounds(base, place);

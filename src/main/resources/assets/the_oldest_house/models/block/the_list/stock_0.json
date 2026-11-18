@@ -1,0 +1,131 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/the_list/stock_wall",
+    "r": "the_oldest_house:block/the_list/stock_rim",
+    "g": "the_oldest_house:block/the_list/galv",
+    "p": "the_oldest_house:block/the_list/pump_iron",
+    "particle": "the_oldest_house:block/the_list/stock_wall"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w",
+          "uv": [
+            0,
+            1,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#w",
+          "uv": [
+            0,
+            1,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#w",
+          "uv": [
+            0,
+            1,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#w",
+          "uv": [
+            14,
+            1,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        15,
+        13
+      ],
+      "to": [
+        16,
+        16.5,
+        16.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            16,
+            16.0
+          ]
+        },
+        "south": {
+          "texture": "#r",
+          "uv": [
+            0,
+            14.5,
+            16,
+            16.0
+          ]
+        },
+        "east": {
+          "texture": "#r",
+          "uv": [
+            12.5,
+            14.5,
+            16.0,
+            16.0
+          ]
+        },
+        "west": {
+          "texture": "#r",
+          "uv": [
+            12.5,
+            14.5,
+            16.0,
+            16.0
+          ]
+        },
+        "up": {
+          "texture": "#r",
+          "uv": [
+            0,
+            12.5,
+            16,
+            16.0
+          ]
+        },
+        "down": {
+          "texture": "#r",
+          "uv": [
+            0,
+            12.5,
+            16,
+            16.0
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}
