@@ -1,0 +1,67 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/place/press",
+    "s": "the_oldest_house:block/place/press_side",
+    "particle": "the_oldest_house:block/place/press_side"
+  },
+  "elements": [
+    {
+      "from": [
+        -9,
+        0,
+        1
+      ],
+      "to": [
+        5,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            2,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            16,
+            15
+          ]
+        }
+      }
+    }
+  ]
+}

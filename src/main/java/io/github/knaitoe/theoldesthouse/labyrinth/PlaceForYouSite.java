@@ -60,6 +60,13 @@ public final class PlaceForYouSite {
     // ------------------------------------------------------------------------------------------------ upstairs, shut in this slice
     /** 0.4.689: in Mara's room, the washing at the foot of the bed and her chest of drawers against the back wall; the bed's head is to the front wall, a bedside table beside it and a lamp by the armchair. */
     public static final BlockPos BASKET=new BlockPos(-7,UP,-15),DRESSER=new BlockPos(-5,UP,-20);
+    /**
+     * 0.4.690: the back passage. The cupboard in front of the back door's catch and where it is shoved to; the step stool's corner;
+     * the cell inside the back door where the wedge or the stool holds it; the back gate in the yard's back fence; where Kit's bag is set
+     * down beyond it, or under the sitting room's side window; that window's pane.
+     */
+    public static final BlockPos BACK_PRESS=new BlockPos(1,0,-27),PRESS_MOVED=new BlockPos(2,0,-27),STOOL_AT=new BlockPos(-2,0,-27),HOLD=new BlockPos(0,0,-27),
+        BACK_GATE=new BlockPos(0,0,-30),BAG_BACK=new BlockPos(0,0,-32),BAG_SIDE=new BlockPos(-12,0,-15),SIDE_WINDOW=new BlockPos(-10,1,-15);
     public static final List<BlockPos> SHUT_DOORS=List.of(new BlockPos(-3,UP,-16),new BlockPos(3,UP,-14),new BlockPos(3,UP,-24),new BlockPos(-3,UP,-24));
     /** The road's two ends, where it goes on into the trees. */
     public static boolean roadEnd(Vec3 r){return Math.abs(r.x)>=11&&r.z<-0.5&&r.z>-4&&r.y<3;}
@@ -103,7 +110,8 @@ public final class PlaceForYouSite {
         // The picket fence round the yard, its gate, the lamp on the gatepost, the mailbox (the account waits in it).
         for(int x=-14;x<=15;x++)if(x!=0)set(l,b,x,0,-4,Blocks.BIRCH_FENCE.defaultBlockState());
         for(int z=-5;z>=-30;z--){set(l,b,-14,0,z,Blocks.BIRCH_FENCE.defaultBlockState());set(l,b,15,0,z,Blocks.BIRCH_FENCE.defaultBlockState());}
-        for(int x=-14;x<=15;x++)set(l,b,x,0,-30,Blocks.BIRCH_FENCE.defaultBlockState());
+        for(int x=-14;x<=15;x++)if(x!=BACK_GATE.getX())set(l,b,x,0,-30,Blocks.BIRCH_FENCE.defaultBlockState());
+        backGate(l,b,false);
         set(l,b,GATE,Blocks.BIRCH_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.SOUTH));
         set(l,b,-1,1,-4,Blocks.LANTERN.defaultBlockState());set(l,b,MAILBOX,read(HouseReadPropBlock.Part.MAILBOX,Direction.SOUTH));
         // The front path, the porch with its posts and roof, the porch light.
@@ -121,7 +129,7 @@ public final class PlaceForYouSite {
         box(l,b,-3,0,-27,-3,3,-13,paper);box(l,b,3,0,-27,3,3,-13,paper);box(l,b,-8,0,-21,-4,3,-21,stripe);box(l,b,4,0,-23,8,3,-23,paper);
         // The front door through both skins, and the back door; the archways into the sitting room and the kitchen; Kit's door and the bathroom's.
         door(l,b,FRONT_DOOR,Blocks.SPRUCE_DOOR,Direction.SOUTH,false);box(l,b,0,0,-11,0,1,-11,air);
-        door(l,b,BACK_DOOR,Blocks.SPRUCE_DOOR,Direction.NORTH,false);box(l,b,0,0,-29,0,1,-29,air);
+        backDoor(l,b,false);box(l,b,0,0,-29,0,1,-29,air);
         box(l,b,-3,0,-16,-3,2,-15,air);box(l,b,3,0,-15,3,2,-14,air);
         door(l,b,KIT_DOOR,Blocks.OAK_DOOR,Direction.WEST,false);door(l,b,BATH_DOOR,Blocks.OAK_DOOR,Direction.EAST,false);
         // Windows: two to the front each side, the kitchen east over the side porch, the sitting room west, Kit's room and the bathroom at the back, upstairs at the front.
@@ -153,8 +161,8 @@ public final class PlaceForYouSite {
         set(l,b,HOOKS,fit(PlaceForYouBlock.Kind.HOOKS,Direction.WEST,0));glass(l,b,0);
         set(l,b,HALL_CHAIR,furniture(HouseholdFurnitureBlock.Kind.CANE_CHAIR,Direction.EAST));
         set(l,b,0,3,-15,barrett(BarrettHomeBlock.Kind.CEILING_LIGHT,Direction.NORTH,true));set(l,b,-1,3,-25,barrett(BarrettHomeBlock.Kind.CEILING_LIGHT,Direction.NORTH,true));
-        // The back passage: the cupboard stood in front of the back door's catch.
-        set(l,b,1,0,-27,barrett(BarrettHomeBlock.Kind.SHELVES,Direction.WEST,false));
+        // The back passage: the cupboard stood in front of the back door's catch; the step stool in the hall's back corner.
+        press(l,b,0);stool(l,b,"corner");
         // The sitting room: striped paper, the sofa on the west wall, the two armchairs, the radio, the sideboard with Theo's photograph and the household's pictures over it.
         box(l,b,-9,0,-20,-9,3,-13,stripe);box(l,b,-8,0,-12,-4,3,-12,stripe);
         for(int y=1;y<=2;y++){for(int x:new int[]{-7,-6,-5})window(l,b,x,y,-12,Direction.SOUTH);for(int z:new int[]{-15,-16,-17})window(l,b,-9,y,z,Direction.WEST);}
@@ -193,6 +201,9 @@ public final class PlaceForYouSite {
         for(int x=-18;x<=18;x++)for(int z=-34;z<=-31;z++)if(Math.floorMod(x*7+z*3,5)!=0)box(l,b,x,0,z,x,3+((x+z)&1),z,leaves(Math.floorMod(x,3)==0?Blocks.BIRCH_LEAVES:Blocks.SPRUCE_LEAVES));
         for(int z=-30;z<=-5;z++)for(int x:new int[]{-18,-17,-16,16,17,18})if(Math.floorMod(x+z*5,4)!=0||x==18||x==-18)box(l,b,x,0,z,x,3+(z&1),z,leaves(Blocks.SPRUCE_LEAVES));
         for(var at:new int[][]{{-16,-8},{-16,-24},{17,-12},{17,-26},{-6,-32},{7,-32}}){box(l,b,at[0],0,at[1],at[0],4,at[1],Blocks.SPRUCE_LOG.defaultBlockState());box(l,b,at[0]-1,5,at[1]-1,at[0]+1,6,at[1]+1,leaves(Blocks.SPRUCE_LEAVES));set(l,b,at[0],7,at[1],leaves(Blocks.SPRUCE_LEAVES));}
+        // 0.4.690: beyond the back gate, a path between the trees, closing over at the end.
+        box(l,b,0,0,-33,0,2,-31,air);box(l,b,0,-1,-33,0,-1,-31,Blocks.DIRT_PATH.defaultBlockState());
+        for(int z=-33;z<=-31;z++)for(int x:new int[]{-1,1})box(l,b,x,0,z,x,3,z,leaves(Blocks.SPRUCE_LEAVES));
         reset(l,b,new CompoundTag());
         // 0.4.263: every pane joined to its neighbours, as if put there by hand (set plain, they stood as bare posts).
         RoomActors.settlePanes(l,b,LabyrinthPlace.PLACE_FOR_YOU);
@@ -208,6 +219,9 @@ public final class PlaceForYouSite {
         set(l,b,BAG_GATE,where.equals("gate")?fit(BAG,Direction.SOUTH,0):Blocks.AIR.defaultBlockState());
         set(l,b,BAG_KITCHEN,where.equals("kitchen")?fit(BAG,Direction.WEST,0):Blocks.AIR.defaultBlockState());
         set(l,b,UNPACKED,where.equals("unpacked")?fit(BAG,Direction.SOUTH,2):Blocks.AIR.defaultBlockState());
+        // 0.4.690: out beyond the back gate, or under the sitting room window.
+        set(l,b,BAG_BACK,where.equals("back")?fit(BAG,Direction.SOUTH,0):Blocks.AIR.defaultBlockState());
+        set(l,b,BAG_SIDE,where.equals("side")?fit(BAG,Direction.WEST,0):Blocks.AIR.defaultBlockState());
     }
     /** The table set for supper (the plates the reader may clear among them), or cleared to the sink. */
     public static void table(ServerLevel l,BlockPos b,boolean set){
@@ -227,6 +241,38 @@ public final class PlaceForYouSite {
     /** 0.4.688: Theo's photograph under the magnet on the fridge door, where the reader's picture was. */
     public static void theoPhoto(ServerLevel l,BlockPos b){var t=new CompoundTag();t.putString("Photo","theo");picture(l,b,t,true);}
     public static void card(ServerLevel l,BlockPos b,boolean there){set(l,b,CARD,there?fit(PlaceForYouBlock.Kind.CARD,Direction.EAST,0):Blocks.AIR.defaultBlockState());}
+    /** 0.4.690: the back passage's cupboard, shoved along the wall none, one, two or three times (the third clears the catch). */
+    public static void press(ServerLevel l,BlockPos b,int shoves){
+        var air=Blocks.AIR.defaultBlockState();
+        if(shoves>=3){if(PlaceForYouBlock.is(l.getBlockState(b.offset(BACK_PRESS)),PRESS))set(l,b,BACK_PRESS,air);set(l,b,BACK_PRESS.above(),air);
+            set(l,b,PRESS_MOVED,fit(PRESS,Direction.SOUTH,0));set(l,b,PRESS_MOVED.above(),fit(PRESS,Direction.SOUTH,1));return;}
+        set(l,b,PRESS_MOVED,air);set(l,b,PRESS_MOVED.above(),air);
+        set(l,b,BACK_PRESS,fit(PRESS,Direction.SOUTH,shoves*2));set(l,b,BACK_PRESS.above(),fit(PRESS,Direction.SOUTH,shoves*2+1));
+    }
+    /** The wedge on the floor where the cupboard stood, under the back door, or neither (carried). */
+    public static void wedge(ServerLevel l,BlockPos b,String where){
+        for(var at:List.of(BACK_PRESS,HOLD))if(PlaceForYouBlock.is(l.getBlockState(b.offset(at)),WEDGE))set(l,b,at,Blocks.AIR.defaultBlockState());
+        if(where.equals("floor"))set(l,b,BACK_PRESS,fit(WEDGE,Direction.NORTH,0));else if(where.equals("held"))set(l,b,HOLD,fit(WEDGE,Direction.NORTH,1));
+    }
+    /** The step stool in its corner, against the back door, or neither (carried). */
+    public static void stool(ServerLevel l,BlockPos b,String where){
+        for(var at:List.of(STOOL_AT,HOLD))if(PlaceForYouBlock.is(l.getBlockState(b.offset(at)),STOOL))set(l,b,at,Blocks.AIR.defaultBlockState());
+        if(where.equals("corner"))set(l,b,STOOL_AT,fit(STOOL,Direction.NORTH,0));else if(where.equals("held"))set(l,b,HOLD,fit(STOOL,Direction.NORTH,1));
+    }
+    /** The back door, opening inward with its hinge on the west jamb, so the catch is on the side the cupboard stands. */
+    public static void backDoor(ServerLevel l,BlockPos b,boolean open){
+        var s=Blocks.SPRUCE_DOOR.defaultBlockState().setValue(DoorBlock.FACING,Direction.SOUTH).setValue(DoorBlock.OPEN,open).setValue(DoorBlock.HINGE,DoorHingeSide.RIGHT);
+        set(l,b,BACK_DOOR,s.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));set(l,b,BACK_DOOR.above(),s.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+    }
+    public static boolean backDoorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(BACK_DOOR));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
+    public static void backGate(ServerLevel l,BlockPos b,boolean open){set(l,b,BACK_GATE,Blocks.BIRCH_FENCE_GATE.defaultBlockState().setValue(FenceGateBlock.FACING,Direction.SOUTH).setValue(FenceGateBlock.OPEN,open));}
+    public static boolean backGateOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(BACK_GATE));return s.getBlock() instanceof FenceGateBlock&&s.getValue(FenceGateBlock.OPEN);}
+    /** The sitting room's side window lifted out of the way, or its pane back, joined to the pane beside it and the wall. */
+    public static void sideWindow(ServerLevel l,BlockPos b,boolean open){
+        var s=open?Blocks.AIR.defaultBlockState():Blocks.GLASS_PANE.defaultBlockState().setValue(CrossCollisionBlock.NORTH,true).setValue(CrossCollisionBlock.SOUTH,true);
+        set(l,b,SIDE_WINDOW,s);set(l,b,SIDE_WINDOW.above(),s);
+    }
+    public static boolean sideWindowOpen(ServerLevel l,BlockPos b){return l.getBlockState(b.offset(SIDE_WINDOW)).isAir();}
     /** Kit's door, or the cupboard door it becomes. */
     public static void kitsDoor(ServerLevel l,BlockPos b,boolean cupboard){
         if(cupboard){set(l,b,KIT_DOOR,fit(CUPBOARD,Direction.EAST,0));set(l,b,KIT_DOOR.above(),fit(CUPBOARD,Direction.EAST,1));}
@@ -271,5 +317,6 @@ public final class PlaceForYouSite {
         table(l,b,true);card(l,b,true);bag(l,b,"none");kitsDoor(l,b,false);kitsChair(l,b,true);cups(l,b,false);kettle(l,b,true);spoon(l,b,false);
         kitchenLight(l,b,true);propped(l,b,false);routine(l,b,-1);picture(l,b,drawing,true);gate(l,b,false);
         pictures(l,b,false);readerChair(l,b,true);photo(l,b,true);basket(l,b,0);dresser(l,b,false);maraDoor(l,b,false);
+        wedge(l,b,"none");stool(l,b,"corner");press(l,b,0);backDoor(l,b,false);backGate(l,b,false);sideWindow(l,b,false);
     }
 }

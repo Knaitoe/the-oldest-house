@@ -65,6 +65,8 @@ public final class PlaceForYou {
         int theoLeg,inviteAt=-1,careAt=-1,kitNightAt=-1;
         // 0.4.689 (PlaceForYouRoom): when the last fold was made, or the drawer opened.
         int roomAt=-1;
+        // 0.4.690 (PlaceForYouBack): when the catch was drawn with nothing holding the door, and since when a refused Kit has been unwatched.
+        int backAt=-1,backSince=-1;
         final Map<UUID,Long> said=new HashMap<>();
         House(BlockPos b){base=b;}
     }
@@ -141,7 +143,7 @@ public final class PlaceForYou {
             if(own.getBoolean("ChairTaken"))m.put("Kit",stand(8.5,-14.5,90));
         }
         if(ch==OPEN||ch==DONE&&own.getString("Outcome").equals("opened_the_house")){
-            if(own.getBoolean("KitLeft"))m.put("Kit",Mark.gone());else if(own.getBoolean("KitGoing"))m.put("Kit",stand(.5,-2.5,90));else m.put("Kit",stand(1.5,-6.5,0));
+            if(own.getBoolean("KitLeft"))m.put("Kit",Mark.gone());else if(own.getBoolean("KitGoing"))m.put("Kit",PlaceForYouBack.going(own));else m.put("Kit",stand(1.5,-6.5,0));
             if(!own.getString("AlexEnd").isEmpty()&&own.getBoolean("AlexGone"))m.put("Alex",Mark.gone());else if(own.getBoolean("Propped")&&own.getBoolean("PictureDown"))m.put("Alex",stand(2.5,-8.5,0));
             if(own.getString("MaraEnd").equals("gate"))m.put("Mara",own.getBoolean("MaraGone")?Mark.gone():stand(.5,-6.5,0));
             if(own.getString("RenEnd").equals("goes"))m.put("Ren",own.getBoolean("MaraGone")?Mark.gone():stand(-.5,-6.5,0));
@@ -149,7 +151,7 @@ public final class PlaceForYou {
         if(ch==ROAD||ch==DONE&&own.getString("Outcome").equals("took_the_road")){if(own.getBoolean("KitLeft"))m.put("Kit",stand(1.5,-6.5,0));}
         // 0.4.687: the kept evening. Whoever has gone stays gone; whoever said they were going is not sat back down; the familiar one beside the reader.
         if(ch==PlaceForYou.KEEP||ch==DONE&&own.getString("Outcome").equals("kept_a_place")){
-            if(own.getBoolean("KitLeft"))m.put("Kit",Mark.gone());else if(own.getBoolean("KitGoing"))m.put("Kit",stand(.5,-2.5,90));
+            if(own.getBoolean("KitLeft"))m.put("Kit",Mark.gone());else if(own.getBoolean("KitGoing"))m.put("Kit",PlaceForYouBack.going(own));
             if(!own.getString("AlexEnd").isEmpty())m.put("Alex",own.getBoolean("AlexGone")?Mark.gone():stand(2.5,-8.5,0));
             if(own.getString("MaraEnd").equals("gate"))m.put("Mara",own.getBoolean("MaraGone")?Mark.gone():stand(.5,-6.5,0));
             if(own.getString("RenEnd").equals("goes"))m.put("Ren",own.getBoolean("MaraGone")?Mark.gone():stand(-.5,-6.5,0));
@@ -158,11 +160,13 @@ public final class PlaceForYou {
         // 0.4.688: the past let in. Kit, already gone, stays gone, and goes on up the road; Alex and Ren keep their places until the house
         // has them gone unseen; Mara goes to the hall to meet him, then back to the table.
         if(ch==INVITE||ch==DONE&&own.getString("Outcome").equals("invited_the_past")){
-            m.put("Kit",own.getBoolean("KitLeft")||own.getBoolean("Rewritten")?Mark.gone():stand(2.5,-1.2,90));
+            m.put("Kit",own.getBoolean("KitLeft")||own.getBoolean("Rewritten")||PlaceForYouBack.backWay(own)?Mark.gone():stand(2.5,-1.2,90));
             if(own.getBoolean("AlexOut"))m.put("Alex",Mark.gone());
             if(own.getBoolean("RenOut"))m.put("Ren",Mark.gone());
             if(!own.getBoolean("Rewritten"))m.put("Mara",stand(.5,-16.5,0));
         }
+        // 0.4.690: Kit by the back door, beside Mara, or on the way out with the bag; Alex at the side window.
+        PlaceForYouBack.marks(own,m);
         return m;
     }
     /**
@@ -294,6 +298,8 @@ public final class PlaceForYou {
                 else if(own.getString("Outcome").equals("invited_the_past"))PlaceForYouInvite.after(l,h,p,own,r);}
             default->{}
         }
+        // 0.4.690: the back passage.
+        PlaceForYouBack.tick(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -573,7 +579,9 @@ public final class PlaceForYou {
     /** Kit picks the bag up and goes: the front door and the gate left open behind, a line over the shoulder. */
     static void kitGoes(ServerPlayer p,House h){
         var own=own(p);if(own.getBoolean("KitGoing"))return;var l=p.serverLevel();var b=h.base;
-        edit(p,o->o.putBoolean("KitGoing",true));h.kitGoneAt=(int)h.tick;PlaceForYouSite.bag(l,b,"none");PlaceForYouSite.frontDoor(l,b,true);PlaceForYouSite.gate(l,b,true);
+        edit(p,o->o.putBoolean("KitGoing",true));h.kitGoneAt=(int)h.tick;PlaceForYouSite.bag(l,b,"none");
+        // 0.4.690: by the back way, if it was opened for Kit; else by the front.
+        if(PlaceForYouBack.backWay(own))PlaceForYouSite.backGate(l,b,true);else{PlaceForYouSite.frontDoor(l,b,true);PlaceForYouSite.gate(l,b,true);}
         above(h,actor(l,h,"Kit"),"I'll write. I probably won't. But I'll mean to.");
     }
     static void maraDecides(ServerPlayer p,House h){
@@ -617,11 +625,11 @@ public final class PlaceForYou {
                 else if(own.getString("Activity").isEmpty()){Talk.begin(p,"offer_"+who,who);offerActivity(p,h,who);}
                 else above(h,a,switch(who){case "Mara"->"Eat something.";case "Kit"->"Don't mind me.";case "Alex"->"Still here.";default->"Mm?";});}
             case BAG->{if(own.getInt("BagStage")==2&&!own.getBoolean("BagOpened")){edit(p,o->o.putBoolean("BagOpened",true));bagExchange(p,h,own);}else above(h,a,who.equals("Kit")?"It's my bag.":"Not now.");}
-            case SINK->{if(PlaceForYouRoom.talk(p,h,who,a))return;
+            case SINK->{if(PlaceForYouRoom.talk(p,h,who,a)||PlaceForYouBack.talk(p,h,who,a))return;
                 // 0.4.689: upstairs first, if the reader will; the sink is still there for one who would rather talk there.
                 if(who.equals("Mara")){if(own.getInt("RoomStage")==0&&!own.getBoolean("RoomDeclined"))PlaceForYouRoom.ask(p,h);else sink(p,h);}
                 else above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
-            case DINNER->{if(who.equals("Mara")&&!own.getBoolean("SpoonTaken"))spoon(p,h);else if(own.getBoolean("SpoonTaken"))confront(p,h);else above(h,a,"Sit down.");}
+            case DINNER->{if(PlaceForYouBack.talk(p,h,who,a))return;if(who.equals("Mara")&&!own.getBoolean("SpoonTaken"))spoon(p,h);else if(own.getBoolean("SpoonTaken"))confront(p,h);else above(h,a,"Sit down.");}
             case OPEN->{boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getBoolean("TheoSilent");boolean knocking=own.getBoolean("Knocked")&&!own.getBoolean("TheoSilent");
                 // 0.4.686 (N9): before the threshold, each is asked their own question.
                 if(who.equals("Kit")&&own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")&&!own.getBoolean("AskedKit"))PlaceForYouDoor.kit(p,h);
@@ -653,7 +661,13 @@ public final class PlaceForYou {
         if(PlaceForYouSite.SHUT_DOORS.stream().anyMatch(d->d.equals(rel)||d.above().equals(rel))){cue(p,"Shut. Not tonight.");return true;}
         if(kind==PlaceForYouBlock.Kind.BASKET)return PlaceForYouRoom.basket(p,h);
         if(kind==PlaceForYouBlock.Kind.DRESSER)return PlaceForYouRoom.dresser(p,h);
-        if(rel.equals(PlaceForYouSite.BACK_DOOR)||rel.equals(PlaceForYouSite.BACK_DOOR.above())){cue(p,"The back door's catch is stiff, and the cupboard stands in front of it.");return true;}
+        // 0.4.690: the back passage: the door, the cupboard, the wedge, the stool, the gate.
+        if(rel.equals(PlaceForYouSite.BACK_DOOR)||rel.equals(PlaceForYouSite.BACK_DOOR.above()))return PlaceForYouBack.door(p,h,held);
+        if((rel.equals(PlaceForYouSite.HOLD)||rel.equals(PlaceForYouSite.HOLD.below()))&&(held==PlaceForYouRegistry.WEDGE||held==PlaceForYouRegistry.STOOL))return PlaceForYouBack.door(p,h,held);
+        if(kind==PlaceForYouBlock.Kind.PRESS)return PlaceForYouBack.press(p,h);
+        if(kind==PlaceForYouBlock.Kind.WEDGE)return PlaceForYouBack.wedge(p,h);
+        if(kind==PlaceForYouBlock.Kind.STOOL)return PlaceForYouBack.stool(p,h);
+        if(rel.equals(PlaceForYouSite.BACK_GATE))return PlaceForYouBack.gate(p,h);
         if(held==PlaceForYouRegistry.BAG)return putBag(p,h,rel);
         if(held==PlaceForYouRegistry.PHOTO)return PlaceForYouInvite.carried(p,h,rel);
         if(held==PlaceForYouRegistry.PLATE){if(rel.equals(PlaceForYouSite.SINK)||rel.equals(PlaceForYouSite.SINK_TOP)){release(p,b);int n=own.getInt("Plates")+1;edit(p,o->o.putInt("Plates",n));
@@ -696,6 +710,7 @@ public final class PlaceForYou {
                 edit(p,o->o.putBoolean("RoutineUsed",true));cue(p,"You put it away in the cabinet.");return true;}
             if(ch==DINNER&&own.getString("Care").equals("private")&&!own.getBoolean("RoutineStopped")){PlaceForYouSite.routine(l,b,-1);edit(p,o->o.putBoolean("RoutineStopped",true));cue(p,"You put your hand over it. It's still warm. It stops.");return true;}
             cue(p,ch==BATHROOM&&own.getString("Care").isEmpty()?"Not yet.":"Laid out exactly as before, ready for the same moment.");return true;}
+        if(kind==PlaceForYouBlock.Kind.COUNTER&&PlaceForYouBack.drawer(p,h))return true;
         if(kind==PlaceForYouBlock.Kind.CARD)return false;
         // The front door: held against the house's closing it, or propped open with the hall chair to open the house.
         if(rel.equals(PlaceForYouSite.FRONT_DOOR)||rel.equals(PlaceForYouSite.FRONT_DOOR.above())){
@@ -741,6 +756,7 @@ public final class PlaceForYou {
     /** Takes back whatever the reader carries; a bag carried off goes back by Kit's chair, a plate to the sink. */
     static void release(ServerPlayer p,@Nullable BlockPos b){
         int held=0;for(int i=0;i<p.getInventory().getContainerSize();i++){var s=p.getInventory().getItem(i);var c=s.get(DataComponents.CUSTOM_DATA);if(s.is(PlaceForYouRegistry.CARRIED.get())&&c!=null&&c.copyTag().contains(TAG)){held=c.copyTag().getInt(TAG);p.getInventory().setItem(i,ItemStack.EMPTY);}}
+        if(b!=null)PlaceForYouBack.released(p,b,held);
         if(b!=null&&held==PlaceForYouRegistry.PHOTO){var l=p.server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(b.offset(PlaceForYouSite.PHOTO)))PlaceForYouSite.photo(l,b,true);}
         if(b!=null&&held==PlaceForYouRegistry.BAG){var l=p.server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(b.offset(PlaceForYouSite.BAG_KITCHEN))){PlaceForYouSite.bag(l,b,"gate");edit(p,o->{if(o.getString("BagWhere").isEmpty())o.putString("BagWhere","gate");});cue(p,"Not past the gate. You leave the bag inside it.");}}
     }

@@ -497,6 +497,137 @@ def room_models():
     return m
 
 
+def press(upper):
+    # The cupboard in the back passage, from the front: two panelled doors in old paint worn back to the wood at the edges and round
+    # the knobs; the lower half stands on a plinth, the upper has the doors' top rails and a moulded cornice.
+    im = new(base='#7d8a78', seed=2631 + upper, spread=3)
+    rnd = random.Random(2633 + upper)
+    for x in (0, 7, 8, 15):
+        for y in range(16):
+            dot(im, x, y, '#5e6a5a')
+    if upper:
+        fill(im, 0, 0, 16, 2, '#6a7666')
+        for x in range(16):
+            dot(im, x, 2, '#4e5a4c')
+        frame(im, 2, 4, 6, 16, '#66725f'); frame(im, 9, 4, 13, 16, '#66725f')
+        for x in range(1, 7):
+            dot(im, x, 3, '#8a9786')
+        for x in range(9, 15):
+            dot(im, x, 3, '#8a9786')
+    else:
+        frame(im, 2, 0, 6, 11, '#66725f'); frame(im, 9, 0, 13, 11, '#66725f')
+        fill(im, 0, 13, 16, 16, '#5a4430')
+        for x in range(16):
+            dot(im, x, 13, '#3e2e20')
+        # The knobs, brass, and the paint worn through round them where hands go.
+        for kx in (6, 9):
+            dot(im, kx, 2, '#9a7a4a'); dot(im, kx, 3, '#9a7a4a'); dot(im, kx, 1, '#8a6a44')
+            dot(im, kx, 1 + 1, '#d8b860')
+    # Wear: the paint gone to the wood down the outer edges and the meeting edges of the doors, where hands and shoulders go.
+    for y in range(16):
+        for x in (0, 15, 7, 8):
+            if rnd.random() < (.35 if x in (7, 8) and not upper and y < 6 else .18):
+                dot(im, x, y, '#8a6a48')
+    return im
+
+
+def press_side():
+    # The side: painted boards running up and down, their joints darker, a little wear at the front edge.
+    im = new(base='#76836f', seed=2635, spread=3)
+    for x in (3, 8, 12):
+        for y in range(16):
+            dot(im, x, y, '#62705e')
+    for y in (2, 9, 13):
+        dot(im, 0, y, '#8a6a48')
+    return im
+
+
+def wedge_wood():
+    # Plain pine, worn smooth along one edge, darker where a foot has pushed it in.
+    im = grain('#b48c5c', 2637)
+    for x in range(16):
+        dot(im, x, 15, '#8c6a42')
+    for y in range(4):
+        dot(im, 2, y + 6, '#9a7850')
+    return im
+
+
+def stool():
+    # The step stool's sides: old cream paint, chipped along the edges to the wood.
+    im = new(base='#d4cab0', seed=2638, spread=3)
+    rnd = random.Random(2639)
+    for _ in range(14):
+        x, y = rnd.randrange(16), rnd.randrange(16)
+        if x in (0, 15) or y in (0, 15) or rnd.random() < .2:
+            dot(im, x, y, '#a08060')
+    return im
+
+
+def stool_tread():
+    # A tread from above: the paint worn through to the wood in the middle, where feet go.
+    im = new(base='#d4cab0', seed=2640, spread=3)
+    for y in range(3, 13):
+        for x in range(2, 14):
+            d = ((x - 7.5) / 5.5) ** 2 + ((y - 7.5) / 4.5) ** 2
+            if d < 1:
+                dot(im, x, y, '#ac8e66' if d < .55 else '#c2ae8a')
+    for x in range(4, 12):
+        dot(im, x, 6, '#9c7e58'); dot(im, x + (1 if x < 11 else 0), 9, '#9c7e58')
+    return im
+
+
+def keys():
+    # The back door key on its own ring with a paper tag, the way it lay under the tea towels.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for x, y in ((4, 3), (5, 2), (6, 2), (7, 3), (7, 4), (6, 5), (5, 5), (4, 4)):
+        dot(im, x, y, '#8c8c84')
+    for i in range(7):
+        dot(im, 6 + i, 6 + i, '#b89a50')
+        dot(im, 7 + i, 6 + i, '#9a7c3a')
+    dot(im, 12, 13, '#b89a50'); dot(im, 13, 11, '#b89a50'); dot(im, 11, 12, '#9a7c3a')
+    fill(im, 1, 7, 5, 13, '#e8dfc6')
+    frame(im, 1, 7, 5, 13, '#c8bc9c')
+    dot(im, 2, 9, '#5a5a6a'); dot(im, 3, 9, '#5a5a6a'); dot(im, 2, 11, '#5a5a6a')
+    dot(im, 4, 6, '#a89c84'); dot(im, 3, 6, '#a89c84')
+    return im
+
+
+def back_models():
+    m = {}
+    side = {'north': 'f', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}
+    # The cupboard, in two halves, shoved along the wall a third at a time: each shove moves it five pixels toward the room's east
+    # (the block faces south, so the model's west is the world's east).
+    for shove in range(3):
+        dx = -5 * shove
+        lower = [element([1 + dx, 0, 1], [15 + dx, 16, 15], side, uv={'north': [1, 0, 15, 16]})]
+        upper = [element([1 + dx, 0, 1], [15 + dx, 14, 15], {**side, 'up': 's'}, uv={'north': [1, 2, 15, 16]}),
+                 element([0.5 + dx, 14, 0.5], [15.5 + dx, 16, 15.5], {'north': 'f', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'},
+                         uv={'north': [0, 0, 16, 2]})]
+        m[f'press_{shove * 2}'] = model(lower, {'f': 'press', 's': 'press_side'}, 'press_side')
+        m[f'press_{shove * 2 + 1}'] = model(upper, {'f': 'press_top', 's': 'press_side'}, 'press_side')
+    # The wedge: lying where the cupboard stood (its block faces north, so these are world coordinates), and pushed in under the
+    # back door's free edge at the passage's north-west corner, thin end first.
+    w = {'all': 'w'}
+    m['wedge_0'] = model([element([5, 0, 4], [11, 1, 12], w), element([5, 1, 7], [11, 2, 12], w), element([5, 2, 10], [11, 2.75, 12], w)],
+                         {'w': 'wedge_wood'}, 'wedge_wood')
+    m['wedge_1'] = model([element([0.5, 0, 0], [4.5, 0.75, 4], w), element([0.5, 0.75, 1.5], [4.5, 1.5, 4], w), element([0.5, 1.5, 3], [4.5, 2.25, 4], w)],
+                         {'w': 'wedge_wood'}, 'wedge_wood')
+
+    def step_stool(x0, z0):
+        x1 = x0 + 8
+        s = {'all': 's', 'up': 't', 'down': 's'}
+        return [element([x0, 0, z0], [x0 + 1, 10, z0 + 5], {'all': 's'}), element([x0, 0, z0 + 5], [x0 + 1, 5, z0 + 10], {'all': 's'}),
+                element([x1 - 1, 0, z0], [x1, 10, z0 + 5], {'all': 's'}), element([x1 - 1, 0, z0 + 5], [x1, 5, z0 + 10], {'all': 's'}),
+                element([x0, 9, z0], [x1, 10, z0 + 5], s, uv={'up': [3, 4, 13, 12]}), element([x0, 4, z0 + 5], [x1, 5, z0 + 10], s, uv={'up': [3, 4, 13, 12]}),
+                element([x0 + 1, 5, z0 + 5], [x1 - 1, 9, z0 + 5.5], {'all': 's'}), element([x0 + 1, 0, z0 + 0.5], [x1 - 1, 9, z0 + 1], {'all': 's'})]
+    # Standing in the hall's back corner; and against the back door, its tall end to the door's free edge.
+    m['stool_0'] = model(step_stool(4, 3), {'s': 'stool', 't': 'stool_tread'}, 'stool')
+    m['stool_1'] = model(step_stool(0, 0), {'s': 'stool', 't': 'stool_tread'}, 'stool')
+    # The back door key on its ring, for carrying.
+    m['keys_0'] = model([element([3, 0, 3], [13, 0.25, 13], {'up': 'k', 'down': 'k'}, uv={'up': [0, 0, 16, 16], 'down': [0, 0, 16, 16]})], {'k': 'keys'}, 'keys')
+    return m
+
+
 def textures():
     out = {f'block/pfy_{k}.png': v for k, v in materials().items()}
     t = {
@@ -510,6 +641,8 @@ def textures():
         'coat_a': coat('#3a4a5a', 2614), 'coat_b': coat('#7a5a3a', 2615), 'glass': glass(), 'cover': cloth_cover(),
         'wicker': wicker(), 'linen': linen(), 'workshirt': workshirt(), 'dresser': dresser(False), 'dresser_open': dresser(True),
         'drawer_in': drawer_in(), 'porch_photo': porch_photo(),
+        'press': press(False), 'press_top': press(True), 'press_side': press_side(), 'wedge_wood': wedge_wood(), 'stool': stool(),
+        'stool_tread': stool_tread(), 'keys': keys(),
     }
     out.update({f'block/place/{k}.png': v for k, v in t.items()})
     return out
@@ -592,17 +725,19 @@ def fitting_models():
     for i in range(16):
         m[f'routine_{i}'] = model([element([2, 0, 2], [14, 0.25, 14], {'up': 'i'}, uv={'up': [0, 0, 16, 16]})], {'i': NS + f'item/read_routine_{i}'}, 'i')
     m.update(room_models())
+    m.update(back_models())
     return m
 
 
 KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'pictures', 'cupboard', 'routine', 'spoon', 'counter', 'stove', 'hooks', 'glass',
-         'basket', 'dresser']
+         'basket', 'dresser', 'press', 'wedge', 'stool']
 STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3,
-          'basket': 3, 'dresser': 2}
+          'basket': 3, 'dresser': 2, 'press': 6, 'wedge': 2, 'stool': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 # 0.4.688: Theo's photograph, carried from the chest of drawers to the fridge.
-CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0'), ('photo', 'photo_0')]
+CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0'), ('photo', 'photo_0'),
+           ('wedge', 'wedge_0'), ('stool', 'stool_0'), ('key', 'keys_0')]
 DISPLAY = {
     'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.625, 0.625, 0.625]},
     'ground': {'rotation': [0, 0, 0], 'translation': [0, 3, 0], 'scale': [0.25, 0.25, 0.25]},

@@ -84,6 +84,41 @@ public final class PlaceForYouTexts {
     static String Pron(String who){return who.equals("Mara")?"She":"They";}
 
     /** The account, in the reader's own words. */
+    /** 0.4.690: the back passage, as the reader saw it and did it. */
+    static String backPassage(CompoundTag own){
+        var t=new StringBuilder("Kit showed me the back door. The catch was stiff, and somebody had stood a cupboard in front of it. Kit asked me to keep it quiet until the bag was outside.");
+        String quiet=own.getString("Quiet"),way=own.getString("BackWay"),held=own.getString("BackHeld");
+        switch(quiet){
+            case "agreed"->t.append(" I said I would.");
+            case "open"->t.append(" I said I'd rather tell Mara, with Kit there.");
+            case "refused"->t.append(" I said I wouldn't help.");
+            default->{}
+        }
+        if(own.getBoolean("ToldOpen"))t.append(" We told her together. She said she had put the cupboard there herself, the first winter, so she would hear it if anyone went. Then she told me where the key was.");
+        String hold=held.equals("stool")?"stood the step stool against it":"pushed the wedge in under it";
+        switch(way){
+            case "door"->{t.append(" I shoved the cupboard along the wall. Under where it stood was a wedge, keeping it level.");
+                t.append(own.getBoolean("Swung")?" I drew the catch, and the door swung back shut on its own, so the next time I "+hold+".":" I drew the catch and "+hold+".");
+                t.append(" The gate at the back opened onto a path between the trees.");}
+            case "key"->t.append(own.getBoolean("ToldOpen")?" The key turned, and the gate at the back opened onto a path between the trees."
+                :" Mara told me the key was in the drawer with the tea towels, with his. It turned, and the gate at the back opened onto a path between the trees.");
+            case "window"->t.append(" Alex lifted the sitting room window and held it, and Kit passed the bag out through it.");
+            case "kit"->t.append(" When I next looked, the cupboard had been moved along the wall and the back door was wedged open. Kit had done it alone.");
+            default->{}
+        }
+        if(own.getBoolean("BrokeQuiet"))t.append(" I told Mara before the bag was out.");
+        else if(own.getBoolean("ToldMara"))t.append(" I told Mara.");
+        if(own.getInt("BackStage")>=3){
+            switch(way){
+                case "window"->t.append(" Then Kit came back in for supper.");
+                case "kit"->t.append(" The bag was already outside.");
+                default->t.append(" Kit carried the bag out to the path and came back in for supper.");
+            }
+            if(own.getBoolean("BrokeQuiet"))t.append(" Kit said I had said I would wait.");
+            else if(own.getBoolean("QuietKept"))t.append(" Kit thanked me for keeping it.");
+        }
+        return t.toString();
+    }
     public static String afterwards(String reader,CompoundTag own){
         var t=new StringBuilder();var snap=own.getCompound("Snap");String outcome=own.getString("Outcome");
         t.append("I was expected at a house across the road from an old garden wall. A woman named Mara had set a place for me, with my name on a card in her hand.\n\n");
@@ -150,6 +185,7 @@ public final class PlaceForYouTexts {
             }
             t.append("\n\n");
         }
+        if(own.getInt("BackStage")>=1)t.append(backPassage(own)).append("\n\n");
         if(own.getInt("Chapter")>=PlaceForYou.DINNER){
             t.append("When we sat down again, the table was laid exactly as it had been.");
             if(own.getBoolean("SpoonTaken"))t.append(" Mara couldn't stop setting it, and I took the spoon out of her hand.");

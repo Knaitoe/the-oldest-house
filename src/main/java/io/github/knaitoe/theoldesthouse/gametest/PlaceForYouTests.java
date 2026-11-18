@@ -336,6 +336,156 @@ public final class PlaceForYouTests {
     }
     @AfterBatch(batch="place_room") public static void roomDone(ServerLevel l){close();}
 
+    /** Puts a reader at the sink chapter with the bag settled in the kitchen, as the back passage begins. */
+    static void sinkReady(LiteraryTests.Fixture f,ServerPlayer p,BlockPos b,ServerLevel l){
+        var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.SINK);own.putString("First","Mara");own.putString("Helper","Mara");
+        own.putString("Activity","radio");own.putBoolean("ActivityDone",true);own.putBoolean("Acknowledged",true);own.putInt("BagStage",3);own.putBoolean("BagSeen",true);
+        LiteraryVignettes.save(f.data(),p.getUUID(),P,own);PlaceForYouSite.bag(l,b,"kitchen");
+    }
+    /**
+     * 0.4.690, the back passage (N6B): Kit waits by the back door while Mara is at the sink and shows it to the reader, asking for quiet
+     * until the bag is outside. The catch is out of reach until the cupboard has been shoved clear; under it lies the wedge; the drawn
+     * catch lets the door swing back shut with nothing holding it; the wedge holds it; the back gate opens; Kit carries the bag out
+     * through it and comes back; the quiet kept is in the account.
+     */
+    @GameTest(template="empty",batch="place_back",timeoutTicks=4000)
+    public static void theBackPassage(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_back",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null,"Kit by the back door"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR)&&!PlaceForYouSite.backDoorOpen(l,b),"the back door, its catch stiff");
+                talk(f,p,"kit");h.assertTrue(Talk.waiting(p,"back_kit"),"Kit shows the back door: "+Talk.key(p));
+                h.assertTrue(Talk.lines(p).contains("Kit: Will you keep it quiet? Only until the bag's outside."),"the quiet asked for: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==3,"three answers: "+Talk.replies(p));
+                say(h,p,"I'll keep it quiet.");
+                var own=f.own(p,P);h.assertTrue(own.getInt("BackStage")==1&&own.getString("Quiet").equals("agreed"),"shown, and the quiet agreed");
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR)&&!PlaceForYouSite.backDoorOpen(l,b),"the catch out of reach while the cupboard stands there");
+                for(int i=0;i<3;i++)h.assertTrue(click(f,p,PlaceForYouSite.BACK_PRESS),"a shove");
+                h.assertTrue(PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.PRESS_MOVED)),PlaceForYouBlock.Kind.PRESS)
+                        &&PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.BACK_PRESS)),PlaceForYouBlock.Kind.WEDGE),"the cupboard along the wall, the wedge where it stood");
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR)&&PlaceForYouSite.backDoorOpen(l,b),"the catch drawn, the door open");})
+            .thenWaitUntil(()->h.assertFalse(PlaceForYouSite.backDoorOpen(l,b),"it swings back shut with nothing holding it"))
+            .thenExecute(()->{
+                h.assertTrue(f.own(p,P).getBoolean("Swung")&&!f.own(p,P).getBoolean("CatchDrawn"),"and the catch drops in again");
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_PRESS)&&PlaceForYou.holding(p)==PlaceForYouRegistry.WEDGE,"the wedge picked up");
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR)&&PlaceForYouSite.backDoorOpen(l,b),"the catch drawn again, the wedge in the other hand");
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR)&&f.own(p,P).getString("BackHeld").equals("wedge")&&PlaceForYou.holding(p)==0
+                        &&PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.HOLD)),PlaceForYouBlock.Kind.WEDGE),"the wedge in under it");
+                at(f,p,.5,0,-28.5,180,20);
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_GATE)&&PlaceForYouSite.backGateOpen(l,b)&&f.own(p,P).getString("BackWay").equals("door"),"the back gate tried, and open");
+                at(f,p,6.5,0,-20.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYouSite.backDoorOpen(l,b)&&f.own(p,P).getInt("BackStage")==3,"the door stays held, and Kit carries the bag out and back: "+f.own(p,P).getInt("BagLeg")))
+            .thenExecute(()->{
+                var own=f.own(p,P);
+                h.assertTrue(PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.BAG_BACK)),PlaceForYouBlock.Kind.BAG)&&own.getString("BagWhere").equals("back")
+                        &&!PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.BAG_KITCHEN)),PlaceForYouBlock.Kind.BAG),"the bag outside, beyond the gate, and not in the kitchen");
+                h.assertTrue(own.getBoolean("QuietKept"),"the quiet kept");
+                h.assertTrue(PlaceForYouBack.backWay(own),"when Kit goes, it will be by the back");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("Kit showed me the back door","I said I would.","Under where it stood was a wedge",
+                        "swung back shut on its own, so the next time I pushed the wedge in under it","onto a path between the trees","Kit carried the bag out to the path","Kit thanked me for keeping it"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_back") public static void backDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.690: the quiet agreed, then broken: asked for the key, the reader tells Mara what it is for before the bag is out. The key is
+     * in the drawer with the tea towels; it opens the door with the cupboard still standing there, and the door stays open; the gate;
+     * the bag out; Kit answers what was done, and the account says so.
+     */
+    @GameTest(template="empty",batch="place_back_key",timeoutTicks=4000)
+    public static void theBackDoorKey(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_back_key",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null&&PlaceForYou.actor(l,b,"mara")!=null,"Kit by the back door, Mara at the sink"))
+            .thenExecute(()->{
+                talk(f,p,"kit");say(h,p,"I'll keep it quiet.");
+                talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"back_mara"),"Mara asked about the back door, before the sheets: "+Talk.key(p));
+                say(h,p,"Is there a key");say(h,p,"Kit wants to go out that way.");
+                var own=f.own(p,P);
+                h.assertTrue(own.getBoolean("KeyOffered")&&own.getBoolean("ToldMara")&&own.getBoolean("BrokeQuiet"),"told, before the bag was out, and the key offered");
+                h.assertTrue(click(f,p,PlaceForYouSite.SINK)&&PlaceForYou.holding(p)==PlaceForYouRegistry.KEY,"the key from the drawer with the tea towels");
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR)&&PlaceForYouSite.backDoorOpen(l,b)&&f.own(p,P).getBoolean("KeyUsed"),"the key turns, the cupboard still where it was");
+                h.assertTrue(f.own(p,P).getInt("Shoves")==0,"nothing shoved");})
+            .thenIdle(PlaceForYouBack.SWING+20)
+            .thenExecute(()->{
+                h.assertTrue(PlaceForYouSite.backDoorOpen(l,b),"unlocked, it stays open");
+                at(f,p,.5,0,-28.5,180,20);
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_GATE)&&f.own(p,P).getString("BackWay").equals("key"),"the gate, opened with the key");
+                at(f,p,6.5,0,-20.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("BackStage")==3,"the bag out: "+f.own(p,P).getInt("BagLeg")))
+            .thenExecute(()->{
+                var own=f.own(p,P);h.assertFalse(own.getBoolean("QuietKept"),"the quiet was not kept");
+                h.assertTrue(PlaceForYouBack.back(own).contains("You said you'd wait"),"Kit says so: "+PlaceForYouBack.back(own));
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("Mara told me the key was in the drawer with the tea towels, with his","I told Mara before the bag was out.","Kit said I had said I would wait."))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                h.assertFalse(text.contains("I shoved the cupboard"),"and not the cupboard's: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_back_key") public static void backKeyDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.690: told openly. The reader would rather tell Mara with Kit there; Kit goes and stands by the sink; told, Mara says she put the
+     * cupboard there herself and gives the key. And Alex's window: asked, Alex goes to the sitting room and lifts it only on getting
+     * there; Kit hands the bag out to Alex; the window goes back.
+     */
+    @GameTest(template="empty",batch="place_back_window",timeoutTicks=5000)
+    public static void theSideWindowAndTheOpenTelling(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_back_window",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null&&PlaceForYou.actor(l,b,"alex")!=null,"Kit and Alex in the house"))
+            .thenExecute(()->{
+                talk(f,p,"kit");say(h,p,"I'd rather tell Mara");
+                talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"back_told"),"told with Kit there: "+Talk.key(p));
+                say(h,p,"Kit's found a way out the back.");
+                var own=f.own(p,P);h.assertTrue(own.getBoolean("ToldOpen")&&own.getBoolean("KeyOffered")&&!own.getBoolean("BrokeQuiet"),"told openly, the key offered, no promise broken");
+                h.assertTrue(String.join(" ",Talk.lines(p)).contains("I put the cupboard there"),"what she says: "+Talk.lines(p));
+                talk(f,p,"alex");h.assertTrue(Talk.waiting(p,"back_alex"),"Alex offers the window: "+Talk.key(p));
+                say(h,p,"Hold it for Kit.");
+                h.assertTrue(!PlaceForYouSite.sideWindowOpen(l,b)&&f.own(p,P).getBoolean("AlexWindow"),"not open until Alex gets there");
+                at(f,p,6.5,0,-26.5,0,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("BackWay").equals("window")&&PlaceForYouSite.sideWindowOpen(l,b),"Alex at the window, lifting it"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("BackStage")==3,"the bag handed out: "+f.own(p,P).getInt("BagLeg")))
+            .thenExecute(()->{
+                var own=f.own(p,P);
+                h.assertTrue(PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.BAG_SIDE)),PlaceForYouBlock.Kind.BAG)&&!PlaceForYouSite.sideWindowOpen(l,b),"the bag in the side yard, the window shut again");
+                h.assertFalse(PlaceForYouBack.backWay(own),"Kit will go by the front");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("I said I'd rather tell Mara, with Kit there.","We told her together.","Alex lifted the sitting room window and held it","Then Kit came back in for supper."))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_back_window") public static void backWindowDone(ServerLevel l){close();}
+
+    /** 0.4.690: refused. Kit does it alone, while nobody is looking at the back of the hall. */
+    @GameTest(template="empty",batch="place_back_alone",timeoutTicks=3000)
+    public static void kitOpensTheBackAlone(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_back_alone",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null,"Kit by the back door"))
+            .thenExecute(()->{talk(f,p,"kit");say(h,p,"I won't help with this.");at(f,p,-.5,0,-24.5,180,10);})
+            .thenIdle(PlaceForYouBack.ALONE+40)
+            .thenExecute(()->h.assertTrue(f.own(p,P).getString("BackWay").isEmpty(),"not while the reader watches the back door"))
+            .thenExecute(()->at(f,p,6.5,0,-19.5,0,0))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("BackWay").equals("kit"),"done alone, unseen"))
+            .thenExecute(()->{
+                var own=f.own(p,P);
+                h.assertTrue(PlaceForYouSite.backDoorOpen(l,b)&&PlaceForYouSite.backGateOpen(l,b)&&PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.HOLD)),PlaceForYouBlock.Kind.WEDGE)
+                        &&PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.BAG_BACK)),PlaceForYouBlock.Kind.BAG),"the door wedged, the gate open, the bag out");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("I said I wouldn't help.","Kit had done it alone.","The bag was already outside."))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_back_alone") public static void backAloneDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="place_road",timeoutTicks=7000)
     public static void aReaderTheHouseKnowsTakesTheRoad(GameTestHelper h){
         var f=fixture(h);var p=f.player("place_family",P);var b=f.base(P);var l=f.level(P);
