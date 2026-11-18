@@ -53,7 +53,7 @@ public final class PlaceForYouBack {
     /** Whether Kit's way out is the back: the door and gate opened by the reader, with the key, or by Kit alone. */
     public static boolean backWay(CompoundTag own){var w=own.getString("BackWay");return w.equals("door")||w.equals("key")||w.equals("kit");}
     /** Where Kit goes when Kit goes: out of the back gate and along the path between the trees, or out of the front gate to the road. */
-    static PlaceForYou.Mark going(CompoundTag own){return backWay(own)?PlaceForYou.stand(.5,-32.6,180):PlaceForYou.stand(.5,-2.5,90);}
+    static PlaceForYou.Mark going(CompoundTag own){return backWay(own)&&!own.contains("PorchBag")?PlaceForYou.stand(.5,-32.6,180):PlaceForYou.stand(.5,-2.5,90);}
     /** Whatever the reader carried off from the passage goes back where it was: the wedge to the floor, the stool to its corner, the key to the drawer. */
     static void released(ServerPlayer p,BlockPos b,int held){
         var l=p.server.getLevel(NovelRooms.dimension(PlaceForYouSite.PLACE));if(l==null||!l.isLoaded(b.offset(PlaceForYouSite.HOLD)))return;

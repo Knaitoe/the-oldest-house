@@ -39,7 +39,9 @@ public final class PlaceForYouRegistry {
         /** 0.4.690: the wedge, the step stool and the back door key, carried in the back passage. */
         WEDGE=6,STOOL=7,KEY=8,
         /** 0.4.691: the reader's own picture, taken down off the landing wall. */
-        PORTRAIT=9;
+        PORTRAIT=9,
+        /** 0.4.692: Kit's letter, fetched back from Mara's drawer. */
+        LETTER=10;
     private PlaceForYouRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);BES.register(bus);}
 }

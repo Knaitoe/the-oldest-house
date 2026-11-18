@@ -54,6 +54,12 @@
         "custom_model_data": 9
       },
       "model": "the_oldest_house:item/pfy_carried_portrait"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "the_oldest_house:item/pfy_carried_letter"
     }
   ]
 }

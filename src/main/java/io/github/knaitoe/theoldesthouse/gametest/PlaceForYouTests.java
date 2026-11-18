@@ -441,6 +441,101 @@ public final class PlaceForYouTests {
     @AfterBatch(batch="place_older") public static void olderDone(ServerLevel l){close();}
 
     /**
+     * 0.4.692, the letter: the quiet agreed and then broken (the key, asked for and explained before the bag was out). Once the bag is
+     * outside, Kit, back by the back door, says the letter is gone from the clasp; the reader says they will get it back; Mara's door
+     * is open; her top drawer gives up Kit's letter; her door shuts again once the reader is out of the room; the letter back in Kit's
+     * hand; the account says so.
+     */
+    @GameTest(template="empty",batch="place_letter",timeoutTicks=5000)
+    public static void theLetterTakenUpstairs(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_letter",P);var b=f.base(P);var l=f.level(P);int up=PlaceForYouSite.UP;
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null&&PlaceForYou.actor(l,b,"mara")!=null,"Kit by the back door, Mara at the sink"))
+            .thenExecute(()->{
+                talk(f,p,"kit");say(h,p,"I'll keep it quiet.");
+                talk(f,p,"mara");say(h,p,"Is there a key");say(h,p,"Kit wants to go out that way.");
+                h.assertTrue(f.own(p,P).getBoolean("BrokeQuiet"),"the quiet broken");
+                h.assertTrue(click(f,p,PlaceForYouSite.SINK)&&click(f,p,PlaceForYouSite.BACK_DOOR),"the key, and the door");
+                at(f,p,.5,0,-28.5,180,20);h.assertTrue(click(f,p,PlaceForYouSite.BACK_GATE),"the gate");
+                at(f,p,6.5,0,-20.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("BackStage")==3,"the bag out: "+f.own(p,P).getInt("BagLeg")))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("LetterStage")==1,"the letter gone from the clasp"))
+            .thenExecute(()->{h.assertTrue(PlaceForYouLetter.holding(f.own(p,P)),"supper waits");at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"letter"),"Kit says so, once the reader is by the back door: "+Talk.key(p)))
+            .thenExecute(()->{
+                h.assertTrue(Talk.lines(p).contains("Kit: The letter's gone. I wrapped it round the clasp, and it isn't there."),"Kit's words: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==3,"three answers: "+Talk.replies(p));
+                say(h,p,"I'll get it back.");
+                h.assertTrue(f.own(p,P).getInt("LetterStage")==2&&PlaceForYouSite.maraDoorOpen(l,b),"her door open");
+                h.assertTrue(click(f,p,PlaceForYouSite.SHUT_DOORS.get(0))&&PlaceForYouSite.maraDoorOpen(l,b),"her door, left open");
+                at(f,p,-5.5,up,-18.5,180,30);
+                h.assertTrue(click(f,p,PlaceForYouSite.DRESSER)&&PlaceForYou.holding(p)==PlaceForYouRegistry.LETTER&&f.own(p,P).getInt("LetterStage")==3,"Kit's letter from her top drawer");
+                h.assertTrue(f.own(p,P).getInt("Chapter")==PlaceForYou.SINK,"still before supper");
+                at(f,p,6.5,0,-20.5,180,0);})
+            .thenWaitUntil(()->h.assertFalse(PlaceForYouSite.maraDoorOpen(l,b),"her door shut again, the reader downstairs"))
+            .thenExecute(()->{
+                at(f,p,-.5,0,-24.5,180,10);talk(f,p,"kit");
+                h.assertTrue(Talk.waiting(p,"letter_back")&&PlaceForYou.holding(p)==0,"the letter in Kit's hand: "+Talk.key(p));
+                say(h,p,"Go on.");
+                var own=f.own(p,P);h.assertTrue(own.getInt("LetterStage")==4&&own.getString("KitTrust").equals("returned")&&!PlaceForYouLetter.holding(own),"settled, and supper free to come");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                h.assertTrue(text.contains("Mara had put it in her top drawer. I went up and got it back, and gave it to Kit."),"the account: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_letter") public static void letterDone(ServerLevel l){close();}
+
+
+    /**
+     * 0.4.692, the porch: told openly, with Kit there, and nothing else done with Mara. When Kit goes, Mara has the bag and carries it out
+     * onto the porch; Kit waits at the open gate. She says she can't go past the porch; the reader carries the bag down to Kit; Kit goes
+     * by the front with it. The account says so, and the other two of her ways are written as they should be.
+     */
+    @GameTest(template="empty",batch="place_porch",timeoutTicks=5000)
+    public static void thePorchWithTheBag(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_porch",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null&&PlaceForYou.actor(l,b,"mara")!=null,"Kit and Mara in the house"))
+            .thenExecute(()->{
+                talk(f,p,"kit");say(h,p,"I'd rather tell Mara");
+                talk(f,p,"mara");say(h,p,"Kit's found a way out the back.");
+                h.assertTrue(f.own(p,P).getBoolean("ToldOpen"),"told openly");
+                // On to the house opened, after the open confrontation, as the evening stands then.
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.OPEN);own.putString("Confront","open");own.putBoolean("TheoTold",true);own.putString("Promise","listen");
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                at(f,p,.5,0,-14.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("PorchStage")==1&&PlaceForYouSite.doorOpen(l,b),"Mara takes the bag out; the front door open"))
+            .thenExecute(()->{
+                h.assertFalse(f.own(p,P).getBoolean("KitGoing"),"Kit not gone yet");
+                var mara=PlaceForYou.actor(l,b,"mara");h.assertTrue(mara!=null&&!mara.getMainHandItem().isEmpty(),"the bag in Mara's hands");
+                // In the yard, facing the front of the house, so both walk out where the reader can see them.
+                at(f,p,2.5,0,-6.5,180,0);})
+            .thenWaitUntil(()->{var m=PlaceForYou.actor(l,b,"mara");var k=PlaceForYou.actor(l,b,"kit");var o=net.minecraft.world.phys.Vec3.atLowerCornerOf(b);
+                h.assertTrue(Talk.waiting(p,"porch"),"on the porch: "+Talk.key(p)+" "+f.own(p,P).getInt("PorchStage")+" Mara "+(m==null?"none":m.position().subtract(o))+" Kit "+(k==null?"none":k.position().subtract(o)));})
+            .thenExecute(()->{
+                var gateKit=PlaceForYou.actor(l,b,"kit");
+                h.assertTrue(gateKit!=null&&gateKit.position().distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(b.offset(0,0,-6)))<4,"Kit at the open gate: "+(gateKit==null?"none":gateKit.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))));
+                h.assertTrue(Talk.lines(p).contains("Mara: I can't go past the porch. I've tried."),"Mara at the threshold: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==2,"two answers: "+Talk.replies(p));
+                say(h,p,"Carry the bag down to Kit.");
+                var own=f.own(p,P);h.assertTrue(own.getInt("PorchStage")==2&&own.getString("PorchBag").equals("carried")&&own.getBoolean("KitGoing"),"carried, and Kit going");
+                var kit=PlaceForYou.actor(l,b,"kit");var mara=PlaceForYou.actor(l,b,"mara");
+                h.assertTrue(kit!=null&&!kit.getMainHandItem().isEmpty()&&mara!=null&&mara.getMainHandItem().isEmpty(),"the bag with Kit, not Mara");
+                h.assertFalse(PlaceForYouBack.backWay(own)&&!own.contains("PorchBag"),"Kit goes by the front");
+                own.putBoolean("Propped",true);own.putBoolean("PictureDown",true);
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                h.assertTrue(text.contains("Mara carried the bag out onto the porch, and Kit waited at the open gate. She said she couldn't go past the porch. I carried the bag down the path to Kit."),"the account: "+text);
+                h.assertFalse(text.contains("Kit went out through the gate with the bag."),"in place of the plain sentence: "+text);
+                var keep=new net.minecraft.nbt.CompoundTag();keep.putString("BagPorch","keep");keep.putString("PorchBag","left");
+                h.assertTrue(PlaceForYouLetter.porchAccount(keep).endsWith("Kit said no, and went without the bag."),"kept back: "+PlaceForYouLetter.porchAccount(keep));
+                var aside=new net.minecraft.nbt.CompoundTag();aside.putString("BagPorch","aside");aside.putString("PorchBag","kit");
+                h.assertTrue(PlaceForYouLetter.porchAccount(aside).endsWith("She went down the path and put it in Kit's hands."),"handed over: "+PlaceForYouLetter.porchAccount(aside));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_porch") public static void porchDone(ServerLevel l){close();}
+
+    /**
      * 0.4.690: the quiet agreed, then broken: asked for the key, the reader tells Mara what it is for before the bag is out. The key is
      * in the drawer with the tea towels; it opens the door with the cupboard still standing there, and the door stays open; the gate;
      * the bag out; Kit answers what was done, and the account says so.

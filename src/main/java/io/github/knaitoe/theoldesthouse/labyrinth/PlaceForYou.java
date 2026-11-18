@@ -169,6 +169,8 @@ public final class PlaceForYou {
         }
         // 0.4.690: Kit by the back door, beside Mara, or on the way out with the bag; Alex at the side window.
         PlaceForYouBack.marks(own,m);
+        // 0.4.692: Kit waiting about the letter; Mara on the porch with the bag, Kit at the gate.
+        PlaceForYouLetter.marks(own,m);
         return m;
     }
     /**
@@ -212,7 +214,19 @@ public final class PlaceForYou {
         double far=a.position().distanceToSqr(to);
         if(!watched&&p.position().distanceToSqr(to)>16){a.moveTo(to.x,to.y,to.z,mark.yaw(),0);a.setYHeadRot(mark.yaw());a.setYBodyRot(mark.yaw());a.setDeltaMovement(Vec3.ZERO);}
         else if(seat&&far<6.25&&slideClear(l,a,to)){var step=to.subtract(a.position()).scale(Math.min(.2,Math.sqrt(far))/Math.sqrt(far));a.moveTo(a.getX()+step.x,a.getY()+step.y,a.getZ()+step.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);SceneFootpaths.face(a,to,20);}
-        else SceneFootpaths.walk(a,to,.12);
+        else{
+            // 0.4.692: by the archways and the front door, not straight into a wall.
+            var rel=a.position().subtract(b.getX(),b.getY(),b.getZ());var step=PlaceForYouSite.via(rel,mark.at());
+            // Through rooms the reader can't see into, straight on to the last of the way they can't see; only the seen part is walked.
+            if(step!=null&&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.getEyePosition())&&!io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,a.position().add(0,.3,0))){
+                Vec3 hop=null,cur=rel;
+                for(int i=0;i<6;i++){var next=PlaceForYouSite.via(cur,mark.at());if(next==null)break;var at=new Vec3(b.getX()+next.x,b.getY()+next.y,b.getZ()+next.z);
+                    if(io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,at.add(0,1.5,0))||io.github.knaitoe.theoldesthouse.house.HouseWatchers.sees(p,at.add(0,.3,0))||p.distanceToSqr(at)<16)break;
+                    hop=at;cur=next;}
+                if(hop!=null){a.moveTo(hop.x,hop.y,hop.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);return;}
+            }
+            SceneFootpaths.walk(a,step==null?to:new Vec3(b.getX()+step.x,b.getY()+step.y,b.getZ()+step.z),.12);
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ what the House remembers
@@ -275,7 +289,7 @@ public final class PlaceForYou {
 
     static void reader(ServerLevel l,House h,ServerPlayer p,CompoundTag own){
         var b=h.base;var r=rel(p.position(),b);int ch=own.getInt("Chapter");
-        if(own.getInt("RoomStage")==4&&PlaceForYouSite.maraDoorOpen(l,b)&&!PlaceForYouRoom.inRoom(r)&&!looking(p,b,PlaceForYouRoom.DOOR,24))PlaceForYouSite.maraDoor(l,b,false);
+        if(own.getInt("RoomStage")==4&&own.getInt("LetterStage")!=2&&PlaceForYouSite.maraDoorOpen(l,b)&&!PlaceForYouRoom.inRoom(r)&&!looking(p,b,PlaceForYouRoom.DOOR,24))PlaceForYouSite.maraDoor(l,b,false);
         switch(ch){
             case APPROACH->{
                 if(PlaceForYouSite.inHouse(r)){own.putInt("Chapter",WELCOME);own.putString("WelcomeAt",PlaceForYouSite.inKitchen(r)?"kitchen":"hall");save(p,own);stage(l,h,p,own);}
@@ -291,7 +305,7 @@ public final class PlaceForYou {
             case SINK->{if(h.sinkAt<0)h.sinkAt=(int)h.tick;int room=own.getInt("RoomStage");int older=own.getInt("OlderStage");
                 if(older>=1&&older<=3)PlaceForYouOlder.tick(l,h,p,own,r);
                 if(room>=1&&room<=3)PlaceForYouRoom.tick(l,h,p,own,r);
-                else if(older>=1&&older<=2){}
+                else if(older>=1&&older<=2||PlaceForYouLetter.holding(own)){}
                 else if(h.tick-h.sinkAt>1800&&!Talk.waiting(p)){own.putInt("Chapter",DINNER);save(p,own);startDinner(l,h,p);}}
             case DINNER->dinner(l,h,p,own,r);
             case OPEN->open(l,h,p,own,r);
@@ -304,6 +318,8 @@ public final class PlaceForYou {
         }
         // 0.4.690: the back passage.
         PlaceForYouBack.tick(l,h,p,own(p),r);PlaceForYouOlder.after(l,h,p,own(p),r);
+        // 0.4.692: the letter and the porch.
+        PlaceForYouLetter.tick(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -569,7 +585,7 @@ public final class PlaceForYou {
         // 0.4.686: somebody at the door (PlaceForYouDoor); nobody decides anything until the voice has stopped.
         PlaceForYouDoor.tick(l,h,p,own,r);own=own(p);
         boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getBoolean("TheoSilent");
-        if(ready&&own.getString("MaraEnd").isEmpty()&&!Talk.waiting(p)&&PlaceForYouSite.inKitchen(r)&&!own.getBoolean("MaraAsked")){own.putBoolean("MaraAsked",true);save(p,own);maraDecides(p,h);}
+        if(ready&&own.getString("MaraEnd").isEmpty()&&!Talk.waiting(p)&&PlaceForYouSite.inKitchen(r)&&!own.getBoolean("MaraAsked")&&own.getInt("PorchStage")!=1){own.putBoolean("MaraAsked",true);save(p,own);maraDecides(p,h);}
         if(own.getString("MaraEnd").equals("sat")&&!own.getBoolean("SatDone")){
             if(p.getVehicle() instanceof SeatEntity&&PlaceForYouSite.inKitchen(r)){if(++h.sitFor>=160){own.putBoolean("SatDone",true);own.putBoolean("PromiseKept",true);save(p,own);above(h,actor(l,h,"Mara"),"I'll stay a while. I'll try it, and see.");}}
         }
@@ -582,11 +598,13 @@ public final class PlaceForYou {
     }
     /** Kit picks the bag up and goes: the front door and the gate left open behind, a line over the shoulder. */
     static void kitGoes(ServerPlayer p,House h){
-        var own=own(p);if(own.getBoolean("KitGoing"))return;var l=p.serverLevel();var b=h.base;
-        edit(p,o->o.putBoolean("KitGoing",true));h.kitGoneAt=(int)h.tick;PlaceForYouSite.bag(l,b,"none");
+        var own=own(p);if(own.getBoolean("KitGoing"))return;
+        // 0.4.692: an unsettled letter stays in the drawer; after an open telling, Mara carries the bag out to the porch first.
+        if(PlaceForYouLetter.hold(p,h))return;own=own(p);var l=p.serverLevel();var b=h.base;
+        edit(p,o->o.putBoolean("KitGoing",true));h.kitGoneAt=(int)h.tick;if(!own.contains("PorchBag"))PlaceForYouSite.bag(l,b,"none");
         // 0.4.690: by the back way, if it was opened for Kit; else by the front.
-        if(PlaceForYouBack.backWay(own))PlaceForYouSite.backGate(l,b,true);else{PlaceForYouSite.frontDoor(l,b,true);PlaceForYouSite.gate(l,b,true);}
-        above(h,actor(l,h,"Kit"),"I'll write. I probably won't. But I'll mean to.");
+        if(PlaceForYouBack.backWay(own)&&!own.contains("PorchBag"))PlaceForYouSite.backGate(l,b,true);else{PlaceForYouSite.frontDoor(l,b,true);PlaceForYouSite.gate(l,b,true);}
+        above(h,actor(l,h,"Kit"),PlaceForYouLetter.parting(own(p)));
     }
     static void maraDecides(ServerPlayer p,House h){
         var own=own(p);Talk.begin(p,"mara_end","Mara");
@@ -618,6 +636,9 @@ public final class PlaceForYou {
         String who=who(a);if(who.isEmpty())return;int ch=own.getInt("Chapter");
         int held=holding(p);
         if(held==PlaceForYouRegistry.BAG&&(who.equals("Kit")||who.equals("Mara"))){giveBag(p,h,who);return;}
+        // 0.4.692: the letter back in Kit's hand; the letter and the porch.
+        if(held==PlaceForYouRegistry.LETTER&&who.equals("Kit")){PlaceForYouLetter.give(p,h);return;}
+        if(PlaceForYouLetter.talk(p,h,who,a))return;
         if(Talk.resume(p,"first_"+who)||Talk.resume(p,Talk.key(p)))return;
         switch(ch){
             case APPROACH->{if(who.equals("Alex"))Talk.begin(p,"alex_road","Alex");else if(who.equals("Kit"))Talk.begin(p,"kit_porch","Kit");else{above(h,a,"Come in, come in.");return;}
@@ -663,6 +684,8 @@ public final class PlaceForYou {
         int room=own.getInt("RoomStage");
         if((rel.equals(PlaceForYouRoom.DOOR)||rel.equals(PlaceForYouRoom.DOOR.above()))&&room>=1&&room<=3){cue(p,"Mara's room.");return true;}
         // 0.4.691: the older pictures, the copied one, the box and the back room's door.
+        // 0.4.692: her top drawer, and her door, while the reader fetches Kit's letter.
+        if(PlaceForYouLetter.click(p,b,rel))return true;
         if(PlaceForYouOlder.click(p,b,rel,held))return true;
         if(PlaceForYouSite.SHUT_DOORS.stream().anyMatch(d->d.equals(rel)||d.above().equals(rel))){cue(p,"Shut. Not tonight.");return true;}
         if(kind==PlaceForYouBlock.Kind.BASKET)return PlaceForYouRoom.basket(p,h);
