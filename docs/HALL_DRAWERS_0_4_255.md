@@ -14,7 +14,9 @@ hall, so they stand only in new worlds.
 
 - **The House's own things.** Every item of this mod.
 - **Things the House made.** Any item carrying custom data. In ordinary play only the House makes those: letters, originals, the
-  Floorboards hatchet and the rest.
+  Floorboards hatchet and the rest. Since docs/NEIGHBOURS.md R7, the House's own stamps alone (a weapon's identity and the mark of a
+  copy, the Mother's marks of who carried a thing and since when) do not count, since they are written on outside things too; the
+  reader's favourite weapon, the one the finale would arm them with, passes as their own.
 - **Food and drink.** Anything with food on it, potions you drink, milk, honey and ominous bottles. Chorus fruit is not let in,
   because eating it moves you.
 - **Lights.** Torches, soul torches, lanterns, soul lanterns and candles.

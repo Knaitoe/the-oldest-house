@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -77,10 +78,13 @@ public final class TallyCounterItem extends Item {
             p.displayClientMessage(Component.literal("Click. "+words(out)+" out there."),true);
         }
     }
-    /** The box is only the broad search; the number is a distance from the keeper, including height. */
+    /**
+     * The box is only the broad search; the number is a distance from the keeper, including height. A neighbour's own people are never
+     * counted (docs/NEIGHBOURS.md R9).
+     */
     public static List<Mob> nearbyHostiles(ServerPlayer p,double range){
         return p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(range),
-            m->m.isAlive()&&m instanceof Enemy&&m.distanceToSqr(p)<=range*range);
+            m->m.isAlive()&&m instanceof Enemy&&!Neighbours.leftAlone(m)&&m.distanceToSqr(p)<=range*range);
     }
     /** Everything alive that is really here with its keeper, the keeper included; another reader's private visions are not. */
     public static List<LivingEntity> present(ServerPlayer p,double range){
@@ -100,7 +104,7 @@ public final class TallyCounterItem extends Item {
         return e.isInvisible()||e.getTags().contains(PRETENDER);
     }
     static boolean hostile(LivingEntity e,ServerPlayer p){
-        if(e instanceof Player)return false;
+        if(e instanceof Player||Neighbours.leftAlone(e))return false;
         if(e instanceof GoatmanFigure f)return f.viewer().filter(p.getUUID()::equals).isPresent();
         return e instanceof Enemy||e instanceof Mob m&&m.getTarget()==p;
     }

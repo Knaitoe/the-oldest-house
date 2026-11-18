@@ -371,8 +371,9 @@ public final class HouseExteriorEntityMirror {
                 && !HouseImpossibleHallway.isInteriorOnlyPosition(origin, mob.blockPosition());
     }
 
+    /** A real mob, never a projection, and never one of a neighbour's own people ({@link Neighbours#LEFT_ALONE}, docs/NEIGHBOURS.md R9). */
     private static boolean eligibleRealMob(Mob mob) {
-        return mob.isAlive() && !mob.isRemoved() && !isProjection(mob);
+        return mob.isAlive() && !mob.isRemoved() && !isProjection(mob) && !Neighbours.leftAlone(mob);
     }
 
     @Nullable
@@ -447,7 +448,10 @@ public final class HouseExteriorEntityMirror {
                 "DeathLootTableSeed",
                 // Data attachments are gameplay identity (Hillary's tag, for
                 // one): a projection must never carry them.
-                AttachmentHolder.ATTACHMENTS_NBT_KEY
+                AttachmentHolder.ATTACHMENTS_NBT_KEY,
+                // So is an entity's own NeoForge data, the House's or a
+                // neighbour's (docs/NEIGHBOURS.md R9).
+                "NeoForgeData"
         }) {
             tag.remove(key);
         }

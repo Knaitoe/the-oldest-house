@@ -4,11 +4,15 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -33,12 +37,30 @@ public final class Neighbours {
      */
     public static final TagKey<DimensionType> NOT_OWN_WORLD = TagKey.create(Registries.DIMENSION_TYPE, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "not_own_world"));
     /**
+     * An entity type in this tag is a neighbour's own people (A Reaping's sparring partner, and later its tributes, guards, citizens and
+     * kin): the House's mirror never projects one, Harrigan's call never kills one and the tally counter never counts one as hostile
+     * (docs/NEIGHBOURS.md, R9).
+     */
+    public static final TagKey<EntityType<?>> LEFT_ALONE = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "left_alone"));
+    /**
+     * An entity type in this tag is game, as the elk's men count it beside the animals of the reader's world ("Never even shot a
+     * deer?"): a neighbour's game animals (docs/NEIGHBOURS.md, the owner's decisions).
+     */
+    public static final TagKey<EntityType<?>> HUNTED = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "hunted"));
+    /**
+     * The scoreboard tag the House puts on Hillary while she guides, so a neighbour never fights her (A Reaping's word for it). She is a
+     * vanilla wolf, and no entity type tag can tell her from any other.
+     */
+    public static final String NOT_A_FIGHTER = "a_reaping.not_a_fighter";
+    /**
      * The message a neighbour sends with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on its districts' land and worksites
      * and at least {@link #MARGIN} blocks round them (docs/NEIGHBOURS.md): the House probes a box only every {@link #PROBE} blocks.
      */
     public static final String DISTRICT_LAND = "district_land";
     /** The message the House sends A Reaping with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on the manor's lot. */
     public static final String HOUSE_LAND = "house_land";
+    /** The message the House sends A Reaping with a {@code Predicate<ItemStack>} that holds on the House's own things. */
+    public static final String HOUSE_MADE = "house_made";
     /** A Reaping, the neighbour the House tells where its lot is. A message to a mod that is not loaded is never read. */
     static final String A_REAPING = "a_reaping";
     /**
@@ -67,6 +89,7 @@ public final class Neighbours {
 
     private static void onEnqueue(InterModEnqueueEvent event) {
         InterModComms.sendTo(A_REAPING, HOUSE_LAND, () -> (BiPredicate<ServerLevel, BlockPos>) Neighbours::houseLand);
+        InterModComms.sendTo(A_REAPING, HOUSE_MADE, () -> (Predicate<ItemStack>) HouseKeeping::houseMade);
     }
 
     private static void onProcess(InterModProcessEvent event) {
@@ -104,6 +127,23 @@ public final class Neighbours {
      */
     public static boolean notOwnWorld(Level level) {
         return level.dimensionTypeRegistration().is(NOT_OWN_WORLD);
+    }
+
+    /** Whether {@code entity} is one of a neighbour's own people ({@link #LEFT_ALONE}). With no neighbour the tag is empty. */
+    public static boolean leftAlone(Entity entity) {
+        return entity.getType().is(LEFT_ALONE);
+    }
+
+    /**
+     * Puts {@link #NOT_A_FIGHTER} on {@code entity}, or takes it off, as {@code on} says. Without a neighbour nothing reads it; it is
+     * written all the same, so a neighbour loaded later finds it there.
+     */
+    public static void notAFighter(Entity entity, boolean on) {
+        if (on) {
+            entity.addTag(NOT_A_FIGHTER);
+        } else {
+            entity.removeTag(NOT_A_FIGHTER);
+        }
     }
 
     /** Whether any neighbour has said where its districts are (or a case has installed one). With none, nothing is district land. */

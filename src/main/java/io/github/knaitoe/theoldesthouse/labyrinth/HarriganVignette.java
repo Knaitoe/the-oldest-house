@@ -947,6 +947,10 @@ public final class HarriganVignette {
         if (key != null && TheOldestHouse.MOD_ID.equals(key.getNamespace())) {
             return TargetKind.FORBIDDEN;
         }
+        // A neighbour's own people are never his to take (docs/NEIGHBOURS.md R9).
+        if (type.is(io.github.knaitoe.theoldesthouse.house.Neighbours.LEFT_ALONE)) {
+            return TargetKind.FORBIDDEN;
+        }
         if (type == EntityType.ENDER_DRAGON || type == EntityType.WITHER
                 || type == EntityType.ELDER_GUARDIAN || type == EntityType.WARDEN) {
             return TargetKind.FORBIDDEN;
