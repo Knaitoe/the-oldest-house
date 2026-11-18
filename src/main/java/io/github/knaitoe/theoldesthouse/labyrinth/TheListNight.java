@@ -103,7 +103,7 @@ public final class TheListNight {
     public static final Vec3 UNDER=new Vec3(TheListSite.TOWER_X-.5,0,TheListSite.TOWER_Z+1.5);
     /** The seed house's doorway, the cells beside it the door rolls into, the lamp over it and the bulb inside. */
     public static final int DOOR_X=(TheListSite.SEED_W+TheListSite.SEED_E)/2;
-    public static final BlockPos LAMP=new BlockPos(DOOR_X,3,TheListSite.SEED_S+1),BULB=new BlockPos(DOOR_X+2,TheListSite.SEED_TOP-1,(TheListSite.SEED_N+TheListSite.SEED_S)/2);
+    public static final BlockPos LAMP=new BlockPos(DOOR_X,3,TheListSite.SEED_S+1),BULB=new BlockPos(DOOR_X+2,TheListSite.BULB_Y,(TheListSite.SEED_N+TheListSite.SEED_S)/2);
     /** The auger's trench, along which the seed draws them. */
     public static final double TRENCH_X=DOOR_X+1.5;
 

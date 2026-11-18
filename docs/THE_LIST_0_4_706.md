@@ -116,6 +116,14 @@ they come to, the door is theirs again. Every other reader can leave at any time
 elsewhere in the town by an earlier case was counted beside the one at his place. The town's own pass now finds them wherever they are
 and keeps one, the case runs that pass before counting, and every list case ends any night an earlier case left going.
 
+## Seen in the frames
+
+Twelve frames at eye level, of the party, the open seed house and the shut one, were looked at before this was called done.
+
+- The party, the pickup and the sedan, the five and their things read as they should.
+- The bulb inside the seed house hung at the roof, nine blocks up, and from the floor it was a speck. It now hangs on a chain, three
+  blocks down from the roof, where the one inside can see it go out.
+
 ## Every new line
 
 Grey cues on the action bar:

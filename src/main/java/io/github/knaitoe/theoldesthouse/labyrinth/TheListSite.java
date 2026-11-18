@@ -48,6 +48,8 @@ public final class TheListSite {
     public static final int GIN_W=72,GIN_E=92,GIN_S=-40,GIN_N=-68,GIN_TOP=9;
     public static final int MODULES_S=-12,MODULES_N=-36;
     public static final int SEED_W=74,SEED_E=84,SEED_S=-74,SEED_N=-86,SEED_TOP=10;
+    /** The seed house bulb's height, on its chain from the roof. */
+    public static final int BULB_Y=SEED_TOP-4;
     public static final int TOWER_X=57,TOWER_Z=-82,TOWER_LEG_TOP=21,CATWALK_Y=22,TANK_BOTTOM=23,TANK_TOP=29;
     public static final int PLAYA_W=70,PLAYA_S=-100;
     /** 0.4.700, the school's field out west (docs/THE_LIST_0_4_700.md): its fence; the field's sidelines and end lines and its middle; the
@@ -1038,7 +1040,9 @@ public final class TheListSite {
         for(int z=SEED_N+1;z<SEED_S;z++){set(l,b,SEED_W+3,0,z,fit(Kind.SEED,Direction.EAST,0));set(l,b,SEED_W+3,1,z,fit(Kind.SEED,Direction.EAST,0));set(l,b,SEED_W+3,2,z,fit(Kind.SEED,Direction.EAST,0));}
         for(int z=SEED_N+1;z<SEED_S-2;z++)for(int x=SEED_W+1;x<SEED_W+3;x++)set(l,b,x,0,z,fit(Kind.SEED,Direction.NORTH,1));
         for(int z=SEED_N+1;z<SEED_S-1;z++)set(l,b,dx+1,0,z,fit(Kind.SEED,Direction.NORTH,2));
-        set(l,b,dx+2,SEED_TOP-1,(SEED_N+SEED_S)/2,fit(Kind.FIXTURE,Direction.NORTH,3));
+        // 0.4.706 frames: at the roof the bulb was a speck from the floor; it hangs on a chain to where it is seen.
+        for(int y=BULB_Y+1;y<SEED_TOP;y++)set(l,b,dx+2,y,(SEED_N+SEED_S)/2,Blocks.CHAIN.defaultBlockState());
+        set(l,b,dx+2,BULB_Y,(SEED_N+SEED_S)/2,fit(Kind.FIXTURE,Direction.NORTH,3));
     }
     /**
      * The water tower: four legs braced in three places, a ladder up a leg to the catwalk, the catwalk round the bowl with its
