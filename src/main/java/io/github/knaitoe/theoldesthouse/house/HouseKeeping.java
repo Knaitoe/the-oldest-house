@@ -143,7 +143,7 @@ public final class HouseKeeping extends SavedData {
      * and so is one the Mother has marked as carried, or one that has gained an identity by being used since it was listed. Two weapons
      * that both carry an identity are the same only if it is the same one, and a House copy is never the thing it copies.
      */
-    static boolean same(ItemStack a,ItemStack b){
+    public static boolean same(ItemStack a,ItemStack b){
         if(a.getItem()!=b.getItem())return false;
         boolean known=identified(a)&&identified(b);
         return ItemStack.isSameItemSameComponents(bare(a,known),bare(b,known));

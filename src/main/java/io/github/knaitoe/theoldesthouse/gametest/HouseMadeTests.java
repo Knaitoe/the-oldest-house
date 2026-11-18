@@ -373,10 +373,14 @@ public final class HouseMadeTests {
             h.assertTrue(swordId != null && WeaponHistory.uses(p, swordId) == 1 && target.getHealth() < target.getMaxHealth(),
                     "a vanilla attack is one use: " + (swordId == null ? "none" : WeaponHistory.uses(p, swordId)));
 
-            // A mod's projectile: its weapon is a copy of what loosed it, and the use is the real one's in the hand.
+            // A mod's projectile: its weapon is a copy of what loosed it, and the use is the real one's in the hand. The sling's first
+            // shot: the copy is taken before the sling is stamped, as the shot joins the world.
             var sling = new ItemStack(Items.FISHING_ROD);
             p.setItemInHand(InteractionHand.MAIN_HAND, sling);
             var shot = new Arrow(h.getLevel(), p, new ItemStack(Items.ARROW), p.getMainHandItem());
+            h.getLevel().addFreshEntity(shot);
+            h.assertTrue(WeaponHistory.identity(p.getMainHandItem()) != null && WeaponHistory.identity(shot.getWeaponItem()) == null,
+                    "the sling is stamped as its shot joins the world, after the shot took its copy");
             target.invulnerableTime = 0;
             target.setHealth(target.getMaxHealth());
             target.hurt(p.damageSources().arrow(shot, p), 1);

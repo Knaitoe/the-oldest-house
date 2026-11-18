@@ -103,7 +103,7 @@ public final class TallyCounterItem extends Item {
         if(e instanceof GoatmanChild c&&(c.tells()!=0||c.getTags().contains(PRETENDER)))return true;
         return e.isInvisible()||e.getTags().contains(PRETENDER);
     }
-    static boolean hostile(LivingEntity e,ServerPlayer p){
+    public static boolean hostile(LivingEntity e,ServerPlayer p){
         if(e instanceof Player||Neighbours.leftAlone(e))return false;
         if(e instanceof GoatmanFigure f)return f.viewer().filter(p.getUUID()::equals).isPresent();
         return e instanceof Enemy||e instanceof Mob m&&m.getTarget()==p;

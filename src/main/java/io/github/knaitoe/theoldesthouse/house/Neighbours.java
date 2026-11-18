@@ -38,8 +38,8 @@ public final class Neighbours {
     public static final TagKey<DimensionType> NOT_OWN_WORLD = TagKey.create(Registries.DIMENSION_TYPE, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "not_own_world"));
     /**
      * An entity type in this tag is a neighbour's own people (A Reaping's sparring partner, and later its tributes, guards, citizens and
-     * kin): the House's mirror never projects one, Harrigan's call never kills one and the tally counter never counts one as hostile
-     * (docs/NEIGHBOURS.md, R9).
+     * kin): the House's mirror never projects one, a copied home never takes one, Harrigan's call never kills one and the tally counter
+     * never counts one as hostile (docs/NEIGHBOURS.md, R9).
      */
     public static final TagKey<EntityType<?>> LEFT_ALONE = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "left_alone"));
     /**

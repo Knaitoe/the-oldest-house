@@ -164,8 +164,23 @@ public final class LiteraryCopies extends SavedData {
             boolean entitiesReady=true;
             for(int x=minX>>4;x<=((minX+size-1)>>4);x++)for(int z=minZ>>4;z<=((minZ+size-1)>>4);z++){l.getChunk(x,z);entitiesReady&=l.areEntitiesLoaded(ChunkPos.asLong(x,z));}
             if(!entitiesReady)return used;
-            c.snapshot=c.capture.build(s.overworld().getGameTime(),c.day,c.bed.asLong());if(c.place==LabyrinthPlace.FAMILY_COPY&&c.meta.contains("Front"))c.meta.putInt("SceneOffset",Math.min(-34,-14-BlockPos.of(c.meta.getLong("Front")).getZ()));c.captured=true;c.capture=null;var box=new AABB(Vec3.atLowerCornerOf(c.bed.offset(-half,-below,-half)),Vec3.atLowerCornerOf(c.bed.offset(half,height-below,half)));for(var e:l.getEntities((Entity)null,box,e->e instanceof TamableAnimal||e instanceof net.minecraft.world.entity.animal.Animal||e instanceof ItemFrame||e instanceof ArmorStand)){if(c.entities.size()>=48)break;var tag=new CompoundTag();if(e.save(tag)){tag.remove("UUID");tag.remove("Owner");tag.remove("Leash");tag.remove("Passengers");tag.putDouble("CopyX",e.getX()-c.bed.getX());tag.putDouble("CopyY",e.getY()-c.bed.getY());tag.putDouble("CopyZ",e.getZ()-c.bed.getZ());c.entities.add(tag);}}releaseCapture(c.key());setDirty();}
+            c.snapshot=c.capture.build(s.overworld().getGameTime(),c.day,c.bed.asLong());if(c.place==LabyrinthPlace.FAMILY_COPY&&c.meta.contains("Front"))c.meta.putInt("SceneOffset",Math.min(-34,-14-BlockPos.of(c.meta.getLong("Front")).getZ()));c.captured=true;c.capture=null;var box=new AABB(Vec3.atLowerCornerOf(c.bed.offset(-half,-below,-half)),Vec3.atLowerCornerOf(c.bed.offset(half,height-below,half)));for(var e:l.getEntities((Entity)null,box,LiteraryCopies::captures)){if(c.entities.size()>=48)break;var tag=captured(e);if(tag!=null){tag.putDouble("CopyX",e.getX()-c.bed.getX());tag.putDouble("CopyY",e.getY()-c.bed.getY());tag.putDouble("CopyZ",e.getZ()-c.bed.getZ());c.entities.add(tag);}}releaseCapture(c.key());setDirty();}
         return used;
+    }
+    /**
+     * What a copied home takes of what lives round its bed: its animals, frames and stands, and never a neighbour's own people
+     * ({@link Neighbours#LEFT_ALONE}, docs/NEIGHBOURS.md R9).
+     */
+    public static boolean captures(Entity e){return (e instanceof TamableAnimal||e instanceof net.minecraft.world.entity.animal.Animal||e instanceof ItemFrame||e instanceof ArmorStand)&&!Neighbours.leftAlone(e);}
+    /**
+     * What a copied home keeps of one it takes: its saved data without its identity, owner, lead or riders, and without its NeoForge
+     * data or attachments, the House's or a neighbour's, which are gameplay identity, as the mirror's projections carry none. Null if
+     * it would not save.
+     */
+    @Nullable public static CompoundTag captured(Entity e){
+        var tag=new CompoundTag();if(!e.save(tag))return null;
+        for(String key:new String[]{"UUID","Owner","Leash","Passengers","NeoForgeData",net.neoforged.neoforge.attachment.AttachmentHolder.ATTACHMENTS_NBT_KEY})tag.remove(key);
+        return tag;
     }
     /** Whether {@code rel}, from the capture's bed, is nearer it than what {@code meta} holds under {@code key}, or nothing is held. */
     private static boolean nearer(CompoundTag meta,String key,BlockPos rel){return !meta.contains(key)||rel.distSqr(BlockPos.ZERO)<BlockPos.of(meta.getLong(key)).distSqr(BlockPos.ZERO);}

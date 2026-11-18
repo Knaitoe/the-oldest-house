@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.HouseKeeping;
 import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,17 +118,21 @@ public final class WeaponHistory {
     }
     /**
      * The reader's own stack that dealt a blow with {@code weapon}: the one in a hand that is it, or is the same thing wear aside (a
-     * projectile carries a copy of what loosed it, which is stamped on the real one); else the copy itself if it carries an identity.
+     * projectile carries a copy of what loosed it, which is stamped on the real one); else the copy itself if it carries an identity. A
+     * copy with no identity was taken before the weapon was first stamped, as the projectile joined the world, so the hand's identity and
+     * the Mother's marks are set aside for it ({@link HouseKeeping#same}).
      */
     @Nullable static ItemStack dealtBy(ServerPlayer player, ItemStack weapon) {
+        boolean known = identity(weapon) != null;
         for (ItemStack hand : new ItemStack[] { player.getMainHandItem(), player.getOffhandItem() }) {
             if (hand == weapon) return hand;
             if (hand.isEmpty() || hand.getItem() != weapon.getItem()) continue;
+            if (!known) { if (HouseKeeping.same(hand, weapon)) return hand; continue; }
             ItemStack a = hand.copyWithCount(1), b = weapon.copyWithCount(1);
             a.remove(DataComponents.DAMAGE); b.remove(DataComponents.DAMAGE);
             if (ItemStack.isSameItemSameComponents(a, b)) return hand;
         }
-        return identity(weapon) != null ? weapon : null;
+        return known ? weapon : null;
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { SWUNG.remove(event.getEntity().getUUID()); }
     @SubscribeEvent public static void toss(net.neoforged.neoforge.event.entity.item.ItemTossEvent event) {

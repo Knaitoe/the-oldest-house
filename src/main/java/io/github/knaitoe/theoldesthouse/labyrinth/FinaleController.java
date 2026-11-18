@@ -434,7 +434,8 @@ public final class FinaleController {
     }
     @SubscribeEvent public static void projectile(EntityJoinLevelEvent event){
         if(!event.getLevel().isClientSide&&event.getEntity() instanceof TamableAnimal pet&&pet.getPersistentData().getBoolean(GUIDE))installGuideGoal(pet);
-        if(event.getLevel().isClientSide||!(event.getEntity() instanceof Projectile projectile)||!(projectile.getOwner() instanceof ServerPlayer player))return;
+        // A weapon is stamped for its projectiles only where the House watches: never in a neighbour's world (docs/NEIGHBOURS.md R3).
+        if(event.getLevel().isClientSide||!(event.getEntity() instanceof Projectile projectile)||!(projectile.getOwner() instanceof ServerPlayer player)||!WeaponHistory.watched(player))return;
         ItemStack used=player.getUseItem();if(!WeaponHistory.weapon(used))used=WeaponHistory.weapon(player.getMainHandItem())?player.getMainHandItem():player.getOffhandItem();
         UUID original=WeaponHistory.stamp(used);if(original!=null)projectile.getPersistentData().putUUID(WeaponHistory.ORIGINAL,original);
     }
