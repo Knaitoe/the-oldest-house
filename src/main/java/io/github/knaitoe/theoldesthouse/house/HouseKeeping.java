@@ -371,14 +371,15 @@ public final class HouseKeeping extends SavedData {
 
     // ------------------------------------------------------------------ things set down in the manor
     /**
-     * Own things dropped in the manor, by item entity, with whose they are: picked up past the hall, they go back to that drawer. Not the
-     * reader's favourite weapon, which passes the hall as their own however it gets there.
+     * Own things dropped in the manor, by item entity, with whose they are: picked up past the hall, they go back to that drawer. The
+     * reader's favourite weapon is followed too: picked up past the hall by its own reader while it is still their favourite, it stays
+     * with them as their own; picked up by anybody else, or once it is no longer the favourite, it is like their other things.
      */
     private static final Map<UUID,UUID> SET_DOWN=new HashMap<>();
     public static void clearAll(){SET_DOWN.clear();}
     @SubscribeEvent public static void tossed(ItemTossEvent e){
         if(!(e.getPlayer() instanceof ServerPlayer p)||p.level().isClientSide())return;
-        var s=e.getEntity().getItem();if(passes(p,s)||where(p)!=Where.MANOR)return;
+        var s=e.getEntity().getItem();if(allowed(s)||where(p)!=Where.MANOR)return;
         var keep=of(p);int own=take(keep.loose,s,s.getCount());if(own<=0)return;
         get(p.server).setDirty();SET_DOWN.put(e.getEntity().getUUID(),p.getUUID());
     }
@@ -386,7 +387,7 @@ public final class HouseKeeping extends SavedData {
         if(!(e.getPlayer() instanceof ServerPlayer p)||p.level().isClientSide())return;
         var item=e.getItemEntity();var owner=SET_DOWN.get(item.getUUID());if(owner==null)return;
         var data=get(p.server);
-        if(where(p)==Where.BEYOND){
+        if(where(p)==Where.BEYOND&&!(owner.equals(p.getUUID())&&favourite(p,item.getItem()))){
             e.setCanPickup(TriState.FALSE);add(data.keep(owner).drawer,item.getItem());item.discard();SET_DOWN.remove(item.getUUID());data.setDirty();
             say(p,"The House takes it back to the chest of drawers in the front hall.");return;
         }

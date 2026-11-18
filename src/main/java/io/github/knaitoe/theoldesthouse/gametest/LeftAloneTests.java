@@ -93,9 +93,24 @@ public final class LeftAloneTests {
      */
     private static final String WATCH = "left_alone_watch";
     private static final List<NativeTestChunks> HELD = new ArrayList<>();
+    /** Who a case of the watch made, put away when the batch ends even if the case did not get as far as putting them away itself. */
+    private static final List<Entity> MADE = new ArrayList<>();
+    private static final List<ServerPlayer> READERS = new ArrayList<>();
 
     @AfterBatch(batch = WATCH)
     public static void theWatchEnds(ServerLevel level) {
+        MADE.forEach(e -> {
+            if (!e.isRemoved()) {
+                e.discard();
+            }
+        });
+        MADE.clear();
+        READERS.forEach(p -> {
+            if (p.server.getPlayerList().getPlayers().contains(p)) {
+                NativeTestPlayers.remove(p);
+            }
+        });
+        READERS.clear();
         HELD.forEach(NativeTestChunks::close);
         HELD.clear();
         NeighbourTags.bind(EntityType.ZOMBIE.builtInRegistryHolder(), Neighbours.LEFT_ALONE, false);
@@ -309,7 +324,14 @@ public final class LeftAloneTests {
         level.setBlock(second.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
         Wolf away = Hillary.spawn(level, home, UUID.randomUUID());
         ServerPlayer reader = NativeTestPlayers.survival(h, "hillary_not_a_fighter");
+        READERS.add(reader);
         Wolf hers = Hillary.spawn(level, second, reader.getUUID());
+        if (away != null) {
+            MADE.add(away);
+        }
+        if (hers != null) {
+            MADE.add(hers);
+        }
         h.assertTrue(away != null && hers != null, "both Hillaries came");
         var tagged = (java.util.function.Predicate<Wolf>) w -> w.getTags().contains(Neighbours.NOT_A_FIGHTER);
         SceneReady.when(h, () -> tagged.test(away) && tagged.test(hers) ? null : "the tag on her at her reader's doorstep (ticked " + away.tickCount + " and "
