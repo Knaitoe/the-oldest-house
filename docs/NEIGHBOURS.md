@@ -1,6 +1,6 @@
 # Neighbours: the House beside other mods
 
-The House shares its world with other mods without depending on any of them. The first is *A Reaping* (mod id `a_reaping`), a Hunger Games mod whose players live in districts in the Overworld and fight in an arena dimension. The design both mods follow is A Reaping's `docs/superpowers/specs/2026-11-17-house-compatibility-design.md`, and its evidence, with a file and line for every House site, is `2026-11-17-house-compatibility-research.md` beside it.
+The House shares its world with other mods without depending on any of them. The first is *A Reaping* (mod id `a_reaping`), a Hunger Games mod whose players live in districts in the Overworld and fight in an arena dimension. The design both mods follow is A Reaping's `docs/superpowers/specs/2026-11-17-house-compatibility-design.md`, and its evidence, with a file and line for every House site, is `2026-11-17-house-compatibility-research.md` beside it. It came in 0.4.675 (`docs/NEIGHBOURS_0_4_675.md`, which also says what it does not cover).
 
 The owner, on the district: "The house should require the player to sneak out from the district. Having Hillary and the like spawn inside would likely still require the player to sneak out, while adding another layer of convolution."
 
