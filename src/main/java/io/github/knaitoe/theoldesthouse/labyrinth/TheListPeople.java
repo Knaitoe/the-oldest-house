@@ -105,6 +105,8 @@ public final class TheListPeople {
         if(TheListHunt.holds(b,who))return TheListHunt.actor(l,b,who);
         // 0.4.720: Amber, out on night two's tests, is wherever she has got to.
         if(TheListDen.holds(l.getServer(),b,who)){for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.phase()==FIRST+who&&x.isAlive()))return a;return null;}
+        // 0.4.721: one dead on an earlier night is nowhere.
+        if(TheListNight.gone(l.getServer(),b,who))return null;
         var s=spot(TheListNight.phase(l.getServer(),b),who);if(s==null)return null;
         LiteraryActor found=null;
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(s.at())).inflate(6),x->is(x)&&x.phase()==FIRST+who&&x.isAlive())){if(found==null)found=a;else a.discard();}
@@ -121,6 +123,7 @@ public final class TheListPeople {
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.isAlive())){int w=who(a);if(found[w]==null)found[w]=a;else a.discard();}
         for(int who=0;who<CAST;who++){
             var s=spot(phase,who);var a=found[who];
+            if(s!=null&&TheListNight.gone(l.getServer(),b,who)&&!TheListHunt.holds(b,who))s=null;
             if(s==null){if(a!=null)a.discard();continue;}
             var at=b.offset(s.at());
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;

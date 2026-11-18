@@ -145,7 +145,10 @@ public final class WitnessAccount {
         LAST_SEEN("last_seen","Last seen","understanding","Children came back to a park the way they were the day they went, and I took each one the folder with their face in it. The city wanted them gone by morning. My own folder was in her drawer."),
         // 0.4.684 (docs/FALLOW_0_4_684.md): resolved by the account in the keeper's ledger under the counter by the till, ready once the
         // man who came down the road after the light had gone, the reader still at the station.
-        FALLOW("fallow","Fallow","survival","A light came over the wheat and brought down a gas station. Afterward a man walked down the road wearing our faces and asked where the girl was.");
+        FALLOW("fallow","Fallow","survival","A light came over the wheat and brought down a gas station. Afterward a man walked down the road wearing our faces and asked where the girl was."),
+        // 0.4.721 (docs/THE_LIST_0_4_721.md): resolved by the account on the tape deck in the reader's room, ready to everyone in Lamesa
+        // when the fourth night ends, and to the one who went in wherever they are.
+        THE_LIST("the_list","The list","memory","Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

@@ -120,6 +120,7 @@ STORY_ICONS = {
     'not_yet': 'minecraft:white_bed',
     'last_seen': 'minecraft:player_head',
     'fallow': 'minecraft:wheat',
+    'the_list': 'minecraft:paper',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 
