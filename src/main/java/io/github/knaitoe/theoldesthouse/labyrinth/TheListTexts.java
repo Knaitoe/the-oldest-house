@@ -22,6 +22,11 @@ public final class TheListTexts {
     public static final String EMPTY_DOOR="Nobody has lived here a while. The door gives when you lean on it.";
     /** 0.4.700: Amber's front door, shut for now. */
     public static final String AMBER_DOOR="Locked. The window beside it flickers with a television.";
+    /** 0.4.701: the pasture's wire gap, opened and shut by hand; the two machines. */
+    public static final String GAP_OPEN="You lift the loop off the post and lay the gap back on the grass.",
+        GAP_SHUT="You stretch the gap across and drop the loop back over the post.",
+        WINDMILL_HEAD="The windmill's head, up on its tower. The wheel goes round in front of it.",
+        JACK_BEARING="The beam's bearing on top of the post. The horsehead rises and falls over the well.";
 
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: the pad by the kitchen telephone. */
@@ -95,6 +100,19 @@ public final class TheListTexts {
             case LOT->switch(stage){case 0->"A sprinkler, ticking its way across the grass.";case 1->"A doghouse. Something has chewed the corner of its door.";case 2->"A trash can, out for the morning.";
                 case 3->"A bike left on its side in the grass.";case 4->"A lawn chair facing the street.";case 5->"A grill, cold, the grate still greasy.";case 6->"A hose wound on its reel.";
                 default->"A kiddie pool with an inch of rainwater in it.";};
+            // 0.4.701, the pasture.
+            case PASTURE->switch(stage){case 0->"A cedar post, the wire stapled to it. The staples have rusted into the wood.";
+                case 1->"Barbed wire, four strands. A tuft of hair is caught on a barb.";case 4->"A cattle guard. Pipes over a pit, far enough apart for a hoof to go through.";
+                case 5->"The corner post, braced against the pull of the wire.";case 6->"A mineral block in a tub, licked into a bowl.";
+                default->"A hay ring. What is left of the bale inside is trodden flat.";};
+            case STOCK->switch(stage){case 3->"The windmill's pipe comes over the rim. A little runs from it with each stroke.";
+                case 4->"The pipe from the windmill, along the ground to the tank.";default->"The stock tank, full nearly to the rim. Moths float on the water.";};
+            case WINDMILL->switch(stage){case 0->"The windmill's pump. The rod rises and drops in it.";case 6->"A footing, the leg bolted to it. The nuts are rusted round.";
+                case 7->"The tail, holding the wheel into the wind.";default->"The pump rod, up the middle of the tower to the head.";};
+            case PUMPJACK->switch(stage){case 0->"The wellhead. It smells of crude, and the polished rod slides in and out of it.";
+                case 1->"The Samson post. It shakes with every stroke.";default->"The gearbox, warm, oil weeping from its seal. Behind it the motor hums.";};
+            case BATTERY->switch(stage){case 2->"The separator. A gauge on it, the needle steady.";case 4->"The lease's sign. Somebody has shot a hole through one corner.";
+                case 5,6,7->"A plate with the well's number on it.";default->"A tank on the lease, a hatch on its roof and a ladder up its side.";};
         };
     }
 }

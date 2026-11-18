@@ -27,13 +27,14 @@ public final class TheListRegistry {
      * roofs; inside, carpet, linoleum, painted wallboard, paneling and the ceilings; the stores' tile, the video store's carpet, the
      * fronts' face brick, stucco and block; the gin's galvanized and rusted iron and its slab; the shop's painted steel; the drive-in's lot.
      * 0.4.700: the school field's turf, mown and darker, its yard lines and sidelines, the end zones and the cinder track.
+     * 0.4.701: the pasture's buffalo grass and the trodden mud round its tank.
      */
     public static final java.util.List<String> MATERIAL_NAMES=java.util.List.of("caliche","asphalt","main_line","curb","sidewalk","soil","dirt",
         "lawn","playa","ballast","siding","wainscot","shingle","flat_roof","carpet","lino","drywall","paneling","ceiling","tile","store_carpet",
         "storefront","stucco","cinder","galvanized","rusted","slab","shop_metal","drive_lot",
-        "turf","turf_dark","turf_line","turf_side","endzone","track_cinder");
+        "turf","turf_dark","turf_line","turf_side","endzone","track_cinder","pasture","mud");
     static{for(String name:MATERIAL_NAMES)MATERIALS.put(name,BLOCKS.registerSimpleBlock("list_"+name,fixed(switch(name){
-        case "caliche","ballast","track_cinder"->Blocks.GRAVEL;case "soil","dirt","playa"->Blocks.DIRT;case "lawn","turf","turf_dark","turf_line","turf_side","endzone"->Blocks.GRASS_BLOCK;
+        case "caliche","ballast","track_cinder"->Blocks.GRAVEL;case "soil","dirt","playa"->Blocks.DIRT;case "lawn","turf","turf_dark","turf_line","turf_side","endzone","pasture"->Blocks.GRASS_BLOCK;case "mud"->Blocks.MUD;
         case "carpet","store_carpet"->Blocks.WHITE_WOOL;case "siding","paneling","shingle"->Blocks.OAK_PLANKS;
         case "galvanized","rusted","shop_metal"->Blocks.IRON_BLOCK;default->Blocks.STONE;})));}
     public static Block material(String name){var block=MATERIALS.get(name);if(block==null)throw new IllegalArgumentException(name);return block.get();}
@@ -48,6 +49,12 @@ public final class TheListRegistry {
     public static final DeferredBlock<DoorBlock> STEEL_DOOR=BLOCKS.register("list_steel_door",()->new DoorBlock(BlockSetType.COPPER,fixed(Blocks.IRON_DOOR).noOcclusion()));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TheListBlock>> FITTING_TYPE=CODECS.register("list_fitting",()->TheListBlock.CODEC);
     public static final DeferredBlock<TheListBlock> FITTING=BLOCKS.registerBlock("list_fitting",TheListBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion().lightLevel(TheListBlock::light));
+    /** 0.4.701: the pasture's windmill and pumpjacks, their still parts in the block and their turning parts drawn by its renderer. */
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<TheListMachineBlock>> MACHINE_TYPE=CODECS.register("list_machine",()->TheListMachineBlock.CODEC);
+    public static final DeferredBlock<TheListMachineBlock> MACHINE=BLOCKS.registerBlock("list_machine",TheListMachineBlock::new,fixed(Blocks.IRON_BLOCK).noOcclusion());
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,TheOldestHouse.MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>,net.minecraft.world.level.block.entity.BlockEntityType<TheListMachineBlock.Turning>> MACHINE_ENTITY=BLOCK_ENTITIES.register("list_machine",
+        ()->net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(TheListMachineBlock.Turning::new,MACHINE.get()).build(null));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** The night's insects; a dog a few yards off; the drive-in's speakers; a loose sheet on the gin; a train out past the playa; the
      * wind; the tower settling. */
@@ -55,6 +62,8 @@ public final class TheListRegistry {
         TIN=sound("the_list.tin"),TRAIN=sound("the_list.train"),WIND=sound("the_list.wind"),TOWER=sound("the_list.tower");
     /** 0.4.700: a sprinkler working a lawn. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SPRINKLER=sound("the_list.sprinkler");
+    /** 0.4.701: the windmill turning, a pumpjack's knock at the bottom of its stroke, the cattle guard underfoot. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> WINDMILL=sound("the_list.windmill"),PUMPJACK=sound("the_list.pumpjack"),GUARD=sound("the_list.guard");
     private TheListRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);SOUNDS.register(bus);}
 }

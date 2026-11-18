@@ -25,8 +25,8 @@ import net.minecraft.world.phys.Vec3;
 public final class TheListSite {
     private TheListSite(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.THE_LIST;
-    /** The scene's edges. South of the House's door are the back yards and the cotton behind them. */
-    public static final int WEST=-164,EAST=96,NORTH=-176,SOUTH=24;
+    /** The scene's edges. South of the House's door are the back yard, the cotton behind it and, from 0.4.701, the pasture. */
+    public static final int WEST=-164,EAST=96,NORTH=-176,SOUTH=140;
     /** The town stands at its own height, as the other tall places outside do, so the water tower's catwalk and tank are in it. */
     public static final int BASE_Y=96;
     /** The reader's house: its outer walls, the wallboard inside them, the ceiling's height. */
@@ -57,6 +57,14 @@ public final class TheListSite {
     /** Amber's house on South Seventh: its walls; the front and back doors, the television in the den and her desk. */
     public static final int AMBER_W=-12,AMBER_E=12,AMBER_S=-78,AMBER_N=-90;
     public static final BlockPos AMBER_FRONT=new BlockPos(0,0,AMBER_S),AMBER_BACK=new BlockPos(0,0,AMBER_N),AMBER_TV=new BlockPos(-10,0,-82),AMBER_DESK=new BlockPos(5,0,-80);
+    /** 0.4.701, the pasture south of town (docs/THE_LIST_0_4_701.md): the back yard's fence; the county road west off Avenue K; the
+     * pasture's fence, its wire gap in the north fence and the lease road inside; the stock tank and the windmill beside it, whose head is
+     * at WIND_TOP; the three pumpjacks' Samson posts and the way each horsehead faces; the lease's tank battery. */
+    public static final int YARD_S=22,ROAD_N=42,ROAD_S=46,PAST_W=-76,PAST_E=6,PAST_N=34,PAST_S=124,GAP_X=-40,LEASE_N=43,LEASE_S=45,WIND_TOP=12;
+    public static final BlockPos TANK_AT=new BlockPos(-30,0,84),WINDMILL_AT=new BlockPos(-38,0,84);
+    public static final BlockPos[] JACKS={new BlockPos(-40,0,56),new BlockPos(-12,0,100),new BlockPos(-62,0,108)};
+    public static final Direction[] JACK_FACING={Direction.NORTH,Direction.WEST,Direction.EAST};
+    public static final BlockPos[] BATTERY_TANKS={new BlockPos(-4,0,51),new BlockPos(0,0,51)};
     /** The sprinklers going on the neighbors' lawns. */
     public static final int[][] SPRINKLERS={{-30,-34},{-3,-65},{-36,-21}};
     /** The House's door at the back of the kitchen; the front door; the reader's own door; the empty house across the street, whose door
@@ -71,6 +79,11 @@ public final class TheListSite {
 
     // ------------------------------------------------------------------------------------------------ where things are
     public static boolean inScene(Vec3 r){return r.x>=WEST&&r.x<=EAST+1&&r.z>=NORTH&&r.z<=SOUTH+1&&r.y>=-6&&r.y<=40;}
+    /** Inside the pasture's fence. */
+    public static boolean inPasture(Vec3 r){return r.x>PAST_W+1&&r.x<PAST_E&&r.z>PAST_N+1&&r.z<PAST_S;}
+    /** Where a pumpjack's machine block stands: over its Samson post, two up. */
+    public static BlockPos jackMachine(int i){return JACKS[i].above(2);}
+    public static BlockPos windmillHead(){return WINDMILL_AT.above(WIND_TOP);}
     /** Inside the reader's house, under its ceiling. */
     public static boolean inHouse(Vec3 r){return r.x>HOUSE_W+1&&r.x<HOUSE_E&&r.z<HOUSE_S&&r.z>HOUSE_N+1&&r.y>-.5&&r.y<CEILING;}
     /** Inside one of Main Street's stores. */
@@ -128,6 +141,7 @@ public final class TheListSite {
         playa(l,b);
         poles(l,b);
         mesquite(l,b);
+        pasture(l,b);
     }
 
     // ------------------------------------------------------------------------------------------------ the ground
@@ -384,13 +398,13 @@ public final class TheListSite {
      * chain-link round it, the clothesline, the burn barrel, the faucet on the back wall. */
     static void yard(ServerLevel l,BlockPos b){
         lawn(l,b,HOUSE_W-8,HOUSE_N-1,HOUSE_E+4,YARD_N);
-        lawn(l,b,-22,HOUSE_S+1,22,SOUTH-2);
+        lawn(l,b,-22,HOUSE_S+1,22,YARD_S);
         ground(l,b,FRONT_DOOR.getX(),HOUSE_N-1,FRONT_DOOR.getX(),YARD_N,mat("sidewalk"));
         set(l,b,FRONT_DOOR.getX()+1,1,HOUSE_N-1,fit(Kind.YARD,Direction.NORTH,0));
         set(l,b,8,0,YARD_N,fit(Kind.MAILBOX,Direction.NORTH,0));
-        fenceRun(l,b,-22,HOUSE_S+1,-22,SOUTH-2,Direction.EAST);
-        fenceRun(l,b,22,HOUSE_S+1,22,SOUTH-2,Direction.EAST);
-        fenceRun(l,b,-22,SOUTH-2,22,SOUTH-2,Direction.NORTH);
+        fenceRun(l,b,-22,HOUSE_S+1,-22,YARD_S,Direction.EAST);
+        fenceRun(l,b,22,HOUSE_S+1,22,YARD_S,Direction.EAST);
+        fenceRun(l,b,-22,YARD_S,22,YARD_S,Direction.NORTH);
         set(l,b,-22,0,4,fit(Kind.FENCE,Direction.EAST,2));
         // The clothesline: two posts and the lines between them at a reader's head.
         set(l,b,-15,0,6,fit(Kind.YARD,Direction.NORTH,1));set(l,b,-15,1,6,fit(Kind.YARD,Direction.NORTH,1));
@@ -1119,5 +1133,177 @@ public final class TheListSite {
         }
         Direction side=Direction.from2DDataValue((int)(hash(x,z,54)*4));
         set(l,b,x+side.getStepX(),1,z+side.getStepZ(),fit(Kind.MESQUITE,side,4));
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.701: the pasture
+    /**
+     * South across the cotton from the back yard: a caliche county road west off Avenue K with a stop sign at the highway, and a pasture of
+     * buffalo grass in barbed wire on cedar posts. The road comes in over a cattle guard in the east fence and goes on as the lease road;
+     * a wire gap in the north fence opens by hand. Inside: the stock tank with trodden mud round it and its windmill beside it, the pipe
+     * from the pump over the rim; a hay ring and a mineral block; cow trails worn to the dirt; mesquite and prickly pear, broomweed,
+     * tumbleweeds blown against the fence; three pumpjacks on caliche pads, each with its well's plate, on spurs off the lease road; the
+     * tank battery inside its berm by the gate; a power line along the north fence; the lease's sign at the road.
+     */
+    static void pasture(ServerLevel l,BlockPos b){
+        // The ground: grass grazed short, worn to dirt in patches; the fence's row clear.
+        for(int x=PAST_W;x<=PAST_E;x++)for(int z=PAST_N;z<=PAST_S;z++){
+            set(l,b,x,-1,z,hash(x,z,61)<.12?mat("dirt"):mat("pasture"));set(l,b,x,0,z,AIR);
+        }
+        // Cow trails from the tank out to the hay ring, the far corner and the south fence.
+        for(int[] to:new int[][]{{-20,66},{-66,92},{-36,121},{-8,80}})trail(l,b,TANK_AT.getX(),TANK_AT.getZ(),to[0],to[1]);
+        // The county road to the highway, its stop sign; the cattle guard in the fence; the lease road on in.
+        ground(l,b,PAST_E+2,ROAD_N,AVE_W-2,ROAD_S,mat("caliche"));
+        set(l,b,AVE_W-3,0,ROAD_S+1,fit(Kind.SIGNPOST,Direction.WEST,3));
+        ground(l,b,PAST_W+8,LEASE_N,PAST_E-1,LEASE_S,mat("caliche"));
+        for(int x=PAST_E-1;x<=PAST_E+1;x++)for(int z=ROAD_N;z<=ROAD_S;z++){set(l,b,x,-1,z,fit(Kind.PASTURE,Direction.EAST,4));set(l,b,x,0,z,AIR);set(l,b,x,-2,z,mat("dirt"));}
+        // The fence: a post every five, wire between, a braced post at each corner with the next post beside it.
+        for(int x=PAST_W;x<=PAST_E;x++){fence(l,b,x,PAST_N,Direction.NORTH,x-PAST_W);fence(l,b,x,PAST_S,Direction.NORTH,x-PAST_W);}
+        for(int z=PAST_N;z<=PAST_S;z++){
+            fence(l,b,PAST_W,z,Direction.EAST,z-PAST_N);
+            if(z<ROAD_N||z>ROAD_S)fence(l,b,PAST_E,z,Direction.EAST,z-PAST_N);
+        }
+        set(l,b,PAST_E,0,ROAD_N-1,fit(Kind.PASTURE,Direction.EAST,0));set(l,b,PAST_E,0,ROAD_S+1,fit(Kind.PASTURE,Direction.EAST,0));
+        set(l,b,PAST_W,0,PAST_N,fit(Kind.PASTURE,Direction.NORTH,5));set(l,b,PAST_W+1,0,PAST_N,fit(Kind.PASTURE,Direction.NORTH,0));
+        set(l,b,PAST_E,0,PAST_N,fit(Kind.PASTURE,Direction.EAST,5));set(l,b,PAST_E,0,PAST_N+1,fit(Kind.PASTURE,Direction.EAST,0));
+        set(l,b,PAST_E,0,PAST_S,fit(Kind.PASTURE,Direction.SOUTH,5));set(l,b,PAST_E-1,0,PAST_S,fit(Kind.PASTURE,Direction.NORTH,0));
+        set(l,b,PAST_W,0,PAST_S,fit(Kind.PASTURE,Direction.WEST,5));set(l,b,PAST_W,0,PAST_S-1,fit(Kind.PASTURE,Direction.EAST,0));
+        // The wire gap, shut, between two posts.
+        set(l,b,GAP_X-2,0,PAST_N,fit(Kind.PASTURE,Direction.NORTH,0));set(l,b,GAP_X+2,0,PAST_N,fit(Kind.PASTURE,Direction.NORTH,0));
+        for(int x=GAP_X-1;x<=GAP_X+1;x++)set(l,b,x,0,PAST_N,fit(Kind.PASTURE,Direction.NORTH,2));
+        // The stock tank and its windmill; the hay ring and the mineral block.
+        stockTank(l,b);
+        windmill(l,b);
+        hayRing(l,b,-20,66);
+        set(l,b,-24,0,77,fit(Kind.PASTURE,Direction.NORTH,6));
+        // The pumpjacks, each on a pad at the end of its spur.
+        for(int i=0;i<JACKS.length;i++)pumpjack(l,b,i);
+        ground(l,b,JACKS[0].getX()-1,LEASE_S+1,JACKS[0].getX()+1,JACKS[0].getZ()-5,mat("caliche"));
+        ground(l,b,JACKS[1].getX()-1,LEASE_S+1,JACKS[1].getX()+1,JACKS[1].getZ()-4,mat("caliche"));
+        ground(l,b,JACKS[2].getX()-4,LEASE_S+1,JACKS[2].getX()-2,JACKS[2].getZ()-4,mat("caliche"));
+        // The two-track from the lease road down to the tank.
+        for(int z=LEASE_S+1;z<=TANK_AT.getZ()-7;z++){set(l,b,TANK_AT.getX()-1,-1,z,mat("dirt"));set(l,b,TANK_AT.getX()+1,-1,z,mat("dirt"));}
+        battery(l,b);
+        // Mesquite, prickly pear, broomweed and tufts on the grass; tumbleweeds caught along the south and west fences.
+        for(int[] t:new int[][]{{-60,70},{-8,72},{-50,96},{-25,112},{-70,52},{-45,118},{-2,116}})tree(l,b,t[0],t[1]);
+        for(int x=PAST_W+1;x<PAST_E;x++)for(int z=PAST_N+1;z<PAST_S;z++){
+            if(!l.getBlockState(b.offset(x,0,z)).isAir()||!l.getBlockState(b.offset(x,-1,z)).is(TheListRegistry.material("pasture")))continue;
+            double h=hash(x,z,62);
+            boolean fence=x==PAST_W+1||z==PAST_S-1;
+            if(fence&&hash(x,z,63)<.18)set(l,b,x,0,z,fit(Kind.WEED,Direction.NORTH,0));
+            else if(h<.006)set(l,b,x,0,z,fit(Kind.WEED,Direction.from2DDataValue((int)(hash(x,z,64)*4)),4));
+            else if(h<.03)set(l,b,x,0,z,fit(Kind.WEED,Direction.from2DDataValue((int)(hash(x,z,64)*4)),2));
+            else if(h<.045)set(l,b,x,0,z,fit(Kind.WEED,Direction.from2DDataValue((int)(hash(x,z,64)*4)),1));
+        }
+        // The power line in along the north fence from the highway's poles.
+        powerLine(l,b);
+        // The lease's sign at the road, outside the guard.
+        set(l,b,PAST_E+4,0,ROAD_S+2,fit(Kind.BATTERY,Direction.NORTH,4));
+    }
+    /** One cell of the pasture's fence along a run: a post every five, wire between. */
+    static void fence(ServerLevel l,BlockPos b,int x,int z,Direction along,int i){
+        set(l,b,x,0,z,fit(Kind.PASTURE,along,Math.floorMod(i,5)==0?0:1));set(l,b,x,-1,z,mat("pasture"));
+    }
+    /** A trail worn by cattle, a little crooked, two cells wide in places. */
+    static void trail(ServerLevel l,BlockPos b,int x0,int z0,int x1,int z1){
+        int n=Math.max(Math.abs(x1-x0),Math.abs(z1-z0));
+        for(int i=0;i<=n;i++){
+            double t=i/(double)n,wob=Math.sin(t*9+x1)*1.6;
+            int x=(int)Math.round(x0+(x1-x0)*t+wob*(z1-z0)/(double)Math.max(1,n)),z=(int)Math.round(z0+(z1-z0)*t-wob*(x1-x0)/(double)Math.max(1,n));
+            set(l,b,x,-1,z,mat("dirt"));if(hash(x,z,65)<.4)set(l,b,x+1,-1,z,mat("dirt"));
+        }
+    }
+    /** Water in the tank: seven across, an octagon of whole cells. */
+    public static boolean inTank(int dx,int dz){return Math.abs(dx)<=3&&Math.abs(dz)<=3&&Math.abs(dx)+Math.abs(dz)<=4;}
+    /**
+     * The stock tank: water in its cells over a galvanized floor; round it, in each cell that touches the water, its wall on that side, a
+     * corner where it touches on two, the seam where it only meets at a point. Trodden mud round it all. The windmill's pipe comes over the
+     * west wall (the pipe along the ground is the windmill's to lay).
+     */
+    static void stockTank(ServerLevel l,BlockPos b){
+        int cx=TANK_AT.getX(),cz=TANK_AT.getZ();
+        for(int dx=-7;dx<=7;dx++)for(int dz=-7;dz<=7;dz++){
+            if(dx*dx+dz*dz>6.5*6.5&&!(dx*dx+dz*dz<=8*8&&hash(cx+dx,cz+dz,66)<.5))continue;
+            set(l,b,cx+dx,-1,cz+dz,mat("mud"));set(l,b,cx+dx,0,cz+dz,AIR);
+        }
+        for(int dx=-4;dx<=4;dx++)for(int dz=-4;dz<=4;dz++){
+            int x=cx+dx,z=cz+dz;
+            if(inTank(dx,dz)){set(l,b,x,-1,z,mat("galvanized"));set(l,b,x,0,z,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());continue;}
+            boolean n=inTank(dx,dz-1),so=inTank(dx,dz+1),e=inTank(dx+1,dz),w=inTank(dx-1,dz);
+            int sides=(n?1:0)+(so?1:0)+(e?1:0)+(w?1:0);
+            if(sides==1){set(l,b,x,0,z,fit(Kind.STOCK,so?Direction.NORTH:n?Direction.SOUTH:e?Direction.WEST:Direction.EAST,0));continue;}
+            if(sides==2){set(l,b,x,0,z,fit(Kind.STOCK,so&&e?Direction.NORTH:w&&so?Direction.EAST:n&&w?Direction.SOUTH:Direction.WEST,1));continue;}
+            boolean se=inTank(dx+1,dz+1),sw=inTank(dx-1,dz+1),nw=inTank(dx-1,dz-1),ne=inTank(dx+1,dz-1);
+            if(se||sw||nw||ne)set(l,b,x,0,z,fit(Kind.STOCK,se?Direction.NORTH:sw?Direction.EAST:nw?Direction.SOUTH:Direction.WEST,2));
+        }
+        set(l,b,cx-4,0,cz,fit(Kind.STOCK,Direction.WEST,3));
+    }
+    /**
+     * The windmill west of the tank, its wheel to the east: a tower of four legs on concrete footings, leaning in to a platform eleven
+     * blocks up, the pump at its foot; the head on the tower, its wheel turning in front (the machine block and its renderer) and the tail
+     * behind on its boom.
+     */
+    static void windmill(ServerLevel l,BlockPos b){
+        int x=WINDMILL_AT.getX(),z=WINDMILL_AT.getZ();
+        for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++){set(l,b,x+dx,0,z+dz,AIR);if(hash(x+dx,z+dz,67)<.6)set(l,b,x+dx,-1,z+dz,mat("dirt"));}
+        for(int k=0;k<4;k++)set(l,b,x,3*k,z,fit(Kind.WINDMILL,Direction.EAST,k));
+        set(l,b,x-1,0,z-1,fit(Kind.WINDMILL,Direction.NORTH,6));set(l,b,x+1,0,z-1,fit(Kind.WINDMILL,Direction.EAST,6));
+        set(l,b,x+1,0,z+1,fit(Kind.WINDMILL,Direction.SOUTH,6));set(l,b,x-1,0,z+1,fit(Kind.WINDMILL,Direction.WEST,6));
+        set(l,b,x,WIND_TOP,z,TheListMachineBlock.of(TheListMachineBlock.Machine.WINDMILL,Direction.EAST));
+        set(l,b,x-1,WIND_TOP,z,fit(Kind.WINDMILL,Direction.EAST,7));
+        // The pump's pipe along the ground to the tank's spout, laid after the ground round the tower is cleared.
+        for(int px=x+2;px<TANK_AT.getX()-4;px++)set(l,b,px,0,z,fit(Kind.STOCK,Direction.EAST,4));
+    }
+    /** A hay ring round the last of a bale, on ground the cattle have worn to dirt round it. */
+    static void hayRing(ServerLevel l,BlockPos b,int x,int z){
+        for(int dx=-2;dx<=2;dx++)for(int dz=-2;dz<=2;dz++){set(l,b,x+dx,0,z+dz,AIR);set(l,b,x+dx,-1,z+dz,hash(x+dx,z+dz,68)<.7?mat("dirt"):mat("mud"));}
+        set(l,b,x,0,z,fit(Kind.PASTURE,Direction.NORTH,7));
+    }
+    /**
+     * Pumpjack i on its caliche pad: the wellhead three blocks before its Samson post with the well's plate beside it, the post, the
+     * machine block above it that keeps the beam, cranks, pitman arms and rod turning, and the gearbox and motor on the skid two behind.
+     */
+    static void pumpjack(ServerLevel l,BlockPos b,int i){
+        var a=JACKS[i];var f=JACK_FACING[i];var side=f.getClockWise();
+        for(int along=-4;along<=4;along++)for(int across=-3;across<=3;across++){
+            var at=a.relative(f,along).relative(side,across);
+            set(l,b,at.getX(),-1,at.getZ(),mat("caliche"));set(l,b,at.getX(),0,at.getZ(),AIR);
+        }
+        set(l,b,a.relative(f,3),fit(Kind.PUMPJACK,f,0));
+        set(l,b,a.relative(f,3).relative(side,2),fit(Kind.BATTERY,f,5+i));
+        set(l,b,a,fit(Kind.PUMPJACK,f,1));
+        set(l,b,a.above(2),TheListMachineBlock.of(TheListMachineBlock.Machine.PUMPJACK,f));
+        set(l,b,a.relative(f.getOpposite(),2),fit(Kind.PUMPJACK,f,7));
+    }
+    /**
+     * The tank battery inside the gate: two tanks and the separator inside an earth berm a block high, with a way in from the lease road.
+     * Each tank is drawn by its two middle blocks; the cells round them only hold its girth.
+     */
+    static void battery(ServerLevel l,BlockPos b){
+        int x0=-7,x1=5,z0=LEASE_S+2,z1=LEASE_S+10;
+        for(int x=x0;x<=x1;x++)for(int z=z0;z<=z1;z++){
+            set(l,b,x,-1,z,mat("dirt"));set(l,b,x,0,z,AIR);
+            boolean edge=x==x0||x==x1||z==z0||z==z1;
+            if(edge&&!(z==z0&&x>=-2&&x<=-1))set(l,b,x,0,z,mat("dirt"));
+        }
+        for(var t:BATTERY_TANKS){
+            for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)for(int y=0;y<=4;y++)set(l,b,t.getX()+dx,y,t.getZ()+dz,fit(Kind.BATTERY,Direction.EAST,3));
+            set(l,b,t,fit(Kind.BATTERY,Direction.EAST,0));set(l,b,t.above(3),fit(Kind.BATTERY,Direction.EAST,1));
+        }
+        set(l,b,3,0,BATTERY_TANKS[0].getZ(),fit(Kind.BATTERY,Direction.NORTH,2));
+    }
+    /** The power line in from the highway's poles along the north fence, its wires sagging between the poles. */
+    static void powerLine(ServerLevel l,BlockPos b){
+        int z=PAST_N+6,from=AVE_E+2;
+        var at=new java.util.ArrayList<Integer>();
+        for(int x=from-16;x>=PAST_W+6;x-=16)at.add(x);
+        for(int x:at){
+            for(int y=0;y<6;y++)set(l,b,x,y,z,fit(Kind.POLE,Direction.NORTH,0));
+            set(l,b,x,6,z,fit(Kind.POLE,Direction.EAST,1));
+        }
+        for(int x=at.get(at.size()-1)+1;x<from;x++){
+            if(at.contains(x))continue;
+            int near=from-x;for(int p:at)near=Math.min(near,Math.abs(x-p));
+            set(l,b,x,6,z,fit(Kind.POLE,Direction.NORTH,sag(near)));
+        }
     }
 }

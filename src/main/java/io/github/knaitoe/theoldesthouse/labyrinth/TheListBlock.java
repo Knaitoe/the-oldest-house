@@ -61,6 +61,15 @@ import net.minecraft.world.phys.shapes.*;
  * her desk at the window with the notebook and the lamp (3), the nightstand with the phone (4), a bookcase of paperbacks (5), her
  * window, lit (6), the coffee table with the remote and two tapes (7). LOT, the neighbors' yards: a sprinkler (0), a doghouse (1), a
  * trash can (2), a bike on its side (3), a lawn chair (4), a grill (5), a hose on its reel (6), a kiddie pool (7).</li>
+ * <li>0.4.701, the pasture (docs/THE_LIST_0_4_701.md). PASTURE: a cedar post with the strands across it (0), barbed wire between posts
+ * (1), the wire gap shut (2) and laid back open (3), a cattle guard set into the road (4), a corner post braced to the next (5), a
+ * mineral block in its tub (6), a hay ring round the last of a bale (7). STOCK, the stock tank: its wall (0), a corner of it (1), the
+ * seam where it turns (2), the wall with the windmill's pipe over it (3), the pipe along the ground (4). WINDMILL: the tower in four
+ * sections from the ground up (0-3), the head (4, drawn by the machine block), the wheel (5, drawn turning by its renderer), a footing
+ * (6), the tail (7). PUMPJACK: the wellhead (0), the Samson post (1), the walking beam's front with the horsehead (2) and its back with
+ * the equalizer (3), the cranks and weights (4), the pitman arms (5), the rod and carrier (6), the gearbox and motor on the skid (7);
+ * 2-6 are drawn moving by the machine's renderer and never stand as blocks. BATTERY: a tank's lower (0) and upper (1) half, the
+ * separator (2), the tank's girth (3, drawn by the tank), the lease's sign (4), the wells' plates (5-7).</li>
  * </ul>
  */
 public final class TheListBlock extends HorizontalDirectionalBlock {
@@ -70,7 +79,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
         WINDOW,KITCHEN,TABLE,BED,ROOM,POSTER,DEN,BATH,ROOFTOP,YARD,SHOP,FIXTURE,
         FRONT,SIGN_DRUG,SIGN_FEED,SIGN_VIDEO,SIGN_LAW,SIGN_DRIVEIN,DRUG,VIDEO,LAW,FEED,DRIVEIN,
         GIN,BALE,SEED,TOWER,TANK,
-        FIELD,STANDS,LOCKER,SCORE,AMBER,LOT;
+        FIELD,STANDS,LOCKER,SCORE,AMBER,LOT,
+        PASTURE,STOCK,WINDMILL,PUMPJACK,BATTERY;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -154,6 +164,12 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
                 case 4->Block.box(2,0,2,14,14,14);case 5->t(f,0,0,8,16,16,16);case 6->t(f,0,0,0,16,16,2);default->t(f,1,0,3,15,8,13);};
             case LOT->switch(stage){case 0->Block.box(7,0,7,9,3,9);case 1->Block.box(1,0,1,15,15,15);case 2->Block.box(2.5,0,2.5,13.5,15,13.5);case 3->Block.box(0,0,0,16,2,16);
                 case 4->t(f,1,0,2,15,14,11);case 5->Block.box(4,0,4,12,15,12);case 6->t(f,2,0,4,14,11,12);default->Block.box(0,0,0,16,3,16);};
+            case PASTURE->switch(stage){case 0->Block.box(6,0,6,10,16,10);case 1,2->t(f,0,0,7,16,16,9);case 3->t(f,0,0,2,16,2,14);case 4->Shapes.block();
+                case 5->Block.box(5,0,5,11,16,11);case 6->Block.box(3,0,3,13,8,13);default->Block.box(0,0,0,16,8,16);};
+            case STOCK->switch(stage){case 0,3->t(f,0,0,13,16,16,16);case 1->Shapes.or(t(f,0,0,13,16,16,16),t(f,13,0,0,16,16,13));case 2->t(f,13,0,13,16,16,16);default->t(f,6,0,0,10,7,16);};
+            case WINDMILL->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 6->t(f,0,0,0,6,5,6);case 7->t(f,7,0,0,9,16,16);default->Block.box(7,0,7,9,16,9);};
+            case PUMPJACK->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 1->t(f,0,0,5,16,16,11);case 7->t(f,2,0,1,14,16,15);default->Block.box(7,0,7,9,16,9);};
+            case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->t(f,0,0,2,16,16,14);case 4->Block.box(0,0,6,16,16,10);default->t(f,6,0,8,10,16,12);};
         };
     }
     /** What stands in the way: buildings' fittings, fences and walls, trunks, posts and machines; not crops, weeds, canopies, wires,
@@ -182,6 +198,14 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case STANDS->stage==7?Shapes.empty():getShape(s,l,p,c);
             case LOCKER->stage==4||stage==5||stage==7?Shapes.empty():getShape(s,l,p,c);
             case LOT->stage==0||stage==3?Shapes.empty():getShape(s,l,p,c);
+            // The pasture's fence stands a block and a half, so nobody steps or jumps it; a reader crouched low slips between the strands
+            // of a span or a shut gap, as one does. The gap laid back, the guard and the posts are what they are.
+            case PASTURE->switch(stage){
+                case 1,2->c instanceof EntityCollisionContext e&&e.getEntity() instanceof net.minecraft.world.entity.player.Player pl&&pl.isCrouching()?Shapes.empty():t(s.getValue(FACING),0,0,7,16,24,9);
+                case 0->Block.box(6,0,6,10,24,10);case 5->Block.box(5,0,5,11,24,11);case 3->Shapes.empty();default->getShape(s,l,p,c);};
+            case WINDMILL->stage==0||stage==6?getShape(s,l,p,c):Shapes.empty();
+            case PUMPJACK->switch(stage){case 0,7->getShape(s,l,p,c);case 1->t(s.getValue(FACING),0,0,5,16,32,11);default->Shapes.empty();};
+            case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->getShape(s,l,p,c);case 4->Shapes.or(t(s.getValue(FACING),-13,0,7,-11,16,9),t(s.getValue(FACING),27,0,7,29,16,9));default->t(s.getValue(FACING),7,0,9,9,13,11);};
             default->getShape(s,l,p,c);
         };
     }

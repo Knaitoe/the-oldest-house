@@ -51,7 +51,21 @@ public final class TheList {
             cue(p,lower.equals(TheListSite.AMBER_FRONT)?TheListTexts.AMBER_DOOR:TheListTexts.SHUT_DOOR);
             return true;
         }
+        // 0.4.701: the pasture's machines answer a hand too.
+        if(TheListMachineBlock.is(st,TheListMachineBlock.Machine.WINDMILL)){cue(p,TheListTexts.WINDMILL_HEAD);return true;}
+        if(TheListMachineBlock.is(st,TheListMachineBlock.Machine.PUMPJACK)){cue(p,TheListTexts.JACK_BEARING);return true;}
         if(!TheListBlock.is(st))return false;
+        // The wire gap opens and shuts by hand, all three of its cells together, for everyone.
+        if(TheListBlock.is(st,TheListBlock.Kind.PASTURE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
+            boolean open=st.getValue(TheListBlock.STAGE)==2;
+            for(int x=TheListSite.GAP_X-1;x<=TheListSite.GAP_X+1;x++){
+                var at=b.offset(x,0,TheListSite.PAST_N);var here=l.getBlockState(at);
+                if(TheListBlock.is(here,TheListBlock.Kind.PASTURE))l.setBlock(at,here.setValue(TheListBlock.STAGE,open?3:2),3);
+            }
+            l.playSound(null,b.offset(TheListSite.GAP_X,0,TheListSite.PAST_N),net.minecraft.sounds.SoundEvents.CHAIN_PLACE,SoundSource.BLOCKS,.6F,.8F);
+            cue(p,open?TheListTexts.GAP_OPEN:TheListTexts.GAP_SHUT);
+            return true;
+        }
         String line=TheListTexts.thing(st.getValue(TheListBlock.KIND),st.getValue(TheListBlock.STAGE));
         if(line==null)return false;
         cue(p,line);
@@ -60,7 +74,7 @@ public final class TheList {
 
     // ------------------------------------------------------------------------------------------------ the night
     static final Map<Long,Site> ACTIVE=new HashMap<>();
-    static final class Site{final BlockPos base;int tick,empty;Site(BlockPos b){base=b;}}
+    static final class Site{final BlockPos base;int tick,empty;final Map<UUID,Vec3> stepped=new HashMap<>();Site(BlockPos b){base=b;}}
     static final int EMPTY_FORGET=100;
     /** Everyone in the town, inside or out. */
     public static List<ServerPlayer> readers(ServerLevel l,BlockPos b){
@@ -93,7 +107,7 @@ public final class TheList {
             boolean out=!TheListSite.indoors(r);
             if(s.tick%140==20&&out)play(l,one.blockPosition().offset(rnd.nextInt(13)-6,0,rnd.nextInt(13)-6),TheListRegistry.INSECTS.get(),.5F);
             if(s.tick%230==90&&out)play(l,one.blockPosition().offset(rnd.nextInt(2)==0?-12:12,1,rnd.nextInt(17)-8),TheListRegistry.WIND.get(),.6F);
-            if(s.tick%410==170&&r.x<TheListSite.AVE_W&&r.x>TheListSite.STREETS_W-8&&r.z>TheListSite.ALLEY_N)play(l,s.base.offset(dogNear(r)),TheListRegistry.DOG.get(),.8F);
+            if(s.tick%410==170&&r.x<TheListSite.AVE_W&&r.x>TheListSite.STREETS_W-8&&r.z>TheListSite.ALLEY_N&&r.z<TheListSite.YARD_S+8)play(l,s.base.offset(dogNear(r)),TheListRegistry.DOG.get(),.8F);
             if(s.tick%120==60&&r.z<TheListSite.WALK_S_S+6&&r.z>TheListSite.MAIN_BACK_N-6&&r.x>TheListSite.AVE_E&&r.x<TheListSite.TRACK_W)
                 play(l,s.base.offset(speakerNear(r)),TheListRegistry.SPEAKER.get(),.9F);
             if(s.tick%170==30){var tin=tinNear(r);if(tin.distToCenterSqr(r)<18*18)play(l,s.base.offset(tin),TheListRegistry.TIN.get(),.8F);}
@@ -102,7 +116,33 @@ public final class TheList {
             if(s.tick%1800==900)for(var p:here)train(p,s.base);
             if(s.tick%5==0)for(int[] at:TheListSite.SPRINKLERS)spray(l,s.base,at,s.tick);
             if(s.tick%90==45&&out){var at=sprinklerNear(r);if(at!=null)play(l,s.base.offset(at),TheListRegistry.SPRINKLER.get(),.55F);}
+            pasture(l,s,here);
         }
+    }
+    /**
+     * 0.4.701, the pasture: the windmill creaks each time its wheel comes round, and each pumpjack knocks at the bottom of its stroke, at
+     * the level's own time so that what is heard keeps step with what every client draws (TheListMachines); each only while someone outside
+     * is near enough to hear it. A reader walking over the cattle guard rattles it.
+     */
+    static void pasture(ServerLevel l,Site s,List<ServerPlayer> here){
+        long time=l.getGameTime();
+        var head=s.base.offset(TheListSite.windmillHead());
+        if(TheListMachines.creaks(time,head)&&anyNear(here,s.base,head,40))play(l,head,TheListRegistry.WINDMILL.get(),1.2F);
+        for(int i=0;i<TheListSite.JACKS.length;i++){
+            var at=s.base.offset(TheListSite.jackMachine(i));
+            if(TheListMachines.knocks(time,at)&&anyNear(here,s.base,at,36))play(l,at,TheListRegistry.PUMPJACK.get(),1.1F);
+        }
+        if(s.tick%6!=0)return;
+        for(var p:here){
+            var was=s.stepped.put(p.getUUID(),p.position());
+            var under=l.getBlockState(p.blockPosition().below());
+            if(was!=null&&TheListBlock.is(under,TheListBlock.Kind.PASTURE)&&under.getValue(TheListBlock.STAGE)==4&&p.onGround()&&was.distanceToSqr(p.position())>.04)
+                l.playSound(null,p.blockPosition(),TheListRegistry.GUARD.get(),SoundSource.BLOCKS,.7F,.9F+l.getRandom().nextFloat()*.2F);
+        }
+    }
+    static boolean anyNear(List<ServerPlayer> here,BlockPos base,BlockPos at,double reach){
+        for(var p:here)if(p.distanceToSqr(Vec3.atCenterOf(at))<reach*reach&&!TheListSite.indoors(p.position().subtract(Vec3.atLowerCornerOf(base))))return true;
+        return false;
     }
     /** Where a train out past the playa is heard from, for one reader: off toward the north-east, near enough for the sound to reach. */
     public static final Vec3 TRAIN_FROM=new Vec3(TheListSite.EAST+60,2,-150);
@@ -113,7 +153,7 @@ public final class TheList {
     }
     /** A yard a dozen blocks along from the reader, at the back fence nearest them. */
     static BlockPos dogNear(Vec3 r){
-        int fence=Math.abs(r.z-(-50))<Math.abs(r.z-(-91))?-50:-91;if(r.z>-25)fence=TheListSite.SOUTH-2;
+        int fence=Math.abs(r.z-(-50))<Math.abs(r.z-(-91))?-50:-91;if(r.z>-25)fence=TheListSite.YARD_S;
         int z=(int)Math.floor(r.z+Math.max(-8,Math.min(8,fence-r.z)));
         int x=(int)Math.floor(r.x)+(r.x>-20?-12:12);
         return new BlockPos(x,0,z);

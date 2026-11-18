@@ -1,0 +1,249 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "s": "the_oldest_house:block/the_list/tank_steel",
+    "r": "the_oldest_house:block/the_list/tank_top",
+    "g": "the_oldest_house:block/the_list/galv",
+    "l": "the_oldest_house:block/the_list/ladder",
+    "k": "the_oldest_house:block/the_list/skid",
+    "c": "the_oldest_house:block/the_list/cedar",
+    "b": "the_oldest_house:block/the_list/lease_sign",
+    "n": "the_oldest_house:block/the_list/well_plate_1",
+    "particle": "the_oldest_house:block/the_list/tank_steel"
+  },
+  "elements": [
+    {
+      "from": [
+        -14,
+        0,
+        0
+      ],
+      "to": [
+        30,
+        32,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        -14
+      ],
+      "to": [
+        16,
+        32,
+        30
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -11,
+        0,
+        -7
+      ],
+      "to": [
+        27,
+        32,
+        23
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -7,
+        0,
+        -11
+      ],
+      "to": [
+        23,
+        32,
+        27
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -15,
+        0,
+        6
+      ],
+      "to": [
+        -13.6,
+        32,
+        10
+      ],
+      "faces": {
+        "east": {
+          "texture": "#l",
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#l",
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

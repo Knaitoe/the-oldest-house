@@ -186,9 +186,11 @@ public final class LabyrinthPlaces {
             return null;
         }
         room = DomesticLives.extend(place, room);
+        // 0.4.701: The list's town runs on south of the House's door as well as north of it, to the pasture.
+        int south = place == LabyrinthPlace.THE_LIST ? Math.max(room.maxZ(), 1 + VESTIBULE_DEPTH) : 1 + VESTIBULE_DEPTH;
         BoundingBox local = new BoundingBox(
                 Math.min(room.minX(), -VESTIBULE_HALF_WIDTH), Math.min(room.minY(), -1), room.minZ(),
-                Math.max(room.maxX(), VESTIBULE_HALF_WIDTH), Math.max(room.maxY(), VESTIBULE_TOP), 1 + VESTIBULE_DEPTH
+                Math.max(room.maxX(), VESTIBULE_HALF_WIDTH), Math.max(room.maxY(), VESTIBULE_TOP), south
         );
         return local.moved(base.getX(), base.getY(), base.getZ());
     }

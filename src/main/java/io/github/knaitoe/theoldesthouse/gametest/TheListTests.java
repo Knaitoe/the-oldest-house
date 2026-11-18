@@ -314,4 +314,109 @@ public final class TheListTests {
         }).thenWaitUntil(()->h.assertTrue(heard(p,TheListRegistry.SPRINKLER.get()),"a sprinkler, heard on the lawn (clock "+TheList.clock(b)+")"))
         .thenExecute(()->{done();h.succeed();});
     }
+
+    /**
+     * 0.4.701: the pasture south of town. Barbed wire on cedar posts all round, a braced post at each corner, the wire gap shut in the north
+     * fence; the county road coming in over the cattle guard; the stock tank holding water inside its walls, the windmill's pipe over the
+     * rim, the windmill's legs, footings, head and tail; the three pumpjacks, each with its wellhead, post, machine and gearbox; the tank
+     * battery and the lease's sign. The machines' angles come round with the level's time, and the pitman arms keep their length.
+     * A body walks in from the county road over the guard to the tank, the hay ring, a pumpjack's pad and the far corner; from inside it
+     * finds no way out through the wire, until the gap is laid open by hand (said to that reader alone), and shut again. A reader crouching
+     * ducks between the strands; standing, the wire holds them. The windmill creaks, a pumpjack knocks, and the guard rattles underfoot.
+     */
+    @GameTest(template="empty",batch="the_list_pasture",timeoutTicks=2400)
+    public static void thePastureItsWindmillAndPumpjacks(GameTestHelper h){
+        var f=place(h);var p=f.player("list_pasture",P);var peer=f.player("list_pasture_peer",P);var l=f.level(P);var b=f.base(P);
+        int pw=TheListSite.PAST_W,pe=TheListSite.PAST_E,pn=TheListSite.PAST_N,ps=TheListSite.PAST_S,gap=TheListSite.GAP_X;
+        var tank=TheListSite.TANK_AT;var mill=TheListSite.WINDMILL_AT;
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            // The fence, its corners and the gap.
+            h.assertTrue(fitting(l,b,new BlockPos(pw+5,0,pn),Kind.PASTURE,0)&&fitting(l,b,new BlockPos(pw+3,0,pn),Kind.PASTURE,1)&&fitting(l,b,new BlockPos(pe,0,pn+3),Kind.PASTURE,1)
+                &&fitting(l,b,new BlockPos(pw,0,ps-3),Kind.PASTURE,1),"barbed wire on its posts along the north, east and west fences");
+            for(var c:List.of(new BlockPos(pw,0,pn),new BlockPos(pe,0,pn),new BlockPos(pe,0,ps),new BlockPos(pw,0,ps)))h.assertTrue(fitting(l,b,c,Kind.PASTURE,5),"a braced post at the corner "+c.toShortString());
+            for(int x=gap-1;x<=gap+1;x++)h.assertTrue(fitting(l,b,new BlockPos(x,0,pn),Kind.PASTURE,2),"the wire gap, shut, at "+x);
+            h.assertTrue(fitting(l,b,new BlockPos(gap-2,0,pn),Kind.PASTURE,0)&&fitting(l,b,new BlockPos(gap+2,0,pn),Kind.PASTURE,0),"a post either side of the gap");
+            // The county road and the cattle guard.
+            h.assertTrue(mat(l,b,pe+5,-1,TheListSite.ROAD_N+2,"caliche")&&mat(l,b,pe-6,-1,TheListSite.LEASE_N+1,"caliche"),"the county road, and the lease road on inside");
+            for(int x=pe-1;x<=pe+1;x++)for(int z=TheListSite.ROAD_N;z<=TheListSite.ROAD_S;z++)
+                h.assertTrue(fitting(l,b,new BlockPos(x,-1,z),Kind.PASTURE,4)&&l.getBlockState(b.offset(x,0,z)).isAir(),"the cattle guard across the road at "+x+","+z);
+            h.assertTrue(mat(l,b,tank.getX()+5,-1,tank.getZ(),"mud")||mat(l,b,tank.getX()+5,-1,tank.getZ(),"dirt")||mat(l,b,tank.getX()+5,-1,tank.getZ(),"pasture"),"the ground round the tank");
+            h.assertTrue(mat(l,b,pw+20,-1,pn+20,"pasture")||mat(l,b,pw+20,-1,pn+20,"dirt"),"buffalo grass, grazed to dirt in places");
+            // The stock tank: water inside its walls, the pipe over the rim.
+            h.assertTrue(l.getFluidState(b.offset(tank)).isSource()&&l.getFluidState(b.offset(tank.offset(3,0,1))).isSource()&&mat(l,b,tank.getX(),-1,tank.getZ(),"galvanized"),"water in the tank on its floor");
+            h.assertTrue(fitting(l,b,tank.offset(0,0,-4),Kind.STOCK,0)&&fitting(l,b,tank.offset(4,0,0),Kind.STOCK,0)&&fitting(l,b,tank.offset(2,0,3),Kind.STOCK,1),"its walls round the water");
+            h.assertTrue(fitting(l,b,tank.offset(-4,0,0),Kind.STOCK,3)&&fitting(l,b,new BlockPos(mill.getX()+2,0,tank.getZ()),Kind.STOCK,4),"the windmill's pipe along the ground and over the rim");
+            for(int dx=-4;dx<=4;dx++)for(int dz=-4;dz<=4;dz++){
+                if(TheListSite.inTank(dx,dz)||(dx==-4&&dz==0))continue;
+                boolean touches=TheListSite.inTank(dx+1,dz)||TheListSite.inTank(dx-1,dz)||TheListSite.inTank(dx,dz+1)||TheListSite.inTank(dx,dz-1);
+                if(touches)h.assertTrue(fitting(l,b,tank.offset(dx,0,dz),Kind.STOCK),"the tank's wall where it meets the water at "+dx+","+dz);
+            }
+            // The windmill.
+            for(int k=0;k<4;k++)h.assertTrue(fitting(l,b,mill.above(3*k),Kind.WINDMILL,k),"the windmill's tower, section "+k);
+            h.assertTrue(fitting(l,b,mill.offset(-1,0,-1),Kind.WINDMILL,6)&&fitting(l,b,mill.offset(1,0,1),Kind.WINDMILL,6),"its footings");
+            var head=b.offset(TheListSite.windmillHead());
+            h.assertTrue(TheListMachineBlock.is(l.getBlockState(head),TheListMachineBlock.Machine.WINDMILL)&&l.getBlockEntity(head) instanceof TheListMachineBlock.Turning,"the windmill's head, its wheel turning");
+            h.assertTrue(fitting(l,b,TheListSite.windmillHead().west(),Kind.WINDMILL,7),"the tail behind it");
+            // The pumpjacks.
+            for(int i=0;i<TheListSite.JACKS.length;i++){
+                var a=TheListSite.JACKS[i];var fc=TheListSite.JACK_FACING[i];
+                h.assertTrue(fitting(l,b,a,Kind.PUMPJACK,1)&&fitting(l,b,a.relative(fc,3),Kind.PUMPJACK,0)&&fitting(l,b,a.relative(fc.getOpposite(),2),Kind.PUMPJACK,7)
+                    &&fitting(l,b,a.relative(fc,3).relative(fc.getClockWise(),2),Kind.BATTERY,5+i),"pumpjack "+i+": its post, wellhead, gearbox and the well's plate");
+                var m=b.offset(TheListSite.jackMachine(i));
+                h.assertTrue(TheListMachineBlock.is(l.getBlockState(m),TheListMachineBlock.Machine.PUMPJACK)&&l.getBlockState(m).getValue(TheListMachineBlock.FACING)==fc
+                    &&l.getBlockEntity(m) instanceof TheListMachineBlock.Turning,"pumpjack "+i+"'s beam over its post, facing "+fc);
+                h.assertTrue(mat(l,b,a.getX(),-1,a.getZ(),"caliche"),"pumpjack "+i+" on its caliche pad");
+            }
+            for(var t:TheListSite.BATTERY_TANKS)h.assertTrue(fitting(l,b,t,Kind.BATTERY,0)&&fitting(l,b,t.above(3),Kind.BATTERY,1),"a tank in the battery at "+t.toShortString());
+            h.assertTrue(fitting(l,b,new BlockPos(pe+4,0,TheListSite.ROAD_S+2),Kind.BATTERY,4),"the lease's sign at the road");
+            // The machines' angles come round with the time; the pitman arms keep their length.
+            var at=b.offset(TheListSite.jackMachine(0));double lo=9,hi=-9,rlo=9,rhi=-9;
+            for(int t=0;t<TheListMachines.STROKE;t+=5){
+                double c=TheListMachines.crank(t,0,at),beam=TheListMachines.beam(c);var pin=TheListMachines.crankPin(c);var eq=TheListMachines.equalizer(beam);
+                h.assertTrue(Math.abs(Math.hypot(eq[0]-pin[0],eq[1]-pin[1])-TheListMachines.PITMAN)<1e-3,"the pitman arm keeps its length at tick "+t+": beam "+beam);
+                lo=Math.min(lo,beam);hi=Math.max(hi,beam);rlo=Math.min(rlo,TheListMachines.rod(beam));rhi=Math.max(rhi,TheListMachines.rod(beam));
+            }
+            h.assertTrue(hi-lo>.25&&hi<.5&&lo>-.5,"the beam rocks through its stroke: "+lo+" to "+hi);
+            h.assertTrue(rhi-rlo>.8,"the rod rises and falls: "+rlo+" to "+rhi);
+            h.assertTrue(TheListMachines.wheel(110,0,head)-TheListMachines.wheel(100,0,head)>.5,"the windmill's wheel turns");
+            int knocks=0;for(long t=0;t<TheListMachines.STROKE*4;t++)if(TheListMachines.knocks(t,at))knocks++;
+            h.assertTrue(knocks==4,"one knock a stroke: "+knocks);
+            // In from the county road over the guard.
+            var in=walked(l,b,new BlockPos(pe+5,0,TheListSite.ROAD_N+2),pw-3,pn-3,pe+8,ps+3);
+            for(var c:List.of(new BlockPos(pe-4,0,TheListSite.LEASE_N+1),tank.offset(0,0,-6),new BlockPos(-20,0,64),TheListSite.JACKS[0].offset(3,0,0),new BlockPos(pw+6,0,ps-6)))
+                h.assertTrue(in.contains(c),"in from the county road over the guard to "+c.toShortString()+": "+in.size());
+            // From inside, no way out through the wire.
+            var inside=walked(l,b,tank.offset(0,0,-6),pw-3,pn-3,pe-2,ps+3);
+            h.assertTrue(inside.contains(new BlockPos(pw+6,0,ps-6))&&inside.contains(new BlockPos(pe-3,0,pn+3)),"the pasture, corner to corner: "+inside.size());
+            h.assertFalse(inside.stream().anyMatch(c->c.getX()<pw||c.getZ()<pn||c.getZ()>ps),"no way out through the wire");
+            cues(p);cues(peer);
+            use(p,b,new BlockPos(gap,0,pn),new BlockPos(gap,0,pn+2));
+            var said=cues(p);
+            h.assertTrue(said.contains(TheListTexts.GAP_OPEN),"the gap laid open by hand: "+said+" in "+LiteraryVignettes.current(p)+" inside "+LiteraryVignettes.inside(p,P)
+                +" at "+p.position().subtract(Vec3.atLowerCornerOf(b))+" "+l.getBlockState(b.offset(gap,0,pn)));
+            for(int x=gap-1;x<=gap+1;x++)h.assertTrue(fitting(l,b,new BlockPos(x,0,pn),Kind.PASTURE,3),"the gap open at "+x);
+            h.assertTrue(cues(peer).isEmpty(),"said to that reader alone");
+            h.assertTrue(walked(l,b,tank.offset(0,0,-6),pw-3,pn-3,pe-2,ps+3).contains(new BlockPos(gap,0,pn-2)),"out through the open gap");
+            use(p,b,new BlockPos(gap,0,pn),new BlockPos(gap,0,pn+2));
+            h.assertTrue(cues(p).contains(TheListTexts.GAP_SHUT)&&fitting(l,b,new BlockPos(gap,0,pn),Kind.PASTURE,2),"and shut again");
+            // Ducking between the strands.
+            var span=b.offset(pw+3,0,pn);var body=new AABB(span.getX()+.2,span.getY()+.01,span.getZ()+.2,span.getX()+.8,span.getY()+1.45,span.getZ()+.8);
+            h.assertFalse(l.noCollision(p,body),"the wire holds a reader standing");
+            p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            h.assertTrue(l.noCollision(p,body),"a reader crouching ducks between the strands");
+            p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            // The windmill heard from the tank.
+            f.at(p,P,tank.getX()-3.5,0,tank.getZ()-4.5);f.at(peer,P,TheListSite.JACKS[0].getX()+3.5,0,TheListSite.JACKS[0].getZ()+.5);
+            NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);NativeTestPlayers.flush(peer);NativeTestPlayers.packets(peer);
+        }).thenWaitUntil(()->h.assertTrue(heard(p,TheListRegistry.WINDMILL.get()),"the windmill, heard at the tank"))
+        .thenWaitUntil(()->h.assertTrue(heard(peer,TheListRegistry.PUMPJACK.get()),"a pumpjack, heard by its pad"))
+        .thenExecute(()->{f.at(p,P,pe+.3,0,TheListSite.ROAD_N+2.5);p.setOnGround(true);NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);})
+        .thenWaitUntil(()->{
+            // Walking back and forth over the guard.
+            double x=p.getX()+.15;if(x>b.getX()+pe+1.7)x=b.getX()+pe-.7;
+            p.moveTo(x,p.getY(),p.getZ());p.setOnGround(true);
+            h.assertTrue(heard(p,TheListRegistry.GUARD.get()),"the cattle guard rattles underfoot");
+        })
+        .thenExecute(()->{done();h.succeed();});
+    }
 }
