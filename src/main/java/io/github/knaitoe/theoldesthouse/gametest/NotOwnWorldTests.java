@@ -22,7 +22,9 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
 import io.github.knaitoe.theoldesthouse.labyrinth.LakeHouse;
 import io.github.knaitoe.theoldesthouse.labyrinth.LakeHouseRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes;
+import io.github.knaitoe.theoldesthouse.labyrinth.NotYetBlock;
 import io.github.knaitoe.theoldesthouse.labyrinth.NotYetMending;
+import io.github.knaitoe.theoldesthouse.labyrinth.NotYetSite;
 import io.github.knaitoe.theoldesthouse.labyrinth.OwnLight;
 import io.github.knaitoe.theoldesthouse.labyrinth.OwnLightLate;
 import io.github.knaitoe.theoldesthouse.labyrinth.PhoneSounds;
@@ -59,6 +61,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
@@ -102,7 +105,10 @@ public final class NotOwnWorldTests {
     }
 
     private static final String BATCH = "not_own_world";
+    /** The ward's case builds the place with a fixture that stands in for the House's whole record, so it has a batch of its own. */
+    private static final String WARD = "not_own_world_ward";
     private static final List<NativeTestChunks> HELD = new ArrayList<>();
+    private static LiteraryTests.Fixture ward;
 
     @BeforeBatch(batch = BATCH)
     public static void theGamesOpen(ServerLevel level) {
@@ -115,6 +121,20 @@ public final class NotOwnWorldTests {
         games(level.getServer().overworld(), false);
         HELD.forEach(NativeTestChunks::close);
         HELD.clear();
+    }
+
+    @BeforeBatch(batch = WARD)
+    public static void theWardOpens(ServerLevel level) {
+        theGamesOpen(level);
+    }
+
+    @AfterBatch(batch = WARD)
+    public static void theWardCloses(ServerLevel level) {
+        if (ward != null) {
+            ward.close();
+            ward = null;
+        }
+        theGamesClose(level);
     }
 
     private static ServerLevel nether(MinecraftServer server) {
@@ -489,20 +509,29 @@ public final class NotOwnWorldTests {
                 LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
                 h.assertTrue(!BlyFollows.carry(p) && !BlyFollows.carrying(p), "near water in the Games she does not take their arm");
                 listed(nether, false, () -> h.assertTrue(BlyFollows.carry(p) && BlyFollows.carrying(p), "out of the tag she does"));
-                // Taken into another world while she has them, she lets go on her next step: she walks nobody anywhere in another world.
-                // She no longer follows, so the step cannot begin another carry where they stand.
+                // She no longer follows, so a step cannot begin another carry where they stand.
                 bly = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE);
                 bly.putBoolean(BlyFollows.FOLLOWS, false);
                 LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
+                // Taken into another world of their own while she has them, she still has them, as she always did: still in her hold,
+                // they are kept where they are.
                 into(p, h.getLevel(), h.absolutePos(new BlockPos(1, 2, 1)));
                 Vec3 there = p.position();
-                h.assertTrue(BlyFollows.carrying(p), "the carry is still hers as they arrive");
                 BlyFollows.tick(new ServerTickEvent.Post(() -> true, nether.getServer()));
-                h.assertTrue(!BlyFollows.carrying(p) && p.level() == h.getLevel() && p.position().distanceTo(there) < .01,
-                        "in the world they were taken to, her carry is let go and they stand where they are: carrying=" + BlyFollows.carrying(p)
-                                + " at " + p.position() + " in " + p.level().dimension().location());
-                // Back into the Games, for the Goatman's rounds.
+                h.assertTrue(BlyFollows.carrying(p) && p.level() == h.getLevel() && p.position().distanceTo(there) < .01,
+                        "taken into a world of their own, she still holds them there: carrying=" + BlyFollows.carrying(p) + " at " + p.position());
+                // Taken into the Games while she has them, she lets go on her next step, and her dark and her hold lift with her. They stay
+                // there for the Goatman's rounds.
                 into(p, nether, spot);
+                Vec3 here = p.position();
+                h.assertTrue(BlyFollows.carrying(p) && p.hasEffect(MobEffects.DARKNESS) && p.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),
+                        "the carry, her dark and her hold are still on them as they arrive");
+                BlyFollows.tick(new ServerTickEvent.Post(() -> true, nether.getServer()));
+                h.assertTrue(!BlyFollows.carrying(p) && p.level() == nether && p.position().distanceTo(here) < .01,
+                        "in the Games her carry is let go and they stand where they are: carrying=" + BlyFollows.carrying(p)
+                                + " at " + p.position() + " in " + p.level().dimension().location());
+                h.assertTrue(!p.hasEffect(MobEffects.DARKNESS) && !p.hasEffect(MobEffects.MOVEMENT_SLOWDOWN),
+                        "and her dark and her hold go with her: " + p.getActiveEffects());
             } catch (RuntimeException e) {
                 NativeTestPlayers.remove(p);
                 throw e;
@@ -620,7 +649,7 @@ public final class NotOwnWorldTests {
                 h.assertTrue(fall.getDamageMultiplier() == 1F && Keepsakes.record(p).getInt("ChalkKept") == 0, "a fall in the Games costs what it costs");
 
                 // The kept bike is not ridden there.
-                h.assertTrue(KeptBikeItem.NOT_HERE.equals(KeptBikeItem.refuse(p)), "the bike is not ridden in the Games");
+                h.assertTrue(KeptBikeItem.NOT_OWN_WORLD.equals(KeptBikeItem.refuse(p)), "the bike is not ridden in the Games, and is not \"in\" there: " + KeptBikeItem.refuse(p));
                 listed(nether, false, () -> h.assertTrue(KeptBikeItem.refuse(p) == null, "out of the tag it is"));
 
                 // The Lake House flashlight lights nothing there, and is put out on going back in.
@@ -773,5 +802,52 @@ public final class NotOwnWorldTests {
                 h.succeed();
             });
         });
+    }
+    /**
+     * The path that matters in play: a reader lying on the mending table in the ward, the arms at work over them, taken into the Games
+     * before the machine is done. The game's own move between worlds does not get a sleeper up, so the machine does on its next step: they
+     * stand where they arrived, the arms in the ward fold, and the seam and the cot are theirs.
+     */
+    @GameTest(template = "empty", batch = WARD, timeoutTicks = 1200)
+    public static void aReaderTakenOffTheMendingTableIsLetGoWhereTheyArrive(GameTestHelper h) {
+        BlockPos spot = new BlockPos(6000, 100, 6500);
+        LabyrinthPlace place = LabyrinthPlace.NOT_YET;
+        ward = new LiteraryTests.Fixture(h);
+        ServerPlayer p = ward.player("taken_off_the_table", place);
+        ServerLevel l = ward.level(place);
+        BlockPos b = ward.base(place);
+        var r = place.room();
+        ward.chunks.request(l, new AABB(b.getX() + r.minX(), b.getY() + r.minY(), b.getZ() + r.minZ(), b.getX() + r.maxX() + 1, b.getY() + r.maxY() + 1, b.getZ() + r.maxZ() + 1));
+        inTheGames(h, spot, nether -> SceneReady.when(h, () -> ward.chunks.ready() ? null : "the ward's chunks", 1, 400, () -> {
+            // Down the ward's aisle, well off the hatch, where the machine takes them.
+            p.teleportTo(l, b.getX() + .5, b.getY(), b.getZ() - 20.5, 180F, 0F);
+            NotYetMending.refuse(p, b, "fall");
+            SceneReady.when(h, () -> NotYetMending.onTable(p.getUUID()) ? null : "the reader on the mending table", 1, 200, () -> {
+                h.assertTrue(p.getSleepingPos().filter(b.offset(NotYetSite.TABLE)::equals).isPresent(), "lying on the table: " + p.getSleepingPos());
+                for (BlockPos arm : NotYetSite.ARMS) {
+                    h.assertTrue(armStage(l, b, arm) == 2, "the arms at work over them");
+                }
+                into(p, nether, spot);
+                Vec3 arrived = p.position();
+                h.assertTrue(NotYetMending.held(p) && p.isSleeping(), "still the machine's, and still lying, as they arrive: held "
+                        + NotYetMending.held(p) + ", sleeping " + p.isSleeping());
+                SceneReady.when(h, () -> NotYetMending.held(p) ? "the machine letting them go" : null, 1, 40, () -> {
+                    CompoundTag own = ward.own(p, place);
+                    h.assertTrue(!p.isSleeping(), "they are up, not lying in the Games: " + p.getSleepingPos());
+                    for (BlockPos arm : NotYetSite.ARMS) {
+                        h.assertTrue(armStage(l, b, arm) == 0, "the arms in the ward folded: " + armStage(l, b, arm) + " at " + arm);
+                    }
+                    h.assertTrue(own.getInt("Mended") == 1 && own.contains("CountFrom") && NotYetMending.cot(own) != null,
+                            "with their seam and their cot: " + own);
+                    h.assertTrue(p.level() == nether && p.position().distanceTo(arrived) < .5,
+                            "standing where they arrived: " + p.position() + " in " + p.level().dimension().location());
+                    h.succeed();
+                });
+            });
+        }));
+    }
+
+    private static int armStage(ServerLevel l, BlockPos b, BlockPos arm) {
+        return l.getBlockState(b.offset(arm)).getValue(NotYetBlock.STAGE);
     }
 }
