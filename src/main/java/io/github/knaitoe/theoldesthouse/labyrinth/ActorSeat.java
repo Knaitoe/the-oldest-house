@@ -47,6 +47,12 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         if(a.role()==LiteraryActor.STRANGER&&Fallow.cast(a.phase())&&(a.gesture()==Fallow.SIT||a.gesture()==Fallow.DOZE))return new ActorSeat(1,null);
         // 0.4.672: Harlan's stool behind the register in Fallow, eleven pixels up, turned however he sits.
         if(FallowBlock.is(state,FallowBlock.Kind.STOOL))return new ActorSeat(11,null);
+        // 0.4.702: The list's people in Amber's desk chair, on the bus bench, the home bench and the stands' planks.
+        if(a.role()==LiteraryActor.STRANGER&&TheListPeople.cast(a.phase())&&TheListBlock.is(state)){
+            var kind=state.getValue(TheListBlock.KIND);int stage=state.getValue(TheListBlock.STAGE);var f=state.getValue(TheListBlock.FACING);
+            if(kind==TheListBlock.Kind.TABLE&&stage==1)return new ActorSeat(10,f);
+            if(kind==TheListBlock.Kind.FEED&&(stage==5||stage==6)||kind==TheListBlock.Kind.STANDS&&(stage==0||stage==4))return new ActorSeat(8,f);
+        }
         // 0.4.667: the office chairs in Last Seen, their seats ten pixels up.
         if(LastSeenBlock.is(state,LastSeenBlock.Kind.CHAIR))return new ActorSeat(10,state.getValue(LastSeenBlock.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.

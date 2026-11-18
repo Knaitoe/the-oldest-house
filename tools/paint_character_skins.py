@@ -434,6 +434,23 @@ LOOKS = {
     'literary_fallow_boyd': Look('#c8966e','#2e241c','part','#e8e4d8','#3a4a66','tee','#d8d2c4',eyes='#3a3026',sleeve=4),
     'literary_fallow_otis': Look('#8a5a3c','#2a201c','close','#5a3e34','#34363a','flannel','#b23a30',eyes='#2e2620',age=1,beard='short',mark='bike_cap',sleeve=10),
     'literary_fallow_stranger': Look('#d0b098','#3a3430','part','#d8d4c4','#2e3038','shirt','#c8c4b4',eyes='#4a4a46',sleeve=4),
+    # 0.4.702, The list (docs/THE_LIST_0_4_702.md): the town's people at their places by night. Amber, up late at her desk in a
+    # sweatshirt too big for her, her hair long and loose; Jenna in the drive-in's shirt and apron, a visor, her hair tied back; Janice
+    # in the video store's polo and glasses; Deek in his letter jacket, his hair cut close; Wes in a flannel over a tee and a cap;
+    # Mel in a knit sweater, curls; Lesley in a jean jacket, her hair long; Shannon in a hoodie, braids; Stace in an old field jacket,
+    # short hair; the deputy in his uniform, a moustache; and the reader's parents asleep, in the tee and the undershirt they sleep in.
+    'literary_list_amber': Look('#b07a58','#1a1614','long','#6a2e34','#2e3440','hoodie','#d8d0c0',eyes='#2a2018',sleeve=10,shoes='#e4e0d4'),
+    'literary_list_jenna': Look('#c08a64','#2a1e18','ponytail','#b8302c','#2e3038','apron','#ece6d8',eyes='#3a2e26',mark='movie_badge',sleeve=4,shoes='#2a2626'),
+    'literary_list_janice': Look('#dcb496','#6a4228','bob','#2e4a7a','#3a3a44','crew','#e8e2d2',eyes='#4a5a4a',glasses=True,sleeve=4,shoes='#3a302a'),
+    'literary_list_deek': Look('#d2a07e','#5a3a22','buzz','#7a1e26','#3a4a66','jacket','#e8e2d2',eyes='#4a5a62',sleeve=10,build='broad',shoes='#e4e2dc'),
+    'literary_list_wes': Look('#c8946e','#8a5a2e','mullet','#4a5a3a','#3a4a66','flannel','#d8d2c4',eyes='#3a3026',mark='bike_cap',sleeve=10,shoes='#3a3a3e'),
+    'literary_list_mel': Look('#d8a888','#3a2418','curls','#8a7a5a','#2e3038','knit','#c8b89a',eyes='#3a2e26',sleeve=10,shoes='#4a3a30'),
+    'literary_list_lesley': Look('#e0b896','#c9a060','long','#4a6a8a','#3a3a44','jacket','#e8e2d2',eyes='#4a6a7a',sleeve=10,shoes='#c8c4be'),
+    'literary_list_shannon': Look('#8a5a3e','#1e1a18','braids','#5a5e64','#2a2c30','hoodie','#8a8e94',eyes='#2a2018',sleeve=10,shoes='#d8d6d0'),
+    'literary_list_stace': Look('#d2a07e','#2a1e18','short','#5a5e44','#2e3038','jacket','#7a7e64',eyes='#4a4036',sleeve=10,shoes='#2a2626'),
+    'literary_list_deputy': Look('#c49274','#3a3230','close','#8a7a5a','#3a3428','uniform','#5a4e3a',eyes='#4a4036',age=1,beard='moustache',sleeve=4,shoes='#1e1e22'),
+    'literary_list_mother': Look('#c99474','#4a3226','tied','#c8bcae','#5a5e6a','tee','#d8d0c0',eyes='#4a3e32',age=1,sleeve=4,shoes='#c99474'),
+    'literary_list_father': Look('#c08e6e','#3a3230','receding','#e4e0d4','#3a3e4a','tee','#d8d2c4',eyes='#3a3026',age=1,beard='stubble',sleeve=4,shoes='#c08e6e'),
     'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board
     # in old coats; and Benny on the far stool.

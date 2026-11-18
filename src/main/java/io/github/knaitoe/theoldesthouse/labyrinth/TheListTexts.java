@@ -22,6 +22,30 @@ public final class TheListTexts {
     public static final String EMPTY_DOOR="Nobody has lived here a while. The door gives when you lean on it.";
     /** 0.4.700: Amber's front door, shut for now. */
     public static final String AMBER_DOOR="Locked. The window beside it flickers with a television.";
+    // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
+    /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
+    public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
+    /** What each says to a reader: the first line, then the second, and the second again after that. */
+    private static final String[][] SAID={
+        {"It's one in the morning. Mom's asleep across the hall.","Go home. I'll see you in first period."},
+        {"We're closed. The fryer's off. I'm here till this drawer comes out right.","Twelve dollars short. It's been twelve every night this week."},
+        {"The slot's for tapes. Somebody keeps putting notes in it.","If you want a horror tape, the wall's picked over. Everybody's renting the same three."},
+        {"Field's ours once the lights go off. Coach doesn't know.","Sit if you're sitting. You're blocking my view of nothing."},
+        {"Don't tell anybody we were out here. Deek's dad would kill him.","We're waiting on a ride that isn't coming. You can wait too."},
+        {"From up here you can see the water tower. That's all there is to see.","Lesley keeps seeing somebody on the field. It's a dog. I told her."},
+        {"Don't sit by Mel. She talks the whole time.","Somebody keeps crossing the field down there. Back and forth. That's not you, is it?"},
+        {"The bus doesn't come this late. I know. I'm not waiting for the bus.","If my brother drives by, you didn't see me."},
+        {"Careful on the ladder. It shakes enough with one up here.","I come up here to see who's still out. Tonight it's you."},
+        {"Little late for a walk.","I'm not calling your folks. Go on home."}};
+    /** The nth line one of them says to a reader. */
+    public static String said(int who,int heard){var lines=SAID[who];return lines[Math.min(heard,lines.length-1)];}
+    /** A hand on the reader's parents, asleep: a cue, for they say nothing. */
+    public static final String MOTHER="Your mother, asleep on her back. She breathes slowly through her mouth.",
+        FATHER="Your father, asleep. His watch is still on.",
+        PARENTS_BED="The edge of your parents' bed. The mattress dips toward the middle.",
+        // A knuckle on Amber's window, and on the drive-in's order window.
+        KNOCK_AMBER="You tap on Amber's window with a knuckle.",
+        KNOCK_ORDER="You knock on the order window.";
     /** 0.4.701: the pasture's wire gap, opened and shut by hand; the two machines. */
     public static final String GAP_OPEN="You lift the loop off the post and lay the gap back on the grass.",
         GAP_SHUT="You stretch the gap across and drop the loop back over the post.",

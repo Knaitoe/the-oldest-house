@@ -403,6 +403,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.NOT_YET){if(NotYet.is(actor))NotYet.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_SEEN){if(LastSeen.is(actor))LastSeen.talk(p,actor,own);else if(LastSeen.corner(actor))LastSeen.cornerHand(p,actor,own);}
         else if(place==LabyrinthPlace.FALLOW){if(Fallow.is(actor))Fallow.talk(p,actor,own);}
+        else if(place==LabyrinthPlace.THE_LIST){if(TheListPeople.is(actor))TheListPeople.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_ORDERS)LastOrders.talk(p,actor);
         else if(place==LabyrinthPlace.TALL_GRASS)TallGrass.talk(p,actor);
         else if(place==LabyrinthPlace.GROWING_THINGS)GrowingThings.talk(p,actor);
