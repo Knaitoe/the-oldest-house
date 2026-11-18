@@ -151,6 +151,27 @@ public final class TheListTexts {
     public static final String[] FOUND_HUNG_BODY=FOUND_BODY.clone();
     static{FOUND_HUNG_BODY[TheListPeople.SHANNON]="That's %s. That's %s up on the stands.";}
     public static final String FOUND_HUNG="%s hangs over a row of the stands, not moving.";
+    // ------------------------------------------------------------------------------------------------ 0.4.713: the line
+    /** What each of the five says, forced onto a riser of the sprinkler line. */
+    public static final String[] RISER=new String[TheListPeople.CAST];
+    static {
+        RISER[TheListPeople.DEEK]="Get it out. Get it out of me.";RISER[TheListPeople.WES]="It's in my back. It's in my back!";
+        RISER[TheListPeople.MEL]="Don't turn it on. Please don't turn it on.";RISER[TheListPeople.LESLEY]="I can't feel my legs.";
+        RISER[TheListPeople.SHANNON]="Jenna, call somebody. Call anybody.";
+    }
+    /** To the slasher: forcing one of them onto the riser; once after, where the valve is; and when the water has done it. */
+    public static final String ONTO_RISER="You force %s back onto the riser, and its head comes up through the front.",
+        VALVE_HINT="The line's valve stands past the end of the bench.",LINE_STILL="%s goes still. The sprinkler head goes on turning.";
+    /** To anyone's hand on one on the riser. */
+    public static final String PINNED="%s is fixed on the riser. It won't come out.";
+    /** To whoever turns the valve. */
+    public static final String VALVE_OPEN="The wheel turns. Water knocks down the line.",VALVE_SHUT="The wheel turns back. The heads run down and stop.";
+    /** To everyone near, once, when the water reaches one on the riser. */
+    public static final String WATER_THROUGH="The sprinkler line knocks with water. On the home sideline, %s screams.";
+    /** One dead on the line, come across: by the rest of the five (Shannon's own line says where), and by a reader who is not the slasher. */
+    public static final String[] FOUND_LINE_BODY=FOUND_BODY.clone();
+    static{FOUND_LINE_BODY[TheListPeople.SHANNON]="That's %s. That's %s on the sprinkler.";}
+    public static final String FOUND_LINE="%s lies across the sprinkler line, not moving.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
@@ -277,6 +298,13 @@ public final class TheListTexts {
                 case 3->"A pool of blood, not dry yet.";default->"Drops of blood. Still wet.";};
             case BATTERY->switch(stage){case 2->"The separator. A gauge on it, the needle steady.";case 4->"The lease's sign. Somebody has shot a hole through one corner.";
                 case 5,6,7->"A plate with the well's number on it.";default->"A tank on the lease, a hatch on its roof and a ladder up its side.";};
+            // 0.4.713, the line down the home sideline.
+            case LINE->switch(stage){case 1->"The end of the line, capped. Mud dried round the cap.";
+                case 2->"A riser to the knee, a sprinkler head on top. Its arm rests against the nozzle.";
+                case 3->"A riser. Something has run down it into the grass, and the head is clogged with it.";
+                case 4->"The line turns here into a hose.";case 5->"A hose, flat in the grass.";
+                case 6->"The valve. A wheel on top to open it.";case 7->"The valve, open. The line knocks with water.";
+                default->"Aluminum pipe laid down the sideline, length to length.";};
         };
     }
 }

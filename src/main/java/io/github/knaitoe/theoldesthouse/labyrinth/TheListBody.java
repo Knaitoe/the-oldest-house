@@ -491,6 +491,8 @@ public final class TheListBody {
         var b=town(p);if(b==null)return;
         var st=p.serverLevel().getBlockState(e.getPos());
         if(TheListBlock.is(st,TheListBlock.Kind.STANDS)&&st.getValue(TheListBlock.STAGE)<2&&TheListHunt.boards(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
+        // 0.4.713: a blow on the line is a hand on it.
+        if(TheListBlock.is(st,TheListBlock.Kind.LINE)&&TheListLine.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         if(strike(p,b,e.getPos().subtract(b)))e.setCanceled(true);
     }
 

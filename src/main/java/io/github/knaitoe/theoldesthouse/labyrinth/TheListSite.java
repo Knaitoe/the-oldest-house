@@ -501,6 +501,20 @@ public final class TheListSite {
     }
 
     // ------------------------------------------------------------------------------------------------ the school's field
+    /**
+     * 0.4.713, the sprinkler line down the home sideline (TheListLine): its cap by the north end zone, lengths of pipe coupled end to
+     * end, the four risers off it, the elbow level with the end of the home bench, the hose and the valve past the bench, shut. Laid as
+     * it was built whenever it is laid: the valve shut and the risers clean. Only where its ground is loaded.
+     */
+    static void line(ServerLevel l,BlockPos b){
+        for(int z=TheListLine.N;z<=TheListLine.S;z++){
+            var rel=new BlockPos(TheListLine.X,0,z);
+            int stage=z==TheListLine.N?TheListLine.CAP:z==TheListLine.S?TheListLine.ELBOW:TheListLine.riserAt(rel)>=0?TheListLine.RISER:TheListLine.PIPE;
+            if(l.isLoaded(b.offset(rel)))set(l,b,rel,fit(Kind.LINE,Direction.NORTH,stage));
+        }
+        if(l.isLoaded(b.offset(TheListLine.HOSE)))set(l,b,TheListLine.HOSE,fit(Kind.LINE,Direction.EAST,TheListLine.HOSE_RUN));
+        if(l.isLoaded(b.offset(TheListLine.VALVE)))set(l,b,TheListLine.VALVE,fit(Kind.LINE,Direction.NORTH,TheListLine.SHUT));
+    }
     /** Whether a cell inside the stadium is on the track, inside it, or out past it: its distance from the line down the infield's
      * middle, between the two centres of the track's turns. The track is the ring from just over 19 out to 21. */
     static double fromInfield(int x,int z){double dz=Math.max(0,Math.abs(z-FIELD_Z)-TURN);double dx=x-FIELD_X;return Math.sqrt(dx*dx+dz*dz);}
@@ -558,6 +572,7 @@ public final class TheListSite {
         scoreboard(l,b);
         concession(l,b);
         ticketBooth(l,b);
+        line(l,b);
         fieldHouse(l,b);
     }
     /** A goalpost at one end of the field: its padded foot behind the end line, its pole up to the gooseneck, which bends out over the line

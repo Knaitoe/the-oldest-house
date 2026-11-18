@@ -1311,6 +1311,122 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.713, part 4b-2 (docs/THE_LIST_0_4_713.md): the line. Deek, taken from behind on the home bench by the slasher, with a second
+     * reader at the valve. A riser out of his reach, or a riser under anyone else's hand, does nothing. A hand on the riser in front of
+     * the bench forces him back onto it: his words, the slasher's cue, the sound and the scream heard, the head out through the front of
+     * him, the riser bloodied and drops either side; the slasher walks again but still holds him and cannot leave. A hand on him: he will
+     * not come out. Unwatered, he lives, and the slasher is told where the valve is. The other reader opens it: the water through him
+     * told to both, the heads throwing water and his throwing blood, stains where it lands; shut, the count stops; open again, he goes
+     * still on the riser, pools either side, the other reader told a scream stopped, the kill kept by the slasher and the hold let go.
+     * The other reader, come near and looking, finds him across the line. Ended, the stains are taken up, the line laid again as it was
+     * built and Deek back on his bench, unmarked.
+     */
+    @GameTest(template="empty",batch="the_list_line",timeoutTicks=6000)
+    public static void theLine(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_line",P);var peer=f.player("list_line_peer",P);
+        int D=TheListPeople.DEEK;
+        var riser=TheListLine.riser(2);var far=TheListLine.riser(1);var valve=TheListLine.VALVE;
+        hold(f,b,TheListPeople.AT[D],valve,far);
+        List<net.minecraft.network.protocol.Packet<?>> theirs=new ArrayList<>();
+        int[] water=new int[1];int[] stains=new int[1];
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the field");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(TheListLine.riserAt(riser)==2&&riser.getZ()==TheListPeople.AT[D].getZ(),"the third riser is level with Deek on the bench");
+            h.assertTrue(fitting(l,b,riser,Kind.LINE,TheListLine.RISER)&&fitting(l,b,valve,Kind.LINE,TheListLine.SHUT)
+                &&fitting(l,b,new BlockPos(TheListLine.X,0,TheListLine.N),Kind.LINE,TheListLine.CAP)&&fitting(l,b,TheListLine.HOSE,Kind.LINE,TheListLine.HOSE_RUN),"the line is laid, the valve shut");
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's"))
+        .thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            f.at(peer,P,valve.getX()-.5,0,valve.getZ()+.5);sent(peer);cues(peer);
+            f.at(p,P,TheListPeople.AT[D].getX()-1.5,0,TheListPeople.AT[D].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            h.assertFalse(TheListHunt.sees(deek,p),"he does not see the slasher behind the bench");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,D));
+            hand(p,b,far);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"a riser out of his reach does nothing");
+            hand(peer,b,riser);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"nor anyone else's hand");
+            cues(p);sent(peer);
+            hand(p,b,riser);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.LINE&&deek.gesture()==TheListHunt.IMPALED,"forced onto the riser: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.ONTO_RISER,"Deek")),"the slasher is told");
+            h.assertTrue(TheListTexts.RISER[D].equals(said(deek)),"his words: "+said(deek));
+            var top=Vec3.atBottomCenterOf(b.offset(riser));
+            h.assertTrue(Math.abs(deek.getX()-top.x)<.05&&Math.abs(deek.getZ()-top.z)<.05&&Math.abs(deek.getY()-top.y)<.05,"across the riser: "+deek.position().subtract(top));
+            h.assertTrue(Math.abs(Math.abs(deek.getYRot())-90)<1,"lying across the line: "+deek.getYRot());
+            h.assertTrue(Math.abs(deek.getBbWidth()-1.2F)<.01&&Math.abs(deek.getBbHeight()-1F)<.01,"in a box the shape of him lying there: "+deek.getBbWidth()+" by "+deek.getBbHeight());
+            h.assertTrue((deek.marks()&TheListHunt.GUT)!=0,"marked where it went through");
+            h.assertTrue(fitting(l,b,riser,Kind.LINE,TheListLine.BLOODY),"the riser runs with blood");
+            h.assertTrue(stain(l,top.add(-.9,0,0),TheListHunt.DROPS)&&stain(l,top.add(.9,0,0),TheListHunt.DROPS),"drops either side of the line");
+            h.assertTrue(TheListHunt.holding(p)&&LiteraryVignettes.retreatLocked(p),"still his, and no retreat");
+            h.assertTrue(p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)>0,"but the slasher walks again");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.RISER.get())&&sound(theirs,TheListRegistry.SCREAM.get()),"the other reader hears it, and him");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.PINNED,"Deek"))&&TheListHunt.state(b,D)==TheListHunt.State.LINE,"a hand on him: he will not come out");
+        }).thenIdle(42).thenExecute(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.VALVE_HINT),"the slasher is told where the valve is");
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.LINE&&TheListHunt.water(b,D)==0,"unwatered, he lives: "+where(l,b,D));
+            stains[0]=TheListHunt.stains(l,b);
+            hand(peer,b,valve);
+            h.assertTrue(fitting(l,b,valve,Kind.LINE,TheListLine.OPEN)&&TheListLine.open(l,b),"the other reader opens the valve");
+            h.assertTrue(cues(peer).contains(TheListTexts.VALVE_OPEN),"and is told so");
+            cues(p);
+        }).thenIdle(20).thenExecute(()->{
+            var got=sent(peer);
+            h.assertTrue(cuesIn(got).contains(String.format(TheListTexts.WATER_THROUGH,"Deek"))&&cues(p).contains(String.format(TheListTexts.WATER_THROUGH,"Deek")),"the water through him, told to both");
+            h.assertTrue(particles(got,net.minecraft.core.particles.ParticleTypes.SPLASH)&&particles(got,TheListRegistry.BLOOD.get()),"the heads throw water, and his throws blood");
+            water[0]=TheListHunt.water(b,D);
+            h.assertTrue(water[0]>=15&&TheListHunt.state(b,D)==TheListHunt.State.LINE,"he lives a while under it: "+water[0]);
+            h.assertTrue(TheListHunt.stains(l,b)>stains[0],"where it lands, blood: "+TheListHunt.stains(l,b));
+            hand(peer,b,valve);
+            h.assertTrue(fitting(l,b,valve,Kind.LINE,TheListLine.SHUT)&&cues(peer).contains(TheListTexts.VALVE_SHUT),"shut again");
+            water[0]=TheListHunt.water(b,D);
+        }).thenIdle(20).thenExecute(()->{
+            h.assertTrue(TheListHunt.water(b,D)==water[0]&&TheListHunt.state(b,D)==TheListHunt.State.LINE,"shut, the count stops: "+TheListHunt.water(b,D));
+            hand(peer,b,valve);cues(peer);cues(p);
+        }).thenIdle(TheListLine.BLEEDS+5).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            var top=Vec3.atBottomCenterOf(b.offset(riser));
+            h.assertTrue(TheListHunt.dead(b,D)&&deek.gesture()==TheListHunt.SPITTED,"he goes still on the riser: "+where(l,b,D));
+            h.assertTrue(Math.abs(deek.getX()-top.x)<.05&&Math.abs(deek.getY()-top.y)<.05,"and stays across it");
+            h.assertTrue(stain(l,top.add(-.9,0,0),TheListHunt.POOL)&&stain(l,top.add(.9,0,0),TheListHunt.POOL),"a pool either side");
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.LINE_STILL,"Deek")),"the slasher is told");
+            h.assertTrue(cues(peer).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")),"the other reader is told a scream stopped");
+            h.assertTrue((TheListBody.kills(p)&1<<D)!=0,"the slasher's record keeps him, whoever opened the valve");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the body walks and may leave");
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Deek")),"a hand on him after: he does not move");
+            // The other reader, come near and looking at him.
+            f.at(peer,P,top.x-b.getX()-3.5,0,top.z-b.getZ()+4);
+            var to=top.add(0,.8,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.sqrt(to.x*to.x+to.z*to.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_LINE,"Deek")),"the other reader finds him across the line");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            h.assertTrue(TheListHunt.stains(l,b)==0,"ended, every stain is taken up");
+            h.assertTrue(fitting(l,b,riser,Kind.LINE,TheListLine.RISER)&&fitting(l,b,valve,Kind.LINE,TheListLine.SHUT),"and the line laid again as it was built");
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.marks()==0&&deek.gesture()==TheListHunt.STILL,"and he is back, unmarked: "+where(l,b,D));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+    /** Whether these packets drew a particle of this kind. */
+    private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
+        for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;
+        return false;
+    }
     /** A hand on a block where the reader stands, without moving them. */
     private static void hand(ServerPlayer p,BlockPos b,BlockPos rel){
         var at=b.offset(rel);

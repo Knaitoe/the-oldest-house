@@ -4260,6 +4260,153 @@ def party_faces():
             'case_top': case_box(1), 'bulb_dark': bulb_dark()}
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.713: the line
+# The sprinkler line down the home sideline (docs/THE_LIST_0_4_713.md): aluminum pipe in lengths, risers of galvanized iron standing to
+# the knee with a brass impact head on each, the elbow into a rubber hose, and the valve on its standpipe with its wheel. The pipe lies
+# three pixels round on the turf, so its sides show the texture's last three rows and its top the middle columns: those carry the shine.
+def line_pipe():
+    rnd = random.Random(9713); im = new('#b4b8ba', 9713, 3)
+    for x in range(16):
+        dot(im, x, 13, '#d4d7d8'); dot(im, x, 15, '#878b8d')
+    for y in range(16):
+        dot(im, 7, y, '#cdd0d1'); dot(im, 8, y, '#c4c7c8')
+    speckle(im, rnd, 5, ['#9a9ea0', '#a6a9ab'])
+    # Grass stain along the bottom where the lengths lie in it.
+    for x in range(0, 16, 3):
+        dot(im, x, 15, '#6e7a5a')
+    return im
+
+
+def line_coupler():
+    im = new('#8a8e90', 9714, 3)
+    for x in range(16):
+        dot(im, x, 13, '#a6a9ab'); dot(im, x, 14, '#5e6264'); dot(im, x, 15, '#6e7274')
+    for y in range(16):
+        dot(im, 6, y, '#5e6264'); dot(im, 9, y, '#5e6264')
+    return im
+
+
+def line_riser(blood):
+    # The riser: galvanized pipe, the zinc gone to a white bloom in places. With blood run down it from the head, two runs and a bead,
+    # and the foot of it wet where the runs meet the grass.
+    rnd = random.Random(9715); im = new('#9a9e9c', 9715, 4)
+    speckle(im, rnd, 7, ['#c4c7c4', '#7d817f', '#b2b5b2'])
+    for y in range(16):
+        dot(im, 7, y, '#b8bbb8')
+    if blood:
+        x = 7
+        for y in range(3, 14):
+            if rnd.random() < .2:
+                x = max(7, min(8, x + rnd.choice((-1, 1))))
+            dot(im, x, y, BLOOD_WET if y < 10 else BLOOD_DRY)
+        for y in range(5, 12):
+            dot(im, 8 if x == 7 else 7, y, BLOOD_DRY)
+        for xx in range(6, 10):
+            dot(im, xx, 13, BLOOD_WET); dot(im, xx, 12, BLOOD_DRY)
+        dot(im, 8, 4, BLOOD_LIGHT)
+    return im
+
+
+def line_head(blood):
+    # The impact head: a cast brass body, its arm and spring, worn bright where hands turn it.
+    rnd = random.Random(9716); im = new('#a8853a', 9716, 4)
+    for x in range(16):
+        dot(im, x, 0, '#d8b25a'); dot(im, x, 15, '#7a5e26')
+    for y in range(16):
+        dot(im, 0, y, '#c49a46'); dot(im, 15, y, '#7a5e26')
+    speckle(im, rnd, 5, ['#d0aa52', '#86682c'])
+    if blood:
+        for _ in range(26):
+            dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice([BLOOD_WET, BLOOD_DRY, BLOOD_LIGHT]))
+        # The sides of the head show the texture's upper rows: the blood is there, in the arm's slot and run over the body.
+        fill(im, 6, 2, 10, 5, BLOOD_WET); fill(im, 7, 5, 9, 9, BLOOD_DRY)
+    return im
+
+
+def line_hose():
+    # A rubber hose, ribbed every few pixels, laid flat in the grass.
+    im = new('#2c2c2a', 9717, 3)
+    for y in range(0, 16, 4):
+        for x in range(16):
+            dot(im, x, y, '#3e3e3a')
+    for x in range(16):
+        dot(im, x, 15, '#1a1a18')
+    return im
+
+
+def line_valve():
+    # The valve's body, cast iron, rusted at its seams and bolts.
+    rnd = random.Random(9718); im = new('#3a3c3e', 9718, 4)
+    speckle(im, rnd, 9, ['#6a4a32', '#57402e', '#4a4c4e'])
+    for x in range(16):
+        dot(im, x, 2, '#2a2c2e'); dot(im, x, 13, '#2a2c2e')
+    for x in (2, 13):
+        for y in (4, 11):
+            dot(im, x, y, '#7a5a3a')
+    return im
+
+
+def line_wheel():
+    # The handwheel, painted once and chipped back to the iron where it is gripped.
+    rnd = random.Random(9719); im = new('#a03828', 9719, 5)
+    for _ in range(14):
+        dot(im, rnd.randrange(16), rnd.randrange(16), rnd.choice(['#3a3c3e', '#4a3a32', '#7a2a1e']))
+    return im
+
+
+def line_stem():
+    im = new('#c8a24e', 9720, 4)
+    for y in range(0, 16, 2):
+        for x in range(16):
+            dot(im, x, y, '#9a7a34')
+    return im
+
+
+def line_faces():
+    return {'line_pipe': line_pipe(), 'line_coupler': line_coupler(), 'line_riser': line_riser(False), 'line_riser_blood': line_riser(True),
+            'line_head': line_head(False), 'line_head_blood': line_head(True), 'line_hose': line_hose(), 'line_valve': line_valve(),
+            'line_wheel': line_wheel(), 'line_stem': line_stem()}
+
+
+def line_model(stage):
+    """The line's pieces, each drawn facing north: the pipe runs north and south through the cell, at the middle, three pixels round."""
+    t = {'p': 'line_pipe', 'c': 'line_coupler', 'r': 'line_riser_blood' if stage == 3 else 'line_riser',
+         'h': 'line_head_blood' if stage == 3 else 'line_head', 'o': 'line_hose', 'v': 'line_valve', 'w': 'line_wheel', 's': 'line_stem'}
+    pipe = element([6.5, 0, 0], [9.5, 3, 16], {'all': 'p'})
+    ring = element([6, 0, 0], [10, 3.5, 1.5], {'all': 'c'})
+    if stage == 0:
+        # A length of pipe, the coupling to the next length at its north end.
+        return model([element([6.5, 0, 1.5], [9.5, 3, 16], {'all': 'p'}), ring], t, 'line_pipe', render=None)
+    if stage == 1:
+        # The end of the line, capped.
+        return model([element([6.5, 0, 4.5], [9.5, 3, 16], {'all': 'p'}), element([6, 0, 3], [10, 3.5, 4.5], {'all': 'c'})], t, 'line_pipe', render=None)
+    if stage in (2, 3):
+        # A riser to the knee off a tee in the line, the impact head on top of it: its body, the arm over it and the nozzle out toward
+        # the field, cocked up.
+        e = [pipe, element([6, 0, 6], [10, 3.5, 10], {'all': 'c'}), element([7, 3.5, 7], [9, 12, 9], {'all': 'r'}),
+             element([6.5, 12, 6.5], [9.5, 14, 9.5], {'all': 'h'}), element([7.5, 14, 5], [8.5, 15, 11], {'all': 'h'}),
+             element([7.5, 15, 10], [8.5, 15.75, 11], {'all': 'h'}),
+             element([9.5, 12.5, 7.5], [12.5, 13.5, 8.5], {'all': 'h'}, rotation={'angle': 22.5, 'axis': 'z', 'origin': [9.5, 13, 8]})]
+        return model(e, t, 'line_riser', render=None)
+    if stage == 4:
+        # The elbow: the line comes from the north and turns west into the hose.
+        e = [element([6.5, 0, 0], [9.5, 3, 6], {'all': 'p'}), element([6, 0, 6], [10, 3.5, 10], {'all': 'c'}),
+             element([0, .25, 6.75], [6, 2.75, 9.25], {'all': 'o'})]
+        return model(e, t, 'line_coupler', render=None)
+    if stage == 5:
+        # The hose, flat in the grass.
+        return model([element([6, 0, 0], [10, 1.5, 16], {'all': 'o'})], t, 'line_hose', render=None)
+    # The valve on its standpipe, the hose coming in from the east; its wheel on top, shut down on the bonnet or with the stem up.
+    up = 2 if stage == 7 else 0
+    e = [element([7, 0, 7], [9, 8, 9], {'all': 'r'}), element([9, .25, 7.25], [16, 1.75, 8.75], {'all': 'o'}),
+         element([5.5, 8, 5.5], [10.5, 11, 10.5], {'all': 'v'}), element([6.5, 11, 6.5], [9.5, 12, 9.5], {'all': 'v'}),
+         element([7.5, 12, 7.5], [8.5, 13 + up, 8.5], {'all': 's'}),
+         element([4, 13 + up, 4], [12, 13.75 + up, 5], {'all': 'w'}), element([4, 13 + up, 11], [12, 13.75 + up, 12], {'all': 'w'}),
+         element([4, 13 + up, 5], [5, 13.75 + up, 11], {'all': 'w'}), element([11, 13 + up, 5], [12, 13.75 + up, 11], {'all': 'w'}),
+         element([7.5, 13 + up, 5], [8.5, 13.5 + up, 11], {'all': 'w'}), element([5, 13 + up, 7.5], [11, 13.5 + up, 8.5], {'all': 'w'})]
+    return model(e, t, 'line_valve', render=None)
+
+
 def fitting_models():
     m = {}
     for s in range(4):
@@ -4296,6 +4443,8 @@ def fitting_models():
         m[f'party_{st}'] = party_model(st)
     for st in range(4):
         m[f'blood_{st}'] = stain_model(st)
+    for st in range(8):
+        m[f'line_{st}'] = line_model(st)
     return m
 
 
@@ -4359,6 +4508,7 @@ def textures():
     faces.update(school_faces())
     faces.update(pasture_faces())
     faces.update(party_faces())
+    faces.update(line_faces())
     for name, im in faces.items():
         out[f'block/the_list/{name}.png'] = im
     # 0.4.705: the sack on the head, in the hand, and from inside.
@@ -4377,6 +4527,8 @@ def textures():
         out[f'block/the_list/blood_{i}.png'] = stain(i)
     out['entity/the_list/wound.png'] = wound()
     out['entity/the_list/neck.png'] = neck()
+    # 0.4.713: where the riser went through.
+    out['entity/the_list/gut.png'] = gut()
     for i in (1, 2, 3):
         out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
         out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
@@ -4635,12 +4787,12 @@ def broken_door(upper):
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
          'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
-         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party', 'blood']
+         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party', 'blood', 'line']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
           'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
-          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4}
+          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4, 'line': 8}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_line': 'Painted Line', 'curb': 'Curb', 'sidewalk': 'Sidewalk',
@@ -4882,6 +5034,58 @@ def wound():
     half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
     wound_at(half, 150, 70, 99, 97101, 138, 154)
     wound_at(half, 52, 45, 64, 97102, 40, 55)
+    return half.resize((512, 256), Image.NEAREST)
+
+
+def gut_at(im, cx, cy, seed, lo, hi, top, bottom, torn):
+    # 0.4.713, the line: where the riser went through, on the skins' own grid. Worn lying on the back, so what runs, runs sideways off
+    # the belly toward the sides, not down toward the hem. The soak is wide and low; in front the cloth is torn open round the hole,
+    # black inside, the frayed edge standing up round it; behind, where it went in, a smaller hole with the soak heavier still.
+    rnd = random.Random(seed)
+    soak = set()
+    for _ in range(9 if torn else 7):
+        bx, by = cx + rnd.randint(-3, 3), cy + rnd.randint(-2, 2)
+        rx, ry = rnd.uniform(2.0, 3.6), rnd.uniform(1.3, 2.4)
+        for dy in range(-4, 5):
+            for dx in range(-5, 6):
+                if (dx / rx) ** 2 + (dy / ry) ** 2 < 1:
+                    soak.add((bx + dx, by + dy))
+    soak = {(x, y) for x, y in soak if lo <= x <= hi and top <= y <= bottom}
+    for x, y in soak:
+        r = rnd.random()
+        dot(im, x, y, BLOOD_WET if r < .55 else BLOOD_DRY if r < .85 else BLOOD_DEEP)
+    hole = [(0, 0), (1, 0), (0, 1), (1, 1)] + ([(-1, 0), (2, 1), (0, -1), (1, 2)] if torn else [])
+    for dx, dy in hole:
+        dot(im, cx + dx, cy + dy, '#120404' if torn else BLOOD_DEEP)
+    if torn:
+        for dx, dy in [(-1, -1), (2, -1), (-2, 1), (3, 0), (2, 2), (-1, 2)]:
+            dot(im, cx + dx, cy + dy, '#5e5040')
+        dot(im, cx + 2, cy, BLOOD_LIGHT); dot(im, cx - 1, cy + 1, BLOOD_LIGHT)
+    # Sideways off the soak to the edges of the face, drying as they go.
+    for side in (-1, 1):
+        for oy in ((-1, 1) if torn else (0,)):
+            y = cy + oy
+            xs = [x for (x, sy) in soak if sy == y]
+            if not xs:
+                continue
+            x = max(xs) if side > 0 else min(xs)
+            end = hi if side > 0 else lo
+            reach = rnd.uniform(.6, 1.0)
+            n = int(abs(end - x) * reach)
+            for k in range(n):
+                if rnd.random() < .12:
+                    y = max(top, min(bottom, y + rnd.choice((-1, 1))))
+                dot(im, x + side * k, y, BLOOD_WET if k < n * .6 else BLOOD_DRY)
+
+
+def gut():
+    # Over the five's own skins (512 by 256, painted two pixels to a dot): low on the belly, through the body's front (u 20 to 28, v 20
+    # to 32) and the coat's (u 68.8 to 77.6, v 32.8 to 49.8), and out through the back where it went in (u 32 to 40, and 82.4 to 91.2).
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    gut_at(half, 47, 55, 97131, 41, 55, 46, 63, True)
+    gut_at(half, 145, 87, 97132, 139, 154, 76, 99, True)
+    gut_at(half, 71, 55, 97133, 65, 79, 48, 63, False)
+    gut_at(half, 173, 87, 97134, 166, 181, 78, 99, False)
     return half.resize((512, 256), Image.NEAREST)
 
 
