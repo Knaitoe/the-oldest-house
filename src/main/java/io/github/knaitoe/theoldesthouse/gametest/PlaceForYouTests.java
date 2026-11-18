@@ -485,6 +485,85 @@ public final class PlaceForYouTests {
     }
     @AfterBatch(batch="place_letter") public static void letterDone(ServerLevel l){close();}
 
+    /**
+     * 0.4.693, the broken promise: the reader promises Mara company at the sink while the back passage is under way, then goes back to
+     * work at the back door with Kit. Mara comes out into the hall and finds them there. Once the bag is out and the reader is back in
+     * the kitchen, she says the promise back to them; they apologise. The spoon no longer counts as the promise kept; the account says
+     * what happened instead of "I did."; she asks again, differently, and a reader who said Kit mattered more is not asked at all.
+     */
+    @GameTest(template="empty",batch="place_promise",timeoutTicks=5000)
+    public static void theBrokenPromise(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_promise",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"kit")!=null&&PlaceForYou.actor(l,b,"mara")!=null,"Kit by the back door, Mara at the sink"))
+            .thenExecute(()->{
+                talk(f,p,"kit");say(h,p,"I'll keep it quiet.");
+                talk(f,p,"mara");say(h,p,"Is there a key for it?");say(h,p,"I'd like to see where it goes.");
+                h.assertTrue(click(f,p,PlaceForYouSite.SINK)&&PlaceForYou.holding(p)==PlaceForYouRegistry.KEY,"the key from the drawer");
+                sinkTalk(f,h,p);h.assertTrue(Talk.waiting(p,"sink"),"Mara about Theo: "+Talk.key(p));say(h,p,"I'll sit with you tonight.");
+                h.assertTrue(f.own(p,P).getInt("Chapter")==PlaceForYou.DINNER&&f.own(p,P).getInt("BackStage")==1,"promised, the back way still to do");
+                at(f,p,-.5,0,-24.5,180,10);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Missed")&&f.own(p,P).getInt("MissedStage")==1,"Mara comes looking"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MissedSaid"),"Mara in the hall: "+PlaceForYou.actor(l,b,"mara").position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))))
+            .thenExecute(()->h.assertTrue(p.hasLineOfSight(PlaceForYou.actor(l,b,"mara")),"from the back of the hall the reader can see her"))
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("MissedStage")==2,"and back in"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.BACK_DOOR),"the key in the door");
+                at(f,p,.5,0,-28.5,180,20);h.assertTrue(click(f,p,PlaceForYouSite.BACK_GATE),"the gate");
+                at(f,p,6.5,0,-20.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("BackStage")==3,"the bag out: "+f.own(p,P).getInt("BagLeg")))
+            .thenExecute(()->at(f,p,5.5,0,-13.5,180,10))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"promise_broken"),"she says it back, once the reader is in the kitchen: "+Talk.key(p)+", Mara at "+PlaceForYou.actor(l,b,"mara").position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))))
+            .thenExecute(()->{
+                h.assertTrue(Talk.lines(p).contains("Mara: \"I'll sit with you tonight.\" That's what you said.")&&Talk.lines(p).contains("Mara: I came to find you, and you were at the back door with Kit."),"her words: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==3,"three answers: "+Talk.replies(p));
+                say(h,p,"I'm sorry. I said it, and then I went.");
+                h.assertTrue(f.own(p,P).getString("PromiseAnswer").equals("sorry")&&!Talk.waiting(p),"answered");
+                talk(f,p,"mara");say(h,p,"Take the spoon.");
+                var own=f.own(p,P);h.assertFalse(own.getBoolean("PromiseKept"),"the spoon is not the promise kept");
+                h.assertTrue(PlaceForYouPromise.ask(own).equals("I'll ask again anyway. Will you sit with me a minute? Before I decide."),"she asks again");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                h.assertTrue(text.contains("Mara came to find me, and I was at the back door with Kit. I said I was sorry. She said it didn't undo it.")&&!text.contains("\" I did."),"the account: "+text);
+                own.putString("PromiseAnswer","kit");h.assertTrue(PlaceForYouPromise.ask(own)==null,"after \"Kit mattered more\" she doesn't ask");
+                own.putString("PromiseAnswer","limited");h.assertTrue(PlaceForYouPromise.ask(own).startsWith("You said tonight."),"held to the rest of tonight");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_promise") public static void promiseDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.693, the confession used: at the table, a reader who heard about Theo tells Mara to tell the others or they will, and tells
+     * them. Kit asks if it's true; she says yes; Ren says she told the reader that on her own. The house opens; asked to decide, Mara
+     * stays, on her own. The account says so.
+     */
+    @GameTest(template="empty",batch="place_confession",timeoutTicks=5000)
+    public static void theConfessionUsed(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_confession",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);at(f,p,5.5,0,-19.5,0,10);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"mara")!=null,"Mara at the sink"))
+            .thenExecute(()->{
+                sinkTalk(f,h,p);h.assertTrue(Talk.waiting(p,"sink"),"Mara about Theo: "+Talk.key(p));say(h,p,"I'm listening.");
+                talk(f,p,"mara");say(h,p,"Take the spoon.");talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"confront"),"at the table");
+                h.assertTrue(Talk.replies(p).size()==5,"five answers at the table: "+Talk.replies(p));
+                say(h,p,"Mara, tell them about Theo. Or I will.");
+                var lines=Talk.lines(p);
+                h.assertTrue(lines.contains("Kit: Is that true?")&&lines.contains("Mara: Yes.")&&lines.contains("Ren: She told you that on her own. You didn't have to do it like this."),"told: "+lines);
+                say(h,p,"You're right. I shouldn't have.");
+                var own=f.own(p,P);
+                h.assertTrue(own.getBoolean("UsedConfession")&&own.getString("RenSaid").equals("wrong")&&own.getString("Confront").equals("open")&&own.getInt("Chapter")==PlaceForYou.OPEN,"the house opened: "+own);
+                own.putBoolean("Propped",true);own.putBoolean("PictureDown",true);own.putBoolean("TheoSilent",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                if(!Talk.waiting(p))talk(f,p,"mara");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("MaraEnd").equals("stays"),"she decides: "+Talk.key(p)+" "+Talk.lines(p)))
+            .thenExecute(()->{
+                h.assertTrue(Talk.lines(p).contains("Mara: I'll stay. I'd rather be on my own for it."),"on her own: "+Talk.lines(p));
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),f.own(p,P));
+                h.assertTrue(text.contains("At the table I told Mara to tell them about Theo, or I would, and then I told them myself.")&&text.contains("I said Ren was right. Ren said to say that to her.")
+                    &&text.contains("She asked me not to sit with her after.")&&!text.contains("I said it to everyone at the table."),"the account: "+text);
+                h.assertTrue(text.contains("Mara stayed. She'd rather be on her own for it, she said."),"her end: "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_confession") public static void confessionDone(ServerLevel l){close();}
 
     /**
      * 0.4.692, the porch: told openly, with Kit there, and nothing else done with Mara. When Kit goes, Mara has the bag and carries it out

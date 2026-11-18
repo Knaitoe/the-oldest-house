@@ -433,6 +433,34 @@ public final class FallowTests {
      * to be: he takes a bottle of pop from the cooler and pays for it, goes out to Opal and asks her name, and she does not tell him. He asks
      * the readers near him the time; one tells him, and he walks off up the track into the wheat and is gone the first moment nobody sees him.
      */
+    /**
+     * 0.4.693 (run 1718): Otis, spoken to as he comes to the coffee machine, finishes answering the reader before he goes on to pour. While
+     * he is turned to them or his answer is still up, his head never swings away from them in a single tick (to the machine, the counter or
+     * his place); he still gets his coffee and comes to the counter afterwards.
+     */
+    @GameTest(template="empty",batch="fallow_answer",timeoutTicks=3000)
+    public static void aCustomerFinishesAnsweringFirst(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
+        var p=f.player("fallow_answer",P);
+        int[] jumps={0};float[] last={Float.NaN};String[] seen={""};
+        h.onEachTick(()->{
+            var otis=Fallow.find(l,b,Fallow.DRIVER);
+            if(otis==null||otis.addressee()==null&&!otis.saying()){last[0]=Float.NaN;return;}
+            float head=otis.getYHeadRot();var d=p.position().subtract(otis.position());float toward=(float)Math.toDegrees(Math.atan2(-d.x,d.z));
+            if(!Float.isNaN(last[0])&&Math.abs(net.minecraft.util.Mth.wrapDegrees(head-toward))-Math.abs(net.minecraft.util.Mth.wrapDegrees(last[0]-toward))>40){
+                jumps[0]++;seen[0]="head "+head+" from "+last[0]+", the reader at "+toward;}
+            last[0]=head;
+        });
+        h.startSequence().thenIdle(5).thenExecute(()->{f.at(p,P,3.5,0,-9.5);Fallow.skipTo(b,Fallow.OTIS_TIME);})
+        .thenWaitUntil(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);
+            h.assertTrue(otis!=null&&otis.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(new Vec3(6.5,0,-10.5))<2.5,"Otis nearly at the machine: "+(otis==null?"none":otis.position().subtract(Vec3.atLowerCornerOf(b))));})
+        .thenExecute(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);p.interactOn(otis,InteractionHand.MAIN_HAND);
+            h.assertTrue(said(otis).startsWith("Hauling seed corn north."),"he answers: "+said(otis));})
+        .thenWaitUntil(()->h.assertTrue(Fallow.customer(b)==Fallow.DRIVER,"then gets his coffee and comes to the counter: "+Fallow.customer(b)))
+        .thenExecute(()->h.assertTrue(jumps[0]==0,"while he answered, his head never swung away from the reader: "+seen[0]))
+        .thenSucceed();
+    }
+
     @GameTest(template="empty",batch="fallow_road",timeoutTicks=9000)
     public static void theBeanAndTheManOnTheRoad(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
