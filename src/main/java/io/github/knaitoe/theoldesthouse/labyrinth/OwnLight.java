@@ -191,7 +191,7 @@ public final class OwnLight {
     }
     /**
      * The visit (docs/NEIGHBOURS.md): nothing on a neighbour's district is touched, and the chest turned round is the nearest the reader
-     * opened themselves, else the nearest.
+     * opened themselves, else the first found, as it always was.
      */
     public static void visit(ServerLevel l,ServerPlayer p,BlockPos bed,String note){
         // a chest nearby, every slot turned the other way round: nothing taken
@@ -199,7 +199,7 @@ public final class OwnLight {
         net.minecraft.world.level.block.entity.ChestBlockEntity chest=null;boolean theirs=false;
         for(var at:BlockPos.betweenClosed(bed.offset(-8,-2,-8),bed.offset(8,3,8)))if(l.getBlockEntity(at) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity c&&!io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,at)){
             boolean mine=opened.contains(at.asLong());
-            if(chest==null||mine&&!theirs||mine==theirs&&at.distSqr(bed)<chest.getBlockPos().distSqr(bed)){chest=c;theirs=mine;}}
+            if(chest==null||mine&&!theirs||mine&&theirs&&at.distSqr(bed)<chest.getBlockPos().distSqr(bed)){chest=c;theirs=mine;}}
         if(chest!=null){var c=chest;int size=c.getContainerSize();var items=new ArrayList<ItemStack>();for(int i=0;i<size;i++)items.add(c.getItem(i));for(int i=0;i<size;i++)c.setItem(i,items.get(size-1-i));c.setChanged();}
         // the lights left burning, put out
         for(var at:BlockPos.betweenClosed(bed.offset(-10,-3,-10),bed.offset(10,4,10))){if(io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,at))continue;var st=l.getBlockState(at);
@@ -207,7 +207,10 @@ public final class OwnLight {
         var page=OwnLightTexts.note(p.getGameProfile().getName(),note);var item=new ItemEntity(l,bed.getX()+.5,bed.getY()+.7,bed.getZ()+.5,page);item.setDeltaMovement(Vec3.ZERO);item.setPickUpDelay(10);l.addFreshEntity(item);
         cue(p,"Your bed has been slept in. There is a note on the pillow.");
     }
-    /** The last few chests a reader opened near their home, so the visit turns one of their own round. */
+    /**
+     * The last few chests a reader opened near their home, so the visit turns one of their own round: those opened before they were
+     * dealt the story count too. Opening the newest again changes nothing, and nothing is written.
+     */
     static final String OPENED="Opened213";
     static final int OPENED_KEPT=16;
     @SubscribeEvent public static void opened(net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open e){
@@ -215,9 +218,10 @@ public final class OwnLight {
         var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);if(home==null)return;
         var chests=io.github.knaitoe.theoldesthouse.house.Containers.blocks(menu.getContainer()).stream().filter(b->b instanceof net.minecraft.world.level.block.entity.ChestBlockEntity&&b.getLevel()==p.level()&&b.getBlockPos().closerThan(home,16)).toList();
         if(chests.isEmpty())return;
-        var own=own(p);var list=own.getList(OPENED,Tag.TAG_LONG);
+        var own=own(p);var list=own.getList(OPENED,Tag.TAG_LONG);var was=list.copy();
         for(var c:chests){var at=LongTag.valueOf(c.getBlockPos().asLong());list.remove(at);list.add(at);}
         while(list.size()>OPENED_KEPT)list.remove(0);
+        if(list.equals(was))return;
         own.put(OPENED,list);save(p,own);
     }
     /** The House lets lights be set down only in its ordinary halls; here, a reader may set their own. */

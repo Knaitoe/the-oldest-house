@@ -187,8 +187,10 @@ public final class ElkFollows {
     static boolean penned(ServerLevel l,BlockPos at){
         for(var c:BlockPos.betweenClosed(at.offset(-4,-1,-4),at.offset(4,1,4))){var s=l.getBlockState(c);if(s.is(BlockTags.FENCES)||s.is(BlockTags.FENCE_GATES))return true;}return false;
     }
+    /** The gate of the taken animal's pen: the nearest. One on a neighbour's district stays shut, and no other pen's is opened instead. */
     static BlockPos gate(ServerLevel l,BlockPos at){
-        BlockPos best=null;for(var c:BlockPos.betweenClosed(at.offset(-6,-1,-6),at.offset(6,1,6))){if(l.getBlockState(c).getBlock() instanceof FenceGateBlock&&(best==null||c.distSqr(at)<best.distSqr(at))&&!io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,c))best=c.immutable();}return best;
+        BlockPos best=null;for(var c:BlockPos.betweenClosed(at.offset(-6,-1,-6),at.offset(6,1,6))){if(l.getBlockState(c).getBlock() instanceof FenceGateBlock&&(best==null||c.distSqr(at)<best.distSqr(at)))best=c.immutable();}
+        return best==null||io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,best)?null:best;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();if(server.getTickCount()%5!=0)return;
