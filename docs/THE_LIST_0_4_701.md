@@ -29,6 +29,7 @@ Shared and recurring, as in 1a and 1b.
 - The wire gap opens to a hand and stays open for everyone until someone shuts it. The cue is that reader's alone; the chain's clink is heard by anyone near.
 - A reader standing cannot pass the wire. A reader crouching ducks between the strands. Nobody passes a post.
 - The cattle guard rattles under whoever walks over it, heard by anyone near.
+- Every yard's gate swings open and shut by hand and stays as it is left, for everyone; the cue is that reader's own, and the latch and hinge are heard by anyone near. Amber's back gate is built standing open.
 - The machines keep time with the level's own clock. The server, which plays their sounds, and every client, which draws them, work out the same angle from the same tick, so every reader sees the same stroke at the same moment and the knock comes as the rod reaches the bottom.
   - The windmill creaks each time its wheel comes round, within forty blocks of someone outside.
   - Each pumpjack knocks once a stroke, eight strokes a minute, within thirty-six blocks of someone outside.
@@ -43,7 +44,7 @@ Shared and recurring, as in 1a and 1b.
     - `stockTank` sets the tank's water in an octagon of whole cells (`inTank`), with its walls where they meet the water;
     - `windmill`, `hayRing`, `pumpjack`, `battery` and `powerLine` build the rest.
   - **Helpers:** `inPasture`, `jackMachine` and `windmillHead`.
-- **`TheListBlock`.** Five new kinds:
+- **`TheListBlock`.** The chain-link gate gains a stage swung open (FENCE 3), which stops nobody. Five new kinds:
   - PASTURE (posts, wire, the gap shut and open, the guard, the corner post, the mineral tub, the hay ring);
   - STOCK (the tank's wall, corner and seam, the spout, the pipe);
   - WINDMILL (four tower sections, the footing, the tail);
@@ -64,11 +65,12 @@ Shared and recurring, as in 1a and 1b.
   - The knock and the creak fall on the ticks where the stroke bottoms and the wheel comes round.
 - **`TheListRegistry`.** Two materials (buffalo grass, trodden mud), the machine block and its block entity, three sounds.
 - **`TheList`.**
-  - The gap opens and shuts by hand, all three cells at once.
+  - The gap opens and shuts by hand, all three cells at once. So does any yard's gate.
   - The pasture's sounds: the creak, the knocks and the guard.
   - A hand on either machine gets its own line.
   - The dog behind the back fence keeps to the neighborhood.
-- **Art.** `tools/draw_the_list_art.py` now draws 313 textures and 399 models and states. The new ones:
+- **Art.** `tools/draw_the_list_art.py` now draws 313 textures and 400 models and states. The new ones:
+  - the yard gate swung open on its hinge;
   - the buffalo grass, the mud, cedar, barbed wire and its barbs, the guard's pipe and pit;
   - the tank's galvanized wall and its water stain, salt and old hay;
   - the tower's iron, the sails, the head's case, the vane and the pier;
@@ -84,7 +86,13 @@ Shared and recurring, as in 1a and 1b.
   - **The wire:** it holds a reader standing; a reader crouching passes.
   - **Heard:** the windmill at the tank, a pumpjack by its pad, and the guard under a reader walking over it.
 
+  The field case (`theFieldAmbersHouseAndTheYards`) also checks that Amber's back gate stands open with nothing in its way, that a body walks from the alley to her back step, and that a hand swings the gate to and open again, said to that reader alone.
+
 ## Found and fixed in the making
+
+Found by CI on 1b (run 1726) and fixed here:
+
+- **Amber's back door.** It opened straight onto the alley fence's gate, shut, one step out, so a reader in the doorway had nowhere to stand. The architecture check caught it. The gate is built standing open now, and a hand opens and shuts any yard's gate.
 
 Found by the new test before this commit:
 
@@ -106,6 +114,7 @@ Seen in eye-level frames before this commit:
 Everything here is written for this part. Nothing of the book is used.
 
 **A hand on things**
+- A yard's gate: "You lift the latch and swing the gate open. Its hinge complains." / "You swing the gate to. The latch drops into its fork." (These replace 1a's "The gate's latch lifts. Its hinge complains.")
 - The gap: "You lift the loop off the post and lay the gap back on the grass." / "You stretch the gap across and drop the loop back over the post."
 - The fence and the pasture: "A cedar post, the wire stapled to it. The staples have rusted into the wood." / "Barbed wire, four strands. A tuft of hair is caught on a barb." / "A cattle guard. Pipes over a pit, far enough apart for a hoof to go through." / "The corner post, braced against the pull of the wire." / "A mineral block in a tub, licked into a bowl." / "A hay ring. What is left of the bale inside is trodden flat."
 - The tank: "The windmill's pipe comes over the rim. A little runs from it with each stroke." / "The pipe from the windmill, along the ground to the tank." / "The stock tank, full nearly to the rim. Moths float on the water."

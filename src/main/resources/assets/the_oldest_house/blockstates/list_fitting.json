@@ -490,7 +490,7 @@
       "model": "the_oldest_house:block/the_list/fence_2"
     },
     "facing=north,kind=fence,stage=3": {
-      "model": "the_oldest_house:block/the_list/fence_0"
+      "model": "the_oldest_house:block/the_list/fence_3"
     },
     "facing=north,kind=fence,stage=4": {
       "model": "the_oldest_house:block/the_list/fence_0"
@@ -517,7 +517,7 @@
       "y": 90
     },
     "facing=east,kind=fence,stage=3": {
-      "model": "the_oldest_house:block/the_list/fence_0",
+      "model": "the_oldest_house:block/the_list/fence_3",
       "y": 90
     },
     "facing=east,kind=fence,stage=4": {
@@ -549,7 +549,7 @@
       "y": 180
     },
     "facing=south,kind=fence,stage=3": {
-      "model": "the_oldest_house:block/the_list/fence_0",
+      "model": "the_oldest_house:block/the_list/fence_3",
       "y": 180
     },
     "facing=south,kind=fence,stage=4": {
@@ -581,7 +581,7 @@
       "y": 270
     },
     "facing=west,kind=fence,stage=3": {
-      "model": "the_oldest_house:block/the_list/fence_0",
+      "model": "the_oldest_house:block/the_list/fence_3",
       "y": 270
     },
     "facing=west,kind=fence,stage=4": {

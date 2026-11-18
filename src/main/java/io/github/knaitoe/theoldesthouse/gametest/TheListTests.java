@@ -305,6 +305,16 @@ public final class TheListTests {
             use(p,b,TheListSite.AMBER_FRONT,TheListSite.AMBER_FRONT.south(2));
             h.assertTrue(cues(p).contains(TheListTexts.AMBER_DOOR)&&shut(l,b,TheListSite.AMBER_FRONT),"her front door is locked, and said so");
             h.assertTrue(cues(peer).isEmpty(),"to that reader alone");
+            // 0.4.701 (run 1726): her back gate stands open onto the alley, so her back door opens onto somewhere a reader can stand; a hand
+            // swings it to, and open again, said to that reader alone.
+            var gate=new BlockPos(0,0,TheListSite.AMBER_N-1);
+            h.assertTrue(fitting(l,b,gate,Kind.FENCE,3)&&l.getBlockState(b.offset(gate)).getCollisionShape(l,b.offset(gate)).isEmpty(),"her back gate stands open, nothing in its way");
+            h.assertTrue(walked(l,b,gate.north(2),-6,-96,6,-88).contains(gate),"from the alley to her back step");
+            use(p,b,gate,gate.north(2));
+            h.assertTrue(cues(p).contains(TheListTexts.GATE_SHUT)&&fitting(l,b,gate,Kind.FENCE,2),"a hand swings the gate to");
+            h.assertTrue(cues(peer).isEmpty(),"said to that reader alone");
+            use(p,b,gate,gate.north(2));
+            h.assertTrue(cues(p).contains(TheListTexts.GATE_OPEN)&&fitting(l,b,gate,Kind.FENCE,3),"and open again");
             var yard=walked(l,b,new BlockPos(0,0,-72),-20,-96,20,-70);
             h.assertFalse(yard.stream().anyMatch(c->TheListSite.inAmber(Vec3.atCenterOf(c))),"not into her house");
             // The yards.

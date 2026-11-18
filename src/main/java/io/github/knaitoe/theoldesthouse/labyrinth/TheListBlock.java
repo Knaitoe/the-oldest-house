@@ -18,7 +18,7 @@ import net.minecraft.world.phys.shapes.*;
  * a trunk (0), a fork where it splits (1), a canopy (2), a thin canopy at its edge (3), a low branch out to one side (4). WEED: a
  * tumbleweed (0), broomweed (1), a tuft of dry grass (2), a mat of goatheads (3), a prickly pear (4).</li>
  * <li>The streets. POLE: a utility pole (0), its top with the crossarm (1), its wires high (2), lower (3) and lowest (4), the street
- * light's arm with its lamp (5), a transformer can (6). FENCE: chain-link (0), a post (1), a gate (2). SIGNPOST: the corner's blades for
+ * light's arm with its lamp (5), a transformer can (6). FENCE: chain-link (0), a post (1), a gate (2), a gate swung open (3, 0.4.701). SIGNPOST: the corner's blades for
  * South Ninth and Avenue K (0), Main and Avenue K (1), South Seventh and Avenue K (2); a stop sign (3), the bus stop's sign (4), the
  * railroad's crossbuck (5). TRACK: rails on their ties. MAILBOX: a mailbox on its post.</li>
  * <li>The reader's house. WINDOW: curtained and dark (0), lit (1), the kitchen's with its curtain half across (2), a screened one, dark
@@ -124,7 +124,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case MESQUITE->switch(stage){case 0->Block.box(5,0,5,11,16,11);case 1->Block.box(3,0,3,13,16,13);case 4->t(f,0,4,5,11,12,11);default->Shapes.block();};
             case WEED->switch(stage){case 0->Block.box(2,0,2,14,11,14);case 3->Block.box(1,0,1,15,1,15);case 4->Block.box(3,0,3,13,13,13);default->Block.box(3,0,3,13,9,13);};
             case POLE->switch(stage){case 0->Block.box(5.5,0,5.5,10.5,16,10.5);case 1->t(f,0,6,6,16,16,10);case 5->t(f,4,4,0,12,12,16);case 6->Block.box(4,0,4,12,14,12);default->t(f,0,10,6,16,16,10);};
-            case FENCE->stage==1?Block.box(6.5,0,6.5,9.5,16,9.5):t(f,0,0,7,16,16,9);
+            case FENCE->stage==1?Block.box(6.5,0,6.5,9.5,16,9.5):stage==3?t(f,0,0,0,1.5,14,9):t(f,0,0,7,16,16,9);
             case SIGNPOST->stage==5?t(f,0,0,7,16,16,9):Block.box(7,0,7,9,16,9);
             case TRACK->Block.box(0,0,0,16,3,16);
             case MAILBOX->Block.box(5,0,4,11,16,12);
@@ -183,6 +183,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case SIGNPOST->stage==5?Block.box(7,0,7,9,16,9):getShape(s,l,p,c);
             case TRACK->Block.box(0,0,0,16,2,16);
             case YARD->stage==0||stage==2||stage==4?Shapes.empty():getShape(s,l,p,c);
+            // 0.4.701: a gate swung open lets anyone through.
+            case FENCE->stage==3?Shapes.empty():getShape(s,l,p,c);
             case SHOP->stage==3?Shapes.empty():getShape(s,l,p,c);
             case FRONT->stage==2||stage==3?Shapes.empty():getShape(s,l,p,c);
             case SIGN_DRIVEIN->stage==0?getShape(s,l,p,c):Shapes.empty();
