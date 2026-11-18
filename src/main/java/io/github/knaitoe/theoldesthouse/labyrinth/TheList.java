@@ -48,7 +48,7 @@ public final class TheList {
             if(!st.is(TheListRegistry.HOUSE_DOOR.get()))return false;
             var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
             if(TheListSite.inHouse(Vec3.atCenterOf(lower))||lower.equals(TheListSite.FRONT_DOOR))return false;
-            cue(p,TheListTexts.SHUT_DOOR);
+            cue(p,lower.equals(TheListSite.AMBER_FRONT)?TheListTexts.AMBER_DOOR:TheListTexts.SHUT_DOOR);
             return true;
         }
         if(!TheListBlock.is(st))return false;
@@ -93,13 +93,15 @@ public final class TheList {
             boolean out=!TheListSite.indoors(r);
             if(s.tick%140==20&&out)play(l,one.blockPosition().offset(rnd.nextInt(13)-6,0,rnd.nextInt(13)-6),TheListRegistry.INSECTS.get(),.5F);
             if(s.tick%230==90&&out)play(l,one.blockPosition().offset(rnd.nextInt(2)==0?-12:12,1,rnd.nextInt(17)-8),TheListRegistry.WIND.get(),.6F);
-            if(s.tick%410==170&&r.x<TheListSite.AVE_W&&r.z>TheListSite.ALLEY_N)play(l,s.base.offset(dogNear(r)),TheListRegistry.DOG.get(),.8F);
+            if(s.tick%410==170&&r.x<TheListSite.AVE_W&&r.x>TheListSite.STREETS_W-8&&r.z>TheListSite.ALLEY_N)play(l,s.base.offset(dogNear(r)),TheListRegistry.DOG.get(),.8F);
             if(s.tick%120==60&&r.z<TheListSite.WALK_S_S+6&&r.z>TheListSite.MAIN_BACK_N-6&&r.x>TheListSite.AVE_E&&r.x<TheListSite.TRACK_W)
                 play(l,s.base.offset(speakerNear(r)),TheListRegistry.SPEAKER.get(),.9F);
             if(s.tick%170==30){var tin=tinNear(r);if(tin.distToCenterSqr(r)<18*18)play(l,s.base.offset(tin),TheListRegistry.TIN.get(),.8F);}
             if(s.tick%260==200&&Math.abs(r.x-TheListSite.TOWER_X)<14&&Math.abs(r.z-TheListSite.TOWER_Z)<14)
                 play(l,s.base.offset(TheListSite.TOWER_X,TheListSite.TANK_BOTTOM,TheListSite.TOWER_Z),TheListRegistry.TOWER.get(),2F);
             if(s.tick%1800==900)for(var p:here)train(p,s.base);
+            if(s.tick%5==0)for(int[] at:TheListSite.SPRINKLERS)spray(l,s.base,at,s.tick);
+            if(s.tick%90==45&&out){var at=sprinklerNear(r);if(at!=null)play(l,s.base.offset(at),TheListRegistry.SPRINKLER.get(),.55F);}
         }
     }
     /** Where a train out past the playa is heard from, for one reader: off toward the north-east, near enough for the sound to reach. */
@@ -122,6 +124,22 @@ public final class TheList {
     static BlockPos tinNear(Vec3 r){
         int x=(int)Math.floor(Math.max(TheListSite.GIN_W,Math.min(TheListSite.GIN_E,r.x))),z=(int)Math.floor(Math.max(TheListSite.GIN_N,Math.min(TheListSite.GIN_S,r.z)));
         return new BlockPos(x,4,z);
+    }
+    /** A sprinkler's jet: it ticks a step at a time across half a circle and back, throwing water out three or four blocks and down. The
+     * server sends it to whoever is near enough to see it. */
+    static void spray(ServerLevel l,BlockPos b,int[] at,int tick){
+        int steps=18,k=(tick/5+at[0]*7+at[1]*3)%(steps*2);if(k>=steps)k=steps*2-1-k;
+        double a=Math.PI*k/(steps-1)+(at[0]+at[1])%4*Math.PI/2;
+        double cx=b.getX()+at[0]+.5,cy=b.getY()+.2,cz=b.getZ()+at[1]+.5;
+        for(int i=1;i<=4;i++){
+            double r=i*.9,h=.35+.25*i-.09*i*i;
+            l.sendParticles(net.minecraft.core.particles.ParticleTypes.SPLASH,cx+Math.cos(a)*r,cy+h,cz+Math.sin(a)*r,3,.08,.04,.08,0);
+        }
+    }
+    /** The sprinkler a reader is near enough to hear, if any. */
+    static BlockPos sprinklerNear(Vec3 r){
+        for(int[] at:TheListSite.SPRINKLERS)if(Math.abs(r.x-at[0])<14&&Math.abs(r.z-at[1])<14)return new BlockPos(at[0],0,at[1]);
+        return null;
     }
     static void play(ServerLevel l,BlockPos at,SoundEvent e,float volume){l.playSound(null,at,e,SoundSource.AMBIENT,volume,.95F+l.getRandom().nextFloat()*.1F);}
 }

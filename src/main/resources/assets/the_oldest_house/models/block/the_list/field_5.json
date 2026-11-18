@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "y": "the_oldest_house:block/the_list/goal_paint",
+    "p": "the_oldest_house:block/the_list/goal_pad",
+    "g": "the_oldest_house:block/the_list/galv",
+    "b": "the_oldest_house:block/the_list/light_bank",
+    "particle": "the_oldest_house:block/the_list/goal_paint"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#y"
+        },
+        "south": {
+          "texture": "#y"
+        },
+        "east": {
+          "texture": "#y"
+        },
+        "west": {
+          "texture": "#y"
+        },
+        "up": {
+          "texture": "#y"
+        },
+        "down": {
+          "texture": "#y"
+        }
+      }
+    }
+  ]
+}

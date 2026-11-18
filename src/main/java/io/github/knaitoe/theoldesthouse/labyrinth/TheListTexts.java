@@ -20,6 +20,8 @@ public final class TheListTexts {
     /** A hand on a neighbor's door, shut for now. */
     public static final String SHUT_DOOR="Locked. Somebody's television is on inside.";
     public static final String EMPTY_DOOR="Nobody has lived here a while. The door gives when you lean on it.";
+    /** 0.4.700: Amber's front door, shut for now. */
+    public static final String AMBER_DOOR="Locked. The window beside it flickers with a television.";
 
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
     /** The first paper: the pad by the kitchen telephone. */
@@ -76,6 +78,23 @@ public final class TheListTexts {
             case SEED->switch(stage){case 1->"Cottonseed in a heap. You sink to the ankle.";case 2->"The auger in its trench.";case 3->"The ladder up the seed house.";case 4,5->"The sliding door. It's heavy on its rail.";case 6->"The lamp over the door.";case 7->"The chute.";default->"The bin's wall, galvanized, dented from inside.";};
             case TOWER->switch(stage){case 0,1->"A leg of the water tower. Bolts as big as your fist.";case 2->"The tower's ladder. It goes up a long way.";case 3->"The catwalk. You can see the whole town from here.";case 4->"The rail.";case 5->"The beacon.";case 6->"The riser.";default->null;};
             case TANK->switch(stage){case 1,2,3->"Lamesa, in letters taller than you.";case 4->"The tank's roof.";case 5->"The cap.";case 6->"The bowl under the tank.";default->"The tank. It rings when you knock on it.";};
+            // 0.4.700: the school's field, Amber's house, the yards.
+            case FIELD->switch(stage){case 0->"The goalpost's foot, in its pad. The pad is split along one seam.";case 1,2->"The goalpost. It goes up into the dark.";
+                case 3->"The crossbar.";case 4,5->"An upright.";case 6->"A light tower. Its ladder starts above your reach.";default->"The lights. Off. Nobody plays tonight.";};
+            case STANDS->switch(stage){case 0,1->"The stands. The aluminum still holds the day's heat.";case 2->"Under the stands: cups, a program, a drift of sunflower seed shells.";
+                case 3->"The rail along the top of the stands.";case 4->"The team's bench. Strips of tape mark where each of them sits.";case 5->"The press box window. Dark inside.";
+                case 6->"The announcer's table. The microphone is unplugged.";default->"The horn on the press box's roof.";};
+            case LOCKER->switch(stage){case 0,1->"A locker. A name on tape across the vents, half peeled off.";case 2->"A bench, worn smooth.";case 3->"The coach's desk. A clipboard, a whistle on its cord.";
+                case 4->"Last week's play is still on the board.";case 5->"A shower head. It drips.";case 6->"The concession stand's shutter, locked from inside.";
+                default->"Hot dogs, chili pie, pickles, pop, and what each costs.";};
+            case SCORE->switch(stage){case 0,1,2->"The scoreboard. Every bulb is dark.";case 3,4,5->"The down, the yards, the ball's spot. Dark.";case 6->"The scoreboard's post.";
+                default->"The ticket booth. A roll of tickets on the counter inside.";};
+            case AMBER->switch(stage){case 0->"The television's on with the sound down. The VCR's clock says twelve.";case 1->"Rented tapes, the video store's sticker on every one. Most of them are late.";
+                case 2->"Tapes stacked on the carpet by the set.";case 3->"Her desk. A notebook open, written to the edges.";case 4->"The phone by her bed, its cord stretched to reach the pillow.";
+                case 5->"Paperbacks. A knife or a mask on nearly every spine.";case 6->"Amber's window. Her desk lamp is on.";default->"The coffee table. The remote, two tapes out of their cases.";};
+            case LOT->switch(stage){case 0->"A sprinkler, ticking its way across the grass.";case 1->"A doghouse. Something has chewed the corner of its door.";case 2->"A trash can, out for the morning.";
+                case 3->"A bike left on its side in the grass.";case 4->"A lawn chair facing the street.";case 5->"A grill, cold, the grate still greasy.";case 6->"A hose wound on its reel.";
+                default->"A kiddie pool with an inch of rainwater in it.";};
         };
     }
 }

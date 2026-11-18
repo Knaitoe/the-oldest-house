@@ -1,0 +1,100 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "y": "the_oldest_house:block/the_list/goal_paint",
+    "p": "the_oldest_house:block/the_list/goal_pad",
+    "g": "the_oldest_house:block/the_list/galv",
+    "b": "the_oldest_house:block/the_list/light_bank",
+    "particle": "the_oldest_house:block/the_list/goal_pad"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        0,
+        6.5
+      ],
+      "to": [
+        9.5,
+        16,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#y"
+        },
+        "south": {
+          "texture": "#y"
+        },
+        "east": {
+          "texture": "#y"
+        },
+        "west": {
+          "texture": "#y"
+        },
+        "up": {
+          "texture": "#y"
+        },
+        "down": {
+          "texture": "#y"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        12,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        6.5,
+        -0.02,
+        6.5
+      ],
+      "to": [
+        9.5,
+        0,
+        9.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#y",
+          "uv": [
+            6.5,
+            6.5,
+            9.5,
+            9.5
+          ]
+        }
+      }
+    }
+  ]
+}

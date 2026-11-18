@@ -1,0 +1,54 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "h": "the_oldest_house:block/the_list/sprinkler_head",
+    "w": "the_oldest_house:block/the_list/spray",
+    "d": "the_oldest_house:block/the_list/doghouse_wall",
+    "o": "the_oldest_house:block/the_list/doghouse_door",
+    "s": "the_oldest_house:block/list_shingle",
+    "c": "the_oldest_house:block/the_list/can_galv",
+    "b": "the_oldest_house:block/the_list/bike",
+    "a": "the_oldest_house:block/the_list/alum",
+    "n": "the_oldest_house:block/the_list/webbing",
+    "g": "the_oldest_house:block/the_list/grill_black",
+    "r": "the_oldest_house:block/the_list/hose_green",
+    "q": "the_oldest_house:block/the_list/galv",
+    "p": "the_oldest_house:block/the_list/pool_out",
+    "i": "the_oldest_house:block/the_list/pool_in",
+    "particle": "the_oldest_house:block/the_list/pool_out"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

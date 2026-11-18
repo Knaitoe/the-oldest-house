@@ -2185,5 +2185,13 @@
   "subtitles.the_oldest_house.the_list.train": "A train horn sounds far off",
   "subtitles.the_oldest_house.the_list.wind": "Wind blows over the flat land",
   "subtitles.the_oldest_house.the_list.tower": "The water tower ticks",
-  "subtitles.the_oldest_house.bleed.the_list": "Crickets and a dog behind a door"
+  "subtitles.the_oldest_house.bleed.the_list": "Crickets and a dog behind a door",
+  "subtitles.the_oldest_house.the_list.sprinkler": "A sprinkler ticks across a lawn",
+  "block.the_oldest_house.list_steel_door": "Steel Door",
+  "block.the_oldest_house.list_turf": "Field Turf",
+  "block.the_oldest_house.list_turf_dark": "Mown Turf",
+  "block.the_oldest_house.list_turf_line": "Yard Line",
+  "block.the_oldest_house.list_turf_side": "Sideline",
+  "block.the_oldest_house.list_endzone": "End Zone",
+  "block.the_oldest_house.list_track_cinder": "Cinder Track"
 }

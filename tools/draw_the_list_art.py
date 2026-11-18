@@ -7,6 +7,10 @@ ceilings inside; the stores' tile, the video store's carpet, the fronts' buff br
 iron and its slab floor; the shop's painted steel; the drive-in's lot), the roofs' stairs, the houses' panel doors and the stores'
 glass doors, and every fitting of the list_fitting block, its models facing north and turned by its facing (TheListBlock lists them).
 
+Part 1b (0.4.700) adds the school's field west of town (the turf and its lines, the track, the goalposts, the light towers, the stands
+and the press box, the scoreboard, the ticket booth, the concession stand, the field house and its lockers), Amber's house (her den's
+television and VCR, the shelf of rented tapes, her desk at her window) and the things in the neighbors' yards, and a steel door.
+
 Every title, name and word on a box, a sign or a poster here is made up for this town, except the town's and the county's own names.
 
 Writes the models and block states and the blocks' names. --check verifies everything; --out draws them somewhere else for a look.
@@ -497,7 +501,8 @@ def materials():
             'shingle': shingle(), 'flat_roof': flat_roof(), 'carpet': carpet(), 'lino': lino(), 'drywall': drywall(), 'paneling': paneling(),
             'ceiling': ceiling(), 'tile': tile(), 'store_carpet': store_carpet(), 'storefront': storefront(), 'stucco': stucco(),
             'cinder': cinder(), 'galvanized': galvanized(), 'rusted': rusted(), 'slab': slab(), 'shop_metal': shop_metal(),
-            'drive_lot': drive_lot()}
+            'drive_lot': drive_lot(), 'turf': turf(0), 'turf_dark': turf(1), 'turf_line': turf_line(0), 'turf_side': turf_line(1),
+            'endzone': endzone(), 'track_cinder': track_cinder()}
 
 
 # ------------------------------------------------------------------------------------------------ models
@@ -2762,6 +2767,602 @@ def tank_model(stage):
     return model([element([0, 8, 0], [16, 16, 16], {'all': 'w'}), element([3, 0, 3], [13, 8, 13], {'all': 'w'})], t, 'tank_wall', render=None)
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.700: the school's field
+# The stadium west of town: the turf, its stripes and lines, the end zones and the cinder track; the goalposts, the light towers, the
+# home and visitors' stands with the press box, the team benches, the scoreboard, the ticket booth, the concession stand and the field
+# house with its lockers, benches, the coach's office and the showers. Then Amber's house across two streets, and the things in the
+# neighbors' yards.
+
+def turf(dark):
+    # The field's grass, cut short in July and watered every night, a band mown one way then the other.
+    rnd = random.Random(9601 + dark); base = '#3f6a33' if dark else '#4a7a3a'
+    im = new(base, 9601 + dark, 5)
+    for x in range(16):
+        for y in range(16):
+            if (x + y * 3 + dark) % 7 == 0:
+                darken(im, x, y, -10)
+    speckle(im, rnd, 14, [shade(base, 14), shade(base, -14), shade(base, 8)])
+    return im
+
+
+def turf_line(along_z):
+    # A yard line painted across the turf, a little worn where the cleats cross it; the sidelines run the other way.
+    im = turf(0); rnd = random.Random(9603 + along_z)
+    for i in range(16):
+        for j in (7, 8):
+            x, y = (j, i) if along_z else (i, j)
+            dot(im, x, y, '#e8eade' if rnd.random() > .12 else '#9aa98e')
+    return im
+
+
+def endzone():
+    rnd = random.Random(9605); im = new('#355c2c', 9605, 4)
+    for x in range(16):
+        for y in range(16):
+            if (x - y) % 8 == 0:
+                dot(im, x, y, '#41683a')
+    speckle(im, rnd, 10, ['#2c4f25', '#4a7440'])
+    return im
+
+
+def track_cinder():
+    # The track round the field: rolled cinders, ruddy and fine, a lane line every other lane.
+    rnd = random.Random(9606); im = new('#8a4a34', 9606, 6)
+    speckle(im, rnd, 30, ['#9c5a42', '#76402e', '#a8664c', '#6a382a'])
+    for x in range(16):
+        if rnd.random() > .2:
+            dot(im, x, 0, '#d8d2c4')
+    return im
+
+
+def goal_paint():
+    im = new('#d9b52a', 9607, 4)
+    for y in range(16):
+        dot(im, 6, y, '#efd35a'); dot(im, 10, y, '#a8861c')
+    return im
+
+
+def goal_pad():
+    # The pad round the goalpost's foot: vinyl over foam, laced up the back.
+    im = new('#283a5a', 9608, 3)
+    for y in range(16):
+        dot(im, 0, y, '#1c2a44'); dot(im, 15, y, '#1c2a44')
+    for y in range(2, 15, 3):
+        dot(im, 7, y, '#d8d2c4'); dot(im, 8, y + 1, '#d8d2c4')
+    return im
+
+
+def light_bank():
+    # A bank of floodlights at the top of a tower, six lamps in their housings, dark tonight.
+    im = new('#6e7274', 9609, 3)
+    for cx in (0, 5, 10):
+        for cy in (1, 8):
+            fill(im, cx + 1, cy + 1, cx + 5, cy + 6, '#2a2e30')
+            dot(im, cx + 2, cy + 2, '#8a9294'); dot(im, cx + 3, cy + 3, '#4e5456')
+    return im
+
+
+def alum(edge):
+    # The stands' planks: extruded aluminum, ribbed lengthwise, scuffed where people have stood.
+    rnd = random.Random(9610 + edge); im = new('#b6babb', 9610 + edge, 3)
+    for y in range(0, 16, 4 if not edge else 8):
+        for x in range(16):
+            dot(im, x, y, '#8e9293')
+    speckle(im, rnd, 6, ['#9fa3a4', '#cfd2d2'])
+    return im
+
+
+def press_glass():
+    # The press box's window onto the field: a dark room, the edge of a table, a microphone's stand.
+    im = new(None)
+    fill(im, 0, 0, 16, 16, '#d8d2c4')
+    fill(im, 1, 2, 15, 14, '#1e2328')
+    line(im, 2, 13, 9, 3, '#2c333a')
+    fill(im, 1, 11, 15, 12, '#4a3e30')
+    dot(im, 11, 9, '#101214'); dot(im, 11, 10, '#101214'); dot(im, 11, 8, '#3a3e40')
+    return im
+
+
+def plywood():
+    rnd = random.Random(9612); im = new('#a88a5e', 9612, 4)
+    for y in range(16):
+        for x in range(16):
+            if (x * 3 + y) % 13 == 0:
+                darken(im, x, y, -12)
+    return im
+
+
+def pa_horn():
+    im = new('#8a8e8c', 9613, 3)
+    fill(im, 4, 4, 12, 12, '#3a3e3c'); fill(im, 6, 6, 10, 10, '#1c1e1e')
+    return im
+
+
+def locker(upper):
+    # A locker room's lockers, painted steel gone dull, vents across the top, a number plate and a latch.
+    rnd = random.Random(9614 + upper); im = new('#3d5a7a', 9614 + upper, 3)
+    for x in (0, 8):
+        for y in range(16):
+            dot(im, x, y, '#2a3e56')
+    if upper:
+        for door in (0, 8):
+            for y in (2, 4, 6):
+                for x in range(door + 2, door + 6):
+                    dot(im, x, y, '#1e2c3e')
+            fill(im, door + 3, 10, door + 5, 12, '#c8c2b0')
+    else:
+        for door in (0, 8):
+            fill(im, door + 5, 2, door + 7, 5, '#9ea2a4')
+            for y in (12, 13):
+                for x in range(door + 2, door + 6):
+                    dot(im, x, y, '#1e2c3e')
+    speckle(im, rnd, 5, ['#4e6a8a', '#33506e'])
+    return im
+
+
+def locker_side():
+    im = new('#3d5a7a', 9615, 3)
+    for y in range(16):
+        dot(im, 0, y, '#2a3e56'); dot(im, 15, y, '#2a3e56')
+    return im
+
+
+def chalkboard():
+    # The coach's board: the last practice's play in chalk, a line of circles, the crosses facing them, the arrows of the routes, a frame
+    # of oak.
+    im = new('#2a332c', 9616, 3)
+    for i in range(16):
+        dot(im, i, 0, '#8a6a46'); dot(im, i, 15, '#8a6a46'); dot(im, 0, i, '#8a6a46'); dot(im, 15, i, '#8a6a46')
+    chalk, faint = '#d8d6cc', '#a8a69c'
+    for x in (3, 6, 9, 12):
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            dot(im, x + dx, 11 + dy, chalk)
+    for x, y in ((4, 4), (8, 3), (12, 5)):
+        for d in (-1, 0, 1):
+            dot(im, x + d, y + d, chalk); dot(im, x + d, y - d, chalk)
+    line(im, 3, 9, 2, 5, faint); line(im, 2, 5, 3, 3, faint)
+    line(im, 12, 9, 13, 7, faint)
+    line(im, 6, 9, 6, 6, faint); line(im, 6, 6, 9, 6, faint)
+    return im
+
+
+def concession_menu():
+    # The concession stand's board, lettered on a white field: what a game night sells, each with its price to the right.
+    im = new('#efebdd', 9617, 2)
+    fill(im, 0, 0, 16, 2, '#8a2a24')
+    for row, length in enumerate((7, 5, 8, 4)):
+        y = 4 + row * 3
+        for x in range(1, 1 + length):
+            if x != 4 or row % 2:
+                dot(im, x, y, '#2a2620')
+        for x in range(12, 15):
+            dot(im, x, y, '#8a2a24')
+    return im
+
+
+def scoreboard():
+    # The scoreboard behind the south end zone, three boards across and two down: HOME, the quarter and the visitors over their bulbs,
+    # dark tonight; the down, the yards and the ball's spot beneath.
+    im = new('#16181a', 9618, 2, size=(48, 32))
+    for x in range(48):
+        dot(im, x, 0, '#c8a03a'); dot(im, x, 31, '#c8a03a')
+    for y in range(32):
+        dot(im, 0, y, '#c8a03a'); dot(im, 47, y, '#c8a03a')
+    for label, x0, y in (('HOME', 0, 2), ('QTR', 16, 2), ('VIS', 32, 2), ('DOWN', 0, 18), ('YDS', 16, 18), ('BALL', 32, 18)):
+        centre(im, y, label, TALL, '#efe9d8', width=16, x0=x0)
+
+    def bulbs(x0, y0):
+        # One digit's bulbs, dark: three across and five down, two pixels apart.
+        for i in range(3):
+            for j in range(5):
+                if i == 1 and j in (1, 3):
+                    continue
+                dot(im, x0 + i * 2, y0 + j * 2, '#4a3a2c')
+    for x0 in (3, 9, 35, 41):
+        bulbs(x0, 8)
+    bulbs(22, 8)
+    for x0 in (6, 22, 38):
+        for i in range(3):
+            dot(im, x0 + i * 2, 26, '#4a3a2c'); dot(im, x0 + i * 2, 28, '#4a3a2c')
+    return im
+
+
+def ticket_window():
+    im = new('#d8d2c4', 9619, 2)
+    fill(im, 0, 0, 16, 5, '#8a2a24')
+    centre(im, 0, 'GATE', TALL, '#efe9d8')
+    fill(im, 2, 6, 14, 14, '#1e2328')
+    fill(im, 6, 13, 10, 14, '#4a4440')
+    return im
+
+
+def door_steel(upper):
+    # The field house's doors: steel painted over and over, a little wired window in the top, a push bar and a kick plate below.
+    im = new('#6a7a6a', 9620 + upper, 3)
+    for y in range(16):
+        dot(im, 0, y, '#4e5a4e'); dot(im, 15, y, '#4e5a4e')
+    if upper:
+        fill(im, 5, 4, 11, 11, '#1e2328')
+        for x in range(5, 11, 2):
+            for y in range(4, 11, 2):
+                dot(im, x, y, '#5a6260')
+    else:
+        fill(im, 2, 1, 14, 3, '#9ea2a4')
+        fill(im, 1, 12, 15, 16, '#8e9294')
+    return im
+
+
+# Amber's house
+def vcr():
+    # The VCR under the television, its clock blinking twelve because nobody has set it, a tape half in its door.
+    im = new('#1e1e20', 9622, 2)
+    fill(im, 1, 3, 9, 5, '#0a0a0c')
+    fill(im, 3, 2, 7, 3, '#2a2a2e')
+    write(im, 10, 2, '12', TALL, '#4ad86a')
+    for x in range(1, 15, 2):
+        dot(im, x, 10, '#4a4a4e')
+    fill(im, 1, 12, 15, 13, '#38383c')
+    return im
+
+
+def rental_tapes():
+    # A shelf of rented tapes in their clamshells, black, the video store's sticker on every spine and the titles in marker.
+    rnd = random.Random(9623); im = new('#5a3e26', 9623, 2)
+    for row in range(2):
+        y0 = 1 + row * 8
+        x = 1
+        while x < 15:
+            fill(im, x, y0, x + 2, y0 + 6, '#121214')
+            dot(im, x, y0 + 1, '#d84a3a'); dot(im, x + 1, y0 + 1, '#efe9d8')
+            if rnd.random() < .7:
+                dot(im, x, y0 + 3, '#c8c6be'); dot(im, x + 1, y0 + 4, '#c8c6be')
+            x += 2 + (1 if rnd.random() < .3 else 0)
+        for i in range(16):
+            dot(im, i, y0 + 6, '#3e2a18')
+    return im
+
+
+def tape_case():
+    im = new('#121214', 9624, 1)
+    fill(im, 2, 2, 14, 6, '#efe9d8'); fill(im, 3, 3, 13, 5, '#d84a3a')
+    for x in range(3, 13, 2):
+        dot(im, x, 10, '#4a4a4e')
+    return im
+
+
+def notebook():
+    # A spiral notebook open on the desk, the pages written to the edges, a pen in the spine.
+    im = new('#efebdd', 9625, 2)
+    for y in range(2, 15, 2):
+        for x in range(1, 7):
+            dot(im, x, y, '#6a6a80')
+        for x in range(9, 15):
+            if not (y > 10 and x > 11):
+                dot(im, x, y, '#6a6a80')
+    for y in range(16):
+        dot(im, 8, y, '#8e8e94' if y % 2 else '#4a4a50')
+    line(im, 2, 14, 7, 9, '#1e2a5a')
+    return im
+
+
+def amber_window():
+    # Her window from the street: the blind pulled up, the desk lamp on, the corner of a poster and the shelf behind it.
+    im = new(None)
+    fill(im, 0, 0, 16, 16, '#e8e6de')
+    fill(im, 1, 1, 15, 15, '#c89a58')
+    fill(im, 1, 1, 15, 3, '#d8d0b8')
+    for y in range(4, 10):
+        dot(im, 2, y, '#7a5a3a'); dot(im, 3, y, '#7a5a3a')
+    fill(im, 9, 4, 14, 9, '#2a2020'); dot(im, 11, 6, '#c84a3a'); dot(im, 12, 6, '#efe9d8')
+    fill(im, 5, 10, 9, 13, '#ffe8a8')
+    fill(im, 1, 13, 15, 15, '#5a4030')
+    return im
+
+
+def remote():
+    im = new('#1e1e20', 9626, 1)
+    for x, y in ((5, 3), (7, 3), (9, 3), (5, 6), (7, 6), (9, 6), (5, 9), (7, 9), (9, 9)):
+        dot(im, x, y, '#8a8a90')
+    dot(im, 7, 1, '#c84a3a')
+    return im
+
+
+# The yards
+def sprinkler_head():
+    im = new('#3a3c3a', 9627, 2)
+    fill(im, 6, 0, 10, 16, '#9a9c9a')
+    return im
+
+
+def spray():
+    # The sprinkler's water, thrown in a fan and catching the street light.
+    rnd = random.Random(9628); im = new(None)
+    for _ in range(46):
+        x = rnd.randrange(16); y = rnd.randrange(16)
+        dot(im, x, y, rnd.choice(['#d8e6ee', '#b8ccd8', '#eef4f6']), a=rnd.choice([120, 170, 210]))
+    return im
+
+
+def doghouse(roof):
+    if roof:
+        return shingle()
+    im = new('#b8a07a', 9629, 4)
+    for y in range(0, 16, 4):
+        for x in range(16):
+            dot(im, x, y, '#8a7656')
+    return im
+
+
+def doghouse_door():
+    im = doghouse(0)
+    fill(im, 4, 5, 12, 16, '#141210')
+    for x in range(5, 11):
+        dot(im, x, 4, '#141210')
+    return im
+
+
+def can_galv():
+    im = new('#9a9e9c', 9630, 4)
+    for y in (3, 8, 13):
+        for x in range(16):
+            dot(im, x, y, '#7a7e7c')
+    return im
+
+
+def bike():
+    # A kid's bike left on its side in the grass: two wheels, the frame between, a banana seat, high handlebars.
+    im = new(None)
+    for cx, cy in ((4, 10), (12, 10)):
+        for a in range(0, 360, 20):
+            dot(im, round(cx + 3 * math.cos(math.radians(a))), round(cy + 3 * math.sin(math.radians(a))), '#1e1e20')
+        dot(im, cx, cy, '#9ea2a4')
+    line(im, 4, 10, 8, 6, '#8a2a24'); line(im, 8, 6, 12, 10, '#8a2a24'); line(im, 8, 6, 8, 10, '#8a2a24'); line(im, 4, 10, 8, 10, '#8a2a24')
+    fill(im, 6, 4, 10, 5, '#2a2a2e'); line(im, 12, 10, 11, 4, '#9ea2a4'); line(im, 10, 3, 13, 3, '#9ea2a4')
+    return im
+
+
+def webbing():
+    # A folding lawn chair's webbing, two colours woven, frayed at one strap.
+    im = new(None)
+    for x in range(16):
+        for y in range(16):
+            c = '#4a8a5a' if (x // 3 + y // 3) % 2 else '#efe9d8'
+            dot(im, x, y, c)
+    return im
+
+
+def grill_black():
+    im = new('#1e1e20', 9631, 3)
+    for x in range(16):
+        dot(im, x, 2, '#3a3a3e')
+    return im
+
+
+def hose_green():
+    im = new('#3e6a34', 9632, 3)
+    for y in range(0, 16, 3):
+        for x in range(16):
+            dot(im, x, y, '#2c4e26')
+    return im
+
+
+def pool_plastic(inside):
+    im = new('#3a7ab8' if not inside else '#5a9ac8', 9633 + inside, 3)
+    if inside:
+        rnd = random.Random(9635)
+        speckle(im, rnd, 8, ['#8a7a4a', '#6a5a3a'])
+        for y in range(16):
+            for x in range(16):
+                if (x + y) % 7 == 0:
+                    darken(im, x, y, 10)
+    return im
+
+
+def field_model(stage):
+    t = {'y': 'goal_paint', 'p': 'goal_pad', 'g': 'galv', 'b': 'light_bank'}
+    if stage == 0:
+        return model([element([6.5, 0, 6.5], [9.5, 16, 9.5], {'all': 'y'}), element([5, 0, 5], [11, 12, 11], {'all': 'p'})], t, 'goal_pad', render=None)
+    if stage == 1:
+        return model([element([6.5, 0, 6.5], [9.5, 16, 9.5], {'all': 'y'})], t, 'goal_paint', render=None)
+    if stage == 2:
+        # The gooseneck: the pole bends forward over the end line toward the crossbar.
+        return model([element([6.5, 0, 6.5], [9.5, 9, 9.5], {'all': 'y'}), element([6.5, 6, 0], [9.5, 9, 6.5], {'all': 'y'})], t, 'goal_paint', render=None)
+    if stage == 3:
+        # The crossbar's middle, reaching a block either way to the ends that carry the uprights; the gooseneck's stub behind it.
+        return model([element([-16, 6, 6.5], [32, 9, 9.5], {'all': 'y'}, uv={'north': [0, 0, 16, 3], 'south': [0, 0, 16, 3], 'up': [0, 0, 16, 3], 'down': [0, 0, 16, 3],
+                                                                         'east': [0, 0, 3, 3], 'west': [0, 0, 3, 3]}),
+                      element([6.5, 6, 9.5], [9.5, 9, 16], {'all': 'y'})], t, 'goal_paint', render=None)
+    if stage == 4:
+        # An end of the crossbar, its upright rising from it; turned for the other end.
+        return model([element([6.5, 6, 6.5], [16, 9, 9.5], {'all': 'y'}), element([6.5, 6, 6.5], [9.5, 16, 9.5], {'all': 'y'})], t, 'goal_paint', render=None)
+    if stage == 5:
+        return model([element([7, 0, 7], [9, 16, 9], {'all': 'y'})], t, 'goal_paint', render=None)
+    if stage == 6:
+        e = [element([6, 0, 6], [10, 16, 10], {'all': 'g'})]
+        e += [element([5, y, 7.5], [11, y + 1, 8.5], {'all': 'g'}) for y in (4, 12)]
+        return model(e, t, 'galv', render=None)
+    # The bank on its tower's top, leaning toward the field.
+    e = [element([6, 0, 6], [10, 4, 10], {'all': 'g'}),
+         element([-4, 4, 2], [20, 16, 6], {'north': 'b', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'},
+                 uv={'north': [0, 0, 16, 16], 'east': [0, 0, 4, 12], 'west': [0, 0, 4, 12], 'up': [0, 0, 16, 4], 'down': [0, 0, 16, 4]},
+                 rotation={'angle': -22.5, 'axis': 'x', 'origin': [8, 10, 4]})]
+    return model(e, t, 'light_bank', render=None)
+
+
+def stands_model(stage):
+    t = {'a': 'alum', 'e': 'alum_edge', 'g': 'galv', 'w': 'press_glass', 'p': 'plywood', 'h': 'pa_horn', 'k': 'remote'}
+    if stage in (0, 1):
+        # A row of the stands: the plank at seat height (0) or a step higher (1), on its two legs. Rows rise half a block apiece, so each
+        # plank is the seat of one row and the footboard of the next.
+        top = 8 if stage == 0 else 16
+        e = [element([0, top - 2, 1], [16, top, 15], {'up': 'a', 'down': 'a', 'north': 'e', 'south': 'e', 'east': 'e', 'west': 'e'}),
+             element([1, 0, 7], [2.5, top - 2, 9], {'all': 'g'}), element([13.5, 0, 7], [15, top - 2, 9], {'all': 'g'})]
+        return model(e, t, 'alum', render=None)
+    if stage == 2:
+        # The frame under the stands: an upright and a brace every few rows.
+        return model([element([7, 0, 7], [9, 16, 9], {'all': 'g'}),
+                      element([7, 0, -3], [9, 1.5, 19], {'all': 'g'}, rotation={'angle': 45, 'axis': 'x', 'origin': [8, 8, 8]})], t, 'galv', render=None)
+    if stage == 3:
+        return model([element([0, 0, 14], [16, 1.5, 15.5], {'all': 'g'}), element([0, 12, 14], [16, 13.5, 15.5], {'all': 'g'}),
+                      element([0, 0, 14], [1.5, 13.5, 15.5], {'all': 'g'}), element([14.5, 0, 14], [16, 13.5, 15.5], {'all': 'g'})], t, 'galv', render=None)
+    if stage == 4:
+        # A team bench at the sideline, aluminum on steel legs, its back toward the stands.
+        e = [element([0, 6, 3], [16, 8, 11], {'up': 'a', 'down': 'a', 'north': 'e', 'south': 'e', 'east': 'e', 'west': 'e'}),
+             element([0, 10, 11], [16, 14, 12.5], {'north': 'a', 'south': 'a', 'up': 'e', 'down': 'e', 'east': 'e', 'west': 'e'})]
+        e += [element([x, 0, 4], [x + 1.5, 6, 5.5], {'all': 'g'}) for x in (1, 13.5)]
+        e += [element([x, 0, 11], [x + 1.5, 14, 12.5], {'all': 'g'}) for x in (1, 13.5)]
+        return model(e, t, 'alum', render=None)
+    if stage == 5:
+        return model([element([0, 0, 0], [16, 16, 2], {'north': 'w', 'south': 'w', 'east': 'e', 'west': 'e', 'up': 'e', 'down': 'e'},
+                               uv={'east': [0, 0, 2, 16], 'west': [14, 0, 16, 16], 'up': [0, 0, 16, 2], 'down': [0, 14, 16, 16]})], t, 'press_glass', render=None)
+    if stage == 6:
+        # The press box's table under its windows, the microphone on its stand, a folded program.
+        e = [element([0, 10, 0], [16, 12, 9], {'all': 'p'}), element([1, 0, 1], [2.5, 10, 2.5], {'all': 'g'}), element([13.5, 0, 1], [15, 10, 2.5], {'all': 'g'}),
+             element([7.5, 12, 3], [8.5, 16, 4], {'all': 'g'}), element([7, 15, 2], [9, 17, 4], {'all': 'k'})]
+        return model(e, t, 'plywood', render=None)
+    # The horn on the press box's roof, aimed at the field.
+    return model([element([7, 0, 7], [9, 6, 9], {'all': 'g'}), element([4, 6, 0], [12, 12, 10], {'north': 'h', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'})],
+                 t, 'pa_horn', render=None)
+
+
+def locker_model(stage):
+    t = {'l': 'locker_lower', 'u': 'locker_upper', 'k': 'locker_side', 'b': 'bench_wood', 'g': 'galv', 'm': 'gov_metal', 'c': 'chalkboard',
+         'r': 'chrome', 's': 'rollup', 'n': 'concession_menu', 'p': 'plywood', 'o': 'notebook'}
+    if stage in (0, 1):
+        f = 'l' if stage == 0 else 'u'
+        return model([element([0, 0, 4], [16, 16, 16], {'north': f, 'south': 'k', 'east': 'k', 'west': 'k', 'up': 'k', 'down': 'k'},
+                               uv={'east': [0, 0, 12, 16], 'west': [0, 0, 12, 16], 'up': [0, 0, 16, 12], 'down': [0, 0, 16, 12]})], t, t[f], render=None)
+    if stage == 2:
+        return model([element([0, 6, 4], [16, 8, 12], {'all': 'b'}), element([2, 0, 7], [3.5, 6, 9], {'all': 'g'}), element([12.5, 0, 7], [14, 6, 9], {'all': 'g'})], t, 'bench_wood', render=None)
+    if stage == 3:
+        # The coach's desk: grey steel, a clipboard and a whistle on its cord.
+        e = [element([0, 0, 2], [16, 12, 14], {'all': 'm'}), element([3, 12, 4], [10, 12.5, 11], {'up': 'o', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}),
+             element([11, 12, 6], [13, 13, 8], {'all': 'r'})]
+        return model(e, t, 'gov_metal', render=None)
+    if stage == 4:
+        return model([element([0, 2, 15], [16, 14, 16], {'north': 'c', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'p', 'down': 'p'})], t, 'chalkboard', render=None)
+    if stage == 5:
+        return model([element([7, 10, 13], [9, 11, 16], {'all': 'r'}), element([6, 8, 11], [10, 10, 14], {'all': 'r'}), element([7.5, 0, 15], [8.5, 10, 16], {'all': 'r'})], t, 'chrome', render=None)
+    if stage == 6:
+        return model([element([0, 0, 13], [16, 16, 16], {'north': 's', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'},
+                               uv={'east': [0, 0, 3, 16], 'west': [13, 0, 16, 16], 'up': [0, 0, 16, 3], 'down': [0, 13, 16, 16]})], t, 'rollup', render=None)
+    return model([element([1, 2, 15], [15, 14, 16], {'north': 'n', 'south': 'p', 'east': 'p', 'west': 'p', 'up': 'p', 'down': 'p'})], t, 'concession_menu', render=None)
+
+
+def score_model(stage):
+    t = {'g': 'galv', 't': 'ticket_window', 'k': 'tv_cabinet'}
+    if stage <= 5:
+        t['f'] = f'score_{stage}'
+        # Its back in galvanized panels, so it reads from behind the end zone too.
+        return model([element([0, 0, 12], [16, 16, 16], {'north': 'f', 'south': 'g', 'east': 'k', 'west': 'k', 'up': 'k', 'down': 'k'},
+                               uv={'east': [0, 0, 4, 16], 'west': [12, 0, 16, 16], 'up': [0, 0, 16, 4], 'down': [0, 12, 16, 16]})], t, f'score_{stage}', render=None)
+    if stage == 6:
+        return model([element([5, 0, 5], [11, 16, 11], {'all': 'g'})], t, 'galv', render=None)
+    return model([element([0, 0, 0], [16, 16, 16], {'north': 't', 'south': 'k', 'east': 'k', 'west': 'k', 'up': 'k', 'down': 'k'})], t, 'ticket_window', render=None)
+
+
+def amber_model(stage):
+    t = {'v': 'vcr', 'k': 'tv_cabinet', 'f': 'tv_front', 's': 'tv_screen', 'w': 'wood_top', 'r': 'rental_tapes', 'c': 'tape_case', 'n': 'notebook',
+         'l': 'lampshade', 'b': 'lamp_base', 'p': 'phone_face', 'd': 'drawers', 'o': 'books', 'a': 'amber_window', 'm': 'remote', 'x': 'window_sill'}
+    if stage == 0:
+        # The television on its stand, the VCR on the shelf under it, the set on and showing nothing much.
+        e = [element([1, 0, 3], [15, 6, 15], {'north': 'v', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'}),
+             element([2, 6, 4], [14, 16, 15], {'north': 'f', 'south': 'k', 'east': 'k', 'west': 'k', 'up': 'k', 'down': 'k'})]
+        e += glow([element([3, 8, 3.9], [12, 15, 3.9], {'north': 's'}, uv={'north': [2, 2, 14, 14]})], 8)
+        return model(e, t, 'tv_front', render=None)
+    if stage == 1:
+        return model([element([0, 0, 6], [16, 16, 16], {'north': 'r', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'},
+                               uv={'east': [0, 0, 10, 16], 'west': [6, 0, 16, 16], 'up': [0, 0, 16, 10], 'down': [0, 6, 16, 16]})], t, 'rental_tapes', render=None)
+    if stage == 2:
+        # Tapes stacked on the carpet by the set, the top one out of its case.
+        e = [element([3, h * 2, 4 + h % 2], [11, h * 2 + 2, 9 + h % 2], {'up': 'c', 'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'down': 'c'}) for h in range(3)]
+        e.append(element([4, 6, 5], [10, 7, 9], {'all': 'v'}))
+        return model(e, t, 'tape_case', render=None)
+    if stage == 3:
+        # Her desk under the window: the notebook open, the lamp on.
+        e = [element([0, 10, 4], [16, 12, 16], {'all': 'w'}), element([0, 0, 13], [2, 10, 15], {'all': 'w'}), element([14, 0, 13], [16, 10, 15], {'all': 'w'}),
+             element([1, 0, 4], [15, 10, 6], {'north': 'd', 'south': 'w', 'east': 'w', 'west': 'w'}),
+             element([3, 12, 6], [10, 12.5, 12], {'up': 'n', 'north': 'w', 'south': 'w', 'east': 'w', 'west': 'w'}),
+             element([12, 12, 10], [14, 18, 12], {'all': 'b'})]
+        e += glow([element([10.5, 17, 8.5], [15.5, 22, 13.5], {'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l'})], 12)
+        return model(e, t, 'notebook')
+    if stage == 4:
+        e = [element([2, 0, 2], [14, 11, 14], {'north': 'd', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'}),
+             element([4, 11, 5], [11, 14, 11], {'all': 'p'})]
+        return model(e, t, 'phone_face', render=None)
+    if stage == 5:
+        return model([element([0, 0, 8], [16, 16, 16], {'north': 'o', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'},
+                               uv={'east': [0, 0, 8, 16], 'west': [8, 0, 16, 16], 'up': [0, 0, 16, 8], 'down': [0, 8, 16, 16]})], t, 'books', render=None)
+    if stage == 6:
+        e = glow([element([0, 0, 0], [16, 16, 2], {'north': 'a', 'south': 'a', 'east': 'x', 'west': 'x', 'up': 'x', 'down': 'x'},
+                          uv={'east': [0, 0, 2, 16], 'west': [14, 0, 16, 16], 'up': [0, 0, 16, 2], 'down': [0, 14, 16, 16]})], 8)
+        return model(e, t, 'amber_window', render='cutout')
+    # The coffee table: the remote, two tapes out of their cases.
+    e = [element([1, 6, 3], [15, 7, 13], {'all': 'w'})]
+    e += [element([x, 0, z], [x + 1, 6, z + 1], {'all': 'w'}) for x in (2, 13) for z in (4, 11)]
+    e += [element([3, 7, 5], [7, 8, 9], {'all': 'v'}), element([8, 7, 6], [12, 8, 10], {'all': 'c'}), element([10, 7, 4], [13, 7.5, 5.5], {'all': 'm'})]
+    return model(e, t, 'wood_top', render=None)
+
+
+def lot_model(stage):
+    t = {'h': 'sprinkler_head', 'w': 'spray', 'd': 'doghouse_wall', 'o': 'doghouse_door', 's': NS + 'block/list_shingle', 'c': 'can_galv',
+         'b': 'bike', 'a': 'alum', 'n': 'webbing', 'g': 'grill_black', 'r': 'hose_green', 'q': 'galv', 'p': 'pool_out', 'i': 'pool_in'}
+    if stage == 0:
+        # A sprinkler on the lawn, its fan of water standing over it.
+        e = [element([7, 0, 7], [9, 3, 9], {'all': 'h'})]
+        e += [element([0, 1, 8], [16, 13, 8], {'north': 'w', 'south': 'w'}, rotation={'angle': a, 'axis': 'y', 'origin': [8, 8, 8]}) for a in (-45, 45)]
+        return model(e, t, 'sprinkler_head', render='translucent')
+    if stage == 1:
+        # A doghouse, its door toward the yard, a shingle roof on it.
+        e = [element([2, 0, 2], [14, 10, 14], {'north': 'o', 'south': 'd', 'east': 'd', 'west': 'd', 'down': 'd'}),
+             element([1, 10, 1], [15, 12, 15], {'all': 's'}), element([3, 12, 1], [13, 14, 15], {'all': 's'}), element([5, 14, 1], [11, 15, 15], {'all': 's'})]
+        return model(e, t, 'doghouse_wall', render=None)
+    if stage == 2:
+        return model([element([3, 0, 3], [13, 13, 13], {'all': 'c'}), element([2.5, 13, 2.5], [13.5, 14, 13.5], {'all': 'c'}), element([7, 14, 6], [9, 15, 10], {'all': 'q'})], t, 'can_galv', render=None)
+    if stage == 3:
+        return model([element([0, 0.5, 0], [16, 0.5, 16], {'up': 'b', 'down': 'b'}), element([7, 0, 3], [9, 2, 13], {'all': 'q'})], t, 'bike')
+    if stage == 4:
+        # A folding lawn chair, aluminum tubes and woven webbing, facing the street.
+        e = [element([2, 5, 2], [14, 5.5, 10], {'up': 'n', 'down': 'n'}), element([2, 5, 10], [14, 14, 10.5], {'north': 'n', 'south': 'n'})]
+        e += [element([x, 0, z], [x + 1, 5, z + 1], {'all': 'a'}) for x in (2, 13) for z in (2, 9)]
+        e += [element([x, 5, 10], [x + 1, 14, 11], {'all': 'a'}) for x in (1.5, 13.5)]
+        return model(e, t, 'webbing', render='cutout')
+    if stage == 5:
+        e = [element([4, 7, 4], [12, 13, 12], {'all': 'g'}), element([5, 13, 5], [11, 14, 11], {'all': 'g'}), element([7.5, 14, 7.5], [8.5, 15, 8.5], {'all': 'q'})]
+        e += [element([x, 0, z], [x + 1, 7, z + 1], {'all': 'q'}) for x, z in ((5, 5), (10, 5), (7.5, 11))]
+        return model(e, t, 'grill_black', render=None)
+    if stage == 6:
+        e = [element([2, 0, 5], [3, 10, 11], {'all': 'q'}), element([13, 0, 5], [14, 10, 11], {'all': 'q'}), element([3, 3, 4], [13, 11, 12], {'all': 'r'}),
+             element([2, 10, 7.5], [14, 11, 8.5], {'all': 'q'})]
+        return model(e, t, 'hose_green', render=None)
+    # A kiddie pool with nothing in it but a few leaves and an inch of rainwater.
+    e = [element([0, 0, 0], [16, 3, 16], {'up': 'i', 'down': 'p', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'})]
+    return model(e, t, 'pool_out', render=None)
+
+
+def school_models():
+    m = {}
+    for s in range(8):
+        m[f'field_{s}'] = field_model(s); m[f'stands_{s}'] = stands_model(s); m[f'locker_{s}'] = locker_model(s)
+        m[f'score_{s}'] = score_model(s); m[f'amber_{s}'] = amber_model(s); m[f'lot_{s}'] = lot_model(s)
+    return m
+
+
+def school_faces():
+    faces = {'goal_paint': goal_paint(), 'goal_pad': goal_pad(), 'light_bank': light_bank(), 'alum': alum(0), 'alum_edge': alum(1),
+             'press_glass': press_glass(), 'plywood': plywood(), 'pa_horn': pa_horn(), 'locker_lower': locker(0), 'locker_upper': locker(1),
+             'locker_side': locker_side(), 'chalkboard': chalkboard(), 'concession_menu': concession_menu(), 'ticket_window': ticket_window(), 'door_steel_lower': door_steel(0),
+             'door_steel_upper': door_steel(1), 'vcr': vcr(), 'rental_tapes': rental_tapes(), 'tape_case': tape_case(), 'notebook': notebook(),
+             'amber_window': amber_window(), 'remote': remote(), 'sprinkler_head': sprinkler_head(), 'spray': spray(), 'doghouse_wall': doghouse(0),
+             'doghouse_door': doghouse_door(), 'can_galv': can_galv(), 'bike': bike(), 'webbing': webbing(), 'grill_black': grill_black(),
+             'hose_green': hose_green(), 'pool_out': pool_plastic(0), 'pool_in': pool_plastic(1)}
+    board = scoreboard()
+    for row in range(2):
+        for col in range(3):
+            faces[f'score_{row * 3 + col}'] = board.crop((col * 16, row * 16, col * 16 + 16, row * 16 + 16))
+    return faces
+
+
 # ------------------------------------------------------------------------------------------------ the whole set
 def fitting_models():
     m = {}
@@ -2793,6 +3394,7 @@ def fitting_models():
         m[f'sign_law_{s}'] = board_model(f'sign_law_{s}')
     for s in range(7):
         m[f'tower_{s}'] = tower_model(s); m[f'tank_{s}'] = tank_model(s)
+    m.update(school_models())
     return m
 
 
@@ -2853,6 +3455,7 @@ def textures():
     for row in range(2):
         for col in range(3):
             faces[f'drivein_board_{1 + row * 3 + col}'] = board.crop((col * 16, row * 16, col * 16 + 16, row * 16 + 16))
+    faces.update(school_faces())
     for name, im in faces.items():
         out[f'block/the_list/{name}.png'] = im
     return out
@@ -2860,11 +3463,11 @@ def textures():
 
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
-         'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank']
+         'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 3, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
-          'tower': 7, 'tank': 7}
+          'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_line': 'Painted Line', 'curb': 'Curb', 'sidewalk': 'Sidewalk',
@@ -2872,10 +3475,13 @@ MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_
                   'wainscot': 'Brick Wainscot', 'shingle': 'Roof Shingles', 'flat_roof': 'Tar and Gravel', 'carpet': 'Carpet', 'lino': 'Kitchen Linoleum',
                   'drywall': 'Painted Wallboard', 'paneling': 'Wood Paneling', 'ceiling': 'Popcorn Ceiling', 'tile': 'Store Tile',
                   'store_carpet': 'Video Store Carpet', 'storefront': 'Face Brick', 'stucco': 'Stucco', 'cinder': 'Cinder Block',
-                  'galvanized': 'Galvanized Iron', 'rusted': 'Rusted Iron', 'slab': 'Gin Floor', 'shop_metal': 'Shop Siding', 'drive_lot': 'Drive-in Lot'}
-DOORS = {'list_house_door': ('door_house_lower', 'door_house_upper'), 'list_glass_door': ('door_glass_lower', 'door_glass_upper')}
+                  'galvanized': 'Galvanized Iron', 'rusted': 'Rusted Iron', 'slab': 'Gin Floor', 'shop_metal': 'Shop Siding', 'drive_lot': 'Drive-in Lot',
+                  'turf': 'Field Turf', 'turf_dark': 'Mown Turf', 'turf_line': 'Yard Line', 'turf_side': 'Sideline', 'endzone': 'End Zone',
+                  'track_cinder': 'Cinder Track'}
+DOORS = {'list_house_door': ('door_house_lower', 'door_house_upper'), 'list_glass_door': ('door_glass_lower', 'door_glass_upper'),
+         'list_steel_door': ('door_steel_lower', 'door_steel_upper')}
 NAMES = {'list_fitting': 'Lamesa Fitting', 'list_shingle_stairs': 'Shingle Stairs', 'list_shingle_slab': 'Shingle Slab', 'list_metal_stairs': 'Galvanized Stairs',
-         'list_house_door': 'Panel Door', 'list_glass_door': 'Store Door', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
+         'list_house_door': 'Panel Door', 'list_glass_door': 'Store Door', 'list_steel_door': 'Steel Door', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
 
 
 def stair_states(model_name):
