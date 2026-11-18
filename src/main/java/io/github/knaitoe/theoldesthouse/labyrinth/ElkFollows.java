@@ -167,15 +167,15 @@ public final class ElkFollows {
     }
     /**
      * In kind: one of the reader's own penned animals near their home bed (HomeBed) is gone in the morning, the gate left open. Never a
-     * named, leashed or tamed animal; never one outside a pen. One a morning, for as many as they have killed. A reader with no home of
-     * their own loses nothing, and still owes it.
+     * named, leashed or tamed animal; never one outside a pen; never one, nor a gate, on a neighbour's district (docs/NEIGHBOURS.md).
+     * One a morning, for as many as they have killed. A reader with no home of their own loses nothing, and still owes it.
      */
     public static boolean morning(ServerPlayer p){
         var own=own(p);if(own.getInt(IN_KIND)<=0)return false;
         var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);if(home==null)return false;
         var l=p.server.overworld();
         Animal taken=null;
-        for(var a:l.getEntitiesOfClass(Animal.class,new AABB(home).inflate(32),a->a.isAlive()&&!a.hasCustomName()&&!a.isLeashed()&&!(a instanceof TamableAnimal t&&t.isTame())&&!(a instanceof AbstractHorse h&&h.isTamed())&&penned(l,a.blockPosition())))
+        for(var a:l.getEntitiesOfClass(Animal.class,new AABB(home).inflate(32),a->a.isAlive()&&!a.hasCustomName()&&!a.isLeashed()&&!(a instanceof TamableAnimal t&&t.isTame())&&!(a instanceof AbstractHorse h&&h.isTamed())&&penned(l,a.blockPosition())&&!io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,a.blockPosition())))
             if(taken==null||a.distanceToSqr(Vec3.atCenterOf(home))<taken.distanceToSqr(Vec3.atCenterOf(home)))taken=a;
         if(taken==null)return false;
         var gate=gate(l,taken.blockPosition());
@@ -188,7 +188,7 @@ public final class ElkFollows {
         for(var c:BlockPos.betweenClosed(at.offset(-4,-1,-4),at.offset(4,1,4))){var s=l.getBlockState(c);if(s.is(BlockTags.FENCES)||s.is(BlockTags.FENCE_GATES))return true;}return false;
     }
     static BlockPos gate(ServerLevel l,BlockPos at){
-        BlockPos best=null;for(var c:BlockPos.betweenClosed(at.offset(-6,-1,-6),at.offset(6,1,6))){if(l.getBlockState(c).getBlock() instanceof FenceGateBlock&&(best==null||c.distSqr(at)<best.distSqr(at)))best=c.immutable();}return best;
+        BlockPos best=null;for(var c:BlockPos.betweenClosed(at.offset(-6,-1,-6),at.offset(6,1,6))){if(l.getBlockState(c).getBlock() instanceof FenceGateBlock&&(best==null||c.distSqr(at)<best.distSqr(at))&&!io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(l,c))best=c.immutable();}return best;
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();if(server.getTickCount()%5!=0)return;

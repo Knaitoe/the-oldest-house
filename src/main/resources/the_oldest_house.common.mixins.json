@@ -18,7 +18,8 @@
     "CraftingKeyMixin",
     "TeleportBaselineMixin",
     "NotYetSleepMixin",
-    "NotYetGetUpMixin"
+    "NotYetGetUpMixin",
+    "CompoundContainerAccess"
   ],
   "injectors": {
     "defaultRequire": 1
