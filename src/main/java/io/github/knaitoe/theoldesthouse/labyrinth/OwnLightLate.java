@@ -44,6 +44,8 @@ public final class OwnLightLate {
         own.remove(KEY);OwnLight.save(p,own);sync(p.server);
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){if(e.getServer().getTickCount()%20==11)sync(e.getServer());}
+    /** Into a neighbour's world that is not their own and out of it, everyone is told on the tick they arrive, not up to a second later. */
+    @SubscribeEvent public static void changedWorld(PlayerEvent.PlayerChangedDimensionEvent e){if(e.getEntity() instanceof ServerPlayer p)sync(p.server);}
     @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p&&p.connection!=null)HousePackets.send(p,new LateBodiesPayload(late(p.server)));}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){sent=List.of();}
 }

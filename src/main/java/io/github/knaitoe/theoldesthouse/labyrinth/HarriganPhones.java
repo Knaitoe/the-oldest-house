@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -84,9 +85,16 @@ public final class HarriganPhones {
         p.displayClientMessage(Component.literal("Your phone is ringing. Mr. Harrigan.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
         return true;
     }
-    /** One ring of a night call; the last goes to a missed call. */
+    /**
+     * One ring of a night call; the last goes to a missed call. A reader taken into a neighbour's world that is not their own while it
+     * rings (docs/NEIGHBOURS.md R3) is out of service there: nothing more rings, and the call is a missed call in the thread, without a
+     * word, for them to find when they open the phone. In the House a call begun outside rings on, as it always has.
+     */
     public static void ringing(ServerPlayer p){
         var s=state(p);int left=s.getInt("RingsLeft0188");if(left<=0)return;
+        if(Neighbours.notOwnWorld(p.level())){
+            s.putInt("RingsLeft0188",0);save(p,s);HarriganVignette.log(p,HarriganVignette.NOTE,"Missed call · Mr. Harrigan");return;
+        }
         p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),PhoneSounds.HIS_RING.get(),SoundSource.PLAYERS,.9F,.92F);
         s.putInt("RingsLeft0188",left-1);save(p,s);
         if(left==1){HarriganVignette.log(p,HarriganVignette.NOTE,"Missed call · Mr. Harrigan");p.displayClientMessage(Component.literal("Missed call. Mr. Harrigan. You can hear breathing on the voicemail.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}

@@ -198,13 +198,17 @@ public final class NotYetMending {
     }
     /**
      * A reader taken out of the ward's world while being mended (a neighbour's Games, a command, anything but the machine) is finished at
-     * once where they now are, as one who goes is: the seam and the counter, the machine's hold on them let go and its dark lifted. They
-     * are not brought back to their cot, and nothing is done to them in the world they are in.
+     * once where they now are, as one who goes is: the seam, the cot and the counter, the machine's hold on them let go and its dark lifted.
+     * The cot is theirs from then on, as if they had woken on it, so the machine has one to keep them on when they lie down. They are not
+     * brought back to it, and nothing is done to them in the world they are in.
      */
     static void gone(ServerPlayer p,Mend m){
         MENDS.remove(m.id);
         var own=own(p);
-        if(!m.onCot){int times=own.getInt("Mended")+1;own.putInt("Mended",times);if(!own.contains("CountFrom"))own.putLong("CountFrom",p.server.overworld().getGameTime());}
+        if(!m.onCot){
+            int times=own.getInt("Mended")+1;own.putInt("Mended",times);if(!own.contains("CountFrom"))own.putLong("CountFrom",p.server.overworld().getGameTime());
+            cotHead(p,m.base,own);
+        }
         save(p,own);
         if(p.isSleeping())p.stopSleeping();
         var ward=p.server.getLevel(NovelRooms.dimension(PLACE));
