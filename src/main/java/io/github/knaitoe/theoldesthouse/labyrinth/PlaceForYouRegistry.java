@@ -29,7 +29,9 @@ public final class PlaceForYouRegistry {
     public static final DeferredBlock<PlaceForYouBlock> FITTING=BLOCKS.registerBlock("pfy_fitting",PlaceForYouBlock::new,fixed(Blocks.OAK_PLANKS).noOcclusion());
     /** What a reader carries for the household: Kit's bag (custom model data 1), the serving spoon (2), a plate (3), the cups (4), Theo's photograph (5, 0.4.688). */
     public static final DeferredItem<Item> CARRIED=ITEMS.registerSimpleItem("pfy_carried",new Item.Properties().stacksTo(1));
-    public static final int BAG=1,SPOON=2,PLATE=3,CUPS=4,PHOTO=5;
+    public static final int BAG=1,SPOON=2,PLATE=3,CUPS=4,PHOTO=5,
+        /** 0.4.690: the wedge, the step stool and the back door key, carried in the back passage. */
+        WEDGE=6,STOOL=7,KEY=8;
     private PlaceForYouRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);ITEMS.register(bus);}
 }

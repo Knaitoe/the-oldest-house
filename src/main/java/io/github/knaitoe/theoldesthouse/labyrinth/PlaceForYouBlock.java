@@ -23,7 +23,10 @@ public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
     public enum Kind implements StringRepresentable {
         TABLE,BAG,CARD,PLATE,KETTLE,CUPS,RADIO,PHOTO,PICTURES,CUPBOARD,ROUTINE,SPOON,COUNTER,STOVE,HOOKS,GLASS,
         /** 0.4.689: Mara's laundry basket (full, half, empty) and her chest of drawers (shut, the top drawer out with the photograph in it). */
-        BASKET,DRESSER;
+        BASKET,DRESSER,
+        /** 0.4.690: the back passage's cupboard (its lower and upper halves, shoved along a third at a time), the wedge (on the floor, or
+         * under the back door) and the step stool (in its corner, or against the back door). */
+        PRESS,WEDGE,STOOL;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -41,7 +44,7 @@ public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case TABLE,CUPBOARD,COUNTER,STOVE->Shapes.block();
+            case TABLE,CUPBOARD,COUNTER,STOVE,PRESS->Shapes.block();
             case BAG->s.getValue(STAGE)==2?Block.box(3,0,4,13,5,12):box(f,3,0,4,13,s.getValue(STAGE)==1?11:9,13);
             case CARD->box(f,5,0,7,11,4,9);
             case PLATE->Block.box(2,0,2,14,s.getValue(STAGE)==2?3:1,14);
@@ -55,11 +58,13 @@ public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
             case GLASS->box(f,2,0,14,14,16,16);
             case BASKET->Block.box(2.5,0,2.5,13.5,s.getValue(STAGE)==0?9:7.5,13.5);
             case DRESSER->box(f,1,0,2,15,15,16);
+            case WEDGE->s.getValue(STAGE)==1?Block.box(0.5,0,0,4.5,2.25,4):Block.box(5,0,4,11,2.75,12);
+            case STOOL->s.getValue(STAGE)==1?Block.box(0,0,0,8,10,10):Block.box(4,0,3,12,10,13);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
-            case TABLE,CUPBOARD,COUNTER,STOVE->Shapes.block();
+            case TABLE,CUPBOARD,COUNTER,STOVE,PRESS->Shapes.block();
             case BAG,RADIO,KETTLE,BASKET,DRESSER->getShape(s,l,p,c);
             default->Shapes.empty();
         };

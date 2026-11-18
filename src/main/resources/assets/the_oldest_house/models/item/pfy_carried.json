@@ -30,6 +30,24 @@
         "custom_model_data": 5
       },
       "model": "the_oldest_house:item/pfy_carried_photo"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "the_oldest_house:item/pfy_carried_wedge"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "the_oldest_house:item/pfy_carried_stool"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "the_oldest_house:item/pfy_carried_key"
     }
   ]
 }

@@ -1,0 +1,123 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "f": "the_oldest_house:block/place/press_top",
+    "s": "the_oldest_house:block/place/press_side",
+    "particle": "the_oldest_house:block/place/press_side"
+  },
+  "elements": [
+    {
+      "from": [
+        -9,
+        0,
+        1
+      ],
+      "to": [
+        5,
+        14,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            1,
+            2,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            2,
+            2,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            16,
+            15
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            16,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -9.5,
+        14,
+        0.5
+      ],
+      "to": [
+        5.5,
+        16,
+        15.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            1,
+            0,
+            16,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            1,
+            0.5,
+            16,
+            15.5
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            1,
+            0.5,
+            16,
+            15.5
+          ]
+        }
+      }
+    }
+  ]
+}
