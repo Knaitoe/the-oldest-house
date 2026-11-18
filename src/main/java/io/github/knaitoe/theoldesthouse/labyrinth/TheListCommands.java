@@ -11,8 +11,9 @@ import net.minecraft.network.chat.Component;
  * 0.4.705 (docs/THE_LIST_0_4_705.md): operator-only. The list is not dealt until night one; until then the slasher's body is tried on in
  * the town by hand: {@code /ghosthouse test the_list body} gives it to the operator standing in the town, {@code body off} takes it back,
  * and {@code status} says where it stands. 0.4.706: {@code night} begins night one round the operator, as the one Deek picks;
- * {@code night party|ride|seed|shut|after} moves it straight there; {@code night off} ends it and puts the town back. Nothing here changes
- * anyone else's record.
+ * {@code night party|seed|shut|after} moves it straight there; {@code night off} ends it and puts the town back. 0.4.707: {@code night light}
+ * brings first light, and {@code night off} also holds the town quiet, so that no night begins round anyone coming in until {@code night}
+ * begins one. Nothing here changes anyone else's record.
  */
 public final class TheListCommands {
     private TheListCommands(){}
@@ -26,14 +27,15 @@ public final class TheListCommands {
                 .then(Commands.literal("party").executes(c->night(c.getSource(),TheListNight.PARTY)))
                 .then(Commands.literal("seed").executes(c->night(c.getSource(),TheListNight.SEED)))
                 .then(Commands.literal("shut").executes(c->night(c.getSource(),TheListNight.SHUT)))
-                .then(Commands.literal("after").executes(c->night(c.getSource(),TheListNight.AFTER))));
+                .then(Commands.literal("after").executes(c->night(c.getSource(),TheListNight.AFTER)))
+                .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE))));
     }
 
     private static int night(CommandSourceStack source,int phase)throws CommandSyntaxException{
         var p=source.getPlayerOrException();var b=TheListBody.town(p);
         if(b==null){source.sendFailure(Component.literal("Go through the back door into Lamesa first: /ghosthouse test vignette the_list places its door."));return 0;}
         var l=p.serverLevel();
-        if(phase==TheListNight.NONE){TheListNight.end(l,b);source.sendSuccess(()->Component.literal("Night one is over and the town is put back."),false);return 1;}
+        if(phase==TheListNight.NONE){TheListNight.end(l,b);TheListNight.quiet(p.server,b,true);source.sendSuccess(()->Component.literal("Night one is over and the town is put back; no night begins round anyone coming in until /ghosthouse test the_list night."),false);return 1;}
         if(TheListNight.phase(p.server,b)==TheListNight.NONE&&!TheListNight.begin(p,b)){source.sendFailure(Component.literal("Spectators and the dead cannot be picked."));return 0;}
         if(phase>TheListNight.PARTY)TheListNight.jump(l,b,phase);
         int now=TheListNight.phase(p.server,b);

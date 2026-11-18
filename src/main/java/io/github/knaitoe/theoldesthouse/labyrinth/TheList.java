@@ -30,8 +30,12 @@ public final class TheList {
     private TheList(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.THE_LIST;
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until night one exists. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /** 0.4.707: dealt from ten crossings down, to a reader who has not had night one; once they have, not until night two exists. */
+    public static final int DEPTH=10;
+    /** How many readers one town holds: the one who comes back wrong and four on Amber's side. */
+    public static final int PARTY=5;
+    public static boolean dealable(LabyrinthData d,UUID reader){return dealable(d.returnDepth(reader),LiteraryVignettes.personal(d,reader,PLACE).getInt("Night"));}
+    public static boolean dealable(int depth,int nights){return depth>=DEPTH&&nights<1;}
 
     /** A reader in through the back door: counted, and the night begins round them if it has not. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -40,8 +44,8 @@ public final class TheList {
         // 0.4.702: the town's people, at their places.
         TheListPeople.ensure(p.serverLevel(),b);
         p.serverLevel().playSound(null,b.offset(-10,1,2),TheListRegistry.INSECTS.get(),SoundSource.AMBIENT,.5F,1F);
-        // 0.4.706: a night already on in the town is heard, and its hour is the reader's at once.
-        TheListNight.arrive(p,b);
+        // 0.4.706: a night already on in the town is heard, and its hour is the reader's at once; 0.4.707: with none, it begins.
+        TheListNight.arrive(p,b,own);
     }
 
     /** A hand on something of the town's. True if it was the town's to answer. The reader's own house opens as a house does; every
@@ -84,6 +88,8 @@ public final class TheList {
         if(TheListBlock.is(st,TheListBlock.Kind.AMBER)&&st.getValue(TheListBlock.STAGE)==6&&TheListPeople.knock(p,b,TheListPeople.AMBER,TheListTexts.KNOCK_AMBER,own))return true;
         if(TheListBlock.is(st,TheListBlock.Kind.DRIVEIN)&&st.getValue(TheListBlock.STAGE)==4&&TheListPeople.knock(p,b,TheListPeople.JENNA,TheListTexts.KNOCK_ORDER,own))return true;
         if(TheListBlock.is(st,TheListBlock.Kind.BED)&&rel.getX()<TheListSite.PARENTS_E&&TheListSite.inHouse(Vec3.atCenterOf(rel))){cue(p,TheListTexts.PARENTS_BED);return true;}
+        // 0.4.707: the reader's own bed, after the cut, is where the one who went in lies down and night one ends.
+        if(TheListBlock.is(st,TheListBlock.Kind.BED)&&(rel.equals(TheListSite.BED_HEAD)||rel.equals(TheListSite.BED_FOOT))&&TheListNight.bed(p,b,own))return true;
         String line=TheListTexts.thing(st.getValue(TheListBlock.KIND),st.getValue(TheListBlock.STAGE));
         if(line==null)return false;
         cue(p,line);

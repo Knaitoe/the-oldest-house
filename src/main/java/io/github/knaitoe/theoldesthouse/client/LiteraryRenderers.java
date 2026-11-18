@@ -590,6 +590,7 @@ public final class LiteraryRenderers {
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Corner.cast(a.phase()))corner(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.LastSeen.cast(a.phase()))lastSeen(a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Fallow.cast(a.phase()))fallow(a.gesture(),age);
+            if(io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.pageUp(a))pageUp(age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightGus.cast(a.phase()))gus(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.BikeNightBullies.cast(a.phase()))bully(a,a.gesture(),age);
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.cast(a.phase()))people(a,a.gesture(),age);
@@ -1087,6 +1088,9 @@ public final class LiteraryRenderers {
          * the car or out to a cooler's shelf; a paper cup carried in both hands at the chest, the head bent to it; kneeling on the
          * forecourt beside the bean, sitting back on the heels, the hands in the lap and the head bowed to it; the pot tipped over a cup.
          */
+        /** 0.4.707: Amber's page held up to her window: the right arm straight out toward the glass and a little to her right, where the
+         * window is, the hand steady but for a breath. */
+        public void pageUp(float age){rightArm.xRot=-1.5F+net.minecraft.util.Mth.sin(age*.05F)*.03F;rightArm.yRot=.55F;rightArm.zRot=0;}
         void fallow(int gesture,float age){
             switch(gesture){
                 case io.github.knaitoe.theoldesthouse.labyrinth.Fallow.WORK->{
@@ -1475,11 +1479,25 @@ public final class LiteraryRenderers {
             // 0.4.607: Daniel, strapped, holds what he is given down against the frame, along his leg, not out at the room.
             if(e instanceof LiteraryActor a&&io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.is(a)&&strapped(a.gesture())&&!s.isEmpty()){
                 p.pushPose();getParentModel().translateToHand(arm,p);heldDown(p,arm==net.minecraft.world.entity.HumanoidArm.LEFT);hands.renderItem(e,s,ctx,arm==net.minecraft.world.entity.HumanoidArm.LEFT,p,out,light);p.popPose();return;}
+            // 0.4.707: Amber's page, up at the end of her arm and flat across it, so its face is to the glass and the street.
+            if(e instanceof LiteraryActor a&&arm==net.minecraft.world.entity.HumanoidArm.RIGHT&&io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.pageUp(a)){
+                p.pushPose();getParentModel().translateToHand(arm,p);page(p,out,light);p.popPose();return;}
             if(arm!=net.minecraft.world.entity.HumanoidArm.RIGHT||!getParentModel().onPhone()){super.renderArmWithItem(e,s,ctx,arm,p,out,light);return;}
             if(s.isEmpty())return;
             p.pushPose();getParentModel().receiver(p);hands.renderItem(e,s,net.minecraft.world.item.ItemDisplayContext.NONE,false,p,out,light);p.popPose();
         }
-        @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.role()==LiteraryActor.STRANGER&&(a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.WindowCleaner.CLEANER||io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.cast(a.phase())))super.render(p,out,light,a,walk,amount,partial,age,yaw,pitch);}
+        @Override public void render(PoseStack p,MultiBufferSource out,int light,LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){if(a.role()==LiteraryActor.STRANGER&&(a.phase()==io.github.knaitoe.theoldesthouse.labyrinth.WindowCleaner.CLEANER||io.github.knaitoe.theoldesthouse.labyrinth.Drawing.cast(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.CalderPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.PellPeople.carries(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.cast(a.phase())||io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.carries(a.phase())))super.render(p,out,light,a,walk,amount,partial,age,yaw,pitch);}
+    }
+    /** 0.4.707: the page Amber holds up (drawn by tools/draw_the_list_art.py). */
+    private static final ResourceLocation PAGE=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/page.png");
+    /** 0.4.707: from the right hand of an arm held straight out (after translateToHand), a notebook page held by its lower edge, flat
+     * across the arm so its face is the way the arm points: vanilla's hand set-up, on past the fist, and up by most of the page. Its
+     * writing reads left to right from in front of it. */
+    public static void page(PoseStack p,MultiBufferSource out,int light){
+        p.pushPose();p.mulPose(Axis.XP.rotationDegrees(-90));p.mulPose(Axis.YP.rotationDegrees(180));p.translate(1/16F,.22F,-.74F);
+        var vc=out.getBuffer(RenderType.entityCutoutNoCull(PAGE));
+        for(int i=0;i<4;i++)vc.addVertex(p.last(),i==0||i==3?-.25F:.25F,i<2?-.25F:.25F,0).setColor(-1).setUv(i==0||i==3?1:0,i<2?1:0).setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(light).setNormal(p.last(),0,0,1);
+        p.popPose();
     }
     static boolean strapped(int gesture){return gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.HELD||gesture==io.github.knaitoe.theoldesthouse.labyrinth.LodgingPeople.STRAIN;}
     /** 0.4.607: from a hanging hand, a held thing turned to hang down along the leg (vanilla's hand set-up, then a quarter turn back). */

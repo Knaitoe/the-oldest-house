@@ -47,8 +47,11 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * is shut to them from the door rolling shut.</li>
  * <li><b>After</b> ({@link #AFTER}): three in the morning. The one who went in comes to under the water tower, face down, with the sack
  * over their head and the body theirs (TheListBody.comeTo). Anybody else is where they stood, alone; the five and the trucks are gone.</li>
+ * <li><b>First light</b> ({@link #DONE}, 0.4.707, docs/THE_LIST_0_4_707.md): the one who went in walks home past Amber's window, where
+ * she holds pages up to the glass for each reader who passes, and night one ends when they lie down on their own bed or when the clock
+ * comes round to first light, whichever is first. Everyone in town has had night one from then.</li>
  * </ol>
- * The walk home, Amber at her window, first light and the dealing are part 3b.
+ * From 0.4.707 the House deals the town, and night one begins round the first reader through its door.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TheListNight {
@@ -57,9 +60,9 @@ public final class TheListNight {
     public static final long TEN=16000,TWO=20000,THREE=21000,LIGHT=23300;
     /** How much of the night passes in a tick while someone is in town: twenty real minutes from ten to the first light. */
     public static final double RATE=1/3.0;
-    public static final int NONE=0,PARTY=1,RIDE=2,SEED=3,SHUT=4,AFTER=5;
+    public static final int NONE=0,PARTY=1,RIDE=2,SEED=3,SHUT=4,AFTER=5,DONE=6;
     /** The phases' names, for an operator. */
-    public static final String[] NAMES={"none","party","ride","seed house","shut","after"};
+    public static final String[] NAMES={"none","party","ride","seed house","shut","after","first light"};
     /** The hour on a clock, from the game's own day time: "2:00 am". */
     public static String hour(long time){
         if(time<0)return "no night";
@@ -77,6 +80,15 @@ public final class TheListNight {
     public static final int LIE=150,WAKE=90;
     /** How near Deek asks the one he picked, how near the tank a reader rides along, how far past the door the one who goes in has gone when it shuts. */
     public static final double ASK_REACH=6,RIDE_REACH=24,INSIDE=3;
+    /** 0.4.707: how near Amber's window a reader in the street must be for her to hold a page up, and the time between her two pages. */
+    public static final double PAGE_REACH=14;public static final int PAGE_GAP=60;
+    /** 0.4.707: after first light comes, how long until each reader is told of it (past the black, for a reader who went to bed). */
+    public static final int LIGHT_CUE=70;
+    /** 0.4.707: Amber's place from the cut until first light: on her feet beside her desk, facing the street, the hand that holds the
+     * page beside the window (her front wall is two blocks thick, the window cut through both). */
+    public static final BlockPos AT_WINDOW=new BlockPos(TheListSite.AMBER_DESK.getX()+1,0,TheListSite.AMBER_DESK.getZ());
+    /** Her window, on the front of her house over Seventh. */
+    public static final BlockPos WINDOW=new BlockPos(TheListSite.AMBER_DESK.getX(),1,TheListSite.AMBER_S);
 
     // ------------------------------------------------------------------------------------------------ where
     /** The five, by their number in TheListPeople: Deek, Wes, Mel, Lesley, Shannon. */
@@ -109,7 +121,7 @@ public final class TheListNight {
 
     // ------------------------------------------------------------------------------------------------ the night's record
     static final class Night{
-        final BlockPos base;@Nullable UUID slasher;int phase,since;double time=TEN;boolean asked;
+        final BlockPos base;@Nullable UUID slasher;int phase,since;double time=TEN;boolean asked,bed;
         final Set<UUID> riders=new LinkedHashSet<>();@Nullable UUID pickup,sedan;int sent;
         Night(BlockPos b){base=b;}
     }
@@ -122,14 +134,14 @@ public final class TheListNight {
         var n=NIGHTS.get(b.asLong());if(n!=null)return n;
         var t=LiteraryVignettes.shared(LabyrinthData.get(s),TheList.PLACE,copy(s,b)).getCompound("Night");
         if(!t.contains("Phase"))return null;
-        n=new Night(b);n.slasher=t.hasUUID("Slasher")?t.getUUID("Slasher"):null;n.phase=t.getInt("Phase");n.since=t.getInt("Since");n.time=t.getDouble("Time");n.asked=t.getBoolean("Asked");
+        n=new Night(b);n.slasher=t.hasUUID("Slasher")?t.getUUID("Slasher"):null;n.phase=t.getInt("Phase");n.since=t.getInt("Since");n.time=t.getDouble("Time");n.asked=t.getBoolean("Asked");n.bed=t.getBoolean("Bed");
         for(var r:t.getList("Riders",Tag.TAG_INT_ARRAY))n.riders.add(NbtUtils.loadUUID(r));
         NIGHTS.put(b.asLong(),n);return n;
     }
     static void save(MinecraftServer s,Night n){
         var d=LabyrinthData.get(s);int copy=copy(s,n.base);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);
         var t=new CompoundTag();if(n.slasher!=null)t.putUUID("Slasher",n.slasher);
-        t.putInt("Phase",n.phase);t.putInt("Since",n.since);t.putDouble("Time",n.time);t.putBoolean("Asked",n.asked);
+        t.putInt("Phase",n.phase);t.putInt("Since",n.since);t.putDouble("Time",n.time);t.putBoolean("Asked",n.asked);t.putBoolean("Bed",n.bed);
         var r=new ListTag();for(var id:n.riders)r.add(NbtUtils.createUUID(id));t.put("Riders",r);
         w.put("Night",t);LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
     }
@@ -148,19 +160,35 @@ public final class TheListNight {
     public static boolean begin(ServerPlayer p,BlockPos b){
         if(!LiteraryVignettes.participant(p)||!TheListSite.inScene(p.position().subtract(Vec3.atLowerCornerOf(b))))return false;
         var n=night(p.server,b);if(n!=null&&n.phase!=NONE)return false;
-        n=new Night(b);n.slasher=p.getUUID();n.phase=PARTY;n.time=TEN;NIGHTS.put(b.asLong(),n);save(p.server,n);
+        n=new Night(b);n.slasher=p.getUUID();n.phase=PARTY;n.time=TEN;NIGHTS.put(b.asLong(),n);save(p.server,n);quiet(p.server,b,false);
         TheList.ACTIVE.computeIfAbsent(b.asLong(),k->new TheList.Site(b));
         var l=p.serverLevel();props(l,b,true);TheListPeople.ensure(l,b);
         for(var q:TheList.readers(l,b))TheList.cue(q,TheListTexts.PARTY_HEARD);
         send(l,n,true);
         return true;
     }
-    /** A reader come into town while its night is on: they hear the party if it is on, and the night's hour is theirs at once. */
-    static void arrive(ServerPlayer p,BlockPos b){
-        var n=night(p.server,b);if(n==null||n.phase==NONE)return;
+    /**
+     * A reader come into town. 0.4.707: into a town with no night, night one begins round them if they have not had it and the town is
+     * not held quiet; into a town whose night one is over and nobody else is in, it is put back and begins again round them. Into a night
+     * that is on, they hear the party if it is on, and the night's hour is theirs at once.
+     */
+    static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
+        var n=night(p.server,b);
+        boolean owed=LiteraryVignettes.participant(p)&&own.getInt("Night")<1;
+        if(n==null||n.phase==NONE){if(owed&&!quiet(p.server,b))begin(p,b);return;}
+        if(n.phase==DONE&&owed&&TheList.readers(p.serverLevel(),b).stream().allMatch(q->q==p)){end(p.serverLevel(),b);begin(p,b);return;}
         if(n.phase==PARTY)TheList.cue(p,TheListTexts.PARTY_HEARD);
         boolean running=n.phase==PARTY||n.phase==RIDE||n.phase==AFTER;
         PacketDistributor.sendToPlayer(p,new TheListNightPayload((long)n.time,(float)(running?RATE:0),0));
+    }
+    /** 0.4.707: whether the town is held without a night: no night begins round a reader coming in until one is begun by hand. */
+    public static boolean quiet(MinecraftServer s,BlockPos b){return LiteraryVignettes.shared(LabyrinthData.get(s),TheList.PLACE,copy(s,b)).getBoolean("Quiet");}
+    /** For an operator or a check: the town held without a night, or let go. */
+    public static void quiet(MinecraftServer s,BlockPos b,boolean held){
+        var d=LabyrinthData.get(s);int copy=copy(s,b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);
+        if(held==w.getBoolean("Quiet"))return;
+        if(held)w.putBoolean("Quiet",true);else w.remove("Quiet");
+        LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
     }
     /** For an operator: the town's night ended and put back as it was before, the seed house's door, lamp and bulb with it. */
     public static void end(ServerLevel l,BlockPos b){
@@ -177,6 +205,7 @@ public final class TheListNight {
         var n=night(l.getServer(),b);if(n==null||phase<=NONE)return;
         if(phase>=SEED&&n.phase<SEED){props(l,b,false);n.time=Math.max(n.time,TWO);}
         if(phase>=AFTER){n.time=Math.max(n.time,THREE);}
+        if(phase>=DONE){dawn(l,n,false);return;}
         n.phase=phase;n.since=0;save(l.getServer(),n);TheListPeople.ensure(l,b);send(l,n,true);
     }
 
@@ -198,6 +227,7 @@ public final class TheListNight {
             case SEED->{n.time=Math.min(TWO,n.time+RATE/4);changed=seed(l,n,here);}
             case SHUT->changed=shut(l,n,here);
             case AFTER->{n.time=Math.min(LIGHT,n.time+RATE);changed=after(l,n,here);}
+            case DONE->changed=light(l,n,here);
             default->{}
         }
         if(changed){save(l.getServer(),n);TheListPeople.ensure(l,b);send(l,n,true);}
@@ -254,8 +284,11 @@ public final class TheListNight {
     /** A word with one of the five at the party; with Deek, the one he picked says yes. True if the night took it. */
     static boolean talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         var b=TheListBody.town(p);if(b==null)return false;
-        var n=night(p.server,b);if(n==null||n.phase!=PARTY)return false;
-        int who=TheListPeople.who(a);if(!five(who))return false;
+        var n=night(p.server,b);if(n==null)return false;
+        int who=TheListPeople.who(a);
+        // 0.4.707: Amber, at her window from the cut until first light, has one thing to say through the glass.
+        if(who==TheListPeople.AMBER&&n.phase==AFTER){a.sayTo(p,TheListTexts.NAMES[who],TheListTexts.AMBER_AFTER);a.speaks(TheListTexts.AMBER_AFTER);return true;}
+        if(n.phase!=PARTY||!five(who))return false;
         var name=TheListTexts.NAMES[who];
         if(who==TheListPeople.DEEK&&p.getUUID().equals(n.slasher)){
             if(!n.asked){a.sayTo(p,name,TheListTexts.ASK);a.speaks(TheListTexts.ASK);n.asked=true;save(p.server,n);return true;}
@@ -433,6 +466,79 @@ public final class TheListNight {
         var p=slasher(l,n);
         if(p!=null&&!TheListBody.has(p)){
             var to=at(n.base,UNDER);p.teleportTo(l,to.x,to.y,to.z,180,0);HousePackets.send(p,new HouseFadePayload(0,40,40));TheListBody.comeTo(p,LIE);
+        }
+        // 0.4.707: Amber at her window, a page for each reader who passes in the street; and first light, if it comes before bed.
+        if(n.since>WAKE)for(var q:here)pages(l,n,q);
+        if(n.time>=LIGHT)dawn(l,n,false);
+        return false;
+    }
+
+    // ------------------------------------------------------------------------------------------------ the walk home (0.4.707)
+    /**
+     * Amber at her window: a reader out in the street in front of her house, near enough to read a page, sees her hold one up to the
+     * glass, and a little later a second. Each reader's pages are their own, once a night: the one who went in is told about the sack (or,
+     * with it off, about their face); anyone else is asked what happened. The second page is the same for everyone: tomorrow, the back
+     * door, after ten.
+     */
+    static void pages(ServerLevel l,Night n,ServerPlayer q){
+        if(!LiteraryVignettes.participant(q))return;
+        var d=LabyrinthData.get(l.getServer());var own=LiteraryVignettes.personal(d,q.getUUID(),TheList.PLACE);
+        int stage=own.getInt("Pages1");if(stage>=2)return;
+        long now=l.getGameTime();
+        if(stage==0){
+            var r=q.position().subtract(Vec3.atLowerCornerOf(n.base));
+            if(TheListSite.indoors(r)||r.z<=TheListSite.AMBER_S||Vec3.atCenterOf(WINDOW).distanceTo(r)>PAGE_REACH)return;
+            var amber=TheListPeople.find(l,n.base,TheListPeople.AMBER);
+            if(amber==null||amber.position().distanceTo(at(n.base,AT_WINDOW))>1.5)return;
+            boolean him=q.getUUID().equals(n.slasher);
+            TheList.cue(q,!him?TheListTexts.PAGE_WHAT:TheListSack.worn(q)?TheListTexts.PAGE_SACK:TheListTexts.PAGE_FACE);
+            own.putInt("Pages1",1);own.putLong("PageAt1",now);LiteraryVignettes.save(d,q.getUUID(),TheList.PLACE,own);
+            return;
+        }
+        if(now-own.getLong("PageAt1")<PAGE_GAP)return;
+        TheList.cue(q,TheListTexts.PAGE_TOMORROW);
+        own.putInt("Pages1",2);LiteraryVignettes.save(d,q.getUUID(),TheList.PLACE,own);
+    }
+    /** A hand on the reader's own bed: for the one who went in, after the cut, it is lying down, and night one ends. True if it did. The
+     * reader's record in hand (saved by the hand's caller after this) keeps it too. */
+    public static boolean bed(ServerPlayer p,BlockPos b,CompoundTag own){
+        var n=night(p.server,b);
+        if(n==null||n.phase!=AFTER||n.since<=WAKE||!p.getUUID().equals(n.slasher)||!LiteraryVignettes.participant(p))return false;
+        dawn(p.serverLevel(),n,true);
+        own.putInt("Night",Math.max(1,own.getInt("Night")));if(!own.contains("Light1"))own.putString("Light1","bed");
+        return true;
+    }
+    /**
+     * First light: night one is over. Gone to bed, it comes behind a black that falls on everyone in town; otherwise it comes up on its own
+     * clock. Each reader in town, and the one who went in wherever they are, keeps that they have had night one and where they were when it
+     * got light.
+     */
+    static void dawn(ServerLevel l,Night n,boolean bed){
+        n.time=LIGHT;n.phase=DONE;n.since=0;n.bed=bed;
+        var d=LabyrinthData.get(l.getServer());
+        if(bed)for(var q:inTown(l,n.base))HousePackets.send(q,new HouseFadePayload(20,60,40));
+        for(var q:TheList.readers(l,n.base))if(LiteraryVignettes.participant(q))light(d,q.getUUID(),where(n,q));
+        if(n.slasher!=null&&slasher(l,n)==null)light(d,n.slasher,"away");
+        save(l.getServer(),n);TheListPeople.ensure(l,n.base);send(l,n,true);
+    }
+    /** Where a reader was when it got light: in bed (the one who went in, gone to bed), in the house, or out in the town. */
+    static String where(Night n,ServerPlayer q){
+        if(n.bed&&q.getUUID().equals(n.slasher))return "bed";
+        return TheListSite.inHouse(q.position().subtract(Vec3.atLowerCornerOf(n.base)))?"house":"town";
+    }
+    static void light(LabyrinthData d,UUID id,String where){
+        var own=LiteraryVignettes.personal(d,id,TheList.PLACE);
+        own.putInt("Night",Math.max(1,own.getInt("Night")));if(!own.contains("Light1"))own.putString("Light1",where);
+        LiteraryVignettes.save(d,id,TheList.PLACE,own);
+    }
+    /** After first light: each reader in town is told, past the black for a reader who went to bed. */
+    static boolean light(ServerLevel l,Night n,List<ServerPlayer> here){
+        if(n.since!=LIGHT_CUE)return false;
+        for(var q:here){
+            if(!LiteraryVignettes.participant(q))continue;
+            if(!q.getUUID().equals(n.slasher)){TheList.cue(q,TheListTexts.LIGHT_OTHER);continue;}
+            var w=where(n,q);
+            TheList.cue(q,w.equals("bed")?TheListTexts.LIGHT_BED:w.equals("house")?TheListTexts.LIGHT_HOUSE:TheListTexts.LIGHT_OUT);
         }
         return false;
     }

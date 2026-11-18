@@ -2743,7 +2743,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.2.1'
-      - name: 'Native Lamesa at night (The list): the house, the streets, Main Street, the gin, the tower, the field, Amber''s house, the pasture, the town''s people, a hand on the town, its night, the slasher''s body, night one''s seed house'
+      - name: 'Native Lamesa at night (The list): the house, the streets, Main Street, the gin, the tower, the field, Amber''s house, the pasture, the town''s people, a hand on the town, its night, the slasher''s body, night one''s seed house, night one home'
         timeout-minutes: 31
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g

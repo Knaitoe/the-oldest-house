@@ -49,6 +49,10 @@ public final class TheListPeople {
     public static final double SLEEPER_Y=11/16.0;
 
     public static boolean cast(int phase){return phase>=FIRST&&phase<FIRST+CAST;}
+    /** 0.4.707: what they hold is drawn in their hands (Mel's camcorder, Amber's page); a hand is empty unless the night gives it something. */
+    public static boolean carries(int phase){return cast(phase);}
+    /** 0.4.707: Amber at her window with a page in her hand: the page is up, at the end of her arm, its face to the street. */
+    public static boolean pageUp(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&a.phase()==FIRST+AMBER&&a.getMainHandItem().is(net.minecraft.world.item.Items.PAPER);}
     public static String skin(int phase){return SKINS[phase-FIRST];}
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     /** The reader's parents, asleep in their bed. */
@@ -68,6 +72,8 @@ public final class TheListPeople {
             if(phase==TheListNight.SEED||phase==TheListNight.SHUT)return new Spot(TheListNight.AT_GIN[i],TheListNight.FACE_GIN[i]);
             return null;
         }
+        // 0.4.707: from the cut until first light Amber is up at her window, over the street.
+        if(who==AMBER&&phase==TheListNight.AFTER)return new Spot(TheListNight.AT_WINDOW,Direction.SOUTH);
         return new Spot(AT[who],FACING[who]);
     }
     /** One of the town's people near where they are now; a second of the same is let go. */
@@ -97,11 +103,13 @@ public final class TheListPeople {
                 if(!l.addFreshEntity(a))continue;
             }
             place(a,at,who,s.facing());
-            // Mel has the camera out from the party until the seed house; nobody else holds anything.
-            boolean camera=who==MEL&&phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT;
+            // Mel has the camera out from the party until the seed house; Amber, at her window after the cut, a page out of a notebook
+            // (0.4.707); nobody else holds anything.
+            var want=who==MEL&&phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT?LiteraryRegistry.CAMCORDER.get()
+                :who==AMBER&&phase==TheListNight.AFTER?net.minecraft.world.item.Items.PAPER:null;
             var held=a.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
-            if(camera&&!held.is(LiteraryRegistry.CAMCORDER.get()))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(LiteraryRegistry.CAMCORDER.get()));
-            else if(!camera&&!held.isEmpty())a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+            if(want!=null&&!held.is(want))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(want));
+            else if(want==null&&!held.isEmpty())a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
         }
     }
     /** At the cell, turned the way given, held there: they do not fall from the stands or the catwalk. The parents are laid in bed. */
