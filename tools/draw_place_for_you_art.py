@@ -390,6 +390,113 @@ def cloth_cover():
     return im
 
 
+
+
+def wicker():
+    # The laundry basket's weave: upright stakes every four pixels, and the cane passing in front of one and behind the next,
+    # row by row, so the over-and-under shows; a darker gap between rows.
+    im = new(base='#b89a62', seed=2620, spread=3)
+    for y in range(16):
+        row = y // 3
+        for x in range(16):
+            if y % 3 == 2:
+                dot(im, x, y, '#6e5630')
+            elif x % 4 == 0:
+                dot(im, x, y, '#8a6e40' if (x // 4 + row) % 2 == 0 else '#d2b47a')
+            elif (x // 4 + row) % 2 == 0:
+                dot(im, x, y, shade('#cdb078', (x * 7 + y) % 5 - 2))
+            else:
+                dot(im, x, y, shade('#a88a54', (x * 5 + y) % 5 - 2))
+    return im
+
+
+def linen():
+    # Sheets folded flat: white with a faint fold and a shadow line at each layer.
+    im = new(base='#ece8de', seed=2621, spread=2)
+    for x in range(16):
+        dot(im, x, 5, '#d4cec0'); dot(im, x, 11, '#d4cec0')
+    for y in range(16):
+        dot(im, 8, y, shade('#e2ddd0', 0))
+    return im
+
+
+def workshirt():
+    # The work shirt folded: its body, a collar band, two buttons; the shirt in Theo's photograph.
+    im = new(base='#5a6a7a', seed=2622, spread=3)
+    fill(im, 4, 0, 12, 3, '#d8d0c0')
+    fill(im, 6, 0, 10, 2, '#4a5868')
+    for y in (6, 10, 14):
+        dot(im, 8, y, '#d8d0c0')
+    for y in range(3, 16):
+        dot(im, 7, y, '#4e5c6c')
+    return im
+
+
+def dresser(open_top):
+    # Mara's chest of drawers, from the front: three drawers with knobs; opened, the top one pulled out and a dark gap where it was.
+    im = grain('#7a5030', 2623)
+    for y0, y1 in ((1, 5), (6, 10), (11, 15)):
+        frame(im, 1, y0, 15, y1, '#4e3220')
+        for x in range(1, 15):
+            dot(im, x, y0, '#4e3220')
+        dot(im, 5, (y0 + y1) // 2, '#d8b860'); dot(im, 10, (y0 + y1) // 2, '#d8b860')
+    if open_top:
+        fill(im, 2, 1, 14, 5, '#1e140c')
+    return im
+
+
+def drawer_in():
+    # Inside the drawer: a paper liner with a small print, its edges darker.
+    im = new(base='#e4dcc8', seed=2624, spread=2)
+    for y in range(1, 16, 4):
+        for x in range((y // 4) % 2 * 2, 16, 4):
+            dot(im, x, y, '#b8a8c0')
+    frame(im, 0, 0, 16, 16, '#a89c84')
+    return im
+
+
+def porch_photo():
+    # The photograph in the drawer: Mara and Theo side by side on the porch steps the day before; a white border, the house behind.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 0, 0, 16, 16, '#f0ece2')
+    fill(im, 1, 1, 15, 15, '#8a9a82')
+    for y in range(1, 9, 2):
+        for x in range(1, 15):
+            dot(im, x, y, '#7a8a72')
+    fill(im, 1, 10, 15, 12, '#cbbd9a'); fill(im, 1, 12, 15, 15, '#b8a888')
+    for x in range(1, 15):
+        dot(im, x, 12, '#9a8c6c')
+    # Mara on the left: hair pinned up, her cardigan; Theo on the right, half turned, in the work shirt.
+    fill(im, 4, 4, 6, 5, '#5c4030'); fill(im, 4, 5, 6, 7, '#cfa088'); fill(im, 3, 7, 7, 11, '#6a7a5c')
+    fill(im, 9, 4, 11, 5, '#4a3a2a'); fill(im, 9, 5, 11, 7, '#c99a7c'); fill(im, 8, 7, 12, 11, '#5a6a7a'); fill(im, 10, 7, 11, 9, '#d8d0c0')
+    return im
+
+
+def room_models():
+    m = {}
+    walls = [element([3, 0, 3], [13, 1, 13], {'all': 'k'}),
+             element([3, 1, 3], [13, 7, 4], {'all': 'k'}), element([3, 1, 12], [13, 7, 13], {'all': 'k'}),
+             element([3, 1, 4], [4, 7, 12], {'all': 'k'}), element([12, 1, 4], [13, 7, 12], {'all': 'k'}),
+             element([2.5, 6.5, 2.5], [13.5, 7.5, 3.5], {'all': 'd'}), element([2.5, 6.5, 12.5], [13.5, 7.5, 13.5], {'all': 'd'})]
+    # Full: sheets heaped over the rim, the shirt at the bottom showing at one side; half: one sheet left and the shirt; empty: the basket.
+    m['basket_0'] = model(walls + [element([4, 1, 4], [12, 7.5, 12], {'all': 'l', 'east': 's'}), element([5, 7.5, 5], [11, 9, 11], {'all': 'l'})],
+                          {'k': 'wicker', 'd': 'wood_dark', 'l': 'linen', 's': 'workshirt'}, 'wicker')
+    m['basket_1'] = model(walls + [element([4, 1, 4], [12, 4, 12], {'all': 'l'}), element([5, 4, 5], [11, 5, 11], {'all': 's'})],
+                          {'k': 'wicker', 'd': 'wood_dark', 'l': 'linen', 's': 'workshirt'}, 'wicker')
+    m['basket_2'] = model(walls, {'k': 'wicker', 'd': 'wood_dark'}, 'wicker')
+    body = {'north': 'f', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'}
+    top = element([0.5, 14, 1.5], [15.5, 15, 16], {'all': 'w'})
+    m['dresser_0'] = model([element([1, 0, 2], [15, 14, 16], body, uv={'north': [1, 1, 15, 15]}), top], {'f': 'dresser', 'w': 'wood'}, 'wood')
+    # The top drawer pulled out toward the room, the paper liner inside it and the photograph lying face up on the liner.
+    drawer = [element([2, 9.5, -4], [14, 13, -3], {'all': 'w', 'north': 'n'}, uv={'north': [2, 1, 14, 5]}),
+              element([2, 9.5, -3], [3, 12.5, 2], {'all': 'w'}), element([13, 9.5, -3], [14, 12.5, 2], {'all': 'w'}),
+              element([3, 9.5, -3], [13, 10, 2], {'all': 'w', 'up': 'i'}),
+              element([5, 10, -2.5], [10, 10.1, 1.5], {'up': 'p', 'north': 'p', 'south': 'p', 'east': 'p', 'west': 'p'}, uv={'up': [0, 0, 16, 16]})]
+    m['dresser_1'] = model([element([1, 0, 2], [15, 14, 16], body, uv={'north': [1, 1, 15, 15]}), top] + drawer,
+                           {'f': 'dresser_open', 'n': 'dresser', 'w': 'wood', 'i': 'drawer_in', 'p': 'porch_photo'}, 'wood')
+    return m
+
+
 def textures():
     out = {f'block/pfy_{k}.png': v for k, v in materials().items()}
     t = {
@@ -401,6 +508,8 @@ def textures():
         'cupboard_1': cupboard(True), 'steel': new(base='#c4c8cc', seed=2613, spread=3), 'counter': counter(), 'worktop': worktop(),
         'basin': basin(), 'stove': stove(), 'hob_0': hob(False), 'hob_1': hob(True), 'hooks': hooks(),
         'coat_a': coat('#3a4a5a', 2614), 'coat_b': coat('#7a5a3a', 2615), 'glass': glass(), 'cover': cloth_cover(),
+        'wicker': wicker(), 'linen': linen(), 'workshirt': workshirt(), 'dresser': dresser(False), 'dresser_open': dresser(True),
+        'drawer_in': drawer_in(), 'porch_photo': porch_photo(),
     }
     out.update({f'block/place/{k}.png': v for k, v in t.items()})
     return out
@@ -482,11 +591,14 @@ def fitting_models():
                          {'g': 'glass', 'w': 'wood_dark', 'c': 'cover'}, 'cover')
     for i in range(16):
         m[f'routine_{i}'] = model([element([2, 0, 2], [14, 0.25, 14], {'up': 'i'}, uv={'up': [0, 0, 16, 16]})], {'i': NS + f'item/read_routine_{i}'}, 'i')
+    m.update(room_models())
     return m
 
 
-KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'pictures', 'cupboard', 'routine', 'spoon', 'counter', 'stove', 'hooks', 'glass']
-STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3}
+KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'pictures', 'cupboard', 'routine', 'spoon', 'counter', 'stove', 'hooks', 'glass',
+         'basket', 'dresser']
+STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3,
+          'basket': 3, 'dresser': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 # 0.4.688: Theo's photograph, carried from the chest of drawers to the fridge.

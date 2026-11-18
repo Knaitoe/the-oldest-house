@@ -58,6 +58,8 @@ public final class PlaceForYouSite {
     // ------------------------------------------------------------------------------------------------ the bathroom
     public static final BlockPos ROUTINE=new BlockPos(5,1,-27),BATH_SINK=new BlockPos(6,0,-27),BATH_MIRROR=new BlockPos(6,1,-27),CABINET=new BlockPos(8,1,-26),TUB=new BlockPos(8,0,-24);
     // ------------------------------------------------------------------------------------------------ upstairs, shut in this slice
+    /** 0.4.689: in Mara's room, the washing at the foot of the bed and her chest of drawers against the back wall; the bed's head is to the front wall, a bedside table beside it and a lamp by the armchair. */
+    public static final BlockPos BASKET=new BlockPos(-7,UP,-15),DRESSER=new BlockPos(-5,UP,-20);
     public static final List<BlockPos> SHUT_DOORS=List.of(new BlockPos(-3,UP,-16),new BlockPos(3,UP,-14),new BlockPos(3,UP,-24),new BlockPos(-3,UP,-24));
     /** The road's two ends, where it goes on into the trees. */
     public static boolean roadEnd(Vec3 r){return Math.abs(r.x)>=11&&r.z<-0.5&&r.z>-4&&r.y<3;}
@@ -138,9 +140,10 @@ public final class PlaceForYouSite {
         // Upstairs: the landing down the middle, Mara's room and the spare room at the front, two back rooms, every door shut.
         box(l,b,-3,UP,-27,-3,8,-13,paper);box(l,b,3,UP,-27,3,8,-13,paper);box(l,b,-8,UP,-21,-4,8,-21,paper);box(l,b,4,UP,-21,8,8,-21,paper);
         for(var at:SHUT_DOORS)door(l,b,at,Blocks.OAK_DOOR,at.getX()<0?Direction.WEST:Direction.EAST,false);
-        set(l,b,-7,UP,-14,Blocks.WHITE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.FOOT));
-        set(l,b,-7,UP,-15,Blocks.WHITE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.HEAD));
-        set(l,b,-5,UP,-20,furniture(HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS,Direction.SOUTH));set(l,b,-8,UP,-18,furniture(HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.EAST));
+        set(l,b,-7,UP,-14,Blocks.WHITE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.SOUTH).setValue(BedBlock.PART,BedPart.FOOT));
+        set(l,b,-7,UP,-13,Blocks.WHITE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.SOUTH).setValue(BedBlock.PART,BedPart.HEAD));
+        set(l,b,-8,UP,-13,furniture(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.EAST));set(l,b,-8,UP,-19,barrett(BarrettHomeBlock.Kind.FLOOR_LAMP,Direction.EAST,true));
+        set(l,b,DRESSER,fit(PlaceForYouBlock.Kind.DRESSER,Direction.SOUTH,0));set(l,b,BASKET,fit(PlaceForYouBlock.Kind.BASKET,Direction.SOUTH,0));set(l,b,-8,UP,-18,furniture(HouseholdFurnitureBlock.Kind.FLORAL_ARMCHAIR,Direction.EAST));
         set(l,b,6,UP,-14,Blocks.LIGHT_BLUE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.FOOT));
         set(l,b,6,UP,-15,Blocks.LIGHT_BLUE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.HEAD));
         set(l,b,8,UP,-19,furniture(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST));
@@ -213,6 +216,11 @@ public final class PlaceForYouSite {
         set(l,b,THEO_PLATE,fit(PLATE,Direction.NORTH,0));
         set(l,b,SINK_TOP,set?Blocks.AIR.defaultBlockState():fit(PLATE,Direction.NORTH,2));
     }
+    /** 0.4.689: the laundry basket full (0), half folded (1) or empty (2); the top drawer shut or out; Mara's door shut or open. */
+    public static void basket(ServerLevel l,BlockPos b,int stage){set(l,b,BASKET,fit(PlaceForYouBlock.Kind.BASKET,Direction.SOUTH,stage));}
+    public static void dresser(ServerLevel l,BlockPos b,boolean open){set(l,b,DRESSER,fit(PlaceForYouBlock.Kind.DRESSER,Direction.SOUTH,open?1:0));}
+    public static void maraDoor(ServerLevel l,BlockPos b,boolean open){door(l,b,SHUT_DOORS.get(0),Blocks.OAK_DOOR,Direction.WEST,open);}
+    public static boolean maraDoorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(SHUT_DOORS.get(0)));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     public static boolean cardThere(ServerLevel l,BlockPos b){return PlaceForYouBlock.is(l.getBlockState(b.offset(CARD)),PlaceForYouBlock.Kind.CARD);}
     /** 0.4.688: Theo's photograph standing on the chest of drawers, or taken up. */
     public static void photo(ServerLevel l,BlockPos b,boolean there){set(l,b,PHOTO,there?fit(PlaceForYouBlock.Kind.PHOTO,Direction.SOUTH,0):Blocks.AIR.defaultBlockState());}
@@ -262,6 +270,6 @@ public final class PlaceForYouSite {
     public static void reset(ServerLevel l,BlockPos b,CompoundTag drawing){
         table(l,b,true);card(l,b,true);bag(l,b,"none");kitsDoor(l,b,false);kitsChair(l,b,true);cups(l,b,false);kettle(l,b,true);spoon(l,b,false);
         kitchenLight(l,b,true);propped(l,b,false);routine(l,b,-1);picture(l,b,drawing,true);gate(l,b,false);
-        pictures(l,b,false);readerChair(l,b,true);photo(l,b,true);
+        pictures(l,b,false);readerChair(l,b,true);photo(l,b,true);basket(l,b,0);dresser(l,b,false);maraDoor(l,b,false);
     }
 }

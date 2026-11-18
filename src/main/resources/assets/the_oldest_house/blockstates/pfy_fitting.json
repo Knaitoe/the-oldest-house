@@ -3839,6 +3839,486 @@
     "facing=west,kind=glass,stage=15": {
       "model": "the_oldest_house:block/place/glass_0",
       "y": 270
+    },
+    "facing=north,kind=basket,stage=0": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=1": {
+      "model": "the_oldest_house:block/place/basket_1"
+    },
+    "facing=north,kind=basket,stage=2": {
+      "model": "the_oldest_house:block/place/basket_2"
+    },
+    "facing=north,kind=basket,stage=3": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=4": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=5": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=6": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=7": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=8": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=9": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=10": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=11": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=12": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=13": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=14": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=north,kind=basket,stage=15": {
+      "model": "the_oldest_house:block/place/basket_0"
+    },
+    "facing=east,kind=basket,stage=0": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=1": {
+      "model": "the_oldest_house:block/place/basket_1",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=2": {
+      "model": "the_oldest_house:block/place/basket_2",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=3": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=4": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=5": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=6": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=7": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=8": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=9": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=10": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=11": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=12": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=13": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=14": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=east,kind=basket,stage=15": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 90
+    },
+    "facing=south,kind=basket,stage=0": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=1": {
+      "model": "the_oldest_house:block/place/basket_1",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=2": {
+      "model": "the_oldest_house:block/place/basket_2",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=3": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=4": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=5": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=6": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=7": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=8": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=9": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=10": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=11": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=12": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=13": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=14": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=south,kind=basket,stage=15": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 180
+    },
+    "facing=west,kind=basket,stage=0": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=1": {
+      "model": "the_oldest_house:block/place/basket_1",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=2": {
+      "model": "the_oldest_house:block/place/basket_2",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=3": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=4": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=5": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=6": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=7": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=8": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=9": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=10": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=11": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=12": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=13": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=14": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=west,kind=basket,stage=15": {
+      "model": "the_oldest_house:block/place/basket_0",
+      "y": 270
+    },
+    "facing=north,kind=dresser,stage=0": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=1": {
+      "model": "the_oldest_house:block/place/dresser_1"
+    },
+    "facing=north,kind=dresser,stage=2": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=3": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=4": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=5": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=6": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=7": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=8": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=9": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=10": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=11": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=12": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=13": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=14": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=north,kind=dresser,stage=15": {
+      "model": "the_oldest_house:block/place/dresser_0"
+    },
+    "facing=east,kind=dresser,stage=0": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=1": {
+      "model": "the_oldest_house:block/place/dresser_1",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=2": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=3": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=4": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=5": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=6": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=7": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=8": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=9": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=10": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=11": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=12": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=13": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=14": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=east,kind=dresser,stage=15": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 90
+    },
+    "facing=south,kind=dresser,stage=0": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=1": {
+      "model": "the_oldest_house:block/place/dresser_1",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=2": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=3": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=4": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=5": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=6": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=7": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=8": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=9": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=10": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=11": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=12": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=13": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=14": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=south,kind=dresser,stage=15": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 180
+    },
+    "facing=west,kind=dresser,stage=0": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=1": {
+      "model": "the_oldest_house:block/place/dresser_1",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=2": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=3": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=4": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=5": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=6": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=7": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=8": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=9": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=10": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=11": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=12": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=13": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=14": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
+    },
+    "facing=west,kind=dresser,stage=15": {
+      "model": "the_oldest_house:block/place/dresser_0",
+      "y": 270
     }
   }
 }

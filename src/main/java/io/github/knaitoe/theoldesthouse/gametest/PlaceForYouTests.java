@@ -33,6 +33,8 @@ public final class PlaceForYouTests {
     private static boolean click(LiteraryTests.Fixture f,ServerPlayer p,BlockPos rel){var own=f.own(p,P);boolean handled=PlaceForYou.click(p,f.base(P),rel,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);return handled;}
     private static void talk(LiteraryTests.Fixture f,ServerPlayer p,String who){var a=PlaceForYou.actor(f.level(P),f.base(P),who);if(a!=null)PlaceForYou.talk(p,a);}
     private static void say(GameTestHelper h,ServerPlayer p,String reply){h.assertTrue(Talk.choose(p,reply),"the panel offers \""+reply+"\": "+Talk.replies(p)+" after "+Talk.lines(p));}
+    /** 0.4.689: at the sink Mara first asks the reader upstairs; a case about the sink itself would rather talk there. */
+    private static void sinkTalk(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer p){talk(f,p,"mara");if(Talk.waiting(p,"room_ask"))say(h,p,"Can we talk here?");}
     /** The account as the mailbox gives it to this reader, from their own record. */
     private static String account(LiteraryTests.Fixture f,ServerPlayer p){var c=LiteraryTexts.ending(p,P,f.own(p,P)).get(DataComponents.WRITTEN_BOOK_CONTENT);return c==null?"":String.join(" ",c.pages().stream().map(pg->pg.raw().getString()).toList());}
     private static AABB lot(BlockPos b){return new AABB(b.getX()-19,b.getY()-4,b.getZ()-35,b.getX()+19,b.getY()+19,b.getZ()+1);}
@@ -87,13 +89,13 @@ public final class PlaceForYouTests {
             .thenExecute(()->{
                 h.assertTrue(click(f,p,PlaceForYouSite.BAG_KITCHEN)&&PlaceForYou.holding(p)==PlaceForYouRegistry.BAG,"Kit's bag, carried");
                 talk(f,p,"kit");var own=f.own(p,P);h.assertTrue(own.getString("BagWhere").equals("kit")&&PlaceForYou.holding(p)==0&&PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.BAG_GATE)),PlaceForYouBlock.Kind.BAG),"handed back to Kit, who sets it by the gate");
-                talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"sink"),"Mara about Theo");say(h,p,"I'll sit with you tonight.");
+                sinkTalk(f,h,p);h.assertTrue(Talk.waiting(p,"sink"),"Mara about Theo: "+Talk.key(p));say(h,p,"I'll sit with you tonight.");
                 own=f.own(p,P);h.assertTrue(own.getString("Promise").equals("company")&&own.getBoolean("TheoTold")&&own.getInt("Chapter")==PlaceForYou.DINNER,"a promise made; dinner again");
                 talk(f,p,"mara");say(h,p,"Take the spoon.");own=f.own(p,P);h.assertTrue(own.getBoolean("SpoonTaken")&&PlaceForYouBlock.is(l.getBlockState(b.offset(PlaceForYouSite.SPOON)),PlaceForYouBlock.Kind.SPOON),"the spoon out of her hand, set down on the counter");
                 h.assertTrue(PlaceForYouSite.routineOut(l,b),"the routine going on in the empty bathroom");
                 PlaceForYouSite.frontDoor(l,b,true);at(f,p,.5,0,-13.5,0,0);})
             .thenWaitUntil(()->h.assertTrue(!PlaceForYouSite.doorOpen(l,b),"the front door swings shut ahead of a reader who helped Kit"))
-            .thenExecute(()->{h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&f.own(p,P).getBoolean("DoorHeld")&&PlaceForYouSite.doorOpen(l,b),"held open");
+            .thenExecute(()->{boolean clicked=click(f,p,PlaceForYouSite.FRONT_DOOR);h.assertTrue(clicked&&f.own(p,P).getBoolean("DoorHeld")&&PlaceForYouSite.doorOpen(l,b),"held open: clicked "+clicked+" open "+PlaceForYouSite.doorOpen(l,b)+" own "+f.own(p,P));
                 h.assertTrue(click(f,p,PlaceForYouSite.ROUTINE)&&f.own(p,P).getBoolean("RoutineStopped")&&!PlaceForYouSite.routineOut(l,b),"a hand on it, and it stops");
                 talk(f,p,"ren");h.assertTrue(Talk.waiting(p,"confront"),"at the table");say(h,p,"I'd like to say this to everyone.");
                 h.assertTrue(Talk.lines(p).stream().anyMatch(s->s.startsWith("you: ")&&s.contains("The bag keeps coming back in.")&&s.contains("put themselves back out")),"the reader says what they saw: "+Talk.lines(p));
@@ -289,6 +291,51 @@ public final class PlaceForYouTests {
     }
     @AfterBatch(batch="place_invite") public static void inviteDone(ServerLevel l){close();}
 
+    /**
+     * 0.4.689, Mara's room (N6A): at the sink Mara asks the reader upstairs; her door opens; three folds, the work shirt taken from the
+     * reader's hands; the top drawer out with the photograph in it; what she tells; a question back, kept for the account; the drawer
+     * shut and supper laid again. A reader who would rather talk at the sink still can.
+     */
+    @GameTest(template="empty",batch="place_room",timeoutTicks=4000)
+    public static void marasRoom(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_room",P);var b=f.base(P);var l=f.level(P);int up=PlaceForYouSite.UP;
+        welcome(h,f,p)
+            .thenExecute(()->{
+                say(h,p,"It's good to be back.");
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.SINK);own.putString("First","Mara");own.putString("Helper","Mara");
+                own.putString("Activity","radio");own.putBoolean("ActivityDone",true);own.putBoolean("Acknowledged",true);own.putInt("BagStage",3);
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                at(f,p,6.5,0,-19.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"mara")!=null,"Mara at the sink"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.SHUT_DOORS.get(0))&&!PlaceForYouSite.maraDoorOpen(l,b),"her door, shut until she asks: "+PlaceForYouSite.maraDoorOpen(l,b));
+                talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"room_ask"),"Mara asks the reader upstairs: "+Talk.key(p));say(h,p,"All right.");
+                h.assertTrue(PlaceForYouSite.maraDoorOpen(l,b)&&f.own(p,P).getInt("RoomStage")==1,"her door open, upstairs");
+                at(f,p,-4.5,up,-15.5,90,30);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("RoomStage")==2,"in her room, by the washing"))
+            .thenExecute(()->{
+                for(int i=0;i<3;i++)h.assertTrue(click(f,p,PlaceForYouSite.BASKET),"a fold");
+                h.assertTrue(f.own(p,P).getInt("Folds")==3&&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.BASKET)))==2,"three folds, the basket empty");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("RoomStage")==3&&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.DRESSER)))==1,"the top drawer out, the photograph in it"))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"room"),"what she tells, with the drawer open: "+Talk.key(p)))
+            .thenExecute(()->{
+                h.assertTrue(Talk.lines(p).contains("Mara: I don't want another conversation in an empty kitchen."),"her words: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==5,"five things to say back: "+Talk.replies(p));
+                say(h,p,"How is keeping them different");
+                var own=f.own(p,P);
+                h.assertTrue(own.getInt("Chapter")==PlaceForYou.DINNER&&own.getBoolean("RoomTold")&&own.getString("Promise").equals("different")
+                        &&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.DRESSER)))==0,"the drawer shut, what was said kept, supper laid again");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("asked me upstairs to help her fold the washing","she took it from me and folded it herself","on the porch steps, the day before",
+                        "how keeping them was different from losing them"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                h.assertFalse(text.contains("At the sink"),"and not the sink's: "+text);
+                at(f,p,5.5,0,-17.5,0,0);})
+            .thenWaitUntil(()->h.assertFalse(PlaceForYouSite.maraDoorOpen(l,b),"her door shut again behind them, while nobody looks"))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_room") public static void roomDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="place_road",timeoutTicks=7000)
     public static void aReaderTheHouseKnowsTakesTheRoad(GameTestHelper h){
         var f=fixture(h);var p=f.player("place_family",P);var b=f.base(P);var l=f.level(P);
@@ -324,7 +371,7 @@ public final class PlaceForYouTests {
             .thenExecute(()->{say(h,p,"Could this wait until morning?");var own=f.own(p,P);h.assertTrue(own.getBoolean("Delayed")&&own.getBoolean("Acknowledged")&&!own.getBoolean("DoorTaken"),"until morning; Kit's door still a door");
                 at(f,p,-.5,0,-24.5,63,27);})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("DoorTaken")&&PlaceForYouSite.cupboard(l,b)&&f.own(p,P).getBoolean("ChairTaken")&&l.getBlockState(b.offset(PlaceForYouSite.KIT_CHAIR)).isAir(),"looked at, Kit's door is a cupboard door, and Kit's chair is gone: looking "+PlaceForYou.looking(p,b,PlaceForYouSite.KIT_DOOR,10)+" at "+p.position().subtract(b.getX(),b.getY(),b.getZ())+" yaw "+p.getYRot()+" pitch "+p.getXRot()+" eye "+p.getEyePosition().subtract(b.getX(),b.getY(),b.getZ())+" view "+p.getViewVector(1)+" clip "+l.clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),net.minecraft.world.phys.Vec3.atCenterOf(b.offset(PlaceForYouSite.KIT_DOOR)),net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p)).getBlockPos().subtract(b)+" door "+l.getBlockState(b.offset(PlaceForYouSite.KIT_DOOR))+" chapter "+chapter(f,p)))
-            .thenExecute(()->{talk(f,p,"mara");say(h,p,"What does Kit want?");h.assertTrue(f.own(p,P).getString("Promise").equals("kit")&&chapter(f,p)==PlaceForYou.DINNER,"what Kit wants; dinner again");
+            .thenExecute(()->{sinkTalk(f,h,p);say(h,p,"What does Kit want?");h.assertTrue(f.own(p,P).getString("Promise").equals("kit")&&chapter(f,p)==PlaceForYou.DINNER,"what Kit wants; dinner again");
                 h.assertTrue(click(f,p,PlaceForYouSite.KIT_DOOR)&&f.own(p,P).getBoolean("CupboardOpened"),"Kit's cupboard opened, and Kit behind the reader");
                 talk(f,p,"mara");say(h,p,"Take the spoon.");talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"confront"),"at the table");
                 say(h,p,"This is more than I can take on.");h.assertTrue(chapter(f,p)==PlaceForYou.ROAD&&f.own(p,P).getString("Confront").equals("road"),"the road");

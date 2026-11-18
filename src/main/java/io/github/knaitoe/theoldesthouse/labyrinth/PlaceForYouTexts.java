@@ -134,11 +134,18 @@ public final class PlaceForYouTexts {
             t.append("\n\n");
         }
         if(own.getBoolean("TheoTold")){
-            t.append("At the sink Mara told me about her brother, Theo, who used to dry and put everything in the wrong cupboard. She said she didn't want another conversation in an empty kitchen.");
+            // 0.4.689: upstairs in her room, or at the sink.
+            if(own.getBoolean("RoomTold")){
+                t.append("Mara asked me upstairs to help her fold the washing. We did the sheets between us. At the bottom of the basket was a work shirt, and she took it from me and folded it herself.");
+                t.append(" In her top drawer there was already a photograph of her and her brother, Theo, on the porch steps, the day before. He had gone out after supper and said he'd be back for supper the next night, she said, and she had made too much every night since.");
+                t.append(" She hadn't been bringing him back. She had been keeping the evening from getting to the part where he wasn't here. She didn't want another conversation in an empty kitchen.");
+            }else t.append("At the sink Mara told me about her brother, Theo, who used to dry and put everything in the wrong cupboard. She said she didn't want another conversation in an empty kitchen.");
             switch(own.getString("Promise")){
                 case "company"->t.append(" I told her: \"I'll sit with you tonight.\""+(own.getBoolean("PromiseKept")?" I did.":outcome.equals("took_the_road")?" I didn't.":""));
                 case "listen"->t.append(" I listened, and didn't promise anything.");
                 case "kit"->t.append(" I asked her what Kit wanted. She said she knew what Kit wanted.");
+                case "keeping"->t.append(" I told her she was keeping all of them. She said she was keeping the evening, and they were in it, and that it wasn't fair and it was true.");
+                case "different"->t.append(" I asked how keeping them was different from losing them. She said she could see them, and it was the only difference she had.");
                 default->{}
             }
             t.append("\n\n");

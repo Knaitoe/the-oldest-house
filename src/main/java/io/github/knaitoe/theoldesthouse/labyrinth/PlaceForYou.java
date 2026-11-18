@@ -63,6 +63,8 @@ public final class PlaceForYou {
         int keepAt=-1,gestureAt=-1;
         // 0.4.688 (PlaceForYouInvite): which leg of his way in Theo is on, when the present beat began, when the care was said, when Kit said goodnight.
         int theoLeg,inviteAt=-1,careAt=-1,kitNightAt=-1;
+        // 0.4.689 (PlaceForYouRoom): when the last fold was made, or the drawer opened.
+        int roomAt=-1;
         final Map<UUID,Long> said=new HashMap<>();
         House(BlockPos b){base=b;}
     }
@@ -130,7 +132,10 @@ public final class PlaceForYou {
         if(ch==BAG){int stage=own.getInt("BagStage");
             if(stage==0)m.put("Kit",stand(1.5,-6.5,180));
             else{m.put("Mara",stand(7.5,-16.5,180));m.put("Kit",stand(2.5,-14.5,-90));}}
-        if(ch==SINK){m.put("Mara",stand(5.5,-20.5,180));if(own.getBoolean("ChairTaken"))m.put("Kit",stand(1.5,-22.5,0));}
+        if(ch==SINK){m.put("Mara",stand(5.5,-20.5,180));if(own.getBoolean("ChairTaken"))m.put("Kit",stand(1.5,-22.5,0));
+            // 0.4.689: upstairs with the reader, by the washing, then at her chest of drawers.
+            int room=own.getInt("RoomStage");if(room>=1&&room<=2)m.put("Mara",new Mark(new Vec3(-5.5,PlaceForYouSite.UP,-15.5),0,true));
+            else if(room==3)m.put("Mara",new Mark(new Vec3(-3.6,PlaceForYouSite.UP,-19.5),90,true));}
         if(ch>=DINNER&&ch<=ROAD){
             if(!own.getBoolean("SpoonTaken")&&ch==DINNER)m.put("Mara",stand(5.5,-18.5,0));
             if(own.getBoolean("ChairTaken"))m.put("Kit",stand(8.5,-14.5,90));
@@ -264,6 +269,7 @@ public final class PlaceForYou {
 
     static void reader(ServerLevel l,House h,ServerPlayer p,CompoundTag own){
         var b=h.base;var r=rel(p.position(),b);int ch=own.getInt("Chapter");
+        if(own.getInt("RoomStage")==4&&PlaceForYouSite.maraDoorOpen(l,b)&&!PlaceForYouRoom.inRoom(r)&&!looking(p,b,PlaceForYouRoom.DOOR,24))PlaceForYouSite.maraDoor(l,b,false);
         switch(ch){
             case APPROACH->{
                 if(PlaceForYouSite.inHouse(r)){own.putInt("Chapter",WELCOME);own.putString("WelcomeAt",PlaceForYouSite.inKitchen(r)?"kitchen":"hall");save(p,own);stage(l,h,p,own);}
@@ -276,7 +282,9 @@ public final class PlaceForYou {
             case SUPPER->supper(l,h,p,own,r);
             case BATHROOM->bathroom(l,h,p,own,r);
             case BAG->bag(l,h,p,own,r);
-            case SINK->{if(h.sinkAt<0)h.sinkAt=(int)h.tick;if(h.tick-h.sinkAt>1800&&!Talk.waiting(p)){own.putInt("Chapter",DINNER);save(p,own);startDinner(l,h,p);}}
+            case SINK->{if(h.sinkAt<0)h.sinkAt=(int)h.tick;int room=own.getInt("RoomStage");
+                if(room>=1&&room<=3)PlaceForYouRoom.tick(l,h,p,own,r);
+                else if(h.tick-h.sinkAt>1800&&!Talk.waiting(p)){own.putInt("Chapter",DINNER);save(p,own);startDinner(l,h,p);}}
             case DINNER->dinner(l,h,p,own,r);
             case OPEN->open(l,h,p,own,r);
             case ROAD->{if(PlaceForYouSite.onRoad(r)){finish(p,"took_the_road");}}
@@ -609,7 +617,10 @@ public final class PlaceForYou {
                 else if(own.getString("Activity").isEmpty()){Talk.begin(p,"offer_"+who,who);offerActivity(p,h,who);}
                 else above(h,a,switch(who){case "Mara"->"Eat something.";case "Kit"->"Don't mind me.";case "Alex"->"Still here.";default->"Mm?";});}
             case BAG->{if(own.getInt("BagStage")==2&&!own.getBoolean("BagOpened")){edit(p,o->o.putBoolean("BagOpened",true));bagExchange(p,h,own);}else above(h,a,who.equals("Kit")?"It's my bag.":"Not now.");}
-            case SINK->{if(who.equals("Mara"))sink(p,h);else above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
+            case SINK->{if(PlaceForYouRoom.talk(p,h,who,a))return;
+                // 0.4.689: upstairs first, if the reader will; the sink is still there for one who would rather talk there.
+                if(who.equals("Mara")){if(own.getInt("RoomStage")==0&&!own.getBoolean("RoomDeclined"))PlaceForYouRoom.ask(p,h);else sink(p,h);}
+                else above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
             case DINNER->{if(who.equals("Mara")&&!own.getBoolean("SpoonTaken"))spoon(p,h);else if(own.getBoolean("SpoonTaken"))confront(p,h);else above(h,a,"Sit down.");}
             case OPEN->{boolean ready=own.getBoolean("Propped")&&own.getBoolean("PictureDown")&&own.getBoolean("TheoSilent");boolean knocking=own.getBoolean("Knocked")&&!own.getBoolean("TheoSilent");
                 // 0.4.686 (N9): before the threshold, each is asked their own question.
@@ -636,7 +647,12 @@ public final class PlaceForYou {
         var l=p.serverLevel();var h=house(b);if(h==null||own.getBoolean("Completed")||!own.contains("Snap"))return false;
         int ch=own.getInt("Chapter");var s=l.getBlockState(b.offset(rel));var kind=PlaceForYouBlock.kind(s);int held=holding(p);
         // The upstairs doors, shut this evening; the back door's stiff catch.
+        // 0.4.689: Mara's door, open while she has the reader upstairs.
+        int room=own.getInt("RoomStage");
+        if((rel.equals(PlaceForYouRoom.DOOR)||rel.equals(PlaceForYouRoom.DOOR.above()))&&room>=1&&room<=3){cue(p,"Mara's room.");return true;}
         if(PlaceForYouSite.SHUT_DOORS.stream().anyMatch(d->d.equals(rel)||d.above().equals(rel))){cue(p,"Shut. Not tonight.");return true;}
+        if(kind==PlaceForYouBlock.Kind.BASKET)return PlaceForYouRoom.basket(p,h);
+        if(kind==PlaceForYouBlock.Kind.DRESSER)return PlaceForYouRoom.dresser(p,h);
         if(rel.equals(PlaceForYouSite.BACK_DOOR)||rel.equals(PlaceForYouSite.BACK_DOOR.above())){cue(p,"The back door's catch is stiff, and the cupboard stands in front of it.");return true;}
         if(held==PlaceForYouRegistry.BAG)return putBag(p,h,rel);
         if(held==PlaceForYouRegistry.PHOTO)return PlaceForYouInvite.carried(p,h,rel);
