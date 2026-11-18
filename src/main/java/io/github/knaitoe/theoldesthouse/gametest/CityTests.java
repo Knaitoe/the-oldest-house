@@ -30,6 +30,7 @@ public final class CityTests {
     /** Run 1493: the last case of each batch leaves no players behind for whatever the runner takes up next. */
     private static void close(){if(active!=null){active.close();active=null;}BlackCity.clearAll();}
     @net.minecraft.gametest.framework.AfterBatch(batch="city_camp") public static void cityCampDone(net.minecraft.server.level.ServerLevel l){close();}
+    @net.minecraft.gametest.framework.AfterBatch(batch="city_rope") public static void cityRopeDone(net.minecraft.server.level.ServerLevel l){close();}
     @net.minecraft.gametest.framework.AfterBatch(batch="city_look") public static void cityLookDone(net.minecraft.server.level.ServerLevel l){close();}
     @net.minecraft.gametest.framework.AfterBatch(batch="city_tunnel") public static void cityTunnelDone(net.minecraft.server.level.ServerLevel l){close();}
     private static AABB box(LiteraryTests.Fixture f){var b=f.base(P);return new AABB(b.getX()-65,b.getY()-47,b.getZ()-193,b.getX()+65,b.getY()+61,b.getZ()+2);}
@@ -99,7 +100,8 @@ public final class CityTests {
      * from row to row and the same height over the lower ground at every edge; a stake at each end of a run and at least every fourth
      * row; none across a nook's mouth; it stops nobody; and no fence post is left on the steps.
      */
-    @GameTest(template="empty",batch="city_camp",timeoutTicks=3000)
+    // Run 1728: in the camp's batch this case's fixture closed the pass case's player and cleared the city's sites in the same tick.
+    @GameTest(template="empty",batch="city_rope",timeoutTicks=3000)
     public static void theAeroplaneStandsWholeAndAFixedRopeRunsUpThePass(GameTestHelper h){
         var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
         h.startSequence().thenExecute(()->f.chunks.hold(l,box(f)))
