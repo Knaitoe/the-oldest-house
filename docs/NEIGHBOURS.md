@@ -18,6 +18,7 @@ Nothing in the House names another mod's classes, and nothing in a neighbour nam
 |---|---|---|---|
 | `#the_oldest_house:not_home` | block tag, declared empty here | a neighbour fills it | a bed that counts for sleep and never for home (A Reaping's issued beds) |
 | `district_land` | message, `BiPredicate<ServerLevel, BlockPos>` | a neighbour sends it; any number, combined with OR | true on a district's land, worksites and margin |
+| `house_land` | message, `BiPredicate<ServerLevel, BlockPos>` | the House sends it to `a_reaping` | true on the manor's lot in the Overworld (`HouseLayout` MIN..MAX in x and z round its origin, at any height) and 8 blocks round it, from the morning the House comes, standing or fallen |
 
 A predicate that throws is taken as not holding and said once in the log. The cases install a district without a neighbour through `Neighbours.installDistrictForTesting`, and take it away in a `finally` or an `@AfterBatch` hook.
 
@@ -72,6 +73,25 @@ Unchanged, because they read the manor and never a home: the HouseRead HOME trai
 
 **No migrations.** A world from before keeps its respawn as home, and remembers a home bed from the first morning woken in one.
 
+## R2. The House never edits district land
+
+`house/HouseSpawnManager`, `house/HouseLayout`, `labyrinth/ElkFollows`, `labyrinth/OwnLight`, `labyrinth/FinaleController`, `labyrinth/HotelVignette`.
+
+**The manor's site.**
+- No site lies within 8 blocks (`Neighbours.MARGIN`) of a district. The House's envelope (`HouseLayout.ENVELOPE`: MIN..MAX in x and z, from 13 below the origin, where the foundations reach, to MAX_Y) is widened by 8 on every side and probed every 2 blocks and on its far faces; a district's land comes with a margin of its own, wider than that. A neighbour is asked last, and only of a site that would be chosen. The search's report counts the sites passed over for a district.
+- Nothing built may stand anywhere on the lot (`HouseLayout.SITE`, MIN..MAX in x, y and z), which closes two blind spots the search had. It looked only from the highest ground up, so a low wall, a fence, a shed or tilled ground lower down was buried under the floor and cut by the cellar; it now looks down to the cellar's floor. It looked only at the cleared ground, from three blocks in front of the house, while the steps come down and the demolition reaches eight; it now looks at the whole lot. Only air, the ground as the world made it (stone, dirt, sand, gravel, clay, terracotta, snow and ice, ores, bedrock, water and lava) and growth (`isNaturalGrowth`) may be there.
+- The finale's demolition clears exactly `HouseLayout.SITE`: the box the search found nothing built in.
+
+**The other edits.**
+- The elk never takes a penned animal standing on a district, nor opens a gate on one. With no other animal she takes nothing, and the debt is kept.
+- Your Own Light's visit touches nothing on a district: no chest, candle or campfire there. The chest turned round is the nearest the reader opened themselves (the House keeps the last sixteen chests a reader opened within 16 blocks of home, `Opened213`), else the nearest.
+- The endings' chest stands in the first free cell off any district; with no free cell, district or not, the pages are left at home for the reader as delivered items, where before they waited for a free cell forever. The sixty mornings' overgrowth leaves every cell on a district as it was.
+- The hotel tab is never collected from a container on a district: a chest, barrel or cart where it stands, either half of a double chest, and a container that stands nowhere of its own (an ender chest's contents) where the reader stands.
+
+Without a neighbour no district holds anywhere, and only the two blind spots, the demolition's box, the pages that waited for a free cell and Own Light's choice of chest are new.
+
 ## Cases
 
 `HomeBedTests`: a bed under an installed district is not home and the opening waits at NONE; a bed in `#not_home` is not home; a home bed outside every district works as it always has, with the door count skipping a refused click; the home is the bed last woken in on a morning, with its day and nights; sleep in a district still ages the House; the letter never lands on district land; beside a bed on district land the Sphinx refuses the survey with the new line, and a night there is neither copied nor counted for the copied homes. The artifact, elk, copied-home, Own Light and Harrigan cases put their readers in a bed of their own.
+
+`NeighbourLandTests`: the site search passes over a site whose envelope and margin touch a district by a block, and keeps one a block further off; tilled ground level with the ground and a fence where the steps come down each move the site, and a fence down in a hollow is something built while the empty hollow is not; `house_land` holds on the lot and its margin at any height, not a block beyond, only in the Overworld, standing or fallen; the elk takes no animal on a district and opens no gate on one; Your Own Light turns round the chest the reader opened, never one on a district, and puts out no light there; the hotel tab is not collected from a double chest with one half on a district; with every free cell on a district the endings' pages are delivered beside the bed, and the overgrowth changes nothing on a district while a crop off it ripens.

@@ -500,9 +500,10 @@ public final class FinaleController {
             }
         }
         if(world.getBoolean("Ended")&&world.contains("CollapsedOrigin")){
-            BlockPos origin=BlockPos.of(world.getLong("CollapsedOrigin"));int cursor=world.getInt("Demolition"),nx=HouseLayout.MAX_X-HouseLayout.MIN_X+1,nz=HouseLayout.MAX_Z-HouseLayout.MIN_Z+1;
-            int total=nx*nz*(HouseLayout.MAX_Y-HouseLayout.MIN_Y+1),end=Math.min(total,cursor+1536);
-            for(;cursor<end;cursor++){int x=HouseLayout.MIN_X+cursor%nx,z=HouseLayout.MIN_Z+(cursor/nx)%nz,y=HouseLayout.MIN_Y+cursor/(nx*nz);BlockPos pos=origin.offset(x,y,z);
+            // The demolition clears the lot the site search found nothing built on, and nothing else (HouseLayout.SITE).
+            BlockPos origin=BlockPos.of(world.getLong("CollapsedOrigin"));var lot=HouseLayout.SITE;int cursor=world.getInt("Demolition"),nx=lot.x1()-lot.x0()+1,nz=lot.z1()-lot.z0()+1;
+            int total=nx*nz*(lot.y1()-lot.y0()+1),end=Math.min(total,cursor+1536);
+            for(;cursor<end;cursor++){int x=lot.x0()+cursor%nx,z=lot.z0()+(cursor/nx)%nz,y=lot.y0()+cursor/(nx*nz);BlockPos pos=origin.offset(x,y,z);
                 var replacement=y<0?Blocks.DIRT.defaultBlockState():y==0?Blocks.GRASS_BLOCK.defaultBlockState():Blocks.AIR.defaultBlockState();server.overworld().setBlock(pos,replacement,FLAGS);
                 if(interior!=null)interior.setBlock(pos,Blocks.AIR.defaultBlockState(),FLAGS);}
             if(cursor!=world.getInt("Demolition")){world.putInt("Demolition",cursor);changed=true;}
@@ -511,29 +512,36 @@ public final class FinaleController {
     }
     /**
      * The pages left at the reader's home (HomeBed), read when they are delivered; beside the reader if they have none, and then only
-     * once they are in the Overworld: where they stand anywhere else is no place there.
+     * once they are in the Overworld: where they stand anywhere else is no place there. The chest stands in the first free cell that
+     * is on no neighbour's district (docs/NEIGHBOURS.md); with none, the pages are left there for the reader as they are.
      */
-    private static boolean epilogue(ServerPlayer player,CompoundTag record){
+    public static boolean epilogue(ServerPlayer player,CompoundTag record){
         ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);
         if(home==null){if(player.serverLevel()!=level)return false;home=player.blockPosition();}
-        level.getChunkAt(home);
-        for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())){
+        level.getChunkAt(home);List<ItemStack> pages=epiloguePages(player,record);
+        for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())&&!Neighbours.districtLand(level,candidate)){
             level.setBlock(candidate,Blocks.CHEST.defaultBlockState(),FLAGS);
             if(level.getBlockEntity(candidate) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest){
-                if(FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED){chest.setItem(0,WitnessEnding.epilogue(player));chest.setChanged();return true;}
-                chest.setItem(0,HouseWriting.book("Loose pages","?",HouseWriting.WritingStyle.WILL,List.of("I have been reading your account.\n\nThis page was not there when you left. Neither was the handwriting beneath it.")));
-                String unseen=Arrays.stream(LabyrinthPlace.values()).filter(p->p.isVignette()&&!LabyrinthData.get(player.server).visited(player.getUUID()).contains(p.id())).map(LabyrinthPlace::id).findFirst().orElse("an unmeasured room");
-                chest.setItem(1,HouseWriting.book("Unnumbered page","?",HouseWriting.WritingStyle.ZAMPANO,List.of("A room outside the survey: "+unseen.replace('_',' ')+".\n\nThe inventory is incomplete. It always was.")));chest.setChanged();return true;
+                for(int i=0;i<pages.size();i++)chest.setItem(i,pages.get(i));chest.setChanged();return true;
             }
         }
-        return false;
+        Vec3 spot=io.github.knaitoe.theoldesthouse.opening.Doorsteps.restingPoint(level,home);
+        for(int i=0;i<pages.size();i++)level.addFreshEntity(io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity.create(level,pages.get(i),spot.add(.14*i-.07*(pages.size()-1),0,0),player.getUUID()));
+        return true;
     }
-    /** Sixty days on, round the reader's home (HomeBed); nothing grows for a reader with none of their own. */
-    private static void overgrowBase(ServerPlayer player,CompoundTag record){
+    private static List<ItemStack> epiloguePages(ServerPlayer player,CompoundTag record){
+        if(FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED)return List.of(WitnessEnding.epilogue(player));
+        String unseen=Arrays.stream(LabyrinthPlace.values()).filter(p->p.isVignette()&&!LabyrinthData.get(player.server).visited(player.getUUID()).contains(p.id())).map(LabyrinthPlace::id).findFirst().orElse("an unmeasured room");
+        return List.of(HouseWriting.book("Loose pages","?",HouseWriting.WritingStyle.WILL,List.of("I have been reading your account.\n\nThis page was not there when you left. Neither was the handwriting beneath it.")),
+                HouseWriting.book("Unnumbered page","?",HouseWriting.WritingStyle.ZAMPANO,List.of("A room outside the survey: "+unseen.replace('_',' ')+".\n\nThe inventory is incomplete. It always was.")));
+    }
+    /** Sixty days on, round the reader's home (HomeBed), and nowhere on a neighbour's district; nothing grows for a reader with none of their own. */
+    public static void overgrowBase(ServerPlayer player,CompoundTag record){
         BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);if(home==null)return;
         ServerLevel level=player.server.overworld();
         // Age only crops and add plants to vacant, supported cells; built blocks stay intact.
         for(BlockPos p:BlockPos.betweenClosed(home.offset(-8,-3,-8),home.offset(8,5,8))){
+            if(Neighbours.districtLand(level,p))continue;
             var state=level.getBlockState(p);
             if(state.getBlock() instanceof CropBlock crop){level.setBlock(p,crop.getStateForAge(crop.getMaxAge()),FLAGS);continue;}
             if(!state.isAir()||Math.floorMod(p.asLong(),11)!=0)continue;

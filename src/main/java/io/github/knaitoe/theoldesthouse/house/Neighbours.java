@@ -9,9 +9,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 
 /**
@@ -24,6 +27,20 @@ public final class Neighbours {
     public static final TagKey<Block> NOT_HOME = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "not_home"));
     /** The message a neighbour sends with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on its districts' land. */
     public static final String DISTRICT_LAND = "district_land";
+    /** The message the House sends A Reaping with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on the manor's lot. */
+    public static final String HOUSE_LAND = "house_land";
+    /** A Reaping, the neighbour the House tells where its lot is. A message to a mod that is not loaded is never read. */
+    static final String A_REAPING = "a_reaping";
+    /**
+     * The margin the House keeps from a district: no district's land may lie within this many blocks of the House's envelope, and
+     * {@code house_land} holds this far round the manor's lot.
+     */
+    public static final int MARGIN = 8;
+    /**
+     * How far apart a box is probed for district land, along each side and always on its far faces. A district's land comes with its
+     * own margin, wider than this, so nothing of it lies between two probes.
+     */
+    static final int PROBE = 2;
 
     private static final List<BiPredicate<ServerLevel, BlockPos>> DISTRICTS = new CopyOnWriteArrayList<>();
     private static final List<BiPredicate<ServerLevel, BlockPos>> TEST_DISTRICTS = new CopyOnWriteArrayList<>();
@@ -33,7 +50,12 @@ public final class Neighbours {
     }
 
     public static void register(IEventBus modBus) {
+        modBus.addListener(Neighbours::onEnqueue);
         modBus.addListener(Neighbours::onProcess);
+    }
+
+    private static void onEnqueue(InterModEnqueueEvent event) {
+        InterModComms.sendTo(A_REAPING, HOUSE_LAND, () -> (BiPredicate<ServerLevel, BlockPos>) Neighbours::houseLand);
     }
 
     private static void onProcess(InterModProcessEvent event) {
@@ -58,6 +80,65 @@ public final class Neighbours {
      */
     public static boolean districtLand(ServerLevel level, BlockPos pos) {
         return holds(DISTRICTS, level, pos) || holds(TEST_DISTRICTS, level, pos);
+    }
+
+    /** Whether any neighbour has said where its districts are (or a case has installed one). With none, nothing is district land. */
+    public static boolean anyDistrict() {
+        return !DISTRICTS.isEmpty() || !TEST_DISTRICTS.isEmpty();
+    }
+
+    /**
+     * Whether any neighbour's district holds anywhere in {@code box}, probed every {@link #PROBE} blocks along each side and on its
+     * far faces. With no district, nothing is probed.
+     */
+    public static boolean districtLandIn(ServerLevel level, BoundingBox box) {
+        if (!anyDistrict()) {
+            return false;
+        }
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x : probes(box.minX(), box.maxX())) {
+            for (int z : probes(box.minZ(), box.maxZ())) {
+                for (int y : probes(box.minY(), box.maxY())) {
+                    if (districtLand(level, pos.set(x, y, z))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static int[] probes(int min, int max) {
+        int steps = (max - min) / PROBE;
+        boolean edge = min + steps * PROBE != max;
+        int[] at = new int[steps + 1 + (edge ? 1 : 0)];
+        for (int i = 0; i <= steps; i++) {
+            at[i] = min + i * PROBE;
+        }
+        if (edge) {
+            at[steps + 1] = max;
+        }
+        return at;
+    }
+
+    /**
+     * What the House tells A Reaping as {@code house_land}: the manor's lot in the Overworld (every block the House can set,
+     * {@link HouseLayout#MIN_X}..{@link HouseLayout#MAX_X} by {@link HouseLayout#MIN_Z}..{@link HouseLayout#MAX_Z} round its origin,
+     * at any height) and {@link #MARGIN} blocks round it, from the morning the House comes, standing or fallen. Before then, and
+     * anywhere else, it holds nowhere.
+     */
+    public static boolean houseLand(ServerLevel level, BlockPos pos) {
+        if (!level.dimension().equals(Level.OVERWORLD)) {
+            return false;
+        }
+        BlockPos origin = HouseSavedData.get(level.getServer()).housePosition().orElse(null);
+        if (origin == null) {
+            return false;
+        }
+        int x = pos.getX() - origin.getX();
+        int z = pos.getZ() - origin.getZ();
+        return x >= HouseLayout.MIN_X - MARGIN && x <= HouseLayout.MAX_X + MARGIN
+                && z >= HouseLayout.MIN_Z - MARGIN && z <= HouseLayout.MAX_Z + MARGIN;
     }
 
     private static boolean holds(List<BiPredicate<ServerLevel, BlockPos>> districts, ServerLevel level, BlockPos pos) {

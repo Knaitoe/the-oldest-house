@@ -47,6 +47,19 @@ public final class HouseLayout {
     public static final int CLEAR_MIN_Z = -3;
     public static final int CLEAR_MAX_Z = 29;
 
+    /**
+     * The House's lot, relative to its origin: every generated block's bounds, from the cellar's floor to the chimney tops. The site
+     * search finds nothing built in it, below the highest ground as well as above, and the finale's demolition clears exactly it.
+     */
+    public static final Box SITE = new Box(MIN_X, MIN_Y, MIN_Z, MAX_X, MAX_Y, MAX_Z);
+    /** How far below the floor course the foundations under it may reach. */
+    public static final int FOUNDATION_DEPTH = 13;
+    /**
+     * Everything the House may reach in the Overworld, relative to its origin: the lot, down to the foundations. No neighbour's
+     * district may lie within {@link Neighbours#MARGIN} of it.
+     */
+    public static final Box ENVELOPE = new Box(MIN_X, -FOUNDATION_DEPTH, MIN_Z, MAX_X, MAX_Y, MAX_Z);
+
     /** Rough centre of the whole house, used for spawn projection and observer range. */
     public static final int CENTER_X = 13;
     public static final int CENTER_Z = 12;

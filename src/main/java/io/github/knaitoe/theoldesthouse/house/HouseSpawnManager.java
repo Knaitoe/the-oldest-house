@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.neoforged.neoforge.common.Tags;
 
 /**
  * Finds the Navidsons a site next door to the player and builds the House
@@ -32,8 +34,13 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * The best site of the first pass that finds any wins. Nothing that looks
  * made by a player is ever cleared: a candidate with planks, glass, stripped
  * logs, player-placed leaves or anything with a block entity in its way is
- * rejected in every pass. Candidates reaching into chunks that
- * are not loaded are skipped; as a last resort a few near ones are loaded.
+ * rejected in every pass, and so is one with anything built anywhere on its
+ * lot ({@link HouseLayout#SITE}): below the highest ground, down to the
+ * cellar's floor, where the floor would bury it and the cellar cut it, and in
+ * front, where the steps come down and the finale's demolition reaches. No
+ * site lies within {@link Neighbours#MARGIN} blocks of a neighbour's district
+ * (docs/NEIGHBOURS.md). Candidates reaching into chunks that are not loaded
+ * are skipped; as a last resort a few near ones are loaded.
  */
 public final class HouseSpawnManager {
     private static final int MIN_DISTANCE = 32;
@@ -52,13 +59,14 @@ public final class HouseSpawnManager {
 
     /** Why the last search went the way it did, for status and logs. */
     public record Report(@Nullable BlockPos origin, String pass, int candidates, int unloaded, int built,
-                         int steep, int wet) {
+                         int steep, int wet, int district) {
         public String describe() {
             String result = origin == null
                     ? "no site found"
                     : "site at " + origin.getX() + "," + origin.getY() + "," + origin.getZ() + " (" + pass + " pass)";
             return result + "; " + candidates + " candidates: " + unloaded + " in unloaded chunks, "
-                    + built + " blocked by something built, " + steep + " too steep, " + wet + " too wet";
+                    + built + " blocked by something built, " + steep + " too steep, " + wet + " too wet, "
+                    + district + " by a neighbour's district";
         }
     }
 
@@ -83,11 +91,7 @@ public final class HouseSpawnManager {
         if (data.isSpawned()) {
             return true;
         }
-        Report report = findSite(level, anchor, false);
-        if (report.origin() == null) {
-            // Last resort: load the chunks around a few near candidates and look again.
-            report = findSite(level, anchor, true);
-        }
+        Report report = survey(level, anchor);
         lastReport = report;
         if (report.origin() == null) {
             TheOldestHouse.LOGGER.warn("No site for the house near {}: {}. It will try again next morning.",
@@ -102,12 +106,23 @@ public final class HouseSpawnManager {
         return true;
     }
 
+    /** Where the House would stand near {@code anchor} now, and why; nothing is built. */
+    public static Report survey(ServerLevel level, BlockPos anchor) {
+        Report report = findSite(level, anchor, false);
+        if (report.origin() == null) {
+            // Last resort: load the chunks around a few near candidates and look again.
+            report = findSite(level, anchor, true);
+        }
+        return report;
+    }
+
     private static Report findSite(ServerLevel level, BlockPos anchor, boolean loadNear) {
         int candidates = 0;
         int unloaded = 0;
         int built = 0;
         int steep = 0;
         int wet = 0;
+        int district = 0;
 
         for (Pass pass : PASSES) {
             BlockPos best = null;
@@ -151,7 +166,7 @@ public final class HouseSpawnManager {
 
                     BlockPos origin = new BlockPos(originX, maxY, originZ);
                     boolean clear = pass.clearTrees() ? onlyNatureInTheWay(level, origin) : HouseBuilder.canBuildAt(level, origin);
-                    if (!clear) {
+                    if (!clear || !nothingBuiltOnTheLot(level, origin)) {
                         built++;
                         continue;
                     }
@@ -162,16 +177,63 @@ public final class HouseSpawnManager {
                     }
                     int score = (maxY - minY) * 30 + water * 60 + distance;
                     if (score < bestScore) {
+                        // A neighbour's answer is asked last, and only of a site that would be chosen.
+                        if (nearDistrict(level, origin)) {
+                            district++;
+                            continue;
+                        }
                         bestScore = score;
                         best = origin;
                     }
                 }
             }
             if (best != null) {
-                return new Report(best, pass.name(), candidates, unloaded, built, steep, wet);
+                return new Report(best, pass.name(), candidates, unloaded, built, steep, wet, district);
             }
         }
-        return new Report(null, "", candidates, unloaded, built, steep, wet);
+        return new Report(null, "", candidates, unloaded, built, steep, wet, district);
+    }
+
+    // ------------------------------------------------------------------
+    // The lot and the neighbours
+
+    /**
+     * Nothing anyone built stands anywhere on the lot ({@link HouseLayout#SITE}): not above the highest ground, not below it down to
+     * the cellar's floor, where low walls, fences, sheds and tilled ground would be buried under the floor and cut by the cellar, and
+     * not in front, where the steps come down. Only air, ground and growth the world put there itself.
+     */
+    public static boolean nothingBuiltOnTheLot(ServerLevel level, BlockPos origin) {
+        HouseLayout.Box site = HouseLayout.SITE;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int x = site.x0(); x <= site.x1(); x++) {
+            for (int z = site.z0(); z <= site.z1(); z++) {
+                int worldX = origin.getX() + x;
+                int worldZ = origin.getZ() + z;
+                // Above the highest block of a column there is only air.
+                int top = Math.min(origin.getY() + site.y1(), level.getHeight(Heightmap.Types.WORLD_SURFACE, worldX, worldZ) - 1);
+                for (int y = origin.getY() + site.y0(); y <= top; y++) {
+                    if (!isNaturalGround(level.getBlockState(pos.set(worldX, y, worldZ)))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether a neighbour's district lies within {@link Neighbours#MARGIN} blocks of the House's envelope ({@link HouseLayout#ENVELOPE})
+     * with its origin at {@code origin}.
+     */
+    public static boolean nearDistrict(ServerLevel level, BlockPos origin) {
+        if (!Neighbours.anyDistrict()) {
+            return false;
+        }
+        HouseLayout.Box envelope = HouseLayout.ENVELOPE;
+        int margin = Neighbours.MARGIN;
+        return Neighbours.districtLandIn(level, new BoundingBox(
+                origin.getX() + envelope.x0() - margin, origin.getY() + envelope.y0() - margin, origin.getZ() + envelope.z0() - margin,
+                origin.getX() + envelope.x1() + margin, origin.getY() + envelope.y1() + margin, origin.getZ() + envelope.z1() + margin));
     }
 
     // ------------------------------------------------------------------
@@ -273,6 +335,29 @@ public final class HouseSpawnManager {
                 || state.is(Blocks.MUSHROOM_STEM)
                 || state.is(Blocks.PUMPKIN)
                 || state.is(Blocks.MELON);
+    }
+
+    /**
+     * The ground as the world made it, or growth on it: stone, dirt, sand, gravel, clay, terracotta, snow and ice, ores, bedrock,
+     * water and lava, and {@link #isNaturalGrowth}. Tilled ground, paths, cobblestone, planks and anything with a block entity are
+     * not.
+     */
+    public static boolean isNaturalGround(BlockState state) {
+        return state.isAir()
+                || isNaturalGrowth(state)
+                || state.is(BlockTags.OVERWORLD_CARVER_REPLACEABLES)
+                || state.is(BlockTags.SCULK_REPLACEABLE)
+                || state.is(BlockTags.SNOW)
+                || state.is(BlockTags.ICE)
+                || state.is(Tags.Blocks.ORES)
+                || state.is(Blocks.BEDROCK)
+                || state.is(Blocks.MAGMA_BLOCK)
+                || state.is(Blocks.OBSIDIAN)
+                || state.is(Blocks.POINTED_DRIPSTONE)
+                || state.is(Blocks.AMETHYST_BLOCK)
+                || state.is(Blocks.BUDDING_AMETHYST)
+                || state.is(Blocks.INFESTED_STONE)
+                || state.is(Blocks.INFESTED_DEEPSLATE);
     }
 
     /** Trees taller than the house would otherwise be left hanging over the roof. */
