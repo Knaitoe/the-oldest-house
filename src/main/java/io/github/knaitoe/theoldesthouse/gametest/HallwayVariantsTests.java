@@ -37,7 +37,14 @@ public final class HallwayVariantsTests {
         }
         LabyrinthData d(){return LabyrinthData.get(level.getServer());}
         void open(BlockPos at){var s=level.getBlockState(at);if(s.getBlock() instanceof DoorBlock door)door.setOpen(null,level,s,at,true);}
-        ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);readers.add(p);at(p,.5,0,3.5);p.setNoGravity(true);p.getFoodData().setFoodLevel(6);return p;}
+        /**
+         * A reader who has been in the House a while: a player who has just joined cannot be hurt for sixty ticks, and a room that loads
+         * at once would let a hazard fall inside that time and find nobody it can hurt (0.4.712: the plaster case did, the steam and wire
+         * cases only passed because their rooms took longer to load).
+         */
+        ServerPlayer player(String name){var p=NativeTestPlayers.survival(h,name);readers.add(p);at(p,.5,0,3.5);p.setNoGravity(true);p.getFoodData().setFoodLevel(6);
+            try{var f=ServerPlayer.class.getDeclaredField("spawnInvulnerableTime");f.setAccessible(true);f.setInt(p,0);}catch(ReflectiveOperationException e){throw new IllegalStateException(e);}
+            return p;}
         void at(ServerPlayer p,double x,double y,double z){p.teleportTo(level,base.getX()+x,base.getY()+y,base.getZ()+z,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);p.setOnGround(true);}
         void clock(long n){var t=HallwayHazards.state(level,base);t.putLong("Clock",n);d().setStateEntry(HallwayHazards.STATE,Long.toString(base.asLong()),t);}
         void reset(){d().setStateEntry(HallwayHazards.STATE,Long.toString(base.asLong()),new CompoundTag());}
@@ -132,7 +139,7 @@ public final class HallwayVariantsTests {
             .thenExecute(()->{h.assertTrue(!HallwayHazards.state(f.level,f.base).getBoolean("Plaster0Fallen")&&hit.getHealth()==1.5F,"dust and cracks precede the fall without hurting anyone");
                 h.assertTrue(f.level.getBlockState(f.base.offset(0,3,-8)).getValue(HallwayFittingBlock.STAGE)==1,"the ceiling visibly cracks during the warning");})
             .thenExecuteFor(28,()->{})
-            .thenExecute(()->h.assertTrue(HallwayHazards.state(f.level,f.base).getBoolean("Plaster0Fallen")&&hit.getHealth()>=1&&hit.getHealth()<1.5F&&safe.getHealth()==20,"the fallen span gives a nonfatal hit and the recess protects the other reader"))
+            .thenExecute(()->h.assertTrue(HallwayHazards.state(f.level,f.base).getBoolean("Plaster0Fallen")&&hit.getHealth()>=1&&hit.getHealth()<1.5F&&safe.getHealth()==20,"the fallen span gives a nonfatal hit and the recess protects the other reader: fallen "+HallwayHazards.state(f.level,f.base).getBoolean("Plaster0Fallen")+", age "+HallwayHazards.state(f.level,f.base).getInt("Plaster0")+", hit "+hit.getHealth()+", sheltered "+safe.getHealth()))
             .thenExecuteFor(90,()->{})
             .thenExecute(()->h.assertTrue(hit.getHealth()>=1&&f.level.getBlockState(f.base.offset(0,0,-8)).getCollisionShape(f.level,f.base.offset(0,0,-8)).isEmpty(),"it falls once and the remaining rubble does not obstruct a body"))
             .thenSucceed();

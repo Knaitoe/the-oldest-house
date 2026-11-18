@@ -48,7 +48,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 /**
  * What the House made, and the reader's favourite weapon (docs/NEIGHBOURS.md, R7 and the owner's decisions of 17 November). The
  * House's own stamps on an outside thing (the Mother's marks of who carried it and since when, a weapon's identity and the mark of a
- * copy) do not make it House-made, so it does not walk past the hall drawers; custom data of any other kind does, as it always did, and
+ * copy) do not make it House-made, so it does not walk past the hall drawers (since 0.4.704 the drawers take outside things where the
+ * reader crosses from the manor into the rest of the House, not at the front door); custom data of any other kind does, as it always did, and
  * that is what the House tells A Reaping as {@code house_made}. The one stamped thing that does pass is the reader's favourite, the
  * weapon the finale would arm them with. A weapon from another mod, in NeoForge's common tags, can be that favourite: its uses are
  * counted by the blow it deals, and the Minotaur knows the original by what dealt the blow.
@@ -146,7 +147,7 @@ public final class HouseMadeTests {
     // ------------------------------------------------------------------------------------------------ the stamps
     /**
      * The House's stamps alone do not make a thing House-made: a pickaxe the Mother has marked as carried, a sword with an identity
-     * that is not the favourite, and a House copy of an axe are all put away at the door; a stick that carries something else of the
+     * that is not the favourite, and a House copy of an axe are all put away at the hall; a stick that carries something else of the
      * House's as well, and the House's own furniture, are House-made and let in. House-made is what A Reaping is told.
      */
     @GameTest(template = "empty", batch = "house_made", timeoutTicks = 100)
@@ -186,10 +187,12 @@ public final class HouseMadeTests {
             inv.setItem(4, furniture);
             HouseKeeping.update(p, Where.MANOR);
             var keep = HouseKeeping.of(p);
+            h.assertTrue(keep.drawer.isEmpty() && carrying(p, Items.IRON_PICKAXE) == 1, "nothing is taken at the front door");
+            HouseKeeping.update(p, Where.BEYOND);
             for (var taken : java.util.List.of(Items.IRON_PICKAXE, Items.IRON_SWORD, Items.IRON_AXE)) {
-                h.assertTrue(carrying(p, taken) == 0 && count(keep.drawer, taken) == 1, "put away at the door: " + taken);
+                h.assertTrue(carrying(p, taken) == 0 && count(keep.drawer, taken) == 1, "put away at the hall: " + taken);
             }
-            h.assertTrue(carrying(p, Items.STICK) == 1 && carrying(p, HouseBlocks.FURNITURE_ITEM.get()) == 1, "the House-made stick and the furniture are let in");
+            h.assertTrue(carrying(p, Items.STICK) == 1 && carrying(p, HouseBlocks.FURNITURE_ITEM.get()) == 1, "the House-made stick and the furniture go on past the hall");
         } finally {
             HouseKeeping.get(p.server).forget(p.getUUID());
             NativeTestPlayers.remove(p);
@@ -220,13 +223,16 @@ public final class HouseMadeTests {
             inv.setItem(2, copy);
             h.assertTrue(WeaponHistory.wounds(axe, WeaponHistory.favorite(p)), "the axe is the favourite");
             HouseKeeping.update(p, Where.MANOR);
+            HouseKeeping.update(p, Where.BEYOND);
             var keep = HouseKeeping.of(p);
-            h.assertTrue(inv.getItem(0) == axe && WeaponHistory.wounds(inv.getItem(0), WeaponHistory.favorite(p)), "the favourite passes the door");
+            h.assertTrue(inv.getItem(0) == axe && WeaponHistory.wounds(inv.getItem(0), WeaponHistory.favorite(p)), "the favourite passes the hall");
             h.assertTrue(carrying(p, Items.IRON_SWORD) == 0 && count(keep.drawer, Items.IRON_SWORD) == 1, "another stamped weapon does not");
             h.assertTrue(count(keep.drawer, Items.IRON_AXE) == 1 && carrying(p, Items.IRON_AXE) == 1, "nor a House copy of the favourite");
-            h.assertTrue(count(keep.loose, Items.IRON_AXE) == 1, "the favourite is the reader's own thing, loose in the manor");
+            h.assertTrue(count(keep.loose, Items.IRON_AXE) == 1, "the favourite is the reader's own thing, loose");
 
-            // The sword comes out of the drawer and is used until it is the favourite; past the hall it goes on and the axe goes back.
+            // Back in the manor the sword comes out of the drawer and is used until it is the favourite; past the hall it goes on and
+            // the axe goes back.
+            HouseKeeping.update(p, Where.MANOR);
             HouseKeeping.retrieve(p, null);
             int at = -1;
             for (int i = 0; i < inv.getContainerSize(); i++) {
@@ -254,8 +260,8 @@ public final class HouseMadeTests {
 
     // ------------------------------------------------------------------------------------------------ stamped since
     /**
-     * What the House stamps on a thing after it was listed does not change whose it is. An outside pickaxe and sword, put away unmarked,
-     * taken out, then marked by the Mother and swung once (not the favourite), go back to the drawer past the hall. Something the House
+     * What the House stamps on a thing after it was listed does not change whose it is. An outside pickaxe and sword, put away unmarked at
+     * the hall, taken out, then marked by the Mother and swung once (not the favourite), go back to the drawer past the hall. Something the House
      * gave, marked and swung outside, comes back in with the reader; and an outside sword with no identity yet does not take the place
      * of the House's sword that has one.
      */
@@ -271,7 +277,10 @@ public final class HouseMadeTests {
             inv.setItem(1, new ItemStack(Items.IRON_SWORD));
             HouseKeeping.update(p, Where.MANOR);
             var keep = HouseKeeping.of(p);
-            h.assertTrue(count(keep.drawer, Items.IRON_PICKAXE) == 1 && count(keep.drawer, Items.IRON_SWORD) == 1, "both put away unmarked at the door");
+            h.assertTrue(keep.drawer.isEmpty() && carrying(p, Items.IRON_PICKAXE) == 1 && carrying(p, Items.IRON_SWORD) == 1, "nothing is taken at the front door");
+            HouseKeeping.update(p, Where.BEYOND);
+            h.assertTrue(count(keep.drawer, Items.IRON_PICKAXE) == 1 && count(keep.drawer, Items.IRON_SWORD) == 1, "both put away unmarked at the hall");
+            HouseKeeping.update(p, Where.MANOR);
             HouseKeeping.retrieve(p, null);
             var pickaxe = held(p, Items.IRON_PICKAXE);
             var sword = held(p, Items.IRON_SWORD);
@@ -299,7 +308,8 @@ public final class HouseMadeTests {
             WeaponHistory.record(p, given, 1);
             inv.setItem(0, new ItemStack(Items.STONE_SWORD));
             HouseKeeping.update(p, Where.MANOR);
-            h.assertTrue(carrying(p, Items.IRON_AXE) == 1 && count(keep.drawer, Items.IRON_AXE) == 0, "the House's axe, marked and swung outside, comes back in");
+            HouseKeeping.update(p, Where.BEYOND);
+            h.assertTrue(carrying(p, Items.IRON_AXE) == 1 && count(keep.drawer, Items.IRON_AXE) == 0, "the House's axe, marked and swung outside, comes back in and past the hall");
             h.assertTrue(carrying(p, Items.STONE_SWORD) == 1 && WeaponHistory.wounds(held(p, Items.STONE_SWORD), bladeId) && count(keep.drawer, Items.STONE_SWORD) == 1,
                     "and the House's sword with it, while the outside one with no identity yet is put away");
         } finally {
@@ -452,8 +462,10 @@ public final class HouseMadeTests {
             inv.setItem(0, sword);
             inv.setItem(1, new ItemStack(Items.IRON_AXE));
             HouseKeeping.update(p, Where.MANOR);
+            HouseKeeping.update(p, Where.BEYOND);
             var keep = HouseKeeping.of(p);
-            h.assertTrue(carrying(p, Items.IRON_SWORD) == 1 && count(keep.drawer, Items.IRON_AXE) == 1, "the favourite sword passes the door, and the unswung axe is put away");
+            h.assertTrue(carrying(p, Items.IRON_SWORD) == 1 && count(keep.drawer, Items.IRON_AXE) == 1, "the favourite sword passes the hall, and the unswung axe is put away");
+            HouseKeeping.update(p, Where.MANOR);
             HouseKeeping.retrieve(p, null);
             h.assertTrue(carrying(p, Items.IRON_AXE) == 1 && count(keep.loose, Items.IRON_AXE) == 1, "the axe out of the drawer is the reader's own, loose");
 
@@ -613,6 +625,7 @@ public final class HouseMadeTests {
         inv.setItem(0, blade);
         inv.setItem(1, sword);
         HouseKeeping.update(p, Where.MANOR);
+        HouseKeeping.update(p, Where.BEYOND);
         h.assertTrue(carrying(p, Items.SHEARS) == 1 && carrying(p, Items.IRON_SWORD) == 0, "the favourite from another mod passes the drawers, and the sword does not");
         target.discard();
         h.succeed();
