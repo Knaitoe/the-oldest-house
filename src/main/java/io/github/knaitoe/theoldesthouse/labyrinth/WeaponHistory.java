@@ -1,6 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
@@ -75,17 +76,19 @@ public final class WeaponHistory {
                 .getCompound(player.getStringUUID()).getCompound(id.toString()).getCompound("Sample"));
     }
     public static boolean wounds(ItemStack stack, @Nullable UUID original) { return original != null && original.equals(identity(stack)); }
+    /** Nothing is recorded in a neighbour's world that is not the reader's own (docs/NEIGHBOURS.md R3): the House does not watch there. */
+    public static boolean watched(ServerPlayer player) { return !Neighbours.notOwnWorld(player.level()); }
     @SubscribeEvent public static void attack(AttackEntityEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && !(event.getTarget() instanceof MinotaurEntity))
+        if (event.getEntity() instanceof ServerPlayer player && watched(player) && !(event.getTarget() instanceof MinotaurEntity))
             record(player, player.getMainHandItem(), 1);
     }
     @SubscribeEvent public static void use(PlayerInteractEvent.RightClickItem event) {
-        if (event.getEntity() instanceof ServerPlayer player && (event.getItemStack().getItem() instanceof BowItem
+        if (event.getEntity() instanceof ServerPlayer player && watched(player) && (event.getItemStack().getItem() instanceof BowItem
                 || event.getItemStack().getItem() instanceof CrossbowItem || event.getItemStack().getItem() instanceof TridentItem))
             record(player, event.getItemStack(), 1);
     }
     @SubscribeEvent public static void toss(net.neoforged.neoforge.event.entity.item.ItemTossEvent event) {
-        if(event.getPlayer() instanceof ServerPlayer player&&weapon(event.getEntity().getItem())&&identity(event.getEntity().getItem())==null)
+        if(event.getPlayer() instanceof ServerPlayer player&&watched(player)&&weapon(event.getEntity().getItem())&&identity(event.getEntity().getItem())==null)
             record(player,event.getEntity().getItem(),Math.max(1,player.getStats().getValue(Stats.ITEM_USED.get(event.getEntity().getItem().getItem()))));
     }
 }

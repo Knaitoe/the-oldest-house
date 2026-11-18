@@ -119,7 +119,8 @@ public final class StelaPassage {
     public static InteractionResult press(ServerPlayer p,ItemStack stone,BlockPos clicked,InteractionHand hand){
         var l=p.serverLevel();var state=l.getBlockState(clicked);
         if(!DreamStela.is(stone)||!fill(state))return InteractionResult.PASS;
-        if(HouseDimensions.isHouseDimension(l.dimension())){line(p,"Nothing here gives to it.");return InteractionResult.CONSUME;}
+        // Only in the reader's own world: never the House, nor a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3).
+        if(!HouseDimensions.ownWorld(l)){line(p,"Nothing here gives to it.");return InteractionResult.CONSUME;}
         var owner=DreamStela.ownerOf(stone);
         if(owner==null||!owner.equals(p.getUUID())){line(p,"It is not yours to press.");return InteractionResult.CONSUME;}
         var store=Store.get(p.server);

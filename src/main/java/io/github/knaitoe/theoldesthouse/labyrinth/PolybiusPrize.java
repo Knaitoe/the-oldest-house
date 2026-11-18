@@ -159,10 +159,12 @@ public class PolybiusPrize extends Item {
 
     /**
      * The mood ring's stone, 0 to 4: violet when its wearer is whole and somewhere ordinary, blue when whole inside the House, green
-     * when a little hurt, amber when badly hurt, black while being hurt and on no finger at all.
+     * when a little hurt, amber when badly hurt, black while being hurt and on no finger at all. In a neighbour's world that is not the
+     * wearer's own it shows nothing: violet, however they are (docs/NEIGHBOURS.md R3), so nobody there reads their wounds off it.
      */
     public static int mood(LivingEntity e){
         if(e==null)return 4;
+        if(io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(e.level()))return 0;
         if(e.hurtTime>0)return 4;
         float health=e.getHealth()/Math.max(1F,e.getMaxHealth());
         if(health<.4F)return 3;

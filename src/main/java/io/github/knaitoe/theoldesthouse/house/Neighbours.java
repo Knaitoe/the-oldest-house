@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.InterModComms;
@@ -25,6 +26,12 @@ import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 public final class Neighbours {
     /** A bed block in this tag counts for sleep and never for home: a bed the reader was given (A Reaping's issued beds). */
     public static final TagKey<Block> NOT_HOME = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "not_home"));
+    /**
+     * A dimension type in this tag is not the reader's own world (A Reaping's arena, and later its Capitol and train). The House keeps
+     * out of it: its curses, returns, tab, weapon history and prizes (docs/NEIGHBOURS.md, R3). Read as {@link #notOwnWorld}, and with
+     * the House's own dimensions as {@link HouseDimensions#ownWorld}.
+     */
+    public static final TagKey<DimensionType> NOT_OWN_WORLD = TagKey.create(Registries.DIMENSION_TYPE, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "not_own_world"));
     /**
      * The message a neighbour sends with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on its districts' land and worksites
      * and at least {@link #MARGIN} blocks round them (docs/NEIGHBOURS.md): the House probes a box only every {@link #PROBE} blocks.
@@ -89,6 +96,14 @@ public final class Neighbours {
         }
         BlockPos at = pos.immutable();
         return holds(DISTRICTS, level, at) || holds(TEST_DISTRICTS, level, at);
+    }
+
+    /**
+     * Whether {@code level} is a world a neighbour says is not the reader's own ({@link #NOT_OWN_WORLD}). With no neighbour the tag is
+     * empty and this holds nowhere. Read on both sides: the game sends dimension type tags to every client.
+     */
+    public static boolean notOwnWorld(Level level) {
+        return level.dimensionTypeRegistration().is(NOT_OWN_WORLD);
     }
 
     /** Whether any neighbour has said where its districts are (or a case has installed one). With none, nothing is district land. */
