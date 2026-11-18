@@ -21,7 +21,9 @@ import net.minecraft.world.phys.shapes.*;
 public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<PlaceForYouBlock> CODEC=simpleCodec(PlaceForYouBlock::new);
     public enum Kind implements StringRepresentable {
-        TABLE,BAG,CARD,PLATE,KETTLE,CUPS,RADIO,PHOTO,PICTURES,CUPBOARD,ROUTINE,SPOON,COUNTER,STOVE,HOOKS,GLASS;
+        TABLE,BAG,CARD,PLATE,KETTLE,CUPS,RADIO,PHOTO,PICTURES,CUPBOARD,ROUTINE,SPOON,COUNTER,STOVE,HOOKS,GLASS,
+        /** 0.4.689: Mara's laundry basket (full, half, empty) and her chest of drawers (shut, the top drawer out with the photograph in it). */
+        BASKET,DRESSER;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -51,12 +53,14 @@ public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
             case ROUTINE,SPOON->Block.box(2,0,2,14,1,14);
             case HOOKS->box(f,1,1,13,15,12,16);
             case GLASS->box(f,2,0,14,14,16,16);
+            case BASKET->Block.box(2.5,0,2.5,13.5,s.getValue(STAGE)==0?9:7.5,13.5);
+            case DRESSER->box(f,1,0,2,15,15,16);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case TABLE,CUPBOARD,COUNTER,STOVE->Shapes.block();
-            case BAG,RADIO,KETTLE->getShape(s,l,p,c);
+            case BAG,RADIO,KETTLE,BASKET,DRESSER->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }
