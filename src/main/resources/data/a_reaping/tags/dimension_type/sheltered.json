@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "the_oldest_house:house_interior",
+    "the_oldest_house:outside",
+    "the_oldest_house:between"
+  ]
+}

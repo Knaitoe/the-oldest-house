@@ -278,6 +278,7 @@ public final class Hillary {
             return;
         }
         HillaryTag tag = tagOf(wolf);
+        io.github.knaitoe.theoldesthouse.house.Neighbours.notAFighter(wolf, guiding(wolf));
         if (wolf.getPersistentData().getBoolean(io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.GUIDE)) return;
         boolean introducing=introductionActive(wolf);
         if (wolf.getTags().contains(io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays.PET))return;
@@ -351,6 +352,21 @@ public final class Hillary {
         } else {
             greeting.crouchTicks = 0;
         }
+    }
+
+    /**
+     * Whether she is guiding, for a neighbour that must never fight her (docs/NEIGHBOURS.md, R5): from her reader's doorstep until her
+     * introduction to the manor is done, or her reader has been inside, as her walk to the manor stops then; and in the finale while she
+     * is its guide. Never as one of the Mother's pets. She carries {@link io.github.knaitoe.theoldesthouse.house.Neighbours#NOT_A_FIGHTER}
+     * while she guides, and it comes off after.
+     */
+    public static boolean guiding(Wolf wolf) {
+        if (wolf.getPersistentData().getBoolean(io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.GUIDE)) return true;
+        HillaryTag tag = tagOf(wolf);
+        if (tag == null || wolf.getPersistentData().getBoolean(INTRO_DONE)
+                || wolf.getTags().contains(io.github.knaitoe.theoldesthouse.labyrinth.MotherOfStrays.PET)) return false;
+        ServerPlayer recipient = wolf.getServer() == null ? null : wolf.getServer().getPlayerList().getPlayer(tag.recipient());
+        return recipient == null || !OpeningSequence.state(recipient).enteredHouse();
     }
 
     /** The player this Hillary belongs to is at the stage where she should come to them. */

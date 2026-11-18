@@ -2,18 +2,22 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import java.util.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -72,22 +76,51 @@ public final class ElkFollows {
     private static void hint(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),false);}
 
     // ------------------------------------------------------------------------------------------------ the record
+    /** A kind the men count, and how they say one of it and many. */
+    record Kind(EntityType<?> type,String one,String many){}
+    /**
+     * The kinds the men count: the animals of the reader's world, in the order they name them, then any game a neighbour lists in
+     * {@code #the_oldest_house:hunted} (the owner, 17 November: "Yes, the house counts kills from the game"; docs/NEIGHBOURS.md), by its
+     * own name.
+     */
+    static List<Kind> counted(){
+        var kinds=new ArrayList<Kind>();
+        for(var e:COUNTED)kinds.add(new Kind(e.getKey(),single(e.getValue()),e.getValue()));
+        for(EntityType<?> type:BuiltInRegistries.ENTITY_TYPE)if(type.is(Neighbours.HUNTED)&&COUNTED.stream().noneMatch(e->e.getKey()==type)){String one=name(type);kinds.add(new Kind(type,one,plural(one)));}
+        return kinds;
+    }
+    /** Game: an animal, or a creature a neighbour lists as game ({@code #the_oldest_house:hunted}). */
+    static boolean game(Entity e){return e instanceof Animal||e.getType().is(Neighbours.HUNTED);}
     /** Every animal the reader has killed in their world, by the game's own count. */
-    public static int kills(ServerPlayer p){int n=0;for(var e:COUNTED)n+=p.getStats().getValue(Stats.ENTITY_KILLED.get(e.getKey()));return n;}
+    public static int kills(ServerPlayer p){int n=0;for(var k:counted())n+=p.getStats().getValue(Stats.ENTITY_KILLED.get(k.type()));return n;}
     /**
      * What the men say of the reader's record: the two kinds they have killed most, named back to them with their name in
      * between; or, for a reader who has killed none, the accusation faltering.
      */
     public static String accusation(ServerPlayer p){
-        var counts=new ArrayList<Map.Entry<String,Integer>>();
-        for(var e:COUNTED){int n=p.getStats().getValue(Stats.ENTITY_KILLED.get(e.getKey()));if(n>0)counts.add(Map.entry(e.getValue(),n));}
+        var counts=new ArrayList<Map.Entry<Kind,Integer>>();
+        for(var k:counted()){int n=p.getStats().getValue(Stats.ENTITY_KILLED.get(k.type()));if(n>0)counts.add(Map.entry(k,n));}
         if(counts.isEmpty())return "Never even shot a deer, %s? Then why'd it look at you?";
         counts.sort((a,b)->b.getValue()-a.getValue());
-        String first=capital(words(counts.get(0).getValue()))+" "+(counts.get(0).getValue()==1?single(counts.get(0).getKey()):counts.get(0).getKey());
+        String first=capital(words(counts.get(0).getValue()))+" "+said(counts.get(0));
         if(counts.size()==1)return first+", %s. We counted.";
-        return first+", %s. "+capital(words(counts.get(1).getValue()))+" "+(counts.get(1).getValue()==1?single(counts.get(1).getKey()):counts.get(1).getKey())+".";
+        return first+", %s. "+capital(words(counts.get(1).getValue()))+" "+said(counts.get(1))+".";
     }
+    private static String said(Map.Entry<Kind,Integer> count){return count.getValue()==1?count.getKey().one():count.getKey().many();}
     static String single(String plural){return switch(plural){case "sheep"->"sheep";case "foxes"->"fox";case "wolves"->"wolf";default->plural.endsWith("s")?plural.substring(0,plural.length()-1):plural;};}
+    /** A neighbour's creature by its own name, as the game gives it, or by its id where the game has no name for it. */
+    static String name(EntityType<?> type){
+        String name=type.getDescription().getString();
+        if(name.isBlank()||name.equals(type.getDescriptionId()))name=BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath().replace('_',' ');
+        return name.toLowerCase(Locale.ROOT);
+    }
+    /** Many of a creature, as the men would say it. */
+    static String plural(String one){
+        for(String same:new String[]{"deer","sheep","fish","moose","elk","bison","salmon","cod","trout"})if(one.endsWith(same))return one;
+        if(one.endsWith("s")||one.endsWith("x")||one.endsWith("z")||one.endsWith("ch")||one.endsWith("sh"))return one+"es";
+        if(one.length()>1&&one.endsWith("y")&&"aeiou".indexOf(one.charAt(one.length()-2))<0)return one.substring(0,one.length()-1)+"ies";
+        return one+"s";
+    }
     static String capital(String s){return s.isEmpty()?s:Character.toUpperCase(s.charAt(0))+s.substring(1);}
     /** A count as the men would say it, in words up to nine hundred and ninety-nine. */
     static String words(int n){
@@ -150,7 +183,7 @@ public final class ElkFollows {
     private static ServerPlayer killer(net.minecraft.world.damagesource.DamageSource s){return s.getEntity() instanceof ServerPlayer p&&!p.isSpectator()?p:null;}
     /** The meat and the hide spoil as they fall. */
     @SubscribeEvent public static void drops(LivingDropsEvent e){
-        if(!(e.getEntity() instanceof Animal)||!outside(e.getEntity().level()))return;var p=killer(e.getSource());if(p==null||!follows(p))return;
+        if(!game(e.getEntity())||!outside(e.getEntity().level()))return;var p=killer(e.getSource());if(p==null||!follows(p))return;
         boolean spoiled=false;
         for(var it=e.getDrops().iterator();it.hasNext();){ItemEntity drop=it.next();var s=drop.getItem();
             if(s.is(Items.LEATHER)||s.is(Items.RABBIT_HIDE)){it.remove();spoiled=true;}
@@ -159,7 +192,7 @@ public final class ElkFollows {
     }
     /** Each animal they kill is counted against them; a young one costs them the night. */
     @SubscribeEvent public static void death(LivingDeathEvent e){
-        if(!(e.getEntity() instanceof Animal a)||!outside(a.level()))return;var p=killer(e.getSource());if(p==null)return;var own=own(p);if(!own.getBoolean(FOLLOWS))return;
+        LivingEntity a=e.getEntity();if(!game(a)||!outside(a.level()))return;var p=killer(e.getSource());if(p==null)return;var own=own(p);if(!own.getBoolean(FOLLOWS))return;
         own.putInt(IN_KIND,own.getInt(IN_KIND)+1);
         if(a.isBaby()){long now=p.server.overworld().getDayTime();own.putLong(CALF_UNTIL,(now/24000L+1)*24000L);hint(p,"That one was young. She will come for your night.");}
         save(p,own);

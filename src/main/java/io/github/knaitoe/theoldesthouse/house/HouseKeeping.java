@@ -1,6 +1,8 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.labyrinth.MotherCollection;
+import io.github.knaitoe.theoldesthouse.labyrinth.WeaponHistory;
 import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -59,8 +61,12 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * it takes back the reader's own things taken out of the drawer; going out, it notes what of its own the reader carries. A reader it has
  * not seen before is taken to be where they stand. Creative and spectating players are left alone.
  * <p>
- * Allowed in: the mod's own items; any item carrying custom data (only the House makes those in ordinary play); food and drink (not
- * chorus fruit, which moves the eater); torches, soul torches, lanterns, soul lanterns and candles.
+ * Allowed in: the mod's own items; any item carrying custom data with something in it besides the House's own stamps (only the House
+ * makes those in ordinary play; a neighbour keeps to its own data components, docs/NEIGHBOURS.md R7); food and drink (not chorus fruit,
+ * which moves the eater); torches, soul torches, lanterns, soul lanterns and candles. The stamps (a weapon's identity and the mark of a
+ * copy, the Mother's marks of who carried a thing and since when) are written on outside things too, so they let nothing in, except
+ * that the reader's favourite weapon, the one the finale would arm them with, passes the door and the hall as their own (the owner, 17
+ * November: "Yes, to favorite weapon").
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseKeeping extends SavedData {
@@ -98,11 +104,34 @@ public final class HouseKeeping extends SavedData {
     public void forget(UUID id){keeps.remove(id);setDirty();}
 
     // ------------------------------------------------------------------ what the House allows
+    /**
+     * The House's own stamps, which it writes on outside things as well as its own: a weapon's identity and the mark of a House copy
+     * ({@link WeaponHistory}), and the Mother's marks of who has carried a thing and since when ({@link MotherCollection}). Alone they
+     * do not make a thing House-made.
+     */
+    static final Set<String> STAMPS=Set.of(WeaponHistory.ORIGINAL,WeaponHistory.COPY,MotherCollection.CARRIER,MotherCollection.CARRIED);
+    /**
+     * The House's own things: its own items, and anything carrying custom data with something in it besides the House's stamps. What the
+     * House tells a neighbour as {@code house_made} (docs/NEIGHBOURS.md, R7).
+     */
+    public static boolean houseMade(ItemStack s){
+        if(s.isEmpty())return false;
+        if(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace().equals(TheOldestHouse.MOD_ID))return true;
+        var data=s.get(DataComponents.CUSTOM_DATA);if(data==null||data.isEmpty())return false;
+        for(String key:data.copyTag().getAllKeys())if(!STAMPS.contains(key))return true;
+        return false;
+    }
+    /**
+     * The reader's favourite weapon, the stamped thing the finale would arm them with ({@link WeaponHistory#favorite}): the one stamped
+     * thing that passes the drawers, and only while it is the favourite.
+     */
+    public static boolean favourite(ServerPlayer p,ItemStack s){UUID id=WeaponHistory.identity(s);return id!=null&&id.equals(WeaponHistory.favorite(p));}
+    /** Whether this reader may carry this past the House's doors: what anyone may, or their favourite weapon. */
+    public static boolean passes(ServerPlayer p,ItemStack s){return allowed(s)||favourite(p,s);}
     /** Whether a reader may carry this past the House's doors: its own, House-made, eaten or drunk, or a light. */
     public static boolean allowed(ItemStack s){
         if(s.isEmpty())return true;
-        if(BuiltInRegistries.ITEM.getKey(s.getItem()).getNamespace().equals(TheOldestHouse.MOD_ID))return true;
-        var data=s.get(DataComponents.CUSTOM_DATA);if(data!=null&&!data.isEmpty())return true;
+        if(houseMade(s))return true;
         if(s.is(Items.CHORUS_FRUIT))return false;
         if(s.has(DataComponents.FOOD))return true;
         if(s.is(Items.POTION)||s.is(Items.MILK_BUCKET)||s.is(Items.HONEY_BOTTLE)||s.is(Items.OMINOUS_BOTTLE))return true;
@@ -154,12 +183,13 @@ public final class HouseKeeping extends SavedData {
         else if(now==Where.OUTSIDE)leave(p,data,keep);
         else if(was==Where.MANOR&&now==Where.BEYOND)cross(p,data,keep);
     }
-    /** In from outside: everything the House did not provide goes to the drawer. */
+    /** In from outside: everything the House did not provide goes to the drawer, but the reader's favourite weapon, which is theirs, loose. */
     static void enter(ServerPlayer p,HouseKeeping data,Keep keep){
         int taken=0;
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(allowed(s))continue;
             int ours=take(keep.carried,s,s.getCount());int theirs=s.getCount()-ours;if(theirs<=0)continue;
+            if(favourite(p,s)){add(keep.loose,s.copyWithCount(theirs));data.setDirty();continue;}
             add(keep.drawer,s.copyWithCount(theirs));
             if(c==p.getInventory())keep.homes.add(0,new Home(s,i,theirs));
             var left=s.copyWithCount(ours);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=theirs;
@@ -169,12 +199,12 @@ public final class HouseKeeping extends SavedData {
             say(p,"What you carried in from outside, the House has put away in the chest of drawers in the front hall.");
             p.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_INSERT,SoundSource.PLAYERS,.8F,.8F);}
     }
-    /** From the manor into the rest of the House: the reader's own things taken out of the drawer go back to it. */
+    /** From the manor into the rest of the House: the reader's own things taken out of the drawer go back to it, but their favourite weapon. */
     static void cross(ServerPlayer p,HouseKeeping data,Keep keep){
         if(keep.loose.isEmpty())return;
         int taken=0;
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
-            var s=c.getItem(i);if(allowed(s))continue;
+            var s=c.getItem(i);if(passes(p,s))continue;
             int own=take(keep.loose,s,s.getCount());if(own<=0)continue;
             add(keep.drawer,s.copyWithCount(own));var left=s.copyWithCount(s.getCount()-own);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=own;
         }
