@@ -2,7 +2,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
+import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseKeeping;
+import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseKeeping.Where;
 import io.github.knaitoe.theoldesthouse.labyrinth.FinaleProgress;
 import io.github.knaitoe.theoldesthouse.labyrinth.FinaleRegistry;
@@ -16,17 +18,22 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -72,11 +79,20 @@ public final class HouseMadeTests {
         return stack;
     }
 
-    /** A reader the House has a weapon history for, with nothing seeded from what they carry: their favourite is only what they used. */
+    /** The one stack of this item the reader carries. */
+    private static ItemStack held(ServerPlayer p, Item item) {
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            if (p.getInventory().getItem(i).is(item)) {
+                return p.getInventory().getItem(i);
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    /** A new reader with nothing on them: their favourite is only what the House counts them using. */
     private static ServerPlayer reader(GameTestHelper h, String name) {
         ServerPlayer p = NativeTestPlayers.survival(h, name, UUID.randomUUID());
         p.getInventory().clearContent();
-        WeaponHistory.seed(p);
         HouseKeeping.get(p.server).forget(p.getUUID());
         return p;
     }
@@ -185,6 +201,125 @@ public final class HouseMadeTests {
             h.assertTrue(carrying(p, Items.IRON_SWORD) == 1, "and it comes in again while it is the favourite");
         } finally {
             HouseKeeping.get(p.server).forget(p.getUUID());
+            NativeTestPlayers.remove(p);
+        }
+        h.succeed();
+    }
+
+    // ------------------------------------------------------------------------------------------------ stamped since
+    /**
+     * What the House stamps on a thing after it was listed does not change whose it is. An outside pickaxe and sword, put away unmarked,
+     * taken out, then marked by the Mother and swung once (not the favourite), go back to the drawer past the hall. Something the House
+     * gave, marked and swung outside, comes back in with the reader; and an outside sword with no identity yet does not take the place
+     * of the House's sword that has one.
+     */
+    @GameTest(template = "empty", batch = "house_made_stamped_since", timeoutTicks = 100)
+    public static void whatTheHouseStampsOnAThingSinceDoesNotChangeWhoseItIs(GameTestHelper h) {
+        ServerPlayer p = reader(h, "stamped_since");
+        try {
+            WeaponHistory.record(p, new ItemStack(Items.DIAMOND_SWORD), 10);
+            long now = p.server.overworld().getGameTime();
+            var inv = p.getInventory();
+            HouseKeeping.update(p, Where.OUTSIDE);
+            inv.setItem(0, new ItemStack(Items.IRON_PICKAXE));
+            inv.setItem(1, new ItemStack(Items.IRON_SWORD));
+            HouseKeeping.update(p, Where.MANOR);
+            var keep = HouseKeeping.of(p);
+            h.assertTrue(count(keep.drawer, Items.IRON_PICKAXE) == 1 && count(keep.drawer, Items.IRON_SWORD) == 1, "both put away unmarked at the door");
+            HouseKeeping.retrieve(p, null);
+            var pickaxe = held(p, Items.IRON_PICKAXE);
+            var sword = held(p, Items.IRON_SWORD);
+            MotherCollection.rememberCarried(pickaxe, p.getUUID(), now);
+            WeaponHistory.record(p, sword, 1);
+            h.assertTrue(pickaxe.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().hasUUID(MotherCollection.CARRIER)
+                    && WeaponHistory.identity(sword) != null && !WeaponHistory.wounds(sword, WeaponHistory.favorite(p)),
+                    "out of the drawer, the Mother has marked the pickaxe and the sword has an identity that is not the favourite's");
+            HouseKeeping.update(p, Where.BEYOND);
+            h.assertTrue(carrying(p, Items.IRON_PICKAXE) == 0 && count(keep.drawer, Items.IRON_PICKAXE) == 1, "past the hall the marked pickaxe goes back to the drawer");
+            h.assertTrue(carrying(p, Items.IRON_SWORD) == 0 && count(keep.drawer, Items.IRON_SWORD) == 1 && keep.loose.isEmpty(), "and so does the swung sword");
+
+            // What the House gave goes out with the reader: a plain axe, and a sword it has counted a use of.
+            var given = new ItemStack(Items.IRON_AXE);
+            var blade = new ItemStack(Items.STONE_SWORD);
+            WeaponHistory.record(p, blade, 1);
+            UUID bladeId = WeaponHistory.identity(blade);
+            inv.setItem(5, given);
+            inv.setItem(6, blade);
+            HouseKeeping.update(p, Where.MANOR);
+            HouseKeeping.update(p, Where.OUTSIDE);
+            h.assertTrue(count(keep.carried, Items.IRON_AXE) == 1 && count(keep.carried, Items.STONE_SWORD) == 1, "the House notes what it gave going out");
+            // Outside the Mother marks the axe and it is swung; another stone sword, never swung, is picked up into an earlier slot.
+            MotherCollection.rememberCarried(given, p.getUUID(), now);
+            WeaponHistory.record(p, given, 1);
+            inv.setItem(0, new ItemStack(Items.STONE_SWORD));
+            HouseKeeping.update(p, Where.MANOR);
+            h.assertTrue(carrying(p, Items.IRON_AXE) == 1 && count(keep.drawer, Items.IRON_AXE) == 0, "the House's axe, marked and swung outside, comes back in");
+            h.assertTrue(carrying(p, Items.STONE_SWORD) == 1 && WeaponHistory.wounds(held(p, Items.STONE_SWORD), bladeId) && count(keep.drawer, Items.STONE_SWORD) == 1,
+                    "and the House's sword with it, while the outside one with no identity yet is put away");
+        } finally {
+            HouseKeeping.get(p.server).forget(p.getUUID());
+            NativeTestPlayers.remove(p);
+        }
+        h.succeed();
+    }
+
+    /**
+     * The favourite passes the hall however it gets there: set down in the manor and picked up past the hall by its reader, it stays
+     * with them, while their own pickaxe set down beside it goes back to the drawer. The saved data says where the House stands; nothing
+     * is built there.
+     */
+    @GameTest(template = "empty", batch = "house_made_set_down", timeoutTicks = 100)
+    public static void theFavouriteSetDownInTheManorStillPassesTheHall(GameTestHelper h) {
+        ServerPlayer p = reader(h, "favourite_set_down");
+        var server = p.server;
+        ServerLevel inside = HouseTestLevel.get(server, HouseDimensions.INTERIOR);
+        BlockPos origin = new BlockPos(h.absolutePos(BlockPos.ZERO).getX() + 250000, 80, 250000);
+        BlockPos hall = origin.offset(HouseKeeping.DRAWERS).east(2);
+        BlockPos rooms = origin.offset(0, 1, 600);
+        var storage = server.overworld().getDataStorage();
+        var house = HouseSavedData.get(server);
+        try {
+            inside.getChunkAt(hall);
+            inside.getChunkAt(rooms);
+            p.teleportTo(inside, hall.getX() + .5, hall.getY(), hall.getZ() + .5, 0F, 0F);
+            var standing = new HouseSavedData();
+            standing.markSpawned(origin);
+            storage.set("the_oldest_house", standing);
+            h.assertTrue(HouseKeeping.where(p) == Where.MANOR, "the reader stands in the front hall");
+            var axe = new ItemStack(Items.IRON_AXE);
+            WeaponHistory.record(p, axe, 3);
+            var inv = p.getInventory();
+            HouseKeeping.update(p, Where.OUTSIDE);
+            inv.setItem(0, axe);
+            inv.setItem(1, new ItemStack(Items.IRON_PICKAXE));
+            HouseKeeping.update(p, Where.MANOR);
+            HouseKeeping.retrieve(p, null);
+            var keep = HouseKeeping.of(p);
+            h.assertTrue(count(keep.loose, Items.IRON_AXE) == 1 && count(keep.loose, Items.IRON_PICKAXE) == 1, "the favourite and the pickaxe are the reader's own, loose");
+
+            // Both set down in the manor.
+            var dropped = new java.util.ArrayList<ItemEntity>();
+            for (var item : java.util.List.of(Items.IRON_AXE, Items.IRON_PICKAXE)) {
+                var stack = held(p, item);
+                inv.removeItem(stack);
+                var entity = new ItemEntity(inside, p.getX(), p.getY(), p.getZ(), stack);
+                HouseKeeping.tossed(new ItemTossEvent(entity, p));
+                dropped.add(entity);
+            }
+            // Picked up past the hall.
+            p.moveTo(rooms.getX() + .5, rooms.getY(), rooms.getZ() + .5);
+            h.assertTrue(HouseKeeping.where(p) == Where.BEYOND, "the reader is past the hall");
+            var favourite = new ItemEntityPickupEvent.Pre(p, dropped.get(0));
+            HouseKeeping.pickup(favourite);
+            h.assertTrue(favourite.canPickup() != TriState.FALSE && !dropped.get(0).isRemoved() && count(keep.drawer, Items.IRON_AXE) == 0,
+                    "the favourite set down in the manor is its reader's to pick up past the hall");
+            var own = new ItemEntityPickupEvent.Pre(p, dropped.get(1));
+            HouseKeeping.pickup(own);
+            h.assertTrue(own.canPickup() == TriState.FALSE && dropped.get(1).isRemoved() && count(keep.drawer, Items.IRON_PICKAXE) == 1,
+                    "while their own pickaxe set down beside it goes back to the drawer");
+        } finally {
+            storage.set("the_oldest_house", house);
+            HouseKeeping.get(server).forget(p.getUUID());
             NativeTestPlayers.remove(p);
         }
         h.succeed();

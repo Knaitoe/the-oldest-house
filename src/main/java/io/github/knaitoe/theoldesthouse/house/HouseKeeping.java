@@ -32,6 +32,7 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -137,16 +138,46 @@ public final class HouseKeeping extends SavedData {
         if(s.is(Items.POTION)||s.is(Items.MILK_BUCKET)||s.is(Items.HONEY_BOTTLE)||s.is(Items.OMINOUS_BOTTLE))return true;
         return s.is(Items.TORCH)||s.is(Items.SOUL_TORCH)||s.is(Items.LANTERN)||s.is(Items.SOUL_LANTERN)||s.is(ItemTags.CANDLES);
     }
-    /** The same thing, wear aside: a sword a little more worn is still the reader's sword. */
+    /**
+     * The same thing, wear aside and whatever the House has stamped on it since: a sword a little more worn is still the reader's sword,
+     * and so is one the Mother has marked as carried, or one that has gained an identity by being used since it was listed. Two weapons
+     * that both carry an identity are the same only if it is the same one, and a House copy is never the thing it copies.
+     */
     static boolean same(ItemStack a,ItemStack b){
         if(a.getItem()!=b.getItem())return false;
-        var x=a.copyWithCount(1);var y=b.copyWithCount(1);x.remove(DataComponents.DAMAGE);y.remove(DataComponents.DAMAGE);
-        return ItemStack.isSameItemSameComponents(x,y);
+        boolean known=identified(a)&&identified(b);
+        return ItemStack.isSameItemSameComponents(bare(a,known),bare(b,known));
+    }
+    /** The same thing, and either both or neither carrying an identity: the likeness the House looks for first. */
+    static boolean exactly(ItemStack a,ItemStack b){return identified(a)==identified(b)&&same(a,b);}
+    private static boolean identified(ItemStack s){var data=s.get(DataComponents.CUSTOM_DATA);return data!=null&&data.copyTag().hasUUID(WeaponHistory.ORIGINAL);}
+    /** One of a thing without its wear or the Mother's marks, and without its identity unless {@code known}. */
+    private static ItemStack bare(ItemStack s,boolean known){
+        var x=s.copyWithCount(1);x.remove(DataComponents.DAMAGE);
+        var data=x.get(DataComponents.CUSTOM_DATA);if(data==null)return x;
+        var tag=data.copyTag();tag.remove(MotherCollection.CARRIER);tag.remove(MotherCollection.CARRIED);if(!known)tag.remove(WeaponHistory.ORIGINAL);
+        if(tag.isEmpty())x.remove(DataComponents.CUSTOM_DATA);else x.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
+        return x;
     }
     /** Takes up to {@code count} of {@code s} off a list, and says how many it found. */
-    static int take(List<ItemStack> list,ItemStack s,int count){
+    static int take(List<ItemStack> list,ItemStack s,int count){return take(list,s,count,false);}
+    /** Takes up to {@code count} of {@code s} off a list, only what is {@link #exactly} like it if {@code exact}, and says how many. */
+    static int take(List<ItemStack> list,ItemStack s,int count,boolean exact){
         int found=0;
-        for(var it=list.iterator();it.hasNext()&&found<count;){var e=it.next();if(!same(e,s))continue;int n=Math.min(e.getCount(),count-found);e.shrink(n);found+=n;if(e.isEmpty())it.remove();}
+        for(var it=list.iterator();it.hasNext()&&found<count;){var e=it.next();if(exact?!exactly(e,s):!same(e,s))continue;int n=Math.min(e.getCount(),count-found);e.shrink(n);found+=n;if(e.isEmpty())it.remove();}
+        return found;
+    }
+    /**
+     * How much of each thing in the reader's pockets a list accounts for, leaving aside what {@code past} lets by: first what is exactly
+     * like an entry, then, of what is left, the same thing whatever has been stamped on it since. What is found is taken off the list.
+     * So an outside sword with no identity yet does not take the entry of a listed sword that has one while that sword is there for it.
+     */
+    private static Map<ItemStack,Integer> listed(ServerPlayer p,List<ItemStack> list,java.util.function.Predicate<ItemStack> past){
+        var found=new IdentityHashMap<ItemStack,Integer>();
+        for(boolean exact:new boolean[]{true,false})for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
+            var s=c.getItem(i);if(past.test(s))continue;
+            int had=found.getOrDefault(s,0);int n=take(list,s,s.getCount()-had,exact);if(n>0)found.put(s,had+n);
+        }
         return found;
     }
     /** Adds to a list, topping up stacks of the same thing first. */
@@ -185,10 +216,10 @@ public final class HouseKeeping extends SavedData {
     }
     /** In from outside: everything the House did not provide goes to the drawer, but the reader's favourite weapon, which is theirs, loose. */
     static void enter(ServerPlayer p,HouseKeeping data,Keep keep){
-        int taken=0;
+        int taken=0;var given=listed(p,keep.carried,HouseKeeping::allowed);
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(allowed(s))continue;
-            int ours=take(keep.carried,s,s.getCount());int theirs=s.getCount()-ours;if(theirs<=0)continue;
+            int ours=given.getOrDefault(s,0);int theirs=s.getCount()-ours;if(theirs<=0)continue;
             if(favourite(p,s)){add(keep.loose,s.copyWithCount(theirs));data.setDirty();continue;}
             add(keep.drawer,s.copyWithCount(theirs));
             if(c==p.getInventory())keep.homes.add(0,new Home(s,i,theirs));
@@ -202,10 +233,10 @@ public final class HouseKeeping extends SavedData {
     /** From the manor into the rest of the House: the reader's own things taken out of the drawer go back to it, but their favourite weapon. */
     static void cross(ServerPlayer p,HouseKeeping data,Keep keep){
         if(keep.loose.isEmpty())return;
-        int taken=0;
+        int taken=0;var theirs=listed(p,keep.loose,s->passes(p,s));
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(passes(p,s))continue;
-            int own=take(keep.loose,s,s.getCount());if(own<=0)continue;
+            int own=theirs.getOrDefault(s,0);if(own<=0)continue;
             add(keep.drawer,s.copyWithCount(own));var left=s.copyWithCount(s.getCount()-own);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=own;
         }
         if(taken>0){data.setDirty();p.inventoryMenu.broadcastChanges();
@@ -214,9 +245,10 @@ public final class HouseKeeping extends SavedData {
     }
     /** Out into the world: the reader's own things go with them; what the House gave them is noted, so it comes back in with them. */
     static void leave(ServerPlayer p,HouseKeeping data,Keep keep){
+        var theirs=listed(p,keep.loose,HouseKeeping::allowed);
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(allowed(s))continue;
-            int own=take(keep.loose,s,s.getCount());if(s.getCount()>own)add(keep.carried,s.copyWithCount(s.getCount()-own));
+            int own=theirs.getOrDefault(s,0);if(s.getCount()>own)add(keep.carried,s.copyWithCount(s.getCount()-own));
         }
         while(keep.carried.size()>CARRIED_LIMIT)keep.carried.remove(0);
         data.setDirty();
@@ -338,12 +370,15 @@ public final class HouseKeeping extends SavedData {
     }
 
     // ------------------------------------------------------------------ things set down in the manor
-    /** Own things dropped in the manor, by item entity, with whose they are: picked up past the hall, they go back to that drawer. */
+    /**
+     * Own things dropped in the manor, by item entity, with whose they are: picked up past the hall, they go back to that drawer. Not the
+     * reader's favourite weapon, which passes the hall as their own however it gets there.
+     */
     private static final Map<UUID,UUID> SET_DOWN=new HashMap<>();
     public static void clearAll(){SET_DOWN.clear();}
     @SubscribeEvent public static void tossed(ItemTossEvent e){
         if(!(e.getPlayer() instanceof ServerPlayer p)||p.level().isClientSide())return;
-        var s=e.getEntity().getItem();if(allowed(s)||where(p)!=Where.MANOR)return;
+        var s=e.getEntity().getItem();if(passes(p,s)||where(p)!=Where.MANOR)return;
         var keep=of(p);int own=take(keep.loose,s,s.getCount());if(own<=0)return;
         get(p.server).setDirty();SET_DOWN.put(e.getEntity().getUUID(),p.getUUID());
     }

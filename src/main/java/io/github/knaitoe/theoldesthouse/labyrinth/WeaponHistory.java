@@ -68,24 +68,12 @@ public final class WeaponHistory {
         entry.put("Sample", stack.save(player.registryAccess())); history.put(id.toString(), entry);
         root.put(player.getStringUUID(), history); data.setState(STATE, root);
     }
-    /** Existing saves have item-type statistics but no instance history. Seed each type once. */
-    public static void seed(ServerPlayer player) {
-        LabyrinthData data = LabyrinthData.get(player.server); CompoundTag root = data.state(STATE);
-        CompoundTag history = root.getCompound(player.getStringUUID());
-        if (history.getBoolean("Seeded")) return;
-        java.util.Set<Item> seen = new java.util.HashSet<>();
-        for (ItemStack stack : player.getInventory().items) {
-            if (weapon(stack) && seen.add(stack.getItem()))
-                record(player, stack, Math.max(1, player.getStats().getValue(Stats.ITEM_USED.get(stack.getItem()))));
-        }
-        root = data.state(STATE); history = root.getCompound(player.getStringUUID()); history.putBoolean("Seeded", true);
-        root.put(player.getStringUUID(), history); data.setState(STATE, root);
-    }
+    /** The reader's favourite: the weapon the House has counted the most uses of. Asking stamps and counts nothing. */
     @Nullable public static UUID favorite(ServerPlayer player) {
-        seed(player); CompoundTag history = LabyrinthData.get(player.server).state(STATE).getCompound(player.getStringUUID());
+        CompoundTag history = LabyrinthData.get(player.server).state(STATE).getCompound(player.getStringUUID());
         UUID best = null; int uses = -1;
         for (String key : new java.util.TreeSet<>(history.getAllKeys())) {
-            if (key.equals("Seeded")) continue;
+            if (key.equals("Seeded")) continue; // an older save's mark that it was seeded from the game's item statistics
             int count = history.getCompound(key).getInt("Uses");
             if (count > uses) { try { best = UUID.fromString(key); uses = count; } catch (IllegalArgumentException ignored) {} }
         }
