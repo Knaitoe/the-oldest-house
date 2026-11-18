@@ -119,7 +119,14 @@ public final class KingCourt {
             var a=find(l,b,phase);if(a==null)continue;
             var home=b.offset(spot(phase));
             if(a.position().distanceToSqr(Vec3.atBottomCenterOf(home))>.04)a.moveTo(home.getX()+.5,home.getY(),home.getZ()+.5,a.getYRot(),0);
-            if(over&&cat!=null){a.gesture(LOOKING_UP);look(a,cat.getEyePosition());continue;}
+            if(over&&cat!=null){
+                // Run 1739: whoever is speaking in the argument says it to the nearest reader within sixteen blocks, not up at the Cat.
+                ServerPlayer hearer=null;double close=16*16;
+                if(a.speaking()>0)for(var p:KingSleep.readers(l,b)){double d=p.distanceToSqr(a);if(d<close){close=d;hearer=p;}}
+                if(hearer!=null){a.gesture(STANDING);look(a,hearer.getEyePosition());}
+                else{a.gesture(LOOKING_UP);look(a,cat.getEyePosition());}
+                continue;
+            }
             // Otherwise each looks at the nearest reader on the square, and the herald keeps his scroll up for a while after reading.
             a.gesture(phase==HERALD&&now<s.heraldReadsUntil?READING:phase==QUEEN&&a.speaking()>0?READING:STANDING);
             ServerPlayer near=null;double best=Double.MAX_VALUE;
