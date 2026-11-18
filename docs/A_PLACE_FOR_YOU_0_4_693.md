@@ -115,6 +115,11 @@ answering before going on with the purchase (`Fallow.customers()`), except when 
 degrees away from them in one tick while he is addressed or saying something. With the fix taken out, it fails ("head -20.7 from
 430.3, the reader at 70.3"); with it, it passes.
 
+Run 1722: the case timed out with Otis still at his rig. It skipped the afternoon to Otis's time before the afternoon had begun, so the
+skip was lost, and with Faye unserved she would have gone first anyway. It now waits until the afternoon has begun and Otis is at his
+rig, marks Faye as served (`Fallow.fayeServed`, for tests) and then skips. Waiting for Otis matters: skipped before the cast is placed,
+he is sent for his coffee before he exists and is never made. Locally, 1 of 1.
+
 ## Results
 
 Locally: the sixteen `PlaceForYouTests` cases and the cast and together conduct checks for A Place for You, 18 of 18; after Mara was

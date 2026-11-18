@@ -451,7 +451,12 @@ public final class FallowTests {
                 jumps[0]++;seen[0]="head "+head+" from "+last[0]+", the reader at "+toward;}
             last[0]=head;
         });
-        h.startSequence().thenIdle(5).thenExecute(()->{f.at(p,P,3.5,0,-9.5);Fallow.skipTo(b,Fallow.OTIS_TIME);})
+        h.startSequence().thenIdle(5).thenExecute(()->f.at(p,P,3.5,0,-9.5))
+        // Run 1722: the skip was dropped when the afternoon had not begun yet, and with Faye unserved she went first; Otis was still at
+        // his truck when the case timed out. The skip waits for the afternoon and for Otis at his rig: skipped before the cast is placed,
+        // he is sent for his coffee before he is there to go.
+        .thenWaitUntil(()->h.assertTrue(Fallow.afternoon(b)!=null&&Fallow.find(l,b,Fallow.DRIVER)!=null,"the afternoon begins, Otis at his rig"))
+        .thenExecute(()->{Fallow.fayeServed(b);Fallow.skipTo(b,Fallow.OTIS_TIME);})
         .thenWaitUntil(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);
             h.assertTrue(otis!=null&&otis.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(new Vec3(6.5,0,-10.5))<2.5,"Otis nearly at the machine: "+(otis==null?"none":otis.position().subtract(Vec3.atLowerCornerOf(b))));})
         .thenExecute(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);p.interactOn(otis,InteractionHand.MAIN_HAND);
