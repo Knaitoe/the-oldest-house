@@ -44,7 +44,9 @@ each reader, saved with the world.
   world. It remembers the last 256 stacks.
 
 Two stacks count as the same thing if they match in every component except wear, so a sword used a little is still the reader's
-sword.
+sword. Since docs/NEIGHBOURS.md R7 the House's later stamps do not count either: the Mother's marks of who carried a thing, and a
+weapon's identity unless both stacks carry one (then it must be the same). The House looks for an exact match first, identity and all,
+and only then for the same thing stamped since.
 
 ## The crossings
 
