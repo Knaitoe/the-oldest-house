@@ -186,6 +186,8 @@ public final class PlaceForYouTexts {
             t.append("\n\n");
         }
         if(own.getInt("BackStage")>=1)t.append(backPassage(own)).append("\n\n");
+        // 0.4.692: what became of Kit's letter.
+        {var letter=PlaceForYouLetter.letterAccount(own);if(!letter.isEmpty())t.append(letter).append("\n\n");}
         if(own.getInt("OlderStage")>=3)t.append(PlaceForYouOlder.account(own)).append("\n\n");
         if(own.getInt("Chapter")>=PlaceForYou.DINNER){
             t.append("When we sat down again, the table was laid exactly as it had been.");
@@ -214,15 +216,15 @@ public final class PlaceForYouTexts {
         if(outcome.equals("invited_the_past")){t.append(invited(own));return t.toString();}
         t.append("I set the hall chair against the front door, and took my picture down off the fridge.");
         if(own.getBoolean("TheoSilent"))t.append(" After that the voice past the gate said her name once more, and stopped.");
-        if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Kit went out through the gate with the bag.");
+        if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(own.contains("PorchBag")?" "+PlaceForYouLetter.porchAccount(own):" Kit went out through the gate with the bag.");
         switch(own.getString("MaraEnd")){
             case "sat"->t.append(" Mara asked me to sit with her before she decided. I did. She said she would stay a while, and try it, and see.");
             case "gate"->t.append(" Mara walked Kit to the gate. Just to the gate, she said. Then she kept going.");
             default->t.append(" Mara stayed. It was still her kitchen, she said.");
         }
         switch(own.getString("AlexEnd")){
-            case "walk"->t.append(" Alex was going to see whether the bus still ran to the coast. I walked with them as far as the road.");
-            case "alone"->t.append(" Alex was going to see whether the bus still ran to the coast. They asked if I wanted to walk a while. I said no, and they said that was a whole answer.");
+            case "walk"->t.append(" Alex was going to see whether the bus still ran to the coast. I walked with him as far as the road.");
+            case "alone"->t.append(" Alex was going to see whether the bus still ran to the coast. He asked if I wanted to walk a while. I said no, and he said that was a whole answer.");
             default->{}
         }
         t.append(own.getString("RenEnd").equals("goes")?" Ren went with them as far as the bend.":" Ren stayed with Mara.");
@@ -241,7 +243,7 @@ public final class PlaceForYouTexts {
             t.append(switch(who){
                 case "Mara"->"She rested her hand on my arm while she talked, and said she was glad it was me at the table.";
                 case "Ren"->"Ren knocked my elbow with theirs and said they'd told me she would make too much.";
-                default->"Alex tipped the last of the jug into my glass before their own.";
+                default->"Alex tipped the last of the jug into my glass before his own.";
             });
         }
         String asked=own.getString("KeepAsked");

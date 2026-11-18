@@ -645,6 +645,7 @@ def textures():
         'stool_tread': stool_tread(), 'keys': keys(),
         'older_0': older(0), 'older_1': older(1), 'older_2': older(2), 'photobox': photobox(), 'photobox_lid': photobox_lid(),
         'photobox_in': photobox_in(), 'portrait_carried': portrait_carried(),
+        'letter': letter(),
     }
     out.update({f'block/place/{k}.png': v for k, v in t.items()})
     return out
@@ -746,6 +747,30 @@ def portrait_carried():
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.692: Kit's letter
+def letter():
+    """Kit's letter, folded in four: plain paper, the creases across it, Kit's name pencilled small on the outside fold, a corner worn
+    soft, and the bend and a rust mark where it was wrapped round the clasp of the bag."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 3, 4, 13, 12, '#ece4d0'); frame(im, 3, 4, 13, 12, '#c9bc9e')
+    for x in range(4, 12):
+        dot(im, x, 8, '#d8ccb0')
+    for y in range(5, 11):
+        dot(im, 8, y, '#d8ccb0')
+    dot(im, 8, 8, '#c4b698')
+    # The name: a short pencil scrawl, then a rule under it.
+    for x, y in ((4, 6), (5, 5), (6, 6), (7, 5)):
+        dot(im, x, y, '#86817a')
+    dot(im, 7, 6, '#aaa49a')
+    # The corner worn soft.
+    im.putpixel((12, 4), (0, 0, 0, 0)); dot(im, 11, 4, '#bcae90'); dot(im, 12, 5, '#bcae90'); dot(im, 11, 5, '#e2d8c0')
+    # Where it was wrapped round the clasp: a bend and a rust mark.
+    for x, y in ((9, 10), (11, 10)):
+        dot(im, x, y, '#cdbf9f')
+    dot(im, 10, 10, '#a8805a'); dot(im, 10, 9, '#c0a07a')
+    return im
+
+
 def older_models():
     m = {}
     edge = {'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f', 'south': 'f'}
@@ -762,6 +787,7 @@ def older_models():
     m['portrait_item'] = model([element([3, 2, 7.5], [13, 14, 8.5], {'north': 'p', 'south': 'p', 'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f'},
                                         uv={'north': [3, 2, 13, 14], 'south': [3, 2, 13, 14]})], {'p': 'portrait_carried', 'f': 'frame'}, 'frame')
     m['portrait_nail'] = model([], {}, 'frame')
+    m['letter_item'] = model([element([3, 0, 4], [13, 0.25, 12], {'up': 'l', 'down': 'l'}, uv={'up': [3, 4, 13, 12], 'down': [3, 4, 13, 12]})], {'l': 'letter'}, 'letter')
     return m
 
 
@@ -855,7 +881,8 @@ FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 # 0.4.688: Theo's photograph, carried from the chest of drawers to the fridge.
 CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0'), ('photo', 'photo_0'),
-           ('wedge', 'wedge_0'), ('stool', 'stool_0'), ('key', 'keys_0'), ('portrait', 'portrait_item')]
+           ('wedge', 'wedge_0'), ('stool', 'stool_0'), ('key', 'keys_0'), ('portrait', 'portrait_item'),
+           ('letter', 'letter_item')]
 DISPLAY = {
     'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.625, 0.625, 0.625]},
     'ground': {'rotation': [0, 0, 0], 'translation': [0, 3, 0], 'scale': [0.25, 0.25, 0.25]},

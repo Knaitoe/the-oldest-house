@@ -1,0 +1,42 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "l": "the_oldest_house:block/place/letter",
+    "particle": "the_oldest_house:block/place/letter"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        0.25,
+        12
+      ],
+      "faces": {
+        "up": {
+          "texture": "#l",
+          "uv": [
+            3,
+            4,
+            13,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#l",
+          "uv": [
+            3,
+            4,
+            13,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

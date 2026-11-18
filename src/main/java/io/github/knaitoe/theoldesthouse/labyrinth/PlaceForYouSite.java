@@ -80,6 +80,37 @@ public final class PlaceForYouSite {
     /** Inside the fence: the yard, the porches and the house. */
     public static boolean inYard(Vec3 r){return r.x>=-14&&r.x<16&&r.z<-4.2&&r.z>=-30&&r.y<10;}
     public static boolean inKitchen(Vec3 r){return r.x>=3.5&&r.x<9&&r.z>=-22.7&&r.z<-12&&r.y<4;}
+    // 0.4.692: the way through the ground floor for someone walking where the reader can see them. Straight lines catch on the walls
+    // between the kitchen, the hall and the sitting room, and on the front of the house; these are the gaps they have to use.
+    static final Vec3 KITCHEN_SIDE=new Vec3(3.7,0,-13.5),HALL_BY_KITCHEN=new Vec3(2.2,0,-13.5),SITTING_SIDE=new Vec3(-3.7,0,-15.5),HALL_BY_SITTING=new Vec3(-2.2,0,-15.5),
+        DOOR_INSIDE=new Vec3(.5,0,-12.8),DOOR_OUTSIDE=new Vec3(.5,0,-9.9);
+    enum Floor{KITCHEN,SITTING,HALL,OUT,OTHER}
+    static Floor floor(Vec3 r){
+        if(r.y>2||r.y<-1.5)return Floor.OTHER;
+        if(r.z>-10.2&&r.z<1&&Math.abs(r.x)<11)return Floor.OUT;
+        if(r.x>=3&&r.x<9&&r.z>=-23&&r.z<-11)return Floor.KITCHEN;
+        if(r.x<=-3&&r.x>-9&&r.z>=-21&&r.z<-11)return Floor.SITTING;
+        if(Math.abs(r.x)<3&&r.z>=-28.7&&r.z<=-10.2)return Floor.HALL;
+        return Floor.OTHER;
+    }
+    static boolean by(Vec3 r,Vec3 at){double dx=r.x-at.x,dz=r.z-at.z;return dx*dx+dz*dz<.36;}
+    /** Where someone at {@code from} heads next on the way to {@code to} (both relative to the house), or null to go straight there. */
+    @javax.annotation.Nullable public static Vec3 via(Vec3 from,Vec3 to){
+        Floor a=floor(from),b=floor(to);
+        if(a==b||a==Floor.OTHER||b==Floor.OTHER)return null;
+        return switch(a){
+            // Up from a chair at the table's front row, first into the strip of floor in front of the table.
+            case KITCHEN->by(from,KITCHEN_SIDE)?HALL_BY_KITCHEN:from.z>-15.2&&from.z<-14.1&&from.x>4.2?new Vec3(from.x,0,-13.5):KITCHEN_SIDE;
+            case SITTING->by(from,SITTING_SIDE)?HALL_BY_SITTING:SITTING_SIDE;
+            case OUT->by(from,DOOR_OUTSIDE)?DOOR_INSIDE:DOOR_OUTSIDE;
+            case HALL->switch(b){
+                case KITCHEN->by(from,HALL_BY_KITCHEN)?KITCHEN_SIDE:HALL_BY_KITCHEN;
+                case SITTING->by(from,HALL_BY_SITTING)?SITTING_SIDE:HALL_BY_SITTING;
+                default->by(from,DOOR_INSIDE)||from.z>-12.4&&Math.abs(from.x-.5)<.4?DOOR_OUTSIDE:DOOR_INSIDE;
+            };
+            default->null;
+        };
+    }
     public static boolean inBathroom(Vec3 r){return r.x>=3.5&&r.x<9&&r.z>=-27.7&&r.z<-23.5&&r.y<4;}
     public static boolean inSitting(Vec3 r){return r.x>=-8.7&&r.x<-3&&r.z>=-20.7&&r.z<-12&&r.y<4;}
 
