@@ -992,4 +992,129 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+
+    /**
+     * 0.4.709, the catch (TheListHunt.hand, take, held, loose, finish), with a second reader. Shannon on the bus bench, come up on from
+     * behind, crouched, is taken hold of: held in front of the slasher, fighting the grip, her words and a scream the other reader hears,
+     * the slasher stood still and unable to retreat. Looked at, she holds; looked away from, she tears loose, shoves the slasher, says so
+     * and runs, and a hand on her running only gets "twists out of your reach"; she does not turn and fight straight after. Mel, found
+     * twice under the stands, cowers; a hand takes hold of her, and a second with the hay hook in hand finishes her: she recoils, the hook
+     * goes in (its cue, the sound, blood thrown at the slasher, and the other reader told where a scream stopped short), she goes to her
+     * knees, it comes out bloodied and she folds, and lies face down. Dead, she has no heart in the slasher's ears, a hand on her gets that
+     * she does not move, the slasher's record keeps her, and the hook stays bloodied. Ended, she is back at her place.
+     */
+    @GameTest(template="empty",batch="the_list_catch",timeoutTicks=9000)
+    public static void theCatch(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_catch",P);var peer=f.player("list_catch_peer",P);
+        hold(f,b,TheListPeople.AT[TheListPeople.DEEK],TheListPeople.AT[TheListPeople.MEL],TheListPeople.AT[TheListPeople.LESLEY],TheListPeople.AT[TheListPeople.SHANNON],
+            new BlockPos(-130,0,-80),new BlockPos(-124,0,-104),new BlockPos(-157,4,-58),new BlockPos(-152,0,-46),new BlockPos(-5,0,-111),new BlockPos(20,0,-115),new BlockPos(38,0,-138));
+        int S=TheListPeople.SHANNON,M=TheListPeople.MEL;
+        var speed=net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED;
+        List<net.minecraft.network.protocol.Packet<?>> mine=new ArrayList<>(),theirs=new ArrayList<>();
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the ground along every way");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListBody.giveHook(p);
+            var inv=p.getInventory();for(int i=0;i<9;i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))inv.selected=i;
+            h.assertTrue(TheListBody.hookInHand(p),"the hay hook in hand");
+            TheListHunt.start(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's"))
+        .thenExecute(()->{
+            // Shannon, from behind, crouched: she faces the street, the slasher comes up the sidewalk at her back.
+            var shannon=TheListPeople.find(l,b,S);
+            f.at(peer,P,-30.5,0,-111.5);sent(peer);
+            f.at(p,P,-35.5,0,-109.9);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);p.setYRot(180);p.setYHeadRot(180);sent(p);cues(p);
+            h.assertFalse(TheListHunt.sees(shannon,p),"she does not see the slasher behind her");
+            LiteraryVignettes.talk(p,shannon);
+            h.assertTrue(TheListHunt.state(b,S)==TheListHunt.State.HELD&&TheListHunt.holding(p),"taken hold of: "+where(l,b,S));
+            h.assertTrue(shannon.gesture()==TheListHunt.STRUGGLING&&shannon.isNoGravity()&&ActorSeat.of(shannon)==null,"up off the bench, fighting the grip");
+            h.assertTrue(shannon.position().distanceTo(p.position())<1.0,"held in front of the slasher: "+shannon.position().distanceTo(p.position()));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.HOLD,"Shannon")),"the slasher is told");
+            h.assertTrue(TheListTexts.CAUGHT[S].equals(said(shannon)),"her words: "+said(shannon));
+            h.assertTrue(LiteraryVignettes.retreatLocked(p),"holding someone, there is no retreat");
+            h.assertTrue(p.getAttribute(speed).hasModifier(TheListBody.HOLD_ID),"and the body stands where it is");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.SCREAM.get())&&sound(theirs,TheListRegistry.STRUGGLE.get()),"the other reader hears her");
+            h.assertFalse(LiteraryVignettes.retreatLocked(peer),"and is held to nothing");
+        }).thenIdle(40).thenExecute(()->{
+            h.assertTrue(TheListHunt.state(b,S)==TheListHunt.State.HELD,"looked at, she cannot get loose");
+            var shannon=TheListPeople.find(l,b,S);
+            h.assertTrue(shannon.position().distanceTo(p.position())<1.0,"still held in front of the slasher");
+            p.setYRot(300);p.setYHeadRot(300);cues(p);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,S)==TheListHunt.State.RUN,"waiting for her to tear loose: "+where(l,b,S)))
+        .thenExecute(()->{
+            var shannon=TheListPeople.find(l,b,S);
+            h.assertTrue(TheListTexts.LOOSE[S].equals(said(shannon)),"her words as she goes: "+said(shannon));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.TORE,"Shannon")),"the slasher is told");
+            h.assertFalse(TheListHunt.holding(p)||p.getAttribute(speed).hasModifier(TheListBody.HOLD_ID)||LiteraryVignettes.retreatLocked(p),"let go: the body walks and may leave");
+            h.assertTrue(TheListHunt.way(b,S)==0&&!shannon.isNoGravity(),"she runs her first way");
+            LiteraryVignettes.talk(p,shannon);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.TWIST,"Shannon"))&&TheListHunt.state(b,S)==TheListHunt.State.RUN,"running, she twists out of reach");
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(TheListBody.down(p)==0&&!TheListHunt.fought(b,S),"she does not turn and fight straight after");
+            // Mel: the four at the field run, Mel hides under the north end of the stands.
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,-133.5,0,-57.5);
+        }).thenWaitUntil(()->h.assertTrue(hid(l,b,M,0),"waiting for Mel to hide: "+where(l,b,M)))
+        .thenExecute(()->{f.at(p,P,-152,0,-75.5);p.setYRot(0);p.setYHeadRot(0);})
+        .thenWaitUntil(()->h.assertTrue(TheListHunt.fought(b,M),"waiting for Mel to be found: "+where(l,b,M)))
+        .thenWaitUntil(()->h.assertTrue(hid(l,b,M,1)&&TheListBody.down(p)==0,"waiting for Mel at her second place and the slasher up: "+where(l,b,M)))
+        .thenExecute(()->{f.at(peer,P,-145.5,0,-52.5);f.at(p,P,-152,0,-46.5);p.setYRot(0);p.setYHeadRot(0);})
+        .thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,M)==TheListHunt.State.COWER,"waiting for Mel to be found again: "+where(l,b,M)))
+        .thenExecute(()->{
+            var mel=TheListPeople.find(l,b,M);
+            LiteraryVignettes.talk(p,mel);
+            h.assertTrue(TheListHunt.state(b,M)==TheListHunt.State.HELD&&TheListHunt.holding(p),"cornered, she is taken hold of: "+where(l,b,M));
+            h.assertTrue(TheListTexts.CAUGHT[M].equals(said(mel)),"her words: "+said(mel));
+            sent(p);sent(peer);mine.clear();theirs.clear();
+            LiteraryVignettes.talk(p,mel);
+            h.assertTrue(TheListHunt.state(b,M)==TheListHunt.State.FINISH&&mel.gesture()==TheListHunt.RECOIL,"the hook comes up and she sees it");
+            h.assertTrue(mel.getMainHandItem().isEmpty(),"she lets the camcorder fall");
+        }).thenIdle(TheListHunt.RAISE+3).thenExecute(()->{
+            mine.addAll(sent(p));theirs.addAll(sent(peer));
+            var mel=TheListPeople.find(l,b,M);
+            h.assertTrue(mel.gesture()==TheListHunt.KNEELING,"on her knees on the hook");
+            var dropped=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,mel.getBoundingBox().inflate(3),e->e.getTags().contains(TheListHunt.DROPPED));
+            h.assertTrue(dropped.size()==1&&dropped.get(0).getItem().is(LiteraryRegistry.CAMCORDER.get())&&dropped.get(0).onGround()&&mel.getMainHandItem().isEmpty(),"the camcorder lies where it fell, and stays out of her hand: "+dropped);
+            h.assertTrue(cuesIn(mine).contains(TheListTexts.HOOK_IN)&&sound(mine,TheListRegistry.HOOK_IN.get()),"it goes in: "+cuesIn(mine));
+            h.assertTrue(mine.stream().anyMatch(q->q instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket pp&&pp.getParticle().getType()==TheListRegistry.BLOOD.get()),"blood is thrown");
+            h.assertTrue(cuesIn(theirs).stream().anyMatch(c->c.startsWith("Somewhere to the ")&&c.endsWith(", a scream stops short.")),"the other reader hears a scream stop short: "+cuesIn(theirs));
+            h.assertTrue(LiteraryVignettes.retreatLocked(p),"still no retreat while it is in her");
+        }).thenWaitUntil(()->{
+            mine.addAll(sent(p));
+            h.assertTrue(TheListHunt.dead(b,M),"waiting for her to lie still: "+where(l,b,M));
+        }).thenExecute(()->{
+            var mel=TheListPeople.find(l,b,M);
+            var c=cuesIn(mine);
+            h.assertTrue(c.contains(String.format(TheListTexts.HOOK_KNEES,"Mel"))&&c.contains(String.format(TheListTexts.HOOK_OUT,"Mel")),"her knees give, and it comes out: "+c);
+            h.assertTrue(sound(mine,TheListRegistry.HOOK_OUT.get()),"the hook tears free");
+            h.assertTrue(mel.gesture()==TheListHunt.FALLEN&&!mel.isNoGravity()&&ActorSeat.of(mel)==null,"she lies face down where she fell");
+            h.assertFalse(TheListHunt.holding(p)||p.getAttribute(speed).hasModifier(TheListBody.HOLD_ID)||LiteraryVignettes.retreatLocked(p),"let go: the body walks and may leave");
+            var hook=p.getMainHandItem().get(DataComponents.CUSTOM_MODEL_DATA);
+            h.assertTrue(TheListBody.hookInHand(p)&&hook!=null&&hook.value()==1&&TheListBody.bloodied(p),"the hook bloodied");
+            h.assertTrue((TheListBody.kills(p)&1<<M)!=0,"the slasher's record keeps her");
+            cues(p);LiteraryVignettes.talk(p,mel);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Mel")),"a hand on her: she doesn't move");
+            f.at(peer,P,mel.getX()-b.getX()+1.5,0,mel.getZ()-b.getZ());cues(peer);LiteraryVignettes.talk(peer,mel);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.STILL_BODY,"Mel")),"to the other reader's hand too");
+            sent(p);
+        }).thenIdle(40).thenExecute(()->{
+            var mel=TheListPeople.find(l,b,M);
+            boolean beat=sent(p).stream().anyMatch(q->q instanceof ClientboundSoundPacket s&&s.getSound().value()==TheListRegistry.HEART.get()&&Math.abs(s.getX()-mel.getX())<1.5&&Math.abs(s.getZ()-mel.getZ())<1.5);
+            h.assertFalse(beat,"no heart where she lies");
+            h.assertTrue(TheListHunt.dead(b,M)&&mel.gesture()==TheListHunt.FALLEN,"and she stays where she fell");
+            TheListHunt.end(l,b);
+            var at=b.offset(TheListPeople.AT[M]);
+            h.assertTrue(mel.position().distanceTo(new Vec3(at.getX()+.5,at.getY(),at.getZ()+.5))<.05&&mel.gesture()==TheListHunt.STILL&&ActorSeat.of(mel)!=null,"ended, Mel is back at her place: "+where(l,b,M));
+            h.assertTrue(l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,mel.getBoundingBox().inflate(80),e->e.getTags().contains(TheListHunt.DROPPED)).isEmpty(),"and the camcorder is taken up");
+            TheListBody.end(p);
+            var inv=p.getInventory();boolean left=false;for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))left=true;
+            h.assertFalse(left,"the hook goes with the body");
+            done();h.succeed();
+        });
+    }
 }

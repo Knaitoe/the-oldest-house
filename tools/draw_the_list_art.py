@@ -17,7 +17,7 @@ and rod drawn apart for theirs), a tank battery, the lease's sign and the wells'
 
 Part 2 (0.4.705) adds the feed sack (on the head, held, and from inside) and the broken door. Part 3a (0.4.706) adds night one's
 party at the stock tank (a portable radio, an ice chest, empty cans, a camp lantern, a blanket, an empty case) and the seed house's lamp
-and bulb gone dark.
+and bulb gone dark. Part 4a-2 (0.4.709) adds the hay hook, clean and after a finish, and the blood thrown off it.
 
 Every title, name and word on a box, a sign or a poster here is made up for this town, except the town's and the county's own names.
 
@@ -4365,6 +4365,11 @@ def textures():
     out['gui/list_sack_inside.png'] = sack_inside()
     # 0.4.707: the page Amber holds up to her window.
     out['entity/the_list/page.png'] = page()
+    # 0.4.709: the hay hook, clean and after a finish, and the blood thrown off it.
+    out['item/list_hay_hook.png'] = hay_hook(False)
+    out['item/list_hay_hook_bloody.png'] = hay_hook(True)
+    for i in range(4):
+        out[f'particle/list_blood_{i}.png'] = blood(i)
     return out
 
 
@@ -4641,7 +4646,7 @@ NAMES = {'list_fitting': 'Lamesa Fitting', 'list_shingle_stairs': 'Shingle Stair
          'list_machine': 'Lamesa Machine', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
 
 
-ITEM_NAMES = {'list_sack': 'Feed Sack'}
+ITEM_NAMES = {'list_sack': 'Feed Sack', 'list_hay_hook': 'Hay Hook'}
 
 
 def stair_states(model_name):
@@ -4683,6 +4688,63 @@ def door_states(name):
                         v['y'] = turn % 360
                     out[f'facing={facing},half={half},hinge={hinge},open={opened}'] = v
     return out
+
+
+# ------------------------------------------------------------------------------------------------ the hook (0.4.709)
+# The hay hook from the seed house: a turned wooden grip across the fist and an iron hook out between the fingers, its shank straight
+# and then bent round into a point. Drawn as a held thing is (grip at the lower left, the hook up to the right), clean and, after a
+# finish, with blood down the bend and off the point.
+HOOK_IRON, HOOK_LIGHT, HOOK_DARK = '#4c4f54', '#8a8f96', '#2a2c30'
+GRIP_WOOD, GRIP_LIGHT, GRIP_DARK = '#8c6238', '#b08452', '#563a20'
+BLOOD_DRY, BLOOD_WET, BLOOD_LIGHT = '#4e0a0a', '#7c1010', '#a8221c'
+
+
+def hay_hook(bloody):
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    # The grip: two pixels thick, across the shank at right angles, light along its top edge and dark under, its ends worn darker.
+    for t in range(-3, 3):
+        x, y = 3 + t, 12 + t
+        dot(im, x, y, GRIP_LIGHT if t > -3 and t < 2 else GRIP_DARK)
+        dot(im, x + 1, y, GRIP_WOOD if t > -3 and t < 2 else GRIP_DARK)
+        if t in (-1, 0):
+            dot(im, x + 1, y + 1, GRIP_DARK)
+    # The ferrule where the shank goes into the grip.
+    dot(im, 5, 11, '#6a6460'); dot(im, 4, 11, '#5a5450')
+    # The shank, a highlight along one side.
+    for k in range(6):
+        dot(im, 6 + k, 10 - k, HOOK_IRON)
+        dot(im, 6 + k, 9 - k, HOOK_LIGHT if k % 2 == 0 else HOOK_IRON)
+    # The bend, over and round, and the point coming back down toward the grip, filed bright at the tip.
+    for x, y in [(12, 4), (12, 3), (13, 2), (14, 2), (15, 3), (15, 4), (15, 5), (14, 6), (14, 7), (13, 8), (12, 8)]:
+        dot(im, x, y, HOOK_IRON)
+    for x, y in [(13, 3), (14, 3)]:
+        dot(im, x, y, HOOK_LIGHT)
+    for x, y in [(15, 5), (14, 7)]:
+        dot(im, x, y, HOOK_DARK)
+    dot(im, 11, 9, '#b8bec4')
+    if bloody:
+        for x, y in [(15, 5), (14, 6), (14, 7), (13, 8), (12, 8)]:
+            dot(im, x, y, BLOOD_WET)
+        dot(im, 15, 4, BLOOD_DRY); dot(im, 11, 9, BLOOD_LIGHT); dot(im, 11, 10, BLOOD_WET); dot(im, 11, 11, BLOOD_DRY)
+        dot(im, 12, 5, BLOOD_DRY); dot(im, 13, 9, BLOOD_DRY)
+    return im
+
+
+def blood(frame):
+    # A drop thrown off the hook, four ways it can look in the air: a bead, a fatter bead, a drawn-out string, a splash breaking up.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    shapes = [
+        [(7, 7, BLOOD_WET), (8, 7, BLOOD_WET), (7, 8, BLOOD_DRY), (8, 8, BLOOD_WET), (7, 7, BLOOD_LIGHT)],
+        [(6, 7, BLOOD_WET), (7, 6, BLOOD_WET), (8, 6, BLOOD_WET), (9, 7, BLOOD_DRY), (6, 8, BLOOD_DRY), (7, 7, BLOOD_LIGHT), (8, 7, BLOOD_WET),
+         (7, 8, BLOOD_WET), (8, 8, BLOOD_DRY), (7, 9, BLOOD_DRY)],
+        [(8, 4, BLOOD_DRY), (8, 5, BLOOD_WET), (7, 6, BLOOD_WET), (8, 6, BLOOD_LIGHT), (7, 7, BLOOD_WET), (8, 7, BLOOD_WET), (7, 8, BLOOD_WET),
+         (7, 9, BLOOD_DRY), (7, 10, BLOOD_DRY)],
+        [(5, 6, BLOOD_DRY), (7, 5, BLOOD_WET), (9, 6, BLOOD_WET), (10, 8, BLOOD_DRY), (6, 8, BLOOD_WET), (7, 7, BLOOD_LIGHT), (8, 7, BLOOD_WET),
+         (8, 8, BLOOD_WET), (7, 9, BLOOD_DRY), (9, 10, BLOOD_DRY), (4, 9, BLOOD_DRY)],
+    ][frame]
+    for x, y, c in shapes:
+        dot(im, x, y, c)
+    return im
 
 
 def files():
@@ -4739,6 +4801,11 @@ def files():
     # given nothing to draw.
     out['models/item/list_sack.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/list_sack'},
                                          'display': {'head': {'scale': [0, 0, 0]}}}
+    # 0.4.709: the hay hook, held as a tool is held; after a finish its picture is the bloodied one (custom model data 1).
+    out['models/item/list_hay_hook.json'] = {'parent': 'minecraft:item/handheld', 'textures': {'layer0': NS + 'item/list_hay_hook'},
+                                             'overrides': [{'predicate': {'custom_model_data': 1}, 'model': NS + 'item/list_hay_hook_bloody'}]}
+    out['models/item/list_hay_hook_bloody.json'] = {'parent': 'minecraft:item/handheld', 'textures': {'layer0': NS + 'item/list_hay_hook_bloody'}}
+    out['particles/list_blood.json'] = {'textures': [NS + f'list_blood_{i}' for i in range(4)]}
     return out
 
 
@@ -4785,6 +4852,10 @@ def main():
     # 0.4.707: Amber's page is torn at the top, clear outside the sheet, and written on.
     pg = images['entity/the_list/page.png']
     assert pg.getpixel((0, 0))[3] == 0 and pg.getpixel((15, 8))[3] == 0 and pg.getpixel((4, 1))[3] == 0 and ink(pg, '#16130f') > 14
+    # 0.4.709: the hook is drawn clear round its shape; the bloodied one has blood on it and the clean one none.
+    hook, red = images['item/list_hay_hook.png'], images['item/list_hay_hook_bloody.png']
+    assert hook.getpixel((0, 0))[3] == 0 and hook.getpixel((15, 15))[3] == 0 and ink(hook, BLOOD_WET) == 0 and ink(red, BLOOD_WET) >= 5
+    assert all(sum(images[f'particle/list_blood_{i}.png'].getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) >= 4 for i in range(4))
     # The tower spells the town across three plates.
     assert all(ink(images[f'block/the_list/tank_{i}.png'], '#2a3e6e') > 8 for i in (1, 2, 3))
     # Cotton stands with its bolls open; the bare stalks have none.

@@ -2213,5 +2213,10 @@
   "subtitles.the_oldest_house.the_list.bolt": "A bolt drops",
   "subtitles.the_oldest_house.the_list.auger": "An auger turns",
   "subtitles.the_oldest_house.the_list.seed": "Seed pours",
-  "subtitles.the_oldest_house.the_list.scream": "Someone screams"
+  "subtitles.the_oldest_house.the_list.scream": "Someone screams",
+  "item.the_oldest_house.list_hay_hook": "Hay Hook",
+  "subtitles.the_oldest_house.the_list.struggle": "Someone struggles",
+  "subtitles.the_oldest_house.the_list.hook_in": "A hook goes in",
+  "subtitles.the_oldest_house.the_list.hook_out": "A hook tears free",
+  "subtitles.the_oldest_house.the_list.gasp": "Someone gasps"
 }

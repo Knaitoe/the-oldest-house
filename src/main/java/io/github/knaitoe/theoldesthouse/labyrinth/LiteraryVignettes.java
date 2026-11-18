@@ -501,6 +501,8 @@ public final class LiteraryVignettes {
         if(Fallow.locked(p))return true;
         // 0.4.706: The list's night one, from the seed house's door rolling shut.
         if(TheListNight.locked(p))return true;
+        // 0.4.709: nor while the reader has hold of one of the five, or the hook in them.
+        if(TheListHunt.holding(p))return true;
         if(ElkLotEnding.held(p))return true;
         if (LakeHouse.inside(p)&&personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.LAKE_HOUSE).getInt("Finish")>0)return true;
         if (CabinBargain.held(p)) return true;

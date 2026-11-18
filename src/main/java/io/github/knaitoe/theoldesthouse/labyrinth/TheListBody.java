@@ -67,6 +67,8 @@ public final class TheListBody {
     private TheListBody(){}
     private static ResourceLocation id(String path){return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,path);}
     public static final ResourceLocation WALK_ID=id("list_walk"),STILL_ID=id("list_still"),STILL_JUMP_ID=id("list_still_jump");
+    /** 0.4.709: holding one of the five, the body stands where it is (TheListHunt). */
+    public static final ResourceLocation HOLD_ID=id("list_hold"),HOLD_JUMP_ID=id("list_hold_jump");
     /** The game's sprint adds three tenths to a walk. The body walks at that pace all the time, and never sprints. */
     public static final double WALK=.3;
     /** Down for five seconds; in the town the body keeps a heart. */
@@ -112,6 +114,8 @@ public final class TheListBody {
     public static boolean walking(Player p){var a=p.getAttribute(Attributes.MOVEMENT_SPEED);return a!=null&&a.hasModifier(WALK_ID);}
     /** Ticks left lying where they fell; 0 when up, or without the body. */
     public static int down(ServerPlayer p){var live=LIVE.get(p.getUUID());return live==null?0:live.down;}
+    /** 0.4.709: whether the body is up and about on the reader (it is made on the tick after it is given). */
+    public static boolean live(ServerPlayer p){return LIVE.containsKey(p.getUUID());}
     /** Toward which name the pull draws now, and how hard (0 to 1). */
     public static @Nullable UUID pulled(ServerPlayer p){var live=LIVE.get(p.getUUID());return live==null?null:live.pulled;}
     public static float pull(ServerPlayer p){var live=LIVE.get(p.getUUID());return live==null?0:live.pull;}
@@ -140,7 +144,7 @@ public final class TheListBody {
         PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,live.pullYaw,live.pull));
     }
     /** The body taken back: nothing of it, the sack included, is left on them. */
-    public static void end(ServerPlayer p){var own=own(p);own.remove("Body");own.remove("Sack");save(p,own);strip(p,false);}
+    public static void end(ServerPlayer p){var own=own(p);own.remove("Body");own.remove("Sack");own.remove("Hook");save(p,own);strip(p,false);}
 
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();var level=server.getLevel(NovelRooms.dimension(TheList.PLACE));
@@ -168,6 +172,7 @@ public final class TheListBody {
             if(--live.down==0)up(p,live);
         }else tread(p,l,live);
         if(live.tick%20==1)live.people=l.getEntitiesOfClass(LiteraryActor.class,bounds(b),a->TheListPeople.is(a)&&a.isAlive());
+        if(live.tick%20==3)hook(p);
         if(live.tick%10==2)seen(p,l,live,now);
         if(live.tick%5==0)pull(p,l,live);
         hearts(p,l,live,now);
@@ -178,6 +183,7 @@ public final class TheListBody {
         var live=LIVE.remove(p.getUUID());
         var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);if(speed!=null){speed.removeModifier(WALK_ID);speed.removeModifier(STILL_ID);}
         var jump=p.getAttribute(Attributes.JUMP_STRENGTH);if(jump!=null)jump.removeModifier(STILL_JUMP_ID);
+        holding(p,false);takeHooks(p);
         if(live!=null&&live.down>0&&p.getForcedPose()==Pose.SWIMMING)p.setForcedPose(null);
         // The sack stays in the town: on the back step, and put back on the reader when they come back.
         int was=takeSacks(p);
@@ -208,15 +214,58 @@ public final class TheListBody {
         p.serverLevel().playSound(null,p.getX(),p.getY()+1.5,p.getZ(),TheListRegistry.SACK_SOUND.get(),SoundSource.PLAYERS,.8F,1F);
         if(left!=3)TheList.cue(p,head?TheListTexts.SACK_WORN:TheListTexts.SACK_CARRIED);
     }
-    /** A sack let go of in the town lies where it fell until it is picked up; it does not rot away. */
-    @SubscribeEvent public static void tossed(ItemTossEvent e){if(TheListSack.is(e.getEntity().getItem()))e.getEntity().setUnlimitedLifetime();}
+    /** A sack let go of in the town lies where it fell until it is picked up; it does not rot away. 0.4.709: the hay hook is not let go
+     * of; thrown, it is back in the slasher's hands within the second (hook). */
+    @SubscribeEvent public static void tossed(ItemTossEvent e){
+        if(TheListSack.is(e.getEntity().getItem()))e.getEntity().setUnlimitedLifetime();
+        else if(e.getEntity().getItem().is(TheListRegistry.HAY_HOOK.get())&&e.getPlayer() instanceof ServerPlayer p&&has(p))e.setCanceled(true);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.709: the hay hook and the grip
+    /** The hay hook given with the body: in the reader's hands, and kept in their record for the nights to come. */
+    public static void giveHook(ServerPlayer p){var own=own(p);if(own.getInt("Hook")==0){own.putInt("Hook",1);save(p,own);}hook(p);}
+    /** Whether the reader has the hay hook in their main hand. */
+    public static boolean hookInHand(ServerPlayer p){return p.getMainHandItem().is(TheListRegistry.HAY_HOOK.get());}
+    /** Whether it has been used: the record's word, 2. */
+    public static boolean bloodied(ServerPlayer p){return own(p).getInt("Hook")==2;}
+    static boolean hasHook(ServerPlayer p){
+        var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))return true;
+        return p.containerMenu.getCarried().is(TheListRegistry.HAY_HOOK.get());
+    }
+    /** The hook the record owes the reader, back in their hands if they have none: clean, or bloodied. */
+    static void hook(ServerPlayer p){
+        int owed=own(p).getInt("Hook");if(owed==0||hasHook(p))return;
+        var stack=new ItemStack(TheListRegistry.HAY_HOOK.get());if(owed==2)stack.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));
+        p.getInventory().add(stack);
+    }
+    /** Every hook taken from the reader: none leaves the town. */
+    static void takeHooks(ServerPlayer p){
+        var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))inv.setItem(i,ItemStack.EMPTY);
+        if(p.containerMenu.getCarried().is(TheListRegistry.HAY_HOOK.get()))p.containerMenu.setCarried(ItemStack.EMPTY);
+    }
+    /** The hook used: the one in hand bloodied, and the record keeps it so. */
+    public static void bloody(ServerPlayer p){
+        var own=own(p);own.putInt("Hook",2);save(p,own);
+        var held=p.getMainHandItem();if(held.is(TheListRegistry.HAY_HOOK.get()))held.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));
+    }
+    /** One of the five killed: the reader's record keeps who (Kills, a bit for each). */
+    public static void killed(ServerPlayer p,int who){var own=own(p);own.putInt("Kills",own.getInt("Kills")|1<<who);save(p,own);}
+    public static int kills(ServerPlayer p){return own(p).getInt("Kills");}
+    /** Holding one of the five, the body stands where it is: no walking, no jumping. Let go, it walks again. */
+    public static void holding(ServerPlayer p,boolean on){
+        var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);var jump=p.getAttribute(Attributes.JUMP_STRENGTH);
+        if(on){
+            if(speed!=null&&!speed.hasModifier(HOLD_ID))speed.addTransientModifier(new AttributeModifier(HOLD_ID,-1,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+            if(jump!=null&&!jump.hasModifier(HOLD_JUMP_ID))jump.addTransientModifier(new AttributeModifier(HOLD_JUMP_ID,-1,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        }else{if(speed!=null)speed.removeModifier(HOLD_ID);if(jump!=null)jump.removeModifier(HOLD_JUMP_ID);}
+    }
 
     // ------------------------------------------------------------------------------------------------ hearts
     /** Each heart near enough, beating where it is, to the slasher alone. */
     static void hearts(ServerPlayer p,ServerLevel l,Live live,long now){
         var heard=new HashSet<UUID>();
         for(var a:live.people){
-            if(!a.isAlive())continue;boolean name=listed(TheListPeople.who(a));
+            if(!a.isAlive()||TheListHunt.gone(a))continue;boolean name=listed(TheListPeople.who(a));
             double reach=name?NAME_HEART:HEART;if(a.distanceToSqr(p)>reach*reach)continue;
             beat(p,a,name,TheListPeople.asleep(a.phase()),live,now,heard);
         }
@@ -249,7 +298,7 @@ public final class TheListBody {
     static void seen(ServerPlayer p,ServerLevel l,Live live,long now){
         boolean bare=!TheListSack.worn(p);var own=bare?own(p):null;int faced=bare?own.getInt("Faced"):0;boolean changed=false;
         for(var a:live.people){
-            if(!a.isAlive()||TheListPeople.asleep(a.phase()))continue;
+            if(!a.isAlive()||TheListPeople.asleep(a.phase())||TheListHunt.gone(a))continue;
             double d=a.distanceTo(p);
             if(d>SEES||!facing(a.getYHeadRot(),a.getEyePosition(),p.getEyePosition(),70)||!a.hasLineOfSight(p))continue;
             live.raced.put(a.getUUID(),now+RACE);
@@ -268,7 +317,7 @@ public final class TheListBody {
     /** The nearest name, and how hard they draw the reader now, sent to the reader's own screen. */
     static void pull(ServerPlayer p,ServerLevel l,Live live){
         LiteraryActor near=null;double best=PULL;
-        for(var a:live.people){if(!a.isAlive()||!listed(TheListPeople.who(a)))continue;double d=a.distanceTo(p);if(d<best){best=d;near=a;}}
+        for(var a:live.people){if(!a.isAlive()||!listed(TheListPeople.who(a))||TheListHunt.gone(a))continue;double d=a.distanceTo(p);if(d<best){best=d;near=a;}}
         float strength=0,yaw=0;
         if(near!=null){
             var to=near.position().subtract(p.position());yaw=(float)Math.toDegrees(Math.atan2(-to.x,to.z));
@@ -285,7 +334,8 @@ public final class TheListBody {
     // ------------------------------------------------------------------------------------------------ the tread
     static void tread(ServerPlayer p,ServerLevel l,Live live){
         var here=p.position();
-        if(live.last!=null&&p.onGround()){
+        // 0.4.709: creeping, crouched, the body's tread is not heard (and the five hear it only from a block away: TheListHunt).
+        if(live.last!=null&&p.onGround()&&!p.isCrouching()){
             double step=Math.hypot(here.x-live.last.x,here.z-live.last.z);
             if(step<2)live.walked+=step;
             if(live.walked>=STRIDE){live.walked=0;l.playSound(p,here.x,here.y,here.z,TheListRegistry.TREAD.get(),SoundSource.PLAYERS,.9F,.9F+p.getRandom().nextFloat()*.15F);}

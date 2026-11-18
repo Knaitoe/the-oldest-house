@@ -106,9 +106,9 @@ public final class TheListPeople {
             }
             // 0.4.708: one the hunt has sent running or hiding is left where they are.
             if(!TheListHunt.holds(b,who))place(a,at,who,s.facing());
-            // Mel has the camera out from the party until the seed house; Amber, at her window after the cut, a page out of a notebook
+            // Mel has the camera out from the party until the seed house, and through a hunt until she lets it fall (0.4.709); Amber, at her window after the cut, a page out of a notebook
             // (0.4.707); nobody else holds anything.
-            var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b))?LiteraryRegistry.CAMCORDER.get()
+            var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b)&&!TheListHunt.dropped(b,MEL))?LiteraryRegistry.CAMCORDER.get()
                 :who==AMBER&&phase==TheListNight.AFTER?net.minecraft.world.item.Items.PAPER:null;
             var held=a.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
             if(want!=null&&!held.is(want))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(want));
@@ -141,6 +141,8 @@ public final class TheListPeople {
      */
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         if(!is(a))return;
+        // 0.4.709: during the hunt a hand on one of the five is the hunt's (a catch, a twist away, a body that does not move).
+        if(TheListHunt.hand(p,a))return;
         // 0.4.706: at the party, the five have the night's own lines, and Deek takes the one he picked.
         if(TheListNight.talk(p,a,own))return;
         int who=who(a);

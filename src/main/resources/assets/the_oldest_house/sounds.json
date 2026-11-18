@@ -7166,5 +7166,41 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.scream"
+  },
+  "the_list.struggle": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/struggle",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.struggle"
+  },
+  "the_list.hook_in": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/hook_in",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.hook_in"
+  },
+  "the_list.hook_out": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/hook_out",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.hook_out"
+  },
+  "the_list.gasp": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/gasp",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.gasp"
   }
 }

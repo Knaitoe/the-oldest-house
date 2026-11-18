@@ -49,12 +49,14 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TheListHunt {
     private TheListHunt(){}
-    /** Sitting at their place; running; hidden; cornered with nothing left. */
-    public enum State{CALM,RUN,HIDE,COWER}
-    /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering. */
-    public static final int STILL=0,RUNNING=1,HIDING=2,SWINGING=3,COWERING=4;
-    /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face. */
-    public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6;
+    /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; dead. */
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,DEAD}
+    /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
+     * grip, flinching from the hook, on the knees on it, slumped over it, fallen. */
+    public static final int STILL=0,RUNNING=1,HIDING=2,SWINGING=3,COWERING=4,STRUGGLING=5,RECOIL=6,KNEELING=7,SLUMPED=8,FALLEN=9;
+    /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
+     * they hear it creeping, crouched. */
+    public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
     /** How far a scream carries to the others on the list, and to the rest of the town. */
     public static final double SCREAM_REACH=40,HELP_REACH=96;
     /** Close enough to find one hiding, and to be caught up with running. */
@@ -65,6 +67,18 @@ public final class TheListHunt {
     public static final float PACE=1.3F;
     /** The slasher this near a held door: it is slammed whoever is still coming. */
     public static final double SLAM=5;
+    /** 0.4.709: how far in front of the slasher one held is kept, and one on the hook drawn in to. */
+    public static final double HELD_AT=.8,KNELT_AT=.65;
+    /** How long each of them takes to tear loose from the slasher's grip, by who they are; twice as quick while the slasher looks more
+     * than LOOK_AWAY degrees off them. */
+    static final int[] STRENGTH=new int[TheListPeople.CAST];
+    static{STRENGTH[TheListPeople.DEEK]=60;STRENGTH[TheListPeople.WES]=90;STRENGTH[TheListPeople.MEL]=80;STRENGTH[TheListPeople.LESLEY]=100;STRENGTH[TheListPeople.SHANNON]=110;}
+    public static int strength(int who){return STRENGTH[who];}
+    public static final float LOOK_AWAY=50F;
+    /** The hay hook's finish, by the tick from its start: raised; in; the knees give; out; slumped over it; fallen and let go; dead. */
+    public static final int RAISE=20,KNEES=32,OUT=70,FOLD=86,DONE=110;
+    /** How often one held is heard fighting the grip; how far the scream cut short by the hook is told of. */
+    static final int STRUGGLE_EVERY=40;
 
     /** The doors the five bolt behind them: the field house's back door (its west leaf), the press box's, the drive-in stand's. */
     public static final BlockPos FIELD_DOOR=new BlockPos(TheListSite.FIELD_X-1,0,TheListSite.FIELD_HOUSE_S),
@@ -110,10 +124,31 @@ public final class TheListHunt {
             {open(STAND_DOOR,39.5,0,-137.5),w(40.5,0,-137.5),w(42.5,0,-137.5),w(42.5,0,-143.5),hide(36.5,0,-143.5,Direction.NORTH)}};
     }
 
+    /** 0.4.709: back the way they came, for one torn loose where they cowered: their second way run backward to their first hiding
+     * place. A door on it is opened as they come to it (by then it has been sprung or broken, or they left it open). */
+    static final int BACK_WAY=2;
+    static final Step[][] BACK=new Step[TheListPeople.CAST][];
+    static {
+        for(int who:new int[]{TheListPeople.DEEK,TheListPeople.WES,TheListPeople.MEL,TheListPeople.LESLEY,TheListPeople.SHANNON}){
+            var second=WAYS[who][1];var back=new ArrayList<Step>();
+            for(int i=second.length-2;i>=0;i--){var st=second[i];back.add(st.door()!=null?new Step(OPEN,st.at(),st.door(),Direction.NORTH):w(st.at().x,st.at().y,st.at().z));}
+            var first=WAYS[who][0];back.add(first[first.length-1]);
+            BACK[who]=back.toArray(Step[]::new);
+        }
+    }
+    /** The steps of the way one is on now: their first, their second, or back. */
+    static Step[] steps(Runner r){return r.way<WAYS[r.who].length?WAYS[r.who][r.way]:BACK[r.who];}
+
     // ------------------------------------------------------------------------------------------------ the town's hunt
     /** One of the five, on the hunt: what they are doing, which way and how far along it, whether they have fought back yet. */
     static final class Runner{
         final int who;final UUID id;State state=State.CALM;int way,step,held,since,stuck;boolean fought,yelled;@Nullable Vec3 last;@Nullable ChunkPos ticket;
+        /** 0.4.709: who has hold of them, how far they are to tearing loose, and what they were doing when caught. */
+        @Nullable UUID holder;int strength;State caught=State.CALM;
+        /** Who used the hook on them: kept past the fall, when the holder lets go, so that the death is theirs. */
+        @Nullable UUID killer;
+        /** Which way the slasher faced when they took hold: the held one is kept that way from them, wherever the slasher looks after. */
+        float pin;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
@@ -139,10 +174,21 @@ public final class TheListHunt {
     public static boolean bolted(BlockPos b,BlockPos lower){var h=HUNTS.get(b.asLong());return h!=null&&h.bolted.contains(lower);}
     /** Whether one of the five is running, hidden or cornered now: their heart races. */
     public static boolean scared(Entity e){
-        if(!(e instanceof LiteraryActor a)||!TheListPeople.is(a))return false;
-        for(var h:HUNTS.values()){var r=h.runners.get(TheListPeople.who(a));if(r!=null&&r.id.equals(a.getUUID()))return r.state!=State.CALM;}
-        return false;
+        var r=runner(e);return r!=null&&r.state!=State.CALM&&!gone(r);
     }
+    /** 0.4.709: whether one of the five is dead, or as good as: the hook out of them. Their heart is not heard, they see nothing, and
+     * nothing draws the slasher to them. */
+    public static boolean gone(Entity e){var r=runner(e);return r!=null&&gone(r);}
+    static boolean gone(Runner r){return r.state==State.DEAD||r.state==State.FINISH&&r.since>=OUT;}
+    static @Nullable Runner runner(Entity e){
+        if(!(e instanceof LiteraryActor a)||!TheListPeople.is(a))return null;
+        for(var h:HUNTS.values()){var r=h.runners.get(TheListPeople.who(a));if(r!=null&&r.id.equals(a.getUUID()))return r;}
+        return null;
+    }
+    /** 0.4.709: whether a reader has hold of one of the five (or the hook in them): they cannot leave by the House's door. */
+    public static boolean holding(ServerPlayer p){for(var h:HUNTS.values())for(var r:h.runners.values())if(p.getUUID().equals(r.holder))return true;return false;}
+    /** Whether one of them is dead. */
+    public static boolean dead(BlockPos b,int who){return state(b,who)==State.DEAD;}
     /** How far one of them turns in a tick while running, on top of the walk's own turn: a body running for its life pivots at a
      * corner. At the walk's twelve degrees a tick, a runner turning a corner in a doorway circled the next point and never reached it. */
     public static final float TURN=45F;
@@ -158,6 +204,7 @@ public final class TheListHunt {
     /** The hunt begun in a town: the night put away, the doors put back, the five found where they sit. */
     public static void start(ServerLevel l,BlockPos b){
         end(l,b);
+        sweep(l,b);
         doors(l,b);
         TheListPeople.ensure(l,b);
         var h=new Hunt(b);
@@ -170,9 +217,11 @@ public final class TheListHunt {
         var h=HUNTS.remove(b.asLong());if(h==null)return;
         for(var r:h.runners.values()){
             release(l,r);
-            if(l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.gesture(STILL);a.setNoGravity(true);}
+            if(r.holder!=null){var p=l.getServer().getPlayerList().getPlayer(r.holder);if(p!=null)TheListBody.holding(p,false);}
+            if(l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.gesture(STILL);a.setNoGravity(true);a.holder(null);}
         }
         doors(l,b);
+        sweep(l,b);
         TheListPeople.ensure(l,b);
     }
     /** The three doors as they were built: shut, and nobody's bolt on them. */
@@ -198,17 +247,21 @@ public final class TheListHunt {
                 case RUN->{
                     lease(l,r,a);
                     if(!r.yelled&&r.since>=HELP_AFTER)yell(l,b,r,a,here);
-                    for(var s:slashers)if(!r.fought&&a.distanceTo(s)<=CAUGHT){fight(l,b,h,r,a,s,here);break;}
+                    // 0.4.709: one just torn loose is a second clear of the slasher before they could turn on them.
+                    for(var s:slashers)if(!r.fought&&r.since>=0&&a.distanceTo(s)<=CAUGHT){fight(l,b,h,r,a,s,here);break;}
                     if(r.state==State.RUN)step(l,b,h,r,a,slashers);
                 }
                 case HIDE->{if(h.tick%5==0)for(var s:slashers)if(finds(a,s)){found(l,b,h,r,a,s,here);break;}}
                 case COWER->{var s=nearest(a,slashers);if(s!=null)face(a,s.position());}
+                case HELD->held(l,b,h,r,a,slashers,here);
+                case FINISH->finishing(l,b,h,r,a,slashers,here);
+                case DEAD->{}
             }
         }
     }
     /** Whether one sitting at their place has noticed the slasher: seen in front of them (further in light), or heard close by. */
     static boolean notices(ServerLevel l,LiteraryActor a,ServerPlayer s){
-        double d=a.distanceTo(s);if(d<=HEARS)return true;
+        double d=a.distanceTo(s);if(d<=(s.isCrouching()?HEARS_CROUCHED:HEARS))return true;
         double sees=TheListBody.lit(s,l)?SEES_LIT:SEES_DARK;
         return d<=sees&&TheListBody.facing(a.getYHeadRot(),a.getEyePosition(),s.getEyePosition(),75)&&a.hasLineOfSight(s);
     }
@@ -222,20 +275,27 @@ public final class TheListHunt {
      */
     static void run(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here,boolean first){
         r.state=State.RUN;r.step=0;r.held=0;r.since=0;r.stuck=0;r.last=null;
+        boolean seated=a.gesture()==STILL;
         a.setPose(Pose.STANDING);a.gesture(RUNNING);a.setNoGravity(false);
         if(first){
-            var up=UP[r.who];a.moveTo(b.getX()+up.x,b.getY()+up.y,b.getZ()+up.z,a.getYRot(),0);
-            l.playSound(null,a.getX(),a.getEyeY(),a.getZ(),TheListRegistry.SCREAM.get(),SoundSource.NEUTRAL,2.2F,.92F+l.getRandom().nextFloat()*.16F);
+            if(seated){var up=UP[r.who];a.moveTo(b.getX()+up.x,b.getY()+up.y,b.getZ()+up.z,a.getYRot(),0);}
+            scream(l,a);
             say(a,r.who,TheListTexts.RUN[r.who]);
-            for(var other:h.runners.values()){
-                if(other==r||other.state!=State.CALM||!(l.getEntity(other.id) instanceof LiteraryActor o))continue;
-                if(o.distanceTo(a)<=SCREAM_REACH)run(l,b,h,other,o,here,true);
-            }
+            heard(l,b,h,r,a,here);
         }
         go(b,r,a);
     }
+    /** A scream, where they are. */
+    static void scream(ServerLevel l,LiteraryActor a){l.playSound(null,a.getX(),a.getEyeY(),a.getZ(),TheListRegistry.SCREAM.get(),SoundSource.NEUTRAL,2.2F,.92F+l.getRandom().nextFloat()*.16F);}
+    /** Anyone else on the list near enough to hear one of them scream, still at their place, runs too. */
+    static void heard(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        for(var other:h.runners.values()){
+            if(other==r||other.state!=State.CALM||!(l.getEntity(other.id) instanceof LiteraryActor o))continue;
+            if(o.distanceTo(a)<=SCREAM_REACH)run(l,b,h,other,o,here,true);
+        }
+    }
     /** Toward the step they are on now. */
-    static void go(BlockPos b,Runner r,LiteraryActor a){var st=WAYS[r.who][r.way][r.step];BorrascaCast.walk(a,Vec3.atLowerCornerOf(b).add(st.at()),1.0);}
+    static void go(BlockPos b,Runner r,LiteraryActor a){var st=steps(r)[r.step];BorrascaCast.walk(a,Vec3.atLowerCornerOf(b).add(st.at()),1.0);}
     /** A few seconds into the run, they yell for help; everyone else in town who is not the slasher is told from which way it came. */
     static void yell(ServerLevel l,BlockPos b,Runner r,LiteraryActor a,List<ServerPlayer> here){
         r.yelled=true;say(a,r.who,TheListTexts.HELP[r.who]);
@@ -253,7 +313,7 @@ public final class TheListHunt {
 
     /** Along the way: on to the next point when they reach this one; a door opened, a door shut and bolted behind them, or the end. */
     static void step(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers){
-        var steps=WAYS[r.who][r.way];var st=steps[r.step];
+        var steps=steps(r);var st=steps[r.step];
         var at=Vec3.atLowerCornerOf(b).add(st.at());
         var to=at.subtract(a.position());
         boolean there=to.horizontalDistance()<.4&&Math.abs(to.y)<.75;
@@ -301,7 +361,7 @@ public final class TheListHunt {
         boolean near=false;for(var s:slashers)if(s.position().distanceTo(Vec3.atCenterOf(at))<=SLAM)near=true;
         if(!near)for(var o:h.runners.values()){
             if(o==r||o.state!=State.RUN||!(l.getEntity(o.id) instanceof LiteraryActor oa)||oa.distanceTo(a)>24)continue;
-            var steps=WAYS[o.who][o.way];
+            var steps=steps(o);
             for(int i=o.step;i<steps.length;i++)if(steps[i].kind()==OPEN&&door.equals(steps[i].door()))return false;
         }
         d.setOpen(a,l,st,at,false);h.bolted.add(door);
@@ -354,9 +414,191 @@ public final class TheListHunt {
             case CALM->run(l,b,h,r,a,here,true);
             case HIDE->found(l,b,h,r,a,p,here);
             case RUN->{if(!r.fought)fight(l,b,h,r,a,p,here);}
+            // 0.4.709: a blow on one cornered takes hold of them; on one held, with the hook in hand, it is the hook.
+            case COWER->take(l,b,h,r,a,p,here);
+            case HELD->{if(p.getUUID().equals(r.holder)&&TheListBody.hookInHand(p))finish(r,a,p);}
             default->{}
         }
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.709: the catch
+    /**
+     * A hand on one of the five, from TheListPeople.talk. The slasher's: one at their place who does not see it coming (from behind,
+     * creeping) is taken hold of, and one who sees it runs; one running twists out of reach; one hiding is found; one cornered is taken
+     * hold of; one held, with the hook in hand, gets the hook. Anyone else's hand: the calm ones talk as before (false), the rest are
+     * past talking. Anyone's on one dead: they do not move. Spectators touch nothing.
+     */
+    public static boolean hand(ServerPlayer p,LiteraryActor a){
+        var b=TheListBody.town(p);if(b==null)return false;var h=HUNTS.get(b.asLong());if(h==null)return false;
+        var r=h.runners.get(TheListPeople.who(a));if(r==null||!r.id.equals(a.getUUID()))return false;
+        if(p.isSpectator())return true;
+        var name=TheListTexts.NAMES[r.who];
+        if(r.state==State.DEAD||gone(r)){TheList.cue(p,String.format(TheListTexts.STILL_BODY,name));return true;}
+        if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return r.state!=State.CALM;
+        var l=p.serverLevel();var here=TheList.readers(l,b);
+        switch(r.state){
+            case CALM->{if(sees(a,p))run(l,b,h,r,a,here,true);else take(l,b,h,r,a,p,here);}
+            case RUN->TheList.cue(p,String.format(TheListTexts.TWIST,name));
+            case HIDE->found(l,b,h,r,a,p,here);
+            case COWER->take(l,b,h,r,a,p,here);
+            case HELD->{if(p.getUUID().equals(r.holder)&&TheListBody.hookInHand(p))finish(r,a,p);}
+            default->{}
+        }
+        return true;
+    }
+    /** Whether one of them has the slasher in front of them, in sight. */
+    public static boolean sees(LiteraryActor a,ServerPlayer s){return TheListBody.facing(a.getYHeadRot(),a.getEyePosition(),s.getEyePosition(),75)&&a.hasLineOfSight(s);}
+    /**
+     * Taken hold of: stood up in front of the slasher, facing them, fighting the grip. Their words and a scream (anyone else on the list
+     * near enough hears it and runs); the slasher stands where they are while they hold on. Nobody is taken while the slasher holds another.
+     */
+    static void take(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,List<ServerPlayer> here){
+        if(holding(s))return;
+        r.caught=r.state;r.state=State.HELD;r.holder=s.getUUID();r.since=0;r.strength=0;r.pin=yawTo(s.position(),a.position());
+        release(l,r);BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(STRUGGLING);a.holder(s.getUUID());
+        pin(a,s,r.pin,HELD_AT);
+        TheListBody.holding(s,true);
+        TheList.cue(s,String.format(TheListTexts.HOLD,TheListTexts.NAMES[r.who]));
+        say(a,r.who,TheListTexts.CAUGHT[r.who]);
+        scream(l,a);
+        l.playSound(null,a.getX(),a.getY()+1,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,1F,1F);
+        heard(l,b,h,r,a,here);
+    }
+    /** Held: kept in front of the slasher wherever they turn, fighting the grip until they tear loose, or until the slasher is put down
+     * or gone. */
+    static void held(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers,List<ServerPlayer> here){
+        var s=holder(r,slashers);
+        if(s==null){loose(l,b,h,r,a,null,here);return;}
+        pin(a,s,r.pin,HELD_AT);
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+1,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,1F,1F);
+        float off=Math.abs(Mth.wrapDegrees(yawTo(s.position(),a.position())-s.getYHeadRot()));
+        r.strength+=off>LOOK_AWAY?2:1;
+        if(r.strength>=STRENGTH[r.who])loose(l,b,h,r,a,s,here);
+    }
+    /** The one with hold of them, if they are still in town with the body up. */
+    static @Nullable ServerPlayer holder(Runner r,List<ServerPlayer> slashers){for(var s:slashers)if(s.getUUID().equals(r.holder))return s;return null;}
+    static float yawTo(Vec3 from,Vec3 to){var d=to.subtract(from);return (float)Math.toDegrees(Math.atan2(-d.x,d.z));}
+    /**
+     * Torn loose: a shove that puts the slasher back a step, their words, a scream, and they run. Caught at their place, they run their
+     * first way; caught cornered, back the way they came to their first hiding place.
+     */
+    static void loose(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,@Nullable ServerPlayer s,List<ServerPlayer> here){
+        var was=r.holder==null?null:l.getServer().getPlayerList().getPlayer(r.holder);
+        if(was!=null)TheListBody.holding(was,false);
+        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);
+        stop(l,a,TheListRegistry.STRUGGLE.get());
+        if(s!=null){
+            s.knockback(.8,a.getX()-s.getX(),a.getZ()-s.getZ());s.hurtMarked=true;
+            l.playSound(null,s.getX(),s.getEyeY(),s.getZ(),SoundEvents.PLAYER_ATTACK_KNOCKBACK,SoundSource.NEUTRAL,1F,1.1F);
+            TheList.cue(s,String.format(TheListTexts.TORE,TheListTexts.NAMES[r.who]));
+        }
+        say(a,r.who,TheListTexts.LOOSE[r.who]);
+        r.way=r.caught==State.CALM?0:BACK_WAY;
+        r.state=State.RUN;r.step=0;r.held=0;r.since=-20;r.stuck=0;r.last=null;
+        a.setPose(Pose.STANDING);a.gesture(RUNNING);
+        scream(l,a);heard(l,b,h,r,a,here);
+        go(b,r,a);
+    }
+    /** Kept so far from the slasher, the way they were taken, facing them; where something is in the way they stay where they are. */
+    static void pin(LiteraryActor a,ServerPlayer s,float yaw,double by){
+        var to=new Vec3(s.getX()-Mth.sin(yaw*Mth.DEG_TO_RAD)*by,s.getY(),s.getZ()+Mth.cos(yaw*Mth.DEG_TO_RAD)*by);
+        if(!a.level().noCollision(a,a.getDimensions(a.getPose()).makeBoundingBox(to).deflate(.05)))to=new Vec3(a.getX(),s.getY(),a.getZ());
+        a.moveTo(to.x,to.y,to.z,yaw+180,0);a.setYBodyRot(yaw+180);a.setYHeadRot(yaw+180);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /** A sound one of them has been making, stopped for everyone near. */
+    static void stop(ServerLevel l,LiteraryActor a,net.minecraft.sounds.SoundEvent sound){
+        var packet=new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(sound.getLocation(),SoundSource.NEUTRAL);
+        for(var p:l.players())if(p.distanceTo(a)<=64)p.connection.send(packet);
+    }
+
+    /** What one of them has in hand (Mel's camcorder) let fall as the hook comes up: it lies where it lands, nobody's to pick up, until
+     * the hunt ends. */
+    public static final String DROPPED="the_list_dropped";
+    static void drop(LiteraryActor a){
+        var held=a.getItemInHand(InteractionHand.MAIN_HAND);if(held.isEmpty())return;
+        a.setItemInHand(InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+        var it=new net.minecraft.world.entity.item.ItemEntity(a.level(),a.getX(),a.getY()+1.1,a.getZ(),held.copy());
+        var out=Vec3.directionFromRotation(0,a.getYRot()+90);
+        it.setDeltaMovement(out.x*.12,.12,out.z*.12);it.setNeverPickUp();it.setUnlimitedLifetime();it.addTag(DROPPED);
+        a.level().addFreshEntity(it);
+    }
+    /** Whether one of them has let go of what they held (Mel keeps the camcorder through the hunt until then). */
+    public static boolean dropped(BlockPos b,int who){var st=state(b,who);return st==State.FINISH||st==State.DEAD;}
+    /** Anything let fall during a hunt, taken up when it ends or another begins. */
+    static void sweep(ServerLevel l,BlockPos b){
+        for(var it:l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,TheListBody.bounds(b),e->e.getTags().contains(DROPPED)))it.discard();
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.709: the hay hook
+    /** The hook, on one held: they see it come up. */
+    static void finish(Runner r,LiteraryActor a,ServerPlayer s){
+        if(r.state!=State.HELD)return;
+        r.state=State.FINISH;r.since=0;r.killer=s.getUUID();a.gesture(RECOIL);s.swing(InteractionHand.MAIN_HAND,true);
+        drop(a);
+    }
+    /**
+     * The hook, tick by tick. Until it goes in they can still be let go of. In: under the collarbone, blood thrown at the slasher, the
+     * scream cut off, and anyone else in town near enough told where it stopped. Drawn in close on it, down on the knees, bleeding. Out:
+     * blood again, the hook bloodied, and they slump over it, then fall. Let go, they lie where they fell, dead.
+     */
+    static void finishing(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers,List<ServerPlayer> here){
+        int t=r.since;// the town's tick has counted this one
+        var s=r.holder==null?null:l.getServer().getPlayerList().getPlayer(r.holder);
+        boolean there=s!=null&&slashers.contains(s);
+        if(t<RAISE){
+            if(!there){loose(l,b,h,r,a,null,here);return;}
+            pin(a,s,r.pin,HELD_AT);if(t==10)s.swing(InteractionHand.MAIN_HAND,true);
+            return;
+        }
+        var name=TheListTexts.NAMES[r.who];
+        if(t==RAISE){
+            stop(l,a,TheListRegistry.STRUGGLE.get());
+            if(there)pin(a,s,r.pin,KNELT_AT);
+            a.gesture(KNEELING);
+            l.playSound(null,a.getX(),a.getY()+1.2,a.getZ(),TheListRegistry.HOOK_IN.get(),SoundSource.NEUTRAL,1F,1F);
+            l.playSound(null,a.getX(),a.getEyeY(),a.getZ(),TheListRegistry.GASP.get(),SoundSource.NEUTRAL,1F,.95F+l.getRandom().nextFloat()*.1F);
+            scream(l,a);
+            spray(l,a,s,24);
+            if(s!=null)TheList.cue(s,TheListTexts.HOOK_IN);
+            for(var q:here)if(q!=s&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+        }
+        if(t==RAISE+5)stop(l,a,TheListRegistry.SCREAM.get());
+        if(t>RAISE&&t<OUT&&there)pin(a,s,r.pin,KNELT_AT);
+        if(t>RAISE&&t<FOLD&&t%2==0)drip(l,a);
+        if(t==KNEES&&s!=null)TheList.cue(s,String.format(TheListTexts.HOOK_KNEES,name));
+        if(t==OUT){
+            l.playSound(null,a.getX(),a.getY()+1.2,a.getZ(),TheListRegistry.HOOK_OUT.get(),SoundSource.NEUTRAL,1F,1F);
+            spray(l,a,s,14);a.gesture(SLUMPED);
+            if(s!=null){s.swing(InteractionHand.MAIN_HAND,true);TheListBody.bloody(s);TheList.cue(s,String.format(TheListTexts.HOOK_OUT,name));}
+        }
+        if(t==FOLD){
+            // Face down, the knees where they knelt and the head toward the slasher's feet.
+            a.gesture(FALLEN);a.setNoGravity(false);
+            if(s!=null){
+                float yaw=r.pin;var to=new Vec3(s.getX()-Mth.sin(yaw*Mth.DEG_TO_RAD)*1.6,a.getY(),s.getZ()+Mth.cos(yaw*Mth.DEG_TO_RAD)*1.6);
+                if(l.noCollision(a,a.getDimensions(a.getPose()).makeBoundingBox(to).deflate(.05)))a.moveTo(to.x,to.y,to.z,a.getYRot(),0);
+                TheListBody.holding(s,false);
+            }
+            r.holder=null;a.holder(null);
+        }
+        if(t>=DONE){
+            r.state=State.DEAD;
+            var by=r.killer==null?null:l.getServer().getPlayerList().getPlayer(r.killer);
+            if(by!=null)TheListBody.killed(by,r.who);
+        }
+    }
+    /** Blood thrown off the hook: toward the slasher's face, up and out, falling where it falls. */
+    static void spray(ServerLevel l,LiteraryActor a,@Nullable ServerPlayer s,int n){
+        var from=new Vec3(a.getX(),a.getY()+1.25,a.getZ());
+        var dir=s!=null?s.getEyePosition().subtract(from).normalize():Vec3.directionFromRotation(0,a.getYRot());
+        var rand=l.getRandom();
+        for(int i=0;i<n;i++){
+            var v=dir.scale(.15+rand.nextDouble()*.22).add((rand.nextDouble()-.5)*.2,.06+rand.nextDouble()*.16,(rand.nextDouble()-.5)*.2);
+            l.sendParticles(TheListRegistry.BLOOD.get(),from.x,from.y,from.z,0,v.x,v.y,v.z,1);
+        }
+    }
+    /** A drop down the front of them. */
+    static void drip(ServerLevel l,LiteraryActor a){l.sendParticles(TheListRegistry.BLOOD.get(),a.getX(),a.getY()+1.0,a.getZ(),1,.1,.05,.1,0);}
 
     // ------------------------------------------------------------------------------------------------ doors struck
     /** A bolted steel door struck at its fifth blow: the bolt tears out and the door swings in, and nobody bolts it again. */

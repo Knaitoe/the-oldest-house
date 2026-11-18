@@ -106,6 +106,25 @@ public final class TheListTexts {
     /** To anyone else in town, once for each name that yells: where it came from. */
     public static final String HELP_HEARD="Somewhere to the %s, %s is yelling for help.";
     public static final String[] COMPASS={"south","southwest","west","northwest","north","northeast","east","southeast"};
+    // ------------------------------------------------------------------------------------------------ 0.4.709: the catch
+    /** What each of the five says when the slasher has hold of them, and when they tear loose (Lesley says nothing; she goes). */
+    public static final String[] CAUGHT=new String[TheListPeople.CAST],LOOSE=new String[TheListPeople.CAST];
+    static {
+        CAUGHT[TheListPeople.DEEK]="Everybody knows I came out here!";CAUGHT[TheListPeople.WES]="Deek! Deek, it's got me!";
+        CAUGHT[TheListPeople.MEL]="There's tape of you. There's tape!";CAUGHT[TheListPeople.LESLEY]="My mom's waiting up. Please.";
+        CAUGHT[TheListPeople.SHANNON]="Somebody! Please, somebody!";
+        LOOSE[TheListPeople.DEEK]="Too slow, freak.";LOOSE[TheListPeople.WES]="I'm out, I'm out!";LOOSE[TheListPeople.MEL]="Run! Everybody run!";
+        LOOSE[TheListPeople.SHANNON]="Jenna!";
+    }
+    /** To the slasher: a hand on one who sees it coming; hold of one; one tearing loose. */
+    public static final String TWIST="%s twists out of your reach.",HOLD="You have hold of %s.",TORE="%s tears loose.";
+    /** To the slasher, the hay hook: in, the knees, out. */
+    public static final String HOOK_IN="The hook goes in under the collarbone.",HOOK_KNEES="%s's knees give.",
+        HOOK_OUT="You tear it free, and %s folds over.";
+    /** To anyone else in town, near enough to hear it: where the scream was cut off. */
+    public static final String STOPS_SHORT="Somewhere to the %s, a scream stops short.";
+    /** To anyone's hand on one of them after. */
+    public static final String STILL_BODY="%s doesn't move.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

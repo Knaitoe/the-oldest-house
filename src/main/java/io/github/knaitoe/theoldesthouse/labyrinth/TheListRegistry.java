@@ -75,11 +75,20 @@ public final class TheListRegistry {
         AUGER=sound("the_list.auger"),SEED=sound("the_list.seed");
     /** 0.4.708, the hunt: one of the names screaming as they start to run. */
     public static final DeferredHolder<SoundEvent,SoundEvent> SCREAM=sound("the_list.scream");
+    /** 0.4.709, the catch: one of them fighting the slasher's grip, the hay hook going in and torn out, and the catch in a throat. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> STRUGGLE=sound("the_list.struggle"),HOOK_IN=sound("the_list.hook_in"),
+        HOOK_OUT=sound("the_list.hook_out"),GASP=sound("the_list.gasp");
+    private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
+    /** 0.4.709: blood thrown off the hay hook and dripping, drawn by the client (TheListBloodParticles). */
+    public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> BLOOD=
+        PARTICLES.register("list_blood",()->new net.minecraft.core.particles.SimpleParticleType(false));
     /** 0.4.705: a house door that has given, split at the lock, a hole punched through its lower panel; it opens and shuts by hand for anyone. */
     public static final DeferredBlock<DoorBlock> BROKEN_DOOR=BLOCKS.register("list_broken_door",()->new DoorBlock(BlockSetType.OAK,fixed(Blocks.OAK_DOOR).noOcclusion()));
     private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
     /** 0.4.705: the feed sack over the slasher's head. */
     public static final DeferredItem<TheListSack> SACK=ITEMS.register("list_sack",()->new TheListSack(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+    /** 0.4.709: the hay hook, the slasher's; its model shows it bloodied once it has been used (custom model data 1). */
+    public static final DeferredItem<net.minecraft.world.item.Item> HAY_HOOK=ITEMS.register("list_hay_hook",()->new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     private TheListRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);PARTICLES.register(bus);}
 }

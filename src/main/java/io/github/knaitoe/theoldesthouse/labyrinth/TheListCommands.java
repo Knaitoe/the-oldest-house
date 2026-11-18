@@ -13,7 +13,8 @@ import net.minecraft.network.chat.Component;
  * and {@code status} says where it stands. 0.4.706: {@code night} begins night one round the operator, as the one Deek picks;
  * {@code night party|seed|shut|after} moves it straight there; {@code night off} ends it and puts the town back. 0.4.707: {@code night light}
  * brings first light, and {@code night off} also holds the town quiet, so that no night begins round anyone coming in until {@code night}
- * begins one. 0.4.708: {@code hunt} begins the hunt round the operator (given the body, the night put away, the town held quiet), and
+ * begins one. 0.4.708: {@code hunt} begins the hunt round the operator (given the body and, 0.4.709, the hay hook; the night put away,
+ * the town held quiet), and
  * {@code hunt off} ends it. Nothing here changes anyone else's record.
  */
 public final class TheListCommands {
@@ -51,10 +52,11 @@ public final class TheListCommands {
         var l=p.serverLevel();
         if(!on){TheListHunt.end(l,b);source.sendSuccess(()->Component.literal("The hunt is over; the five are back at their places and the doors put back."),false);return 1;}
         if(!TheListBody.give(p)){source.sendFailure(Component.literal("Spectators and the dead are not given the body."));return 0;}
+        TheListBody.giveHook(p);
         if(TheListNight.phase(p.server,b)!=TheListNight.NONE)TheListNight.end(l,b);
         TheListNight.quiet(p.server,b,true);
         TheListHunt.start(l,b);
-        source.sendSuccess(()->Component.literal("The hunt is on: the five are at their places and run when they see you. /ghosthouse test the_list hunt off ends it."),false);
+        source.sendSuccess(()->Component.literal("The hunt is on: the five are at their places and run when they see you, and the hay hook is in your hands. /ghosthouse test the_list hunt off ends it."),false);
         return 1;
     }
 
