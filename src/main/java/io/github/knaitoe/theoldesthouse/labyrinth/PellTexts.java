@@ -842,6 +842,7 @@ public final class PellTexts {
         case "last_seen"->"I kept one of the folders back and never said whose face was in it.";
         // 0.4.684: Fallow becomes a Witness story.
         case "fallow"->"I told the man on the road where the girl was.";
+        case "the_list"->"I went down the list myself, one name a night.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

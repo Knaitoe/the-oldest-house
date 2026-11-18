@@ -2229,5 +2229,7 @@
   "subtitles.the_oldest_house.the_list.car_open": "A car door opens",
   "subtitles.the_oldest_house.the_list.brake": "A brake bites",
   "subtitles.the_oldest_house.the_list.strain": "A motor strains",
-  "subtitles.the_oldest_house.the_list.dunk": "Someone is held under water"
+  "subtitles.the_oldest_house.the_list.dunk": "Someone is held under water",
+  "advancements.the_oldest_house.account.the_list.title": "The list",
+  "advancements.the_oldest_house.account.the_list.description": "Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list."
 }

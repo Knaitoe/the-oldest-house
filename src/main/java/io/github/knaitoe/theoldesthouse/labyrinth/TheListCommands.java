@@ -32,7 +32,9 @@ public final class TheListCommands {
                 .then(Commands.literal("shut").executes(c->night(c.getSource(),TheListNight.SHUT)))
                 .then(Commands.literal("after").executes(c->night(c.getSource(),TheListNight.AFTER)))
                 .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE)))
-                .then(Commands.literal("two").executes(c->two(c.getSource()))))
+                .then(Commands.literal("two").executes(c->two(c.getSource())))
+                .then(Commands.literal("three").executes(c->later(c.getSource(),3)))
+                .then(Commands.literal("four").executes(c->later(c.getSource(),4))))
             .then(Commands.literal("hunt").executes(c->hunt(c.getSource(),true,1)).then(Commands.literal("off").executes(c->hunt(c.getSource(),false,1)))
                 .then(Commands.argument("night",com.mojang.brigadier.arguments.IntegerArgumentType.integer(1,4)).executes(c->hunt(c.getSource(),true,com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c,"night")))));
     }
@@ -55,6 +57,14 @@ public final class TheListCommands {
         if(b==null){source.sendFailure(Component.literal("Go through the back door into Lamesa first: /ghosthouse test vignette the_list places its door."));return 0;}
         if(!TheListDen.begin(p,b)){source.sendFailure(Component.literal("Spectators and the dead cannot be the one who went in."));return 0;}
         source.sendSuccess(()->Component.literal("Night two: ten o'clock, Amber in her den. Knock at her back door. /ghosthouse test the_list night off ends it."),false);
+        return 1;
+    }
+
+    private static int later(CommandSourceStack source,int night)throws CommandSyntaxException{
+        var p=source.getPlayerOrException();var b=TheListBody.town(p);
+        if(b==null){source.sendFailure(Component.literal("Go through the back door into Lamesa first: /ghosthouse test vignette the_list places its door."));return 0;}
+        if(!TheListNights.begin(p,b,night)){source.sendFailure(Component.literal("Spectators and the dead cannot be the one who went in."));return 0;}
+        source.sendSuccess(()->Component.literal("Night "+(night==3?"three":"four")+": ten o'clock, the hook in your hands, the hunt on"+(night==4?" and the gin running":"")+". Lie down on your own bed or wait for first light to end it."),false);
         return 1;
     }
 

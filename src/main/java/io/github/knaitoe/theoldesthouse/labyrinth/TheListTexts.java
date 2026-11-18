@@ -333,11 +333,27 @@ public final class TheListTexts {
             "The back door sticks. Lift it when you shut it or it won't latch.",
             "Lights off when you come in. All of them."));
     }
-    /** The account. Nothing asks for it until a later part; it says only what anybody could see of the town. */
+    /** 0.4.721: the account, on the tape deck in the reader's room once the fourth night is over: the town; for the one who went in,
+     * the four nights, who of the five they finished and the rule in the notebook; for anyone else, that somebody else had the sack. */
     public static ItemStack account(String name,CompoundTag own){
-        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.THE_LIST),name,pages(
-            "The back door let me into my own kitchen, in Lamesa, at night. Out front the street was caliche and the houses across it were dark. "
-                +"Main Street was lit for nobody, and past the highway the gin stood by the tracks under the water tower with the town's name on it."));
+        var parts=new ArrayList<String>();
+        parts.add("The back door let me into my own kitchen, in Lamesa, at night. Out front the street was caliche and the houses across it were dark. "
+            +"Main Street was lit for nobody, and past the highway the gin stood by the tracks under the water tower with the town's name on it.");
+        if(own.getBoolean("WentIn")){
+            parts.add("Four nights running it was ten o'clock when I came in. The first night Deek took me to the gin and shut me in the seed house, and I came to under the water tower with a sack over my head.");
+            int kills=own.getInt("Kills");var names=new ArrayList<String>();
+            for(int who:TheListBody.LISTED)if((kills&1<<who)!=0)names.add(NAMES[who]);
+            if(names.isEmpty())parts.add("I had the hook in my hand. At the end every name on the list was still walking around town.");
+            else if(names.size()==TheListBody.LISTED.length)parts.add("There were five names on the list. By the last morning I had been to every one of them.");
+            else parts.add("There were five names on the list. By the last morning I had been to "+join(names)+".");
+            if((own.getInt("Rules")&1)!=0)parts.add("Amber wrote one rule in her notebook from the field, in her own hand: he can't run, and doesn't need to.");
+        }else parts.add("Somebody else had the sack and the hook. I was in town when it got light the last time.");
+        parts.add("The list was five names long.");
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.THE_LIST),name,pages(parts.toArray(String[]::new)));
+    }
+    private static String join(List<String> names){
+        if(names.size()==1)return names.get(0);
+        return String.join(", ",names.subList(0,names.size()-1))+" and "+names.get(names.size()-1);
     }
 
     /** What a hand finds on a fitting of this kind at this stage; null if there is nothing to say. */
@@ -456,4 +472,15 @@ public final class TheListTexts {
     public static final String[] COUNT={"On three.","One.","Two.","Three!"};
     /** The rules the tests write, in the notebook's own words. */
     public static final String[] RULES={"1. He can't run. He doesn't need to. You don't get away from him. (The field.)"};
+
+    /** 0.4.721: the first name out, said by Amber over her head; the cue to the one who went in, and to anyone else in town. */
+    public static final String FIRST_NAME="That's the first one. They're out there now. Go on.",
+        FIRST_NAME_CUE="Across town a porch light goes off.",
+        HUNT_OTHER="Somewhere a screen door bangs, and somebody starts running.",
+        // 0.4.721: ten o'clock again on nights three and four, in the kitchen.
+        NIGHT3="Ten o'clock. The hay hook is on the kitchen table where you didn't leave it.",
+        NIGHT4="Ten o'clock. Over the highway the gin is running. You can hear it from the kitchen.",
+        // 0.4.721: first light after the fourth night: the one who went in, and anyone else.
+        END_WENT_IN="It gets light over the gin, and the hands are your own again. The tape deck in your room is running.",
+        END_OTHER="It gets light over the gin. Nobody is out on the streets yet.";
 }

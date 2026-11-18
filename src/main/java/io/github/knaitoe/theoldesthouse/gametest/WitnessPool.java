@@ -29,8 +29,9 @@ package io.github.knaitoe.theoldesthouse.gametest;
  * 0.4.666, Not yet: 92 / 69 / 68.
  * 0.4.671, Last seen: 93 / 70 / 69.
  * 0.4.684, Fallow: 94 / 33 / 70, the quota now capped at 33 (WitnessAccount.CAP).
+ * 0.4.721, The list: 95 / 33 / 71.
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=94,REQUIRED=33,LITERARY=70;
+    static final int SOURCES=95,REQUIRED=33,LITERARY=71;
 }

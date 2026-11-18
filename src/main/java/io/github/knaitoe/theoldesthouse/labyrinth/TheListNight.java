@@ -62,7 +62,7 @@ public final class TheListNight {
     public static final double RATE=1/3.0;
     public static final int NONE=0,PARTY=1,RIDE=2,SEED=3,SHUT=4,AFTER=5,DONE=6;
     /** The phases' names, for an operator. */
-    public static final String[] NAMES={"none","party","ride","seed house","shut","after","first light","night two, home","night two, the den","night two, to the field","night two, the field","night two, ran"};
+    public static final String[] NAMES={"none","party","ride","seed house","shut","after","first light","night two, home","night two, the den","night two, to the field","night two, the field","night two, ran","night two, the hunt","night two, first light","night three","night three, first light","night four","the end"};
     /** 0.4.720, night two (TheListDen): home at ten, Amber's den, her walk to the field, the field, and the first rule written. */
     public static final int HOME2=7,DEN=8,TO_FIELD=9,FIELD=10,RAN=11;
     /** The hour on a clock, from the game's own day time: "2:00 am". */
@@ -124,6 +124,8 @@ public final class TheListNight {
     // ------------------------------------------------------------------------------------------------ the night's record
     static final class Night{
         final BlockPos base;@Nullable UUID slasher;int phase,since;double time=TEN;boolean asked,bed;
+        /** 0.4.721: which of the five are dead from an earlier night, a bit for each; the town does not make them again. */
+        int dead;
         final Set<UUID> riders=new LinkedHashSet<>();@Nullable UUID pickup,sedan;int sent;
         Night(BlockPos b){base=b;}
     }
@@ -136,14 +138,14 @@ public final class TheListNight {
         var n=NIGHTS.get(b.asLong());if(n!=null)return n;
         var t=LiteraryVignettes.shared(LabyrinthData.get(s),TheList.PLACE,copy(s,b)).getCompound("Night");
         if(!t.contains("Phase"))return null;
-        n=new Night(b);n.slasher=t.hasUUID("Slasher")?t.getUUID("Slasher"):null;n.phase=t.getInt("Phase");n.since=t.getInt("Since");n.time=t.getDouble("Time");n.asked=t.getBoolean("Asked");n.bed=t.getBoolean("Bed");
+        n=new Night(b);n.slasher=t.hasUUID("Slasher")?t.getUUID("Slasher"):null;n.phase=t.getInt("Phase");n.since=t.getInt("Since");n.time=t.getDouble("Time");n.asked=t.getBoolean("Asked");n.bed=t.getBoolean("Bed");n.dead=t.getInt("Dead");
         for(var r:t.getList("Riders",Tag.TAG_INT_ARRAY))n.riders.add(NbtUtils.loadUUID(r));
         NIGHTS.put(b.asLong(),n);return n;
     }
     static void save(MinecraftServer s,Night n){
         var d=LabyrinthData.get(s);int copy=copy(s,n.base);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);
         var t=new CompoundTag();if(n.slasher!=null)t.putUUID("Slasher",n.slasher);
-        t.putInt("Phase",n.phase);t.putInt("Since",n.since);t.putDouble("Time",n.time);t.putBoolean("Asked",n.asked);t.putBoolean("Bed",n.bed);
+        t.putInt("Phase",n.phase);t.putInt("Since",n.since);t.putDouble("Time",n.time);t.putBoolean("Asked",n.asked);t.putBoolean("Bed",n.bed);t.putInt("Dead",n.dead);
         var r=new ListTag();for(var id:n.riders)r.add(NbtUtils.createUUID(id));t.put("Riders",r);
         w.put("Night",t);LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
     }
@@ -153,6 +155,8 @@ public final class TheListNight {
     public static long time(MinecraftServer s,BlockPos b){var n=night(s,b);return n==null?-1:(long)n.time;}
     /** Whose night it is: the one Deek picks, who comes to with the body. */
     public static @Nullable UUID slasher(MinecraftServer s,BlockPos b){var n=night(s,b);return n==null?null:n.slasher;}
+    /** 0.4.721: whether one of the five is dead from an earlier night. */
+    public static boolean gone(MinecraftServer s,BlockPos b,int who){var n=night(s,b);return n!=null&&TheListNights.dead(n,who);}
     public static int since(MinecraftServer s,BlockPos b){var n=night(s,b);return n==null?0:n.since;}
 
     /**
@@ -180,6 +184,10 @@ public final class TheListNight {
         if(n==null||n.phase==NONE){if(owed&&!quiet(p.server,b))begin(p,b);return;}
         // 0.4.720: the one who went in, back in a town whose night one is over, and night two begins round them.
         if(TheListDen.owed(p,n,own)){TheListDen.begin(p,n);return;}
+        // 0.4.721: and nights three and four, the same way.
+        if(TheListNights.owed(p,n,own)){TheListNights.begin(p,n);return;}
+        // 0.4.721: a town whose four nights are over, come into by a reader who has not had one and nobody else in, begins again round them.
+        if(n.phase==TheListNights.OVER&&owed&&TheList.readers(p.serverLevel(),b).stream().allMatch(q->q==p)){end(p.serverLevel(),b);begin(p,b);return;}
         if(n.phase>=HOME2){TheListDen.hour(p,n);return;}
         if(n.phase==DONE&&owed&&TheList.readers(p.serverLevel(),b).stream().allMatch(q->q==p)){end(p.serverLevel(),b);begin(p,b);return;}
         if(n.phase==PARTY)TheList.cue(p,TheListTexts.PARTY_HEARD);
@@ -199,7 +207,7 @@ public final class TheListNight {
     public static void end(ServerLevel l,BlockPos b){
         var n=night(l.getServer(),b);
         if(n!=null){cars(l,n,false);}
-        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);
+        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);TheListHunt.end(l,b);
         NIGHTS.remove(b.asLong());
         var d=LabyrinthData.get(l.getServer());int copy=copy(l.getServer(),b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);w.remove("Night");LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
         TheListPeople.ensure(l,b);
@@ -233,7 +241,10 @@ public final class TheListNight {
             case SHUT->changed=shut(l,n,here);
             case AFTER->{n.time=Math.min(LIGHT,n.time+RATE);changed=after(l,n,here);}
             case DONE->changed=light(l,n,here);
-            default->{if(n.phase>=HOME2)changed=TheListDen.tick(l,n,here);}
+            default->{
+                if(n.phase>=TheListNights.HUNT2)changed=TheListNights.tick(l,n,here);
+                else if(n.phase>=HOME2){changed=TheListDen.tick(l,n,here);if(n.phase==RAN&&TheListNights.ran(l,n))changed=true;}
+            }
         }
         if(changed){save(l.getServer(),n);TheListPeople.ensure(l,b);send(l,n,true);}
         else{if(n.since%100==0)save(l.getServer(),n);send(l,n,false);}
@@ -510,6 +521,7 @@ public final class TheListNight {
      * reader's record in hand (saved by the hand's caller after this) keeps it too. */
     public static boolean bed(ServerPlayer p,BlockPos b,CompoundTag own){
         var n=night(p.server,b);
+        if(n!=null&&TheListNights.hunting(n.phase))return TheListNights.bed(p,n,own);
         if(n==null||n.phase!=AFTER||n.since<=WAKE||!p.getUUID().equals(n.slasher)||!LiteraryVignettes.participant(p))return false;
         dawn(p.serverLevel(),n,true);
         own.putInt("Night",Math.max(1,own.getInt("Night")));if(!own.contains("Light1"))own.putString("Light1","bed");

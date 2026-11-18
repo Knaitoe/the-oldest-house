@@ -2166,6 +2166,60 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.721, the skeleton to its end: the first name goes out after the field and night two's hunt begins; the one who went in lies down
+     * on their own bed and night two is over. Back in town, night three begins with the hook and the hunt; one of the five dead on an
+     * earlier night is not made again; first light ends it. Night four, the gin running; first light, and the end: the body is the
+     * reader's own, both readers are ready, the account on the tape deck names whom the one who went in finished, and reading the pad
+     * then the account gives each their own Witness story. A spectator earns nothing.
+     */
+    @GameTest(template="empty",batch="the_list_end",timeoutTicks=6000)
+    public static void toTheEnd(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_end",P);var peer=f.player("list_end_peer",P);var ghost=f.player("list_end_ghost",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);cues(p);cues(peer);
+            h.assertTrue(TheListDen.begin(p,b),"night two begins round the one who went in");
+            TheListNights.toRan(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT2,"waiting for the first name: "+TheListNight.NAMES[TheListNight.phase(s,b)]))
+        .thenExecute(()->{
+            h.assertTrue(TheListHunt.on(b),"night two's hunt is on");
+            h.assertTrue(cues(p).contains(TheListTexts.FIRST_NAME_CUE)&&cues(peer).contains(TheListTexts.HUNT_OTHER),"each told");
+            f.click(p,P,TheListSite.BED_HEAD);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.DONE2&&!TheListHunt.on(b),"lying down ends night two: "+TheListNight.NAMES[TheListNight.phase(s,b)]);
+            h.assertTrue(f.own(p,P).getInt("Night")==2,"they have had two nights");
+            TheListNights.slain(l,b,TheListPeople.WES,p.getUUID());
+            var own=f.own(p,P);TheList.arrive(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT3&&TheListHunt.on(b)&&TheListNight.time(s,b)==TheListNight.TEN,"back in town, night three: ten o'clock and the hunt on");
+            h.assertTrue(cues(p).contains(TheListTexts.NIGHT3)&&TheListBody.has(p),"the hook back, the body theirs");
+            h.assertTrue(TheListHunt.state(b,TheListPeople.WES)==null&&TheListPeople.find(l,b,TheListPeople.WES)==null,"Wes, dead the night before, is not made again");
+            h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)!=null,"the rest are hunted");
+            TheListNights.dawn(l,b);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.DONE3&&f.own(p,P).getInt("Night")==3,"first light ends night three");
+            own=f.own(p,P);TheList.arrive(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT4&&TheListGin.running(b),"night four, the gin running");
+            h.assertTrue(cues(p).contains(TheListTexts.NIGHT4),"told");
+            cues(p);cues(peer);
+            TheListNights.dawn(l,b);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.OVER&&!TheListHunt.on(b),"the end: "+TheListNight.NAMES[TheListNight.phase(s,b)]);
+            h.assertFalse(TheListBody.has(p),"the body is their own again");
+            h.assertTrue(cues(p).contains(TheListTexts.END_WENT_IN)&&cues(peer).contains(TheListTexts.END_OTHER),"each told");
+            var mine=f.own(p,P);var theirs=f.own(peer,P);
+            h.assertTrue(mine.getBoolean("Ready")&&mine.getString("Outcome").equals("crossed_names_off")&&mine.getInt("Night")==4,"the one who went in is ready: "+mine.getString("Outcome"));
+            h.assertTrue(theirs.getBoolean("Ready")&&theirs.getString("Outcome").equals("was_in_town_at_the_end"),"so is the other reader");
+            h.assertFalse(f.own(ghost,P).getBoolean("Ready"),"the spectator is not");
+            var account=String.join(" ",pages(TheListTexts.account("x",mine)));
+            h.assertTrue(account.contains("been to Wes.")&&account.contains("Four nights"),"the account says whom they finished: "+account);
+            h.assertTrue(String.join(" ",pages(TheListTexts.account("x",theirs))).contains("Somebody else had the sack"),"the other reader's says somebody else");
+            for(var q:List.of(p,peer)){f.read(q,P,TheListSite.SOURCE);f.read(q,P,TheListSite.ENDING);}
+            h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.THE_LIST)&&WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.THE_LIST),"each reads their own account, and the story is theirs");
+            h.assertTrue(WitnessAccount.Story.THE_LIST.kind.equals("memory")&&WitnessAccount.Story.values().length==WitnessPool.SOURCES,"a memory story, in the pinned pool");
+            TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
     /** Where a reader stands in Amber's den to talk to her: between her and the couch. */
     private static final Vec3 DEN_STAND=new Vec3(-5.5,0,-80.5);
 }
