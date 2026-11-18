@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
  * begins one. 0.4.708: {@code hunt} begins the hunt round the operator (given the body and, 0.4.709, the hay hook; the night put away,
  * the town held quiet), and
  * {@code hunt off} ends it. 0.4.718: {@code hunt <night>} begins it on one of the four nights (one if none is given); on the fourth the gin
- * runs. Nothing here changes anyone else's record.
+ * runs. 0.4.720: {@code night two} begins night two round the operator. Nothing here changes anyone else's record.
  */
 public final class TheListCommands {
     private TheListCommands(){}
@@ -31,7 +31,8 @@ public final class TheListCommands {
                 .then(Commands.literal("seed").executes(c->night(c.getSource(),TheListNight.SEED)))
                 .then(Commands.literal("shut").executes(c->night(c.getSource(),TheListNight.SHUT)))
                 .then(Commands.literal("after").executes(c->night(c.getSource(),TheListNight.AFTER)))
-                .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE))))
+                .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE)))
+                .then(Commands.literal("two").executes(c->two(c.getSource()))))
             .then(Commands.literal("hunt").executes(c->hunt(c.getSource(),true,1)).then(Commands.literal("off").executes(c->hunt(c.getSource(),false,1)))
                 .then(Commands.argument("night",com.mojang.brigadier.arguments.IntegerArgumentType.integer(1,4)).executes(c->hunt(c.getSource(),true,com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c,"night")))));
     }
@@ -45,6 +46,15 @@ public final class TheListCommands {
         if(phase>TheListNight.PARTY)TheListNight.jump(l,b,phase);
         int now=TheListNight.phase(p.server,b);
         source.sendSuccess(()->Component.literal("Night one: "+TheListNight.NAMES[now]+", "+TheListNight.hour(TheListNight.time(p.server,b))+". /ghosthouse test the_list night off ends it."),false);
+        return 1;
+    }
+
+    /** 0.4.720: night two begun round the operator, as the one who went in, night one put behind them. */
+    private static int two(CommandSourceStack source)throws CommandSyntaxException{
+        var p=source.getPlayerOrException();var b=TheListBody.town(p);
+        if(b==null){source.sendFailure(Component.literal("Go through the back door into Lamesa first: /ghosthouse test vignette the_list places its door."));return 0;}
+        if(!TheListDen.begin(p,b)){source.sendFailure(Component.literal("Spectators and the dead cannot be the one who went in."));return 0;}
+        source.sendSuccess(()->Component.literal("Night two: ten o'clock, Amber in her den. Knock at her back door. /ghosthouse test the_list night off ends it."),false);
         return 1;
     }
 

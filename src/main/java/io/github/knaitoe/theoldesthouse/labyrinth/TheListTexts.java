@@ -430,4 +430,30 @@ public final class TheListTexts {
                 case 5->"The fryer. The dark oil spits and smokes.";default->"The fryer, off. Two baskets hang over cold oil.";};
         };
     }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.720, night two: the den
+    public static final String HOME2="Ten o'clock. Amber's page said her back door, after ten.",
+        BACK_DOOR_OPENS="Amber has the back door open before your knuckle lands.",
+        DEN_OTHER="Shut the door behind you. My mom's asleep.",
+        ON_THE_WAY="South end zone. Keep up. Or don't, that's the test.",
+        AT_THE_END="Stand next to me. I'm not counting till you're here.",
+        RAN_KEPT="That's not fair. You walked the whole way. I ran.",
+        RAN_LOST="Huh. Maybe you're just slow. Again.",
+        NEXT_DOOR="Next one's the field house. It has a lock on it.",
+        NOTEBOOK_GIVEN="Amber hands you a spiral notebook. The first page says THE RULES.",
+        NOTEBOOK_TITLE="Amber's notebook",
+        RULE_WRITTEN="Amber writes in the notebook against her knee and hands it back.",
+        RULES_TAPES="THE RULES\n(from the tapes)\n\n- Only at night.\n- Light keeps him back.\n- He can't come in unless you ask him in. (That's vampires. Writing it down anyway.)",
+        RULES_TESTED="TESTED";
+    /** Amber in her den, in turn, to the one who went in; the third hands the notebook over, and after the last she sets off. */
+    public static final String[] DEN={
+        "You came to the back. Good. Keep it down, my mom's asleep.",
+        "I watched three of these last night to get ready. If you're what you say you are, there are rules. There are always rules. That's the whole point.",
+        "Here. I wrote down the ones from the tapes already. We test the rest.",
+        "First one. The football field. I run, you walk. If I get away from you, you're just somebody in a sack.",
+        "South end zone. Come on."};
+    /** Her count at the end zone; on the last she runs. */
+    public static final String[] COUNT={"On three.","One.","Two.","Three!"};
+    /** The rules the tests write, in the notebook's own words. */
+    public static final String[] RULES={"1. He can't run. He doesn't need to. You don't get away from him. (The field.)"};
 }
