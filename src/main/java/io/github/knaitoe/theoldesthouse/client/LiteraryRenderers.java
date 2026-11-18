@@ -1203,6 +1203,16 @@ public final class LiteraryRenderers {
                     rightLeg.xRot=.18F;leftLeg.xRot=.12F;
                     rightArm.xRot=-.15F;rightArm.yRot=0;rightArm.zRot=.08F;leftArm.xRot=-.25F;leftArm.yRot=0;leftArm.zRot=-.06F;
                     head.xRot=2.7F;head.yRot=.15F;head.zRot=.1F;}
+                // 0.4.718, the gin's auger: stood in the trough with the legs going down into the screw, leaning back from it, the arms out
+                // to the trough's sides bracing and shoving, the head thrown about.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.AUGERED->{float w=net.minecraft.util.Mth.sin(age*1.7F),v=net.minecraft.util.Mth.cos(age*1.3F);
+                    low(12F,-.22F+w*.05F,0F);
+                    rightArm.xRot=-.35F+v*.2F;leftArm.xRot=-.35F-v*.2F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=1.25F+w*.12F;leftArm.zRot=-1.25F+w*.12F;
+                    head.xRot=-.45F+v*.15F;head.yRot=w*.4F;head.zRot=0;}
+                // Still: slumped forward over the trough, down in it to the waist, the arms hanging over its sides.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.MANGLED->{low(12F,.6F,0F);
+                    rightArm.xRot=.15F;rightArm.yRot=0;rightArm.zRot=.95F;leftArm.xRot=.25F;leftArm.yRot=0;leftArm.zRot=-.9F;
+                    head.xRot=.95F;head.yRot=-.2F;head.zRot=.1F;}
                 default->{}
             }
             hat.copyFrom(head);

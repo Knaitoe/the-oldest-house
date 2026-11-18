@@ -1883,6 +1883,96 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.718, the gin's auger. Before the fourth night the gin is still: the slasher's hand on an auger with hold of Deek is told the
+     * screw takes nobody, and the switch only clicks. On the fourth, the slasher puts him in feet first and lets go; the other reader hears
+     * him go in, a hand on him or the auger finds him held in the screw, and while the line runs it draws him down and he cannot get
+     * out. The other reader throws the switch: the screw stops drawing and he fights his way loose at twice a grip's pace, unless it is
+     * thrown on again first. Drawn all the way down he dies there, the screw jams and the switch does nothing; the other reader is told
+     * the scream stopped and finds him in the trough. Ended, the gin is put back.
+     */
+    @GameTest(template="empty",batch="the_list_auger",timeoutTicks=6000)
+    public static void theAuger(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_auger",P);var peer=f.player("list_auger_peer",P);
+        int D=TheListPeople.DEEK;var cell=new BlockPos(TheListGin.MID,0,TheListGin.RUN_S-4);
+        hold(f,b,TheListPeople.AT[D],cell);
+        h.startSequence().thenExecute(()->f.at(peer,P,TheListGin.SWITCH.getX()+.5,0,TheListGin.SWITCH.getZ()-1.5))
+        .thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the town");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(TheListGin.auger(cell)&&!TheListGin.auger(cell.east())&&TheListGin.feeder(TheListGin.SWITCH),"the run and the switch");
+            h.assertTrue(fitting(l,b,cell,Kind.GIN,6)&&l.getBlockState(b.offset(cell)).getValue(TheListBlock.FACING).getAxis()==net.minecraft.core.Direction.Axis.X,"the trough lies along the run");
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+            h.assertFalse(TheListGin.running(b),"the gin is still on the first night");
+            cues(peer);
+            h.assertTrue(TheListGin.hand(peer,b,TheListGin.SWITCH)&&cues(peer).contains(TheListTexts.GIN_DARK),"the switch only clicks");
+        }).thenIdle(10).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            f.at(p,P,TheListPeople.AT[D].getX()-1.5,0,TheListPeople.AT[D].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,D));
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,cell.getX()-1.5,0,cell.getZ()+.5);p.setYRot(270);p.setYHeadRot(270);
+        }).thenIdle(2).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.position().distanceTo(TheListGin.in(b,cell,0))<=TheListGin.REACH,"held by the trough: "+where(l,b,D));
+            cues(p);
+            h.assertTrue(TheListGin.hand(p,b,cell)&&cues(p).contains(TheListTexts.GIN_NOT_TONIGHT),"not tonight");
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"still held");
+            TheListHunt.night(b,TheListGin.NIGHT);
+            h.assertTrue(TheListGin.running(b),"the fourth night: the gin runs");
+            sent(peer);cues(peer);cues(p);
+            h.assertTrue(TheListGin.hand(p,b,cell),"the slasher's hand on the auger");
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.AUGER&&deek.gesture()==TheListHunt.AUGERED,"in the auger: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.INTO_AUGER,"Deek")),"the slasher is told");
+            h.assertTrue(TheListTexts.AUGER[D].equals(said(deek)),"his words: "+said(deek));
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the screw has him");
+            var got=sent(peer);
+            h.assertTrue(sound(got,TheListRegistry.SCREAM.get())&&sound(got,TheListRegistry.AUGER.get()),"the other reader hears him go in");
+            LiteraryVignettes.talk(peer,deek);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.AUGER_HELD,"Deek")),"a hand on him: held in the screw");
+            TheListGin.hand(peer,b,cell);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.AUGER_HELD,"Deek")),"and on the auger");
+        }).thenIdle(20).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            int drawn=TheListHunt.drawn(b,D);
+            h.assertTrue(drawn>=15&&TheListHunt.strengthIn(b,D)==0,"drawn down while it runs, no fighting out of it: "+drawn);
+            h.assertTrue(deek.getY()<b.getY()+.06-.1,"sunk into the trough: "+where(l,b,D));
+            h.assertTrue(TheListGin.hand(peer,b,TheListGin.SWITCH)&&cues(peer).contains(TheListTexts.GIN_OFF)&&!TheListGin.running(b),"the other reader throws the switch");
+        }).thenIdle(6).thenExecute(()->{
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.AUGER&&TheListHunt.strengthIn(b,D)>0,"stopped, he fights his way up");
+            int drawn=TheListHunt.drawn(b,D);
+            h.assertTrue(TheListGin.hand(p,b,TheListGin.SWITCH)&&cues(p).contains(TheListTexts.GIN_ON)&&TheListGin.running(b),"the slasher throws it back on");
+            TheListHunt.drawn(b,D,TheListGin.DRAW-3);sent(peer);cues(peer);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.dead(b,D),"waiting for the screw: "+where(l,b,D)))
+        .thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.gesture()==TheListHunt.MANGLED&&TheListGin.jammed(b)&&!TheListGin.running(b),"slumped in the trough, the screw jammed: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.AUGER_STILL,"Deek")),"the slasher is told");
+            h.assertTrue((TheListBody.kills(p)&1<<D)!=0,"the slasher's record keeps him");
+            h.assertTrue(cuesIn(sent(peer)).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")||c.contains("scream stops short")),"the other reader is told a scream stopped");
+            TheListGin.hand(peer,b,TheListGin.SWITCH);
+            h.assertTrue(cues(peer).contains(TheListTexts.GIN_JAMMED)&&!TheListGin.running(b),"jammed: the switch turns nothing");
+            TheListGin.hand(peer,b,cell);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.AUGER_STILL_BODY,"Deek")),"a hand on the auger: he is still");
+            var back=deek.position().add(0,1.15,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-back.x,back.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(back.y,Math.sqrt(back.x*back.x+back.z*back.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_AUGER,"Deek")),"the other reader finds him in the auger");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.marks()==0&&deek.gesture()==TheListHunt.STILL&&!TheListGin.jammed(b)&&!TheListGin.off(b),"ended, he is back and the gin put back: "+where(l,b,D));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Whether these packets drew a particle of this kind. */
     private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;

@@ -165,7 +165,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case LAW->switch(stage){case 3->t(f,0,0,3,16,8,13);case 4->Block.box(7,0,7,9,16,9);case 5->t(f,8,4,7,16,14,9);case 6->t(f,1,2,14,15,14,16);case 7->Block.box(4,0,4,12,16,12);default->Shapes.block();};
             case FEED->switch(stage){case 1->Block.box(0,0,0,16,8,16);case 2->Block.box(1,0,1,15,10,15);case 5,6->t(f,0,0,4,16,14,14);case 7->t(f,0,0,13,16,10,16);default->Shapes.block();};
             case DRIVEIN->switch(stage){case 0,1->Block.box(0,12,0,16,16,16);case 2->Block.box(6,0,6,10,16,10);case 3->Block.box(5,0,5,11,16,11);case 4->t(f,0,0,8,16,16,16);case 7->Block.box(0,0,0,16,12,16);default->Shapes.block();};
-            case GIN->stage==6?Block.box(0,0,2,16,9,14):stage==7?Block.box(3,0,3,13,16,13):Shapes.block();
+            case GIN->stage==6?t(f,0,0,2,16,9,14):stage==7?Block.box(3,0,3,13,16,13):Shapes.block();
             case BALE->Shapes.block();
             case SEED->switch(stage){case 1->Block.box(0,0,0,16,10,16);case 2->Block.box(0,0,2,16,8,14);case 3->t(f,1,0,13,15,16,16);case 6->t(f,4,5,10,12,14,16);case 7->t(f,4,0,0,12,16,16);default->stage==4||stage==5?t(f,0,0,13,16,16,16):Shapes.block();};
             case TOWER->switch(stage){case 0->Block.box(5,0,5,11,16,11);case 1->Block.box(0,0,0,16,16,16);case 2->t(f,2,0,13,14,16,16);case 3->Block.box(0,0,0,16,2,16);case 4->t(f,0,0,13,16,16,16);case 5->Block.box(5,0,5,11,8,11);default->Block.box(5,0,5,11,16,11);};

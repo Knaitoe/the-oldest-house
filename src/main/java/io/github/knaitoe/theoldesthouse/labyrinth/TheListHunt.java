@@ -52,7 +52,7 @@ public final class TheListHunt {
     /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
      * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; 0.4.714: in the fryer; 0.4.715: the head in a car's
      * door; 0.4.716: the head under a pumpjack's weight; 0.4.717: held under at the stock tank; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,DEAD}
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,AUGER,DEAD}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
      * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
      * through the gap under the next, and hanging there dead. */
@@ -69,6 +69,9 @@ public final class TheListHunt {
     public static final int PUMPED=18,PINNED=19;
     /** 0.4.717, the stock tank: forced over its rim with the head under; the head up out of it, gasping; still, slumped over it. */
     public static final int DUNKED=20,SURFACED=21,SUNK=22;
+    /** 0.4.718, the gin's auger: stood in its trough with the screw drawing the legs down into it, the arms braced on its sides; and
+     * slumped forward over it dead, down to the waist. */
+    public static final int AUGERED=23,MANGLED=24;
     /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
      * they hear it creeping, crouched. */
     public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
@@ -210,6 +213,8 @@ public final class TheListHunt {
         /** 0.4.717: at the stock tank: the wall cell they were put over (kept when dead) and the way into the water; breath left,
          * whether the head is under, how long it has been up, and how many times it has gone under. */
         @Nullable BlockPos tank;Direction tankIn=Direction.NORTH;int breath,surfaced,dunks;boolean under;
+        /** 0.4.718: in the gin's auger: the cell of the run they were put in (kept when dead) and how long the screw has drawn them. */
+        @Nullable BlockPos augerAt;int drawn;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
@@ -218,6 +223,8 @@ public final class TheListHunt {
         final Map<UUID,Integer> found=new HashMap<>();
         /** 0.4.714: one of the five has been forced into the fryer this hunt; Jenna stays down in the stand's corner until it ends. */
         boolean fryer;
+        /** 0.4.718: which of the town's four nights this hunt is (one, for a hunt begun by hand without one); the gin runs on the fourth. */
+        int night=1;
         Hunt(BlockPos b){base=b;}
     }
     static final Map<Long,Hunt> HUNTS=new HashMap<>();
@@ -269,7 +276,9 @@ public final class TheListHunt {
     public static float pace(LiteraryActor a){return TheListPeople.is(a)&&a.gesture()==RUNNING?PACE:1F;}
 
     /** The hunt begun in a town: the night put away, the doors put back, the five found where they sit. */
-    public static void start(ServerLevel l,BlockPos b){
+    public static void start(ServerLevel l,BlockPos b){start(l,b,1);}
+    /** 0.4.718: begun on one of the four nights. */
+    public static void start(ServerLevel l,BlockPos b,int night){
         end(l,b);
         sweep(l,b);
         tidy(l,b);
@@ -279,7 +288,8 @@ public final class TheListHunt {
         TheListCar.reset(b);
         TheListJack.reset(l,b);
         TheListPeople.ensure(l,b);
-        var h=new Hunt(b);
+        TheListGin.reset(b);
+        var h=new Hunt(b);h.night=Math.max(1,Math.min(4,night));
         for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID()));}
         HUNTS.put(b.asLong(),h);
         TheListPeople.ensure(l,b);
@@ -287,6 +297,7 @@ public final class TheListHunt {
     /** Ended: everyone stood up and sent back to their place, the doors put back. */
     public static void end(ServerLevel l,BlockPos b){
         var h=HUNTS.remove(b.asLong());if(h==null)return;
+        TheListGin.reset(b);
         for(var r:h.runners.values()){
             release(l,r);
             if(r.holder!=null){var p=l.getServer().getPlayerList().getPlayer(r.holder);if(p!=null)TheListBody.holding(p,false);}
@@ -339,10 +350,12 @@ public final class TheListHunt {
                 case CAR->dooring(l,b,h,r,a,slashers,here);
                 case JACK->jacking(l,b,h,r,a,slashers,here);
                 case TANK->tanking(l,b,h,r,a,slashers,here);
+                case AUGER->augering(l,b,h,r,a,here);
                 case DEAD->{}
             }
         }
         if(h.tick%5==1)bodies(l,b,h,here);
+        TheListGin.tick(l,b,h.tick,here);
     }
     /** Whether one sitting at their place has noticed the slasher: seen in front of them (further in light), or heard close by. */
     static boolean notices(ServerLevel l,LiteraryActor a,ServerPlayer s){
@@ -543,6 +556,8 @@ public final class TheListHunt {
             else TheList.cue(p,String.format(TheListTexts.TANK_HELD,name));
             return true;
         }
+        // 0.4.718: one in the gin's auger is the screw's; a hand on them, the slasher's or anyone's, finds them held down in it.
+        if(r.state==State.AUGER){TheList.cue(p,String.format(TheListTexts.AUGER_HELD,name));return true;}
         if(r.state==State.JACK){
             if(p.getUUID().equals(r.holder)){if(TheListJack.braked(p.serverLevel(),b,r.jack))TheListJack.brake(p.serverLevel(),b,r.jack,false,p);}
             else TheList.cue(p,String.format(TheListTexts.JACK_HELD,name));
@@ -602,7 +617,7 @@ public final class TheListHunt {
         if(was!=null)TheListBody.holding(was,false);
         // 0.4.715: out of the car door, it is pushed wide as they pull the head out.
         if(r.doored&&TheListCar.angle(b)<TheListCar.OPEN-1)TheListCar.swing(b,null,new TheListCar.Leg(TheListCar.OPEN,4));
-        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;r.jack=-1;r.tank=null;r.under=false;r.dunks=0;r.surfaced=0;
+        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;r.jack=-1;r.tank=null;r.under=false;r.dunks=0;r.surfaced=0;r.augerAt=null;r.drawn=0;
         stop(l,a,TheListRegistry.STRUGGLE.get());
         if(s!=null){
             s.knockback(.8,a.getX()-s.getX(),a.getZ()-s.getZ());s.hurtMarked=true;
@@ -1387,6 +1402,99 @@ public final class TheListHunt {
     public static int dunks(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.dunks;}
     public static void breath(BlockPos b,int who,int left){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);if(r!=null)r.breath=left;}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.718: the gin's auger
+    /** Which night this town's hunt is on, or nought with none. */
+    public static int night(BlockPos b){var h=HUNTS.get(b.asLong());return h==null?0:h.night;}
+    /**
+     * A hand or a blow on a cell of the gin's auger run (TheListGin.hand). One already in it there: a hand finds them held down in the
+     * screw, or, dead, still in it. Otherwise the slasher with hold of one of the five near enough puts them in, feet first, but only on
+     * the fourth night, when the gin runs; before then the hand is told the screw takes nobody. False for anyone else's hand: a look.
+     */
+    public static boolean auger(ServerPlayer p,BlockPos b,BlockPos rel){
+        var h=HUNTS.get(b.asLong());if(h==null||p.isSpectator())return false;
+        var l=p.serverLevel();
+        for(var r:h.runners.values()){
+            if(r.augerAt==null||!r.augerAt.equals(rel))continue;
+            var name=TheListTexts.NAMES[r.who];
+            if(r.state==State.DEAD){TheList.cue(p,String.format(TheListTexts.AUGER_STILL_BODY,name));return true;}
+            if(r.state!=State.AUGER)continue;
+            TheList.cue(p,String.format(TheListTexts.AUGER_HELD,name));return true;
+        }
+        if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return false;
+        for(var r:h.runners.values()){
+            if(!p.getUUID().equals(r.holder)||r.state!=State.HELD||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(a.position().distanceTo(TheListGin.in(b,rel,0))>TheListGin.REACH)return false;
+            if(h.night<TheListGin.NIGHT){TheList.cue(p,TheListTexts.GIN_NOT_TONIGHT);return true;}
+            augered(l,b,h,r,a,p,rel,TheList.readers(l,b));
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Forced down into the auger's trough, feet first, where the screw takes the legs. The slasher lets go: it is the screw that holds
+     * them now, and the slasher's hands and walk are free. Their words, a scream; anyone else on the list near enough hears it. What they
+     * had in hand they let fall. The kill, when it comes, is still the slasher's.
+     */
+    static void augered(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,BlockPos cell,List<ServerPlayer> here){
+        r.state=State.AUGER;r.since=0;r.augerAt=cell.immutable();r.drawn=0;r.strength=0;r.dropped=true;r.killer=s.getUUID();
+        r.holder=null;a.holder(null);TheListBody.holding(s,false);
+        BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(AUGERED);drop(a);
+        sink(b,r,a);
+        TheList.cue(s,String.format(TheListTexts.INTO_AUGER,TheListTexts.NAMES[r.who]));
+        say(a,r.who,TheListTexts.AUGER[r.who]);
+        scream(l,a);
+        heard(l,b,h,r,a,here);
+        l.playSound(null,a.getX(),a.getY()+.5,a.getZ(),TheListRegistry.AUGER.get(),SoundSource.NEUTRAL,1.3F,.7F);
+    }
+    /** Kept in the middle of the trough, as far down into the screw as it has drawn them, facing the feeder's end. */
+    static void sink(BlockPos b,Runner r,LiteraryActor a){
+        var at=TheListGin.in(b,r.augerAt,r.drawn/(double)TheListGin.DRAW);
+        a.moveTo(at.x,at.y,at.z,0,0);a.setYBodyRot(0);a.setYHeadRot(0);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /**
+     * In the auger, each tick. While the line runs the screw draws them down; blood comes up off it and runs out onto the floor beside
+     * the trough. While it runs they cannot get out of it. With the line stopped it no longer draws, and they fight their way out as they
+     * fight a grip, at twice its pace. Drawn all the way down, they die there; the screw jams on them and the line stops for good.
+     */
+    static void augering(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        boolean on=TheListGin.running(b);
+        if(on)r.drawn++;
+        sink(b,r,a);
+        if(on&&r.since%5==0){
+            var at=TheListGin.in(b,r.augerAt,0);
+            l.sendParticles(new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.45F,.02F,.03F),1.4F),at.x,at.y+.5,at.z,6,.25,.1,.25,.02);
+            if(r.drawn>=TheListGin.DRAW/4&&r.since%30==0)pool(l,b,TheListGin.beside(b,r.augerAt),Direction.EAST);
+        }
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+1.2,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,1F,1F);
+        if(on&&r.since%30==15)scream(l,a);
+        if(r.drawn>=TheListGin.DRAW){mangled(l,b,h,r,a,here);return;}
+        if(on)return;
+        r.strength+=2;
+        if(r.strength>=STRENGTH[r.who])loose(l,b,h,r,a,null,here);
+    }
+    /**
+     * Drawn down to the waist: the screw jams on them and the line stops, the motor labouring. Slumped forward over the trough with the
+     * arms hanging over its sides. The scream stopped, anyone else in town near enough told from which way; the kill the slasher's.
+     */
+    static void mangled(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        stop(l,a,TheListRegistry.SCREAM.get());stop(l,a,TheListRegistry.STRUGGLE.get());
+        TheListGin.jam(b);
+        l.playSound(null,a.getX(),a.getY()+.8,a.getZ(),TheListRegistry.STRAIN.get(),SoundSource.BLOCKS,1.3F,.6F);
+        pool(l,b,TheListGin.beside(b,r.augerAt),Direction.EAST);
+        a.gesture(MANGLED);sink(b,r,a);
+        r.state=State.DEAD;
+        var name=TheListTexts.NAMES[r.who];
+        var killer=r.killer==null?null:l.getServer().getPlayerList().getPlayer(r.killer);
+        if(killer!=null)TheList.cue(killer,String.format(TheListTexts.AUGER_STILL,name));
+        for(var q:here)if(q!=killer&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+        if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
+    }
+    /** For tests: how long the screw has drawn one, and setting it. */
+    public static int drawn(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.drawn;}
+    public static void night(BlockPos b,int night){var h=HUNTS.get(b.asLong());if(h!=null)h.night=night;}
+    public static int strengthIn(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.strength;}
+    public static void drawn(BlockPos b,int who,int ticks){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);if(r!=null)r.drawn=ticks;}
+
     // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
     /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
     static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
@@ -1465,10 +1573,10 @@ public final class TheListHunt {
         for(var d:h.runners.values()){
             if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
             // 0.4.711: one hung over a row of the stands is seen by the head under the next plank as well as the body on it.
-            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED,pinned=body.gesture()==PINNED,sunk=body.gesture()==SUNK;
+            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED,pinned=body.gesture()==PINNED,sunk=body.gesture()==SUNK,mangled=body.gesture()==MANGLED;
             // 0.4.714: one dead in the fryer is seen by the back, bent over it; 0.4.715: one at the car door, by the back, slumped at it.
             // 0.4.716: one dead at a pumpjack, by the back, bowed over beside the gearbox.
-            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:pinned?.45:sunk?.9:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
+            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:pinned?.45:sunk?.9:mangled?1.15:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
             for(var r:h.runners.values()){
                 if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
                 if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
@@ -1476,7 +1584,7 @@ public final class TheListHunt {
                 r.saw|=1<<d.who;
                 if(r.state==State.CALM)run(l,b,h,r,a,here,true);
                 say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:fried?TheListTexts.FOUND_FRYER_BODY[r.who]
-                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:pinned?TheListTexts.FOUND_JACK_BODY[r.who]:sunk?TheListTexts.FOUND_TANK_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
+                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:pinned?TheListTexts.FOUND_JACK_BODY[r.who]:sunk?TheListTexts.FOUND_TANK_BODY[r.who]:mangled?TheListTexts.FOUND_AUGER_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
             }
             for(var q:here){
                 if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
@@ -1484,7 +1592,7 @@ public final class TheListHunt {
                 if(!sight(l,q,q.getYHeadRot(),body,at,head,READER_FINDS,READER_LOOK))continue;
                 h.found.put(q.getUUID(),seen|1<<d.who);
                 TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:fried?TheListTexts.FOUND_FRYER:slammed?TheListTexts.FOUND_CAR
-                    :pinned?TheListTexts.FOUND_JACK:sunk?TheListTexts.FOUND_TANK:TheListTexts.FOUND_DEAD,name));
+                    :pinned?TheListTexts.FOUND_JACK:sunk?TheListTexts.FOUND_TANK:mangled?TheListTexts.FOUND_AUGER:TheListTexts.FOUND_DEAD,name));
                 TheListBody.found(q,d.who);
             }
         }
@@ -1530,7 +1638,7 @@ public final class TheListHunt {
     static void release(@Nullable ServerLevel l,Runner r){if(r.ticket!=null&&l!=null)l.getChunkSource().removeRegionTicket(TICKET,r.ticket,3,r.id);r.ticket=null;}
 
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){HUNTS.clear();}
-    public static void clearAll(){HUNTS.clear();TheListCar.clearAll();TheListJack.clearAll();}
+    public static void clearAll(){HUNTS.clear();TheListCar.clearAll();TheListJack.clearAll();TheListGin.clearAll();}
     /** A word for the operator: each one's state, way and step. */
     public static String status(BlockPos b){
         var h=HUNTS.get(b.asLong());if(h==null)return "no hunt";

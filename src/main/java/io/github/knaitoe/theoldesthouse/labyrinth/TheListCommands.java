@@ -15,7 +15,8 @@ import net.minecraft.network.chat.Component;
  * brings first light, and {@code night off} also holds the town quiet, so that no night begins round anyone coming in until {@code night}
  * begins one. 0.4.708: {@code hunt} begins the hunt round the operator (given the body and, 0.4.709, the hay hook; the night put away,
  * the town held quiet), and
- * {@code hunt off} ends it. Nothing here changes anyone else's record.
+ * {@code hunt off} ends it. 0.4.718: {@code hunt <night>} begins it on one of the four nights (one if none is given); on the fourth the gin
+ * runs. Nothing here changes anyone else's record.
  */
 public final class TheListCommands {
     private TheListCommands(){}
@@ -31,7 +32,8 @@ public final class TheListCommands {
                 .then(Commands.literal("shut").executes(c->night(c.getSource(),TheListNight.SHUT)))
                 .then(Commands.literal("after").executes(c->night(c.getSource(),TheListNight.AFTER)))
                 .then(Commands.literal("light").executes(c->night(c.getSource(),TheListNight.DONE))))
-            .then(Commands.literal("hunt").executes(c->hunt(c.getSource(),true)).then(Commands.literal("off").executes(c->hunt(c.getSource(),false))));
+            .then(Commands.literal("hunt").executes(c->hunt(c.getSource(),true,1)).then(Commands.literal("off").executes(c->hunt(c.getSource(),false,1)))
+                .then(Commands.argument("night",com.mojang.brigadier.arguments.IntegerArgumentType.integer(1,4)).executes(c->hunt(c.getSource(),true,com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c,"night")))));
     }
 
     private static int night(CommandSourceStack source,int phase)throws CommandSyntaxException{
@@ -46,7 +48,7 @@ public final class TheListCommands {
         return 1;
     }
 
-    private static int hunt(CommandSourceStack source,boolean on)throws CommandSyntaxException{
+    private static int hunt(CommandSourceStack source,boolean on,int night)throws CommandSyntaxException{
         var p=source.getPlayerOrException();var b=TheListBody.town(p);
         if(b==null){source.sendFailure(Component.literal("Go through the back door into Lamesa first: /ghosthouse test vignette the_list places its door."));return 0;}
         var l=p.serverLevel();
@@ -55,8 +57,8 @@ public final class TheListCommands {
         TheListBody.giveHook(p);
         if(TheListNight.phase(p.server,b)!=TheListNight.NONE)TheListNight.end(l,b);
         TheListNight.quiet(p.server,b,true);
-        TheListHunt.start(l,b);
-        source.sendSuccess(()->Component.literal("The hunt is on: the five are at their places and run when they see you, and the hay hook is in your hands. /ghosthouse test the_list hunt off ends it."),false);
+        TheListHunt.start(l,b,night);
+        source.sendSuccess(()->Component.literal("The hunt is on, night "+night+": the five are at their places and run when they see you, and the hay hook is in your hands"+(night>=TheListGin.NIGHT?"; the gin runs":"")+". /ghosthouse test the_list hunt off ends it."),false);
         return 1;
     }
 

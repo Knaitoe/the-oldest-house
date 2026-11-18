@@ -499,6 +499,8 @@ public final class TheListBody {
         if(TheListBlock.is(st,TheListBlock.Kind.PUMPJACK)&&st.getValue(TheListBlock.STAGE)==7&&TheListJack.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         // 0.4.717: a blow on the stock tank's wall is a hand on it.
         if(TheListBlock.is(st,TheListBlock.Kind.STOCK)&&TheListTank.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
+        // 0.4.718: a blow on the gin's switch or an auger is a hand on it.
+        if(TheListBlock.is(st,TheListBlock.Kind.GIN)&&TheListGin.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         if(strike(p,b,e.getPos().subtract(b)))e.setCanceled(true);
     }
 
