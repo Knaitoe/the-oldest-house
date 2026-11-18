@@ -185,7 +185,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
                 case 5->Block.box(5,0,5,11,16,11);case 6->Block.box(3,0,3,13,8,13);default->Block.box(0,0,0,16,8,16);};
             case STOCK->switch(stage){case 0,3->t(f,0,0,13,16,16,16);case 1->Shapes.or(t(f,0,0,13,16,16,16),t(f,13,0,0,16,16,13));case 2->t(f,13,0,13,16,16,16);default->t(f,6,0,0,10,7,16);};
             case WINDMILL->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 6->t(f,0,0,0,6,5,6);case 7->t(f,7,0,0,9,16,16);default->Block.box(7,0,7,9,16,9);};
-            case PUMPJACK->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 1->t(f,0,0,5,16,16,11);case 7->t(f,2,0,1,14,16,15);default->Block.box(7,0,7,9,16,9);};
+            case PUMPJACK->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 1->t(f,0,0,5,16,16,11);case 7->t(f,2,0,1,14,24,15);default->Block.box(7,0,7,9,16,9);};
             case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->t(f,0,0,2,16,16,14);case 4->Block.box(0,0,6,16,16,10);default->t(f,6,0,8,10,16,12);};
             case PARTY->switch(stage){case 0->t(f,2,0,6,14,11,10);case 1->t(f,1.5,0,3.5,14.5,9,12.5);case 2->Block.box(3,0,3,13,4,13);case 3->Block.box(5,0,5,11,11.75,11);
                 case 4->Block.box(0,0,0,16,1.25,16);case 5->t(f,3,0,4,13,5,12);case 6->t(f,4,8.5,8,12,13,16);default->Block.box(6.5,11,6.5,9.5,16,9.5);};

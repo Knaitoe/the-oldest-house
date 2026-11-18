@@ -91,11 +91,13 @@ public final class TheListMarks {
     static final ResourceLocation BURN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/burn.png");
     /** 0.4.715: the back of the head where the car door came down on it (TheListHunt.CRUSH). */
     static final ResourceLocation CRUSH=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/crush.png");
+    /** 0.4.716: the side of the head where the pumpjack's weight came down on it (TheListHunt.FLAT). */
+    static final ResourceLocation FLAT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/flat.png");
     public static final class Wound extends RenderLayer<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor,LiteraryRenderers.CastModel> {
         public Wound(RenderLayerParent<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor,LiteraryRenderers.CastModel> parent){super(parent);}
         public static boolean wounded(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor a){
             return a.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.cast(a.phase())
-                &&(a.marks()&(io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.BURN|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.CRUSH))!=0;
+                &&(a.marks()&(io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.BURN|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.CRUSH|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.FLAT))!=0;
         }
         @Override public void render(PoseStack pose,MultiBufferSource out,int light,io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
             if(!wounded(a)||a.isInvisible())return;
@@ -105,6 +107,7 @@ public final class TheListMarks {
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(GUT)),light,overlay,-1);
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.BURN)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(BURN)),light,overlay,-1);
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.CRUSH)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(CRUSH)),light,overlay,-1);
+            if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.FLAT)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(FLAT)),light,overlay,-1);
         }
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)

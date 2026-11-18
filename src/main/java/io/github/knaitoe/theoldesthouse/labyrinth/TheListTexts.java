@@ -214,6 +214,27 @@ public final class TheListTexts {
     public static final String[] FOUND_CAR_BODY=FOUND_BODY.clone();
     static{FOUND_CAR_BODY[TheListPeople.SHANNON]="That's %s. That's %s at the car.";}
     public static final String FOUND_CAR="%s kneels at a car in the drive-in, the door shut on the head.";
+    // ------------------------------------------------------------------------------------------------ 0.4.716: the pumpjack
+    /** What each of the five says, forced down beside a pumpjack's gearbox with the head under its weight. */
+    public static final String[] JACK=new String[TheListPeople.CAST];
+    static {
+        JACK[TheListPeople.DEEK]="Not under that thing. Come on, not under that.";JACK[TheListPeople.WES]="It's still going! Turn it off! It's still going!";
+        JACK[TheListPeople.MEL]="There's a brake. On the box. Somebody pull the brake.";JACK[TheListPeople.LESLEY]="My face is in the dirt! Get off me!";
+        JACK[TheListPeople.SHANNON]="Jenna! Jenna, I'm out at the wells!";
+    }
+    /** To the slasher: forcing one of them down; the weight not yet clear, or hanging in the slot with the brake on; and the weight down. */
+    public static final String INTO_JACK="You force %s down on the knees beside the gearbox and hold the head where the weight comes round.",
+        JACK_WAIT="Not yet. The weight is coming round.",JACK_IN_SLOT="The weight hangs in the slot. There's no room under it.",
+        JACK_STILL="The weight comes down on the head and stops there. %s goes still.";
+    /** To anyone else's hand on one under the weight; to anyone's hand on the gearbox with one dead under it. */
+    public static final String JACK_HELD="%s is held down by the gearbox, the head under the weight.",
+        JACK_STALLED="The well has stopped on %s. The brake makes no difference now.";
+    /** To whoever hauls the brake on or knocks it off. */
+    public static final String BRAKE_ON="You haul the brake on. The jack slows and stops.",BRAKE_OFF="You knock the brake off. The jack starts up again.";
+    /** One dead at a pumpjack, come across: by the rest of the five (Shannon's own line says where), and by a reader who is not the slasher. */
+    public static final String[] FOUND_JACK_BODY=FOUND_BODY.clone();
+    static{FOUND_JACK_BODY[TheListPeople.SHANNON]="That's %s. That's %s at the pumpjack.";}
+    public static final String FOUND_JACK="%s kneels at a pumpjack, the head under its weight.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

@@ -105,8 +105,10 @@ public final class TheListLine {
         }
     }
     /** Where the jet from a head comes down now, at a reach along its arc: on the ground in the town. */
-    public static Vec3 falls(BlockPos b,int i,int tick,double reach){
-        double a=angle(i,tick);var rel=riser(i);
+    public static Vec3 falls(BlockPos b,int i,int tick,double reach){return fallsAt(b,i,angle(i,tick),reach);}
+    /** 0.4.716: where water off a head lands, thrown at an angle (radians, east nought, south a quarter turn) so far out. */
+    public static Vec3 fallsAt(BlockPos b,int i,double a,double reach){
+        var rel=riser(i);
         return new Vec3(b.getX()+rel.getX()+.5+Math.cos(a)*reach,b.getY(),b.getZ()+rel.getZ()+.5+Math.sin(a)*reach);
     }
     static boolean near(List<ServerPlayer> here,BlockPos at,double reach){for(var p:here)if(p.blockPosition().closerThan(at,reach))return true;return false;}

@@ -495,6 +495,8 @@ public final class TheListBody {
         if(TheListBlock.is(st,TheListBlock.Kind.LINE)&&TheListLine.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         // 0.4.714: a blow on the fryer is a hand on it.
         if(TheListBlock.is(st,TheListBlock.Kind.FRYER)&&TheListFryer.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
+        // 0.4.716: a blow on a pumpjack's gearbox is a hand on it.
+        if(TheListBlock.is(st,TheListBlock.Kind.PUMPJACK)&&st.getValue(TheListBlock.STAGE)==7&&TheListJack.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         if(strike(p,b,e.getPos().subtract(b)))e.setCanceled(true);
     }
 

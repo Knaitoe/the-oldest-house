@@ -7274,5 +7274,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.car_open"
+  },
+  "the_list.brake": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/brake",
+        "attenuation_distance": 16
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.brake"
+  },
+  "the_list.strain": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/strain",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.strain"
   }
 }

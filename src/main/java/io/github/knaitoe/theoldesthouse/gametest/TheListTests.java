@@ -1666,6 +1666,138 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.716, the pumpjack (docs/THE_LIST_0_4_716.md): the north well running. Another reader hauls its brake on, told so and hearing
+     * it: the well stands where it is; knocked off, it runs on from there. Deek taken from behind on the home bench and brought to the
+     * well, held by its gearbox. With the weight in its slot, a hand on the gearbox tells the slasher it is coming round and he is still
+     * held; with it clear, a hand forces him down: the slasher told, his words, on the knees beside the gearbox bowed toward it, held
+     * with no retreat and no walk, the other reader hearing him. A hand from the other reader on him: held down. The other reader hauls
+     * the brake on: the weight does not come. The slasher's hand on him knocks it off; the weight comes round onto the head and the well
+     * stops there: still, the side of the head marked, the slasher told, the other reader told a scream stopped and hearing the motor,
+     * the kill kept by the slasher, the hold let go, blood under the head. The motor grinds the weight on a little and then only stands;
+     * the brake makes no difference; a hand on him and he does not move. The other reader, looking, finds him at the pumpjack. Ended: the
+     * well running, Deek back and unmarked.
+     */
+    @GameTest(template="empty",batch="the_list_jack",timeoutTicks=6000)
+    public static void theJack(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_jack",P);var peer=f.player("list_jack_peer",P);
+        int D=TheListPeople.DEEK,J=0;var box=TheListJack.gearbox(J);
+        hold(f,b,TheListPeople.AT[D],TheListSite.JACKS[J]);
+        var kneel=TheListJack.kneel(b,J).subtract(Vec3.atLowerCornerOf(b));
+        double[] held=new double[1];
+        List<net.minecraft.network.protocol.Packet<?>> theirs=new ArrayList<>();
+        h.startSequence().thenExecute(()->f.at(peer,P,kneel.x-2.4,0,kneel.z+2.6))
+        .thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the town");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+            h.assertTrue(l.getBlockEntity(TheListJack.machine(b,J)) instanceof TheListMachineBlock.Turning,"waiting for the well");
+        }).thenExecute(()->{
+            h.assertTrue(TheListJack.running(l,b,J)&&!TheListJack.braked(l,b,J)&&fitting(l,b,box,Kind.PUMPJACK,7),"the well runs, its brake off");
+            h.assertTrue(TheListJack.JAM<TheListJack.CLEAR&&TheListJack.JAM>Math.toRadians(-90)&&TheListJack.JAM<0,"the weight meets the head coming down behind the shaft: "+Math.toDegrees(TheListJack.JAM)+" to "+Math.toDegrees(TheListJack.CLEAR));
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+            sent(peer);cues(peer);
+            TheListJack.hand(peer,b,box);
+            var got=sent(peer);
+            h.assertTrue(cuesIn(got).contains(TheListTexts.BRAKE_ON)&&sound(got,TheListRegistry.BRAKE.get()),"the other reader hauls the brake on, told so and hearing it");
+            h.assertTrue(TheListJack.braked(l,b,J)&&!TheListJack.running(l,b,J),"braked, the well stands");
+            held[0]=TheListJack.tick(l,b,J);
+        }).thenIdle(5).thenExecute(()->{
+            h.assertTrue(TheListJack.tick(l,b,J)==held[0],"it stands where it was: "+(TheListJack.tick(l,b,J)-held[0]));
+            TheListJack.hand(peer,b,box);
+            h.assertTrue(cues(peer).contains(TheListTexts.BRAKE_OFF)&&TheListJack.running(l,b,J)&&!TheListJack.braked(l,b,J),"knocked off, it runs");
+        }).thenIdle(5).thenExecute(()->{
+            double went=TheListJack.tick(l,b,J)-held[0];
+            h.assertTrue(went>=4.5&&went<=5.5,"on from where it stood: "+went);
+            // Deek taken from behind on the bench, and the slasher brought to the well with him.
+            var deek=TheListPeople.find(l,b,D);
+            f.at(p,P,TheListPeople.AT[D].getX()-1.5,0,TheListPeople.AT[D].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,D));
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,kneel.x-1.25,0,kneel.z);
+        }).thenIdle(2).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.position().distanceTo(TheListJack.kneel(b,J))<=TheListJack.REACH,"held by the gearbox: "+where(l,b,D));
+            // The weight down in its slot: not yet.
+            TheListJack.setAngle(l,b,J,Math.toDegrees(TheListJack.JAM)+5);cues(p);
+            TheListJack.hand(p,b,box);
+            h.assertTrue(cues(p).contains(TheListTexts.JACK_WAIT)&&TheListHunt.state(b,D)==TheListHunt.State.HELD,"the weight is coming round, and he is still held");
+            // Clear of it, a way still to come: down.
+            TheListJack.setAngle(l,b,J,Math.toDegrees(TheListJack.CLEAR)+10);
+            sent(peer);cues(peer);cues(p);
+            TheListJack.hand(p,b,box);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.JACK&&deek.gesture()==TheListHunt.PUMPED,"forced down by the gearbox: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.INTO_JACK,"Deek")),"the slasher is told");
+            h.assertTrue(TheListTexts.JACK[D].equals(said(deek)),"his words: "+said(deek));
+            h.assertTrue(deek.position().distanceTo(TheListJack.kneel(b,J))<.05&&Math.abs(net.minecraft.util.Mth.wrapDegrees(deek.getYRot()-TheListJack.kneelYaw(J)))<1,
+                "on the knees by the gearbox, bowed toward it: "+deek.position().subtract(TheListJack.kneel(b,J))+" "+deek.getYRot());
+            h.assertTrue(TheListHunt.holding(p)&&LiteraryVignettes.retreatLocked(p),"still his, and no retreat");
+            h.assertTrue(p.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)==0,"and he holds him there");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.SCREAM.get()),"the other reader hears him");
+            LiteraryVignettes.talk(peer,deek);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.JACK_HELD,"Deek"))&&TheListHunt.state(b,D)==TheListHunt.State.JACK,"a hand on him: held down");
+            // The other reader hauls the brake on: the weight does not come.
+            TheListJack.hand(peer,b,box);
+            h.assertTrue(cues(peer).contains(TheListTexts.BRAKE_ON)&&TheListJack.braked(l,b,J),"the brake, on");
+            // For the case: set on a moment from the head (which lets the brake go), and braked there.
+            TheListJack.setAngle(l,b,J,Math.toDegrees(TheListJack.JAM)-6);
+            h.assertTrue(TheListJack.running(l,b,J),"set running a moment from the head");
+            TheListJack.hand(peer,b,box);
+            h.assertTrue(TheListJack.braked(l,b,J),"and braked again");
+            held[0]=TheListJack.tick(l,b,J);
+        }).thenIdle(12).thenExecute(()->{
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.JACK&&TheListJack.tick(l,b,J)==held[0],"braked, the weight does not come: "+where(l,b,D));
+            // The slasher's hand on him knocks it off.
+            var deek=TheListPeople.find(l,b,D);
+            cues(p);cues(peer);sent(peer);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(TheListTexts.BRAKE_OFF)&&TheListJack.running(l,b,J),"the slasher knocks the brake off");
+            TheListJack.hand(p,b,box);
+            h.assertTrue(TheListJack.running(l,b,J)&&TheListHunt.state(b,D)==TheListHunt.State.JACK,"his hand on the gearbox after does nothing more");
+        }).thenIdle(8).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(TheListHunt.dead(b,D)&&deek.gesture()==TheListHunt.PINNED,"the weight comes down on him: "+where(l,b,D));
+            h.assertTrue((deek.marks()&TheListHunt.FLAT)!=0,"the side of the head marked");
+            h.assertTrue(TheListJack.stalled(b,J)&&!TheListJack.running(l,b,J),"the well stopped on him");
+            double at=TheListJack.ahead(TheListJack.JAM,TheListJack.angle(l,b,J));
+            h.assertTrue(at<=TheListJack.GRIND+.01,"stopped where it met him: "+Math.toDegrees(at));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.JACK_STILL,"Deek")),"the slasher is told");
+            var got=sent(peer);
+            h.assertTrue(cuesIn(got).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")),"the other reader is told a scream stopped");
+            h.assertTrue(sound(got,TheListRegistry.STRAIN.get()),"and hears the motor");
+            h.assertTrue((TheListBody.kills(p)&1<<D)!=0,"the slasher's record keeps him");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the body walks and may leave");
+            h.assertTrue(stain(l,TheListJack.under(b,J),TheListHunt.POOL),"a pool under the head");
+            h.assertTrue(deek.position().distanceTo(TheListJack.kneel(b,J))<.05,"where he knelt");
+        }).thenIdle(TheListJack.GRIND_TICKS+10).thenExecute(()->{
+            double at=TheListJack.ahead(TheListJack.JAM,TheListJack.angle(l,b,J));
+            h.assertTrue(at>TheListJack.GRIND*.8&&at<=TheListJack.GRIND+.01,"ground on into him: "+Math.toDegrees(at));
+            cues(p);cues(peer);
+            TheListJack.hand(peer,b,box);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.JACK_STALLED,"Deek"))&&!TheListJack.braked(l,b,J)&&TheListJack.stalled(b,J),"the brake makes no difference");
+            var deek=TheListPeople.find(l,b,D);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Deek")),"a hand on him after: he does not move");
+            // The other reader, looking at his back by the gearbox.
+            var back=deek.position().add(0,.45,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-back.x,back.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(back.y,Math.sqrt(back.x*back.x+back.z*back.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_JACK,"Deek")),"the other reader finds him at the pumpjack");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            h.assertTrue(TheListJack.running(l,b,J)&&!TheListJack.braked(l,b,J)&&!TheListJack.stalled(b,J),"ended, the well running");
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.marks()==0&&deek.gesture()==TheListHunt.STILL,"and he is back, unmarked: "+where(l,b,D));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Whether these packets drew a particle of this kind. */
     private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;
