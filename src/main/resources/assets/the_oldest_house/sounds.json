@@ -7202,5 +7202,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.gasp"
+  },
+  "the_list.stamp": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/stamp",
+        "attenuation_distance": 32
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.stamp"
+  },
+  "the_list.crack": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/crack",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.crack"
   }
 }

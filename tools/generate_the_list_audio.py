@@ -9,7 +9,8 @@ the body's heavy tread, and the body going down.
 Part 3a (0.4.706) is night one: a cheap radio playing at the stock tank, the seed house's door rolling on its rail, its bolt, the auger
 turning in its trench, and the seed going.
 Part 4a (0.4.708) is the hunt: one of the names screaming as they run. Part 4a-2 (0.4.709) is the catch: a struggle in the slasher's
-grip, the hay hook going in and torn out, and the catch in a throat as it goes in.
+grip, the hay hook going in and torn out, and the catch in a throat as it goes in. Part 4b-1 (0.4.711) is the boards: a heel
+stamped down on an aluminum plank of the stands, and something giving under it.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -46,6 +47,8 @@ ROWS = {
     'hook_in': ('A hook goes in', 16),
     'hook_out': ('A hook tears free', 16),
     'gasp': ('Someone gasps', 12),
+    'stamp': ('A plank rings under a stamp', 32),
+    'crack': ('Something gives', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -533,10 +536,44 @@ def gasp():
     return (voice + air) * env
 
 
+def stamp():
+    # A heel brought down on an aluminum plank of the stands: the dull blow of the shoe, the plank ringing at its few modes and dying
+    # away along the row, and the frame under it rattling once.
+    n = seconds(1.3)
+    t = times(n)
+    x = t - .01
+    on = x >= 0
+    blow = band(rng.standard_normal(n), 80, 900) * np.exp(-np.clip(x, 0, None) / .025) * on * 1.3
+    ring = np.zeros(n)
+    for f, level, decay in ((412, 1.0, .38), (937, .7, .3), (1583, .45, .22), (2671, .28, .14), (3940, .15, .09)):
+        ring += np.sin(2 * np.pi * f * x + rng.uniform(0, 6.28)) * np.exp(-np.clip(x, 0, None) / decay) * on * level
+    beat = 1 + .25 * np.sin(2 * np.pi * 5.5 * t)
+    rattle = np.zeros(n)
+    for at in (.03, .06, .1):
+        y = t - at
+        rattle += band(rng.standard_normal(n), 1200, 4500) * np.exp(-np.clip(y, 0, None) / .01) * (y >= 0) * rng.uniform(.15, .3)
+    return blow + ring * beat * .55 + rattle
+
+
+def crack():
+    # Under the heel, something giving: a short, muffled snap deep in a body, the give after it, and a soft grind as it settles.
+    n = seconds(.7)
+    t = times(n)
+    x = t - .015
+    on = x >= 0
+    snap = band(rng.standard_normal(n), 300, 2600) * np.exp(-np.clip(x, 0, None) / .006) * on * 1.6
+    knock = np.sin(2 * np.pi * (140 - 50 * np.clip(x / .08, 0, 1)) * x) * np.exp(-np.clip(x, 0, None) / .05) * on
+    y = t - .05
+    give = band(rng.standard_normal(n), 150, 900) * (1 + np.sin(2 * np.pi * 31 * t)) * np.exp(-np.clip(y, 0, None) / .08) * (y >= 0) * .5
+    z = np.clip((t - .14) / .4, 0, 1)
+    grind = band(rng.standard_normal(n), 700, 3000) * (rng.random(n) < .15) * np.sin(np.pi * z) * (t > .14) * .3
+    return snap + knock + give + grind
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
           'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
-          'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp}
+          'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp, 'stamp': stamp, 'crack': crack}
 
 
 def main():

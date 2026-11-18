@@ -49,11 +49,13 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class TheListHunt {
     private TheListHunt(){}
-    /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,DEAD}
+    /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
+     * down over a row of the stands; dead. */
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,DEAD}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
-     * grip, flinching from the hook, on the knees on it, slumped over it, fallen. */
-    public static final int STILL=0,RUNNING=1,HIDING=2,SWINGING=3,COWERING=4,STRUGGLING=5,RECOIL=6,KNEELING=7,SLUMPED=8,FALLEN=9;
+     * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
+     * through the gap under the next, and hanging there dead. */
+    public static final int STILL=0,RUNNING=1,HIDING=2,SWINGING=3,COWERING=4,STRUGGLING=5,RECOIL=6,KNEELING=7,SLUMPED=8,FALLEN=9,OVER=10,HUNG=11;
     /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
      * they hear it creeping, crouched. */
     public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
@@ -79,8 +81,15 @@ public final class TheListHunt {
     public static final int RAISE=20,KNEES=32,OUT=70,FOLD=86,DONE=110;
     /** How often one held is heard fighting the grip; how far the scream cut short by the hook is told of. */
     static final int STRUGGLE_EVERY=40;
-    /** 0.4.710: the hook's wound, drawn on them from the moment it goes in (LiteraryActor.marks). */
-    public static final int WOUND=1;
+    /** 0.4.710: the hook's wound, drawn on them from the moment it goes in (LiteraryActor.marks); 0.4.711: the neck's, from the second
+     * stamp on the boards. */
+    public static final int WOUND=1,NECK=2;
+    /** 0.4.711, the boards: how near a plank one held must be for the slasher to force them over it, and how soon after one stamp the
+     * next counts. */
+    public static final double BOARDS_REACH=3;
+    public static final int STAMP_GAP=10;
+    /** Where the head hangs from where one forced over the row kneels, facing up the rows (west): under the next row's plank. */
+    public static final Vec3 HEAD=new Vec3(-.95,-.2,0);
     /** 0.4.710: blood left where it lands, as the fitting's BLOOD stages: drops, a spatter, a smear, a pool. */
     public static final int DROPS=0,SPATTER=1,SMEAR=2,POOL=3;
     /** 0.4.710: how far one of the five sees one of the others lying dead, and a reader who is not the slasher, and how near to where
@@ -159,6 +168,10 @@ public final class TheListHunt {
         float pin;
         /** 0.4.710: which of the others they have come across dead, a bit for each. */
         int saw;
+        /** 0.4.711: on the boards, the plank (in the town's coordinates), where they kneel on it, how many stamps and when the last was. */
+        @Nullable BlockPos plank;@Nullable Vec3 kneel;int stamps,stampAt;
+        /** Whether they have let fall what they had in hand (Mel's camcorder): the hook, or forced over the row. */
+        boolean dropped;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
@@ -269,6 +282,7 @@ public final class TheListHunt {
                 case COWER->{var s=nearest(a,slashers);if(s!=null)face(a,s.position());}
                 case HELD->held(l,b,h,r,a,slashers,here);
                 case FINISH->finishing(l,b,h,r,a,slashers,here);
+                case BOARDS->boarded(l,b,h,r,a,slashers,here);
                 case DEAD->{}
             }
         }
@@ -435,6 +449,8 @@ public final class TheListHunt {
             // 0.4.709: a blow on one cornered takes hold of them; on one held, with the hook in hand, it is the hook.
             case COWER->take(l,b,h,r,a,p,here);
             case HELD->{if(p.getUUID().equals(r.holder)&&TheListBody.hookInHand(p))finish(r,a,p);}
+            // 0.4.711: a blow on one held over the row is a stamp.
+            case BOARDS->{if(p.getUUID().equals(r.holder))stamp(l,b,h,r,a,p,here);}
             default->{}
         }
     }
@@ -460,6 +476,7 @@ public final class TheListHunt {
             case HIDE->found(l,b,h,r,a,p,here);
             case COWER->take(l,b,h,r,a,p,here);
             case HELD->{if(p.getUUID().equals(r.holder)&&TheListBody.hookInHand(p))finish(r,a,p);}
+            case BOARDS->{if(p.getUUID().equals(r.holder))stamp(l,b,h,r,a,p,here);}
             default->{}
         }
         return true;
@@ -503,7 +520,7 @@ public final class TheListHunt {
     static void loose(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,@Nullable ServerPlayer s,List<ServerPlayer> here){
         var was=r.holder==null?null:l.getServer().getPlayerList().getPlayer(r.holder);
         if(was!=null)TheListBody.holding(was,false);
-        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);
+        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;
         stop(l,a,TheListRegistry.STRUGGLE.get());
         if(s!=null){
             s.knockback(.8,a.getX()-s.getX(),a.getZ()-s.getZ());s.hurtMarked=true;
@@ -541,7 +558,7 @@ public final class TheListHunt {
         a.level().addFreshEntity(it);
     }
     /** Whether one of them has let go of what they held (Mel keeps the camcorder through the hunt until then). */
-    public static boolean dropped(BlockPos b,int who){var st=state(b,who);return st==State.FINISH||st==State.DEAD;}
+    public static boolean dropped(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r!=null&&(r.dropped||r.state==State.FINISH||r.state==State.DEAD);}
     /** Anything let fall during a hunt, taken up when it ends or another begins. */
     static void sweep(ServerLevel l,BlockPos b){
         for(var it:l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,TheListBody.bounds(b),e->e.getTags().contains(DROPPED)))it.discard();
@@ -551,7 +568,7 @@ public final class TheListHunt {
     /** The hook, on one held: they see it come up. */
     static void finish(Runner r,LiteraryActor a,ServerPlayer s){
         if(r.state!=State.HELD)return;
-        r.state=State.FINISH;r.since=0;r.killer=s.getUUID();a.gesture(RECOIL);s.swing(InteractionHand.MAIN_HAND,true);
+        r.state=State.FINISH;r.since=0;r.killer=s.getUUID();r.dropped=true;a.gesture(RECOIL);s.swing(InteractionHand.MAIN_HAND,true);
         drop(a);
     }
     /**
@@ -631,6 +648,136 @@ public final class TheListHunt {
     /** A drop down the front of them. */
     static void drip(ServerLevel l,LiteraryActor a){l.sendParticles(TheListRegistry.BLOOD.get(),a.getX(),a.getY()+1.0,a.getZ(),1,.1,.05,.1,0);}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.711: the boards
+    /** The home stands: their front, and the ends of their rows. Row r stands at x = STANDS_FRONT-1-r, its plank's top (r+1)/2 above
+     * the ground. */
+    static final int STANDS_FRONT=TheListSite.FIELD_X-22,STANDS_N=TheListSite.FIELD_Z-16,STANDS_S=TheListSite.FIELD_Z+16;
+    /** Which row of the home stands a plank is, in the town's coordinates: 1 to 6, a row with a row above it and the dirt open under
+     * that one (under row 1 the plank's own block fills the cell); otherwise -1. */
+    public static int row(ServerLevel l,BlockPos b,BlockPos rel){
+        int r=STANDS_FRONT-1-rel.getX();
+        if(r<1||r>6||rel.getY()!=r/2||rel.getZ()<STANDS_N||rel.getZ()>STANDS_S)return -1;
+        var st=l.getBlockState(b.offset(rel));
+        return TheListBlock.is(st,TheListBlock.Kind.STANDS)&&st.getValue(TheListBlock.STAGE)==r%2?r:-1;
+    }
+    /**
+     * A hand or a blow on a plank of the home stands (TheList.click, TheListBody.punched). The slasher's, with hold of one of the five
+     * within reach of it, forces them down over that row; with one already over a row, it is a stamp, on that plank or on the next one up
+     * beside where they lie. True when it was either; anyone else's, or a plank out of reach, is left to the town.
+     */
+    public static boolean boards(ServerPlayer p,BlockPos b,BlockPos rel){
+        var h=HUNTS.get(b.asLong());if(h==null||p.isSpectator()||!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return false;
+        var l=p.serverLevel();
+        for(var r:h.runners.values()){
+            if(!p.getUUID().equals(r.holder)||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(r.state==State.BOARDS){
+                if(r.plank==null||Math.abs(rel.getZ()-r.plank.getZ())>1||rel.getX()!=r.plank.getX()&&rel.getX()!=r.plank.getX()-1)return false;
+                stamp(l,b,h,r,a,p,TheList.readers(l,b));
+                return true;
+            }
+            if(r.state!=State.HELD)return false;
+            int row=row(l,b,rel);
+            if(row<0||Vec3.atCenterOf(b.offset(rel)).distanceTo(a.position())>BOARDS_REACH)return false;
+            over(l,b,h,r,a,p,rel,row,TheList.readers(l,b));
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Forced over the row: down on the knees on the plank facing up the rows, bent over its far edge, the head through the gap under the
+     * next row and hanging in the dark under the stands. Never across a post of the frame: the cell beside, toward where they were. Their
+     * words and a scream; anyone else on the list near enough hears it. What they had in hand they let fall.
+     */
+    static void over(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,BlockPos rel,int row,List<ServerPlayer> here){
+        if(Math.floorMod(rel.getZ(),4)==0)rel=rel.offset(0,0,a.getZ()>=b.getZ()+rel.getZ()+.5?1:-1);
+        r.state=State.BOARDS;r.since=0;r.stamps=0;r.stampAt=0;r.plank=rel;r.dropped=true;
+        r.kneel=new Vec3(b.getX()+rel.getX()+.6,b.getY()+(row+1)*.5,b.getZ()+rel.getZ()+.5);
+        BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(OVER);drop(a);
+        kneel(a,r);
+        TheList.cue(s,String.format(TheListTexts.FORCED_OVER,TheListTexts.NAMES[r.who]));
+        say(a,r.who,TheListTexts.OVER[r.who]);
+        scream(l,a);
+        l.playSound(null,r.kneel.x,r.kneel.y,r.kneel.z,TheListRegistry.STAMP.get(),SoundSource.NEUTRAL,.5F,1.25F);
+        heard(l,b,h,r,a,here);
+    }
+    /** Kept where they kneel over the row, facing up the rows. */
+    static void kneel(LiteraryActor a,Runner r){
+        if(r.kneel==null)return;
+        a.moveTo(r.kneel.x,r.kneel.y,r.kneel.z,90,0);a.setYBodyRot(90);a.setYHeadRot(90);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /** Where the head hangs, under the next row. */
+    public static @Nullable Vec3 head(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null||r.kneel==null?null:r.kneel.add(HEAD);}
+    /** How many times they have been stamped on. */
+    public static int stamps(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.stamps;}
+    /**
+     * Over the row, each tick: kept there. Left without a stamp they fight the plank as they fight a grip, longer while the slasher looks
+     * at them, and after the first stamp it takes them twice as long; after the second they cannot. Bleeding from the head after the
+     * first. The slasher gone from the town, they tear loose, unless it is past that.
+     */
+    static void boarded(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers,List<ServerPlayer> here){
+        kneel(a,r);
+        if(r.stamps>=1&&r.since%4==0&&r.kneel!=null){var at=r.kneel.add(HEAD);l.sendParticles(TheListRegistry.BLOOD.get(),at.x,at.y-.15,at.z,1,.04,.02,.04,0);}
+        if(r.stamps>=2)return;
+        var s=holder(r,slashers);
+        if(s==null){loose(l,b,h,r,a,null,here);return;}
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+.5,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,1F,1F);
+        float off=Math.abs(Mth.wrapDegrees(yawTo(s.position(),a.position())-s.getYHeadRot()));
+        r.strength+=off>LOOK_AWAY?2:1;
+        if(r.strength>=STRENGTH[r.who]*(r.stamps>=1?2:1))loose(l,b,h,r,a,s,here);
+    }
+    /**
+     * A stamp, at least STAMP_GAP ticks after the last. The first: the row rings, they jerk, and blood drops from the head onto the dirt
+     * under the stands. The second: something gives, blood sprays onto the dirt, more on the slasher, and the neck is marked. The third:
+     * still, the scream stopped, anyone else in town near enough told from which way; hung over the row dead, a pool under the head, the
+     * kill the slasher's.
+     */
+    static void stamp(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,List<ServerPlayer> here){
+        if(r.stamps>=3||r.kneel==null||r.stamps>0&&r.since-r.stampAt<STAMP_GAP)return;
+        r.stamps++;r.stampAt=r.since;r.killer=s.getUUID();
+        s.swing(InteractionHand.MAIN_HAND,true);
+        var head=r.kneel.add(HEAD);var ground=ground(l,b,head);
+        l.playSound(null,r.kneel.x-.5,r.kneel.y,r.kneel.z,TheListRegistry.STAMP.get(),SoundSource.NEUTRAL,1.2F,.92F+l.getRandom().nextFloat()*.12F);
+        var name=TheListTexts.NAMES[r.who];
+        var facing=Direction.WEST;
+        switch(r.stamps){
+            case 1->{
+                TheList.cue(s,TheListTexts.STAMPS[0]);
+                l.sendParticles(TheListRegistry.BLOOD.get(),head.x,head.y-.15,head.z,6,.05,.05,.05,0);
+                if(ground!=null)stain(l,b,ground,DROPS,facing);
+            }
+            case 2->{
+                stop(l,a,TheListRegistry.STRUGGLE.get());
+                l.playSound(null,head.x,head.y,head.z,TheListRegistry.CRACK.get(),SoundSource.NEUTRAL,1F,.95F+l.getRandom().nextFloat()*.1F);
+                TheList.cue(s,TheListTexts.STAMPS[1]);
+                for(int i=0;i<18;i++){var rand=l.getRandom();
+                    l.sendParticles(TheListRegistry.BLOOD.get(),head.x,head.y,head.z,0,(rand.nextDouble()-.5)*.25,-.05-rand.nextDouble()*.15,(rand.nextDouble()-.5)*.25,1);}
+                if(ground!=null)stain(l,b,ground,SPATTER,facing);
+                a.marks(a.marks()|NECK);
+                TheListBody.bleed(s);
+            }
+            default->{
+                stop(l,a,TheListRegistry.SCREAM.get());stop(l,a,TheListRegistry.STRUGGLE.get());
+                TheList.cue(s,String.format(TheListTexts.STAMPS[2],name));
+                for(var q:here)if(q!=s&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+                a.gesture(HUNG);kneel(a,r);
+                if(ground!=null)pool(l,b,ground,facing);
+                TheListBody.holding(s,false);r.holder=null;a.holder(null);
+                r.state=State.DEAD;
+                TheListBody.killed(l.getServer(),r.killer,r.who);
+            }
+        }
+    }
+    /** The dirt under a point under the stands: the open cell over it, or the nearest beside it along the row if a post of the frame
+     * stands there. */
+    static @Nullable Vec3 ground(ServerLevel l,BlockPos b,Vec3 over){
+        var cell=BlockPos.containing(over.x,b.getY(),over.z);
+        for(int dz:new int[]{0,1,-1}){
+            var at=cell.offset(0,0,dz);
+            if(l.getBlockState(at).isAir()&&l.getBlockState(at.below()).isFaceSturdy(l,at.below(),Direction.UP))return new Vec3(over.x,b.getY(),over.z+dz);
+        }
+        return null;
+    }
+
     // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
     /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
     static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
@@ -700,24 +847,37 @@ public final class TheListHunt {
     static void bodies(ServerLevel l,BlockPos b,Hunt h,List<ServerPlayer> here){
         for(var d:h.runners.values()){
             if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
-            var at=body.position().add(0,.3,0);var name=TheListTexts.NAMES[d.who];
+            // 0.4.711: one hung over a row of the stands is seen by the head under the next plank as well as the body on it.
+            boolean hung=body.gesture()==HUNG&&d.kneel!=null;
+            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
             for(var r:h.runners.values()){
                 if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
                 if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
-                if(a.getEyePosition().distanceToSqr(at)>FINDS_BODY*FINDS_BODY||!TheListBody.facing(a.getYHeadRot(),a.getEyePosition(),at,75)||!a.hasLineOfSight(body))continue;
+                if(!sight(l,a,a.getYHeadRot(),body,at,head,FINDS_BODY,75))continue;
                 r.saw|=1<<d.who;
                 if(r.state==State.CALM)run(l,b,h,r,a,here,true);
-                say(a,r.who,String.format(TheListTexts.FOUND_BODY[r.who],name,name));
+                say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
             }
             for(var q:here){
                 if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
                 int seen=h.found.getOrDefault(q.getUUID(),0);if((seen&1<<d.who)!=0)continue;
-                if(q.getEyePosition().distanceToSqr(at)>READER_FINDS*READER_FINDS||!TheListBody.facing(q.getYHeadRot(),q.getEyePosition(),at,READER_LOOK)||!q.hasLineOfSight(body))continue;
+                if(!sight(l,q,q.getYHeadRot(),body,at,head,READER_FINDS,READER_LOOK))continue;
                 h.found.put(q.getUUID(),seen|1<<d.who);
-                TheList.cue(q,String.format(TheListTexts.FOUND_DEAD,name));
+                TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:TheListTexts.FOUND_DEAD,name));
                 TheListBody.found(q,d.who);
             }
         }
+    }
+    /** Whether one looking from where they are sees a point (or a second, the head of one hung over the stands): near enough, in front
+     * of them, nothing solid between. */
+    static boolean sight(ServerLevel l,net.minecraft.world.entity.LivingEntity e,float yaw,LiteraryActor body,Vec3 at,@Nullable Vec3 also,double reach,float within){
+        var eye=e.getEyePosition();
+        if(also==null)return eye.distanceToSqr(at)<=reach*reach&&TheListBody.facing(yaw,eye,at,within)&&e.hasLineOfSight(body);
+        for(var to:new Vec3[]{at,also}){
+            if(eye.distanceToSqr(to)>reach*reach||!TheListBody.facing(yaw,eye,to,within))continue;
+            if(l.clip(new net.minecraft.world.level.ClipContext(eye,to,net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,e)).getType()==net.minecraft.world.phys.HitResult.Type.MISS)return true;
+        }
+        return false;
     }
     /** For tests: the dead looked for now, rather than on the town's next fifth tick. */
     public static void look(ServerLevel l,BlockPos b){var h=HUNTS.get(b.asLong());if(h!=null)bodies(l,b,h,TheList.readers(l,b));}

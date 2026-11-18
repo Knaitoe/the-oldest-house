@@ -1127,6 +1127,17 @@ public final class LiteraryRenderers {
                 // Fallen, face down (laid by setupRotations): the arms loose at the sides, one out a little, the head turned on the ground.
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.FALLEN->{rightArm.xRot=0;rightArm.yRot=0;rightArm.zRot=.4F;leftArm.xRot=-.1F;leftArm.yRot=0;leftArm.zRot=-.15F;rightLeg.xRot=0;leftLeg.xRot=.05F;
                     rightLeg.yRot=leftLeg.yRot=0;rightLeg.zRot=.05F;leftLeg.zRot=-.08F;head.xRot=0;head.yRot=.6F;head.zRot=0;body.xRot=0;}
+                // 0.4.711, the boards. Forced over the row: on the knees on the plank, the legs back along it, bent over its far edge with the
+                // throat across it, the head through the gap under the next row; the hands flat on the plank either side pushing, the head
+                // straining up against the plank above and twisting.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.OVER->{float w=net.minecraft.util.Mth.sin(age*.9F),v=net.minecraft.util.Mth.cos(age*.7F);
+                    low(19.5F,1.9F+w*.03F,1.2F);
+                    rightArm.xRot=-.25F+w*.15F;leftArm.xRot=-.25F-w*.15F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=1.35F;leftArm.zRot=-1.35F;
+                    head.xRot=2.0F+v*.12F;head.yRot=w*.3F;head.zRot=0;}
+                // Hung there dead: slumped further over the edge, the arms hanging down over it, the head hanging under the next row.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.HUNG->{low(19.5F,2.0F,1.2F);
+                    rightArm.xRot=-.45F;leftArm.xRot=-.4F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=.12F;leftArm.zRot=-.1F;
+                    head.xRot=2.6F;head.yRot=0;head.zRot=.15F;}
                 default->{}
             }
             hat.copyFrom(head);

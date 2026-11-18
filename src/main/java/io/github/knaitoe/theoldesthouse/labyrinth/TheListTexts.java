@@ -135,6 +135,22 @@ public final class TheListTexts {
     }
     /** To a reader who is not the slasher, coming across one of them dead. */
     public static final String FOUND_DEAD="%s lies face down, not moving.";
+    // ------------------------------------------------------------------------------------------------ 0.4.711: the boards
+    /** What each of the five says, forced down over a row of the stands. */
+    public static final String[] OVER=new String[TheListPeople.CAST];
+    static {
+        OVER[TheListPeople.DEEK]="Wait, wait. I'll do whatever you want.";OVER[TheListPeople.WES]="I can't see anything!";
+        OVER[TheListPeople.MEL]="The camera's still running.";OVER[TheListPeople.LESLEY]="I can see the ground. Let me up.";
+        OVER[TheListPeople.SHANNON]="Jenna, I'm under the bleachers!";
+    }
+    /** To the slasher: forcing one of them over the row, and each of the three stamps. */
+    public static final String FORCED_OVER="You force %s down over the row, head through the gap under the next one.";
+    public static final String[] STAMPS={"You stamp on the plank across the back of the neck. The row rings.","Again. Something gives under your heel.",
+        "Again. %s goes still."};
+    /** One hung there dead, come across: by the rest of the five (Shannon's own line says where), and by a reader who is not the slasher. */
+    public static final String[] FOUND_HUNG_BODY=FOUND_BODY.clone();
+    static{FOUND_HUNG_BODY[TheListPeople.SHANNON]="That's %s. That's %s up on the stands.";}
+    public static final String FOUND_HUNG="%s hangs over a row of the stands, not moving.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

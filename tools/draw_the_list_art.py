@@ -4376,6 +4376,7 @@ def textures():
     for i in range(4):
         out[f'block/the_list/blood_{i}.png'] = stain(i)
     out['entity/the_list/wound.png'] = wound()
+    out['entity/the_list/neck.png'] = neck()
     for i in (1, 2, 3):
         out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
         out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
@@ -4884,6 +4885,59 @@ def wound():
     return half.resize((512, 256), Image.NEAREST)
 
 
+def neck():
+    # 0.4.711, the boards: where the plank came down across the back of the neck, over the five's own skins (512 by 256, painted two
+    # pixels to a dot). It is only ever worn bent over a row, head down under the next one, so the blood runs toward the head: a crease
+    # of broken skin across the nape where head meets collar, bruising either side of it heaviest in the middle, blood soaked into the
+    # collar's lip and run from the nape up the back of the head and through the hair to the crown. On the head's back and the hair's
+    # (u 24 to 32 and 56 to 64, v 8 to 16, the nape its last row), the body's back (u 32 to 40, from v 20) and the coat's (u 82.4 to
+    # 91.2, from v 32.8), and the back edge of the body's top (u 20 to 28, v 16) and the coat's (u 68.8 to 77.6, v 28).
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    rnd = random.Random(97111)
+    bruise, dark = '#5b2a3a', '#3d2030'
+
+    def heavy(x, x0, x1):
+        return 1 - abs(x - (x0 + x1 - 1) / 2) / ((x1 - x0) / 2)
+
+    def run_up(x, y0, y1, lo, hi):
+        # From the nape toward the crown, wavering, drying as it goes.
+        for y in range(y0, y1, -1):
+            if rnd.random() < .15:
+                x = max(lo, min(hi - 1, x + rnd.choice((-1, 1))))
+            dot(half, x, y, BLOOD_WET if y0 - y < (y0 - y1) * .55 else BLOOD_DRY)
+        dot(half, x, y1, BLOOD_DRY)
+
+    # The nape: the head's last two rows, and the hair's, the crease along the bottom one, and runs up toward the crown.
+    for x0, cover, runs in ((48, 1.0, ((-3, .8), (0, 1.0), (2, .6), (5, .45))), (112, .55, ((-1, .7), (3, .5)))):
+        for x in range(x0 + 1, x0 + 15):
+            w = heavy(x, x0 + 1, x0 + 15)
+            if rnd.random() < (.35 + .55 * w) * cover:
+                dot(half, x, 30, dark if rnd.random() < .5 * w else bruise)
+            if rnd.random() < (.55 + .45 * w) * cover:
+                dot(half, x, 31, BLOOD_DEEP if rnd.random() < .5 else BLOOD_WET)
+        mid = x0 + 8
+        for ox, reach in runs:
+            run_up(mid + ox, 29, 29 - int(9 * reach), x0 + 1, x0 + 15)
+    # The collar: the crease on the top row of the back and bruising under it; the blood has run the other way, over its lip.
+    for x0, x1, top in ((64, 80, 40), (165, 182, 66)):
+        for x in range(x0 + 1, x1 - 1):
+            w = heavy(x, x0 + 1, x1 - 1)
+            if rnd.random() < .6 + .4 * w:
+                dot(half, x, top, BLOOD_DEEP if rnd.random() < .45 else BLOOD_WET)
+            for r in (1, 2):
+                if rnd.random() < (.3 + .6 * w) / r:
+                    dot(half, x, top + r, dark if rnd.random() < .45 * w else bruise)
+    # The collar's lip: the back edge of the top of the body and of the coat, soaked heaviest in the middle.
+    for x0, x1, edge in ((40, 56, 32), (138, 155, 56)):
+        for x in range(x0 + 1, x1 - 1):
+            w = heavy(x, x0 + 1, x1 - 1)
+            if rnd.random() < .5 + .5 * w:
+                dot(half, x, edge, BLOOD_WET if rnd.random() < .6 else BLOOD_DEEP)
+            if rnd.random() < .45 * w:
+                dot(half, x, edge + 1, BLOOD_DRY)
+    return half.resize((512, 256), Image.NEAREST)
+
+
 def spatter(level):
     # Over a player's own skin (64 by 64), on its outer layer: the shirt's front (u 20 to 28, v 36 to 48), and the sleeves of both
     # arms (the right: outside 40-43, front 44-46, fist 48-49; the left: front 52-54, outside 56-58, fist 56-57), so that it lies on
@@ -5104,6 +5158,17 @@ def main():
     wd = images['entity/the_list/wound.png']
     assert wd.getpixel((301, 141))[3] > 0 and wd.getpixel((104, 90))[3] > 0 and wd.getpixel((10, 10))[3] == 0
     assert all(275 <= x <= 310 and 131 <= y <= 199 or 80 <= x < 112 and 80 <= y < 128 for x in range(512) for y in range(256) if wd.getpixel((x, y))[3])
+    # 0.4.711: the neck's mark is on the nape and the collar behind, and nowhere else.
+    nk = images['entity/the_list/neck.png']
+    def inked(x0, x1, y0, y1):
+        return sum(nk.getpixel((x, y))[3] > 0 for x in range(x0, x1) for y in range(y0, y1))
+    assert inked(96, 128, 56, 64) >= 50 and inked(96, 128, 40, 56) >= 20 and inked(224, 256, 40, 64) >= 20
+    assert inked(128, 160, 80, 86) >= 40 and inked(330, 364, 132, 138) >= 40 and inked(80, 112, 64, 68) >= 12 and inked(276, 310, 112, 116) >= 12
+    # Head down over the row, the blood runs toward the head: nothing below the collar's bruise on the back.
+    assert inked(128, 160, 86, 128) == 0 and inked(330, 364, 138, 200) == 0
+    assert all((96 <= x < 128 or 224 <= x < 256) and 40 <= y < 64 or 128 <= x < 160 and 80 <= y < 86 or 330 <= x < 364 and 132 <= y < 138
+               or 80 <= x < 112 and 64 <= y < 68 or 276 <= x < 310 and 112 <= y < 116
+               for x in range(512) for y in range(256) if nk.getpixel((x, y))[3])
     for name in ('sack_blood_1', 'sack_blood_2', 'sack_blood_3', 'sack_dirt', 'sack_torn'):
         assert all(images[f'entity/the_list/{name}.png'].getpixel((8 + x, 8 + y))[3] == 0 for x, y in EYEHOLES), name
     plain = sum(images['entity/the_list/sack.png'].getpixel((x, y))[3] == 0 for x in range(8, 24) for y in range(8, 16))
