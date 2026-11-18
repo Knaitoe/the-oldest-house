@@ -91,7 +91,7 @@ public final class TheListHunt {
         UP[TheListPeople.WES]=new Vec3(-136.5,0,-60.5);
         WAYS[TheListPeople.WES]=new Step[][]{
             {w(-129.5,0,-63.5),w(-129.5,0,-93.5),w(-124.5,0,-97.5),open(FIELD_DOOR,-124.5,0,-98.6),w(-124.5,0,-101.5),shut(FIELD_DOOR,-122.5,0,-103.5),
-                w(-121.5,0,-105.5),w(-120.5,0,-105.5),w(-118.5,0,-104.5),w(-114.5,0,-104.5),hide(-114.5,0,-106.5,Direction.WEST)},
+                w(-121.5,0,-105.5),w(-120.5,0,-105.5),w(-118.5,0,-104.5),w(-114.5,0,-104.5),hide(-114.5,0,-106.5,Direction.EAST)},
             {w(-114.5,0,-104.5),w(-118.5,0,-104.5),w(-120.5,0,-105.5),w(-121.5,0,-105.5),w(-121.5,0,-103.5),hide(-123.5,0,-103.5,Direction.WEST)}};
         UP[TheListPeople.MEL]=new Vec3(-152.5,3.5,-60.5);
         WAYS[TheListPeople.MEL]=new Step[][]{

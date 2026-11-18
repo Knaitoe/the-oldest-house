@@ -29,7 +29,7 @@ Deek and Wes sit on the bench by the field, Mel and Lesley high on the home stan
 | Name | First place | Second place |
 | --- | --- | --- |
 | Deek | Across the field and through the field house's back door, through the locker room to the far end of the showers. | Back through the inner wall to the far end of the locker room, between the benches and the lockers. |
-| Wes | The same door, then into the coaches' office, beside the desk. | Back out to the locker room, against the inner wall. |
+| Wes | The same door, then into the coaches' office, his back to the desk. | Back out to the locker room, against the inner wall. |
 | Mel | Down off the stands and under them at the north end. | Along under the stands to the south end. |
 | Lesley | Along the top row into the press box, bolting its door, to the far end past the tables. | Back out of the press box, down to the sidewalk and round under the south end of the stands. |
 | Shannon | East along Main Street, round to the drive-in stand's side door, and in. | Back out of the stand and round behind it. |
@@ -99,8 +99,9 @@ Unchanged. The hunt locks nothing; the plan's lock while the reader has hold of 
 - **`TheListBody`**: `felled`, the body put down by one of the five, knocked back, with their cue; the race of a hidden name's heart;
   a bolted steel door struck five times (`STEEL_STRIKES`).
 - **`TheListCommands`**: `/ghosthouse test the_list hunt` and `hunt off`; the status line names each runner's state.
-- **Client** (`LiteraryRenderers.hunted`): running, the body leans forward and the arms swing wider; hiding, crouched with the arms
-  drawn in round the knees and the head down, breathing; cowering, the arms up over the head.
+- **Client** (`LiteraryRenderers.hunted`): running, the body leans forward and the arms swing wider; hiding, sat on the floor with the
+  knees up, the arms round them and the head down, breathing (`CastModel.low`); cowering, down on the heels, bent over, the arms up over
+  the head.
 - **Sound** (`tools/generate_the_list_audio.py`): a scream, synthesized from a rising and falling voice with breath, subtitled
   "Someone screams".
 
@@ -126,6 +127,16 @@ Unchanged. The hunt locks nothing; the plan's lock while the reader has hold of 
 `TheListTests.theTownsPeopleAtTheirPlaces` and `nightOneTheSeedHouse` failed in run 1730 (aac28a42) in the full suite, though the
 list's own job passed: the field, the pasture and the gin had been unloaded under them by the cases before. Each now holds the ground
 round the places it uses and waits for it to load, and so does `theHunt`.
+
+## Seen in the frames
+
+Thirteen frames at eye level were looked at after this was pushed: the run across the field from three places, each first hiding place,
+the field house's bolted door from outside, Deek cowering from the front and the side, and Shannon in the drive-in stand.
+
+- Hidden and cornered, they read as standing. The game's own crouch only bends the back a little, and from the front Mel under the stands
+  and Deek in the locker room were at full height. Hidden, they sit on the floor now with the knees drawn up, the arms round them and the
+  head down; cornered, they are down on their heels, bent over, with the arms up over the head.
+- Wes faced the coaches' desk from beside it and his head went into it. He sits with his back to it now.
 
 ## Every new line
 
