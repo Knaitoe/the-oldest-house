@@ -392,6 +392,55 @@ public final class PlaceForYouTests {
     @AfterBatch(batch="place_back") public static void backDone(ServerLevel l){close();}
 
     /**
+     * 0.4.691, the older pictures (N6C): at the sink, the one the reader actually met asks them up (here Alex: nobody under the eaves, and
+     * the reader talked to Mara first). The reader's picture is copied onto the landing wall among the household's older photographs.
+     * On the landing Alex shows them all, tells the claimed lake and then what happened (supper, tonight), and takes one of five answers.
+     * Taken down, the picture is carried and Alex loses the sentence and starts another; hung back, the claim comes back; down again, it
+     * is gone again; laid in the back room's box, it stays gone. The account says so.
+     */
+    @GameTest(template="empty",batch="place_older",timeoutTicks=4000)
+    public static void theOlderPictures(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_older",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);var own=f.own(p,P);own.putBoolean("RoomDeclined",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);at(f,p,-4.5,0,-18.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"alex")!=null,"Alex in the house"))
+            .thenExecute(()->{
+                h.assertFalse(l.getBlockState(b.offset(PlaceForYouSite.PORTRAIT)).is(PlaceForYouRegistry.PORTRAIT_BLOCK.get()),"no picture of the reader on the landing yet");
+                for(var at:java.util.List.of(PlaceForYouSite.OLDER_A,PlaceForYouSite.OLDER_B,PlaceForYouSite.OLDER_C))
+                    h.assertTrue(PlaceForYouBlock.is(l.getBlockState(b.offset(at)),PlaceForYouBlock.Kind.OLDER),"an older picture on the landing at "+at);
+                talk(f,p,"alex");h.assertTrue(Talk.waiting(p,"older_ask"),"Alex asks the reader up: "+Talk.key(p));
+                say(h,p,"Show me.");
+                var own=f.own(p,P);
+                h.assertTrue(own.getInt("OlderStage")==1&&own.getString("OlderGuide").equals("Alex")&&PlaceForYouSite.portraitUp(l,b),"asked up, and the reader's picture on the wall: "+own.getInt("OlderStage")+" "+own.getString("OlderGuide"));
+                at(f,p,-1.5,PlaceForYouSite.UP,-21.5,0,0);})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"older"),"the pictures shown on the landing: "+Talk.key(p)+" "+f.own(p,P).getInt("OlderStage")))
+            .thenExecute(()->{
+                h.assertTrue(Talk.lines(p).contains("Alex: And that's us. At the lake, the summer we went every weekend. You had the end of the dock and wouldn't give it up."),"the claim: "+Talk.lines(p));
+                h.assertTrue(Talk.lines(p).contains("Alex: That isn't right. I met you tonight, at the table. That's the part that happened.")
+                        &&Talk.lines(p).contains("Alex: I liked sitting across from you. That part happened. I don't know where she got the rest."),"what happened, and the rest: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==5,"five answers: "+Talk.replies(p));
+                say(h,p,"What do you want tomorrow?");
+                var own=f.own(p,P);h.assertTrue(own.getInt("OlderStage")==3&&own.getString("OlderSaid").equals("tomorrow"),"answered");
+                h.assertTrue(click(f,p,PlaceForYouSite.PORTRAIT)&&PlaceForYou.holding(p)==PlaceForYouRegistry.PORTRAIT&&!PlaceForYouSite.portraitUp(l,b),"the picture taken down");
+                h.assertTrue(Talk.waiting(p,"older_falter")&&Talk.lines(p).contains("Alex: You always had the end of the dock, with your feet in the—")
+                        &&Talk.lines(p).contains("Alex: I don't know where you like to sit. I'd like to find out."),"the sentence lost, a new one begun: "+Talk.lines(p));
+                say(h,p,"Go on.");
+                h.assertTrue(PlaceForYouSite.storeDoorOpen(l,b),"the back room open");
+                h.assertTrue(click(f,p,PlaceForYouSite.PORTRAIT)&&PlaceForYouSite.portraitUp(l,b)&&PlaceForYou.holding(p)==0&&f.own(p,P).getString("Portrait").equals("rehung"),"hung back on its nail");
+                h.assertTrue(click(f,p,PlaceForYouSite.PORTRAIT)&&!PlaceForYouSite.portraitUp(l,b)&&Talk.lines(p).contains("Alex: No. Gone again."),"down again, and the claim gone again: "+Talk.lines(p));
+                say(h,p,"Go on.");
+                at(f,p,-5.5,PlaceForYouSite.UP,-23.5,180,30);
+                h.assertTrue(click(f,p,PlaceForYouSite.PHOTO_BOX)&&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.PHOTO_BOX)))==1&&PlaceForYou.holding(p)==0,"laid in the box");
+                var done=f.own(p,P);h.assertTrue(done.getInt("OlderStage")==5&&done.getString("Portrait").equals("boxed"),"boxed, for good");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),done);
+                for(var said:java.util.List.of("Alex took me up to the pictures on the landing","said it was the two of us at the lake","What happened was supper, that night.",
+                        "To wake up somewhere he hadn't fallen asleep.","with the ones nobody hangs"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_older") public static void olderDone(ServerLevel l){close();}
+
+    /**
      * 0.4.690: the quiet agreed, then broken: asked for the key, the reader tells Mara what it is for before the bag is out. The key is
      * in the drawer with the tea towels; it opens the door with the cupboard still standing there, and the door stays open; the gate;
      * the bag out; Kit answers what was done, and the account says so.

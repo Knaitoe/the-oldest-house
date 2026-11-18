@@ -137,7 +137,9 @@ public final class PlaceForYou {
         if(ch==SINK){m.put("Mara",stand(5.5,-20.5,180));if(own.getBoolean("ChairTaken"))m.put("Kit",stand(1.5,-22.5,0));
             // 0.4.689: upstairs with the reader, by the washing, then at her chest of drawers.
             int room=own.getInt("RoomStage");if(room>=1&&room<=2)m.put("Mara",new Mark(new Vec3(-5.5,PlaceForYouSite.UP,-15.5),0,true));
-            else if(room==3)m.put("Mara",new Mark(new Vec3(-3.6,PlaceForYouSite.UP,-19.5),90,true));}
+            else if(room==3)m.put("Mara",new Mark(new Vec3(-3.6,PlaceForYouSite.UP,-19.5),90,true));
+            // 0.4.691: the guide on the landing while the older pictures are shown.
+            var older=PlaceForYouOlder.mark(own);if(older!=null)m.put(own.getString("OlderGuide"),older);}
         if(ch>=DINNER&&ch<=ROAD){
             if(!own.getBoolean("SpoonTaken")&&ch==DINNER)m.put("Mara",stand(5.5,-18.5,0));
             if(own.getBoolean("ChairTaken"))m.put("Kit",stand(8.5,-14.5,90));
@@ -286,8 +288,10 @@ public final class PlaceForYou {
             case SUPPER->supper(l,h,p,own,r);
             case BATHROOM->bathroom(l,h,p,own,r);
             case BAG->bag(l,h,p,own,r);
-            case SINK->{if(h.sinkAt<0)h.sinkAt=(int)h.tick;int room=own.getInt("RoomStage");
+            case SINK->{if(h.sinkAt<0)h.sinkAt=(int)h.tick;int room=own.getInt("RoomStage");int older=own.getInt("OlderStage");
+                if(older>=1&&older<=3)PlaceForYouOlder.tick(l,h,p,own,r);
                 if(room>=1&&room<=3)PlaceForYouRoom.tick(l,h,p,own,r);
+                else if(older>=1&&older<=2){}
                 else if(h.tick-h.sinkAt>1800&&!Talk.waiting(p)){own.putInt("Chapter",DINNER);save(p,own);startDinner(l,h,p);}}
             case DINNER->dinner(l,h,p,own,r);
             case OPEN->open(l,h,p,own,r);
@@ -299,7 +303,7 @@ public final class PlaceForYou {
             default->{}
         }
         // 0.4.690: the back passage.
-        PlaceForYouBack.tick(l,h,p,own(p),r);
+        PlaceForYouBack.tick(l,h,p,own(p),r);PlaceForYouOlder.after(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -625,7 +629,7 @@ public final class PlaceForYou {
                 else if(own.getString("Activity").isEmpty()){Talk.begin(p,"offer_"+who,who);offerActivity(p,h,who);}
                 else above(h,a,switch(who){case "Mara"->"Eat something.";case "Kit"->"Don't mind me.";case "Alex"->"Still here.";default->"Mm?";});}
             case BAG->{if(own.getInt("BagStage")==2&&!own.getBoolean("BagOpened")){edit(p,o->o.putBoolean("BagOpened",true));bagExchange(p,h,own);}else above(h,a,who.equals("Kit")?"It's my bag.":"Not now.");}
-            case SINK->{if(PlaceForYouRoom.talk(p,h,who,a)||PlaceForYouBack.talk(p,h,who,a))return;
+            case SINK->{if(PlaceForYouRoom.talk(p,h,who,a)||PlaceForYouBack.talk(p,h,who,a)||PlaceForYouOlder.talk(p,h,who,a))return;
                 // 0.4.689: upstairs first, if the reader will; the sink is still there for one who would rather talk there.
                 if(who.equals("Mara")){if(own.getInt("RoomStage")==0&&!own.getBoolean("RoomDeclined"))PlaceForYouRoom.ask(p,h);else sink(p,h);}
                 else above(h,a,who.equals("Kit")?"She'll be at that sink a while.":"Go and talk to her.");}
@@ -658,6 +662,8 @@ public final class PlaceForYou {
         // 0.4.689: Mara's door, open while she has the reader upstairs.
         int room=own.getInt("RoomStage");
         if((rel.equals(PlaceForYouRoom.DOOR)||rel.equals(PlaceForYouRoom.DOOR.above()))&&room>=1&&room<=3){cue(p,"Mara's room.");return true;}
+        // 0.4.691: the older pictures, the copied one, the box and the back room's door.
+        if(PlaceForYouOlder.click(p,b,rel,held))return true;
         if(PlaceForYouSite.SHUT_DOORS.stream().anyMatch(d->d.equals(rel)||d.above().equals(rel))){cue(p,"Shut. Not tonight.");return true;}
         if(kind==PlaceForYouBlock.Kind.BASKET)return PlaceForYouRoom.basket(p,h);
         if(kind==PlaceForYouBlock.Kind.DRESSER)return PlaceForYouRoom.dresser(p,h);

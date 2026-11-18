@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "facing=north,hung=false": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=north,hung=true": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=east,hung=false": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=east,hung=true": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=south,hung=false": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=south,hung=true": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=west,hung=false": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    },
+    "facing=west,hung=true": {
+      "model": "the_oldest_house:block/place/portrait_nail"
+    }
+  }
+}

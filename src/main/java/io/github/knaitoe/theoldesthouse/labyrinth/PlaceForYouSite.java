@@ -60,6 +60,9 @@ public final class PlaceForYouSite {
     // ------------------------------------------------------------------------------------------------ upstairs, shut in this slice
     /** 0.4.689: in Mara's room, the washing at the foot of the bed and her chest of drawers against the back wall; the bed's head is to the front wall, a bedside table beside it and a lamp by the armchair. */
     public static final BlockPos BASKET=new BlockPos(-7,UP,-15),DRESSER=new BlockPos(-5,UP,-20);
+    /** 0.4.691: the older pictures down the landing's west wall, the reader's copied in among them, and the box in the back room. */
+    public static final BlockPos OLDER_A=new BlockPos(-2,UP+1,-18),OLDER_B=new BlockPos(-2,UP+1,-19),PORTRAIT=new BlockPos(-2,UP+1,-20),
+        OLDER_C=new BlockPos(-2,UP+1,-21),PHOTO_BOX=new BlockPos(-6,UP,-25);
     /**
      * 0.4.690: the back passage. The cupboard in front of the back door's catch and where it is shoved to; the step stool's corner;
      * the cell inside the back door where the wedge or the stool holds it; the back gate in the yard's back fence; where Kit's bag is set
@@ -155,7 +158,8 @@ public final class PlaceForYouSite {
         set(l,b,6,UP,-14,Blocks.LIGHT_BLUE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.FOOT));
         set(l,b,6,UP,-15,Blocks.LIGHT_BLUE_BED.defaultBlockState().setValue(BedBlock.FACING,Direction.NORTH).setValue(BedBlock.PART,BedPart.HEAD));
         set(l,b,8,UP,-19,furniture(HouseholdFurnitureBlock.Kind.BEDSIDE_TABLE,Direction.WEST));
-        for(var at:new int[][]{{5,-25},{6,-25},{7,-26},{-6,-25},{-7,-26}})set(l,b,at[0],UP,at[1],barrett(BarrettHomeBlock.Kind.BOXES,Direction.SOUTH,false));
+        for(var at:new int[][]{{5,-25},{6,-25},{7,-26},{-7,-26}})set(l,b,at[0],UP,at[1],barrett(BarrettHomeBlock.Kind.BOXES,Direction.SOUTH,false));
+        set(l,b,OLDER_A,fit(OLDER,Direction.EAST,0));set(l,b,OLDER_B,fit(OLDER,Direction.EAST,1));set(l,b,OLDER_C,fit(OLDER,Direction.EAST,2));photoBox(l,b,false);
         set(l,b,0,UP+3,-24,barrett(BarrettHomeBlock.Kind.CEILING_LIGHT,Direction.NORTH,true));
         // The vestibule: the coat hooks, the hall glass, the hall chair, two lights down the hall.
         set(l,b,HOOKS,fit(PlaceForYouBlock.Kind.HOOKS,Direction.WEST,0));glass(l,b,0);
@@ -233,6 +237,16 @@ public final class PlaceForYouSite {
     /** 0.4.689: the laundry basket full (0), half folded (1) or empty (2); the top drawer shut or out; Mara's door shut or open. */
     public static void basket(ServerLevel l,BlockPos b,int stage){set(l,b,BASKET,fit(PlaceForYouBlock.Kind.BASKET,Direction.SOUTH,stage));}
     public static void dresser(ServerLevel l,BlockPos b,boolean open){set(l,b,DRESSER,fit(PlaceForYouBlock.Kind.DRESSER,Direction.SOUTH,open?1:0));}
+    /** 0.4.691: the reader's picture on the landing wall, hung or its nail alone, from their own kitchen drawing; or nothing there. */
+    public static void portrait(ServerLevel l,BlockPos b,CompoundTag drawing,boolean hung){
+        var at=b.offset(PORTRAIT);BuildBlocks.set(l,at,PlaceForYouRegistry.PORTRAIT_BLOCK.get().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING,Direction.EAST).setValue(PlaceForYouPortrait.HUNG,hung),F);
+        if(l.getBlockEntity(at) instanceof PlaceForYouPortrait.Portrait frame)frame.setRead(drawing.isEmpty()?HouseReadKitchen.blank():drawing.copy());
+    }
+    public static void unhang(ServerLevel l,BlockPos b){set(l,b,PORTRAIT,Blocks.AIR.defaultBlockState());}
+    public static boolean portraitUp(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(PORTRAIT));return s.is(PlaceForYouRegistry.PORTRAIT_BLOCK.get())&&s.getValue(PlaceForYouPortrait.HUNG);}
+    public static void photoBox(ServerLevel l,BlockPos b,boolean in){set(l,b,PHOTO_BOX,fit(PlaceForYouBlock.Kind.PHOTO_BOX,Direction.SOUTH,in?1:0));}
+    public static void storeDoor(ServerLevel l,BlockPos b,boolean open){door(l,b,SHUT_DOORS.get(3),Blocks.OAK_DOOR,Direction.WEST,open);}
+    public static boolean storeDoorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(SHUT_DOORS.get(3)));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     public static void maraDoor(ServerLevel l,BlockPos b,boolean open){door(l,b,SHUT_DOORS.get(0),Blocks.OAK_DOOR,Direction.WEST,open);}
     public static boolean maraDoorOpen(ServerLevel l,BlockPos b){var s=l.getBlockState(b.offset(SHUT_DOORS.get(0)));return s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.OPEN);}
     public static boolean cardThere(ServerLevel l,BlockPos b){return PlaceForYouBlock.is(l.getBlockState(b.offset(CARD)),PlaceForYouBlock.Kind.CARD);}
@@ -317,6 +331,7 @@ public final class PlaceForYouSite {
         table(l,b,true);card(l,b,true);bag(l,b,"none");kitsDoor(l,b,false);kitsChair(l,b,true);cups(l,b,false);kettle(l,b,true);spoon(l,b,false);
         kitchenLight(l,b,true);propped(l,b,false);routine(l,b,-1);picture(l,b,drawing,true);gate(l,b,false);
         pictures(l,b,false);readerChair(l,b,true);photo(l,b,true);basket(l,b,0);dresser(l,b,false);maraDoor(l,b,false);
+        unhang(l,b);photoBox(l,b,false);storeDoor(l,b,false);
         wedge(l,b,"none");stool(l,b,"corner");press(l,b,0);backDoor(l,b,false);backGate(l,b,false);sideWindow(l,b,false);
     }
 }

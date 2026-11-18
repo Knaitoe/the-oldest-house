@@ -643,9 +643,126 @@ def textures():
         'drawer_in': drawer_in(), 'porch_photo': porch_photo(),
         'press': press(False), 'press_top': press(True), 'press_side': press_side(), 'wedge_wood': wedge_wood(), 'stool': stool(),
         'stool_tread': stool_tread(), 'keys': keys(),
+        'older_0': older(0), 'older_1': older(1), 'older_2': older(2), 'photobox': photobox(), 'photobox_lid': photobox_lid(),
+        'photobox_in': photobox_in(), 'portrait_carried': portrait_carried(),
     }
     out.update({f'block/place/{k}.png': v for k, v in t.items()})
     return out
+
+
+# ------------------------------------------------------------------------------------------------ 0.4.691: the older pictures
+SEPIA = ['#efe6cf', '#ddcfaa', '#bfaa80', '#937b58', '#64503a', '#3c3024']
+
+
+def older(which):
+    """The household's older photographs, each in a dark frame with a white border round a sepia print (the print 8 by 10, the frame
+    12 by 14, as the model shows it): Mara's mother sitting on the shore with her shoes on, the lake behind her; the house before the
+    porch was closed in, a family nobody knows standing on it; Mara and Theo on a sled at the top of the hill, a tree below them."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 2, 1, 14, 15, '#3a2c22'); frame(im, 2, 1, 14, 15, '#281e16')
+    for x, y in ((3, 1), (4, 1), (2, 2), (13, 13), (12, 14)):
+        dot(im, x, y, '#4e3a2a')
+    fill(im, 3, 2, 13, 14, '#efe8d8'); dot(im, 3, 2, '#ddd4c2'); dot(im, 12, 13, '#ddd4c2')
+    s = SEPIA
+    if which == 0:
+        fill(im, 4, 3, 12, 5, s[0]); dot(im, 9, 3, s[1]); dot(im, 10, 3, s[1])   # sky, a cloud
+        fill(im, 4, 5, 12, 6, s[3]); dot(im, 5, 4, s[3]); dot(im, 10, 4, s[3])     # the far shore's trees
+        fill(im, 4, 6, 12, 11, s[1]); dot(im, 5, 7, s[0]); dot(im, 10, 9, s[0])    # the lake
+        fill(im, 4, 11, 12, 13, s[2]); dot(im, 4, 12, s[3])                        # the shore
+        fill(im, 6, 10, 9, 11, s[3])                                              # the rock she sits on
+        dot(im, 7, 6, s[5])                                                       # her head
+        fill(im, 7, 7, 8, 10, s[4]); dot(im, 8, 8, s[4])                          # her back, an arm to her knee
+        dot(im, 8, 9, s[4]); dot(im, 9, 9, s[4]); dot(im, 9, 10, s[4])            # her lap, her shin
+        dot(im, 9, 11, s[5]); dot(im, 10, 11, s[5])                               # her shoes
+    elif which == 1:
+        fill(im, 4, 3, 12, 13, s[0])
+        fill(im, 7, 4, 9, 5, s[4]); fill(im, 6, 5, 10, 6, s[4]); fill(im, 5, 6, 11, 7, s[4])  # the gable
+        fill(im, 5, 7, 11, 8, s[1]); dot(im, 6, 7, s[3]); dot(im, 9, 7, s[3])     # the upstairs wall, its windows
+        fill(im, 4, 8, 12, 9, s[3])                                               # the porch roof
+        fill(im, 5, 9, 11, 11, s[2])                                              # under the porch
+        for y in (9, 10):
+            dot(im, 4, y, s[4]); dot(im, 11, y, s[4])                             # the porch posts
+        for x in (6, 8, 9):
+            dot(im, x, 9, s[5]); dot(im, x, 10, s[4])                             # the family on the porch
+        dot(im, 7, 10, s[5])                                                      # and a child
+        fill(im, 4, 11, 12, 12, s[3]); fill(im, 4, 12, 12, 13, s[1]); dot(im, 7, 12, s[2]); dot(im, 8, 12, s[2])  # boards, yard, path
+    else:
+        fill(im, 4, 3, 12, 13, s[1])                                              # a winter sky
+        for x in range(4, 12):                                                    # the hill, flat at the top, then falling away
+            top = 8 if x < 7 else 8 + (x - 6)
+            if top < 13:
+                fill(im, x, top, x + 1, 13, s[0]); dot(im, x, top, s[2])
+        dot(im, 10, 8, s[4]); fill(im, 9, 9, 12, 11, s[4]); dot(im, 10, 11, s[5])  # a fir below them, its trunk
+        fill(im, 4, 7, 7, 8, s[4]); dot(im, 7, 6, s[4])                           # the sled, its front curled up
+        dot(im, 4, 4, s[5]); dot(im, 4, 5, s[3]); dot(im, 4, 6, s[3])             # the older one behind
+        dot(im, 6, 5, s[5]); dot(im, 6, 6, s[3]); dot(im, 5, 6, s[3])             # the younger in front
+    return im
+
+
+def photobox():
+    """The box's sides: a shoebox's cardboard, its corners worn, a label pencilled across the front."""
+    im = new(base='#b4966a', seed=2690, spread=4)
+    frame(im, 0, 0, 16, 16, '#8e744e')
+    fill(im, 4, 8, 12, 11, '#e6dcc4'); frame(im, 4, 8, 12, 11, '#c6b896')
+    for x in (5, 6, 8, 9, 10):
+        dot(im, x, 9, '#5a5048')
+    for x, y in ((0, 0), (15, 0), (0, 15), (15, 15), (1, 15)):
+        dot(im, x, y, '#6e5a3c')
+    return im
+
+
+def photobox_lid():
+    """The lid from above: cardboard, a string tied round it both ways and knotted at the middle."""
+    im = new(base='#bc9e70', seed=2691, spread=4)
+    frame(im, 0, 0, 16, 16, '#957a52')
+    fill(im, 7, 0, 8, 16, '#e4dccb'); fill(im, 0, 8, 16, 9, '#e4dccb')
+    dot(im, 7, 8, '#c8bea8'); dot(im, 6, 9, '#e4dccb'); dot(im, 8, 7, '#e4dccb')
+    return im
+
+
+def photobox_in():
+    """Open, from above: loose old prints in the bottom, and the reader's picture on top in its dark frame, a pencil figure on the page."""
+    im = new(base='#4e3c2a', seed=2692, spread=3)
+    frame(im, 3, 4, 13, 12, '#8e744e')
+    fill(im, 4, 5, 8, 9, SEPIA[1]); frame(im, 4, 5, 8, 9, '#efe8d8')
+    fill(im, 9, 7, 12, 11, SEPIA[2]); frame(im, 9, 7, 12, 11, '#efe8d8')
+    fill(im, 5, 6, 11, 11, '#3a2c22'); fill(im, 6, 7, 10, 10, '#f4f0e8')
+    dot(im, 8, 7, '#6a6660'); dot(im, 8, 8, '#6a6660'); dot(im, 7, 8, '#8a8680'); dot(im, 9, 8, '#8a8680'); dot(im, 8, 9, '#6a6660')
+    return im
+
+
+def portrait_carried():
+    """The reader's picture carried down: the dark frame, the white page, a pencil figure on it."""
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    fill(im, 3, 2, 13, 14, '#3a2c22'); frame(im, 3, 2, 13, 14, '#281e16')
+    fill(im, 4, 3, 12, 13, '#f4f0e8')
+    for x, y in ((7, 4), (8, 4), (6, 5), (9, 5), (7, 6), (8, 6)):
+        dot(im, x, y, '#6a6660')
+    for y in range(7, 10):
+        dot(im, 7, y, '#6a6660'); dot(im, 8, y, '#8a8680')
+    dot(im, 5, 8, '#6a6660'); dot(im, 6, 7, '#6a6660'); dot(im, 9, 7, '#6a6660'); dot(im, 10, 8, '#6a6660')
+    for y in range(10, 12):
+        dot(im, 6, y, '#6a6660'); dot(im, 9, y, '#6a6660')
+    return im
+
+
+def older_models():
+    m = {}
+    edge = {'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f', 'south': 'f'}
+    for i in range(3):
+        m[f'older_{i}'] = model([element([2, 1, 15], [14, 15, 16], {**edge, 'north': 'o'}, uv={'north': [2, 1, 14, 15]}),
+                                 element([7.5, 15, 15.3], [8.5, 15.9, 16], {'all': 'o'}, uv={f: [2, 1, 3, 2] for f in ('north', 'south', 'east', 'west', 'up', 'down')})], {'o': f'older_{i}', 'f': 'frame'}, 'frame')
+    body = {'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b', 'down': 'b'}
+    m['photo_box_0'] = model([element([3, 0, 4], [13, 4, 12], {**body, 'up': 'b'}),
+                              element([2.75, 3.5, 3.75], [13.25, 5, 12.25], {**body, 'up': 'l'}, uv={'up': [0, 0, 16, 16]})],
+                             {'b': 'photobox', 'l': 'photobox_lid'}, 'photobox')
+    m['photo_box_1'] = model([element([3, 0, 4], [13, 4, 12], {**body, 'up': 'i'}),
+                              element([2.5, 0, 12.5], [13.5, 1, 15.5], {'all': 'l'}, uv={'up': [0, 0, 16, 16]})],
+                             {'b': 'photobox', 'i': 'photobox_in', 'l': 'photobox_lid'}, 'photobox')
+    m['portrait_item'] = model([element([3, 2, 7.5], [13, 14, 8.5], {'north': 'p', 'south': 'p', 'east': 'f', 'west': 'f', 'up': 'f', 'down': 'f'},
+                                        uv={'north': [3, 2, 13, 14], 'south': [3, 2, 13, 14]})], {'p': 'portrait_carried', 'f': 'frame'}, 'frame')
+    m['portrait_nail'] = model([], {}, 'frame')
+    return m
 
 
 # ------------------------------------------------------------------------------------------------ models
@@ -726,18 +843,19 @@ def fitting_models():
         m[f'routine_{i}'] = model([element([2, 0, 2], [14, 0.25, 14], {'up': 'i'}, uv={'up': [0, 0, 16, 16]})], {'i': NS + f'item/read_routine_{i}'}, 'i')
     m.update(room_models())
     m.update(back_models())
+    m.update(older_models())
     return m
 
 
 KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'pictures', 'cupboard', 'routine', 'spoon', 'counter', 'stove', 'hooks', 'glass',
-         'basket', 'dresser', 'press', 'wedge', 'stool']
+         'basket', 'dresser', 'press', 'wedge', 'stool', 'older', 'photo_box']
 STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3,
-          'basket': 3, 'dresser': 2, 'press': 6, 'wedge': 2, 'stool': 2}
+          'basket': 3, 'dresser': 2, 'press': 6, 'wedge': 2, 'stool': 2, 'older': 3, 'photo_box': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16
 # 0.4.688: Theo's photograph, carried from the chest of drawers to the fridge.
 CARRIED = [('bag', 'bag_0'), ('spoon', 'spoon_0'), ('plate', 'plate_1'), ('cups', 'cups_0'), ('photo', 'photo_0'),
-           ('wedge', 'wedge_0'), ('stool', 'stool_0'), ('key', 'keys_0')]
+           ('wedge', 'wedge_0'), ('stool', 'stool_0'), ('key', 'keys_0'), ('portrait', 'portrait_item')]
 DISPLAY = {
     'gui': {'rotation': [30, 225, 0], 'translation': [0, 0, 0], 'scale': [0.625, 0.625, 0.625]},
     'ground': {'rotation': [0, 0, 0], 'translation': [0, 3, 0], 'scale': [0.25, 0.25, 0.25]},
@@ -749,7 +867,7 @@ DISPLAY = {
 }
 NAMES = {'pfy_fitting': 'Household Things', 'pfy_siding': 'Sage Clapboard', 'pfy_shingle': 'Roof Shingle', 'pfy_paper': 'Sprigged Wallpaper',
          'pfy_stripe': 'Striped Wallpaper', 'pfy_boards': 'Floorboards', 'pfy_lino': 'Kitchen Linoleum', 'pfy_porch': 'Porch Boards',
-         'pfy_tile': 'Bathroom Tile', 'pfy_trim': 'Cream Trim'}
+         'pfy_tile': 'Bathroom Tile', 'pfy_trim': 'Cream Trim', 'pfy_portrait': 'Your Picture'}
 ITEM_NAMES = {'item.the_oldest_house.pfy_carried': 'Something of the Household'}
 
 
@@ -770,6 +888,9 @@ def files():
                     v['y'] = y
                 variants[f'facing={facing},kind={kind},stage={stage}'] = v
     out['blockstates/pfy_fitting.json'] = {'variants': variants}
+    # 0.4.691: the copied picture is drawn by its block entity; the state names only a model to break into.
+    out['blockstates/pfy_portrait.json'] = {'variants': {f'facing={f},hung={h}': {'model': NS + 'block/place/portrait_nail'}
+                                                         for f in FACING_Y for h in ('false', 'true')}}
     for name, parent in CARRIED:
         out[f'models/item/pfy_carried_{name}.json'] = {'parent': NS + f'block/place/{parent}', 'display': DISPLAY}
     out['models/item/pfy_carried.json'] = {'parent': NS + 'item/pfy_carried_bag',

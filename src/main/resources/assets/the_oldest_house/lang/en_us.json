@@ -2141,5 +2141,6 @@
   "block.the_oldest_house.fallow_charred_log": "Charred Trunk",
   "subtitles.the_oldest_house.fallow.rig": "A diesel engine idles",
   "advancements.the_oldest_house.account.fallow.title": "Fallow",
-  "advancements.the_oldest_house.account.fallow.description": "A light came over the wheat and brought down a gas station."
+  "advancements.the_oldest_house.account.fallow.description": "A light came over the wheat and brought down a gas station.",
+  "block.the_oldest_house.pfy_portrait": "Your Picture"
 }
