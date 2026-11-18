@@ -513,21 +513,32 @@ public final class FinaleController {
     /**
      * The pages left at the reader's home (HomeBed), read when they are delivered; beside the reader if they have none, and then only
      * once they are in the Overworld: where they stand anywhere else is no place there. The chest stands in the first free cell that
-     * is on no neighbour's district (docs/NEIGHBOURS.md); with none, the pages are left there for the reader as they are.
+     * is on no neighbour's district (docs/NEIGHBOURS.md); with none, the pages are left there for the reader as they are: on the bed at
+     * home, and where a reader with no home stands only once they stand where pages can lie ({@link #pagesLie}); until then they wait.
      */
     public static boolean epilogue(ServerPlayer player,CompoundTag record){
-        ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);
+        ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);boolean own=home!=null;
         if(home==null){if(player.serverLevel()!=level)return false;home=player.blockPosition();}
-        level.getChunkAt(home);List<ItemStack> pages=epiloguePages(player,record);
+        level.getChunkAt(home);
         for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())&&!Neighbours.districtLand(level,candidate)){
             level.setBlock(candidate,Blocks.CHEST.defaultBlockState(),FLAGS);
             if(level.getBlockEntity(candidate) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest){
-                for(int i=0;i<pages.size();i++)chest.setItem(i,pages.get(i));chest.setChanged();return true;
+                List<ItemStack> pages=epiloguePages(player,record);for(int i=0;i<pages.size();i++)chest.setItem(i,pages.get(i));chest.setChanged();return true;
             }
         }
+        if(!own&&!pagesLie(level,home))return false;
+        List<ItemStack> pages=epiloguePages(player,record);
         Vec3 spot=io.github.knaitoe.theoldesthouse.opening.Doorsteps.restingPoint(level,home);
         for(int i=0;i<pages.size();i++)level.addFreshEntity(io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity.create(level,pages.get(i),spot.add(.14*i-.07*(pages.size()-1),0,0),player.getUUID()));
         return true;
+    }
+    /**
+     * Whether pages left at {@code at} lie there until the reader takes them: nothing flowing there, and solid ground under them. Never
+     * in water, nor over lava, a cactus or a drop, where a reader with no home may be swimming, riding, gliding or falling when the
+     * pages are due, and where they could be lost before they are taken.
+     */
+    private static boolean pagesLie(ServerLevel level,BlockPos at){
+        return level.getFluidState(at).isEmpty()&&level.getBlockState(at.below()).isSolidRender(level,at.below());
     }
     private static List<ItemStack> epiloguePages(ServerPlayer player,CompoundTag record){
         if(FinaleProgress.phase(record)==FinaleProgress.Phase.WITNESSED)return List.of(WitnessEnding.epilogue(player));

@@ -30,11 +30,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.vehicle.MinecartChest;
+import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -173,14 +177,16 @@ public final class NeighbourLandTests {
                             && !HouseSpawnManager.isNaturalGround(Blocks.OAK_FENCE.defaultBlockState()),
                     "tilled ground, a path, cobblestone and a fence are things somebody made");
             h.assertTrue(Stream.of(Blocks.LILY_PAD, Blocks.MANGROVE_ROOTS, Blocks.CAVE_VINES, Blocks.CAVE_VINES_PLANT, Blocks.BIG_DRIPLEAF,
-                                    Blocks.BIG_DRIPLEAF_STEM, Blocks.SMALL_DRIPLEAF, Blocks.SMALL_AMETHYST_BUD, Blocks.AMETHYST_CLUSTER, Blocks.BONE_BLOCK,
-                                    Blocks.KELP_PLANT, Blocks.SEA_PICKLE, Blocks.BRAIN_CORAL_BLOCK, Blocks.BEE_NEST)
+                                    Blocks.BIG_DRIPLEAF_STEM, Blocks.SMALL_DRIPLEAF, Blocks.SMALL_AMETHYST_BUD, Blocks.AMETHYST_CLUSTER,
+                                    Blocks.KELP_PLANT, Blocks.SEA_PICKLE, Blocks.BRAIN_CORAL_BLOCK)
                             .allMatch(block -> HouseSpawnManager.isNaturalGround(block.defaultBlockState())),
-                    "what the world grows or leaves in swamps, lush caves, geodes, the sea and the ground is the ground, and so is a bees' nest");
-            h.assertTrue(!HouseSpawnManager.isNaturalGround(Blocks.BEEHIVE.defaultBlockState())
+                    "what the world grows or leaves in swamps, lush caves, geodes and the sea is the ground");
+            h.assertTrue(Stream.of(Blocks.BEEHIVE, Blocks.BONE_BLOCK, Blocks.MOSSY_COBBLESTONE, Blocks.BEE_NEST)
+                            .noneMatch(block -> HouseSpawnManager.isNaturalGround(block.defaultBlockState()))
                             && !HouseSpawnManager.isNaturalGrowth(Blocks.BEE_NEST.defaultBlockState())
                             && !HouseSpawnManager.isNaturalGrowth(Blocks.LILY_PAD.defaultBlockState()),
-                    "a hive somebody made is built, and what is only not built is not cleared for the House either");
+                    "a hive somebody made is built; fossil bone, a forest rock's stone and a bees' nest are the ground only where the world leaves"
+                            + " them; and what is only not built is not cleared for the House either");
             h.assertTrue(HouseSpawnManager.isNaturalGround(Blocks.GRASS_BLOCK.defaultBlockState())
                             && HouseSpawnManager.isNaturalGround(Blocks.DIRT.defaultBlockState())
                             && HouseSpawnManager.isNaturalGround(Blocks.STONE.defaultBlockState())
@@ -206,6 +212,19 @@ public final class NeighbourLandTests {
                 level.setBlock(tilled, ground, Block.UPDATE_CLIENTS);
             }
 
+            // In the ground below the origin, where the floor buries it: a forest rock's mossy cobblestone is the ground; fossil bone,
+            // which the world leaves only deeper, and a bees' nest set in the ground are somebody's.
+            try {
+                level.setBlock(tilled, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, first), "a forest rock's stone below the origin is the ground");
+                for (Block built : new Block[]{Blocks.BONE_BLOCK, Blocks.BEE_NEST}) {
+                    level.setBlock(tilled, built.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, first), built + " set in the ground on the lot is something built");
+                }
+            } finally {
+                level.setBlock(tilled, ground, Block.UPDATE_CLIENTS);
+            }
+
             // A fence where the steps come down, in front of the cleared ground: the demolition reaches it, so the search does.
             BlockPos front = first.offset(HouseLayout.AXIS_X, 0, -6);
             h.assertTrue(front.getZ() - first.getZ() < HouseLayout.CLEAR_MIN_Z && lot(first).isInside(front), "the fence stands on the lot, in front of the cleared ground");
@@ -215,6 +234,20 @@ public final class NeighbourLandTests {
                 h.assertTrue(moved.origin() != null && !moved.origin().equals(first) && !lot(moved.origin()).isInside(front),
                         "a fence in front blocks the site, and the lot chosen instead leaves it be: " + moved.describe());
             } finally {
+                level.setBlock(front, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+            }
+
+            // In front, level with the origin, mossy cobblestone may be somebody's; a bees' nest hanging over the open ground is the
+            // bees' own, as trees carry them.
+            BlockState overFront = level.getBlockState(front.above());
+            try {
+                level.setBlock(front, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, first), "mossy cobblestone in front, level with the origin, is something built");
+                level.setBlock(front, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(front.above(), Blocks.BEE_NEST.defaultBlockState(), Block.UPDATE_CLIENTS);
+                h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, first), "a bees' nest hanging over the ground in front is the ground");
+            } finally {
+                level.setBlock(front.above(), overFront, Block.UPDATE_CLIENTS);
                 level.setBlock(front, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
             }
 
@@ -260,6 +293,8 @@ public final class NeighbourLandTests {
                         "with " + built + " at its foot the dip is as deep as the open pass takes, and nothing stands in the House's way");
                 h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, origin), built + " at the foot of the dip is something built under the lot");
             }
+            level.setBlock(foot, Blocks.BONE_BLOCK.defaultBlockState(), Block.UPDATE_CLIENTS);
+            h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "fossil bone at the foot of the dip, in the ground under the lot, is the ground");
             level.setBlock(foot, Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
             fill(level, dip.below(5), dip.below(), Blocks.STONE);
 
@@ -285,6 +320,26 @@ public final class NeighbourLandTests {
             h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "a fence on the floor of a cave under the cellar is something built under the lot");
             level.setBlock(caveFloor, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
             fill(level, cellar.below(8), cellar.below(6), Blocks.STONE);
+
+            // The deepest a run goes: from a row under the cellar's floor down to LOWEST_SUPPORT_Y, through a shaft of air. A fence
+            // on the row under that is what the run stops on and buries; a fence a row lower still is out of the House's reach.
+            BlockPos shaftTop = cellar.offset(0, HouseLayout.MIN_Y - 1, 0);
+            BlockPos stop = cellar.offset(0, HouseLayout.LOWEST_SUPPORT_Y - 1, 0);
+            h.assertTrue(stop.getY() - origin.getY() == -19, "a run under the cellar stops on the nineteenth row below the origin");
+            Map<BlockPos, BlockState> shaft = new HashMap<>();
+            for (BlockPos at : BlockPos.betweenClosed(stop.below(), shaftTop)) {
+                shaft.put(at.immutable(), level.getBlockState(at));
+            }
+            try {
+                fill(level, stop.above(), shaftTop, Blocks.AIR);
+                level.setBlock(stop, Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                h.assertTrue(!HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "a fence where the deepest run stops is something built under the lot");
+                level.setBlock(stop, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(stop.below(), Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                h.assertTrue(HouseSpawnManager.nothingBuiltOnTheLot(level, origin), "a fence a row under it is out of the House's reach");
+            } finally {
+                shaft.forEach((at, was) -> level.setBlock(at, was, Block.UPDATE_CLIENTS));
+            }
 
             // A fence sealed in the ground under the floor course, where no run gets to: not the House's to bury, and the site stands.
             BlockPos sealed = origin.offset(6, -7, 6);
@@ -363,6 +418,11 @@ public final class NeighbourLandTests {
                     }
                 }
                 BlockPos gate = base.offset(4, 0, 2);
+                // The next pen's gate, nearer the cow than six blocks but not its own.
+                BlockPos nextPen = base.offset(4, 0, 9);
+                level.setBlock(nextPen.west(), Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_ALL);
+                level.setBlock(nextPen, Blocks.OAK_FENCE_GATE.defaultBlockState(), Block.UPDATE_ALL);
+                level.setBlock(nextPen.east(), Blocks.OAK_FENCE.defaultBlockState(), Block.UPDATE_ALL);
                 cow = EntityType.COW.create(level);
                 cow.moveTo(Vec3.atBottomCenterOf(base.offset(4, 0, 4)));
                 level.addFreshEntity(cow);
@@ -389,6 +449,7 @@ public final class NeighbourLandTests {
                 h.assertTrue(took && !cow.isAlive() && !level.getBlockState(gate).getValue(FenceGateBlock.OPEN)
                                 && LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND) == 1,
                         "off the district she takes one in kind, and leaves shut a gate that stands on one");
+                h.assertTrue(!level.getBlockState(nextPen).getValue(FenceGateBlock.OPEN), "and opens no other pen's gate instead");
             } finally {
                 if (cow != null) {
                     cow.discard();
@@ -441,6 +502,8 @@ public final class NeighbourLandTests {
                 ChestBlockEntity nearest = chest(level, bed.offset(2, 0, 0));
                 ChestBlockEntity theirs = chest(level, bed.offset(5, 0, 0));
                 ChestBlockEntity onDistrict = chest(level, bed.offset(-3, 0, 0));
+                // Further off than the nearest, and where the visit has always looked first.
+                ChestBlockEntity firstFound = chest(level, bed.offset(6, 0, -5));
                 BlockPos districtCandle = bed.offset(-4, 0, 2);
                 BlockPos candle = bed.offset(3, 0, 3);
                 level.setBlock(districtCandle, Blocks.CANDLE.defaultBlockState().setValue(CandleBlock.LIT, true), Block.UPDATE_ALL);
@@ -453,13 +516,14 @@ public final class NeighbourLandTests {
                 district(level, bed.offset(-6, -1, -2), bed.offset(-3, 3, 3));
 
                 OwnLight.visit(level, p, bed, "Not yet.");
-                h.assertTrue(turnedRound(theirs) && asLeft(nearest) && asLeft(onDistrict),
+                h.assertTrue(turnedRound(theirs) && asLeft(nearest) && asLeft(onDistrict) && asLeft(firstFound),
                         "the chest turned round is the one the reader opened themselves, never the one on the district");
                 h.assertTrue(!level.getBlockState(candle).getValue(CandleBlock.LIT) && level.getBlockState(districtCandle).getValue(CandleBlock.LIT),
                         "the lights left burning are put out, except on the district");
 
                 OwnLight.visit(level, other, bed, "Not yet.");
-                h.assertTrue(turnedRound(nearest) && asLeft(onDistrict), "for a reader who opened none, the nearest chest off the district");
+                h.assertTrue(turnedRound(firstFound) && asLeft(nearest) && asLeft(onDistrict),
+                        "for a reader who opened none, the first chest found off the district, as it always was");
             } finally {
                 level.getEntitiesOfClass(ItemEntity.class, new AABB(base).inflate(24)).forEach(ItemEntity::discard);
                 NativeTestPlayers.remove(p);
@@ -473,6 +537,7 @@ public final class NeighbourLandTests {
         BlockPos base = new BlockPos(91900, 100, -91900);
         onGround(h, base, 40, level -> withFreshRecords(level, () -> {
             ServerPlayer p = NativeTestPlayers.survival(h, "tab_neighbour");
+            MinecartChest cart = null;
             try {
                 plot(level, base, 18);
                 // A double chest whose east half stands on a district, and a chest off it.
@@ -497,11 +562,36 @@ public final class NeighbourLandTests {
                         "a double chest half on a district collects nothing on the tab");
                 p.closeContainer();
 
+                // A cart on the district, opened by a reader standing off it: the cart is where it stands.
+                p.teleportTo(level, base.getX() + 10.5, base.getY(), base.getZ() + 9.5, 0, 0);
+                cart = EntityType.CHEST_MINECART.create(level);
+                cart.moveTo(Vec3.atBottomCenterOf(east.offset(2, 0, 2)));
+                level.addFreshEntity(cart);
+                h.assertTrue(Neighbours.districtLand(level, cart.blockPosition()) && !Neighbours.districtLand(level, p.blockPosition()),
+                        "the cart stands on the district, and the reader off it");
+                p.openMenu(cart);
+                h.assertTrue(HotelVignette.personal(d, p.getUUID()).getInt("Debt") == 1 && p.getInventory().countItem(Items.DIAMOND) == 1,
+                        "a cart on a district collects nothing on the tab");
+                p.closeContainer();
+
+                // An ender chest stands nowhere of its own: it is where the reader stands, here on the district.
+                p.teleportTo(level, east.getX() + 2.5, east.getY(), east.getZ() + 1.5, 0, 0);
+                h.assertTrue(Neighbours.districtLand(level, p.blockPosition()), "the reader stands on the district");
+                p.openMenu(new SimpleMenuProvider((id, inventory, who) -> ChestMenu.threeRows(id, inventory, p.getEnderChestInventory()),
+                        Component.literal("Ender Chest")));
+                h.assertTrue(p.containerMenu instanceof ChestMenu
+                                && HotelVignette.personal(d, p.getUUID()).getInt("Debt") == 1 && p.getInventory().countItem(Items.DIAMOND) == 1,
+                        "an ender chest opened on a district collects nothing on the tab");
+                p.closeContainer();
+
                 p.openMenu((ChestBlockEntity) level.getBlockEntity(single));
                 h.assertTrue(HotelVignette.personal(d, p.getUUID()).getInt("Debt") == 0 && p.getInventory().countItem(Items.DIAMOND) == 0,
                         "a chest off the district collects one place on the tab, as it always has");
                 p.closeContainer();
             } finally {
+                if (cart != null) {
+                    cart.discard();
+                }
                 NativeTestPlayers.remove(p);
             }
         }));
@@ -534,6 +624,23 @@ public final class NeighbourLandTests {
                 h.assertTrue(delivered && !chest && pages.size() == 2, "with no free cell off the district the pages are left for the reader as they are: " + pages.size() + (chest ? ", and a chest" : ""));
                 pages.forEach(DeliveredItemEntity::discard);
 
+                // The district over the near half of the ring round the bed, where the first cells are: the chest stands in the first
+                // free cell off it, none on it, and nothing is left loose.
+                BoundingBox near = BoundingBox.fromCorners(bed.offset(-4, -1, -4), bed.offset(4, 3, -1));
+                Runnable half = Neighbours.installDistrictForTesting((l, pos) -> l == level && near.isInside(pos));
+                delivered = FinaleController.epilogue(p, record);
+                half.run();
+                List<BlockPos> chests = BlockPos.betweenClosedStream(bed.offset(-4, 0, -4), bed.offset(4, 2, 4))
+                        .filter(at -> level.getBlockState(at).is(Blocks.CHEST)).map(BlockPos::immutable).toList();
+                var loose = level.getEntitiesOfClass(DeliveredItemEntity.class, round, e -> e.isAlive() && p.getUUID().equals(e.getTarget()));
+                h.assertTrue(delivered && chests.equals(List.of(bed.offset(-4, 0, 0))) && loose.isEmpty(),
+                        "with the near half of the ring on a district the chest stands in the first free cell off it, and nothing is left loose: "
+                                + chests + ", " + loose.size() + " loose");
+                ChestBlockEntity left = (ChestBlockEntity) level.getBlockEntity(chests.get(0));
+                h.assertTrue(left.getItem(0).is(Items.WRITTEN_BOOK) && left.getItem(1).is(Items.WRITTEN_BOOK), "and the pages are in it");
+                left.clearContent();
+                level.setBlock(chests.get(0), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
+
                 // Sixty mornings: a crop on the district is left as it was, and nothing grows on it; one off it ripens.
                 BlockPos theirs = base.offset(2, 0, 10);
                 BlockPos mine = base.offset(10, 0, 10);
@@ -564,6 +671,56 @@ public final class NeighbourLandTests {
                 }
             } finally {
                 level.getEntitiesOfClass(ItemEntity.class, new AABB(base).inflate(24)).forEach(ItemEntity::discard);
+                NativeTestPlayers.remove(p);
+            }
+        });
+    }
+
+    @GameTest(template = "empty", batch = "neighbour_epilogue_homeless", timeoutTicks = 1200)
+    public static void theEndingsPagesWaitUntilAReaderWithNoHomeStandsWhereTheyCanLie(GameTestHelper h) {
+        BlockPos base = new BlockPos(92800, 100, -92800);
+        onGround(h, base, 40, level -> {
+            ServerPlayer p = NativeTestPlayers.survival(h, "epilogue_homeless");
+            BlockPos pool = base.offset(4, 0, 4);
+            BlockPos pit = base.offset(10, -1, 4);
+            try {
+                plot(level, base, 16);
+                h.assertTrue(HomeBed.of(p).isEmpty(), "the reader has no home");
+                CompoundTag record = new CompoundTag();
+                record.putString("Phase", FinaleProgress.Phase.ESCAPED.name());
+                // Every cell round them on a district, so no chest stands near them anywhere.
+                district(level, base.offset(-8, -8, -8), base.offset(24, 12, 24));
+                // A basin of water, a pit of lava in the floor, and the open air four rows up.
+                for (Direction side : Direction.Plane.HORIZONTAL) {
+                    level.setBlock(pool.relative(side), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                }
+                level.setBlock(pool, Blocks.WATER.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(pit.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(pit, Blocks.LAVA.defaultBlockState(), Block.UPDATE_CLIENTS);
+                AABB round = new AABB(base).inflate(24);
+                String[] where = {"swimming", "over lava", "in the air"};
+                BlockPos[] at = {pool, pit.above(), base.offset(4, 4, 10)};
+                for (int i = 0; i < at.length; i++) {
+                    p.teleportTo(level, at[i].getX() + .5, at[i].getY(), at[i].getZ() + .5, 0, 0);
+                    boolean delivered = FinaleController.epilogue(p, record);
+                    boolean chest = BlockPos.betweenClosedStream(at[i].offset(-4, 0, -4), at[i].offset(4, 2, 4)).anyMatch(c -> level.getBlockState(c).is(Blocks.CHEST));
+                    var pages = level.getEntitiesOfClass(DeliveredItemEntity.class, round, e -> e.isAlive() && p.getUUID().equals(e.getTarget()));
+                    h.assertTrue(p.blockPosition().equals(at[i]) && !delivered && !chest && pages.isEmpty(),
+                            "a reader with no home " + where[i] + " is left nothing, and the pages wait: " + pages.size() + (chest ? ", and a chest" : ""));
+                }
+
+                // On the stone, where pages lie: left at their feet.
+                BlockPos stand = base.offset(8, 0, 10);
+                p.teleportTo(level, stand.getX() + .5, stand.getY(), stand.getZ() + .5, 0, 0);
+                boolean delivered = FinaleController.epilogue(p, record);
+                boolean chest = BlockPos.betweenClosedStream(stand.offset(-4, 0, -4), stand.offset(4, 2, 4)).anyMatch(c -> level.getBlockState(c).is(Blocks.CHEST));
+                var pages = level.getEntitiesOfClass(DeliveredItemEntity.class, round, e -> e.isAlive() && p.getUUID().equals(e.getTarget()));
+                h.assertTrue(delivered && !chest && pages.size() == 2 && pages.stream().allMatch(e -> e.blockPosition().equals(stand)),
+                        "standing on the stone they are left the pages at their feet: " + pages.size() + (chest ? ", and a chest" : ""));
+            } finally {
+                level.getEntitiesOfClass(ItemEntity.class, new AABB(base).inflate(24)).forEach(ItemEntity::discard);
+                level.setBlock(pit, Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                level.setBlock(pool, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
                 NativeTestPlayers.remove(p);
             }
         });

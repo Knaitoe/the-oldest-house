@@ -25,7 +25,10 @@ import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 public final class Neighbours {
     /** A bed block in this tag counts for sleep and never for home: a bed the reader was given (A Reaping's issued beds). */
     public static final TagKey<Block> NOT_HOME = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID, "not_home"));
-    /** The message a neighbour sends with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on its districts' land. */
+    /**
+     * The message a neighbour sends with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on its districts' land and worksites
+     * and at least {@link #MARGIN} blocks round them (docs/NEIGHBOURS.md): the House probes a box only every {@link #PROBE} blocks.
+     */
     public static final String DISTRICT_LAND = "district_land";
     /** The message the House sends A Reaping with a {@code BiPredicate<ServerLevel, BlockPos>} that holds on the manor's lot. */
     public static final String HOUSE_LAND = "house_land";
@@ -37,8 +40,9 @@ public final class Neighbours {
      */
     public static final int MARGIN = 8;
     /**
-     * How far apart a box is probed for district land, along each side and always on its far faces. A district's land comes with its
-     * own margin, wider than this, so nothing of it lies between two probes.
+     * How far apart a box is probed for district land, along each side and always on its far faces. A neighbour's {@code
+     * district_land} holds at least {@link #MARGIN} blocks round a district's land and worksites, as the contract asks, so nothing of
+     * it lies between two probes; a predicate that held only on a strip narrower than this (a road, one worksite block) could.
      */
     static final int PROBE = 2;
 
@@ -75,9 +79,9 @@ public final class Neighbours {
     }
 
     /**
-     * Whether any neighbour's district holds at {@code pos}: its land, its worksites and their margin. Any number of neighbours may
-     * say, and one is enough. A neighbour whose answer throws is taken as not holding, and said once in the log. A neighbour is
-     * handed a position of its own, which it may keep: never a cursor the House moves on.
+     * Whether any neighbour's district holds at {@code pos}: its land, its worksites and their margin of at least {@link #MARGIN}. Any
+     * number of neighbours may say, and one is enough. A neighbour whose answer throws is taken as not holding, and said once in the
+     * log. A neighbour is handed a position of its own, which it may keep: never a cursor the House moves on.
      */
     public static boolean districtLand(ServerLevel level, BlockPos pos) {
         if (!anyDistrict()) {

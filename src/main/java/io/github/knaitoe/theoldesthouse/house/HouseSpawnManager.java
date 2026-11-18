@@ -225,13 +225,14 @@ public final class HouseSpawnManager {
                 // Above the highest block of a column there is only air.
                 int top = Math.min(origin.getY() + site.y1(), level.getHeight(Heightmap.Types.WORLD_SURFACE, worldX, worldZ) - 1);
                 for (int y = floor; y <= top; y++) {
-                    if (!isNaturalGround(level.getBlockState(pos.set(worldX, y, worldZ)))) {
+                    BlockState state = level.getBlockState(pos.set(worldX, y, worldZ));
+                    if (!naturalOnTheLot(level, origin, pos, state)) {
                         return false;
                     }
                 }
                 for (int y = floor - 1; y >= deepest; y--) {
                     BlockState state = level.getBlockState(pos.set(worldX, y, worldZ));
-                    if (!isNaturalGround(state)) {
+                    if (!naturalOnTheLot(level, origin, pos, state)) {
                         return false;
                     }
                     if (!HouseShell.runsThrough(state)) {
@@ -360,12 +361,36 @@ public final class HouseSpawnManager {
     }
 
     /**
+     * Whether {@code state} at {@code at}, on the lot with its origin at {@code origin} or under it, is the ground or growth as the
+     * world made it ({@link #isNaturalGround}), or one of three things the world leaves only in some places while a player can set
+     * them anywhere: fossil bone in the ground under the lot, where a run would find it in a cave; the mossy cobblestone of a forest
+     * rock below the origin, where the floor would bury it (at or above it, a rock always turned the site down in the cleared ground,
+     * and now does in front too); and a bees' nest hanging over the ground, as trees carry them. Anywhere else each is taken for
+     * something built, so a player's bone-block path, mossy wall or moved nest is never buried or cleared.
+     */
+    static boolean naturalOnTheLot(ServerLevel level, BlockPos origin, BlockPos at, BlockState state) {
+        if (isNaturalGround(state)) {
+            return true;
+        }
+        if (state.is(Blocks.BONE_BLOCK)) {
+            return at.getY() < origin.getY() + HouseLayout.SITE.y0();
+        }
+        if (state.is(Blocks.MOSSY_COBBLESTONE)) {
+            return at.getY() < origin.getY();
+        }
+        if (state.is(Blocks.BEE_NEST)) {
+            return isNaturalGrowth(level.getBlockState(at.below()));
+        }
+        return false;
+    }
+
+    /**
      * The ground as the world made it, or growth on it: stone, dirt, sand, gravel, clay, terracotta, snow and ice, ores, bedrock,
-     * water and lava, and {@link #isNaturalGrowth}; and what the world grows or leaves in swamps, lush caves, geodes, the sea and the
-     * ground: lily pads, mangrove roots, cave vines, dripleaf, amethyst, fossil bone, kelp, sea pickles and coral, and the bees' own
-     * nests (which nobody can make: a hive somebody made is a beehive). Tilled ground, paths, cobblestone, planks and anything else
-     * with a block entity are not. None of these is cleared for the House (that is {@link #isNaturalGrowth}'s to say); they are only
-     * not taken for something built.
+     * water and lava, and {@link #isNaturalGrowth}; and what the world grows or leaves in swamps, lush caves, geodes and the sea:
+     * lily pads, mangrove roots, cave vines, dripleaf, amethyst, kelp, sea pickles and coral. Tilled ground, paths, cobblestone,
+     * planks and anything else with a block entity are not; nor, on their own, fossil bone, mossy cobblestone and a bees' nest, which
+     * the world leaves only in some places ({@link #naturalOnTheLot}). None of these is cleared for the House (that is {@link
+     * #isNaturalGrowth}'s to say); they are only not taken for something built.
      */
     public static boolean isNaturalGround(BlockState state) {
         return state.isAir()
@@ -380,14 +405,12 @@ public final class HouseSpawnManager {
                 || state.is(Blocks.MEDIUM_AMETHYST_BUD)
                 || state.is(Blocks.LARGE_AMETHYST_BUD)
                 || state.is(Blocks.AMETHYST_CLUSTER)
-                || state.is(Blocks.BONE_BLOCK)
                 || state.is(Blocks.KELP)
                 || state.is(Blocks.KELP_PLANT)
                 || state.is(Blocks.SEA_PICKLE)
                 || state.is(BlockTags.CORALS)
                 || state.is(BlockTags.CORAL_BLOCKS)
                 || state.is(BlockTags.WALL_CORALS)
-                || state.is(Blocks.BEE_NEST)
                 || state.is(BlockTags.OVERWORLD_CARVER_REPLACEABLES)
                 || state.is(BlockTags.SCULK_REPLACEABLE)
                 || state.is(BlockTags.SNOW)
