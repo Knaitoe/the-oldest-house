@@ -37,6 +37,11 @@ public final class KingBrothers {
     public static final int WAIT=900,DRESS_TICKS=100,FIGHT_TICKS=80,CROW_TICKS=40;
     /** How far they run in a tick, and how far past the wood's area anybody of theirs is looked for when they are gone. */
     static final double RUN=.9,GONE_REACH=48;
+    /**
+     * Run 1731: the way they face arm in arm (into the hedge's gap); how far a reader may be from that before the pair shuffles round
+     * together, and how far round they shuffle in a tick.
+     */
+    static final float ROAD=90,LEEWAY=50,SHUFFLE=8;
     static final String TALK="king_brothers";
 
     public static boolean cast(int phase){return phase==DUM||phase==DEE;}
@@ -107,12 +112,25 @@ public final class KingBrothers {
         int pose=switch(s.battle){case DRESS->DRESSING;case FIGHT->FIGHTING;default->KingSleep.nearest(l,b,dum.position())!=null&&KingSleep.nearest(l,b,dum.position()).distanceTo(dum)<12?POINTING:LINKED;};
         dum.gesture(pose);dee.gesture(pose);
         if(s.battle==FIGHT){KingSleep.face(dum,dee.position());KingSleep.face(dee,dum.position());return;}
-        // Arm in arm they stay facing along the road, so the arms stay round each other; only their heads turn to whoever has come.
+        // Arm in arm they face the same way, so the arms stay round each other, and their heads turn to whoever has come. Run 1731: a
+        // reader who went round behind them to the King was answered by a head turned as far as a head goes, the other way. Now a reader
+        // past LEEWAY of the way they face has the pair shuffle round together, about the middle between their places, until the reader
+        // is LEEWAY off; with nobody near, they shuffle back to facing the gap.
         var near=KingSleep.nearest(l,b,dum.position());
+        var mid=Vec3.atBottomCenterOf(b.offset(spot(DUM))).add(Vec3.atBottomCenterOf(b.offset(spot(DEE)))).scale(.5);
+        float face=dum.getYRot(),turn;
+        if(near!=null&&near.distanceTo(dum)<16){
+            float want=(float)Math.toDegrees(Math.atan2(near.getZ()-mid.z,near.getX()-mid.x))-90,d=net.minecraft.util.Mth.wrapDegrees(want-face);
+            turn=Math.abs(d)<=LEEWAY?0:d-Math.signum(d)*LEEWAY;
+        }else turn=net.minecraft.util.Mth.wrapDegrees(ROAD-face);
+        face+=net.minecraft.util.Mth.clamp(turn,-SHUFFLE,SHUFFLE);
         for(var a:new LiteraryActor[]{dum,dee}){
-            a.setYRot(90);a.setYBodyRot(90);
-            float head=90;
-            if(near!=null&&near.distanceTo(a)<16){float to=(float)(Math.toDegrees(Math.atan2(near.getZ()-a.getZ(),near.getX()-a.getX()))-90);head=90+net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(to-90),-70,70);}
+            // Tweedledum on the left of the pair as they face.
+            double side=a==dum?.5:-.5,rad=Math.toRadians(face);
+            if(turn!=0)a.setPos(mid.x+Math.cos(rad)*side,a.getY(),mid.z+Math.sin(rad)*side);
+            a.setYRot(face);a.setYBodyRot(face);
+            float head=face;
+            if(near!=null&&near.distanceTo(a)<16){float to=(float)(Math.toDegrees(Math.atan2(near.getZ()-a.getZ(),near.getX()-a.getX()))-90);head=face+net.minecraft.util.Mth.clamp(net.minecraft.util.Mth.wrapDegrees(to-face),-70,70);}
             a.setYHeadRot(head);
         }
     }
