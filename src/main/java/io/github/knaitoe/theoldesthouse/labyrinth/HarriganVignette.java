@@ -1276,8 +1276,7 @@ public final class HarriganVignette {
         AABB area = new AABB(
                 bed.getX() - KILL_RADIUS, level.getMinBuildHeight(), bed.getZ() - KILL_RADIUS,
                 bed.getX() + KILL_RADIUS + 1.0D, level.getMaxBuildHeight(), bed.getZ() + KILL_RADIUS + 1.0D);
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area,
-                e -> e.getType() == targetType && !e.hasCustomName())) {
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, area, e -> sweeps(e, targetType))) {
             entity.hurt(level.damageSources().genericKill(), Float.MAX_VALUE);
         }
 
@@ -1286,6 +1285,14 @@ public final class HarriganVignette {
         p.remove("HostileDay");
         savePlayerState(data, caller.getUUID(), p);
         HarriganPhones.flies(caller);
+    }
+
+    /**
+     * Whether the morning's sweep after a hostile call takes {@code e}: one of the kind named, unnamed, and never one of a neighbour's own
+     * people, though their kind was listed in {@link Neighbours#LEFT_ALONE} only after the call was made (docs/NEIGHBOURS.md R9).
+     */
+    public static boolean sweeps(Entity e, EntityType<?> targetType) {
+        return e.getType() == targetType && !e.hasCustomName() && !Neighbours.leftAlone(e);
     }
 
     private static void spawnGhost(ServerLevel level, ServerPlayer target, UUID owner, int mode, @Nullable UUID playerTarget) {

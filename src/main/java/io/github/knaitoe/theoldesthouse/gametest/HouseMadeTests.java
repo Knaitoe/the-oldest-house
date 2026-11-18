@@ -12,9 +12,13 @@ import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthData;
 import io.github.knaitoe.theoldesthouse.labyrinth.MinotaurEntity;
 import io.github.knaitoe.theoldesthouse.labyrinth.MotherCollection;
 import io.github.knaitoe.theoldesthouse.labyrinth.WeaponHistory;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -31,10 +35,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -471,94 +477,144 @@ public final class HouseMadeTests {
     }
 
     // ------------------------------------------------------------------------------------------------ another mod's weapon
+    private static final String WEAPONS = "house_made_weapons";
+    /** The weapons case's reader, put away when the batch ends even if the case did not get as far as putting them away itself. */
+    private static final List<ServerPlayer> ARMED = new ArrayList<>();
+
+    @AfterBatch(batch = WEAPONS)
+    public static void theWeaponsArePutAway(ServerLevel level) {
+        NeighbourTags.bind(Items.SHEARS.builtInRegistryHolder(), Tags.Items.MELEE_WEAPON_TOOLS, false);
+        NeighbourTags.bind(Items.FISHING_ROD.builtInRegistryHolder(), Tags.Items.RANGED_WEAPON_TOOLS, false);
+        ARMED.forEach(p -> {
+            HouseKeeping.get(p.server).forget(p.getUUID());
+            if (p.server.getPlayerList().getPlayers().contains(p)) {
+                NativeTestPlayers.remove(p);
+            }
+        });
+        ARMED.clear();
+    }
+
+    /** The mod's blade deals a blow to {@code target} for the reader, as another mod's melee does: no vanilla attack is made. */
+    private static void blade(ServerPlayer p, Mob target) {
+        target.invulnerableTime = 0;
+        target.setHealth(target.getMaxHealth());
+        target.hurt(p.damageSources().playerAttack(p), 1);
+    }
+
+    /** Runs {@code then} on a tick after this one. */
+    private static void later(GameTestHelper h, Runnable then) {
+        long now = h.getLevel().getGameTime();
+        SceneReady.when(h, () -> h.getLevel().getGameTime() > now ? null : "a later tick", 1, 20, then);
+    }
+
     /**
      * A weapon from another mod is a weapon to the House when it is in {@code #c:tools/melee_weapon} or {@code #c:tools/ranged_weapon}
      * (shears and a fishing rod stand in, put in the tags for the case). A use is counted by the blow it deals, through the damage
-     * source: a melee blow that is not a vanilla attack, and a projectile, whose weapon is the one that loosed it, counted on the real
-     * one in the reader's hand. A vanilla attack is counted once, and a vanilla bow's arrow only when the bow is drawn, as before. The
-     * one used most is the favourite, and passes the drawers.
+     * source: a melee blow that is not a vanilla attack, once a tick however many it hurts, as a sweep through three is one; and a
+     * projectile, whose weapon is the one that loosed it, counted on the real one in the reader's hand. A vanilla attack is counted
+     * once, and not at all if another listener cancels it; a vanilla bow's arrow only when the bow is drawn, as before. The one used
+     * most is the favourite, and passes the drawers.
      */
-    @GameTest(template = "empty", batch = "house_made_weapons", timeoutTicks = 100)
+    @GameTest(template = "empty", batch = WEAPONS, timeoutTicks = 100)
     public static void aWeaponFromAnotherModCanBeTheFavourite(GameTestHelper h) {
         ServerPlayer p = reader(h, "another_mods_weapon");
+        ARMED.add(p);
         var shears = Items.SHEARS.builtInRegistryHolder();
         var rod = Items.FISHING_ROD.builtInRegistryHolder();
-        try {
-            h.assertTrue(!WeaponHistory.weapon(new ItemStack(Items.SHEARS)) && !WeaponHistory.weapon(new ItemStack(Items.FISHING_ROD)), "out of the tags, shears and a rod are no weapons");
-            NeighbourTags.bind(shears, Tags.Items.MELEE_WEAPON_TOOLS, true);
-            NeighbourTags.bind(rod, Tags.Items.RANGED_WEAPON_TOOLS, true);
-            h.assertTrue(WeaponHistory.weapon(new ItemStack(Items.SHEARS)) && WeaponHistory.weapon(new ItemStack(Items.FISHING_ROD)), "in them, they are");
-            BlockPos at = h.absolutePos(new BlockPos(1, 2, 1));
-            p.teleportTo(h.getLevel(), at.getX() + .5, at.getY(), at.getZ() + .5, 0F, 0F);
-            Mob target = h.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(2, 2, 1));
-            target.setInvulnerable(false);
+        h.assertTrue(!WeaponHistory.weapon(new ItemStack(Items.SHEARS)) && !WeaponHistory.weapon(new ItemStack(Items.FISHING_ROD)), "out of the tags, shears and a rod are no weapons");
+        NeighbourTags.bind(shears, Tags.Items.MELEE_WEAPON_TOOLS, true);
+        NeighbourTags.bind(rod, Tags.Items.RANGED_WEAPON_TOOLS, true);
+        h.assertTrue(WeaponHistory.weapon(new ItemStack(Items.SHEARS)) && WeaponHistory.weapon(new ItemStack(Items.FISHING_ROD)), "in them, they are");
+        BlockPos at = h.absolutePos(new BlockPos(1, 2, 1));
+        p.teleportTo(h.getLevel(), at.getX() + .5, at.getY(), at.getZ() + .5, 0F, 0F);
+        Mob target = h.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(2, 2, 1));
+        target.setInvulnerable(false);
 
-            // A mod's melee blow: the damage source carries the main hand, and no vanilla attack was made.
-            var blade = new ItemStack(Items.SHEARS);
-            p.setItemInHand(InteractionHand.MAIN_HAND, blade);
-            for (int i = 0; i < 3; i++) {
-                target.invulnerableTime = 0;
-                target.setHealth(target.getMaxHealth());
-                target.hurt(p.damageSources().playerAttack(p), 1);
-            }
-            UUID bladeId = WeaponHistory.identity(p.getMainHandItem());
-            h.assertTrue(bladeId != null && WeaponHistory.uses(p, bladeId) == 3, "each blow of the mod's blade is a use: " + (bladeId == null ? "none" : WeaponHistory.uses(p, bladeId)));
-            target.invulnerableTime = 0;
-            target.setHealth(target.getMaxHealth());
-            target.hurt(p.damageSources().thorns(p), 1);
-            h.assertTrue(target.getHealth() < target.getMaxHealth() && WeaponHistory.uses(p, bladeId) == 3, "thorns, which the reader's armour deals, are no use of the blade");
-
-            // A vanilla attack is counted once, not again by its damage.
-            var sword = new ItemStack(Items.IRON_SWORD);
-            p.setItemInHand(InteractionHand.MAIN_HAND, sword);
-            target.invulnerableTime = 0;
-            target.setHealth(target.getMaxHealth());
-            p.attack(target);
-            UUID swordId = WeaponHistory.identity(p.getMainHandItem());
-            h.assertTrue(swordId != null && WeaponHistory.uses(p, swordId) == 1 && target.getHealth() < target.getMaxHealth(),
-                    "a vanilla attack is one use: " + (swordId == null ? "none" : WeaponHistory.uses(p, swordId)));
-
-            // A mod's projectile: its weapon is a copy of what loosed it, and the use is the real one's in the hand. The sling's first
-            // shot: the copy is taken before the sling is stamped, as the shot joins the world.
-            var sling = new ItemStack(Items.FISHING_ROD);
-            p.setItemInHand(InteractionHand.MAIN_HAND, sling);
-            var shot = new Arrow(h.getLevel(), p, new ItemStack(Items.ARROW), p.getMainHandItem());
-            h.getLevel().addFreshEntity(shot);
-            h.assertTrue(WeaponHistory.identity(p.getMainHandItem()) != null && WeaponHistory.identity(shot.getWeaponItem()) == null,
-                    "the sling is stamped as its shot joins the world, after the shot took its copy");
-            target.invulnerableTime = 0;
-            target.setHealth(target.getMaxHealth());
-            target.hurt(p.damageSources().arrow(shot, p), 1);
-            UUID slingId = WeaponHistory.identity(p.getMainHandItem());
-            h.assertTrue(slingId != null && WeaponHistory.uses(p, slingId) == 1, "a hit from the mod's sling is a use of the sling in the hand");
-            shot.discard();
-
-            // A vanilla bow's arrow is counted when the bow is drawn, not again when it hits.
-            var bow = new ItemStack(Items.BOW);
-            p.setItemInHand(InteractionHand.MAIN_HAND, bow);
-            var arrow = new Arrow(h.getLevel(), p, new ItemStack(Items.ARROW), bow);
-            target.invulnerableTime = 0;
-            target.setHealth(target.getMaxHealth());
-            target.hurt(p.damageSources().arrow(arrow, p), 1);
-            h.assertTrue(WeaponHistory.identity(p.getMainHandItem()) == null, "a vanilla arrow's hit is not counted again");
-            arrow.discard();
-
-            // The blade, used most, is the favourite, and passes the drawers; the sword does not.
-            h.assertTrue(bladeId.equals(WeaponHistory.favorite(p)), "the mod's blade is the favourite");
-            var inv = p.getInventory();
-            inv.clearContent();
-            HouseKeeping.update(p, Where.OUTSIDE);
-            inv.setItem(0, blade);
-            inv.setItem(1, sword);
-            HouseKeeping.update(p, Where.MANOR);
-            h.assertTrue(carrying(p, Items.SHEARS) == 1 && carrying(p, Items.IRON_SWORD) == 0, "the favourite from another mod passes the drawers, and the sword does not");
-            target.discard();
-        } finally {
-            NeighbourTags.bind(shears, Tags.Items.MELEE_WEAPON_TOOLS, false);
-            NeighbourTags.bind(rod, Tags.Items.RANGED_WEAPON_TOOLS, false);
-            HouseKeeping.get(p.server).forget(p.getUUID());
-            NativeTestPlayers.remove(p);
+        // A mod's melee blow: the damage source carries the main hand, and no vanilla attack was made. Three hurt on one tick, as a
+        // sweep through three would, are one use.
+        var blade = new ItemStack(Items.SHEARS);
+        p.setItemInHand(InteractionHand.MAIN_HAND, blade);
+        for (int i = 0; i < 3; i++) {
+            blade(p, target);
         }
+        UUID bladeId = WeaponHistory.identity(p.getMainHandItem());
+        h.assertTrue(bladeId != null && WeaponHistory.uses(p, bladeId) == 1, "the mod's blade hurting three on one tick is one use: " + (bladeId == null ? "none" : WeaponHistory.uses(p, bladeId)));
+        later(h, () -> {
+            blade(p, target);
+            h.assertTrue(WeaponHistory.uses(p, bladeId) == 2, "a blow on a later tick is another: " + WeaponHistory.uses(p, bladeId));
+            later(h, () -> {
+                blade(p, target);
+                h.assertTrue(WeaponHistory.uses(p, bladeId) == 3, "and another: " + WeaponHistory.uses(p, bladeId));
+                aWeaponFromAnotherModThen(h, p, target, blade, bladeId);
+            });
+        });
+    }
+
+    private static void aWeaponFromAnotherModThen(GameTestHelper h, ServerPlayer p, Mob target, ItemStack blade, UUID bladeId) {
+        target.invulnerableTime = 0;
+        target.setHealth(target.getMaxHealth());
+        target.hurt(p.damageSources().thorns(p), 1);
+        h.assertTrue(target.getHealth() < target.getMaxHealth() && WeaponHistory.uses(p, bladeId) == 3, "thorns, which the reader's armour deals, are no use of the blade");
+
+        // A vanilla attack another listener cancels (another mod's weapon taking the swing) is no use; one that goes through is counted
+        // once, not again by its damage.
+        var sword = new ItemStack(Items.IRON_SWORD);
+        p.setItemInHand(InteractionHand.MAIN_HAND, sword);
+        target.invulnerableTime = 0;
+        target.setHealth(target.getMaxHealth());
+        Consumer<AttackEntityEvent> takesTheSwing = e -> {
+            if (e.getEntity() == p) {
+                e.setCanceled(true);
+            }
+        };
+        NeoForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, AttackEntityEvent.class, takesTheSwing);
+        try {
+            p.attack(target);
+        } finally {
+            NeoForge.EVENT_BUS.unregister(takesTheSwing);
+        }
+        h.assertTrue(WeaponHistory.identity(p.getMainHandItem()) == null && target.getHealth() == target.getMaxHealth(), "a vanilla attack another listener cancels is no use");
+        p.attack(target);
+        UUID swordId = WeaponHistory.identity(p.getMainHandItem());
+        h.assertTrue(swordId != null && WeaponHistory.uses(p, swordId) == 1 && target.getHealth() < target.getMaxHealth(),
+                "a vanilla attack is one use: " + (swordId == null ? "none" : WeaponHistory.uses(p, swordId)));
+
+        // A mod's projectile: its weapon is a copy of what loosed it, and the use is the real one's in the hand. The sling's first
+        // shot: the copy is taken before the sling is stamped, as the shot joins the world. It lands on the tick the blade last
+        // struck, and is counted all the same: once a tick is each weapon's.
+        var sling = new ItemStack(Items.FISHING_ROD);
+        p.setItemInHand(InteractionHand.MAIN_HAND, sling);
+        var shot = new Arrow(h.getLevel(), p, new ItemStack(Items.ARROW), p.getMainHandItem());
+        h.getLevel().addFreshEntity(shot);
+        h.assertTrue(WeaponHistory.identity(p.getMainHandItem()) != null && WeaponHistory.identity(shot.getWeaponItem()) == null,
+                "the sling is stamped as its shot joins the world, after the shot took its copy");
+        target.invulnerableTime = 0;
+        target.setHealth(target.getMaxHealth());
+        target.hurt(p.damageSources().arrow(shot, p), 1);
+        UUID slingId = WeaponHistory.identity(p.getMainHandItem());
+        h.assertTrue(slingId != null && WeaponHistory.uses(p, slingId) == 1, "a hit from the mod's sling is a use of the sling in the hand");
+        shot.discard();
+
+        // A vanilla bow's arrow is counted when the bow is drawn, not again when it hits.
+        var bow = new ItemStack(Items.BOW);
+        p.setItemInHand(InteractionHand.MAIN_HAND, bow);
+        var arrow = new Arrow(h.getLevel(), p, new ItemStack(Items.ARROW), bow);
+        target.invulnerableTime = 0;
+        target.setHealth(target.getMaxHealth());
+        target.hurt(p.damageSources().arrow(arrow, p), 1);
+        h.assertTrue(WeaponHistory.identity(p.getMainHandItem()) == null, "a vanilla arrow's hit is not counted again");
+        arrow.discard();
+
+        // The blade, used most, is the favourite, and passes the drawers; the sword does not.
+        h.assertTrue(bladeId.equals(WeaponHistory.favorite(p)), "the mod's blade is the favourite");
+        var inv = p.getInventory();
+        inv.clearContent();
+        HouseKeeping.update(p, Where.OUTSIDE);
+        inv.setItem(0, blade);
+        inv.setItem(1, sword);
+        HouseKeeping.update(p, Where.MANOR);
+        h.assertTrue(carrying(p, Items.SHEARS) == 1 && carrying(p, Items.IRON_SWORD) == 0, "the favourite from another mod passes the drawers, and the sword does not");
+        target.discard();
         h.succeed();
     }
 
