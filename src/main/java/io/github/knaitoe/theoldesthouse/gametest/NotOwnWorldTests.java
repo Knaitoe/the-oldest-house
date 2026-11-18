@@ -5,7 +5,9 @@ import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import io.github.knaitoe.theoldesthouse.labyrinth.Artifacts;
 import io.github.knaitoe.theoldesthouse.labyrinth.BlyFollows;
+import io.github.knaitoe.theoldesthouse.labyrinth.ChurchKeyItem;
 import io.github.knaitoe.theoldesthouse.labyrinth.DreamStela;
+import io.github.knaitoe.theoldesthouse.labyrinth.DrownedTownRegistry;
 import io.github.knaitoe.theoldesthouse.labyrinth.ElkFollows;
 import io.github.knaitoe.theoldesthouse.labyrinth.FeetUp;
 import io.github.knaitoe.theoldesthouse.labyrinth.GoatmanHaunt;
@@ -27,6 +29,7 @@ import io.github.knaitoe.theoldesthouse.labyrinth.PrizeWear;
 import io.github.knaitoe.theoldesthouse.labyrinth.SelfAddressedEnvelopeItem;
 import io.github.knaitoe.theoldesthouse.labyrinth.StelaPassage;
 import io.github.knaitoe.theoldesthouse.labyrinth.Storeroom;
+import io.github.knaitoe.theoldesthouse.labyrinth.TallyCounterItem;
 import io.github.knaitoe.theoldesthouse.labyrinth.WeaponHistory;
 import io.github.knaitoe.theoldesthouse.labyrinth.WorkPrint;
 import java.lang.reflect.Method;
@@ -72,6 +75,8 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -217,6 +222,19 @@ public final class NotOwnWorldTests {
                     spoiled.forEach(ItemEntity::discard);
                 });
 
+                // The morning in kind: owed one, at dawn in the Games nothing comes and the day is not marked, so it waits for their first dawn back.
+                int dawn = (int) (time / 24000L) + 1;
+                h.assertTrue(!ElkFollows.dawn(p, dawn)
+                                && LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND_DAY) != dawn,
+                        "at dawn in the Games the morning in kind does not come, and the day is not spent");
+                listed(nether, false, () -> {
+                    CompoundTag owed = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT);
+                    h.assertTrue(ElkFollows.dawn(p, dawn)
+                                    && LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND_DAY) == dawn
+                                    && LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND) == owed.getInt(ElkFollows.IN_KIND),
+                            "out of the tag it comes at dawn; with no home of their own nothing is taken and the debt is kept");
+                });
+
                 // The calf's night: anchored in the Overworld at night, let go when they change worlds, and never set in the Games.
                 long night = Math.floorDiv(time, 24000L) * 24000L + 18000L;
                 overworld.setDayTime(night);
@@ -251,6 +269,7 @@ public final class NotOwnWorldTests {
                 own.remove(ElkFollows.FOLLOWS);
                 own.remove(ElkFollows.CALF_UNTIL);
                 own.remove(ElkFollows.IN_KIND);
+                own.remove(ElkFollows.IN_KIND_DAY);
                 LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.ELK_LOT, own);
                 NativeTestPlayers.remove(p);
             }
@@ -442,6 +461,18 @@ public final class NotOwnWorldTests {
                     LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
                     h.assertTrue(!BlyFollows.carry(p) && !BlyFollows.carrying(p), "near water in the Games she does not take their arm");
                     listed(nether, false, () -> h.assertTrue(BlyFollows.carry(p) && BlyFollows.carrying(p), "out of the tag she does"));
+                    // Taken into another world while she has them, she lets go on her next step: she walks nobody anywhere in another world.
+                    // She no longer follows, so the step cannot begin another carry where they stand.
+                    bly = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE);
+                    bly.putBoolean(BlyFollows.FOLLOWS, false);
+                    LiteraryVignettes.save(d, p.getUUID(), LabyrinthPlace.BLY_ROUTE, bly);
+                    into(p, h.getLevel(), h.absolutePos(new BlockPos(1, 2, 1)));
+                    Vec3 there = p.position();
+                    h.assertTrue(BlyFollows.carrying(p), "the carry is still hers as they arrive");
+                    BlyFollows.tick(new ServerTickEvent.Post(() -> true, nether.getServer()));
+                    h.assertTrue(!BlyFollows.carrying(p) && p.level() == h.getLevel() && p.position().distanceTo(there) < .01,
+                            "in the world they were taken to, her carry is let go and they stand where they are: carrying=" + BlyFollows.carrying(p)
+                                    + " at " + p.position() + " in " + p.level().dimension().location());
                 } finally {
                     CompoundTag all = d.state(GoatmanVignette.ID), players = all.getCompound("Players");
                     CompoundTag goat = players.getCompound(p.getUUID().toString());
@@ -449,7 +480,6 @@ public final class NotOwnWorldTests {
                     players.put(p.getUUID().toString(), goat);
                     all.put("Players", players);
                     d.setState(GoatmanVignette.ID, all);
-                    // Going ends her carry, before a tick of it is walked.
                     NativeTestPlayers.remove(p);
                 }
                 h.succeed();
@@ -542,6 +572,68 @@ public final class NotOwnWorldTests {
                     h.assertTrue(heard.stream().noneMatch("Nothing here gives to it."::equals) && !heard.isEmpty(),
                             "out of the tag the fill is tried: " + heard);
                 });
+
+                // Something that means them harm, close behind them, out of their sight and after them.
+                into(p, nether, spot);
+                var behind = EntityType.ZOMBIE.create(nether);
+                behind.setNoAi(true);
+                behind.moveTo(spot.getX() + .5, spot.getY(), spot.getZ() - 2.5);
+                nether.addFreshEntity(behind);
+                behind.setTarget(p);
+                try {
+                    // The Goatman's counter counts nobody through the walls there, and keeps no watch over a sleeping keeper.
+                    ItemStack counter = TallyCounterItem.forReader(p.getUUID());
+                    p.setItemInHand(InteractionHand.MAIN_HAND, counter);
+                    NativeTestPlayers.messages(p);
+                    TallyCounterItem.click(p, counter);
+                    NativeTestPlayers.flush(p);
+                    var clicked = NativeTestPlayers.messages(p);
+                    h.assertTrue(clicked.contains(TallyCounterItem.NOT_HERE) && clicked.stream().noneMatch(m -> m.contains("out there")),
+                            "in the Games the counter clicks and counts nobody: " + clicked);
+                    listed(nether, false, () -> {
+                        int out = TallyCounterItem.nearbyHostiles(p, TallyCounterItem.OUT_THERE).size();
+                        TallyCounterItem.click(p, counter);
+                        NativeTestPlayers.flush(p);
+                        var counted = NativeTestPlayers.messages(p);
+                        h.assertTrue(out >= 1 && counted.contains("Click. " + TallyCounterItem.words(out) + " out there."),
+                                "out of the tag it counts what is out there: " + counted);
+                    });
+                    p.startSleeping(spot);
+                    TallyCounterItem.watch(p);
+                    h.assertTrue(p.isSleeping() && TallyCounterItem.lastWarning(p.getUUID()) == -1L,
+                            "asleep in the Games with something close, nothing wakes them");
+                    listed(nether, false, () -> {
+                        TallyCounterItem.watch(p);
+                        h.assertTrue(!p.isSleeping() && TallyCounterItem.lastWarning(p.getUUID()) == nether.getGameTime(),
+                                "out of the tag the counter wakes them");
+                    });
+                    p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    into(p, nether, spot);
+
+                    // The church key keeps no drowned off them there; the essay page keeps out of the Games too.
+                    p.getInventory().add(new ItemStack(DrownedTownRegistry.CHURCH_KEY.get()));
+                    var drowned = EntityType.DROWNED.create(nether);
+                    drowned.moveTo(spot.getX() + 2.5, spot.getY(), spot.getZ() + .5);
+                    drowned.setTarget(p);
+                    ChurchKeyItem.onEntityTick(new EntityTickEvent.Post(drowned));
+                    h.assertTrue(!ChurchKeyItem.protects(p) && drowned.getTarget() == p, "in the Games a drowned keeps after the key's bearer");
+                    listed(nether, false, () -> {
+                        h.assertTrue(ChurchKeyItem.protects(p), "out of the tag the key masks them");
+                        ChurchKeyItem.onEntityTick(new EntityTickEvent.Post(drowned));
+                        h.assertTrue(drowned.getTarget() == null, "and the drowned after them gives up");
+                        drowned.setTarget(p);
+                        h.assertTrue(drowned.getTarget() == null, "nor takes them up again");
+                    });
+                    drowned.discard();
+                    p.getInventory().clearContent();
+
+                    // The planchette points at nothing that stalks them there.
+                    h.assertTrue(behind.getTarget() == p && Artifacts.unseenHarm(p) == null, "in the Games the planchette points at nothing");
+                    listed(nether, false, () -> h.assertTrue(Artifacts.unseenHarm(p) != null, "out of the tag it drifts toward what is after them"));
+                } finally {
+                    behind.discard();
+                    TallyCounterItem.forget(p.getUUID());
+                }
             } finally {
                 NativeTestPlayers.remove(p);
             }
@@ -576,7 +668,7 @@ public final class NotOwnWorldTests {
             // The machine took them in its ward, and before it was done something else took them into the Games.
             NotYetMending.refuse(p, spot.offset(0, 0, -2), "fall");
             h.assertTrue(NotYetMending.held(p), "the machine holds them");
-            h.runAfterDelay(NotYetMending.DARK + 10, () -> {
+            SceneReady.when(h, () -> NotYetMending.held(p) ? "the machine letting them go" : null, 1, 200, () -> {
                 try {
                     CompoundTag own = LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.NOT_YET);
                     h.assertTrue(!NotYetMending.held(p) && own.getInt("Mended") == 1 && own.contains("CountFrom"),

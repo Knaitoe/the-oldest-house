@@ -258,7 +258,7 @@ public final class HarriganDialogueTests {
             h.assertTrue(f.player.heard("spare phone")&&f.player.heard("time back home"),"the real gift explains whose phone it is and why its clock matters");
             var owned=f.player.getInventory().items.stream().filter(s->s.is(LabyrinthRegistry.PHONE.get())).findFirst().orElseThrow();
             var help=owned.getTooltipLines(Item.TooltipContext.of(f.level),f.player,TooltipFlag.NORMAL).stream().map(Component::getString).toList();
-            h.assertTrue(help.stream().anyMatch(s->s.contains("Outside the House"))&&help.stream().anyMatch(s->s.contains("text him a name"))
+            h.assertTrue(help.stream().anyMatch(s->s.contains("Out in your world"))&&help.stream().anyMatch(s->s.contains("text him a name"))
                     &&help.stream().anyMatch(s->s.contains("Overworld bed")),"the inventory tooltip retains controls, place and delayed effect");
             HarriganVignette.onArrive(f.player,LabyrinthPlace.HARRIGAN);
         });

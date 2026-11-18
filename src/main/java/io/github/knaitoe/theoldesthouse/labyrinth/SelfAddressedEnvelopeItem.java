@@ -23,9 +23,10 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 /**
  * What the institute gives the reader whose letters came home (0.4.66): an envelope already addressed to them. Inside the
- * House it returns its sender to the manor, once a day, from any hall but never out of a room's story. Outside, it holds
- * one sealed stack, and if its keeper dies away from the House it is waiting for them when they wake. It works only for
- * the reader it was addressed to.
+ * House it returns its sender to the manor, once a day, from any hall but never out of a room's story. Out in its keeper's
+ * own world (HouseDimensions.ownWorld), it holds one sealed stack, and if they die there it is waiting for them when they
+ * wake. In a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3) nothing happens. It works only for the reader it
+ * was addressed to.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class SelfAddressedEnvelopeItem extends Item {
@@ -130,7 +131,7 @@ public final class SelfAddressedEnvelopeItem extends Item {
         if(t!=null&&t.copyTag().contains(SEALED)&&registries!=null){var inside=ItemStack.parseOptional(registries,t.copyTag().getCompound(SEALED));
             if(!inside.isEmpty())lines.add(Component.literal("Sealed: "+inside.getCount()+" × "+inside.getHoverName().getString()).withStyle(ChatFormatting.GRAY));}
         lines.add(Component.literal("In the House, once a day, it returns its sender to the manor.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
-        lines.add(Component.literal("Outside, it holds one sealed stack, and finds you again if you die.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
+        lines.add(Component.literal("Out in your world, it holds one sealed stack, and finds you again if you die.").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));
         lines.add(Component.literal("Addressed in your own hand.").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

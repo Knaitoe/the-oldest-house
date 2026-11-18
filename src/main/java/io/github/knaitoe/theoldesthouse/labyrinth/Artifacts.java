@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -68,8 +69,9 @@ import org.joml.Vector3f;
  *
  * <p>Each is given once, when the room's ending is recorded ({@link WitnessAccount}), and only on the ending that earns it. Like
  * the keepsakes ({@link Keepsakes}) it is marked as its reader's own, works only for them, is offerable to the Mother and adds no
- * Witness credit. "Their world" means outside the House; the House's own dark, hunters and rooms are never touched by an effect
- * that is only for their world.
+ * Witness credit. "Their world" means outside the House, and never a neighbour's world that is not theirs ({@link #ownWorld},
+ * docs/NEIGHBOURS.md R3); the House's own dark, hunters and rooms, and a neighbour's Games, are never touched by an effect that
+ * is only for their world.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Artifacts {
@@ -270,8 +272,12 @@ public final class Artifacts {
         return t.hasUUID(ClassicsVignettes.OWNER)&&t.getUUID(ClassicsVignettes.OWNER).equals(p.getUUID());
     }
     public static boolean planchetteWakes(ServerPlayer p){return (planchette(p.getMainHandItem(),p)||planchette(p.getOffhandItem(),p))&&heardHerOut(p);}
-    /** The nearest thing within sixteen blocks that means them harm and that they cannot see: in the House only what is hunting them. */
+    /**
+     * The nearest thing within sixteen blocks that means them harm and that they cannot see: in the House only what is hunting them.
+     * Nothing in a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3): it points at nothing that stalks them in the Games.
+     */
     public static Mob unseenHarm(ServerPlayer p){
+        if(Neighbours.notOwnWorld(p.level()))return null;
         boolean world=ownWorld(p);Mob best=null;double near=Double.MAX_VALUE;var look=p.getViewVector(1);
         for(var m:p.serverLevel().getEntitiesOfClass(Mob.class,p.getBoundingBox().inflate(PLANCHETTE_REACH),m->m.isAlive()&&(m.getTarget()==p||world&&m instanceof Enemy))){
             var to=m.getEyePosition().subtract(p.getEyePosition());double d=to.lengthSqr();

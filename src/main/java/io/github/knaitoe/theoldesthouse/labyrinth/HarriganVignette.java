@@ -1187,7 +1187,7 @@ public final class HarriganVignette {
         savePlayerState(data, player.getUUID(), personal);
         player.displayClientMessage(Component.literal("The door opens on a funeral home now. He lies at the front of the chapel, made ready for his funeral.")
                 .withStyle(ChatFormatting.GRAY), false);
-        player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number outside the House.")
+        player.displayClientMessage(Component.literal("Hold his phone and right-click his casket to lay it beside him, or leave with it to keep it. Only if it goes with him may your own phone reach his number out in your world.")
                 .withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), false);
     }
 
@@ -1196,7 +1196,7 @@ public final class HarriganVignette {
         if (personal.getBoolean("CallingExplained")) return;
         personal.putBoolean("CallingExplained", true);
         savePlayerState(data, player.getUUID(), personal);
-        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Outside the House, open it to call him, or text him a creature's name.")
+        player.displayClientMessage(Component.literal("Your own phone can reach his number now. Out in your world, open it to call him, or text him a creature's name.")
                 .withStyle(ChatFormatting.GRAY), false);
         player.displayClientMessage(Component.literal("One call a day. Name a hostile species, such as zombie: those creatures within 64 blocks of your Overworld bed die at the next dawn. Keep a bed set as your respawn point.")
                 .withStyle(ChatFormatting.DARK_GRAY), false);
