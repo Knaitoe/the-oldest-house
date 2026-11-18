@@ -70,6 +70,23 @@ public final class WeaponHistory {
         }
         return best;
     }
+    /**
+     * 0.4.704 (docs/FAVORITE_ITEM_0_4_704.md): the one thing a reader left on the hall stand, handed to them at the cell door. Whatever it
+     * is, a sword or a spade, it is given an identity of its own if it has none and recorded as the reader's most used, so the Minotaur
+     * answers to it and the witness, the ending and a death in the fight all know it as the original.
+     */
+    public static UUID keepsake(ServerPlayer player, ItemStack stack) {
+        UUID id = identity(stack);
+        if (id == null) { UUID made = UUID.randomUUID(); id = made; CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> { tag.remove(COPY); tag.putUUID(ORIGINAL, made); }); }
+        LabyrinthData data = LabyrinthData.get(player.server); CompoundTag root = data.state(STATE);
+        CompoundTag history = root.getCompound(player.getStringUUID()); int most = 0;
+        for (String key : history.getAllKeys()) if (!key.equals("Seeded") && !key.equals(id.toString())) most = Math.max(most, history.getCompound(key).getInt("Uses"));
+        CompoundTag entry = history.getCompound(id.toString());
+        entry.putInt("Uses", Math.max(entry.getInt("Uses"), Math.min(Integer.MAX_VALUE - 1000, most + 1)));
+        entry.put("Sample", stack.save(player.registryAccess())); history.put(id.toString(), entry); history.putBoolean("Seeded", true);
+        root.put(player.getStringUUID(), history); data.setState(STATE, root);
+        return id;
+    }
     public static ItemStack sample(ServerPlayer player, UUID id) {
         return ItemStack.parseOptional(player.registryAccess(), LabyrinthData.get(player.server).state(STATE)
                 .getCompound(player.getStringUUID()).getCompound(id.toString()).getCompound("Sample"));

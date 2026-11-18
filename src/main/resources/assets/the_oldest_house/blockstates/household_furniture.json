@@ -274,6 +274,26 @@
     "facing=west,kind=chess_table": {
       "model": "the_oldest_house:block/furniture_chess_table",
       "y": 270
+    },
+    "facing=north,kind=hall_stand": {
+      "model": "the_oldest_house:block/furniture_hall_stand",
+      "y": 0,
+      "uvlock": false
+    },
+    "facing=east,kind=hall_stand": {
+      "model": "the_oldest_house:block/furniture_hall_stand",
+      "y": 90,
+      "uvlock": false
+    },
+    "facing=south,kind=hall_stand": {
+      "model": "the_oldest_house:block/furniture_hall_stand",
+      "y": 180,
+      "uvlock": false
+    },
+    "facing=west,kind=hall_stand": {
+      "model": "the_oldest_house:block/furniture_hall_stand",
+      "y": 270,
+      "uvlock": false
     }
   }
 }

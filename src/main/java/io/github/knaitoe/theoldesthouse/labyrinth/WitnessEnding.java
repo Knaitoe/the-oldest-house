@@ -39,7 +39,9 @@ public final class WitnessEnding {
         if(!player.isShiftKeyDown()||!player.getMainHandItem().isEmpty()||!player.getOffhandItem().isEmpty()){
             FinaleController.words(player,cell.above(),"Both hands empty. Bow your head. Leave the door open.");return false;
         }
-        UUID weapon=WeaponHistory.favorite(player);ItemEntity laid=weapon==null?null:laidDown(player,cell,weapon);
+        // 0.4.704: a reader who left their one thing on the hall stand has already laid it down, a long way above.
+        UUID weapon=io.github.knaitoe.theoldesthouse.house.HouseKeeping.of(player).kept.isEmpty()?WeaponHistory.favorite(player):null;
+        ItemEntity laid=weapon==null?null:laidDown(player,cell,weapon);
         if(weapon!=null&&laid==null){
             FinaleController.words(player,cell.above(),"Lay the original weapon beside the cell. An empty hand is only part of it.");return false;
         }

@@ -850,7 +850,7 @@ jobs:
                       if texture.startswith('the_oldest_house:'):
                           assert z.read('assets/the_oldest_house/textures/'+texture.split(':',1)[1]+'.png').startswith(b'\x89PNG\r\n\x1a\n')
               furniture=json.loads(z.read('assets/the_oldest_house/blockstates/household_furniture.json'))['variants']
-              assert len(furniture)==56, 'four directions for all fourteen furniture kinds'
+              assert len(furniture)==60, 'four directions for all fifteen furniture kinds'
               for variant in furniture.values():
                   name=variant['model'].split(':',1)[1]
                   model=json.loads(z.read(f'assets/the_oldest_house/models/{name}.json'))

@@ -23,6 +23,11 @@ public final class SeatClientEvents {
     private SeatClientEvents() {}
     @SubscribeEvent public static void renderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(HouseSitting.SEAT.get(), SwingRenderer::new);
+        // 0.4.704: the thing on the hall stand is an ordinary item display, sent to its reader alone.
+        event.registerEntityRenderer(HouseSitting.STAND_DISPLAY.get(), StandRenderer::new);
+    }
+    private static final class StandRenderer extends net.minecraft.client.renderer.entity.DisplayRenderer.ItemDisplayRenderer {
+        StandRenderer(EntityRendererProvider.Context context) { super(context); }
     }
     /**
      * An ordinary seat draws nothing. 0.4.172: a swinging one draws the swing's seat and what it hangs by, turned about the crossbar

@@ -206,10 +206,121 @@ def washer_front():
     return im
 
 
+def stand_zinc():
+    """0.4.704, the hall stand's drip tray: galvanised zinc with its spangle, a lit rim, a darker line inside it, and the marks
+    left where wet umbrellas stood."""
+    rnd = random.Random(31)
+    im = Image.new('RGBA', (16, 16), rgb('#878c89') + (255,))
+    for _ in range(26):
+        put(im, rnd.randint(0, 15), rnd.randint(0, 15), '#949995')
+    for _ in range(14):
+        put(im, rnd.randint(0, 15), rnd.randint(0, 15), '#7d827f')
+    for x, y in ((5, 6), (10, 9), (7, 11)):
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (-1, 0), (0, -1)):
+            put(im, x + dx, y + dy, '#737874')
+    put(im, 11, 4, '#8b6b4b')
+    put(im, 12, 4, '#7a5d41')
+    for k in range(16):
+        put(im, k, 0, '#a5aaa6')
+        put(im, 0, k, '#a5aaa6')
+        put(im, k, 15, '#6c716e')
+        put(im, 15, k, '#6c716e')
+    return im
+
+
+def stand_glass():
+    """0.4.704, the hall stand's small mirror: old silvered glass, darker towards its foot, a pale sheen across it from corner to
+    corner, and the brown spots where the silver behind it has gone."""
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            put(im, x, y, '#66707a' if y < 6 else '#5d6670' if y < 11 else '#555e67')
+    for k in range(3, 13):
+        put(im, k, 15 - k, '#8b96a1')
+        put(im, k + 1, 15 - k, '#76818c')
+        put(im, k - 1, 15 - k, '#727c87')
+    for x, y, c in ((2, 3, '#5f5747'), (3, 2, '#6b6352'), (13, 12, '#5f5747'), (12, 13, '#6b6352'), (14, 6, '#5f5747'), (1, 10, '#6b6352')):
+        put(im, x, y, c)
+    for k in range(16):
+        put(im, k, 0, '#7d8791')
+        put(im, 0, k, '#7d8791')
+    return im
+
+
+def stand_brass():
+    """0.4.704, the hall stand's hooks: brass rod, every other column lit, so a hook one pixel thick shows a lit side and a dark."""
+    im = Image.new('RGBA', (16, 16))
+    for y in range(16):
+        for x in range(16):
+            put(im, x, y, BRASS if x % 2 == 0 else BRASS_DARK)
+    for y in range(0, 16, 4):
+        put(im, 0, y, '#d6bd7c')
+    return im
+
+
 def pictures():
     return {'walnut': walnut(), 'cane': cane(), 'bedside_front': bedside_front(), 'drawer_front': drawer_front(),
             'blue_weave': blue_weave(), 'floral': floral(), 'green_cloth': green_cloth(), 'formica': formica(),
-            'metal_legs': metal_legs(), 'enamel': enamel(), 'washer_front': washer_front()}
+            'metal_legs': metal_legs(), 'enamel': enamel(), 'washer_front': washer_front(),
+            'stand_zinc': stand_zinc(), 'stand_glass': stand_glass(), 'stand_brass': stand_brass()}
+
+
+FACES = ('north', 'south', 'east', 'west', 'up', 'down')
+
+
+def uv(face, f, t):
+    """The game's own mapping of a face of a box onto its picture, so every face falls on whole pixels as the box does."""
+    x0, y0, z0 = f
+    x1, y1, z1 = t
+    return {'north': [16 - x1, 16 - y1, 16 - x0, 16 - y0], 'south': [x0, 16 - y1, x1, 16 - y0], 'west': [z0, 16 - y1, z1, 16 - y0],
+            'east': [16 - z1, 16 - y1, 16 - z0, 16 - y0], 'up': [x0, z0, x1, z1], 'down': [x0, 16 - z1, x1, 16 - z0]}[face]
+
+
+def part(f, t, texture, faces=FACES, front=None):
+    out = {'from': list(f), 'to': list(t), 'faces': {}}
+    for face in faces:
+        out['faces'][face] = {'uv': uv(face, f, t), 'texture': '#' + (front if front and face == 'north' else texture)}
+    return out
+
+
+def hall_stand():
+    """0.4.704, the hall stand in the Navidsons' front hall (HouseKeeping.STAND), drawn facing north, its back to the wall at the
+    south: two back posts under a crest, a panel between them with a small mirror in a frame and a brass hook on each post; in front,
+    two short posts and a rail all round at hip height, and in the well they make a zinc drip tray with its own walls, so that what a
+    reader stands in it stands in a tray."""
+    w, z, g, b = 'walnut', 'zinc', 'glass', 'brass'
+    parts = [
+        part((1, 0, 13), (3, 15, 15), w), part((13, 0, 13), (15, 15, 15), w), part((0, 15, 12), (16, 16, 16), w),
+        part((3, 5, 14), (13, 15, 15), w, ('north', 'up', 'down')),
+        part((3, 14, 13), (13, 15, 14), w, ('north', 'down')), part((3, 7, 13), (13, 8, 14), w, ('north', 'up')),
+        part((3, 8, 13), (4, 14, 14), w, ('north', 'east')), part((12, 8, 13), (13, 14, 14), w, ('north', 'west')),
+        part((4, 8, 13.5), (12, 14, 14), g, ('north',)),
+        part((1.5, 12, 11), (2.5, 13, 13), b, ('north', 'east', 'west', 'up', 'down')), part((1.5, 13, 11), (2.5, 14, 12), b, ('north', 'south', 'east', 'west', 'up')),
+        part((13.5, 12, 11), (14.5, 13, 13), b, ('north', 'east', 'west', 'up', 'down')), part((13.5, 13, 11), (14.5, 14, 12), b, ('north', 'south', 'east', 'west', 'up')),
+        part((1, 0, 3), (3, 9, 5), w), part((13, 0, 3), (15, 9, 5), w),
+        part((3, 7, 3), (13, 9, 5), w, ('north', 'south', 'up', 'down')),
+        part((1, 7, 5), (3, 9, 13), w, ('east', 'west', 'up', 'down')), part((13, 7, 5), (15, 9, 13), w, ('east', 'west', 'up', 'down')),
+        part((1, 1, 5), (3, 2, 13), w, ('east', 'west', 'up', 'down')), part((13, 1, 5), (15, 2, 13), w, ('east', 'west', 'up', 'down')),
+        part((3, 0, 5), (13, 0.5, 13), z, ('up',)),
+        part((3, 0, 5), (13, 2, 6), z, ('north', 'south', 'up')), part((3, 0, 12), (13, 2, 13), z, ('north', 'south', 'up')),
+        part((3, 0, 6), (4, 2, 12), z, ('east', 'up')), part((12, 0, 6), (13, 2, 12), z, ('west', 'up')),
+    ]
+    return {'parent': 'minecraft:block/block',
+            'textures': {'walnut': f'{MOD}:block/household/walnut', 'particle': f'{MOD}:block/household/walnut',
+                         'zinc': f'{MOD}:block/household/stand_zinc', 'glass': f'{MOD}:block/household/stand_glass',
+                         'brass': f'{MOD}:block/household/stand_brass'},
+            'elements': parts}
+
+
+def stand_files():
+    """The stand's model, and the furniture's block states with its four facings, as the tool writes them."""
+    import json
+    model_path = ASSETS / 'models/block/furniture_hall_stand.json'
+    states_path = ASSETS / 'blockstates/household_furniture.json'
+    states = json.loads(states_path.read_text())
+    for facing, y in (('north', 0), ('east', 90), ('south', 180), ('west', 270)):
+        states['variants'][f'facing={facing},kind=hall_stand'] = {'model': f'{MOD}:block/furniture_hall_stand', 'y': y, 'uvlock': False}
+    return {model_path: json.dumps(hall_stand(), indent=2) + '\n', states_path: json.dumps(states, indent=2) + '\n'}
 
 
 def pointed():
@@ -246,12 +357,17 @@ def main():
             raise SystemExit(f'pictures the tool does not make: {sorted(extra)}')
         if stale:
             raise SystemExit(f'{len(stale)} models still name a 32-pixel household picture, {next(iter(stale)).relative_to(ROOT)} among them')
+        for path, text in stand_files().items():
+            if not path.exists() or path.read_text() != text:
+                raise SystemExit(f'{path.relative_to(ROOT)} is not what the tool writes for the hall stand')
         print(f'the household furniture: {len(pics)} pictures at sixteen pixels, and no model on the old ones')
         return
     FOLDER.mkdir(parents=True, exist_ok=True)
     for name, im in pics.items():
         im.save(FOLDER / f'{name}.png')
     for path, text in stale.items():
+        path.write_text(text)
+    for path, text in stand_files().items():
         path.write_text(text)
     print(f'the household furniture: {len(pics)} pictures, {len(stale)} models pointed at them')
 
