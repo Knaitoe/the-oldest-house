@@ -4294,6 +4294,8 @@ def fitting_models():
     m.update(pasture_models())
     for st in range(8):
         m[f'party_{st}'] = party_model(st)
+    for st in range(4):
+        m[f'blood_{st}'] = stain_model(st)
     return m
 
 
@@ -4370,6 +4372,15 @@ def textures():
     out['item/list_hay_hook_bloody.png'] = hay_hook(True)
     for i in range(4):
         out[f'particle/list_blood_{i}.png'] = blood(i)
+    # 0.4.710: where it lands, the wound, and what gets on the slasher and the sack.
+    for i in range(4):
+        out[f'block/the_list/blood_{i}.png'] = stain(i)
+    out['entity/the_list/wound.png'] = wound()
+    for i in (1, 2, 3):
+        out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
+        out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
+    out['entity/the_list/sack_dirt.png'] = sack_dirt()
+    out['entity/the_list/sack_torn.png'] = sack_torn()
     return out
 
 
@@ -4623,12 +4634,12 @@ def broken_door(upper):
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
          'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
-         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party']
+         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party', 'blood']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
           'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
-          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8}
+          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_line': 'Painted Line', 'curb': 'Curb', 'sidewalk': 'Sidewalk',
@@ -4747,6 +4758,236 @@ def blood(frame):
     return im
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.710: where it lands
+# Blood on the ground, at sixteen pixels: drops; a spatter thrown one way (toward the top of the picture, north, and turned with the
+# block), the drops drawn out the way they flew; a smear dragged the same way, streaked by what dragged it; a pool, wet at its edge
+# and catching what light there is. Four ways the wound and the blood look on the five and on the slasher, at their skins' density.
+BLOOD_DEEP = '#2e0505'
+
+
+def stain(stage):
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(9710 + stage)
+    def drop(x, y, r):
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if dx * dx + dy * dy <= r * r + (1 if r else 0):
+                    dot(im, x + dx, y + dy, BLOOD_DRY if dx * dx + dy * dy >= r * r else BLOOD_WET)
+        if r:
+            dot(im, x - 1, y - 1, BLOOD_LIGHT)
+    if stage == 0:
+        # Drops, round where they fell straight, a few specks thrown off them.
+        for x, y, r in [(4, 5, 1), (9, 3, 0), (11, 8, 1), (6, 10, 1), (3, 12, 0), (12, 13, 0), (8, 7, 0)]:
+            drop(x, y, r)
+        for x, y in [(5, 3), (13, 6), (10, 11), (2, 8), (7, 14)]:
+            dot(im, x, y, BLOOD_DRY)
+    elif stage == 1:
+        # Thrown north: the heavy drops near where it came from (the foot of the picture), drawn out the further they flew, each
+        # with its tail ahead of it.
+        for x0, y0, n in [(7, 13, 3), (5, 11, 4), (9, 10, 5), (4, 7, 5), (11, 6, 6), (7, 6, 6), (8, 3, 4), (12, 2, 3), (3, 3, 3)]:
+            for k in range(n):
+                y = y0 - k
+                if 0 <= y < 16:
+                    dot(im, x0, y, BLOOD_WET if k < max(1, n - 2) else BLOOD_DRY)
+            dot(im, x0 + 1, y0, BLOOD_WET); dot(im, x0, y0 + 1, BLOOD_DRY)
+            dot(im, x0, y0, BLOOD_LIGHT)
+        for x, y in [(2, 9), (13, 9), (10, 14), (6, 1), (14, 4), (1, 5)]:
+            dot(im, x, y, BLOOD_DRY)
+    elif stage == 2:
+        # Dragged north: a band, broad where it began and thinning, streaked lengthways, ragged at its edges.
+        for y in range(1, 16):
+            half = 1 + (y * 3) // 15
+            sway = round(math.sin(y * .7) * .8)
+            for x in range(8 - half + sway, 8 + half + 1 + sway):
+                streak = (x + 7) % 3 == 0
+                dot(im, x, y, BLOOD_DRY if streak else BLOOD_WET)
+            if rnd.random() < .5:
+                dot(im, 8 - half + sway - 1, y, BLOOD_DRY)
+            if rnd.random() < .5:
+                dot(im, 8 + half + sway + 1, y, BLOOD_DRY)
+        for y in (12, 13, 14):
+            dot(im, 7, y, BLOOD_LIGHT)
+        for x, y in [(3, 14), (12, 12), (5, 4), (11, 2)]:
+            dot(im, x, y, BLOOD_DRY)
+    else:
+        # A pool: dark in the middle, a wet edge, a glint where the light is, a run off one side.
+        cx, cy = 7.5, 8.5
+        for y in range(16):
+            for x in range(16):
+                d = ((x - cx) / 6.2) ** 2 + ((y - cy) / 5.4) ** 2 + .12 * math.sin(x * 1.3 + y * .9)
+                if d < .45:
+                    dot(im, x, y, BLOOD_DEEP)
+                elif d < .85:
+                    dot(im, x, y, BLOOD_DRY if (x + y) % 5 else BLOOD_DEEP)
+                elif d < 1.0:
+                    dot(im, x, y, BLOOD_WET)
+        for x, y in [(5, 5), (6, 5), (6, 6)]:
+            dot(im, x, y, BLOOD_LIGHT)
+        for x, y in [(13, 11), (14, 12), (14, 13), (15, 13)]:
+            dot(im, x, y, BLOOD_WET)
+    return im
+
+
+def stain_model(stage):
+    # Flat on what is under it, a sixty-fourth of a block above it.
+    e = [element([0, .25, 0], [16, .25, 16], {'up': 'b', 'down': 'b'})]
+    return model(e, {'b': f'blood_{stage}'}, f'blood_{stage}')
+
+
+def bleed_run(im, x, y0, y1, rnd, wide=1, lo=0, hi=10 ** 6):
+    # A run of blood down cloth: wavering a pixel now and then (never off the face it runs down), darker as it dries, a bead at its end.
+    for y in range(y0, y1):
+        if rnd.random() < .12:
+            x = max(lo, min(hi - wide, x + rnd.choice((-1, 1))))
+        for k in range(wide):
+            dot(im, x + k, y, BLOOD_WET if y - y0 < (y1 - y0) * .6 else BLOOD_DRY)
+    dot(im, x, y1, BLOOD_DRY); dot(im, x + wide - 1, y1, BLOOD_DRY)
+    return x
+
+
+def wound_at(im, cx, cy, hem, seed, lo, hi):
+    # The hook's wound, on the skins' own grid (two of the sheet's pixels to one painted): a short slit torn through the cloth on a
+    # slant, black inside, threads standing out of it; the soak round it uneven and heavier below, as cloth takes it; and runs from
+    # the foot of the soak down to the hem.
+    rnd = random.Random(seed)
+    soak = set()
+    for _ in range(7):
+        bx, by = cx + rnd.randint(-2, 2), cy + rnd.randint(-1, 3)
+        rx, ry = rnd.uniform(1.4, 2.6), rnd.uniform(1.4, 3.0)
+        for dy in range(-4, 5):
+            for dx in range(-4, 5):
+                if (dx / rx) ** 2 + (dy / ry) ** 2 < 1:
+                    soak.add((bx + dx, by + dy))
+    soak = {(x, y) for x, y in soak if lo <= x <= hi}
+    for x, y in soak:
+        r = rnd.random()
+        dot(im, x, y, BLOOD_WET if r < .62 else BLOOD_DRY if r < .9 else BLOOD_DEEP)
+    for dx, dy in [(0, -1), (0, 0), (1, 0), (1, 1)]:
+        dot(im, cx + dx, cy + dy, BLOOD_DEEP)
+    for dx, dy in [(-1, -1), (2, 1), (2, 2)]:
+        dot(im, cx + dx, cy + dy, '#5e5040')
+    dot(im, cx + 1, cy - 1, BLOOD_LIGHT); dot(im, cx - 1, cy + 1, BLOOD_LIGHT)
+    # The runs, from the foot of the soak to the hem, the longest to it.
+    for ox, wide, reach in [(-1, 1, 1.0), (1, 2, .75), (3, 1, .5), (-2, 1, .35)]:
+        x = max(lo, min(hi - wide + 1, cx + ox))
+        top = max([y for (sx, y) in soak if sx == x] or [cy + 2])
+        end = top + int((hem - top) * reach)
+        bleed_run(im, x, top, min(hem - 1, end), rnd, wide, lo, hi + 1)
+
+
+def wound():
+    # Over the five's own skins (512 by 256, painted two pixels to a dot), where the coat's front is (u 68.8 to 77.6, v 32.8 to
+    # 49.8), on the left of the chest just under the collarbone; and the same on the body's front under it (u 20 to 28, v 20 to 32).
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    wound_at(half, 150, 70, 99, 97101, 138, 154)
+    wound_at(half, 52, 45, 64, 97102, 40, 55)
+    return half.resize((512, 256), Image.NEAREST)
+
+
+def spatter(level):
+    # Over a player's own skin (64 by 64), on its outer layer: the shirt's front (u 20 to 28, v 36 to 48), and the sleeves of both
+    # arms (the right: outside 40-43, front 44-46, fist 48-49; the left: front 52-54, outside 56-58, fist 56-57), so that it lies on
+    # whichever hand holds the hook. Thrown up the front toward the face, and down the forearm; more at each level.
+    im = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+    rnd = random.Random(97100 + level)
+    flecks = {1: 8, 2: 18, 3: 34}[level]
+    for _ in range(flecks):
+        x = 20 + min(7, int(rnd.random() ** 1.6 * 8))
+        y = 36 + min(11, int(rnd.random() ** 1.3 * 9))
+        dot(im, x, y, rnd.choice((BLOOD_WET, BLOOD_WET, BLOOD_DRY)))
+        if level >= 2 and rnd.random() < .3:
+            dot(im, x, y + 1, BLOOD_DRY)
+    if level >= 2:
+        bleed_run(im, 21, 38, 44 if level == 2 else 47, rnd)
+        bleed_run(im, 23, 37, 41 if level == 2 else 46, rnd)
+    if level >= 3:
+        for x in range(20, 25):
+            for y in range(36, 42):
+                if rnd.random() < .6 - (y - 36) * .06:
+                    dot(im, x, y, BLOOD_WET if rnd.random() < .7 else BLOOD_DRY)
+        bleed_run(im, 25, 38, 46, rnd)
+    # The sleeves, forearm first: from the cuff up as far as it has got.
+    up = {1: 45, 2: 42, 3: 39}[level]
+    for (x0, x1, fist) in ((40, 47, (48, 50)), (52, 59, (56, 58))):
+        for x in range(x0, x1):
+            if x in (47, 55) or (x0 == 52 and x == 55):
+                continue
+            for y in range(36 if x0 == 40 else 52, 48 if x0 == 40 else 64):
+                row = y - (36 if x0 == 40 else 52)
+                if row + 36 >= up and rnd.random() < (.25 + .18 * level) * (1 if row > 8 else .6):
+                    dot(im, x, y, BLOOD_WET if rnd.random() < .6 else BLOOD_DRY)
+        if level >= 2:
+            for x in range(*fist):
+                for y in range(32 if x0 == 40 else 48, 36 if x0 == 40 else 52):
+                    dot(im, x, y, BLOOD_WET if (x + y) % 2 else BLOOD_DRY)
+    return im
+
+
+SACK_FRONT = (8, 8)
+EYEHOLES = [(1, 3), (2, 3), (1, 4), (2, 4), (5, 3), (6, 3), (5, 4), (6, 4)]
+
+
+def keep_eyeholes(im):
+    for x, y in EYEHOLES:
+        im.putpixel((SACK_FRONT[0] + x, SACK_FRONT[1] + y), (0, 0, 0, 0))
+    return im
+
+
+def sack_blood(level):
+    # Over the sack (64 by 32): thrown at its face from in front, more each time, then soaked down from the mouth; never over the
+    # eyeholes.
+    im = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
+    rnd = random.Random(97200 + level)
+    fx, fy = SACK_FRONT
+    for _ in range({1: 6, 2: 13, 3: 20}[level]):
+        dot(im, fx + rnd.randrange(8), fy + rnd.randrange(1, 8), rnd.choice((BLOOD_WET, BLOOD_DRY)))
+    for _ in range(level * 2):
+        dot(im, rnd.randrange(0, 8), 8 + rnd.randrange(3, 8), BLOOD_DRY)
+    if level >= 2:
+        bleed_run(im, fx + 3, fy + 6, fy + 8, rnd)
+        for x in range(fx + 1, fx + 7):
+            if rnd.random() < .5:
+                dot(im, x, 24, BLOOD_WET)
+    if level >= 3:
+        for x in range(fx + 1, fx + 7):
+            for y in range(fy + 5, fy + 8):
+                if rnd.random() < .7:
+                    dot(im, x, y, BLOOD_WET if (x + y) % 3 else BLOOD_DEEP)
+        bleed_run(im, fx + 5, fy + 5, fy + 8, rnd)
+    return keep_eyeholes(im)
+
+
+def sack_dirt():
+    # Lesley's fistful: caliche dust thrown in its face, thick round the eyeholes and caught in the weave below them.
+    im = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
+    rnd = random.Random(97300)
+    fx, fy = SACK_FRONT
+    for x, y in EYEHOLES:
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, 1), (1, 1)]:
+            if rnd.random() < .6:
+                dot(im, fx + x + dx, fy + y + dy, rnd.choice(('#a69a82', '#8c806a', '#bcb098')))
+    for _ in range(16):
+        dot(im, fx + rnd.randrange(8), fy + rnd.randrange(8), rnd.choice(('#a69a82', '#8c806a')))
+    for _ in range(5):
+        dot(im, rnd.randrange(8, 16), rnd.randrange(0, 8), '#a69a82')
+    return keep_eyeholes(im)
+
+
+def sack_torn():
+    # Mel's camcorder caught it across its left cheek: a tear from the front round onto the side, open through, raw threads standing
+    # at its edges.
+    im = sack_skin()
+    fx, fy = SACK_FRONT
+    gash = [(fx + 6, fy + 6), (fx + 7, fy + 5), (fx + 7, fy + 6), (16, fy + 5), (16, fy + 4), (17, fy + 4), (17, fy + 3), (18, fy + 3)]
+    for x, y in gash:
+        im.putpixel((x, y), (0, 0, 0, 0))
+    for x, y in [(fx + 5, fy + 6), (fx + 6, fy + 7), (fx + 7, fy + 4), (16, fy + 6), (17, fy + 5), (18, fy + 2), (18, fy + 4), (19, fy + 3)]:
+        dot(im, x, y, '#d8c49a')
+    for x, y in [(fx + 5, fy + 7), (16, fy + 3), (19, fy + 4)]:
+        darken(im, x, y, -24)
+    return im
+
+
 def files():
     out = {}
     for name in materials():
@@ -4856,6 +5097,19 @@ def main():
     hook, red = images['item/list_hay_hook.png'], images['item/list_hay_hook_bloody.png']
     assert hook.getpixel((0, 0))[3] == 0 and hook.getpixel((15, 15))[3] == 0 and ink(hook, BLOOD_WET) == 0 and ink(red, BLOOD_WET) >= 5
     assert all(sum(images[f'particle/list_blood_{i}.png'].getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) >= 4 for i in range(4))
+    # 0.4.710: every stain has blood in it, heavier at each stage; the wound sits on the coat's front and the body's; the sack's marks
+    # never cover its eyeholes, and the torn sack is open where it tore.
+    stained = [sum(images[f'block/the_list/blood_{i}.png'].getpixel((x, y))[3] > 0 for x in range(16) for y in range(16)) for i in range(4)]
+    assert stained[0] >= 8 and stained[0] < stained[1] < stained[3] and stained[2] > stained[0], stained
+    wd = images['entity/the_list/wound.png']
+    assert wd.getpixel((301, 141))[3] > 0 and wd.getpixel((104, 90))[3] > 0 and wd.getpixel((10, 10))[3] == 0
+    assert all(275 <= x <= 310 and 131 <= y <= 199 or 80 <= x < 112 and 80 <= y < 128 for x in range(512) for y in range(256) if wd.getpixel((x, y))[3])
+    for name in ('sack_blood_1', 'sack_blood_2', 'sack_blood_3', 'sack_dirt', 'sack_torn'):
+        assert all(images[f'entity/the_list/{name}.png'].getpixel((8 + x, 8 + y))[3] == 0 for x, y in EYEHOLES), name
+    plain = sum(images['entity/the_list/sack.png'].getpixel((x, y))[3] == 0 for x in range(8, 24) for y in range(8, 16))
+    assert sum(images['entity/the_list/sack_torn.png'].getpixel((x, y))[3] == 0 for x in range(8, 24) for y in range(8, 16)) >= plain + 6
+    sp = [sum(images[f'entity/the_list/spatter_{i}.png'].getpixel((x, y))[3] > 0 for x in range(64) for y in range(64)) for i in (1, 2, 3)]
+    assert sp[0] < sp[1] < sp[2], sp
     # The tower spells the town across three plates.
     assert all(ink(images[f'block/the_list/tank_{i}.png'], '#2a3e6e') > 8 for i in (1, 2, 3))
     # Cotton stands with its bolls open; the bare stalks have none.

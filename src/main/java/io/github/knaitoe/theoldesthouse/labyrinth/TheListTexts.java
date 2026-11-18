@@ -125,6 +125,16 @@ public final class TheListTexts {
     public static final String STOPS_SHORT="Somewhere to the %s, a scream stops short.";
     /** To anyone's hand on one of them after. */
     public static final String STILL_BODY="%s doesn't move.";
+    // ------------------------------------------------------------------------------------------------ 0.4.710: the dead found
+    /** What each of the five says on coming across one of the others dead (the dead one's name). */
+    public static final String[] FOUND_BODY=new String[TheListPeople.CAST];
+    static {
+        FOUND_BODY[TheListPeople.DEEK]="That's not funny, %s. Get up.";FOUND_BODY[TheListPeople.WES]="%s? No. No, no, no.";
+        FOUND_BODY[TheListPeople.MEL]="Is %s breathing? Is anybody checking?";FOUND_BODY[TheListPeople.LESLEY]="Don't look at %s. Don't look.";
+        FOUND_BODY[TheListPeople.SHANNON]="That's %s. That's %s on the ground.";
+    }
+    /** To a reader who is not the slasher, coming across one of them dead. */
+    public static final String FOUND_DEAD="%s lies face down, not moving.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
@@ -246,6 +256,9 @@ public final class TheListTexts {
                 case 2->"Empty cans, most of them stepped on.";case 3->"A camp lantern, hissing. Bugs knock against the glass.";
                 case 4->"A blanket spread on the grass. Sandburs in the weave.";case 5->"A cardboard case, torn open. Empty.";
                 case 6->"The lamp over the door. Out.";default->"The bulb. Out.";};
+            // 0.4.710: blood where it landed.
+            case BLOOD->switch(stage){case 1->"Blood, thrown out across the ground in a spray.";case 2->"Blood, dragged into a smear.";
+                case 3->"A pool of blood, not dry yet.";default->"Drops of blood. Still wet.";};
             case BATTERY->switch(stage){case 2->"The separator. A gauge on it, the needle steady.";case 4->"The lease's sign. Somebody has shot a hole through one corner.";
                 case 5,6,7->"A plate with the well's number on it.";default->"A tank on the lease, a hatch on its roof and a ladder up its side.";};
         };

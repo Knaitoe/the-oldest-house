@@ -37,4 +37,10 @@ public final class TheListSack extends Item implements Equipable {
         if(data==null)return null;var tag=data.copyTag();return tag.hasUUID("ListSack0705")?tag.getUUID("ListSack0705"):null;
     }
     public static boolean worn(Player player){return is(player.getItemBySlot(EquipmentSlot.HEAD));}
+    /** 0.4.710: what has got on a sack, drawn by its layer: blood (0 to 3, the low bits), torn, dirt in its weave. */
+    public static final int BLOOD=3,TORN=4,DIRT=8;
+    public static int marks(ItemStack stack){var data=stack.get(DataComponents.CUSTOM_DATA);return data==null?0:data.copyTag().getInt("ListMarks0710");}
+    public static void marks(ItemStack stack,int marks){CustomData.update(DataComponents.CUSTOM_DATA,stack,t->t.putInt("ListMarks0710",marks));}
+    /** More blood on it, up to three. */
+    public static void bleed(ItemStack stack){int m=marks(stack);marks(stack,m&~BLOOD|Math.min(3,(m&BLOOD)+1));}
 }

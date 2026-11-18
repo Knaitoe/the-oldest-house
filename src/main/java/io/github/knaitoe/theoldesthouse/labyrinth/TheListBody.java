@@ -1,7 +1,9 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.network.TheListBodyPayload;
+import io.github.knaitoe.theoldesthouse.network.TheListMarksPayload;
 import java.util.*;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -144,7 +146,7 @@ public final class TheListBody {
         PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,live.pullYaw,live.pull));
     }
     /** The body taken back: nothing of it, the sack included, is left on them. */
-    public static void end(ServerPlayer p){var own=own(p);own.remove("Body");own.remove("Sack");own.remove("Hook");save(p,own);strip(p,false);}
+    public static void end(ServerPlayer p){var own=own(p);own.remove("Body");own.remove("Sack");own.remove("Hook");own.remove("Blood");own.remove("SackMarks");save(p,own);strip(p,false);}
 
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var server=e.getServer();var level=server.getLevel(NovelRooms.dimension(TheList.PLACE));
@@ -173,6 +175,8 @@ public final class TheListBody {
         }else tread(p,l,live);
         if(live.tick%20==1)live.people=l.getEntitiesOfClass(LiteraryActor.class,bounds(b),a->TheListPeople.is(a)&&a.isAlive());
         if(live.tick%20==3)hook(p);
+        // 0.4.710: the blood on them, to every viewer now and then, so that one who comes into town later sees it too.
+        if(live.tick%40==5&&blood(p)>0)shown(p,blood(p));
         if(live.tick%10==2)seen(p,l,live,now);
         if(live.tick%5==0)pull(p,l,live);
         hearts(p,l,live,now);
@@ -185,10 +189,11 @@ public final class TheListBody {
         var jump=p.getAttribute(Attributes.JUMP_STRENGTH);if(jump!=null)jump.removeModifier(STILL_JUMP_ID);
         holding(p,false);takeHooks(p);
         if(live!=null&&live.down>0&&p.getForcedPose()==Pose.SWIMMING)p.setForcedPose(null);
-        // The sack stays in the town: on the back step, and put back on the reader when they come back.
+        // The sack stays in the town: on the back step, and put back on the reader when they come back, as it was (0.4.710).
+        int marks=sackMarks(p);
         int was=takeSacks(p);
-        if(keep&&was>0){var own=own(p);own.putInt("Sack",was);save(p,own);TheList.cue(p,TheListTexts.SACK_LEFT);}
-        if(live!=null)PacketDistributor.sendToPlayer(p,new TheListBodyPayload(false,0,0,0));
+        if(keep&&was>0){var own=own(p);own.putInt("Sack",was);if(marks!=0)own.putInt("SackMarks",marks);save(p,own);TheList.cue(p,TheListTexts.SACK_LEFT);}
+        if(live!=null){PacketDistributor.sendToPlayer(p,new TheListBodyPayload(false,0,0,0));shown(p,0);}
     }
     static boolean hasSack(ServerPlayer p){
         var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(TheListSack.is(inv.getItem(i)))return true;
@@ -209,6 +214,8 @@ public final class TheListBody {
         own.remove("Sack");save(p,own);
         if(hasSack(p))return;
         var sack=TheListSack.made(p.getUUID());
+        // 0.4.710: as it was left: torn, dirt in it, blood on it.
+        if(own.contains("SackMarks")){TheListSack.marks(sack,own.getInt("SackMarks"));own.remove("SackMarks");save(p,own);}
         boolean head=left!=2&&p.getItemBySlot(EquipmentSlot.HEAD).isEmpty();
         if(head)p.setItemSlot(EquipmentSlot.HEAD,sack);else if(!p.getInventory().add(sack))p.drop(sack,false);
         p.serverLevel().playSound(null,p.getX(),p.getY()+1.5,p.getZ(),TheListRegistry.SACK_SOUND.get(),SoundSource.PLAYERS,.8F,1F);
@@ -250,6 +257,36 @@ public final class TheListBody {
     }
     /** One of the five killed: the reader's record keeps who (Kills, a bit for each). */
     public static void killed(ServerPlayer p,int who){var own=own(p);own.putInt("Kills",own.getInt("Kills")|1<<who);save(p,own);}
+    /** 0.4.710: the same for one who may have logged off since the hook went in. */
+    public static void killed(net.minecraft.server.MinecraftServer server,UUID reader,int who){
+        var d=LabyrinthData.get(server);var own=LiteraryVignettes.personal(d,reader,TheList.PLACE);
+        own.putInt("Kills",own.getInt("Kills")|1<<who);LiteraryVignettes.save(d,reader,TheList.PLACE,own);
+    }
+
+    // ------------------------------------------------------------------------------------------------ 0.4.710: what gets on the body
+    /** How much blood is down the front of the reader and their right sleeve: 0 to 3, the record's Blood. */
+    public static int blood(ServerPlayer p){return own(p).getInt("Blood");}
+    /** The hook in, or out: more blood down the front and the sleeve, and on the sack if it is on the head. Every viewer sees it. */
+    public static void bleed(ServerPlayer p){
+        var own=own(p);int b=Math.min(3,own.getInt("Blood")+1);own.putInt("Blood",b);save(p,own);
+        if(TheListSack.worn(p))TheListSack.bleed(p.getItemBySlot(EquipmentSlot.HEAD));
+        shown(p,b);
+    }
+    /** The sack on the head torn (Mel's camcorder), or with dirt in its weave (Lesley's fistful): nothing if the sack is off. */
+    public static void mark(ServerPlayer p,int mark){
+        if(!TheListSack.worn(p))return;var sack=p.getItemBySlot(EquipmentSlot.HEAD);TheListSack.marks(sack,TheListSack.marks(sack)|mark);
+    }
+    /** The marks on whichever sack the reader has: the one on their head, else one carried. */
+    static int sackMarks(ServerPlayer p){
+        if(TheListSack.worn(p))return TheListSack.marks(p.getItemBySlot(EquipmentSlot.HEAD));
+        var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(TheListSack.is(inv.getItem(i)))return TheListSack.marks(inv.getItem(i));
+        return 0;
+    }
+    /** The blood on a reader as every viewer draws it (0 to take it off). */
+    static void shown(ServerPlayer p,int blood){var payload=new TheListMarksPayload(p.getUUID(),blood);for(var q:p.server.getPlayerList().getPlayers())HousePackets.send(q,payload);}
+    /** 0.4.710: one who is not the slasher came across one of the five dead (Found, a bit for each). */
+    public static void found(ServerPlayer p,int who){var own=own(p);own.putInt("Found",own.getInt("Found")|1<<who);save(p,own);}
+    public static int found(ServerPlayer p){return own(p).getInt("Found");}
     public static int kills(ServerPlayer p){return own(p).getInt("Kills");}
     /** Holding one of the five, the body stands where it is: no walking, no jumping. Let go, it walks again. */
     public static void holding(ServerPlayer p,boolean on){

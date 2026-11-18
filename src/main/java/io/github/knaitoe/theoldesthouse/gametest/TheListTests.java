@@ -1062,6 +1062,8 @@ public final class TheListTests {
         }).thenWaitUntil(()->h.assertTrue(hid(l,b,M,0),"waiting for Mel to hide: "+where(l,b,M)))
         .thenExecute(()->{f.at(p,P,-152,0,-75.5);p.setYRot(0);p.setYHeadRot(0);})
         .thenWaitUntil(()->h.assertTrue(TheListHunt.fought(b,M),"waiting for Mel to be found: "+where(l,b,M)))
+        // 0.4.710: her camcorder tears the sack on the slasher's head.
+        .thenExecute(()->h.assertTrue((TheListSack.marks(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD))&TheListSack.TORN)!=0,"the camcorder tears the sack"))
         .thenWaitUntil(()->h.assertTrue(hid(l,b,M,1)&&TheListBody.down(p)==0,"waiting for Mel at her second place and the slasher up: "+where(l,b,M)))
         .thenExecute(()->{f.at(peer,P,-145.5,0,-52.5);f.at(p,P,-152,0,-46.5);p.setYRot(0);p.setYHeadRot(0);})
         .thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,M)==TheListHunt.State.COWER,"waiting for Mel to be found again: "+where(l,b,M)))
@@ -1116,5 +1118,113 @@ public final class TheListTests {
             h.assertFalse(left,"the hook goes with the body");
             done();h.succeed();
         });
+    }
+
+    /**
+     * 0.4.710, part 4a-3 (docs/THE_LIST_0_4_710.md): wounds, blood where it lands, and the dead found. Shannon, taken from behind at the
+     * bus bench and given the hook, with a second reader near: the wound on her once it goes in; drops under her and a spatter where
+     * the slasher stands; blood on the slasher and the sack, sent to the other reader; a smear and a pool by the time she lies still,
+     * low and wide where she lies. The other reader, coming up and looking at her, is told who it is and keeps it; the slasher is not.
+     * Deek, set down in sight of her, says so and runs. Ended, every stain is taken up and the wound is gone; the body taken back, the
+     * blood with it.
+     */
+    @GameTest(template="empty",batch="the_list_found",timeoutTicks=6000)
+    public static void theDeadFound(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_found",P);var peer=f.player("list_found_peer",P);
+        hold(f,b,TheListPeople.AT[TheListPeople.DEEK],TheListPeople.AT[TheListPeople.SHANNON],new BlockPos(-30,0,-111));
+        int S=TheListPeople.SHANNON,D=TheListPeople.DEEK;
+        List<net.minecraft.network.protocol.Packet<?>> mine=new ArrayList<>(),theirs=new ArrayList<>();
+        Vec3[] knelt=new Vec3[1];
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the ground");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListBody.giveHook(p);
+            var inv=p.getInventory();for(int i=0;i<9;i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))inv.selected=i;
+            TheListHunt.start(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p)&&TheListSack.worn(p),"waiting for the body and the sack to be the reader's"))
+        .thenExecute(()->{
+            h.assertTrue(TheListBody.blood(p)==0&&TheListHunt.stains(l,b)==0,"nothing on the slasher, nothing on the ground");
+            var shannon=TheListPeople.find(l,b,S);
+            f.at(peer,P,-28.5,0,-116.5);sent(peer);
+            f.at(p,P,-35.5,0,-109.9);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);p.setYRot(180);p.setYHeadRot(180);sent(p);
+            LiteraryVignettes.talk(p,shannon);
+            h.assertTrue(TheListHunt.state(b,S)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,S));
+            LiteraryVignettes.talk(p,shannon);
+            h.assertTrue(TheListHunt.state(b,S)==TheListHunt.State.FINISH,"the hook comes up");
+            h.assertTrue((shannon.marks()&TheListHunt.WOUND)==0,"no wound before it goes in");
+        }).thenIdle(TheListHunt.RAISE+2).thenExecute(()->{
+            mine.addAll(sent(p));theirs.addAll(sent(peer));
+            var shannon=TheListPeople.find(l,b,S);knelt[0]=shannon.position();
+            h.assertTrue((shannon.marks()&TheListHunt.WOUND)!=0,"the wound on her once it is in");
+            h.assertTrue(TheListBody.blood(p)==1,"blood on the slasher: "+TheListBody.blood(p));
+            h.assertTrue((TheListSack.marks(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD))&TheListSack.BLOOD)==1,"and on the sack");
+            h.assertTrue(stain(l,shannon.position(),TheListHunt.DROPS),"drops under her");
+            h.assertTrue(stain(l,p.position(),TheListHunt.SPATTER),"a spatter where the slasher stands");
+            h.assertTrue(TheListHunt.stains(l,b)>=2,"both kept to be taken up: "+TheListHunt.stains(l,b));
+            h.assertTrue(marks(theirs,p)>=1,"the other reader is sent the blood on the slasher: "+marks(theirs,p));
+        }).thenWaitUntil(()->{
+            mine.addAll(sent(p));theirs.addAll(sent(peer));
+            h.assertTrue(TheListHunt.dead(b,S),"waiting for her to lie still: "+where(l,b,S));
+        }).thenExecute(()->{
+            var shannon=TheListPeople.find(l,b,S);
+            h.assertTrue(TheListBody.blood(p)==2&&(TheListSack.marks(p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD))&TheListSack.BLOOD)==2,"more blood as it comes out: "+TheListBody.blood(p));
+            h.assertTrue(marks(theirs,p)==2,"sent again: "+marks(theirs,p));
+            h.assertTrue(stain(l,knelt[0],TheListHunt.SMEAR),"a smear where she knelt");
+            h.assertTrue(stain(l,shannon.position(),TheListHunt.POOL),"a pool where she lies");
+            h.assertTrue(shannon.getBbHeight()<.5&&shannon.getBbWidth()>1,"she lies low and long: "+shannon.getBbWidth()+" by "+shannon.getBbHeight());
+            h.assertTrue(Math.abs(shannon.getY()-knelt[0].y)<.05,"she lies on the ground she knelt on: "+shannon.getY()+" against "+knelt[0].y);
+            // The other reader comes up and looks at her; the slasher, standing over her, is told nothing of it.
+            Vec3 spot=null;
+            for(var o:new Vec3[]{new Vec3(2.5,0,0),new Vec3(-2.5,0,0),new Vec3(0,0,2.5),new Vec3(0,0,-2.5)}){
+                var at=shannon.position().add(o);
+                if(l.noCollision(peer,peer.getDimensions(peer.getPose()).makeBoundingBox(at))&&l.getBlockState(BlockPos.containing(at).below()).isFaceSturdy(l,BlockPos.containing(at).below(),Direction.UP)){spot=at;break;}
+            }
+            h.assertTrue(spot!=null,"somewhere to stand by her");
+            f.at(peer,P,spot.x-b.getX(),shannon.getY()-b.getY(),spot.z-b.getZ());
+            var to=shannon.position().subtract(peer.position());float yaw=(float)Math.toDegrees(Math.atan2(-to.x,to.z));
+            peer.setYRot(yaw);peer.setYHeadRot(yaw);peer.setXRot(40);cues(peer);cues(p);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_DEAD,"Shannon")),"the other reader finds her");
+            h.assertTrue((TheListBody.found(peer)&1<<S)!=0&&(TheListHunt.found(b,peer)&1<<S)!=0,"and keeps it");
+            h.assertFalse(cues(p).contains(String.format(TheListTexts.FOUND_DEAD,"Shannon")),"the slasher is not told");
+            TheListHunt.look(l,b);
+            h.assertFalse(cues(peer).contains(String.format(TheListTexts.FOUND_DEAD,"Shannon")),"once");
+            // Deek, set down where he can see her, at his place in the hunt: he says so, and runs.
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.CALM,"Deek has heard nothing at the field");
+            deek.stopRiding();
+            var by=spot.add(shannon.position()).scale(.5).add(spot.subtract(shannon.position()).normalize().scale(3));
+            var look=shannon.position().subtract(by);float dy=(float)Math.toDegrees(Math.atan2(-look.x,look.z));
+            deek.moveTo(by.x,shannon.getY(),by.z,dy,0);deek.setYHeadRot(dy);deek.setYBodyRot(dy);
+            TheListHunt.look(l,b);
+            h.assertTrue(TheListHunt.saw(b,D,S),"Deek sees her");
+            h.assertTrue(String.format(TheListTexts.FOUND_BODY[D],"Shannon","Shannon").equals(said(deek)),"and says so: "+said(deek));
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.RUN,"and runs");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            h.assertTrue(TheListHunt.stains(l,b)==0,"ended, every stain is taken up");
+            h.assertFalse(stain(l,knelt[0],TheListHunt.DROPS)||stain(l,p.position(),TheListHunt.DROPS),"the ground as it was");
+            var shannon=TheListPeople.find(l,b,S);
+            h.assertTrue(shannon.marks()==0&&shannon.gesture()==TheListHunt.STILL,"and the wound is gone");
+            TheListBody.end(p);
+            h.assertTrue(TheListBody.blood(p)==0&&marks(sent(peer),p)==0,"the body taken back, the blood with it");
+            done();h.succeed();
+        });
+    }
+    /** Whether there is blood at least this heavy within a block of a point, at its own height. */
+    private static boolean stain(ServerLevel l,Vec3 at,int stage){
+        var c=BlockPos.containing(at.x,at.y+.1,at.z);
+        for(var q:BlockPos.betweenClosed(c.offset(-1,0,-1),c.offset(1,0,1))){var st=l.getBlockState(q);if(TheListBlock.is(st,Kind.BLOOD)&&st.getValue(TheListBlock.STAGE)>=stage)return true;}
+        return false;
+    }
+    /** The last blood sent for a reader in these packets: -1 if none was. */
+    private static int marks(List<net.minecraft.network.protocol.Packet<?>> packets,ServerPlayer who){
+        int last=-1;
+        for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.TheListMarksPayload m&&m.player().equals(who.getUUID()))last=m.blood();
+        return last;
     }
 }
