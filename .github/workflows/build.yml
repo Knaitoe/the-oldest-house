@@ -1780,14 +1780,14 @@ jobs:
         with:
           gradle-version: '9.2.1'
       - name: Native exploration, shared routes and old-save append
-        timeout-minutes: 10
+        timeout-minutes: 16
         env:
           JAVA_TOOL_OPTIONS: -Xmx4g
         run: |
           mkdir -p run build
           printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
           set -o pipefail
-          timeout --signal=QUIT --kill-after=20s 8m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_exploration --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/exploration-native.log
+          timeout --signal=QUIT --kill-after=20s 14m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_exploration --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/exploration-native.log
           python3 - <<'PYTHON'
           import re
           from pathlib import Path

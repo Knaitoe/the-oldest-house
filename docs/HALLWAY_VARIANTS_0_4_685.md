@@ -40,4 +40,6 @@ Full workflow and client rendering remain pending verification gates for a merge
 ## Merged (0.4.712)
 
 Brought into `feature/vignette-environment-audit-0.4.125` on 18 November (`docs/INTEGRATION_0_4_712.md`). Slot 246 had gone to
-*The list* in the meantime, so the twelve stand at slots 247 to 258 in the same order; nothing else in them changed.
+*The list* in the meantime, so the twelve stand at slots 247 to 258 in the same order; nothing else in them changed. The exploration
+pass's limit goes from eight minutes to fourteen to hold their nineteen cases, and the cases' fixture clears the sixty ticks a
+joining player cannot be hurt, which the plaster case fell inside when its room loaded at once.
