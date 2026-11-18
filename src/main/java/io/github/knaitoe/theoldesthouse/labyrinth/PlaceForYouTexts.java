@@ -75,6 +75,7 @@ public final class PlaceForYouTexts {
     /** What the reader sees when it is over. */
     public static String ended(String outcome,CompoundTag own){
         if(outcome.equals("took_the_road"))return "The road goes on into the trees. Behind you, the house is exactly as you left it.";
+        if(outcome.equals("kept_a_place"))return "Your chair is pulled out from the table. The supper is still warm.";
         return own.getBoolean("LightOff")?"The kitchen light goes out. Nobody is left to switch it on.":"The kitchen light is still on. One chair is empty.";
     }
 
@@ -164,6 +165,7 @@ public final class PlaceForYouTexts {
             t.append(" The house stayed exactly as I left it.");
             return t.toString();
         }
+        if(outcome.equals("kept_a_place")){t.append(kept(own));return t.toString();}
         t.append("I set the hall chair against the front door, and took my picture down off the fridge.");
         if(own.getBoolean("TheoSilent"))t.append(" After that the voice past the gate said her name once more, and stopped.");
         if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Kit went out through the gate with the bag.");
@@ -179,6 +181,34 @@ public final class PlaceForYouTexts {
         }
         t.append(own.getString("RenEnd").equals("goes")?" Ren went with them as far as the bend.":" Ren stayed with Mara.");
         t.append(own.getBoolean("LightOff")?"\n\nThe last one out turned off the kitchen light.":"\n\nWhen I looked back from the road, the kitchen light was on, and one chair was empty.");
+        return t.toString();
+    }
+    /** 0.4.687: the evening kept (PlaceForYouKeep): the picture back up, who sat beside the reader, the old answer, the gesture again. */
+    static String kept(CompoundTag own){
+        var t=new StringBuilder();
+        t.append("I had taken my picture down off the fridge. I put it back up.");
+        if(own.getBoolean("VoiceStopped"))t.append(" The knocking stopped.");
+        t.append(" Mara said that was where it went, and the supper was still warm.");
+        String who=own.getString("Beside");
+        if(!who.isEmpty()){
+            t.append(" "+who+" sat down next to me. ");
+            t.append(switch(who){
+                case "Mara"->"She rested her hand on my arm while she talked, and said she was glad it was me at the table.";
+                case "Ren"->"Ren knocked my elbow with theirs and said they'd told me she would make too much.";
+                default->"Alex tipped the last of the jug into my glass before their own.";
+            });
+        }
+        String asked=own.getString("KeepAsked");
+        if(!asked.isEmpty()){
+            t.append(" I asked Mara "+switch(asked){case "kit"->"where Kit was tonight";case "door"->"who had been at the door";default->"what we were doing tomorrow";}+".");
+            t.append(" She said, \""+own.getString("OldAnswer")+"\" It was what she had said when I came in.");
+        }
+        if(own.getBoolean("GestureAgain")&&!who.isEmpty())t.append(" A while later "+who+" did it again, the same way, with the same words.");
+        if(own.getBoolean("RoutineAgain"))t.append(" In the bathroom my "+routine(own.getCompound("Snap").getInt("Routine"))+" was laid out again, untouched.");
+        if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Nobody set a place for Kit.");
+        if(!own.getString("AlexEnd").isEmpty())t.append(" Alex's chair stayed empty.");
+        if(own.getBoolean("DoorClosed"))t.append(" The hall chair was back in the hall, and the front door was shut.");
+        t.append("\n\nWhen I left, my chair was still pulled out from the table.");
         return t.toString();
     }
     /** 0.4.686: Kit asked on the way out, and somebody at the door (PlaceForYouDoor): what the reader asked, saw and was told. */

@@ -42,6 +42,8 @@ public final class PlaceForYou {
     public static boolean ren(int phase){return phase>=REN&&phase<=REN+2;}
     /** The evening's chapters. */
     public static final int APPROACH=0,WELCOME=1,SUPPER=2,BATHROOM=3,BAG=4,SINK=5,DINNER=6,OPEN=7,ROAD=8,DONE=9;
+    /** 0.4.687 (PlaceForYouKeep): the reader's picture put back up, and the evening kept with them in it. */
+    public static final int KEEP=10;
     static final String TAG="PlaceForYou257";
     public static final int EMPTY_RESET=200;
 
@@ -53,6 +55,8 @@ public final class PlaceForYou {
         // 0.4.686 (PlaceForYouDoor): when the knock comes, when the voice speaks from the gate, how long the door has stood open or shut,
         // when a forgetting is taken back and by whom, when the voice last spoke, and how many times it has knocked again.
         int knockAt=-1,voiceAt=-1,openFor,shutFor,forgetAt=-1,knocks;long lastVoice=-1000;String forgetter="Mara";
+        // 0.4.687 (PlaceForYouKeep): when the kept evening's present beat began, and when the familiar gesture last came.
+        int keepAt=-1,gestureAt=-1;
         final Map<UUID,Long> said=new HashMap<>();
         House(BlockPos b){base=b;}
     }
@@ -126,6 +130,14 @@ public final class PlaceForYou {
             if(own.getString("RenEnd").equals("goes"))m.put("Ren",own.getBoolean("MaraGone")?Mark.gone():stand(-.5,-6.5,0));
         }
         if(ch==ROAD||ch==DONE&&own.getString("Outcome").equals("took_the_road")){if(own.getBoolean("KitLeft"))m.put("Kit",stand(1.5,-6.5,0));}
+        // 0.4.687: the kept evening. Whoever has gone stays gone; whoever said they were going is not sat back down; the familiar one beside the reader.
+        if(ch==PlaceForYou.KEEP||ch==DONE&&own.getString("Outcome").equals("kept_a_place")){
+            if(own.getBoolean("KitLeft"))m.put("Kit",Mark.gone());else if(own.getBoolean("KitGoing"))m.put("Kit",stand(.5,-2.5,90));
+            if(!own.getString("AlexEnd").isEmpty())m.put("Alex",own.getBoolean("AlexGone")?Mark.gone():stand(2.5,-8.5,0));
+            if(own.getString("MaraEnd").equals("gate"))m.put("Mara",own.getBoolean("MaraGone")?Mark.gone():stand(.5,-6.5,0));
+            if(own.getString("RenEnd").equals("goes"))m.put("Ren",own.getBoolean("MaraGone")?Mark.gone():stand(-.5,-6.5,0));
+            PlaceForYouKeep.seat(own,m);
+        }
         return m;
     }
     /**
@@ -244,6 +256,8 @@ public final class PlaceForYou {
             case DINNER->dinner(l,h,p,own,r);
             case OPEN->open(l,h,p,own,r);
             case ROAD->{if(PlaceForYouSite.onRoad(r)){finish(p,"took_the_road");}}
+            case KEEP->PlaceForYouKeep.tick(l,h,p,own,r);
+            case DONE->{if(own.getString("Outcome").equals("kept_a_place"))PlaceForYouKeep.after(l,h,p,own,r);}
             default->{}
         }
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
@@ -579,6 +593,7 @@ public final class PlaceForYou {
                 else if(who.equals("Mara")&&knocking)PlaceForYouDoor.mara(p,h);
                 else if((who.equals("Alex")||who.equals("Ren"))&&knocking)PlaceForYouDoor.peers(p,h);
                 else above(h,a,who.equals("Kit")?"Go on. I'm right behind you.":knocking?(who.equals("Mara")?"I can't be the one who answers it.":"I'm not answering it."):"The door first.");}
+            case KEEP->PlaceForYouKeep.talk(p,h,who,a);
             default->above(h,a,"...");
         }
     }
@@ -646,6 +661,8 @@ public final class PlaceForYou {
             return false;}
         // The fridge: the reader's picture, taken down to open the house.
         if(rel.equals(PlaceForYouSite.FRIDGE)||rel.equals(PlaceForYouSite.FRIDGE.above())){
+            // 0.4.687: with the picture already down, it can go back up, and the evening is kept (PlaceForYouKeep).
+            if(ch==OPEN&&own.getBoolean("PictureDown")&&!own.getBoolean("Ready")){PlaceForYouKeep.fridge(p,h);return true;}
             if(ch==OPEN&&!own.getBoolean("PictureDown")){PlaceForYouSite.picture(l,b,own.getCompound("Snap").getCompound("Drawing"),false);edit(p,o->o.putBoolean("PictureDown",true));cue(p,"You take your picture down off the fridge.");checkOpen(p,h);return true;}
             cue(p,PlaceForYouSite.pictureUp(l,b)?(own.getCompound("Snap").contains("Drawing")?"Your picture, on their fridge.":"A pencil figure on the fridge door, with no face yet. It's your place they've drawn."):"The fridge door, bare.");return true;}
         // Kit's door, before it is taken: Kit's room is Kit's.
