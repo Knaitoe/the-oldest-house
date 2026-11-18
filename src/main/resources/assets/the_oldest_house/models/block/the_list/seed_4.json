@@ -1,0 +1,51 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/the_list/bin_wall",
+    "s": "the_oldest_house:block/the_list/cottonseed",
+    "a": "the_oldest_house:block/the_list/auger_flight",
+    "r": "the_oldest_house:block/the_list/trough",
+    "l": "the_oldest_house:block/the_list/ladder",
+    "d": "the_oldest_house:block/the_list/door_slide_lower",
+    "u": "the_oldest_house:block/the_list/door_slide_upper",
+    "g": "the_oldest_house:block/the_list/galv",
+    "h": "the_oldest_house:block/the_list/barn_shade",
+    "b": "the_oldest_house:block/the_list/bulb",
+    "o": "the_oldest_house:block/the_list/pipe",
+    "particle": "the_oldest_house:block/the_list/door_slide_lower"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ]
+}

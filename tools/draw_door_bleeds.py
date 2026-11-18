@@ -894,6 +894,18 @@ def fallow(r):
     return im
 
 
+COTTON_BOLL = (['.aa.', 'abba', 'aaab', '.cc.'], ['aa.', 'aba', '.c.'], ['.a.', 'aaa', 'ac.'])
+COTTON_PAL = [dict(a=0xF2EEE4, b=0xDCD6C8, c=0x6E5638), dict(a=0xEAE4D6, b=0xD2CCBC, c=0x5E4A30)]
+
+
+def the_list(r):
+    im = canvas(1)
+    drift(im, r, [(0xD8CDB4, 3), (0xC4B898, 2), (0xA89A7C, 1)], 6, body=.5)   # caliche dust off the street, pale
+    strew(im, r, [(rows, COTTON_PAL) for rows in COTTON_BOLL], 4, near=.55)   # cotton, blown in off the field
+    sprite(im, 11, 3, ['a.a', 'bab', '.c.'], dict(a=0xB8AC94, b=0x8E826A, c=0x5A5040))   # a moth from the porch light, its wings open
+    return im
+
+
 DRAWN = {
     'goatman': goatman, 'ted_caver': ted_caver, 'zampano_courtyard': zampano_courtyard, 'whale': whale, 'barn_well': barn_well, 'plain': plain,
     'holloway_camp': holloway_camp, 'wallpaper_nursery': wallpaper_nursery, 'hill_nursery': hill_nursery, 'miniatures': miniatures,
@@ -907,7 +919,7 @@ DRAWN = {
     'vacant_possession': vacant_possession, 'second_person': second_person, 'deer_road': deer_road, 'state_route': state_route,
     'marsh_supper': marsh_supper, 'tall_grass': tall_grass, 'growing_things': growing_things, 'pinehook': pinehook,
     'the_drawing': the_drawing, 'corner_house': corner_house, 'black_city': black_city, 'kept': kept, 'last_orders': last_orders,
-    'bike_night': bike_night, 'pell_house': pell_house, 'ones_inside': ones_inside, 'fallow': fallow,
+    'bike_night': bike_night, 'pell_house': pell_house, 'ones_inside': ones_inside, 'fallow': fallow, 'the_list': the_list,
 }
 
 

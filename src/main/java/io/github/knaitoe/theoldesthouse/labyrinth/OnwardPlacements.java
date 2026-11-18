@@ -65,6 +65,7 @@ final class OnwardPlacements {
         r.put(NOT_YET,NotYetSite.ONWARD.getX(),0,NotYetSite.ONWARD.getZ(),SOUTH,OnwardRegistry.SERVICE); // 0.4.663: a service door past the far door
         r.put(LAST_SEEN,LastSeenSite.ONWARD.getX(),0,LastSeenSite.ONWARD.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.667: a house door across the avenue, facing the park
         r.put(FALLOW,FallowSite.ONWARD.getX(),0,FallowSite.ONWARD.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.672: the farmhouse's front door across the road
+        r.put(THE_LIST,TheListSite.ONWARD.getX(),0,TheListSite.ONWARD.getZ(),SOUTH,()->Blocks.OAK_DOOR); // 0.4.699: the empty house across South Ninth
         r.put(LAST_ORDERS,LastOrdersSite.ONWARD.getX(),0,LastOrdersSite.ONWARD.getZ(),EAST,OnwardRegistry.PANEL); // 0.4.416: the street door in the west wall by the front
         r.put(PELL_HOUSE,PellSite.ONWARD.getX(),0,PellSite.ONWARD.getZ(),NORTH,OnwardRegistry.SERVICE); // 0.4.518: a service door in the substation's wall, west of the door the reader came by
         r.put(LITTLE_LONGER,LongerSite.ONWARD.getX(),0,LongerSite.ONWARD.getZ(),WEST,()->Blocks.SPRUCE_DOOR); // 0.4.621: a second door in the House's corridor

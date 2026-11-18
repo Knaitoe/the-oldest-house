@@ -1,0 +1,45 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "b": "the_oldest_house:block/the_list/bale_side",
+    "g": "the_oldest_house:block/the_list/bale_tag",
+    "m": "the_oldest_house:block/the_list/module_side",
+    "t": "the_oldest_house:block/the_list/tarp",
+    "e": "the_oldest_house:block/the_list/module_end",
+    "particle": "the_oldest_house:block/the_list/bale_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      }
+    }
+  ]
+}

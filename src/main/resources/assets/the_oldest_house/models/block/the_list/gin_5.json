@@ -1,0 +1,50 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "m": "the_oldest_house:block/the_list/machine",
+    "f": "the_oldest_house:block/the_list/feeder_front",
+    "s": "the_oldest_house:block/the_list/stand_front",
+    "c": "the_oldest_house:block/the_list/cleaner_front",
+    "p": "the_oldest_house:block/the_list/press_lower",
+    "q": "the_oldest_house:block/the_list/press_upper",
+    "a": "the_oldest_house:block/the_list/auger_flight",
+    "r": "the_oldest_house:block/the_list/trough",
+    "o": "the_oldest_house:block/the_list/pipe",
+    "g": "the_oldest_house:block/the_list/galv",
+    "particle": "the_oldest_house:block/the_list/press_lower"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q"
+        },
+        "south": {
+          "texture": "#q"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/the_list/galv",
+    "a": "the_oldest_house:block/the_list/drivein_arrow",
+    "particle": "the_oldest_house:block/the_list/drivein_arrow"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        2,
+        7.5
+      ],
+      "to": [
+        16,
+        14,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a",
+          "uv": [
+            0,
+            2,
+            16,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#a",
+          "uv": [
+            0,
+            2,
+            16,
+            14
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 14,
+        "sky_light": 0
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

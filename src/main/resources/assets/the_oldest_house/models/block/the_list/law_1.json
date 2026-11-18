@@ -1,0 +1,242 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "m": "the_oldest_house:block/the_list/gov_metal",
+    "d": "the_oldest_house:block/the_list/gov_drawers",
+    "r": "the_oldest_house:block/the_list/radio_set",
+    "b": "the_oldest_house:block/the_list/bench_wood",
+    "g": "the_oldest_house:block/the_list/galv",
+    "f": "the_oldest_house:block/the_list/flag",
+    "c": "the_oldest_house:block/the_list/corkboard",
+    "j": "the_oldest_house:block/the_list/water_jug",
+    "o": "the_oldest_house:block/the_list/cooler_body",
+    "particle": "the_oldest_house:block/the_list/gov_metal"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        13,
+        0
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        5,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        0,
+        14
+      ],
+      "to": [
+        11,
+        13,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        15,
+        6
+      ],
+      "to": [
+        13,
+        20,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#r",
+          "uv": [
+            3,
+            11,
+            13,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#r",
+          "uv": [
+            3,
+            11,
+            10,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#r",
+          "uv": [
+            6,
+            11,
+            13,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#r"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        15,
+        3
+      ],
+      "to": [
+        3,
+        17,
+        5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            13,
+            0,
+            15,
+            2
+          ]
+        },
+        "south": {
+          "texture": "#r",
+          "uv": [
+            1,
+            0,
+            3,
+            2
+          ]
+        },
+        "east": {
+          "texture": "#r",
+          "uv": [
+            11,
+            0,
+            13,
+            2
+          ]
+        },
+        "west": {
+          "texture": "#r",
+          "uv": [
+            3,
+            0,
+            5,
+            2
+          ]
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      }
+    }
+  ]
+}

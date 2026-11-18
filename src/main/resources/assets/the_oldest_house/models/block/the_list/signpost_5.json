@@ -1,0 +1,337 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/the_list/galv",
+    "c": "the_oldest_house:block/the_list/crossbuck",
+    "particle": "the_oldest_house:block/the_list/crossbuck"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        8
+      ],
+      "to": [
+        9,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        16,
+        8
+      ],
+      "to": [
+        9,
+        26,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            7,
+            6,
+            9,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            7,
+            6,
+            9,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#g",
+          "uv": [
+            6,
+            6,
+            8,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            8,
+            6,
+            10,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        -8,
+        18,
+        7.5
+      ],
+      "to": [
+        24,
+        25,
+        8.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "z",
+        "origin": [
+          8,
+          21.5,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        -8,
+        18,
+        8.0
+      ],
+      "to": [
+        24,
+        25,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#c",
+          "uv": [
+            0,
+            8,
+            16,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#c",
+          "uv": [
+            0,
+            8,
+            16,
+            15
+          ]
+        }
+      },
+      "rotation": {
+        "angle": -45,
+        "axis": "z",
+        "origin": [
+          8,
+          21.5,
+          8
+        ]
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        0,
+        7.98
+      ],
+      "to": [
+        9,
+        16,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#g",
+          "uv": [
+            8.02,
+            0,
+            8,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            7,
+            8,
+            9,
+            7.98
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        16,
+        7.98
+      ],
+      "to": [
+        9,
+        26,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            7,
+            6,
+            9,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9,
+        0,
+        7.98
+      ],
+      "to": [
+        9,
+        15.50025,
+        8
+      ],
+      "faces": {
+        "east": {
+          "texture": "#g",
+          "uv": [
+            8,
+            0.49975,
+            7.98,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        9,
+        25.44975,
+        7.98
+      ],
+      "to": [
+        9,
+        26,
+        8
+      ],
+      "faces": {
+        "east": {
+          "texture": "#g",
+          "uv": [
+            8,
+            6,
+            7.98,
+            6.55025
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        7,
+        16,
+        7.98
+      ],
+      "to": [
+        7,
+        17.55025,
+        8
+      ],
+      "faces": {
+        "west": {
+          "texture": "#g",
+          "uv": [
+            8.02,
+            14.44975,
+            8,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        8.44975,
+        26,
+        7.98
+      ],
+      "to": [
+        9,
+        26,
+        8
+      ],
+      "faces": {
+        "up": {
+          "texture": "#g",
+          "uv": [
+            8.44975,
+            8.02,
+            9,
+            8
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

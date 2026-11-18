@@ -1,0 +1,52 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/the_list/goods_0",
+    "h": "the_oldest_house:block/the_list/goods_1",
+    "s": "the_oldest_house:block/the_list/tape_shelf_side",
+    "c": "the_oldest_house:block/the_list/counter_front_w",
+    "t": "the_oldest_house:block/the_list/counter_top",
+    "r": "the_oldest_house:block/the_list/register",
+    "b": "the_oldest_house:block/the_list/bottles",
+    "m": "the_oldest_house:block/the_list/chrome",
+    "v": "the_oldest_house:block/the_list/stool_top",
+    "z": "the_oldest_house:block/the_list/magazines",
+    "k": "the_oldest_house:block/the_list/cards",
+    "e": "the_oldest_house:block/the_list/counter_edge",
+    "particle": "the_oldest_house:block/the_list/bottles"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        6
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

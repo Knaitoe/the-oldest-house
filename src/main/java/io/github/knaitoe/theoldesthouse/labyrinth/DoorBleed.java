@@ -121,6 +121,8 @@ public enum DoorBleed {
     // 0.4.667: morning daylight under the door, and the avenue beyond it.
     LAST_SEEN(new Spec().drawn(1).light(0xFFF4DC,Rhythm.STEADY).glow(.5F).sound("bleed.last_seen")),
     FALLOW(new Spec().drawn(2).air(Air.DUST,0xCDB57A).light(0xFFD9A0,Rhythm.STEADY).glow(.45F).sound("bleed.fallow")),
+    // 0.4.699: the porch light under the door at night, a moth or two at it, caliche dust and cotton blown in off the street.
+    THE_LIST(new Spec().drawn(1).air(Air.FLIES).light(0xFFE2A8,Rhythm.STEADY).glow(.35F).sound("bleed.the_list")),
     LAST_ORDERS(new Spec().drawn(1).light(0xFFB14F,Rhythm.STEADY).glow(.5F).sound("bleed.last_orders")),
     BIKE_NIGHT(new Spec().drawn(1).light(0xFF9A2E,Rhythm.CANDLE).glow(.7F).sound("bleed.bike_night")),
     PELL_HOUSE(new Spec().drawn(1).light(0xFFE8B0,Rhythm.STEADY).glow(.5F).sound("bleed.pell_house")),

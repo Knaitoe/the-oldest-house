@@ -1,0 +1,30 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/the_list/goathead",
+    "particle": "the_oldest_house:block/the_list/goathead"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0.1,
+        1
+      ],
+      "to": [
+        15,
+        0.1,
+        15
+      ],
+      "faces": {
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

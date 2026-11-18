@@ -1,0 +1,81 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "u": "the_oldest_house:block/the_list/canopy_under",
+    "e": "the_oldest_house:block/the_list/canopy_edge",
+    "l": "the_oldest_house:block/the_list/canopy_light",
+    "g": "the_oldest_house:block/the_list/galv",
+    "m": "the_oldest_house:block/the_list/menu_board",
+    "s": "the_oldest_house:block/the_list/speaker",
+    "o": "the_oldest_house:block/the_list/order_window",
+    "f": "the_oldest_house:block/the_list/fryer",
+    "d": "the_oldest_house:block/the_list/griddle",
+    "p": "the_oldest_house:block/the_list/picnic",
+    "t": "the_oldest_house:block/the_list/steel",
+    "r": "the_oldest_house:block/list_flat_roof",
+    "particle": "the_oldest_house:block/the_list/griddle"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#t"
+        },
+        "down": {
+          "texture": "#t"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        14,
+        1
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#t"
+        },
+        "south": {
+          "texture": "#t"
+        },
+        "east": {
+          "texture": "#t"
+        },
+        "west": {
+          "texture": "#t"
+        },
+        "up": {
+          "texture": "#d"
+        }
+      }
+    }
+  ]
+}

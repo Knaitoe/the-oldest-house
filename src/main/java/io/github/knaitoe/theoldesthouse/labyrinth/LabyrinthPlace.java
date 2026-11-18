@@ -727,7 +727,12 @@ public enum LabyrinthPlace {
     /** 0.4.672, Fallow (Fallow, docs/FALLOW_0_4_672.md): a gas station and grocery on a two-lane road through wheat to the edge of sight,
      * its garage with a car up on the lift, the keeper's trailer and storm cellar behind it, a farmhouse across the road and two fenced pads
      * out in the field (FallowSite). This part, the place. Not dealt until part 2. */
-    FALLOW("fallow",Kind.RECURRING,245,new BoundingBox(-56,-6,-136,56,16,0),literaryEntry());
+    FALLOW("fallow",Kind.RECURRING,245,new BoundingBox(-56,-6,-136,56,16,0),literaryEntry()),
+    /** 0.4.699, The list (TheList, docs/THE_LIST_0_4_699.md), after Stephen Graham Jones's I Was a Teenage Slasher: the middle of Lamesa at
+     * night through the back door of the reader's own house, the streets, Main Street, the gin, the seed house, the water tower and the
+     * playa (TheListSite); the back yards run south of the door behind the House's own hall. This part, the place. Not dealt until night
+     * one. */
+    THE_LIST("the_list",Kind.RECURRING,246,new BoundingBox(TheListSite.WEST,-6,TheListSite.NORTH,TheListSite.EAST,40,TheListSite.SOUTH),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

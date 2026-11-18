@@ -116,6 +116,7 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.NotYetRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.LastSeenRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.register(modEventBus);
+        io.github.knaitoe.theoldesthouse.labyrinth.TheListRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.CityRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.KeptRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.TallGrassRegistry.register(modEventBus);

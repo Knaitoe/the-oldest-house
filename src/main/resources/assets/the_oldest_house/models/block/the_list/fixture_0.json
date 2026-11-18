@@ -1,0 +1,82 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "d": "the_oldest_house:block/the_list/dome_glass",
+    "g": "the_oldest_house:block/the_list/galv",
+    "b": "the_oldest_house:block/the_list/bulb",
+    "o": "the_oldest_house:block/the_list/tube_lens",
+    "m": "the_oldest_house:block/list_ceiling",
+    "particle": "the_oldest_house:block/the_list/dome_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        15,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        12,
+        4.5
+      ],
+      "to": [
+        11.5,
+        15,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#d"
+        },
+        "south": {
+          "texture": "#d"
+        },
+        "east": {
+          "texture": "#d"
+        },
+        "west": {
+          "texture": "#d"
+        },
+        "up": {
+          "texture": "#d"
+        },
+        "down": {
+          "texture": "#d"
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 0
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,44 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "d": "the_oldest_house:block/the_list/drawers",
+    "w": "the_oldest_house:block/the_list/wood_top",
+    "b": "the_oldest_house:block/the_list/boombox",
+    "r": "the_oldest_house:block/the_list/clock_radio",
+    "l": "the_oldest_house:block/the_list/louver",
+    "k": "the_oldest_house:block/the_list/books",
+    "m": "the_oldest_house:block/the_list/mirror",
+    "particle": "the_oldest_house:block/the_list/louver"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        13
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "east": {
+          "texture": "#l"
+        },
+        "west": {
+          "texture": "#l"
+        },
+        "up": {
+          "texture": "#l"
+        },
+        "down": {
+          "texture": "#l"
+        }
+      }
+    }
+  ]
+}

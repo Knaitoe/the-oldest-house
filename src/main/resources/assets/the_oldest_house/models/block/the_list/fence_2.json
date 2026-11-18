@@ -1,0 +1,215 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "m": "the_oldest_house:block/the_list/chainlink",
+    "g": "the_oldest_house:block/the_list/galv",
+    "particle": "the_oldest_house:block/the_list/chainlink"
+  },
+  "elements": [
+    {
+      "from": [
+        0.5,
+        0.5,
+        8
+      ],
+      "to": [
+        15.5,
+        13.5,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m"
+        },
+        "south": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        7.5
+      ],
+      "to": [
+        16,
+        1,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        13,
+        7.5
+      ],
+      "to": [
+        16,
+        14,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        7.5
+      ],
+      "to": [
+        1,
+        13,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        1,
+        7.5
+      ],
+      "to": [
+        16,
+        13,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        7,
+        6.5
+      ],
+      "to": [
+        17,
+        8,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g",
+          "uv": [
+            0,
+            8,
+            3,
+            9
+          ]
+        },
+        "south": {
+          "texture": "#g",
+          "uv": [
+            13,
+            8,
+            16,
+            9
+          ]
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g",
+          "uv": [
+            13,
+            6.5,
+            16,
+            9.5
+          ]
+        },
+        "down": {
+          "texture": "#g",
+          "uv": [
+            13,
+            6.5,
+            16,
+            9.5
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

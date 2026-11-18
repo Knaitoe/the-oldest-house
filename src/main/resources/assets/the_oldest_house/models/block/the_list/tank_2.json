@@ -1,0 +1,43 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/the_list/tank_wall",
+    "r": "the_oldest_house:block/the_list/tank_roof",
+    "l": "the_oldest_house:block/the_list/tank_2",
+    "particle": "the_oldest_house:block/the_list/tank_wall"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w"
+        },
+        "west": {
+          "texture": "#w"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      }
+    }
+  ]
+}

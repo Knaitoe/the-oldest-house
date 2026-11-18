@@ -1,0 +1,58 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "d": "the_oldest_house:block/the_list/display_lit",
+    "k": "the_oldest_house:block/the_list/display_dark",
+    "r": "the_oldest_house:block/the_list/transom",
+    "a": "the_oldest_house:block/the_list/awning",
+    "v": "the_oldest_house:block/the_list/valance",
+    "c": "the_oldest_house:block/the_list/pilaster_cap",
+    "b": "the_oldest_house:block/list_storefront",
+    "m": "the_oldest_house:block/the_list/galv",
+    "particle": "the_oldest_house:block/the_list/awning"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        15,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a"
+        },
+        "south": {
+          "texture": "#a"
+        },
+        "east": {
+          "texture": "#a"
+        },
+        "west": {
+          "texture": "#a"
+        },
+        "up": {
+          "texture": "#a"
+        },
+        "down": {
+          "texture": "#a"
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          16,
+          16
+        ]
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}
