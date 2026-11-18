@@ -1973,6 +1973,92 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.719, the gin's press. Before the fourth night the slasher's hand on it with hold of Deek is told it is shut down. On the fourth,
+     * the slasher shoves Deek into its chamber and lets go: the chamber opens, the ram starts down, the other reader hears it; the
+     * slasher's hand on the press finds him held, and the other reader's hand hauls the release, the ram goes back up, he comes out and
+     * runs, and the chamber is shut again. Then, the hunt begun again, Wes, shoved in and left: bent double under it halfway, crushed when it comes all the
+     * way down, the slasher told, the kill kept, the other reader told the scream stopped and finding him folded in the press. A hand on
+     * the press then: still. Ended, the press is shut and Wes is back.
+     */
+    @GameTest(template="empty",batch="the_list_press",timeoutTicks=6000)
+    public static void thePress(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_press",P);var peer=f.player("list_press_peer",P);
+        int D=TheListPeople.DEEK,W=TheListPeople.WES;var press=TheListGin.PRESS;var up=press.above();
+        hold(f,b,TheListPeople.AT[D],TheListPeople.AT[W],press);
+        java.util.function.IntConsumer take=who->{
+            var a=TheListPeople.find(l,b,who);
+            f.at(p,P,TheListPeople.AT[who].getX()-1.5,0,TheListPeople.AT[who].getZ()+.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            LiteraryVignettes.talk(p,a);
+            h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,who));
+            p.setShiftKeyDown(false);p.setPose(net.minecraft.world.entity.Pose.STANDING);
+            f.at(p,P,press.getX()-1.0,0,press.getZ()-.5);
+        };
+        h.startSequence().thenExecute(()->f.at(peer,P,press.getX()+2.5,0,press.getZ()-1.5))
+        .thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the town");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(fitting(l,b,press,Kind.GIN,4)&&fitting(l,b,up,Kind.GIN,5)&&TheListGin.press(press)&&TheListGin.press(up),"the press");
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+        }).thenIdle(10).thenExecute(()->take.accept(D))
+        .thenIdle(2).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(deek.position().distanceTo(TheListGin.chamber(b))<=TheListGin.REACH,"held by the press: "+where(l,b,D));
+            cues(p);
+            h.assertTrue(TheListGin.hand(p,b,press)&&cues(p).contains(TheListTexts.PRESS_NOT_TONIGHT)&&TheListHunt.state(b,D)==TheListHunt.State.HELD,"not tonight");
+            TheListHunt.night(b,TheListGin.NIGHT);sent(peer);cues(peer);
+            h.assertTrue(TheListGin.hand(p,b,press),"the slasher's hand on the press");
+            h.assertTrue(TheListHunt.state(b,D)==TheListHunt.State.PRESS&&deek.gesture()==TheListHunt.PRESSED,"in the press: "+where(l,b,D));
+            h.assertTrue(l.getBlockState(b.offset(press)).isAir()&&deek.position().distanceTo(TheListGin.chamber(b))<.05,"in the opened chamber: "+where(l,b,D));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.INTO_PRESS,"Deek"))&&TheListTexts.PRESS[D].equals(said(deek)),"the slasher told, his words");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the chamber has him");
+            h.assertTrue(sound(sent(peer),TheListRegistry.SCREAM.get()),"the other reader hears him");
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(TheListHunt.ram(b,D)>=8,"the ram coming: "+TheListHunt.ram(b,D));
+            TheListGin.hand(p,b,up);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.PRESS_HELD,"Deek"))&&TheListHunt.state(b,D)==TheListHunt.State.PRESS,"the slasher's hand: held");
+            h.assertTrue(TheListGin.hand(peer,b,up),"the other reader's hand on the press");
+            var deek=TheListPeople.find(l,b,D);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.PRESS_RELEASE,"Deek"))&&TheListHunt.state(b,D)==TheListHunt.State.RUN,"released, he runs: "+where(l,b,D));
+            h.assertTrue(fitting(l,b,press,Kind.GIN,4)&&deek.position().distanceTo(TheListGin.chamber(b))>.8,"out, and the chamber shut: "+where(l,b,D));
+            // Begun again for the next: the rest heard Deek and ran.
+            TheListHunt.start(l,b);TheListHunt.night(b,TheListGin.NIGHT);
+            h.assertTrue(fitting(l,b,press,Kind.GIN,4),"the press shut for the next hunt");
+        }).thenIdle(10).thenExecute(()->take.accept(W))
+        .thenIdle(2).thenExecute(()->{
+            h.assertTrue(TheListGin.hand(p,b,press)&&TheListHunt.state(b,W)==TheListHunt.State.PRESS,"Wes in the press: "+where(l,b,W));
+            TheListHunt.ram(b,W,TheListGin.RAM/2-2);
+        }).thenWaitUntil(()->h.assertTrue(TheListPeople.find(l,b,W).gesture()==TheListHunt.BENT,"waiting for him to bend under it"))
+        .thenExecute(()->{TheListHunt.ram(b,W,TheListGin.RAM-3);sent(peer);cues(peer);cues(p);})
+        .thenWaitUntil(()->h.assertTrue(TheListHunt.dead(b,W),"waiting for the ram: "+where(l,b,W)))
+        .thenExecute(()->{
+            var wes=TheListPeople.find(l,b,W);
+            h.assertTrue(wes.gesture()==TheListHunt.FOLDED&&(wes.marks()&TheListHunt.CRUSH)!=0,"folded under the ram, crushed: "+where(l,b,W));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.PRESS_STILL,"Wes"))&&(TheListBody.kills(p)&1<<W)!=0,"the slasher told, the kill kept");
+            h.assertTrue(cuesIn(sent(peer)).stream().anyMatch(c->c.contains("scream stops short")),"the other reader is told a scream stopped");
+            TheListGin.hand(peer,b,up);
+            // Standing by the press, the other reader may already have come across him: what was told so far counts.
+            var told=cues(peer);
+            h.assertTrue(told.contains(String.format(TheListTexts.PRESS_STILL_BODY,"Wes"))&&TheListHunt.dead(b,W),"a hand on the press: still");
+            var back=wes.position().add(0,.5,0).subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-back.x,back.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(back.y,Math.sqrt(back.x*back.x+back.z*back.z))));
+            TheListHunt.look(l,b);
+            told.addAll(cues(peer));
+            h.assertTrue(told.contains(String.format(TheListTexts.FOUND_PRESS,"Wes")),"the other reader finds him in the press: "+told);
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            var wes=TheListPeople.find(l,b,W);
+            h.assertTrue(fitting(l,b,press,Kind.GIN,4)&&wes.marks()==0&&wes.gesture()==TheListHunt.STILL,"ended, the press shut and Wes back: "+where(l,b,W));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Whether these packets drew a particle of this kind. */
     private static boolean particles(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.core.particles.ParticleOptions kind){
         for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket q&&q.getParticle().getType()==kind.getType())return true;

@@ -1213,6 +1213,19 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.MANGLED->{low(12F,.6F,0F);
                     rightArm.xRot=.15F;rightArm.yRot=0;rightArm.zRot=.95F;leftArm.xRot=.25F;leftArm.yRot=0;leftArm.zRot=-.9F;
                     head.xRot=.95F;head.yRot=-.2F;head.zRot=.1F;}
+                // 0.4.719, the gin's press: stood in its chamber shoving both hands up at the ram, the head bowed under it.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.PRESSED->{float w=net.minecraft.util.Mth.sin(age*2.1F);
+                    rightArm.xRot=-2.95F+w*.06F;leftArm.xRot=-2.95F-w*.06F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=-.12F;leftArm.zRot=.12F;
+                    head.xRot=.55F;head.yRot=w*.15F;head.zRot=0;}
+                // Bent double under it, the knees going, the hands still up against it.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.BENT->{float w=net.minecraft.util.Mth.sin(age*2.4F);
+                    low(18F,.4F,-.7F);back(3F);
+                    rightArm.xRot=-2.6F+w*.08F;leftArm.xRot=-2.6F-w*.08F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=-.2F;leftArm.zRot=.2F;
+                    head.xRot=.85F;head.yRot=0;head.zRot=0;}
+                // Crushed: folded down in the chamber under the ram, the arms gone slack.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.FOLDED->{low(21F,1.0F,-1.45F);back(7F);
+                    rightArm.xRot=-.35F;rightArm.yRot=0;rightArm.zRot=.5F;leftArm.xRot=-.2F;leftArm.yRot=0;leftArm.zRot=-.6F;
+                    head.xRot=1.25F;head.yRot=.25F;head.zRot=.15F;}
                 default->{}
             }
             hat.copyFrom(head);
@@ -1228,6 +1241,8 @@ public final class LiteraryRenderers {
             head.y=body.y;head.z=body.z;
             leftArm.y=rightArm.y=body.y+2*c;leftArm.z=rightArm.z=body.z+2*s;
         }
+        /** 0.4.719: the whole body set back this many of the model's pixels, so a low pose that reaches forward stays in a one-block box. */
+        void back(float px){body.z+=px;head.z+=px;leftArm.z+=px;rightArm.z+=px;leftLeg.z+=px;rightLeg.z+=px;}
         public void pageUp(float age){rightArm.xRot=-1.5F+net.minecraft.util.Mth.sin(age*.05F)*.03F;rightArm.yRot=.55F;rightArm.zRot=0;}
         void fallow(int gesture,float age){
             switch(gesture){

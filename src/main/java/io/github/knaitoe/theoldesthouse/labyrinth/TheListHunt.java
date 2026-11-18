@@ -52,7 +52,7 @@ public final class TheListHunt {
     /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
      * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; 0.4.714: in the fryer; 0.4.715: the head in a car's
      * door; 0.4.716: the head under a pumpjack's weight; 0.4.717: held under at the stock tank; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,AUGER,DEAD}
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,AUGER,PRESS,DEAD}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
      * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
      * through the gap under the next, and hanging there dead. */
@@ -72,6 +72,8 @@ public final class TheListHunt {
     /** 0.4.718, the gin's auger: stood in its trough with the screw drawing the legs down into it, the arms braced on its sides; and
      * slumped forward over it dead, down to the waist. */
     public static final int AUGERED=23,MANGLED=24;
+    /** 0.4.719, the gin's press: stood in its chamber shoving up at the ram; bent double under it; folded in it, crushed. */
+    public static final int PRESSED=25,BENT=26,FOLDED=27;
     /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
      * they hear it creeping, crouched. */
     public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
@@ -215,6 +217,8 @@ public final class TheListHunt {
         @Nullable BlockPos tank;Direction tankIn=Direction.NORTH;int breath,surfaced,dunks;boolean under;
         /** 0.4.718: in the gin's auger: the cell of the run they were put in (kept when dead) and how long the screw has drawn them. */
         @Nullable BlockPos augerAt;int drawn;
+        /** 0.4.719: in the gin's press (kept when dead), and how far the ram has come. */
+        boolean pressed;int ram;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
@@ -301,8 +305,11 @@ public final class TheListHunt {
         for(var r:h.runners.values()){
             release(l,r);
             if(r.holder!=null){var p=l.getServer().getPlayerList().getPlayer(r.holder);if(p!=null)TheListBody.holding(p,false);}
-            if(l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.gesture(STILL);a.setNoGravity(true);a.holder(null);a.marks(0);}
+            if(l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.gesture(STILL);a.setNoGravity(true);a.holder(null);a.marks(0);
+                // 0.4.719: one in the press is brought out of its chamber before it is shut again.
+                if(r.pressed){var out=TheListGin.front(b);a.moveTo(out.x,out.y,out.z,a.getYRot(),0);}}
         }
+        TheListGin.shut(l,b);
         doors(l,b);
         sweep(l,b);
         tidy(l,b);
@@ -351,6 +358,7 @@ public final class TheListHunt {
                 case JACK->jacking(l,b,h,r,a,slashers,here);
                 case TANK->tanking(l,b,h,r,a,slashers,here);
                 case AUGER->augering(l,b,h,r,a,here);
+                case PRESS->pressing(l,b,h,r,a,here);
                 case DEAD->{}
             }
         }
@@ -558,6 +566,8 @@ public final class TheListHunt {
         }
         // 0.4.718: one in the gin's auger is the screw's; a hand on them, the slasher's or anyone's, finds them held down in it.
         if(r.state==State.AUGER){TheList.cue(p,String.format(TheListTexts.AUGER_HELD,name));return true;}
+        // 0.4.719: one in the gin's press: the slasher's hand finds them held; anyone else's hauls the release.
+        if(r.state==State.PRESS)return press(p,b);
         if(r.state==State.JACK){
             if(p.getUUID().equals(r.holder)){if(TheListJack.braked(p.serverLevel(),b,r.jack))TheListJack.brake(p.serverLevel(),b,r.jack,false,p);}
             else TheList.cue(p,String.format(TheListTexts.JACK_HELD,name));
@@ -617,7 +627,7 @@ public final class TheListHunt {
         if(was!=null)TheListBody.holding(was,false);
         // 0.4.715: out of the car door, it is pushed wide as they pull the head out.
         if(r.doored&&TheListCar.angle(b)<TheListCar.OPEN-1)TheListCar.swing(b,null,new TheListCar.Leg(TheListCar.OPEN,4));
-        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;r.jack=-1;r.tank=null;r.under=false;r.dunks=0;r.surfaced=0;r.augerAt=null;r.drawn=0;
+        r.holder=null;r.killer=null;a.holder(null);a.setNoGravity(false);r.plank=null;r.kneel=null;r.stamps=0;r.doored=false;r.slams=0;r.slamming=false;r.jack=-1;r.tank=null;r.under=false;r.dunks=0;r.surfaced=0;r.augerAt=null;r.drawn=0;r.pressed=false;r.ram=0;
         stop(l,a,TheListRegistry.STRUGGLE.get());
         if(s!=null){
             s.knockback(.8,a.getX()-s.getX(),a.getZ()-s.getZ());s.hurtMarked=true;
@@ -1495,6 +1505,97 @@ public final class TheListHunt {
     public static int strengthIn(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.strength;}
     public static void drawn(BlockPos b,int who,int ticks){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);if(r!=null)r.drawn=ticks;}
 
+    // ------------------------------------------------------------------------------------------------ 0.4.719: the gin's press
+    /**
+     * A hand or a blow on the gin's press (TheListGin.hand), or on one in it. One in its chamber with the ram coming: the hand that put
+     * them there finds them held; anyone else's hauls the release and lets them out. One dead there: still. Otherwise the slasher with
+     * hold of one of the five near enough shoves them in, on the fourth night only. False for anyone else's hand: a look.
+     */
+    public static boolean press(ServerPlayer p,BlockPos b){
+        var h=HUNTS.get(b.asLong());if(h==null||p.isSpectator())return false;
+        var l=p.serverLevel();
+        for(var r:h.runners.values()){
+            if(!r.pressed)continue;
+            var name=TheListTexts.NAMES[r.who];
+            if(r.state==State.DEAD){TheList.cue(p,String.format(TheListTexts.PRESS_STILL_BODY,name));return true;}
+            if(r.state!=State.PRESS)continue;
+            if(p.getUUID().equals(r.killer)){TheList.cue(p,String.format(TheListTexts.PRESS_HELD,name));return true;}
+            if(l.getEntity(r.id) instanceof LiteraryActor a)released(l,b,h,r,a,p,TheList.readers(l,b));
+            return true;
+        }
+        if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return false;
+        for(var r:h.runners.values()){
+            if(!p.getUUID().equals(r.holder)||r.state!=State.HELD||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(a.position().distanceTo(TheListGin.chamber(b))>TheListGin.REACH)return false;
+            if(h.night<TheListGin.NIGHT){TheList.cue(p,TheListTexts.PRESS_NOT_TONIGHT);return true;}
+            pressedIn(l,b,h,r,a,p,TheList.readers(l,b));
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Shoved into the press's chamber, the latch dropped and the ram started down. The slasher lets go: the chamber holds them now.
+     * Their words, a scream; anyone else on the list near enough hears it. What they had in hand they let fall.
+     */
+    static void pressedIn(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,List<ServerPlayer> here){
+        r.state=State.PRESS;r.since=0;r.pressed=true;r.ram=0;r.strength=0;r.dropped=true;r.killer=s.getUUID();
+        r.holder=null;a.holder(null);TheListBody.holding(s,false);
+        BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(PRESSED);drop(a);
+        TheListGin.open(l,b);chambered(b,a);
+        TheList.cue(s,String.format(TheListTexts.INTO_PRESS,TheListTexts.NAMES[r.who]));
+        say(a,r.who,TheListTexts.PRESS[r.who]);
+        scream(l,a);
+        heard(l,b,h,r,a,here);
+        l.playSound(null,a.getX(),a.getY()+1.5,a.getZ(),TheListRegistry.STRAIN.get(),SoundSource.BLOCKS,1.3F,.55F);
+    }
+    /** Kept in the chamber, facing out of it toward the press door. */
+    static void chambered(BlockPos b,LiteraryActor a){
+        var at=TheListGin.chamber(b);a.moveTo(at.x,at.y,at.z,180,0);a.setYBodyRot(180);a.setYHeadRot(180);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /**
+     * In the press, each tick: the ram comes down on them over RAM ticks, the motor labouring; halfway they are bent double under it.
+     * They cannot get out by themselves: the chamber is latched. All the way down, they are crushed.
+     */
+    static void pressing(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        chambered(b,a);
+        r.ram++;
+        if(r.ram==TheListGin.RAM/2)a.gesture(BENT);
+        if(r.since%20==0)l.playSound(null,a.getX(),a.getY()+1.5,a.getZ(),TheListRegistry.STRAIN.get(),SoundSource.BLOCKS,1.1F,.5F+.3F*r.ram/TheListGin.RAM);
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+.8,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,1F,1F);
+        if(r.since%30==15)scream(l,a);
+        if(r.ram>=TheListGin.RAM)crushed(l,b,h,r,a,here);
+    }
+    /**
+     * The release hauled by a hand that is not the slasher's: the ram stops and goes back up, the latch lifts, and they come out of the
+     * chamber and run. The press is shut again behind them.
+     */
+    static void released(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer by,List<ServerPlayer> here){
+        var out=TheListGin.front(b);a.moveTo(out.x,out.y,out.z,180,0);
+        TheListGin.shut(l,b);
+        l.playSound(null,out.x,out.y+1,out.z,net.minecraft.sounds.SoundEvents.PISTON_CONTRACT,SoundSource.BLOCKS,1F,.6F);
+        TheList.cue(by,String.format(TheListTexts.PRESS_RELEASE,TheListTexts.NAMES[r.who]));
+        loose(l,b,h,r,a,null,here);
+    }
+    /**
+     * Crushed: the ram all the way down, bones going; folded in the chamber, blood out of its foot onto the floor. The slasher is told;
+     * anyone else in town near enough is told from which way the scream stopped; the kill the slasher's.
+     */
+    static void crushed(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        stop(l,a,TheListRegistry.SCREAM.get());stop(l,a,TheListRegistry.STRUGGLE.get());
+        l.playSound(null,a.getX(),a.getY()+.6,a.getZ(),TheListRegistry.CRACK.get(),SoundSource.NEUTRAL,1.4F,.7F);
+        a.marks(a.marks()|CRUSH);a.gesture(FOLDED);chambered(b,a);
+        pool(l,b,TheListGin.front(b),Direction.NORTH);
+        r.state=State.DEAD;
+        var name=TheListTexts.NAMES[r.who];
+        var killer=r.killer==null?null:l.getServer().getPlayerList().getPlayer(r.killer);
+        if(killer!=null)TheList.cue(killer,String.format(TheListTexts.PRESS_STILL,name));
+        for(var q:here)if(q!=killer&&!q.isSpectator()&&q.distanceTo(a)<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+        if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
+    }
+    /** For tests: how far the ram has come, and setting it. */
+    public static int ram(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.ram;}
+    public static void ram(BlockPos b,int who,int ticks){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);if(r!=null)r.ram=ticks;}
+
     // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
     /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
     static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
@@ -1573,10 +1674,11 @@ public final class TheListHunt {
         for(var d:h.runners.values()){
             if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
             // 0.4.711: one hung over a row of the stands is seen by the head under the next plank as well as the body on it.
-            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED,pinned=body.gesture()==PINNED,sunk=body.gesture()==SUNK,mangled=body.gesture()==MANGLED;
+            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED,slammed=body.gesture()==SLAMMED,pinned=body.gesture()==PINNED,sunk=body.gesture()==SUNK,mangled=body.gesture()==MANGLED,folded=body.gesture()==FOLDED;
             // 0.4.714: one dead in the fryer is seen by the back, bent over it; 0.4.715: one at the car door, by the back, slumped at it.
             // 0.4.716: one dead at a pumpjack, by the back, bowed over beside the gearbox.
-            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:pinned?.45:sunk?.9:mangled?1.15:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
+            // 0.4.719: one crushed in the press is seen at the body itself: its eyes are up inside the press head.
+            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:slammed?.7:pinned?.45:sunk?.9:mangled?1.15:folded?.5:.3,0);var head=hung?d.kneel.add(HEAD):folded?at:null;var name=TheListTexts.NAMES[d.who];
             for(var r:h.runners.values()){
                 if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
                 if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
@@ -1584,7 +1686,7 @@ public final class TheListHunt {
                 r.saw|=1<<d.who;
                 if(r.state==State.CALM)run(l,b,h,r,a,here,true);
                 say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:fried?TheListTexts.FOUND_FRYER_BODY[r.who]
-                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:pinned?TheListTexts.FOUND_JACK_BODY[r.who]:sunk?TheListTexts.FOUND_TANK_BODY[r.who]:mangled?TheListTexts.FOUND_AUGER_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
+                    :slammed?TheListTexts.FOUND_CAR_BODY[r.who]:pinned?TheListTexts.FOUND_JACK_BODY[r.who]:sunk?TheListTexts.FOUND_TANK_BODY[r.who]:mangled?TheListTexts.FOUND_AUGER_BODY[r.who]:folded?TheListTexts.FOUND_PRESS_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
             }
             for(var q:here){
                 if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
@@ -1592,7 +1694,7 @@ public final class TheListHunt {
                 if(!sight(l,q,q.getYHeadRot(),body,at,head,READER_FINDS,READER_LOOK))continue;
                 h.found.put(q.getUUID(),seen|1<<d.who);
                 TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:fried?TheListTexts.FOUND_FRYER:slammed?TheListTexts.FOUND_CAR
-                    :pinned?TheListTexts.FOUND_JACK:sunk?TheListTexts.FOUND_TANK:mangled?TheListTexts.FOUND_AUGER:TheListTexts.FOUND_DEAD,name));
+                    :pinned?TheListTexts.FOUND_JACK:sunk?TheListTexts.FOUND_TANK:mangled?TheListTexts.FOUND_AUGER:folded?TheListTexts.FOUND_PRESS:TheListTexts.FOUND_DEAD,name));
                 TheListBody.found(q,d.who);
             }
         }
