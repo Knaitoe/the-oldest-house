@@ -49,13 +49,15 @@ public final class HouseReadKitchenProof extends Screen {
         var left=new CompoundTag();left.putIntArray("Colours",HouseReadKitchen.colours(reader,false));left.putInt("Taken",2);
         var right=new CompoundTag();right.putIntArray("Colours",HouseReadKitchen.colours(reader,true));right.putInt("Taken",-1);
         var coloured=drawing(4,4,12,18);
+        // 0.4.698: an UNSEEN reader's picture as A Place for You hangs it, the face rubbed out.
+        var faced=coloured.copy();faced.putInt("Mood",2);faced.putInt("Body",1);var smudged=faced.copy();smudged.putBoolean("Smudged",true);
         record Shown(BlockState state,CompoundTag read,String label){}
         var shown=new Shown[]{new Shown(part(HouseReadPropBlock.Part.TIN_LEFT).setValue(HouseReadPropBlock.WRITING,true),left,"tin, left half (one taken)"),new Shown(part(HouseReadPropBlock.Part.TIN_RIGHT),right,"tin, right half"),
             new Shown(part(HouseReadPropBlock.Part.SHEET),drawing(-1,-1,-1,-1),"the drawing, in pencil"),new Shown(part(HouseReadPropBlock.Part.SHEET),coloured,"the drawing, coloured"),
-            new Shown(part(HouseReadPropBlock.Part.FRIDGE),new CompoundTag(),"fridge, old drawings"),new Shown(part(HouseReadPropBlock.Part.FRIDGE_TOP).setValue(HouseReadPropBlock.TURNED,true),coloured,"fridge door, picture up"),
+            new Shown(part(HouseReadPropBlock.Part.FRIDGE),new CompoundTag(),"fridge, old drawings"),new Shown(part(HouseReadPropBlock.Part.FRIDGE_TOP).setValue(HouseReadPropBlock.TURNED,true),faced,"fridge door, picture up"),new Shown(part(HouseReadPropBlock.Part.FRIDGE_TOP).setValue(HouseReadPropBlock.TURNED,true),smudged,"fridge door, face rubbed out"),
             new Shown(part(HouseReadPropBlock.Part.RADIO),new CompoundTag(),"radio, low"),new Shown(part(HouseReadPropBlock.Part.RADIO).setValue(HouseReadPropBlock.TURNED,true),new CompoundTag(),"radio, off"),
             new Shown(part(HouseReadPropBlock.Part.WALL_CLOCK),afterFour(),"kitchen clock"),new Shown(part(HouseReadPropBlock.Part.WALL_CLOCK),new CompoundTag(),"office clock")};
-        int columns=5;float cw=width/(float)columns,ch=(height-36)/2f;
+        int columns=5,rows=(shown.length+columns-1)/columns;float cw=width/(float)columns,ch=(height-36)/(float)rows;
         for(int i=0;i<shown.length;i++){float cx=(i%columns+.5f)*cw,cy=32+(i/columns+.5f)*ch;block(g,shown[i].state(),shown[i].read(),cx,cy,Math.min(cw,ch)*.5f,shown[i].state().getValue(HouseReadPropBlock.PART).name().startsWith("FRIDGE")?12:shown[i].state().getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.WALL_CLOCK?0:62);
             g.drawCenteredString(font,shown[i].label(),(int)cx,(int)(32+(i/columns+1)*ch-10),0xffe5dcc8);}
     }

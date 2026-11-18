@@ -374,6 +374,50 @@ def coat(colour, seed):
     return im
 
 
+def reader_coat(kind):
+    # 0.4.698: the coat hung up for the reader on the end hook, by the House's read of how they present: a short jacket with a
+    # collar and a patch pocket; a long coat with a belt and two rows of buttons; a knitted coat in ribbed rows.
+    if kind == 'jacket':
+        im = new(base='#4e5a3c', seed=2681, spread=3)
+        for x in range(16):
+            dot(im, x, 0, '#3a4430'); dot(im, x, 1, '#3a4430')
+        for y in range(16):
+            dot(im, 7, y, '#3e4832')
+        for x in range(10, 14):
+            dot(im, x, 7, '#3e4832'); dot(im, x, 10, '#3e4832')
+        for y in range(7, 11):
+            dot(im, 10, y, '#3e4832'); dot(im, 13, y, '#3e4832')
+        for y in (3, 6):
+            dot(im, 8, y, '#c8b890')
+    elif kind == 'long':
+        im = new(base='#5c3a48', seed=2682, spread=3)
+        for y in range(16):
+            dot(im, 7, y, '#462c38'); dot(im, 8, y, '#4e3240')
+        for x in range(16):
+            dot(im, x, 6, '#3a2430'); dot(im, x, 7, '#3a2430')
+        dot(im, 8, 6, '#b89a58'); dot(im, 8, 7, '#b89a58')
+        for y in (2, 4, 10, 13):
+            dot(im, 6, y, '#d0c4a8'); dot(im, 9, y, '#d0c4a8')
+    else:
+        # Knit stitches: in each pair of columns a small V, the left half shaded on one row and the right on the next; a ribbed
+        # hem and cuff-band at the foot, and the front opening down the middle with three buttons.
+        im = new(base='#7e6c4c', seed=2683, spread=2)
+        for y in range(13):
+            for x in range(16):
+                if (x % 2 == 0) == (y % 2 == 0):
+                    dot(im, x, y, shade('#7e6c4c', -16))
+                elif x % 4 == 1 and y % 2 == 0:
+                    dot(im, x, y, shade('#7e6c4c', 10))
+        for y in range(13, 16):
+            for x in range(16):
+                dot(im, x, y, '#6a5a3e' if x % 2 == 0 else '#5a4c34')
+        for y in range(16):
+            dot(im, 7, y, '#4e4230')
+        for y in (2, 6, 10):
+            dot(im, 8, y, '#d8ccb0')
+    return im
+
+
 def glass():
     im = new(base='#9aaab0', seed=2602, spread=3)
     for i in range(16):
@@ -638,7 +682,8 @@ def textures():
         'card_back': new(base='#a8946c', seed=2612, spread=3), 'pictures': pictures(), 'pictures_theo': pictures(True), 'cupboard_0': cupboard(False),
         'cupboard_1': cupboard(True), 'steel': new(base='#c4c8cc', seed=2613, spread=3), 'counter': counter(), 'worktop': worktop(),
         'basin': basin(), 'stove': stove(), 'hob_0': hob(False), 'hob_1': hob(True), 'hooks': hooks(),
-        'coat_a': coat('#3a4a5a', 2614), 'coat_b': coat('#7a5a3a', 2615), 'glass': glass(), 'cover': cloth_cover(),
+        'coat_a': coat('#3a4a5a', 2614), 'coat_b': coat('#7a5a3a', 2615),
+        'coat_jacket': reader_coat('jacket'), 'coat_long': reader_coat('long'), 'coat_knit': reader_coat('knit'), 'glass': glass(), 'cover': cloth_cover(),
         'wicker': wicker(), 'linen': linen(), 'workshirt': workshirt(), 'dresser': dresser(False), 'dresser_open': dresser(True),
         'drawer_in': drawer_in(), 'porch_photo': porch_photo(),
         'press': press(False), 'press_top': press(True), 'press_side': press_side(), 'wedge_wood': wedge_wood(), 'stool': stool(),
@@ -860,6 +905,13 @@ def fitting_models():
                           element([2, 1, 13], [7, 11, 15], {'all': 'a'}, uv={'north': [5, 0, 10, 10], 'south': [5, 0, 10, 10]}),
                           element([9, 3, 13], [14, 11, 15], {'all': 'b'}, uv={'north': [5, 0, 10, 8], 'south': [5, 0, 10, 8]})],
                          {'h': 'hooks', 'a': 'coat_a', 'b': 'coat_b'}, 'hooks')
+    # 0.4.698: the end hook holds the reader's coat in place of the household's second one.
+    for stage, (tex, lo, uv) in enumerate([('coat_jacket', 4, [5, 0, 10, 7]), ('coat_long', 0, [5, 0, 10, 11]), ('coat_knit', 3, [4, 0, 10, 8])], 1):
+        x0 = 8.5 if tex == 'coat_knit' else 9
+        m[f'hooks_{stage}'] = model([element([1, 10, 15], [15, 12, 16], {'all': 'h'}),
+                                     element([2, 1, 13], [7, 11, 15], {'all': 'a'}, uv={'north': [5, 0, 10, 10], 'south': [5, 0, 10, 10]}),
+                                     element([x0, lo, 13], [14.5 if tex == 'coat_knit' else 14, 11, 15], {'all': 'b'}, uv={'north': uv, 'south': uv})],
+                                    {'h': 'hooks', 'a': 'coat_a', 'b': tex}, 'hooks')
     face = {'north': 'g', 'south': 'w', 'east': 'w', 'west': 'w', 'up': 'w', 'down': 'w'}
     m['glass_0'] = model([element([3, 0, 15], [13, 16, 16], face, uv={'north': [3, 0, 13, 16]})], {'g': 'glass', 'w': 'wood_dark'}, 'glass')
     m['glass_1'] = model([element([3, 0, 15], [13, 16, 16], {**face, 'north': 'w'})], {'w': 'wood_dark'}, 'wood_dark')
@@ -875,7 +927,7 @@ def fitting_models():
 
 KINDS = ['table', 'bag', 'card', 'plate', 'kettle', 'cups', 'radio', 'photo', 'pictures', 'cupboard', 'routine', 'spoon', 'counter', 'stove', 'hooks', 'glass',
          'basket', 'dresser', 'press', 'wedge', 'stool', 'older', 'photo_box']
-STAGES = {'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3,
+STAGES = {'hooks': 4, 'pictures': 2, 'bag': 3, 'plate': 3, 'cups': 2, 'photo': 2, 'cupboard': 2, 'routine': 16, 'counter': 2, 'stove': 2, 'glass': 3,
           'basket': 3, 'dresser': 2, 'press': 6, 'wedge': 2, 'stool': 2, 'older': 3, 'photo_box': 2}
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MAX_STAGE = 16

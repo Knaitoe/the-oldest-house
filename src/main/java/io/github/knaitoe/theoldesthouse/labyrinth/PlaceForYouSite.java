@@ -260,6 +260,8 @@ public final class PlaceForYouSite {
     }
 
     /** The hall glass as the reader's snapshot left it: as it hangs (0), turned to the wallpaper (1) or covered with a cloth (2). */
+    /** 0.4.698: the coat hooks, with the reader's own coat on the end hook from stage 1. */
+    public static void hooks(ServerLevel l,BlockPos b,int stage){set(l,b,HOOKS,fit(PlaceForYouBlock.Kind.HOOKS,Direction.WEST,stage));}
     public static void glass(ServerLevel l,BlockPos b,int stage){set(l,b,GLASS,fit(PlaceForYouBlock.Kind.GLASS,Direction.EAST,stage));}
     /** The routine item on the bathroom counter, or the counter bare. */
     public static void routine(ServerLevel l,BlockPos b,int item){set(l,b,ROUTINE,item<0?Blocks.AIR.defaultBlockState():fit(PlaceForYouBlock.Kind.ROUTINE,Direction.SOUTH,Math.floorMod(item,16)));}

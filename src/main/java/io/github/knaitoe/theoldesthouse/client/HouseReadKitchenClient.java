@@ -30,7 +30,7 @@ public final class HouseReadKitchenClient {
     static final ResourceLocation CRAYON=tex("entity/house_read/kitchen/crayon"),SHEET=tex("block/house_read/sheet");
     private static final String[] KEYS={"Face","Hands","Hair","Clothes"};
     private static final char[] LETTERS={'f','h','r','c'};
-    private static final int LINE=0x8e8a82,MARK=0x5e5a54,TEAR=0x5b8fd6;
+    private static final int LINE=0x8e8a82,MARK=0x5e5a54,TEAR=0x5b8fd6,SMUDGE=0x77736c;
 
     static boolean draws(HouseReadPropBlock.Part part){return part==HouseReadPropBlock.Part.TIN_LEFT||part==HouseReadPropBlock.Part.TIN_RIGHT||part==HouseReadPropBlock.Part.SHEET||part==HouseReadPropBlock.Part.FRIDGE_TOP;}
     static void render(HouseReadPropBlock.Fitting be,PoseStack pose,MultiBufferSource out,int light){
@@ -62,7 +62,9 @@ public final class HouseReadKitchenClient {
     static void colours(CompoundTag read,PoseStack pose,MultiBufferSource out,int light,boolean upright){
         var vc=out.getBuffer(RenderType.entityTranslucent(CRAYON));var figure=HouseReadKitchen.figure(read.getInt("Body"));int mood=read.getInt("Mood");
         var marks=new java.util.HashSet<Integer>();if(mood>0&&mood<=HouseReadKitchen.FACE_MARKS.length)for(int[] m:HouseReadKitchen.FACE_MARKS[mood-1])marks.add(m[1]*16+m[0]);
-        boolean sad=mood==2;
+        // 0.4.698: a picture the House would not keep a face in: the face rubbed out with a thumb, the smear past the line.
+        boolean smudged=read.getBoolean("Smudged");if(smudged)marks.clear();
+        boolean sad=mood==2&&!smudged;
         for(int y=0;y<16;y++)for(int x=0;x<16;x++){
             char c=figure[y].charAt(x);if(c=='.')continue;boolean edge=edge(figure,x,y);
             if(edge)pixel(pose,vc,x,y,upright,0,LINE,1f,light);
@@ -77,6 +79,10 @@ public final class HouseReadKitchenClient {
         }
         if(read.getInt("Body")==2)for(int[] leg:HouseReadKitchen.LEGS)pixel(pose,vc,leg[0],leg[1],upright,0,LINE,1f,light);
         for(int m:marks)pixel(pose,vc,m%16,m/16,upright,6,MARK,1f,light);
+        if(smudged)for(int y=0;y<16;y++)for(int x=0;x<16;x++){
+            if(figure[y].charAt(x)=='f'){if((x*3+y*5)%4!=0)pixel(pose,vc,x,y,upright,6,SMUDGE,(x+y)%2==0?.62f:.42f,light);
+                if(x<15&&figure[y].charAt(x+1)=='.'&&y%2==0)pixel(pose,vc,x+1,y,upright,6,SMUDGE,.3f,light);}
+        }
         if(sad)pixel(pose,vc,HouseReadKitchen.TEAR[0],HouseReadKitchen.TEAR[1],upright,6,TEAR,1f,light);
     }
     /** Whether a marked pixel is on its part's edge: a neighbour off the page or of another part. */

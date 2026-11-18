@@ -247,14 +247,16 @@ public final class PlaceForYou {
         var shelter=seen.getCompound("shelter");t.putString("Stood",shelter.getString("Stood"));t.putBoolean("Danced",shelter.getBoolean("Danced"));
         t.putString("Porch",seen.getCompound("porch").getString("First"));
         var kitchen=seen.getCompound("kitchen");
-        if(kitchen.getBoolean("Hung")){var dr=new CompoundTag();for(var key:List.of("Face","Hands","Hair","Clothes"))dr.putInt(key,kitchen.contains(key)?kitchen.getInt(key):-1);dr.putInt("Body",kitchen.getInt("Body"));dr.putInt("Mood",kitchen.getInt("Mood"));t.put("Drawing",dr);}
+        // 0.4.698: how the reader presents, settled; for UNSEEN the face in their picture is rubbed out.
+        String self=HouseRead.value(d,id,HouseRead.Trait.SELF,true);t.putString("Self",self);
+        if(kitchen.getBoolean("Hung")){var dr=new CompoundTag();for(var key:List.of("Face","Hands","Hair","Clothes"))dr.putInt(key,kitchen.contains(key)?kitchen.getInt(key):-1);dr.putInt("Body",kitchen.getInt("Body"));dr.putInt("Mood",kitchen.getInt("Mood"));if(self.equals("UNSEEN"))dr.putBoolean("Smudged",true);t.put("Drawing",dr);}
         t.putString("Age",HouseRead.value(d,id,HouseRead.Trait.AGE,true));
         t.putString("Home",HouseRead.value(d,id,HouseRead.Trait.HOME,false));
         t.putString("Drawn",HouseRead.drawnTo(p));
         t.putInt("CastAge",HouseReadShelter.age(p));
         return t;
     }
-    static int glassStage(CompoundTag snap){String g=snap.getString("Glass");return g.startsWith("covered")?2:g.startsWith("turned")?1:0;}
+    static int glassStage(CompoundTag snap){if(snap.getBoolean("Read")&&snap.getString("Self").equals("UNSEEN"))return 2;String g=snap.getString("Glass");return g.startsWith("covered")?2:g.startsWith("turned")?1:0;}
 
     // ------------------------------------------------------------------------------------------------ arrival
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -265,7 +267,7 @@ public final class PlaceForYou {
             var snap=snapshot(p);own.put("Snap",snap);own.putInt("Chapter",APPROACH);
             // A fresh evening: the house as it begins, the hall glass and the fridge as this reader left them in the quiet rooms.
             var h=HOUSES.remove(b.asLong());if(h!=null)clearActors(l,b);
-            PlaceForYouSite.reset(l,b,snap.getCompound("Drawing"));PlaceForYouSite.glass(l,b,glassStage(snap));
+            PlaceForYouSite.reset(l,b,snap.getCompound("Drawing"));PlaceForYouSite.glass(l,b,glassStage(snap));PlaceForYouSite.hooks(l,b,PlaceForYouSelf.coat(snap));
         }
         cue(p,own.getInt("Chapter")==APPROACH?PlaceForYouTexts.arrival(own.getCompound("Snap").getString("Home")):"Mara's house, as you left it. The evening has waited.");
     }
@@ -337,6 +339,8 @@ public final class PlaceForYou {
         PlaceForYouAfter.tick(l,h,p,own(p),r);
         // 0.4.697: what the household assumes, made aloud, and kept when they sit down.
         PlaceForYouAge.tick(l,h,p,own(p),r);PlaceForYouAge.dinner(l,h,p,own(p),r);
+        // 0.4.698: someone who knows a reader without a face; the place card waiting.
+        PlaceForYouSelf.tick(l,h,p,own(p),r);
         // Kit, once going, is gone from the road when the reader isn't watching (or after half a minute), in whatever chapter the evening is in.
         own=own(p);
         if(own.getBoolean("KitGoing")&&!own.getBoolean("KitLeft")){if(h.kitGoneAt<0)h.kitGoneAt=(int)h.tick;var kit=actor(l,h,"Kit");
@@ -704,7 +708,10 @@ public final class PlaceForYou {
         return handled;
     }
     static boolean clicked(ServerPlayer p,BlockPos b,BlockPos rel,CompoundTag own){
-        var l=p.serverLevel();var h=house(b);if(h==null||own.getBoolean("Completed")||!own.contains("Snap"))return false;
+        var l=p.serverLevel();var h=house(b);
+        // 0.4.698: after the account, the place card is the reader's to take.
+        if(h!=null&&own.getBoolean("Completed")&&rel.equals(PlaceForYouSite.CARD))return PlaceForYouSelf.card(p,h);
+        if(h==null||own.getBoolean("Completed")||!own.contains("Snap"))return false;
         int ch=own.getInt("Chapter");var s=l.getBlockState(b.offset(rel));var kind=PlaceForYouBlock.kind(s);int held=holding(p);
         // The upstairs doors, shut this evening; the back door's stiff catch.
         // 0.4.689: Mara's door, open while she has the reader upstairs.
@@ -754,7 +761,9 @@ public final class PlaceForYou {
         if(kind==PlaceForYouBlock.Kind.PHOTO&&ch==OPEN&&own.getBoolean("VoiceHeard")&&!own.getBoolean("TheoSilent")&&!own.getBoolean("Ready")){PlaceForYouInvite.photo(p,h);return true;}
         if(kind==PlaceForYouBlock.Kind.PHOTO){cue(p,"A man half turned from the camera, in a work shirt. Somebody has dusted the frame and nothing else.");if(!own.getBoolean("TheoNamed"))edit(p,o->o.putBoolean("SawTheo",true));return true;}
         if(kind==PlaceForYouBlock.Kind.PICTURES){cue(p,PlaceForYouSite.picturesFilled(l,b)?"The household, in a row, and in the gap a man in a work shirt.":"The household, in a row. There's a gap in the row, the width of one person.");return true;}
-        if(kind==PlaceForYouBlock.Kind.GLASS){cue(p,switch(s.getValue(PlaceForYouBlock.STAGE)){case 1->"The hall glass, turned to face the wallpaper.";case 2->"The hall glass, with a cloth over it.";default->"The hall glass.";});return true;}
+        // 0.4.698: any reader can cover the hall glass, or uncover it.
+        if(kind==PlaceForYouBlock.Kind.GLASS)return PlaceForYouSelf.glass(p,h,s.getValue(PlaceForYouBlock.STAGE));
+        if(kind==PlaceForYouBlock.Kind.HOOKS)return PlaceForYouSelf.hooks(p,own);
         if(kind==PlaceForYouBlock.Kind.CUPBOARD){
             if(ch==DINNER&&!own.getBoolean("CupboardOpened")){edit(p,o->o.putBoolean("CupboardOpened",true));cue(p,"Shelves. Kit's things, folded. Kit is behind you in the hall, saying your name like it's the second time.");above(h,actor(l,h,"Kit"),"Hey. Hey. I'm here.");return true;}
             cue(p,"Shelves, and Kit's folded things.");return true;}
@@ -763,7 +772,7 @@ public final class PlaceForYou {
                 String helper=own.getString("Helper");
                 cue(p,switch(own.getString("Care")){case "help"->helper+" holds it out to you, and you do it together, slowly.";case "company"->"You do it yourself. "+helper+" talks about the weather the whole time, which helps.";default->"You do it on your own.";});
                 l.playSound(null,b.offset(rel),SoundEvents.BRUSH_GENERIC,SoundSource.BLOCKS,.6F,1F);PlaceForYouSite.routine(l,b,-1);h.repeatAt=(int)h.tick+60;
-                edit(p,o->o.putBoolean("RoutineUsed",true));cue(p,"You put it away in the cabinet.");return true;}
+                edit(p,o->o.putBoolean("RoutineUsed",true));cue(p,"You put it away in the cabinet.");PlaceForYouSelf.routine(p,h,own);return true;}
             if(ch==DINNER&&own.getString("Care").equals("private")&&!own.getBoolean("RoutineStopped")){PlaceForYouSite.routine(l,b,-1);edit(p,o->o.putBoolean("RoutineStopped",true));cue(p,"You put your hand over it. It's still warm. It stops.");return true;}
             cue(p,ch==BATHROOM&&own.getString("Care").isEmpty()?"Not yet.":"Laid out exactly as before, ready for the same moment.");return true;}
         if(kind==PlaceForYouBlock.Kind.COUNTER&&PlaceForYouBack.drawer(p,h))return true;

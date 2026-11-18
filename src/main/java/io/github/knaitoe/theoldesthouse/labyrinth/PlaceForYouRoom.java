@@ -70,7 +70,7 @@ final class PlaceForYouRoom {
         l.playSound(null,b.offset(PlaceForYouSite.BASKET),SoundEvents.WOOL_PLACE,SoundSource.BLOCKS,.6F,1.1F);
         switch(n){
             case 1->cue(p,"You take two corners of a sheet and Mara takes the other two, and you walk them in together.");
-            case 2->{PlaceForYouSite.basket(l,b,1);cue(p,"A pillowcase. Mara does hers in the air without looking.");}
+            case 2->{PlaceForYouSite.basket(l,b,1);cue(p,"A pillowcase. Mara does hers in the air without looking.");PlaceForYouSelf.fold(p,h);}
             default->{PlaceForYouSite.basket(l,b,2);cue(p,"At the bottom, a work shirt. Mara takes it from you and folds it herself.");}
         }
         return true;
