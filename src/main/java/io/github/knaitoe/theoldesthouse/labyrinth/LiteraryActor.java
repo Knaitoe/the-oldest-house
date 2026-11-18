@@ -171,7 +171,13 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * does; a seated one turns only their head, as far as a head turns ({@link #HEAD_TURN}). Nobody turns who cannot see the reader
      * ({@link #addresses}). It is the last word on their heads each tick, after every scene has turned its people (CastAddress).
      */
-    private @javax.annotation.Nullable UUID addressee;private int addressFor,spokenToAt=Integer.MIN_VALUE/2,facedAt=-1;private float facedYaw,facedPitch,aimedYaw;private String aimedFront="none";
+    private @javax.annotation.Nullable UUID addressee;private int addressFor,spokenToAt=Integer.MIN_VALUE/2,facedAt=-1;
+    /**
+     * Run 1735 (Fallow with two readers): the reader this person was turned to when another spoke to them, and until when.
+     * Otis was answering one reader when the other spoke to him too and was given the same line again; that reader went on to someone
+     * across the store, Otis let go of everyone, and with his answer still up went back to his coffee, his back to the first.
+     */
+    private @javax.annotation.Nullable UUID before;private int beforeUntil;private float facedYaw,facedPitch,aimedYaw;private String aimedFront="none";
     private static final Set<LiteraryActor> ADDRESSING=Collections.newSetFromMap(new WeakHashMap<>());
     /** How near a reader must be for a line to be said to them; how long, at most, someone keeps looking at them after it. */
     public static final double ADDRESS_RANGE=12;public static final int ADDRESS_TICKS=100;
@@ -190,7 +196,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     private void spokenTo(ServerPlayer reader){
         if(reader.isSpectator()||!addresses())return;
         LAST_SPOKEN_TO.put(reader.getUUID(),new java.lang.ref.WeakReference<>(this));
-        addressee=reader.getUUID();spokenToAt=tickCount;addressFor=Math.max(addressFor,60);ADDRESSING.add(this);
+        interrupted(reader);addressee=reader.getUUID();spokenToAt=tickCount;addressFor=Math.max(addressFor,60);ADDRESSING.add(this);
     }
     /**
      * 0.4.561: a reader spoke to this person in the last three seconds. A scene walking them somewhere can stop them to answer
@@ -206,7 +212,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     public static void panelLine(ServerPlayer reader){
         var ref=LAST_SPOKEN_TO.get(reader.getUUID());var a=ref==null?null:ref.get();
         if(a==null||a.isRemoved()||a.level()!=reader.level()||a.distanceToSqr(reader)>64||!a.addresses())return;
-        a.addressee=reader.getUUID();a.spokenToAt=a.tickCount;a.addressFor=Math.max(a.addressFor,80);ADDRESSING.add(a);
+        a.interrupted(reader);a.addressee=reader.getUUID();a.spokenToAt=a.tickCount;a.addressFor=Math.max(a.addressFor,80);ADDRESSING.add(a);
     }
     /** The reader this person is turned to, while they go on looking at them; null when nobody. */
     public @javax.annotation.Nullable UUID addressee(){return addressFor>0?addressee:null;}
@@ -242,10 +248,26 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      */
     private void faceAddressee(){
         if(addressFor<=0)return;
-        var p=addressee==null?null:level().getPlayerByUUID(addressee);
-        if(--addressFor<=0||!(p instanceof ServerPlayer reader)||!reader.isAlive()||reader.isSpectator()||reader.level()!=level()
-                ||reader.distanceToSqr(this)>ADDRESS_RANGE*ADDRESS_RANGE*2||!addresses()){addressee=null;addressFor=0;ADDRESSING.remove(this);return;}
+        var reader=still(addressee);
+        if(--addressFor<=0){addressee=null;before=null;ADDRESSING.remove(this);return;}
+        if(reader==null){
+            // The reader who spoke over the first one has gone; the first, if still there and their answer still due, is turned to again.
+            var back=tickCount<beforeUntil?still(before):null;before=null;
+            if(back==null){addressee=null;addressFor=0;ADDRESSING.remove(this);return;}
+            addressee=back.getUUID();addressFor=beforeUntil-tickCount;reader=back;
+        }
         face(reader);facedYaw=getYHeadRot();facedPitch=getXRot();facedAt=tickCount;
+    }
+    /** Another reader speaking to this person while they are turned to one: the first is remembered for as long as they were owed. */
+    private void interrupted(ServerPlayer reader){
+        if(addressee!=null&&addressFor>0&&!addressee.equals(reader.getUUID())){before=addressee;beforeUntil=tickCount+addressFor;}
+        else if(before!=null&&before.equals(reader.getUUID()))before=null;
+    }
+    /** A reader this person can go on looking at: there, alive, not a spectator, near enough; null otherwise. */
+    private @javax.annotation.Nullable ServerPlayer still(@javax.annotation.Nullable UUID id){
+        if(id==null||!addresses())return null;
+        return level().getPlayerByUUID(id) instanceof ServerPlayer r&&r.isAlive()&&!r.isSpectator()&&r.level()==level()
+            &&r.distanceToSqr(this)<=ADDRESS_RANGE*ADDRESS_RANGE*2?r:null;
     }
     /**
      * Once a tick after every scene's own tick handlers have run (CastAddress): whoever was turned to a reader this tick is left
