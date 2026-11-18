@@ -1,8 +1,9 @@
 """Original sounds for The list (0.4.699, docs/THE_LIST_0_4_699.md): a small cotton town on the South Plains at night.
 
-Part 1a has only the town's own night: crickets in the yards and the cotton, a dog behind a fence a few yards off, the drive-in's
+Part 1a has the town's own night: crickets in the yards and the cotton, a dog behind a fence a few yards off, the drive-in's
 speakers on Main Street murmuring with nobody in the stalls, a loose sheet of tin on the gin knocking in the wind, a train's horn out past
-the playa, the wind over the flat land, and the water tower ticking as it cools. Nothing in them is frightening yet.
+the playa, the wind over the flat land, and the water tower ticking as it cools; part 1b (0.4.700) adds a sprinkler working a lawn.
+Nothing in them is frightening yet.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -19,6 +20,7 @@ ROWS = {
     'train': ('A train horn sounds far off', 64),
     'wind': ('Wind blows over the flat land', 48),
     'tower': ('The water tower ticks', 24),
+    'sprinkler': ('A sprinkler ticks across a lawn', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -171,7 +173,26 @@ def tower():
     return out + groan
 
 
-MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower}
+def sprinkler():
+    # An impact sprinkler working a lawn at night: a tick and a burst of spray, a step at a time across its arc, a dozen steps; then the
+    # quick ratchet of the arm going back to the start of it.
+    n = seconds(5.0)
+    t = times(n)
+    out = np.zeros(n)
+    for k in range(12):
+        at = .12 + k * .3
+        x = t - at
+        on = x >= 0
+        out += band(rng.standard_normal(n), 1800, 5200) * np.exp(-np.clip(x, 0, None) / .003) * on * .9
+        out += band(rng.standard_normal(n), 2500, 9000) * np.exp(-np.clip(x, 0, None) / .09) * on * .35
+    back = (t > 3.85) & (t < 4.55)
+    clicks = (np.sin(2 * np.pi * 34 * t) > .6) * back
+    out += band(rng.standard_normal(n), 1500, 4500) * clicks * .5
+    out += band(rng.standard_normal(n), 3000, 9000) * back * .12
+    return out
+
+
+MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler}
 
 
 def main():

@@ -1,0 +1,71 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "a": "the_oldest_house:block/the_list/alum",
+    "e": "the_oldest_house:block/the_list/alum_edge",
+    "g": "the_oldest_house:block/the_list/galv",
+    "w": "the_oldest_house:block/the_list/press_glass",
+    "p": "the_oldest_house:block/the_list/plywood",
+    "h": "the_oldest_house:block/the_list/pa_horn",
+    "k": "the_oldest_house:block/the_list/remote",
+    "particle": "the_oldest_house:block/the_list/press_glass"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#e",
+          "uv": [
+            14,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#e",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#e",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

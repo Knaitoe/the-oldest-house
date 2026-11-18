@@ -1,0 +1,288 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "h": "the_oldest_house:block/the_list/sprinkler_head",
+    "w": "the_oldest_house:block/the_list/spray",
+    "d": "the_oldest_house:block/the_list/doghouse_wall",
+    "o": "the_oldest_house:block/the_list/doghouse_door",
+    "s": "the_oldest_house:block/list_shingle",
+    "c": "the_oldest_house:block/the_list/can_galv",
+    "b": "the_oldest_house:block/the_list/bike",
+    "a": "the_oldest_house:block/the_list/alum",
+    "n": "the_oldest_house:block/the_list/webbing",
+    "g": "the_oldest_house:block/the_list/grill_black",
+    "r": "the_oldest_house:block/the_list/hose_green",
+    "q": "the_oldest_house:block/the_list/galv",
+    "p": "the_oldest_house:block/the_list/pool_out",
+    "i": "the_oldest_house:block/the_list/pool_in",
+    "particle": "the_oldest_house:block/the_list/hose_green"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        5
+      ],
+      "to": [
+        3,
+        10,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q"
+        },
+        "south": {
+          "texture": "#q"
+        },
+        "east": {
+          "texture": "#q"
+        },
+        "west": {
+          "texture": "#q"
+        },
+        "up": {
+          "texture": "#q"
+        },
+        "down": {
+          "texture": "#q"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        5
+      ],
+      "to": [
+        14,
+        10,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q"
+        },
+        "south": {
+          "texture": "#q"
+        },
+        "east": {
+          "texture": "#q"
+        },
+        "west": {
+          "texture": "#q"
+        },
+        "up": {
+          "texture": "#q"
+        },
+        "down": {
+          "texture": "#q"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        3,
+        4
+      ],
+      "to": [
+        13,
+        11,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        },
+        "south": {
+          "texture": "#r"
+        },
+        "east": {
+          "texture": "#r"
+        },
+        "west": {
+          "texture": "#r"
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        10,
+        7.5
+      ],
+      "to": [
+        14,
+        11,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q"
+        },
+        "south": {
+          "texture": "#q"
+        },
+        "east": {
+          "texture": "#q"
+        },
+        "west": {
+          "texture": "#q"
+        },
+        "up": {
+          "texture": "#q"
+        },
+        "down": {
+          "texture": "#q"
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2,
+        11,
+        7.5
+      ],
+      "to": [
+        14,
+        11.02,
+        8.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#q",
+          "uv": [
+            2,
+            7.5,
+            14,
+            8.5
+          ]
+        },
+        "east": {
+          "texture": "#q",
+          "uv": [
+            7.5,
+            5.02,
+            8.5,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#q",
+          "uv": [
+            7.5,
+            5.02,
+            8.5,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2,
+        11,
+        8.5
+      ],
+      "to": [
+        3,
+        11.02,
+        8.5
+      ],
+      "faces": {
+        "south": {
+          "texture": "#q",
+          "uv": [
+            2,
+            5.02,
+            3,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        11,
+        8.5
+      ],
+      "to": [
+        14,
+        11.02,
+        8.5
+      ],
+      "faces": {
+        "south": {
+          "texture": "#q",
+          "uv": [
+            13,
+            5.02,
+            14,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        13,
+        11,
+        7.5
+      ],
+      "to": [
+        14,
+        11.02,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q",
+          "uv": [
+            2,
+            5.02,
+            3,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "__comment": "laid over the face behind it so the two do not flicker (tools/flicker.py)",
+      "from": [
+        2,
+        11,
+        7.5
+      ],
+      "to": [
+        3,
+        11.02,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q",
+          "uv": [
+            13,
+            5.02,
+            14,
+            5
+          ]
+        }
+      }
+    }
+  ]
+}

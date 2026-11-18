@@ -244,17 +244,25 @@ public final class PlaceForYou {
         }
     }
 
-    /** Down onto the floor of the storey at the walker's feet, up to half a block on toward where they are going, if they fit there. */
+    /** Down onto the floor of the storey at the walker's feet, up to half a block on toward where they are going, if they fit there; or else at
+     * the next point on their way, if it is within a block and a half. */
     static boolean setDown(ServerLevel l,House h,LiteraryActor a,Vec3 to){
         var b=h.base;var rel=a.position().subtract(b.getX(),b.getY(),b.getZ());
         double floor=rel.y>=PlaceForYouSite.UP-.6?PlaceForYouSite.UP:0;
         // No more than a step down: someone halfway up the stair stays on it.
         if(rel.y-floor>1.2)return false;
         var toward=new Vec3(to.x-a.getX(),0,to.z-a.getZ());if(toward.lengthSqr()>1e-4)toward=toward.normalize().scale(Math.min(.5,toward.length()));
-        var dest=new Vec3(a.getX()+toward.x,b.getY()+floor,a.getZ()+toward.z);
-        if(Math.abs(dest.y-a.getY())<.05&&toward.lengthSqr()<1e-4)return false;
-        if(!l.noCollision(a,a.getBoundingBox().move(dest.subtract(a.position()))))return false;
-        a.moveTo(dest.x,dest.y,dest.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);return true;
+        var tries=new java.util.ArrayList<Vec3>();tries.add(new Vec3(a.getX()+toward.x,b.getY()+floor,a.getZ()+toward.z));
+        // 0.4.700 (run 1725: Mara on the first tread again, pushed there by a reader standing on her place in the hall; half a block toward her
+        // chair was under the tread): failing that, the next point on her way, the foot of the stair or an archway, if it is near.
+        var step=PlaceForYouSite.via(rel,to.subtract(b.getX(),b.getY(),b.getZ()));
+        if(step!=null&&new Vec3(step.x-rel.x,0,step.z-rel.z).length()<1.6)tries.add(new Vec3(b.getX()+step.x,b.getY()+step.y,b.getZ()+step.z));
+        for(var dest:tries){
+            if(Math.abs(dest.y-a.getY())<.05&&dest.subtract(a.position()).horizontalDistanceSqr()<1e-4)continue;
+            if(!l.noCollision(a,a.getBoundingBox().move(dest.subtract(a.position()))))continue;
+            a.moveTo(dest.x,dest.y,dest.z,a.getYRot(),0);a.setDeltaMovement(Vec3.ZERO);return true;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------------------------------------ what the House remembers

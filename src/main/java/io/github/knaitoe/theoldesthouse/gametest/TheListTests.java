@@ -33,7 +33,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * 0.4.699, The list (docs/THE_LIST_0_4_699.md), part 1a: the middle of Lamesa at night, the place alone. Each case builds the place
+ * 0.4.699, The list (docs/THE_LIST_0_4_699.md), part 1a: the middle of Lamesa at night, the place alone; 0.4.700 (docs/THE_LIST_0_4_700.md),
+ * part 1b: the school's field, Amber's house and the yards. Each case builds the place
  * itself, one case to a batch, as Fallow's cases do.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_the_list") @PrefixGameTestTemplate(false)
@@ -255,6 +256,62 @@ public final class TheListTests {
         }).thenWaitUntil(()->h.assertTrue(heard(p,TheListRegistry.SPEAKER.get()),"the drive-in's speaker, heard on Main Street (clock "+TheList.clock(b)+")"))
         .thenExecute(()->{p.setGameMode(GameType.SPECTATOR);peer.setGameMode(GameType.SPECTATOR);})
         .thenWaitUntil(()->h.assertFalse(TheList.active(b),"the night forgotten once nobody is in town (clock "+TheList.clock(b)+")"))
+        .thenExecute(()->{done();h.succeed();});
+    }
+
+    /**
+     * 0.4.700: the school's field, Amber's house and the neighbors' yards. The field lined and mown inside its cinder track, its end zones
+     * and goalposts with the crossbar on its gooseneck; the home stands rising in rows with the press box behind them, the visitors' stands
+     * across; the lights dark on their towers; the scoreboard read from the field; the field house's steel doors shut. A body walks in at the
+     * gate from South Seventh to the track, the field and the top of both stands and into the press box, but not into the field house until
+     * a door is opened, and then through it to the coach's office and the showers. Amber's house: face brick, her television and her desk
+     * and her window lit, the front door locked and said so for that reader, not walked into. Sprinklers on the lawns, heard by a reader
+     * near one.
+     */
+    @GameTest(template="empty",batch="the_list_field",timeoutTicks=2400)
+    public static void theFieldAmbersHouseAndTheYards(GameTestHelper h){
+        var f=place(h);var p=f.player("list_field",P);var peer=f.player("list_field_peer",P);var l=f.level(P);var b=f.base(P);
+        int fx=TheListSite.FIELD_X,fz=TheListSite.FIELD_Z;
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            // The field.
+            h.assertTrue(mat(l,b,fx,-1,TheListSite.FIELD_N+5,"turf_line")&&mat(l,b,fx,-1,TheListSite.FIELD_S-5,"turf_line")&&mat(l,b,fx,-1,TheListSite.FIELD_N+2,"endzone")
+                &&mat(l,b,TheListSite.FIELD_W,-1,fz,"turf_side")&&(mat(l,b,fx,-1,fz+2,"turf")||mat(l,b,fx,-1,fz+2,"turf_dark")),"the field: its lines, an end zone, a sideline, mown turf");
+            h.assertTrue(mat(l,b,fx-21,-1,fz,"track_cinder")&&mat(l,b,fx+20,-1,fz,"track_cinder")&&mat(l,b,fx,-1,TheListSite.FIELD_N-8,"track_cinder")&&!mat(l,b,fx-22,-1,fz,"track_cinder"),"the cinder track round it");
+            for(int end:new int[]{TheListSite.FIELD_N,TheListSite.FIELD_S}){
+                int base=end==TheListSite.FIELD_N?end-1:end+1;
+                h.assertTrue(fitting(l,b,new BlockPos(fx,0,base),Kind.FIELD,0)&&fitting(l,b,new BlockPos(fx,3,base),Kind.FIELD,2)&&fitting(l,b,new BlockPos(fx,3,end),Kind.FIELD,3)
+                    &&fitting(l,b,new BlockPos(fx-2,3,end),Kind.FIELD,4)&&fitting(l,b,new BlockPos(fx+2,8,end),Kind.FIELD,5),"the goalpost at "+end+": its foot, gooseneck, crossbar and uprights");
+            }
+            h.assertTrue(fitting(l,b,new BlockPos(fx-24,16,TheListSite.FIELD_N-2),Kind.FIELD,7)&&l.getBlockState(b.offset(fx-24,16,TheListSite.FIELD_N-2)).getLightEmission()==0,"a tower's lights, dark");
+            h.assertTrue(fitting(l,b,new BlockPos(fx-23,0,fz),Kind.STANDS,0)&&fitting(l,b,new BlockPos(fx-30,3,fz),Kind.STANDS,1)&&fitting(l,b,new BlockPos(fx-30,4,fz-2),Kind.STANDS,3)
+                &&fitting(l,b,new BlockPos(fx-31,5,fz),Kind.STANDS,5)&&fitting(l,b,new BlockPos(fx+26,1,fz),Kind.STANDS,1),"the home stands in rows, their rail, the press box's window; the visitors' stands");
+            for(int i=0;i<3;i++)h.assertTrue(fitting(l,b,new BlockPos(fx+1-i,6,TheListSite.FENCE_S-2),Kind.SCORE,i)&&fitting(l,b,new BlockPos(fx+1-i,5,TheListSite.FENCE_S-2),Kind.SCORE,3+i),"the scoreboard read from the field, piece "+i);
+            var fieldDoor=new BlockPos(fx-1,0,TheListSite.FIELD_HOUSE_S);
+            h.assertTrue(is(l,b,fieldDoor,TheListRegistry.STEEL_DOOR.get())&&shut(l,b,fieldDoor)&&shut(l,b,fieldDoor.east())&&fitting(l,b,new BlockPos(fx-2,0,TheListSite.MAIN_FRONT_S+1),Kind.LOCKER,0),"the field house's doors shut, its lockers");
+            // Walking in at the gate.
+            var field=walked(l,b,new BlockPos(-80,0,-71),TheListSite.FENCE_W,TheListSite.MAIN_FRONT_S,-60,TheListSite.FENCE_S);
+            for(var at:List.of(new BlockPos(fx-21,0,fz),new BlockPos(fx,0,fz),new BlockPos(fx,0,TheListSite.FIELD_N+2),new BlockPos(fx-30,3,fz-4),new BlockPos(fx+26,1,fz)))
+                h.assertTrue(field.contains(at),"in at the gate to "+at.toShortString()+": "+field.size());
+            h.assertFalse(field.stream().anyMatch(c->TheListSite.inFieldHouse(Vec3.atCenterOf(c))),"not into the field house by its shut doors");
+            open(l,b,fieldDoor,true);
+            var through=walked(l,b,new BlockPos(fx,0,fz),TheListSite.FENCE_W,TheListSite.MAIN_FRONT_S,-60,TheListSite.FENCE_S);
+            h.assertTrue(through.contains(new BlockPos(fx+5,0,TheListSite.MAIN_FRONT_S+3))&&through.contains(new BlockPos(fx+6,0,TheListSite.FIELD_HOUSE_S-1)),"through its door to the coach's office and the showers");
+            open(l,b,fieldDoor,false);
+            // Amber's house.
+            h.assertTrue(mat(l,b,TheListSite.AMBER_W,1,-84,"storefront")&&fitting(l,b,TheListSite.AMBER_TV,Kind.AMBER,0)&&fitting(l,b,TheListSite.AMBER_DESK,Kind.AMBER,3)
+                &&fitting(l,b,new BlockPos(TheListSite.AMBER_DESK.getX(),1,TheListSite.AMBER_S),Kind.AMBER,6),"Amber's house in face brick: the television, her desk, her window");
+            h.assertTrue(shut(l,b,TheListSite.AMBER_FRONT)&&shut(l,b,TheListSite.AMBER_BACK),"her front and back doors, shut");
+            cues(p);cues(peer);
+            use(p,b,TheListSite.AMBER_FRONT,TheListSite.AMBER_FRONT.south(2));
+            h.assertTrue(cues(p).contains(TheListTexts.AMBER_DOOR)&&shut(l,b,TheListSite.AMBER_FRONT),"her front door is locked, and said so");
+            h.assertTrue(cues(peer).isEmpty(),"to that reader alone");
+            var yard=walked(l,b,new BlockPos(0,0,-72),-20,-96,20,-70);
+            h.assertFalse(yard.stream().anyMatch(c->TheListSite.inAmber(Vec3.atCenterOf(c))),"not into her house");
+            // The yards.
+            for(int[] at:TheListSite.SPRINKLERS)h.assertTrue(fitting(l,b,new BlockPos(at[0],0,at[1]),Kind.LOT,0),"a sprinkler on a lawn at "+at[0]+","+at[1]);
+            f.at(p,P,TheListSite.SPRINKLERS[0][0]+3.5,0,TheListSite.SPRINKLERS[0][1]+.5);
+            NativeTestPlayers.flush(p);NativeTestPlayers.packets(p);
+        }).thenWaitUntil(()->h.assertTrue(heard(p,TheListRegistry.SPRINKLER.get()),"a sprinkler, heard on the lawn (clock "+TheList.clock(b)+")"))
         .thenExecute(()->{done();h.succeed();});
     }
 }

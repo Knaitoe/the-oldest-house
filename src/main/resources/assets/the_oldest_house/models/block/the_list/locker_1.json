@@ -1,0 +1,76 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "l": "the_oldest_house:block/the_list/locker_lower",
+    "u": "the_oldest_house:block/the_list/locker_upper",
+    "k": "the_oldest_house:block/the_list/locker_side",
+    "b": "the_oldest_house:block/the_list/bench_wood",
+    "g": "the_oldest_house:block/the_list/galv",
+    "m": "the_oldest_house:block/the_list/gov_metal",
+    "c": "the_oldest_house:block/the_list/chalkboard",
+    "r": "the_oldest_house:block/the_list/chrome",
+    "s": "the_oldest_house:block/the_list/rollup",
+    "n": "the_oldest_house:block/the_list/concession_menu",
+    "p": "the_oldest_house:block/the_list/plywood",
+    "o": "the_oldest_house:block/the_list/notebook",
+    "particle": "the_oldest_house:block/the_list/locker_upper"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        4
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#u"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k",
+          "uv": [
+            0,
+            0,
+            12,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#k",
+          "uv": [
+            0,
+            0,
+            12,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#k",
+          "uv": [
+            0,
+            0,
+            16,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#k",
+          "uv": [
+            0,
+            0,
+            16,
+            12
+          ]
+        }
+      }
+    }
+  ]
+}

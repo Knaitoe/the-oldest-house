@@ -50,6 +50,17 @@ import net.minecraft.world.phys.shapes.*;
  * ladder (3), the sliding door's lower (4) and upper (5) half, the lamp over the door (6), the chute (7). TOWER: a leg (0), a leg with
  * its braces (1), the ladder (2), the catwalk's grating (3), its rail (4), the beacon (5), the riser (6). TANK: the tank's wall (0), its
  * letters (1-3), its roof (4), its cap (5), its bowl (6).</li>
+ * <li>0.4.700, the school's field (docs/THE_LIST_0_4_700.md). FIELD: a goalpost's padded foot (0), its pole (1), the gooseneck bending
+ * over the end line (2), the crossbar's middle (3) and an end of it with its upright (4), an upright (5), a light tower's pole (6), its
+ * bank of floodlights, dark (7). STANDS: a row's plank at seat height (0) or a step higher (1), the frame under the stands (2), the rail
+ * along the top (3), a team bench (4), the press box's window (5), its table with the microphone (6), the horn on its roof (7). LOCKER:
+ * a locker's lower (0) and upper (1) half, a bench (2), the coach's desk (3), the chalkboard (4), a shower head (5), the concession
+ * stand's shutter (6) and its prices (7). SCORE: the scoreboard in six boards, three across and two down (0-5), its post (6), the ticket
+ * booth's window (7).</li>
+ * <li>Amber's house. AMBER: the television with the VCR under it (0), the shelf of rented tapes (1), tapes stacked on the carpet (2),
+ * her desk at the window with the notebook and the lamp (3), the nightstand with the phone (4), a bookcase of paperbacks (5), her
+ * window, lit (6), the coffee table with the remote and two tapes (7). LOT, the neighbors' yards: a sprinkler (0), a doghouse (1), a
+ * trash can (2), a bike on its side (3), a lawn chair (4), a grill (5), a hose on its reel (6), a kiddie pool (7).</li>
  * </ul>
  */
 public final class TheListBlock extends HorizontalDirectionalBlock {
@@ -58,7 +69,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
         COTTON,MESQUITE,WEED,POLE,FENCE,SIGNPOST,TRACK,MAILBOX,
         WINDOW,KITCHEN,TABLE,BED,ROOM,POSTER,DEN,BATH,ROOFTOP,YARD,SHOP,FIXTURE,
         FRONT,SIGN_DRUG,SIGN_FEED,SIGN_VIDEO,SIGN_LAW,SIGN_DRIVEIN,DRUG,VIDEO,LAW,FEED,DRIVEIN,
-        GIN,BALE,SEED,TOWER,TANK;
+        GIN,BALE,SEED,TOWER,TANK,
+        FIELD,STANDS,LOCKER,SCORE,AMBER,LOT;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -85,6 +97,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case ROOM->stage==2?2:0;
             case VIDEO->stage==7?5:0;
             case FRONT->stage==0?8:0;
+            case AMBER->stage==0?6:stage==3?12:stage==6?8:0;
             case SHOP->stage==3?12:0;
             default->0;
         };
@@ -130,6 +143,17 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case SEED->switch(stage){case 1->Block.box(0,0,0,16,10,16);case 2->Block.box(0,0,2,16,8,14);case 3->t(f,1,0,13,15,16,16);case 6->t(f,4,5,10,12,14,16);case 7->t(f,4,0,0,12,16,16);default->stage==4||stage==5?t(f,0,0,13,16,16,16):Shapes.block();};
             case TOWER->switch(stage){case 0->Block.box(5,0,5,11,16,11);case 1->Block.box(0,0,0,16,16,16);case 2->t(f,2,0,13,14,16,16);case 3->Block.box(0,0,0,16,2,16);case 4->t(f,0,0,13,16,16,16);case 5->Block.box(5,0,5,11,8,11);default->Block.box(5,0,5,11,16,11);};
             case TANK->Shapes.block();
+            case FIELD->switch(stage){case 0->Block.box(5,0,5,11,16,11);case 1->Block.box(6.5,0,6.5,9.5,16,9.5);case 2->t(f,6.5,0,0,9.5,9,9.5);
+                case 3->t(f,0,6,6.5,16,9,16);case 4->t(f,6.5,6,6.5,16,16,9.5);case 5->Block.box(7,0,7,9,16,9);case 6->Block.box(5,0,5,11,16,11);default->t(f,0,4,0,16,16,8);};
+            case STANDS->switch(stage){case 0->Block.box(0,6,0,16,8,16);case 1->Block.box(0,14,0,16,16,16);case 2->Block.box(7,0,7,9,16,9);
+                case 3->t(f,0,0,14,16,14,16);case 4->t(f,0,0,3,16,14,13);case 5->t(f,0,0,0,16,16,2);case 6->t(f,0,0,0,16,12,9);default->t(f,4,0,0,12,12,10);};
+            case LOCKER->switch(stage){case 0,1->t(f,0,0,4,16,16,16);case 2->t(f,0,0,4,16,8,12);case 3->t(f,0,0,2,16,13,14);case 4->t(f,0,2,15,16,14,16);
+                case 5->t(f,6,8,11,10,11,16);case 6->t(f,0,0,13,16,16,16);default->t(f,1,2,15,15,14,16);};
+            case SCORE->stage<=5?t(f,0,0,12,16,16,16):stage==6?Block.box(5,0,5,11,16,11):Shapes.block();
+            case AMBER->switch(stage){case 0->t(f,1,0,3,15,16,15);case 1->t(f,0,0,6,16,16,16);case 2->Block.box(3,0,4,11,7,10);case 3->t(f,0,0,4,16,12,16);
+                case 4->Block.box(2,0,2,14,14,14);case 5->t(f,0,0,8,16,16,16);case 6->t(f,0,0,0,16,16,2);default->t(f,1,0,3,15,8,13);};
+            case LOT->switch(stage){case 0->Block.box(7,0,7,9,3,9);case 1->Block.box(1,0,1,15,15,15);case 2->Block.box(2.5,0,2.5,13.5,15,13.5);case 3->Block.box(0,0,0,16,2,16);
+                case 4->t(f,1,0,2,15,14,11);case 5->Block.box(4,0,4,12,15,12);case 6->t(f,2,0,4,14,11,12);default->Block.box(0,0,0,16,3,16);};
         };
     }
     /** What stands in the way: buildings' fittings, fences and walls, trunks, posts and machines; not crops, weeds, canopies, wires,
@@ -154,6 +178,10 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case BATH->stage==4?Shapes.empty():getShape(s,l,p,c);
             case KITCHEN->stage==6?Shapes.empty():getShape(s,l,p,c);
             case VIDEO->stage==5||stage==7?Shapes.empty():getShape(s,l,p,c);
+            case FIELD->stage==7?Shapes.empty():getShape(s,l,p,c);
+            case STANDS->stage==7?Shapes.empty():getShape(s,l,p,c);
+            case LOCKER->stage==4||stage==5||stage==7?Shapes.empty():getShape(s,l,p,c);
+            case LOT->stage==0||stage==3?Shapes.empty():getShape(s,l,p,c);
             default->getShape(s,l,p,c);
         };
     }
@@ -162,6 +190,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
         var k=s.getValue(KIND);int stage=s.getValue(STAGE);
         return switch(k){
             case BALE,TANK->false;
+            case SCORE->stage!=7;
             case SHOP->stage==3;
             case GIN->stage==6||stage==7;
             case FRONT->stage!=5;

@@ -1,0 +1,85 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "v": "the_oldest_house:block/the_list/vcr",
+    "k": "the_oldest_house:block/the_list/tv_cabinet",
+    "f": "the_oldest_house:block/the_list/tv_front",
+    "s": "the_oldest_house:block/the_list/tv_screen",
+    "w": "the_oldest_house:block/the_list/wood_top",
+    "r": "the_oldest_house:block/the_list/rental_tapes",
+    "c": "the_oldest_house:block/the_list/tape_case",
+    "n": "the_oldest_house:block/the_list/notebook",
+    "l": "the_oldest_house:block/the_list/lampshade",
+    "b": "the_oldest_house:block/the_list/lamp_base",
+    "p": "the_oldest_house:block/the_list/phone_face",
+    "d": "the_oldest_house:block/the_list/drawers",
+    "o": "the_oldest_house:block/the_list/books",
+    "a": "the_oldest_house:block/the_list/amber_window",
+    "m": "the_oldest_house:block/the_list/remote",
+    "x": "the_oldest_house:block/the_list/window_sill",
+    "particle": "the_oldest_house:block/the_list/amber_window"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#a"
+        },
+        "south": {
+          "texture": "#a"
+        },
+        "east": {
+          "texture": "#x",
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#x",
+          "uv": [
+            14,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#x",
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ]
+        },
+        "down": {
+          "texture": "#x",
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 8,
+        "sky_light": 0
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

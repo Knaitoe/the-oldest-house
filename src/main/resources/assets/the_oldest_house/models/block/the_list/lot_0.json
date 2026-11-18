@@ -1,0 +1,113 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "h": "the_oldest_house:block/the_list/sprinkler_head",
+    "w": "the_oldest_house:block/the_list/spray",
+    "d": "the_oldest_house:block/the_list/doghouse_wall",
+    "o": "the_oldest_house:block/the_list/doghouse_door",
+    "s": "the_oldest_house:block/list_shingle",
+    "c": "the_oldest_house:block/the_list/can_galv",
+    "b": "the_oldest_house:block/the_list/bike",
+    "a": "the_oldest_house:block/the_list/alum",
+    "n": "the_oldest_house:block/the_list/webbing",
+    "g": "the_oldest_house:block/the_list/grill_black",
+    "r": "the_oldest_house:block/the_list/hose_green",
+    "q": "the_oldest_house:block/the_list/galv",
+    "p": "the_oldest_house:block/the_list/pool_out",
+    "i": "the_oldest_house:block/the_list/pool_in",
+    "particle": "the_oldest_house:block/the_list/sprinkler_head"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        3,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        },
+        "down": {
+          "texture": "#h"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        8
+      ],
+      "to": [
+        16,
+        13,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        }
+      },
+      "rotation": {
+        "angle": -45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        8
+      ],
+      "to": [
+        16,
+        13,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    }
+  ],
+  "render_type": "minecraft:translucent"
+}

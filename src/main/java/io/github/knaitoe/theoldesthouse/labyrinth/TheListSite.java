@@ -26,7 +26,7 @@ public final class TheListSite {
     private TheListSite(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.THE_LIST;
     /** The scene's edges. South of the House's door are the back yards and the cotton behind them. */
-    public static final int WEST=-88,EAST=96,NORTH=-176,SOUTH=24;
+    public static final int WEST=-164,EAST=96,NORTH=-176,SOUTH=24;
     /** The town stands at its own height, as the other tall places outside do, so the water tower's catwalk and tank are in it. */
     public static final int BASE_Y=96;
     /** The reader's house: its outer walls, the wallboard inside them, the ceiling's height. */
@@ -50,6 +50,15 @@ public final class TheListSite {
     public static final int SEED_W=74,SEED_E=84,SEED_S=-74,SEED_N=-86,SEED_TOP=10;
     public static final int TOWER_X=57,TOWER_Z=-82,TOWER_LEG_TOP=21,CATWALK_Y=22,TANK_BOTTOM=23,TANK_TOP=29;
     public static final int PLAYA_W=70,PLAYA_S=-100;
+    /** 0.4.700, the school's field out west (docs/THE_LIST_0_4_700.md): its fence; the field's sidelines and end lines and its middle; the
+     * gate in the east fence where South Seventh comes in; the field house's back wall on the field; the press box's door. */
+    public static final int FENCE_W=-161,FENCE_E=-96,FENCE_N=-98,FENCE_S=-16;
+    public static final int FIELD_W=-136,FIELD_E=-112,FIELD_N=-88,FIELD_S=-28,FIELD_X=-124,FIELD_Z=-58,GATE_N=-73,GATE_S=-69,FIELD_HOUSE_S=-100,PRESS_DOOR_Z=-53;
+    /** Amber's house on South Seventh: its walls; the front and back doors, the television in the den and her desk. */
+    public static final int AMBER_W=-12,AMBER_E=12,AMBER_S=-78,AMBER_N=-90;
+    public static final BlockPos AMBER_FRONT=new BlockPos(0,0,AMBER_S),AMBER_BACK=new BlockPos(0,0,AMBER_N),AMBER_TV=new BlockPos(-10,0,-82),AMBER_DESK=new BlockPos(5,0,-80);
+    /** The sprinklers going on the neighbors' lawns. */
+    public static final int[][] SPRINKLERS={{-30,-34},{-3,-65},{-36,-21}};
     /** The House's door at the back of the kitchen; the front door; the reader's own door; the empty house across the street, whose door
      * is the way on. */
     public static final BlockPos FRONT_DOOR=new BlockPos(5,0,HOUSE_N),ROOM_DOOR=new BlockPos(5,0,FRONT_WALL_Z),ONWARD=new BlockPos(0,0,-37);
@@ -72,9 +81,13 @@ public final class TheListSite {
         for(int[] s:STORES)if(r.x>s[0]+1&&r.x<s[1]&&(s[2]==0?south:north))return true;
         return false;
     }
-    /** Under a roof: the house, a store, the gin, the seed house. */
+    /** Inside Amber's house, under its ceiling. */
+    public static boolean inAmber(Vec3 r){return r.x>AMBER_W+1&&r.x<AMBER_E&&r.z<AMBER_S&&r.z>AMBER_N+1&&r.y>-.5&&r.y<CEILING;}
+    /** Inside the field house. */
+    public static boolean inFieldHouse(Vec3 r){return r.x>FIELD_X-11&&r.x<FIELD_X+12&&r.z<FIELD_HOUSE_S&&r.z>MAIN_FRONT_S+1&&r.y>-.5&&r.y<3;}
+    /** Under a roof: the reader's house, Amber's, the field house, a store, the gin, the seed house. */
     public static boolean indoors(Vec3 r){
-        return inHouse(r)||inStore(r)||r.x>GIN_W+1&&r.x<GIN_E&&r.z<GIN_S&&r.z>GIN_N+1&&r.y<GIN_TOP||r.x>SEED_W+1&&r.x<SEED_E&&r.z<SEED_S&&r.z>SEED_N+1&&r.y<SEED_TOP;
+        return inHouse(r)||inAmber(r)||inFieldHouse(r)||inStore(r)||r.x>GIN_W+1&&r.x<GIN_E&&r.z<GIN_S&&r.z>GIN_N+1&&r.y<GIN_TOP||r.x>SEED_W+1&&r.x<SEED_E&&r.z<SEED_S&&r.z>SEED_N+1&&r.y<SEED_TOP;
     }
     /** Main Street's stores, west to east: {west wall, east wall, 0 south side or 1 north side}. The feed store, Dawson Drug, the video
      * store, the substation. */
@@ -103,6 +116,9 @@ public final class TheListSite {
         yard(l,b);
         shop(l,b);
         neighbors(l,b);
+        amberHouse(l,b);
+        yards(l,b);
+        school(l,b);
         main(l,b);
         driveIn(l,b);
         tracks(l,b);
@@ -416,7 +432,6 @@ public final class TheListSite {
         neighbor(l,b,-42,-26,-52,-62,Direction.NORTH,4,true,true);
         neighbor(l,b,-8,8,-52,-62,Direction.NORTH,5,false,false);
         neighbor(l,b,-42,-26,-78,-88,Direction.SOUTH,6,true,false);
-        neighbor(l,b,-8,8,-78,-88,Direction.SOUTH,7,false,true);
     }
     /** One house from x0 to x1 and z0 to z1 (z0 its front if it faces south, its back if it faces north), facing the street. */
     static void neighbor(ServerLevel l,BlockPos b,int x0,int x1,int za,int zb,Direction faces,int seed,boolean carport,boolean fence){
@@ -467,6 +482,295 @@ public final class TheListSite {
             for(int x=fw;x<=fe;x++)if(x!=door.getX())set(l,b,x,0,fz,fit(Kind.FENCE,Direction.NORTH,Math.floorMod(x,4)==0?1:0));
             set(l,b,door.getX(),0,fz,fit(Kind.FENCE,Direction.NORTH,2));
         }
+    }
+
+    // ------------------------------------------------------------------------------------------------ the school's field
+    /** Whether a cell inside the stadium is on the track, inside it, or out past it: its distance from the line down the infield's
+     * middle, between the two centres of the track's turns. The track is the ring from just over 19 out to 21. */
+    static double fromInfield(int x,int z){double dz=Math.max(0,Math.abs(z-FIELD_Z)-TURN);double dx=x-FIELD_X;return Math.sqrt(dx*dx+dz*dz);}
+    static final int TURN=17;
+    static boolean onTrack(int x,int z){double d=fromInfield(x,z);return d>19&&d<=21;}
+    /** The field's own turf: the sidelines, the end zones, a line every five, and the turf mown in bands between them. */
+    static BlockState fieldAt(int x,int z){
+        if(x==FIELD_W||x==FIELD_E)return mat("turf_side");
+        if(z<=FIELD_N+4||z>=FIELD_S-4)return mat("endzone");
+        int from=z-(FIELD_N+5);
+        if(from%5==0)return mat("turf_line");
+        return (from/5)%2==0?mat("turf"):mat("turf_dark");
+    }
+    /**
+     * The high school's field west of town, out where South Seventh's caliche ends at its gate, the lot beside the road. Chain-link round
+     * all of it. Inside, the grass worn to dirt; the cinder track round the field; the field lined and mown, its end zones and its goalposts;
+     * the home stands on the west with the press box on top of them, the visitors' stands on the east, the team benches at the sidelines;
+     * four towers of lights, dark; the scoreboard past the south end; the concession stand and the ticket booth by the gate; the field house
+     * on Main Street at the north end, its doors onto the field.
+     */
+    static void school(ServerLevel l,BlockPos b){
+        lawn(l,b,FENCE_W,MAIN_FRONT_S,FENCE_E,FENCE_N-1);
+        ground(l,b,FENCE_E+1,SEVENTH_S,STREETS_W-1,SEVENTH_N,mat("caliche"));
+        ground(l,b,FENCE_E+2,SEVENTH_N-2,STREETS_W-4,SEVENTH_N-16,mat("caliche"));
+        streetLight(l,b,-80,SEVENTH_N-9,Direction.NORTH);
+        for(int x=FENCE_W+1;x<FENCE_E;x++)for(int z=FENCE_N+1;z<FENCE_S;z++){
+            double d=fromInfield(x,z);
+            BlockState s=d>19&&d<=21?mat("track_cinder"):x>=FIELD_W&&x<=FIELD_E&&z>=FIELD_N&&z<=FIELD_S?fieldAt(x,z):d<=19?mat("turf"):hash(x,z,61)<.16?mat("dirt"):mat("lawn");
+            set(l,b,x,-1,z,s);set(l,b,x,0,z,AIR);
+        }
+        // The fence: the north side broken where the field house's doors open onto it, the east side where the road comes in.
+        for(int x=FENCE_W;x<=FENCE_E;x++){
+            if(x<FIELD_X-2||x>FIELD_X+1)set(l,b,x,0,FENCE_N,fit(Kind.FENCE,Direction.NORTH,Math.floorMod(x,4)==0?1:0));
+            set(l,b,x,0,FENCE_S,fit(Kind.FENCE,Direction.NORTH,Math.floorMod(x,4)==0?1:0));
+        }
+        for(int z=FENCE_N+1;z<FENCE_S;z++){
+            set(l,b,FENCE_W,0,z,fit(Kind.FENCE,Direction.EAST,Math.floorMod(z,4)==0?1:0));
+            if(z<GATE_N||z>GATE_S)set(l,b,FENCE_E,0,z,fit(Kind.FENCE,Direction.EAST,Math.floorMod(z,4)==0?1:0));
+        }
+        set(l,b,FENCE_E,0,GATE_N-1,fit(Kind.FENCE,Direction.EAST,1));set(l,b,FENCE_E,0,GATE_S+1,fit(Kind.FENCE,Direction.EAST,1));
+        // The gaps are open ground: the road's caliche on through the gate, grass where the field house's doors come out.
+        ground(l,b,FENCE_E,GATE_N,FENCE_E,GATE_S,mat("caliche"));
+        lawn(l,b,FIELD_X-2,FENCE_N,FIELD_X+1,FENCE_N);
+        goalpost(l,b,FIELD_N,Direction.SOUTH);
+        goalpost(l,b,FIELD_S,Direction.NORTH);
+        homeStands(l,b);
+        visitorStands(l,b);
+        // The team benches at the sidelines, the home team's on the west.
+        for(int z=FIELD_Z-10;z<=FIELD_Z+10;z++){if(z==FIELD_Z)continue;set(l,b,FIELD_W-2,0,z,fit(Kind.STANDS,Direction.EAST,4));set(l,b,FIELD_E+2,0,z,fit(Kind.STANDS,Direction.WEST,4));}
+        // The towers of lights at the corners, their banks aimed in at the field, all of them dark tonight.
+        for(int[] t:new int[][]{{FIELD_X-24,FIELD_N-2},{FIELD_X-24,FIELD_S+2},{FIELD_X+24,FIELD_N-2},{FIELD_X+24,FIELD_S+2}}){
+            for(int y=0;y<16;y++)set(l,b,t[0],y,t[1],fit(Kind.FIELD,Direction.NORTH,6));
+            set(l,b,t[0],16,t[1],fit(Kind.FIELD,t[0]<FIELD_X?Direction.EAST:Direction.WEST,7));
+        }
+        scoreboard(l,b);
+        concession(l,b);
+        ticketBooth(l,b);
+        fieldHouse(l,b);
+    }
+    /** A goalpost at one end of the field: its padded foot behind the end line, its pole up to the gooseneck, which bends out over the line
+     * to the crossbar's middle; the bar across, and an upright rising from each of its ends. */
+    static void goalpost(ServerLevel l,BlockPos b,int endZ,Direction in){
+        int baseZ=endZ-in.getStepZ();
+        set(l,b,FIELD_X,0,baseZ,fit(Kind.FIELD,Direction.NORTH,0));
+        for(int y=1;y<=2;y++)set(l,b,FIELD_X,y,baseZ,fit(Kind.FIELD,Direction.NORTH,1));
+        set(l,b,FIELD_X,3,baseZ,fit(Kind.FIELD,in,2));
+        set(l,b,FIELD_X,3,endZ,fit(Kind.FIELD,in,3));
+        set(l,b,FIELD_X-2,3,endZ,fit(Kind.FIELD,Direction.NORTH,4));set(l,b,FIELD_X+2,3,endZ,fit(Kind.FIELD,Direction.SOUTH,4));
+        for(int y=4;y<=8;y++){set(l,b,FIELD_X-2,y,endZ,fit(Kind.FIELD,Direction.NORTH,5));set(l,b,FIELD_X+2,y,endZ,fit(Kind.FIELD,Direction.NORTH,5));}
+    }
+    /** The home stands on the west of the track: a concrete walk at their foot, eight rows rising half a block apiece, the frame under them,
+     * a rail along the top; the press box on its posts behind the top row, its windows on the field, its door off the top row, the horn on
+     * its roof. Under the high rows a body can walk. */
+    static void homeStands(ServerLevel l,BlockPos b){
+        int front=FIELD_X-22,zn=FIELD_Z-16,zs=FIELD_Z+16;
+        for(int z=zn;z<=zs;z++){
+            set(l,b,front,-1,z,mat("sidewalk"));
+            for(int r=0;r<8;r++){
+                int x=front-1-r,y=r/2;
+                set(l,b,x,-1,z,mat("dirt"));
+                set(l,b,x,y,z,fit(Kind.STANDS,Direction.EAST,r%2));
+                if(y>=1&&Math.floorMod(z,4)==0)for(int yy=0;yy<y;yy++)set(l,b,x,yy,z,fit(Kind.STANDS,Direction.EAST,2));
+            }
+            if(z!=PRESS_DOOR_Z)set(l,b,front-8,4,z,fit(Kind.STANDS,Direction.EAST,3));
+        }
+        // The press box: a floor on four posts level with the top row, walls of plywood, its windows along the field side.
+        int pe=front-9,pw=pe-4,pn=FIELD_Z-6,ps=FIELD_Z+6;
+        for(int x=pw;x<=pe;x++)for(int z=pn;z<=ps;z++){
+            set(l,b,x,3,z,mat("slab"));
+            boolean wall=x==pw||x==pe||z==pn||z==ps;
+            for(int y=4;y<=6;y++)set(l,b,x,y,z,wall?mat("siding"):AIR);
+        }
+        flatRoof(l,b,pw,pe,pn,ps,7,mat("siding"));
+        for(int[] c:new int[][]{{pw,pn},{pw,ps},{pe,pn},{pe,ps}})for(int y=0;y<3;y++)set(l,b,c[0],y,c[1],fit(Kind.YARD,Direction.NORTH,6));
+        for(int z=pn+1;z<=ps-2;z++){set(l,b,pe,5,z,fit(Kind.STANDS,Direction.EAST,5));set(l,b,pe,6,z,fit(Kind.STANDS,Direction.EAST,5));}
+        // The table under the windows where the announcer and the two spotters sit, each with a microphone.
+        for(int z:new int[]{FIELD_Z-4,FIELD_Z,FIELD_Z+4})set(l,b,pe-1,4,z,fit(Kind.STANDS,Direction.EAST,6));
+        steelDoor(l,b,new BlockPos(pe,4,PRESS_DOOR_Z),Direction.WEST,false);
+        set(l,b,pw+2,9,FIELD_Z,fit(Kind.STANDS,Direction.EAST,7));
+    }
+    /** The visitors' stands, four rows on the east of the track with a rail along the top. */
+    static void visitorStands(ServerLevel l,BlockPos b){
+        int front=FIELD_X+23;
+        for(int z=FIELD_Z-8;z<=FIELD_Z+12;z++){
+            for(int r=0;r<4;r++){int x=front+r;set(l,b,x,-1,z,mat("dirt"));set(l,b,x,r/2,z,fit(Kind.STANDS,Direction.WEST,r%2));
+                if(r>=2&&Math.floorMod(z,4)==0)set(l,b,x,0,z,fit(Kind.STANDS,Direction.WEST,2));}
+            set(l,b,front+3,2,z,fit(Kind.STANDS,Direction.WEST,3));
+        }
+    }
+    /** The scoreboard past the south end of the field on its two posts, read from the field: HOME, the quarter and VISITORS across the top,
+     * the down, the yards to go and the ball's place under them, every bulb dark. */
+    static void scoreboard(ServerLevel l,BlockPos b){
+        int z=FENCE_S-2;
+        for(int y=0;y<=6;y++){set(l,b,FIELD_X-2,y,z,fit(Kind.SCORE,Direction.NORTH,6));set(l,b,FIELD_X+2,y,z,fit(Kind.SCORE,Direction.NORTH,6));}
+        // Read from the field: the viewer's left is the east.
+        for(int i=0;i<3;i++){set(l,b,FIELD_X+1-i,6,z,fit(Kind.SCORE,Direction.NORTH,i));set(l,b,FIELD_X+1-i,5,z,fit(Kind.SCORE,Direction.NORTH,3+i));}
+    }
+    /** The concession stand inside the gate: cinder block under a flat roof, its shutter down over the counter and its prices beside it. */
+    static void concession(ServerLevel l,BlockPos b){
+        int x0=FENCE_E-6,x1=FENCE_E-2,zn=GATE_N-13,zs=GATE_N-8;
+        for(int x=x0;x<=x1;x++)for(int z=zn;z<=zs;z++){
+            set(l,b,x,-1,z,mat("slab"));
+            boolean wall=x==x0||x==x1||z==zn||z==zs;
+            for(int y=0;y<3;y++)set(l,b,x,y,z,wall?mat("cinder"):AIR);
+        }
+        flatRoof(l,b,x0,x1,zn,zs,3,mat("cinder"));
+        for(int x=x0+1;x<=x0+2;x++)set(l,b,x,1,zs+1,fit(Kind.LOCKER,Direction.SOUTH,6));
+        set(l,b,x0+3,1,zs+1,fit(Kind.LOCKER,Direction.SOUTH,7));
+        set(l,b,x0+2,2,zs+1,fit(Kind.YARD,Direction.SOUTH,0));
+    }
+    /** The ticket booth outside the gate, its window on the road. */
+    static void ticketBooth(ServerLevel l,BlockPos b){
+        int x0=FENCE_E+1,x1=FENCE_E+3,zn=SEVENTH_S+1,zs=SEVENTH_S+3;
+        for(int x=x0;x<=x1;x++)for(int z=zn;z<=zs;z++){
+            set(l,b,x,-1,z,mat("slab"));
+            boolean wall=x==x0||x==x1||z==zn||z==zs;
+            for(int y=0;y<3;y++)set(l,b,x,y,z,wall?mat("cinder"):AIR);
+        }
+        flatRoof(l,b,x0,x1,zn,zs,3,mat("cinder"));
+        set(l,b,x0+1,1,zn,fit(Kind.SCORE,Direction.NORTH,7));
+    }
+    /**
+     * The field house on Main Street, its front on the sidewalk with the stores and its back on the field: cinder block under a flat roof,
+     * a steel door off the street and two onto the field with a light over them. The locker room with its lockers along two walls and
+     * benches down the middle; through the wall, the coach's office with its desk and chalkboard, and the showers behind it. One light
+     * left on in the locker room.
+     */
+    static void fieldHouse(ServerLevel l,BlockPos b){
+        int x0=FIELD_X-12,x1=FIELD_X+12,zn=MAIN_FRONT_S,zs=FIELD_HOUSE_S,wall=FIELD_X+3;
+        for(int x=x0;x<=x1;x++)for(int z=zn;z<=zs;z++){
+            boolean outer=x==x0||x==x1||z==zn||z==zs,shower=x>wall&&z>=zs-2;
+            set(l,b,x,-1,z,outer?mat("slab"):shower?mat("tile"):mat("slab"));
+            for(int y=0;y<3;y++)set(l,b,x,y,z,outer?mat("cinder"):AIR);
+        }
+        flatRoof(l,b,x0,x1,zn,zs,3,mat("cinder"));
+        // The wall between the locker room and the coach's side, open to each; the wall between the office and the showers.
+        for(int z=zn+1;z<zs;z++)for(int y=0;y<3;y++)set(l,b,wall,y,z,y<2&&(z==zn+3||z==zs-2)?AIR:mat("cinder"));
+        for(int x=wall+1;x<x1;x++)for(int y=0;y<3;y++)set(l,b,x,y,zs-3,mat("cinder"));
+        steelDoor(l,b,new BlockPos(FIELD_X-6,0,zn),Direction.SOUTH,false);
+        set(l,b,FIELD_X-5,2,zn-1,fit(Kind.YARD,Direction.NORTH,0));
+        steelDoor(l,b,new BlockPos(FIELD_X-1,0,zs),Direction.NORTH,false);steelDoor(l,b,new BlockPos(FIELD_X,0,zs),Direction.NORTH,true);
+        set(l,b,FIELD_X+2,2,zs+1,fit(Kind.YARD,Direction.SOUTH,0));
+        // The lockers: along the north wall either side of the street door, and down the west wall.
+        for(int x=x0+1;x<wall;x++){if(Math.abs(x-(FIELD_X-6))<=1)continue;set(l,b,x,0,zn+1,fit(Kind.LOCKER,Direction.SOUTH,0));set(l,b,x,1,zn+1,fit(Kind.LOCKER,Direction.SOUTH,1));}
+        for(int z=zn+2;z<zs;z++){set(l,b,x0+1,0,z,fit(Kind.LOCKER,Direction.EAST,0));set(l,b,x0+1,1,z,fit(Kind.LOCKER,Direction.EAST,1));}
+        for(int x=x0+3;x<wall-1;x++)if(Math.abs(x-(FIELD_X-6))>1)set(l,b,x,0,zn+4,fit(Kind.LOCKER,Direction.NORTH,2));
+        set(l,b,FIELD_X-4,2,zn+5,fit(Kind.FIXTURE,Direction.NORTH,2));
+        // The coach's office, the showers behind it.
+        set(l,b,wall+5,0,zn+2,fit(Kind.LOCKER,Direction.SOUTH,3));set(l,b,wall+5,0,zn+3,fit(Kind.TABLE,Direction.NORTH,1));
+        set(l,b,wall+3,1,zn+1,fit(Kind.LOCKER,Direction.SOUTH,4));set(l,b,wall+2,1,zn+1,fit(Kind.LOCKER,Direction.SOUTH,4));
+        for(int x=wall+2;x<x1;x+=2)set(l,b,x,1,zs-2,fit(Kind.LOCKER,Direction.SOUTH,5));
+    }
+    /** A flat roof over a box from x0 to x1 and zn to zs: a ceiling inside at {@code y}, the gravel a course above it, and the walls carried up
+     * through both so no edge of gravel shows from the ground. */
+    static void flatRoof(ServerLevel l,BlockPos b,int x0,int x1,int zn,int zs,int y,BlockState wall){
+        for(int x=x0;x<=x1;x++)for(int z=zn;z<=zs;z++){
+            boolean edge=x==x0||x==x1||z==zn||z==zs;
+            set(l,b,x,y,z,edge?wall:mat("ceiling"));set(l,b,x,y+1,z,edge?wall:mat("flat_roof"));
+        }
+    }
+    /** One of the field house's steel doors, shut in the outer face of its wall like the stores' doors. */
+    static void steelDoor(ServerLevel l,BlockPos b,BlockPos at,Direction facing,boolean right){
+        var d=TheListRegistry.STEEL_DOOR.get().defaultBlockState().setValue(DoorBlock.FACING,facing).setValue(DoorBlock.HINGE,right?DoorHingeSide.RIGHT:DoorHingeSide.LEFT).setValue(DoorBlock.OPEN,false);
+        set(l,b,at,d.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));set(l,b,at.above(),d.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));
+    }
+
+    // ------------------------------------------------------------------------------------------------ Amber's house
+    /**
+     * Amber's house on South Seventh, built as the reader's is, double-walled, with face brick to the eaves outside. Through the front door
+     * a short hall; the den on the west with the television and the VCR, the shelf of rented tapes, the couch and the recliner, the picture
+     * window; Amber's room on the east with her desk under her own window, the notebook on it, her bed, her bookcase and her posters; behind
+     * them the kitchen, her mother's room and the bathroom; the back door onto the alley. The television is on in the den, her lamp on her
+     * desk; the rest is dark. Shut for now: the front door is locked.
+     */
+    static void amberHouse(ServerLevel l,BlockPos b){
+        int w=AMBER_W,e=AMBER_E,s=AMBER_S,n=AMBER_N,mid=n+5;
+        for(int x=w;x<=e;x++)for(int z=n;z<=s;z++){
+            boolean outer=x==w||x==e||z==n||z==s,lining=!outer&&(x==w+1||x==e-1||z==n+1||z==s-1);
+            boolean kitchen=x<=-3&&z<mid,bath=x>=9&&z<mid,den=x<=-3&&z>mid;
+            set(l,b,x,-1,z,outer||lining?mat("slab"):kitchen||bath?mat("lino"):mat("carpet"));
+            for(int y=0;y<CEILING;y++)set(l,b,x,y,z,outer?mat("storefront"):lining?(den||x==w+1&&z>mid?mat("paneling"):mat("drywall")):AIR);
+            set(l,b,x,CEILING,z,outer?mat("storefront"):mat("ceiling"));
+        }
+        // The walls between the rooms: across the middle, either side of the hall, and between her mother's room and the bathroom.
+        for(int x=w+2;x<=e-2;x++)for(int y=0;y<CEILING;y++)set(l,b,x,y,mid,mat("drywall"));
+        for(int z=n+2;z<=s-2;z++)for(int y=0;y<CEILING;y++){set(l,b,-2,y,z,z>mid?mat("paneling"):mat("drywall"));set(l,b,2,y,z,mat("drywall"));}
+        for(int z=n+2;z<mid;z++)for(int y=0;y<CEILING;y++)set(l,b,8,y,z,mat("drywall"));
+        for(int y=0;y<=1;y++){
+            for(int x=-1;x<=1;x++)set(l,b,x,y,mid,AIR);
+            set(l,b,-6,y,mid,AIR);set(l,b,-7,y,mid,AIR);
+            set(l,b,-2,y,s-2,AIR);set(l,b,-2,y,s-3,AIR);set(l,b,-2,y,n+3,AIR);
+            set(l,b,0,y,s-1,AIR);set(l,b,0,y,n+1,AIR);
+        }
+        door(l,b,AMBER_FRONT,Direction.NORTH,true);
+        door(l,b,AMBER_BACK,Direction.SOUTH,false);
+        door(l,b,new BlockPos(2,0,s-4),Direction.EAST,false);
+        door(l,b,new BlockPos(2,0,n+4),Direction.EAST,true);
+        door(l,b,new BlockPos(8,0,n+3),Direction.EAST,false);
+        // The den.
+        set(l,b,AMBER_TV,fit(Kind.AMBER,Direction.EAST,0));
+        set(l,b,w+2,0,s-6,fit(Kind.AMBER,Direction.EAST,1));set(l,b,w+2,1,s-6,fit(Kind.AMBER,Direction.EAST,1));
+        set(l,b,w+2,0,s-5,fit(Kind.AMBER,Direction.EAST,1));
+        set(l,b,w+3,0,s-2,fit(Kind.AMBER,Direction.NORTH,2));
+        set(l,b,-3,0,s-4,fit(Kind.DEN,Direction.WEST,0));set(l,b,-3,0,s-5,fit(Kind.DEN,Direction.WEST,1));
+        set(l,b,-3,0,s-6,fit(Kind.DEN,Direction.WEST,4));
+        set(l,b,-6,0,s-4,fit(Kind.AMBER,Direction.EAST,7));
+        set(l,b,-6,0,s-2,fit(Kind.DEN,Direction.WEST,2));
+        set(l,b,w+2,1,s-3,fit(Kind.POSTER,Direction.EAST,4));
+        set(l,b,-7,1,s,fit(Kind.WINDOW,Direction.SOUTH,5));set(l,b,-6,1,s,fit(Kind.WINDOW,Direction.SOUTH,4));
+        set(l,b,-7,1,s-1,AIR);set(l,b,-6,1,s-1,AIR);
+        set(l,b,w,1,s-2,fit(Kind.WINDOW,Direction.WEST,0));set(l,b,w+1,1,s-2,AIR);
+        // Amber's room.
+        set(l,b,AMBER_DESK,fit(Kind.AMBER,Direction.NORTH,3));set(l,b,AMBER_DESK.getX(),0,AMBER_DESK.getZ()-1,fit(Kind.TABLE,Direction.SOUTH,1));
+        set(l,b,AMBER_DESK.getX(),1,s,fit(Kind.AMBER,Direction.SOUTH,6));set(l,b,AMBER_DESK.getX(),1,s-1,AIR);
+        set(l,b,8,1,s,fit(Kind.WINDOW,Direction.SOUTH,0));set(l,b,8,1,s-1,AIR);
+        set(l,b,e,1,s-4,fit(Kind.WINDOW,Direction.EAST,0));set(l,b,e-1,1,s-4,AIR);
+        set(l,b,e-2,0,s-5,fit(Kind.BED,Direction.WEST,0));set(l,b,e-3,0,s-5,fit(Kind.BED,Direction.WEST,1));
+        set(l,b,e-2,0,s-6,fit(Kind.AMBER,Direction.WEST,4));
+        set(l,b,4,0,mid+1,fit(Kind.AMBER,Direction.SOUTH,5));set(l,b,5,0,mid+1,fit(Kind.AMBER,Direction.SOUTH,5));
+        set(l,b,3,0,s-2,fit(Kind.ROOM,Direction.EAST,0));
+        set(l,b,e-2,1,s-2,fit(Kind.POSTER,Direction.WEST,1));set(l,b,7,1,mid+1,fit(Kind.POSTER,Direction.SOUTH,0));set(l,b,3,1,s-5,fit(Kind.POSTER,Direction.EAST,3));
+        // The kitchen.
+        int kz=n+2;
+        for(int x=w+2;x<=-3;x++){
+            int st=x==w+2?3:x==-8?2:x==-6?1:x==-4?7:0;
+            set(l,b,x,0,kz,fit(Kind.KITCHEN,Direction.SOUTH,st));
+            if(st==3)set(l,b,x,1,kz,fit(Kind.KITCHEN,Direction.SOUTH,4));
+            else if(x!=-8&&x!=-6)set(l,b,x,2,kz,fit(Kind.KITCHEN,Direction.SOUTH,5));
+        }
+        set(l,b,-6,1,n,fit(Kind.WINDOW,Direction.NORTH,2));set(l,b,-6,1,n+1,AIR);
+        set(l,b,-4,0,mid-1,fit(Kind.TABLE,Direction.NORTH,0));set(l,b,-5,0,mid-1,fit(Kind.TABLE,Direction.EAST,1));set(l,b,-3,0,mid-1,fit(Kind.TABLE,Direction.WEST,1));
+        set(l,b,w+2,1,mid-1,fit(Kind.KITCHEN,Direction.EAST,6));
+        // Her mother's room; the bathroom.
+        for(int x=5;x<=6;x++){set(l,b,x,0,n+2,fit(Kind.BED,Direction.SOUTH,0));set(l,b,x,0,n+3,fit(Kind.BED,Direction.SOUTH,1));}
+        set(l,b,4,0,n+2,fit(Kind.ROOM,Direction.SOUTH,2));set(l,b,7,0,n+2,fit(Kind.ROOM,Direction.SOUTH,2));set(l,b,7,0,n+4,fit(Kind.ROOM,Direction.WEST,0));
+        set(l,b,5,1,n,fit(Kind.WINDOW,Direction.NORTH,0));set(l,b,5,1,n+1,AIR);
+        set(l,b,9,0,n+2,fit(Kind.BATH,Direction.EAST,0));set(l,b,10,0,n+2,fit(Kind.BATH,Direction.EAST,1));
+        set(l,b,10,0,n+4,fit(Kind.BATH,Direction.WEST,2));
+        set(l,b,9,0,n+4,fit(Kind.BATH,Direction.NORTH,3));set(l,b,9,1,n+4,fit(Kind.BATH,Direction.NORTH,4));
+        set(l,b,10,1,n,fit(Kind.WINDOW,Direction.NORTH,3));set(l,b,10,1,n+1,AIR);
+        roof(l,b,w,e,s,n,false);
+        // Out front: the walk to the street, the porch light by the door, the mailbox at the curb, chain-link across the yard with its gate.
+        for(int z=s+1;z<=SEVENTH_N-1;z++){set(l,b,0,-1,z,mat("sidewalk"));set(l,b,0,0,z,AIR);}
+        set(l,b,1,1,s+1,fit(Kind.YARD,Direction.SOUTH,0));
+        set(l,b,3,0,SEVENTH_N-1,fit(Kind.MAILBOX,Direction.SOUTH,0));
+        for(int x=w-2;x<=e+2;x++)if(x!=0)set(l,b,x,0,s+2,fit(Kind.FENCE,Direction.NORTH,Math.floorMod(x,4)==0?1:0));
+        set(l,b,0,0,s+2,fit(Kind.FENCE,Direction.NORTH,2));
+        // Out back: the step down to the alley, her trash can.
+        for(int z=n-1;z>=ALLEY_S+1;z--){set(l,b,0,-1,z,mat("sidewalk"));set(l,b,0,0,z,AIR);}
+        set(l,b,0,0,-91,fit(Kind.FENCE,Direction.NORTH,2));
+        set(l,b,2,0,ALLEY_S+1,fit(Kind.LOT,Direction.SOUTH,2));
+    }
+
+    // ------------------------------------------------------------------------------------------------ the yards
+    /** What the neighbors leave out in their yards: sprinklers going on the lawns, a doghouse by a back fence, trash cans at the alley, a
+     * bike down in the grass, lawn chairs, a grill, a hose reel by a wall, a kiddie pool gone green. */
+    static void yards(ServerLevel l,BlockPos b){
+        for(int[] p:SPRINKLERS)set(l,b,p[0],0,p[1],fit(Kind.LOT,Direction.NORTH,0));
+        set(l,b,-38,0,-49,fit(Kind.LOT,Direction.SOUTH,1));set(l,b,-34,0,-89,fit(Kind.LOT,Direction.SOUTH,1));
+        for(int x:new int[]{-29,-28})set(l,b,x,0,ALLEY_S+1,fit(Kind.LOT,Direction.SOUTH,2));
+        set(l,b,-27,0,NINTH_N-1,fit(Kind.LOT,Direction.SOUTH,2));
+        set(l,b,5,0,-65,fit(Kind.LOT,Direction.WEST,3));
+        set(l,b,-40,0,-5,fit(Kind.LOT,Direction.SOUTH,4));set(l,b,-38,0,-5,fit(Kind.LOT,Direction.WEST,4));
+        set(l,b,-34,0,-4,fit(Kind.LOT,Direction.NORTH,5));
+        set(l,b,-43,0,-56,fit(Kind.LOT,Direction.WEST,6));
+        set(l,b,-44,0,-3,fit(Kind.LOT,Direction.NORTH,7));
     }
 
     // ------------------------------------------------------------------------------------------------ Main Street
@@ -797,7 +1101,7 @@ public final class TheListSite {
     /** Mesquite along the tracks, at the backs of the lots, by the gin and round the playa's edge: low trees, crooked, a trunk that forks
      * into a thin canopy. */
     static void mesquite(ServerLevel l,BlockPos b){
-        int[][] at={{60,-20},{60,-52},{60,-36},{68,-96},{60,-150},{68,-160},{-55,-44},{-12,-56},{12,-86},{-56,-84},{93,-36},{88,-98},{50,-60},{40,-36},
+        int[][] at={{60,-20},{60,-52},{60,-36},{68,-96},{60,-150},{68,-160},{-55,-44},{-12,-56},{-56,-84},{93,-36},{88,-98},{50,-60},{40,-36},
             {30,-10},{-30,12},{-60,2},{-70,-40},{-75,-102},{-50,-150},{8,-160},{30,-160},{-16,-84}};
         for(int[] p:at)tree(l,b,p[0],p[1]);
     }
