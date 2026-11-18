@@ -258,12 +258,15 @@ public final class EntrancePlaytestTests {
         for(var place:LabyrinthPlace.values())if(HallVariations.plain(place))out.add(place);
         // 0.4.403: the laundry, bedroom and atrium halls have been ordinary ways on since 0.4.390; a re-deal in CI run 1488 opened onto one the fixture never built.
         for(var place:OrdinaryHalls.HALLS)if(!OrdinaryHalls.stone(place))out.add(place);
+        // 0.4.714: the owner's hallway variants (0.4.685) dealt from the first crossings, the parallel passage and the back stair; run 1736
+        // dealt the back stair onto the boarded house's door. These fixtures never go deeper than their first crossings.
+        for(var place:HallwayVariants.PLACES)if(HallwayVariants.firstDepth(place)==0)out.add(place);
         return java.util.List.copyOf(out);
     }
     /** Builds one of {@link #HALLS} as the House would and registers its doors. */
     static void buildHall(LiteraryTests.Fixture f,LabyrinthPlace hall){
         var b=f.base(hall);
-        if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else if(OrdinaryHalls.is(hall))OrdinaryHalls.build(f.in,b,hall);else LabyrinthHalls.build(f.in,b,hall);
+        if(hall==LabyrinthPlace.GRAY_CORRIDOR)LabyrinthBuilder.buildCorridor(f.in,b);else if(OrdinaryHalls.is(hall))OrdinaryHalls.build(f.in,b,hall);else if(HallwayVariants.is(hall))HallwayVariants.build(f.in,b,hall);else LabyrinthHalls.build(f.in,b,hall);
         LabyrinthBuilder.registerDoors(f.data(),hall,b);f.built.add(hall);
     }
     private static boolean hall(LabyrinthPlace place){return place!=null&&(LabyrinthPacing.ordinary(place)||LabyrinthPacing.quiet(place));}
