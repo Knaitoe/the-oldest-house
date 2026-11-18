@@ -40,6 +40,8 @@ public final class TheList {
         // 0.4.702: the town's people, at their places.
         TheListPeople.ensure(p.serverLevel(),b);
         p.serverLevel().playSound(null,b.offset(-10,1,2),TheListRegistry.INSECTS.get(),SoundSource.AMBIENT,.5F,1F);
+        // 0.4.706: a night already on in the town is heard, and its hour is the reader's at once.
+        TheListNight.arrive(p,b);
     }
 
     /** A hand on something of the town's. True if it was the town's to answer. The reader's own house opens as a house does; every
@@ -104,7 +106,7 @@ public final class TheList {
     public static boolean active(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     public static int clock(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.tick;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){ACTIVE.clear();}
-    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();}
+    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();}
     /**
      * Every few seconds while someone is in town, its night, each heard where it is: crickets near a reader who is outdoors, a dog behind
      * the back fence nearest them, the drive-in's nearest speaker post to anyone on that stretch of Main Street, the loose tin on whichever
@@ -135,6 +137,8 @@ public final class TheList {
             pasture(l,s,here);
             // 0.4.702: whoever's place has loaded since is put there.
             if(s.tick%100==50)TheListPeople.ensure(l,s.base);
+            // 0.4.706: the town's night, while someone is in it.
+            TheListNight.tick(l,s.base,here);
         }
     }
     /**

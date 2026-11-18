@@ -87,6 +87,8 @@ public final class TheListBody {
     /** What the body is doing, for each reader wearing it now; never saved. */
     static final class Live{
         int down,tick;@Nullable Vec3 last;double walked;float pullYaw,pull;@Nullable UUID pulled;
+        /** 0.4.706: lying where night one's cut left them, not knocked down: the get-up says the body's own line, not the get-up's. */
+        boolean cameTo;
         final Map<UUID,Long> beat=new HashMap<>(),raced=new HashMap<>();
         List<LiteraryActor> people=List.of();
     }
@@ -123,6 +125,17 @@ public final class TheListBody {
         var own=own(p);
         if(!own.getBoolean("Body")){own.putBoolean("Body",true);if(!hasSack(p))own.putInt("Sack",3);save(p,own);TheList.cue(p,TheListTexts.BODY);}
         return true;
+    }
+    /**
+     * 0.4.706, night one's cut (TheListNight): the body is the reader's from here, the sack over their head, and they lie face down where
+     * they have been set for so many ticks before they get up with the hearts. Nothing is said as they go down; nothing is taken.
+     */
+    public static void comeTo(ServerPlayer p,int ticks){
+        var own=own(p);
+        if(!own.getBoolean("Body")){own.putBoolean("Body",true);if(!hasSack(p))own.putInt("Sack",3);save(p,own);}
+        var live=LIVE.computeIfAbsent(p.getUUID(),k->new Live());
+        live.cameTo=true;live.down=Math.max(1,ticks);still(p);
+        PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,live.pullYaw,live.pull));
     }
     /** The body taken back: nothing of it, the sack included, is left on them. */
     public static void end(ServerPlayer p){var own=own(p);own.remove("Body");own.remove("Sack");save(p,own);strip(p,false);}
@@ -280,22 +293,26 @@ public final class TheListBody {
 
     // ------------------------------------------------------------------------------------------------ down and up
     static void down(ServerPlayer p,Live live){
-        live.down=DOWN;
+        live.down=DOWN;live.cameTo=false;
+        still(p);
+        p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),TheListRegistry.DOWN.get(),SoundSource.PLAYERS,1F,.95F+p.getRandom().nextFloat()*.1F);
+        TheList.cue(p,TheListTexts.DOWN);
+        PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,live.pullYaw,live.pull));
+    }
+    /** Face down and still: no walking, no jumping. */
+    static void still(ServerPlayer p){
         var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);
         if(speed!=null&&!speed.hasModifier(STILL_ID))speed.addTransientModifier(new AttributeModifier(STILL_ID,-1,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         var jump=p.getAttribute(Attributes.JUMP_STRENGTH);
         if(jump!=null&&!jump.hasModifier(STILL_JUMP_ID))jump.addTransientModifier(new AttributeModifier(STILL_JUMP_ID,-1,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         p.setSprinting(false);p.setForcedPose(Pose.SWIMMING);p.setPose(Pose.SWIMMING);
-        p.serverLevel().playSound(null,p.getX(),p.getY(),p.getZ(),TheListRegistry.DOWN.get(),SoundSource.PLAYERS,1F,.95F+p.getRandom().nextFloat()*.1F);
-        TheList.cue(p,TheListTexts.DOWN);
-        PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,live.pullYaw,live.pull));
     }
     static void up(ServerPlayer p,Live live){
         live.down=0;
         var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);if(speed!=null)speed.removeModifier(STILL_ID);
         var jump=p.getAttribute(Attributes.JUMP_STRENGTH);if(jump!=null)jump.removeModifier(STILL_JUMP_ID);
         p.setForcedPose(null);
-        TheList.cue(p,TheListTexts.UP);
+        TheList.cue(p,live.cameTo?TheListTexts.BODY:TheListTexts.UP);live.cameTo=false;
         PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,0,live.pullYaw,live.pull));
     }
     static boolean spared(DamageSource source){return !source.is(DamageTypes.GENERIC_KILL)&&!source.is(DamageTypes.FELL_OUT_OF_WORLD);}

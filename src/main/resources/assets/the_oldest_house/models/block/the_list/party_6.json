@@ -1,0 +1,101 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "f": "the_oldest_house:block/the_list/boombox",
+    "s": "the_oldest_house:block/the_list/boombox_side",
+    "i": "the_oldest_house:block/the_list/ice_chest_side",
+    "l": "the_oldest_house:block/the_list/ice_chest_top",
+    "c": "the_oldest_house:block/the_list/beer_can",
+    "p": "the_oldest_house:block/the_list/can_top",
+    "g": "the_oldest_house:block/the_list/lantern_glass",
+    "m": "the_oldest_house:block/the_list/lantern_metal",
+    "b": "the_oldest_house:block/the_list/blanket",
+    "x": "the_oldest_house:block/the_list/case_box",
+    "o": "the_oldest_house:block/the_list/case_top",
+    "h": "the_oldest_house:block/the_list/barn_shade",
+    "d": "the_oldest_house:block/the_list/bulb_dark",
+    "q": "the_oldest_house:block/the_list/galv",
+    "particle": "the_oldest_house:block/the_list/barn_shade"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        12,
+        11
+      ],
+      "to": [
+        8.5,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#q"
+        },
+        "south": {
+          "texture": "#q"
+        },
+        "east": {
+          "texture": "#q"
+        },
+        "west": {
+          "texture": "#q"
+        },
+        "up": {
+          "texture": "#q"
+        },
+        "down": {
+          "texture": "#q"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        9,
+        8
+      ],
+      "to": [
+        12,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        8.5,
+        9.5
+      ],
+      "to": [
+        10.5,
+        9,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#d"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

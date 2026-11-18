@@ -499,6 +499,8 @@ public final class LiteraryVignettes {
         if(Stillness.locked(p))return true;
         if(LastSeen.locked(p))return true;
         if(Fallow.locked(p))return true;
+        // 0.4.706: The list's night one, from the seed house's door rolling shut.
+        if(TheListNight.locked(p))return true;
         if(ElkLotEnding.held(p))return true;
         if (LakeHouse.inside(p)&&personal(LabyrinthData.get(p.server),p.getUUID(),LabyrinthPlace.LAKE_HOUSE).getInt("Finish")>0)return true;
         if (CabinBargain.held(p)) return true;

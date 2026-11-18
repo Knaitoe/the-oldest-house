@@ -2207,5 +2207,10 @@
   "subtitles.the_oldest_house.the_list.splinter": "A door splinters",
   "subtitles.the_oldest_house.the_list.sack": "Burlap rustles",
   "subtitles.the_oldest_house.the_list.tread": "Heavy footsteps",
-  "subtitles.the_oldest_house.the_list.down": "A body hits the ground"
+  "subtitles.the_oldest_house.the_list.down": "A body hits the ground",
+  "subtitles.the_oldest_house.the_list.radio": "A radio plays",
+  "subtitles.the_oldest_house.the_list.slide": "A heavy door rolls on its rail",
+  "subtitles.the_oldest_house.the_list.bolt": "A bolt drops",
+  "subtitles.the_oldest_house.the_list.auger": "An auger turns",
+  "subtitles.the_oldest_house.the_list.seed": "Seed pours"
 }
