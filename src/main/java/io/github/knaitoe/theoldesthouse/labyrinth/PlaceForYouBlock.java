@@ -26,7 +26,10 @@ public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
         BASKET,DRESSER,
         /** 0.4.690: the back passage's cupboard (its lower and upper halves, shoved along a third at a time), the wedge (on the floor, or
          * under the back door) and the step stool (in its corner, or against the back door). */
-        PRESS,WEDGE,STOOL;
+        PRESS,WEDGE,STOOL,
+        /** 0.4.691: the household's three older photographs on the landing, and the box in the back room the ones nobody hangs go in
+         * (shut, or open with the reader's picture on top). */
+        OLDER,PHOTO_BOX;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -60,12 +63,14 @@ public final class PlaceForYouBlock extends HorizontalDirectionalBlock {
             case DRESSER->box(f,1,0,2,15,15,16);
             case WEDGE->s.getValue(STAGE)==1?Block.box(0.5,0,0,4.5,2.25,4):Block.box(5,0,4,11,2.75,12);
             case STOOL->s.getValue(STAGE)==1?Block.box(0,0,0,8,10,10):Block.box(4,0,3,12,10,13);
+            case OLDER->box(f,2,1,15,14,15,16);
+            case PHOTO_BOX->Block.box(3,0,4,13,s.getValue(STAGE)==1?4:5,12);
         };
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         return switch(s.getValue(KIND)){
             case TABLE,CUPBOARD,COUNTER,STOVE,PRESS->Shapes.block();
-            case BAG,RADIO,KETTLE,BASKET,DRESSER->getShape(s,l,p,c);
+            case BAG,RADIO,KETTLE,BASKET,DRESSER,PHOTO_BOX->getShape(s,l,p,c);
             default->Shapes.empty();
         };
     }

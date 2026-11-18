@@ -186,6 +186,7 @@ public final class PlaceForYouTexts {
             t.append("\n\n");
         }
         if(own.getInt("BackStage")>=1)t.append(backPassage(own)).append("\n\n");
+        if(own.getInt("OlderStage")>=3)t.append(PlaceForYouOlder.account(own)).append("\n\n");
         if(own.getInt("Chapter")>=PlaceForYou.DINNER){
             t.append("When we sat down again, the table was laid exactly as it had been.");
             if(own.getBoolean("SpoonTaken"))t.append(" Mara couldn't stop setting it, and I took the spoon out of her hand.");

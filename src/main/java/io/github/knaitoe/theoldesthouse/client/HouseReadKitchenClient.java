@@ -113,6 +113,28 @@ public final class HouseReadKitchenClient {
         box(pose,out.getBuffer(RenderType.entityCutoutNoCull(CRAYON)),6.5f/16,11.8f/16,15f/16,8f/16,12.8f/16,15.6f/16,0xc4473a,light);
     }
     private static final float PX0=2.5f/16,PX1=11.5f/16,PY0=3f/16,PY1=12f/16;
+    /**
+     * 0.4.691 (A Place for You): the reader's picture copied into a frame on the landing wall, the same size and wood as the older
+     * photographs beside it. The same page and colours as on the fridge, set back against the wall behind the block, centred in the
+     * block and a little larger, in a dark frame hung from a nail; taken down, the nail alone.
+     */
+    static void framed(CompoundTag read,boolean hung,PoseStack pose,MultiBufferSource out,int light){
+        pose.pushPose();pose.translate(0,0,-14f/16);
+        float mid=(PX0+PX1)/2,px=1f/16;
+        pose.translate(.5f,.5f,0);pose.scale(1.15f,1.15f,1);pose.translate(-mid,-(PY0+PY1)/2,0);
+        box(pose,out.getBuffer(RenderType.entityCutoutNoCull(CRAYON)),mid-.45f*px,PY1+2f*px,14.4f/16,mid+.45f*px,PY1+2.8f*px,15f/16,0x281e16,light);
+        if(hung){
+            page(pose,out.getBuffer(RenderType.entityCutoutNoCull(SHEET)),15.05f,0xffffff,light);colours(read,pose,out,light,true);
+            // The page and the colours each ask the buffer source for their own layer, which ends any crayon builder taken before them.
+            var vc=out.getBuffer(RenderType.entityCutoutNoCull(CRAYON));int wood=0x3a2c22,worn=0x4e3a2a,wire=0x6a6660;
+            box(pose,vc,PX0-px,PY0-px,14f/16,PX1+px,PY0,15.6f/16,wood,light);
+            box(pose,vc,PX0-px,PY1,14f/16,PX1+px,PY1+px,15.6f/16,worn,light);
+            box(pose,vc,PX0-px,PY0,14f/16,PX0,PY1,15.6f/16,wood,light);
+            box(pose,vc,PX1,PY0,14f/16,PX1+px,PY1,15.6f/16,wood,light);
+            box(pose,vc,mid-.15f*px,PY1+px,14.9f/16,mid+.15f*px,PY1+2f*px,15f/16,wire,light);
+        }
+        pose.popPose();
+    }
     /** 0.4.688 (A Place for You): Theo's photograph from the chest of drawers, under the magnet where the reader's picture was: a white border, the print inside it. */
     static final ResourceLocation THEO=tex("block/place/theo");
     static void photo(PoseStack pose,MultiBufferSource out,int light){

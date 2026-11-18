@@ -48,6 +48,12 @@
         "custom_model_data": 8
       },
       "model": "the_oldest_house:item/pfy_carried_key"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "the_oldest_house:item/pfy_carried_portrait"
     }
   ]
 }

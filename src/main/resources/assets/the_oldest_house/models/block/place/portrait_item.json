@@ -1,0 +1,55 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "p": "the_oldest_house:block/place/portrait_carried",
+    "f": "the_oldest_house:block/place/frame",
+    "particle": "the_oldest_house:block/place/frame"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        2,
+        7.5
+      ],
+      "to": [
+        13,
+        14,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p",
+          "uv": [
+            3,
+            2,
+            13,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#p",
+          "uv": [
+            3,
+            2,
+            13,
+            14
+          ]
+        },
+        "east": {
+          "texture": "#f"
+        },
+        "west": {
+          "texture": "#f"
+        },
+        "up": {
+          "texture": "#f"
+        },
+        "down": {
+          "texture": "#f"
+        }
+      }
+    }
+  ]
+}
