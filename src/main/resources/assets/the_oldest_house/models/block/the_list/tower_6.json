@@ -1,0 +1,46 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/the_list/tower_paint",
+    "r": "the_oldest_house:block/the_list/tower_rod",
+    "l": "the_oldest_house:block/the_list/ladder",
+    "g": "the_oldest_house:block/the_list/grate",
+    "b": "the_oldest_house:block/the_list/beacon",
+    "o": "the_oldest_house:block/the_list/pipe",
+    "particle": "the_oldest_house:block/the_list/pipe"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#o"
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "m": "the_oldest_house:block/the_list/gov_metal",
+    "d": "the_oldest_house:block/the_list/gov_drawers",
+    "r": "the_oldest_house:block/the_list/radio_set",
+    "b": "the_oldest_house:block/the_list/bench_wood",
+    "g": "the_oldest_house:block/the_list/galv",
+    "f": "the_oldest_house:block/the_list/flag",
+    "c": "the_oldest_house:block/the_list/corkboard",
+    "j": "the_oldest_house:block/the_list/water_jug",
+    "o": "the_oldest_house:block/the_list/cooler_body",
+    "particle": "the_oldest_house:block/the_list/flag"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7
+      ],
+      "to": [
+        9,
+        16,
+        9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        4,
+        8
+      ],
+      "to": [
+        25,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            0,
+            2,
+            16,
+            12
+          ]
+        },
+        "south": {
+          "texture": "#f",
+          "uv": [
+            0,
+            2,
+            16,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        15,
+        6.5
+      ],
+      "to": [
+        9.5,
+        16,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

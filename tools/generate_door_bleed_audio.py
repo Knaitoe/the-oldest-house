@@ -110,6 +110,7 @@ ROWS = {
     'not_yet': 'A ward hums and a counter turns over, behind a door',
     'last_seen': 'Traffic passes and pigeons coo, behind a door',
     'fallow': 'Wind goes over wheat behind a door',
+    'the_list': 'Crickets and a dog behind a door',
 }
 
 
@@ -689,6 +690,7 @@ MAKERS = {
     'not_yet': own(('not_yet/hum', 0, 1, 1400, 0, 3.4), ('not_yet/tick', .9, .7, 2600), ('not_yet/tick', 2.1, .7, 2600)),
     'last_seen': own(('last_seen/traffic', 0, .8, 1800, .5, 3.4), ('last_seen/pigeons', 1.3, .7, 2400)),
     'fallow': own(('fallow/wind', 0, 1, 1600, .3, 3.4), ('fallow/insects', 1.0, .5, 2600, .4, 2.0)),
+    'the_list': own(('the_list/insects', 0, 1, 2600, 0, 3.4), ('the_list/dog', 1.7, .35, 1800, 0, 1.2)),
 }
 
 

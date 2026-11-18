@@ -1,0 +1,146 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "c": "the_oldest_house:block/the_list/cabinet_front",
+    "d": "the_oldest_house:block/the_list/oak_door",
+    "t": "the_oldest_house:block/the_list/counter_top",
+    "e": "the_oldest_house:block/the_list/counter_edge",
+    "s": "the_oldest_house:block/the_list/steel",
+    "b": "the_oldest_house:block/the_list/sink_basin",
+    "r": "the_oldest_house:block/the_list/range_front",
+    "p": "the_oldest_house:block/the_list/range_top",
+    "k": "the_oldest_house:block/the_list/cabinet_front",
+    "particle": "the_oldest_house:block/the_list/range_front"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            15
+          ]
+        },
+        "west": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            15
+          ]
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        15,
+        13
+      ],
+      "to": [
+        16,
+        21,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p",
+          "uv": [
+            0,
+            0,
+            16,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#p",
+          "uv": [
+            0,
+            10,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#p",
+          "uv": [
+            0,
+            10,
+            3,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#p",
+          "uv": [
+            13,
+            10,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        9,
+        0
+      ],
+      "to": [
+        14,
+        10,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

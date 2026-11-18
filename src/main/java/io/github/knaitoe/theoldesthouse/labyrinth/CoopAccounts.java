@@ -131,6 +131,7 @@ final class CoopAccounts {
             "When I shut the drawer, %s {was} still out in the empty park."));
         // 0.4.672: Fallow. 0.4.684: the line says who else was there when the man came down the road.
         together(FALLOW,with("%s {was} at the station with me when he came down the road."));
+        together(THE_LIST,with("%s {was} in Lamesa with me that night."));
         together(LAST_ORDERS,with("%s {was} in the bar with me."));
         together(BIKE_NIGHT,with("%s {was} out on a bike that night too."));
         together(PELL_HOUSE,PELL);

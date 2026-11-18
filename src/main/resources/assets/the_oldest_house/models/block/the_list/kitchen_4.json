@@ -1,0 +1,80 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "c": "the_oldest_house:block/the_list/cabinet_front",
+    "d": "the_oldest_house:block/the_list/oak_door",
+    "t": "the_oldest_house:block/the_list/counter_top",
+    "e": "the_oldest_house:block/the_list/counter_edge",
+    "s": "the_oldest_house:block/the_list/steel",
+    "b": "the_oldest_house:block/the_list/sink_basin",
+    "f": "the_oldest_house:block/the_list/fridge_1",
+    "x": "the_oldest_house:block/the_list/fridge_side",
+    "particle": "the_oldest_house:block/the_list/fridge_side"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#x"
+        },
+        "east": {
+          "texture": "#x"
+        },
+        "west": {
+          "texture": "#x"
+        },
+        "up": {
+          "texture": "#x"
+        },
+        "down": {
+          "texture": "#x"
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        1,
+        0
+      ],
+      "to": [
+        13,
+        7,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

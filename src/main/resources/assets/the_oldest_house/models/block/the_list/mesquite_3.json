@@ -1,0 +1,127 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "b": "the_oldest_house:block/the_list/mesquite_bark",
+    "e": "the_oldest_house:block/the_list/mesquite_end",
+    "l": "the_oldest_house:block/the_list/mesquite_leaves",
+    "m": "the_oldest_house:block/the_list/mesquite_leaves_thin",
+    "particle": "the_oldest_house:block/the_list/mesquite_leaves"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        -2,
+        2,
+        8
+      ],
+      "to": [
+        18,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            16,
+            14
+          ]
+        },
+        "south": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            16,
+            14
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    },
+    {
+      "from": [
+        8,
+        2,
+        -2
+      ],
+      "to": [
+        8,
+        14,
+        18
+      ],
+      "faces": {
+        "east": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            16,
+            14
+          ]
+        },
+        "west": {
+          "texture": "#m",
+          "uv": [
+            0,
+            2,
+            16,
+            14
+          ]
+        }
+      },
+      "rotation": {
+        "angle": 45,
+        "axis": "y",
+        "origin": [
+          8,
+          8,
+          8
+        ]
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

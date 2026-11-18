@@ -1,0 +1,47 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/the_list/tower_paint",
+    "r": "the_oldest_house:block/the_list/tower_rod",
+    "l": "the_oldest_house:block/the_list/ladder",
+    "g": "the_oldest_house:block/the_list/grate",
+    "b": "the_oldest_house:block/the_list/beacon",
+    "o": "the_oldest_house:block/the_list/pipe",
+    "particle": "the_oldest_house:block/the_list/ladder"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        15
+      ],
+      "to": [
+        14,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#l",
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#l",
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

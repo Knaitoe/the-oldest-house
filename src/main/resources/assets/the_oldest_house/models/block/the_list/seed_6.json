@@ -1,0 +1,102 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "w": "the_oldest_house:block/the_list/bin_wall",
+    "s": "the_oldest_house:block/the_list/cottonseed",
+    "a": "the_oldest_house:block/the_list/auger_flight",
+    "r": "the_oldest_house:block/the_list/trough",
+    "l": "the_oldest_house:block/the_list/ladder",
+    "d": "the_oldest_house:block/the_list/door_slide_lower",
+    "u": "the_oldest_house:block/the_list/door_slide_upper",
+    "g": "the_oldest_house:block/the_list/galv",
+    "h": "the_oldest_house:block/the_list/barn_shade",
+    "b": "the_oldest_house:block/the_list/bulb",
+    "o": "the_oldest_house:block/the_list/pipe",
+    "particle": "the_oldest_house:block/the_list/barn_shade"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        12,
+        11
+      ],
+      "to": [
+        8.5,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        9,
+        8
+      ],
+      "to": [
+        12,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        8.5,
+        9.5
+      ],
+      "to": [
+        10.5,
+        9,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "texture": "#b"
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 0
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

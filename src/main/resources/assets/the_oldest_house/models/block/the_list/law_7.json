@@ -1,0 +1,81 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "m": "the_oldest_house:block/the_list/gov_metal",
+    "d": "the_oldest_house:block/the_list/gov_drawers",
+    "r": "the_oldest_house:block/the_list/radio_set",
+    "b": "the_oldest_house:block/the_list/bench_wood",
+    "g": "the_oldest_house:block/the_list/galv",
+    "f": "the_oldest_house:block/the_list/flag",
+    "c": "the_oldest_house:block/the_list/corkboard",
+    "j": "the_oldest_house:block/the_list/water_jug",
+    "o": "the_oldest_house:block/the_list/cooler_body",
+    "particle": "the_oldest_house:block/the_list/water_jug"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        10,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#o"
+        },
+        "south": {
+          "texture": "#o"
+        },
+        "east": {
+          "texture": "#o"
+        },
+        "west": {
+          "texture": "#o"
+        },
+        "up": {
+          "texture": "#o"
+        },
+        "down": {
+          "texture": "#o"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        10,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#j"
+        },
+        "south": {
+          "texture": "#j"
+        },
+        "east": {
+          "texture": "#j"
+        },
+        "west": {
+          "texture": "#j"
+        },
+        "up": {
+          "texture": "#j"
+        },
+        "down": {
+          "texture": "#j"
+        }
+      }
+    }
+  ]
+}

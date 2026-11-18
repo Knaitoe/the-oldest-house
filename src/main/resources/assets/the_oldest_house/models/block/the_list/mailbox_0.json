@@ -1,0 +1,167 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/the_list/post_wood",
+    "m": "the_oldest_house:block/the_list/mailbox",
+    "f": "the_oldest_house:block/the_list/mailbox_front",
+    "r": "the_oldest_house:block/the_list/flag_red",
+    "particle": "the_oldest_house:block/the_list/mailbox"
+  },
+  "elements": [
+    {
+      "from": [
+        6.5,
+        0,
+        6.5
+      ],
+      "to": [
+        9.5,
+        11,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#p"
+        },
+        "south": {
+          "texture": "#p"
+        },
+        "east": {
+          "texture": "#p"
+        },
+        "west": {
+          "texture": "#p"
+        },
+        "up": {
+          "texture": "#p"
+        },
+        "down": {
+          "texture": "#p"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        11,
+        3
+      ],
+      "to": [
+        11,
+        15,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        },
+        "down": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        15,
+        3
+      ],
+      "to": [
+        10.5,
+        16,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f",
+          "uv": [
+            4,
+            4,
+            12,
+            6
+          ]
+        },
+        "south": {
+          "texture": "#m"
+        },
+        "east": {
+          "texture": "#m"
+        },
+        "west": {
+          "texture": "#m"
+        },
+        "up": {
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        12,
+        9
+      ],
+      "to": [
+        11.5,
+        17,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r",
+          "uv": [
+            4.5,
+            0,
+            5,
+            5
+          ]
+        },
+        "south": {
+          "texture": "#r",
+          "uv": [
+            11,
+            0,
+            11.5,
+            5
+          ]
+        },
+        "east": {
+          "texture": "#r",
+          "uv": [
+            6,
+            0,
+            7,
+            5
+          ]
+        },
+        "west": {
+          "texture": "#r",
+          "uv": [
+            9,
+            0,
+            10,
+            5
+          ]
+        },
+        "up": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      }
+    }
+  ]
+}

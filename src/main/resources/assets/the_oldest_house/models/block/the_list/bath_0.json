@@ -1,0 +1,79 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "e": "the_oldest_house:block/the_list/enamel",
+    "i": "the_oldest_house:block/the_list/tub_inside",
+    "s": "the_oldest_house:block/the_list/steel",
+    "d": "the_oldest_house:block/the_list/drawers",
+    "w": "the_oldest_house:block/the_list/counter_top",
+    "b": "the_oldest_house:block/the_list/sink_basin",
+    "m": "the_oldest_house:block/the_list/mirror",
+    "particle": "the_oldest_house:block/the_list/enamel"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        9,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#e"
+        },
+        "south": {
+          "texture": "#e"
+        },
+        "east": {
+          "texture": "#e"
+        },
+        "west": {
+          "texture": "#e"
+        },
+        "up": {
+          "texture": "#i"
+        },
+        "down": {
+          "texture": "#e"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        9,
+        14
+      ],
+      "to": [
+        9,
+        12,
+        15
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

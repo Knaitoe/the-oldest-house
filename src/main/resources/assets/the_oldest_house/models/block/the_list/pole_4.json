@@ -1,0 +1,128 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "p": "the_oldest_house:block/the_list/pole_wood",
+    "a": "the_oldest_house:block/the_list/crossarm",
+    "i": "the_oldest_house:block/the_list/insulator",
+    "w": "the_oldest_house:block/the_list/line_wire",
+    "g": "the_oldest_house:block/the_list/galv",
+    "h": "the_oldest_house:block/the_list/lamp_head",
+    "l": "the_oldest_house:block/the_list/lamp_lens",
+    "x": "the_oldest_house:block/the_list/transformer",
+    "particle": "the_oldest_house:block/the_list/line_wire"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        9,
+        -3
+      ],
+      "to": [
+        16,
+        9.5,
+        -2.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w",
+          "uv": [
+            2.5,
+            6.5,
+            3,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#w",
+          "uv": [
+            13,
+            6.5,
+            13.5,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            13,
+            16,
+            13.5
+          ]
+        },
+        "down": {
+          "texture": "#w",
+          "uv": [
+            0,
+            2.5,
+            16,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        9,
+        18.5
+      ],
+      "to": [
+        16,
+        9.5,
+        19
+      ],
+      "faces": {
+        "north": {
+          "texture": "#w"
+        },
+        "south": {
+          "texture": "#w"
+        },
+        "east": {
+          "texture": "#w",
+          "uv": [
+            13,
+            6.5,
+            13.5,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#w",
+          "uv": [
+            2.5,
+            6.5,
+            3,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#w",
+          "uv": [
+            0,
+            2.5,
+            16,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#w",
+          "uv": [
+            0,
+            13,
+            16,
+            13.5
+          ]
+        }
+      }
+    }
+  ]
+}

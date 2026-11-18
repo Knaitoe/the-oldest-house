@@ -145,7 +145,7 @@ public final class LabyrinthPlaces {
         }
         return new BlockPos(
                 origin.getX() + HouseLayout.CENTER_X + column(origin, place.slot()) * COLUMN_SPACING,
-                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.BIKE_NIGHT ? BikeNightSite.BASE_Y : place == LabyrinthPlace.BLACK_CITY ? CitySite.BASE_Y : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : place == LabyrinthPlace.PITT ? PittCave.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.LAST_CROSSING || place == LabyrinthPlace.BARN_WELL || place == LabyrinthPlace.DARK_SPIRAL || place == LabyrinthPlace.DARK_EDGE || place == LabyrinthPlace.SPHINX_STAIR || place == LabyrinthPlace.SPHINX_SHELF ? 14 : place == LabyrinthPlace.SPHINX_VESTIBULE ? 1 : floorInSlot(place)),
+                place == LabyrinthPlace.BORRASCA ? 80 : place == LabyrinthPlace.BIKE_NIGHT ? BikeNightSite.BASE_Y : place == LabyrinthPlace.BLACK_CITY ? CitySite.BASE_Y : place == LabyrinthPlace.THE_LIST ? TheListSite.BASE_Y : place == LabyrinthPlace.WHISTLERS ? LookoutTower.BASE_Y : place == LabyrinthPlace.PITT ? PittCave.BASE_Y : (place == LabyrinthPlace.LAKE_HOUSE || place == LabyrinthPlace.LAKE_HOUSE_EMPTY) ? LakeHouse.BASE_Y : slotBottom(origin, place.slot()) + (place == LabyrinthPlace.DROWNED_TOWN || place == LabyrinthPlace.LAST_CROSSING || place == LabyrinthPlace.BARN_WELL || place == LabyrinthPlace.DARK_SPIRAL || place == LabyrinthPlace.DARK_EDGE || place == LabyrinthPlace.SPHINX_STAIR || place == LabyrinthPlace.SPHINX_SHELF ? 14 : place == LabyrinthPlace.SPHINX_VESTIBULE ? 1 : floorInSlot(place)),
                 origin.getZ() + HouseLayout.CENTER_Z - (NovelRooms.outside(place) ? 4096 + place.slot()*spacing
                         : place.slot() >= APPENDED_INTERIOR_FIRST_SLOT ? APPENDED_INTERIOR_NORTH : 0)
         );
@@ -215,7 +215,8 @@ public final class LabyrinthPlaces {
     @Nullable
     public static BoundingBox reach(BlockPos origin, LabyrinthPlace place) {
         // 0.4.492: and Bike night, whose Hollow is floating ground far over and under the hill it starts from.
-        if (place == LabyrinthPlace.WHISTLERS || place == LabyrinthPlace.PITT || place == LabyrinthPlace.BLACK_CITY || place == LabyrinthPlace.BIKE_NIGHT) {
+        // 0.4.699: and The list, whose water tower stands thirty blocks over the street.
+        if (place == LabyrinthPlace.WHISTLERS || place == LabyrinthPlace.PITT || place == LabyrinthPlace.BLACK_CITY || place == LabyrinthPlace.BIKE_NIGHT || place == LabyrinthPlace.THE_LIST) {
             BoundingBox bounds = placeBounds(origin, place);
             return bounds == null ? null : bounds.inflatedBy(PAD);
         }

@@ -1,0 +1,63 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "l": "the_oldest_house:block/the_list/porch_lamp",
+    "g": "the_oldest_house:block/the_list/galv",
+    "r": "the_oldest_house:block/the_list/barrel_rust",
+    "a": "the_oldest_house:block/the_list/ash_top",
+    "h": "the_oldest_house:block/the_list/hose",
+    "c": "the_oldest_house:block/the_list/concrete_step",
+    "u": "the_oldest_house:block/the_list/corrugated_under",
+    "w": "the_oldest_house:block/the_list/line_wire",
+    "particle": "the_oldest_house:block/the_list/barrel_rust"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        14,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#r"
+        },
+        "south": {
+          "texture": "#r"
+        },
+        "east": {
+          "texture": "#r"
+        },
+        "west": {
+          "texture": "#r"
+        },
+        "down": {
+          "texture": "#r"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        11,
+        3.5
+      ],
+      "to": [
+        12.5,
+        11,
+        12.5
+      ],
+      "faces": {
+        "up": {
+          "texture": "#a"
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

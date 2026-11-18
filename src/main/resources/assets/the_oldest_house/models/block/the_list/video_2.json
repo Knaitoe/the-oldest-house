@@ -1,0 +1,52 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "s": "the_oldest_house:block/the_list/tape_shelf_side",
+    "c": "the_oldest_house:block/the_list/counter_front_w",
+    "t": "the_oldest_house:block/the_list/counter_top",
+    "e": "the_oldest_house:block/the_list/counter_edge",
+    "r": "the_oldest_house:block/the_list/register",
+    "w": "the_oldest_house:block/the_list/rewinder",
+    "d": "the_oldest_house:block/the_list/return_slot",
+    "f": "the_oldest_house:block/the_list/standee",
+    "k": "the_oldest_house:block/the_list/tv_case",
+    "p": "the_oldest_house:block/the_list/tape_screen",
+    "g": "the_oldest_house:block/the_list/galv",
+    "x": "the_oldest_house:block/the_list/tapes_2",
+    "particle": "the_oldest_house:block/the_list/tapes_2"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#x"
+        },
+        "south": {
+          "texture": "#x"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    }
+  ]
+}

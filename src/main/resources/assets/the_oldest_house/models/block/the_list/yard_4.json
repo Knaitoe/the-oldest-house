@@ -1,0 +1,77 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "l": "the_oldest_house:block/the_list/porch_lamp",
+    "g": "the_oldest_house:block/the_list/galv",
+    "r": "the_oldest_house:block/the_list/barrel_rust",
+    "a": "the_oldest_house:block/the_list/ash_top",
+    "h": "the_oldest_house:block/the_list/hose",
+    "c": "the_oldest_house:block/the_list/concrete_step",
+    "u": "the_oldest_house:block/the_list/corrugated_under",
+    "w": "the_oldest_house:block/the_list/line_wire",
+    "particle": "the_oldest_house:block/the_list/hose"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        6,
+        14
+      ],
+      "to": [
+        9,
+        9,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        0,
+        11
+      ],
+      "to": [
+        13,
+        8,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#h"
+        },
+        "south": {
+          "texture": "#h"
+        },
+        "east": {
+          "texture": "#h"
+        },
+        "west": {
+          "texture": "#h"
+        },
+        "up": {
+          "texture": "#h"
+        }
+      }
+    }
+  ]
+}

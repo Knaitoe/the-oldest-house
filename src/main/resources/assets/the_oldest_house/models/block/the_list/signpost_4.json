@@ -1,0 +1,75 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "g": "the_oldest_house:block/the_list/galv",
+    "s": "the_oldest_house:block/the_list/bus_sign",
+    "particle": "the_oldest_house:block/the_list/bus_sign"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        7.5
+      ],
+      "to": [
+        9,
+        16,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#g"
+        },
+        "south": {
+          "texture": "#g"
+        },
+        "east": {
+          "texture": "#g"
+        },
+        "west": {
+          "texture": "#g"
+        },
+        "up": {
+          "texture": "#g"
+        },
+        "down": {
+          "texture": "#g"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        16,
+        7
+      ],
+      "to": [
+        14,
+        30,
+        7.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            14,
+            15
+          ]
+        },
+        "south": {
+          "texture": "#s",
+          "uv": [
+            2,
+            1,
+            14,
+            15
+          ]
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,119 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "s": "the_oldest_house:block/the_list/feed_sack",
+    "t": "the_oldest_house:block/the_list/sack_top",
+    "m": "the_oldest_house:block/the_list/mineral",
+    "c": "the_oldest_house:block/the_list/counter_front_w",
+    "w": "the_oldest_house:block/the_list/counter_top",
+    "e": "the_oldest_house:block/the_list/counter_edge",
+    "b": "the_oldest_house:block/the_list/bench_wood",
+    "a": "the_oldest_house:block/the_list/bench_ad",
+    "p": "the_oldest_house:block/the_list/seed_bin_top",
+    "r": "the_oldest_house:block/the_list/rubber",
+    "k": "the_oldest_house:block/list_slab",
+    "o": "the_oldest_house:block/the_list/oak_door",
+    "particle": "the_oldest_house:block/the_list/bench_wood"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        6,
+        4
+      ],
+      "to": [
+        16,
+        8,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        8,
+        12
+      ],
+      "to": [
+        16,
+        14,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#a",
+          "uv": [
+            8,
+            2,
+            16,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        0,
+        4
+      ],
+      "to": [
+        14,
+        6,
+        13
+      ],
+      "faces": {
+        "north": {
+          "texture": "#k"
+        },
+        "south": {
+          "texture": "#k"
+        },
+        "east": {
+          "texture": "#k"
+        },
+        "west": {
+          "texture": "#k"
+        },
+        "up": {
+          "texture": "#k"
+        },
+        "down": {
+          "texture": "#k"
+        }
+      }
+    }
+  ]
+}

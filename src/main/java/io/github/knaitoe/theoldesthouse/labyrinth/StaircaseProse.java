@@ -265,6 +265,7 @@ public final class StaircaseProse {
     static { PLACES.put("not_yet","the machine's ward"); }
     static { PLACES.put("last_seen","the park by the archive"); }
     static { PLACES.put("fallow","the station in the wheat"); }
+    static { PLACES.put("the_list","Lamesa at night"); }
     static { PLACES.put("a_little_longer","the radio shop"); }
     static { PLACES.put("household","the landing where the household camped"); }
     static {
