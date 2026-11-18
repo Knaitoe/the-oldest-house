@@ -215,6 +215,25 @@ public final class HouseReadTests {
         h.succeed();
     }
 
+    /** 0.4.703 (owner: "Get rid of monster sounds in clothing room vignette"): the game's own monsters and cave sounds stay out of the quiet rooms. */
+    @GameTest(template="empty")
+    public static void quietRoomsKeepOutTheGamesOwnMonstersAndCaveSounds(GameTestHelper h){
+        var origin=new BlockPos(0,64,0);var coat=new BlockPos(8192+3*4096,80,-HouseReadSites.Room.COATROOM.offsetZ);double m=LabyrinthSpawnRules.QUIET_MARGIN;
+        h.assertTrue(HouseReadSites.nearRoom(origin,HouseDimensions.INTERIOR,coat.getX()+.5,coat.getY(),coat.getZ()-4.5,m),"a monster in a reader's coatroom is near a quiet room");
+        h.assertTrue(HouseReadSites.nearRoom(origin,HouseDimensions.INTERIOR,coat.getX()+.5,coat.getY()-20,coat.getZ()-4.5,m),"so is one in a cave under it");
+        h.assertTrue(!HouseReadSites.nearRoom(origin,HouseDimensions.INTERIOR,coat.getX()+.5,coat.getY()-60,coat.getZ()-4.5,m),"one far below it is not");
+        h.assertTrue(!HouseReadSites.nearRoom(origin,net.minecraft.world.level.Level.OVERWORLD,coat.getX()+.5,coat.getY(),coat.getZ()-4.5,m),"nor one in another dimension");
+        var porch=new BlockPos(8192,80,-HouseReadSites.Room.PORCH.offsetZ);
+        h.assertTrue(HouseReadSites.nearRoom(origin,HouseDimensions.OUTSIDE,porch.getX()+.5,porch.getY(),porch.getZ()+.5,m),"the porch, outside, is kept the same way");
+        var mc=(java.util.function.Function<String,net.minecraft.resources.ResourceLocation>)net.minecraft.resources.ResourceLocation::withDefaultNamespace;
+        h.assertTrue(HouseReadSites.quietens(mc.apply("ambient.cave"),net.minecraft.sounds.SoundSource.AMBIENT,false),"the cave's groans are not heard");
+        h.assertTrue(HouseReadSites.quietens(mc.apply("entity.zombie.ambient"),net.minecraft.sounds.SoundSource.HOSTILE,false),"nor a monster's voice");
+        h.assertTrue(HouseReadSites.quietens(mc.apply("weather.rain"),net.minecraft.sounds.SoundSource.WEATHER,false)&&!HouseReadSites.quietens(mc.apply("weather.rain"),net.minecraft.sounds.SoundSource.WEATHER,true),"rain is not heard indoors, but is on the porch");
+        h.assertTrue(!HouseReadSites.quietens(mc.apply("block.wooden_door.open"),net.minecraft.sounds.SoundSource.BLOCKS,false)&&!HouseReadSites.quietens(mc.apply("entity.player.hurt"),net.minecraft.sounds.SoundSource.PLAYERS,false),"doors and the reader's own body are heard");
+        h.assertTrue(!HouseReadSites.quietens(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"read.hanger"),net.minecraft.sounds.SoundSource.AMBIENT,false),"the room's own sounds are kept");
+        h.succeed();
+    }
+
     @GameTest(template="empty",batch="read_wardrobe",timeoutTicks=5000)
     public static void coatroomScreenLeadsOnAndRestoresOriginalGearAfterReload(GameTestHelper h){
         var f=fixture(h);var p=player(h,f,"coat_reader");var peer=player(h,f,"coat_observer");var sourceAt=f.origin.offset(0,0,-5);var hall=LabyrinthPlace.GRAY_CORRIDOR;var target=f.base(hall);
@@ -225,7 +244,9 @@ public final class HouseReadTests {
           })
           .thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.COATROOM),"the bounded production coatroom finishes"))
           .thenExecute(()->{
-              b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.COATROOM);HouseReadAudit.check(h,f.in,b[0],HouseReadSites.Room.COATROOM);seed(p,HouseReadSites.Room.COATROOM,from[0]);stand(p,f.in,b[0],.5,0,.5);stand(peer,f.in,b[0],2.5,0,.5);
+              b[0]=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.COATROOM);HouseReadAudit.check(h,f.in,b[0],HouseReadSites.Room.COATROOM);
+              // 0.4.703 (owner: "Get rid of monster sounds in clothing room vignette"): no game monster is let in, to be heard through the walls.
+              var zombie=net.minecraft.world.entity.EntityType.ZOMBIE.create(f.in);zombie.moveTo(b[0].getX()+.5,b[0].getY(),b[0].getZ()-4.5);h.assertTrue(!f.in.addFreshEntity(zombie),"no game monster is let into the coatroom");seed(p,HouseReadSites.Room.COATROOM,from[0]);stand(p,f.in,b[0],.5,0,.5);stand(peer,f.in,b[0],2.5,0,.5);
               for(int i=0;i<36;i++)p.getInventory().setItem(i,new ItemStack(Items.COBBLESTONE,64));gear[0]=new ItemStack(Items.DIAMOND_CHESTPLATE);gear[0].set(DataComponents.CUSTOM_NAME,Component.literal("Original coat armour"));gear[0].setDamageValue(37);gear[1]=new ItemStack(Items.DIAMOND_BOOTS);gear[1].setDamageValue(19);p.setItemSlot(EquipmentSlot.CHEST,gear[0].copy());p.setItemSlot(EquipmentSlot.FEET,gear[1].copy());
               // 0.4.166: until the House has seen the reader dress (or turn the glass away), the door back and the curtain stay shut.
               var locked=LabyrinthData.get(p.server).door("house_read/"+p.getUUID()+"/coatroom/entry");click(p,locked.lower);var curtain=b[0].offset(HouseReadRooms.CURTAIN_AT);

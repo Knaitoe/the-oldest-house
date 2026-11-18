@@ -112,7 +112,37 @@ public final class FinaleTests {
         var pages=TrialMarks.pages(data,reader);
         h.assertTrue(TrialMarks.sealed(data,reader)&&!TrialMarks.told(data,reader)&&pages.getFirst().startsWith("THE MARKS")&&!String.join(" ",pages).contains("wait"),"the fourth story makes the seal, and the account stops asking");
         for(int i=0;i<30;i++)for(UUID id:List.of(reader,every))data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.ZERO,0));
-        h.assertTrue(FinaleController.canOffer(data,reader)&&LabyrinthDealer.finaleOffered(data,reader)&&!LabyrinthDealer.finaleOffered(data,every),"sealed and deep, the stair is offered; every mark without stories is not enough");
+        h.assertTrue(FinaleController.canOffer(data,reader)&&!LabyrinthDealer.finaleOffered(data,reader),"sealed and deep, the stair still waits on a reader who has not been to Holloway's camp (0.4.703)");
+        visitHolloway(data,reader);visitHolloway(data,every);
+        h.assertTrue(LabyrinthDealer.finaleOffered(data,reader)&&!LabyrinthDealer.finaleOffered(data,every),"sealed, deep and met, the stair is offered; every mark without stories is not enough");
+        h.succeed();
+    }
+    /** 0.4.703: a reader's first visit to Holloway's camp, as the camp saves it. */
+    static void visitHolloway(LabyrinthData data,UUID player){
+        var all=data.state(HollowayVignette.ID);var players=all.getCompound("Players");var own=players.getCompound(player.toString());
+        own.putInt("Visits",own.getInt("Visits")+1);players.put(player.toString(),own);all.put("Players",players);data.setState(HollowayVignette.ID,all);
+    }
+    /** 0.4.703 (owner: "Ensure player encounters Holloway prior to encountering staircase"). */
+    @GameTest(template="empty") public static void hollowaysCampComesBeforeTheStaircase(GameTestHelper h){
+        LabyrinthData data=new LabyrinthData();UUID reader=UUID.randomUUID(),told=UUID.randomUUID();seal(data,reader);
+        LabyrinthBuilder.registerDoors(data,LabyrinthPlace.STRAIGHT_HALL,new BlockPos(0,64,0));
+        java.util.function.Consumer<UUID> deeper=id->data.pushReturn(id,new LabyrinthData.Waypoint(HouseDimensions.INTERIOR,Vec3.ZERO,0));
+        for(int i=0;i<LabyrinthPacing.STAIRCASE_DEPTH-LabyrinthDealer.HOLLOWAY_LEAD-1;i++)deeper.accept(reader);
+        h.assertTrue(!LabyrinthDealer.hollowayOwed(data,reader),"short of the staircase's approach, his camp is dealt as any story is");
+        deeper.accept(reader);
+        h.assertTrue(LabyrinthDealer.hollowayOwed(data,reader)&&!LabyrinthDealer.metHolloway(data,reader),"near the staircase, a reader who has not met him is owed his camp");
+        for(int roll=0;roll<16;roll++){
+            LabyrinthDealer.dealPlace(data,reader,LabyrinthPlace.STRAIGHT_HALL,net.minecraft.util.RandomSource.create(roll));
+            int camps=0;for(var spec:LabyrinthPlace.STRAIGHT_HALL.doors()){var door=data.door(LabyrinthPlace.STRAIGHT_HALL.doorId(spec));var deal=door==null?null:data.deal(reader,door);
+                if(deal!=null&&LabyrinthPlace.HOLLOWAY_CAMP.id().equals(deal.place()))camps++;h.assertTrue(deal==null||!FinaleArchitecture.ID.equals(deal.place()),"the staircase is not behind any door yet");}
+            h.assertTrue(camps==1,"one door of the hall leads to his camp while it is owed ("+roll+": "+camps+")");
+        }
+        for(int i=0;i<LabyrinthDealer.HOLLOWAY_LEAD+2;i++)deeper.accept(reader);
+        h.assertTrue(!LabyrinthDealer.finaleOffered(data,reader)&&LabyrinthDealer.hollowayOwed(data,reader),"at the staircase's depth, still his camp first");
+        visitHolloway(data,reader);
+        h.assertTrue(LabyrinthDealer.metHolloway(data,reader)&&!LabyrinthDealer.hollowayOwed(data,reader)&&LabyrinthDealer.finaleOffered(data,reader),"once there, the staircase can be offered");
+        WitnessAccount.resolve(data,told,WitnessAccount.Story.HOLLOWAY,"survived");
+        h.assertTrue(LabyrinthDealer.metHolloway(data,told),"a reader whose story of him is told has met him");
         h.succeed();
     }
     @GameTest(template="empty") public static void endingSurvivesWorldSaveAndDoesNotFinishVignettes(GameTestHelper helper){

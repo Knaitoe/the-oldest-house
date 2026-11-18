@@ -204,7 +204,7 @@ public final class KitchenTests {
         set.accept(0,0);
         h.assertTrue(FamiliarRoom.weight(data,id,2)==0&&FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT,"never found: from the third crossing, at its ordinary weight");
         set.accept(1,0);h.assertTrue(FamiliarRoom.weight(data,id,5)==0,"not again straight after a visit");
-        set.accept(1,FamiliarRoom.SOON);h.assertTrue(FamiliarRoom.weight(data,id,5)==1,"back by degrees");
+        set.accept(1,FamiliarRoom.SOON);h.assertTrue(FamiliarRoom.weight(data,id,5)==Math.max(1,FamiliarRoom.WEIGHT/(FamiliarRoom.BACK-FamiliarRoom.SOON+1))&&FamiliarRoom.weight(data,id,5)<FamiliarRoom.WEIGHT,"back by degrees");
         set.accept(1,FamiliarRoom.BACK);h.assertTrue(FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT,"then at its ordinary weight");
         set.accept(1,FamiliarRoom.LONG);h.assertTrue(FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT*2,"twice as likely a long while after");
         FamiliarRoom.need(id,true);h.assertTrue(FamiliarRoom.weight(data,id,5)==FamiliarRoom.WEIGHT*6,"three times again for a reader hungry or hurt");

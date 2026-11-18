@@ -18,7 +18,9 @@
     "CraftingKeyMixin",
     "TeleportBaselineMixin",
     "NotYetSleepMixin",
-    "NotYetGetUpMixin"
+    "NotYetGetUpMixin",
+    "HouseSleepMixin",
+    "HouseSleepAccess"
   ],
   "injectors": {
     "defaultRequire": 1

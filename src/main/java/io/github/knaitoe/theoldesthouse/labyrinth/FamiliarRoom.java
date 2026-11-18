@@ -58,8 +58,9 @@ public final class FamiliarRoom {
     public static final Direction LAID=Direction.SOUTH;
     public static final BlockPos[] SPARE={new BlockPos(5,0,-13),new BlockPos(5,0,-2),new BlockPos(-2,0,-14)};
     public static final Direction[] SPARE_FACING={Direction.WEST,Direction.WEST,Direction.SOUTH};
-    /** A reader's weight for the kitchen, and while somebody else is in it. */
-    public static final int WEIGHT=4,MEET=40;
+    /** 0.4.703 (owner: "Increase frequency of passive kitchen room (shared space)"): the kitchen's weight, as often as the shut-up rooms
+     * (was 4, a third of that); still far more readily while somebody else is in it. */
+    public static final int WEIGHT=12,MEET=80;
 
     static BlockState ground(){return Blocks.DEEPSLATE_TILES.defaultBlockState();}
     static BlockState passage(){return Blocks.SMOOTH_STONE.defaultBlockState();}
@@ -126,8 +127,9 @@ public final class FamiliarRoom {
     private static final Set<UUID> IN=new HashSet<>();
     /** Readers who are hungry or hurt, refreshed with the room's own clock. */
     private static final Set<UUID> NEED=new HashSet<>();
-    /** Crossings after a visit before the kitchen can come again, before it is back at its ordinary weight, and before it is twice as likely. */
-    public static final int SOON=4,BACK=10,LONG=24;
+    /** Crossings after a visit before the kitchen can come again, before it is back at its ordinary weight, and before it is twice as
+     * likely (0.4.703: 2, 6 and 14, were 4, 10 and 24). */
+    public static final int SOON=2,BACK=6,LONG=14;
     /** A reader's weight for the kitchen: from the third crossing, and far more while somebody else is already there. */
     public static int weight(UUID reader,int depth){return weight(null,reader,depth);}
     /**

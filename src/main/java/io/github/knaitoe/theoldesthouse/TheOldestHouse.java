@@ -8,7 +8,6 @@ import io.github.knaitoe.theoldesthouse.house.HouseBlockEntities;
 import io.github.knaitoe.theoldesthouse.house.HouseBlocks;
 import io.github.knaitoe.theoldesthouse.house.HouseChunkKeeper;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
-import io.github.knaitoe.theoldesthouse.house.HouseDays;
 import io.github.knaitoe.theoldesthouse.house.HouseSitting;
 import io.github.knaitoe.theoldesthouse.house.HouseLabyrinth;
 import io.github.knaitoe.theoldesthouse.house.HouseLifecycleEvents;
@@ -149,7 +148,6 @@ public final class TheOldestHouse {
 
         NeoForge.EVENT_BUS.addListener(HouseCommands::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerWakeUp);
-        NeoForge.EVENT_BUS.addListener(HouseDays::onSleepFinished);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStarted);
         NeoForge.EVENT_BUS.addListener(HouseLifecycleEvents::onServerStopped);
