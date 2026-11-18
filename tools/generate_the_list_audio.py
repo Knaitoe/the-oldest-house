@@ -8,7 +8,8 @@ Part 2 (0.4.705) is the slasher's body: a heart heard through a wall, a locked d
 the body's heavy tread, and the body going down.
 Part 3a (0.4.706) is night one: a cheap radio playing at the stock tank, the seed house's door rolling on its rail, its bolt, the auger
 turning in its trench, and the seed going.
-Part 4a (0.4.708) is the hunt: one of the names screaming as they run.
+Part 4a (0.4.708) is the hunt: one of the names screaming as they run. Part 4a-2 (0.4.709) is the catch: a struggle in the slasher's
+grip, the hay hook going in and torn out, and the catch in a throat as it goes in.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -41,6 +42,10 @@ ROWS = {
     'auger': ('An auger turns', 40),
     'seed': ('Seed pours', 16),
     'scream': ('Someone screams', 64),
+    'struggle': ('Someone struggles', 16),
+    'hook_in': ('A hook goes in', 16),
+    'hook_out': ('A hook tears free', 16),
+    'gasp': ('Someone gasps', 12),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -469,9 +474,69 @@ def seed():
     return pour + band(patter, 300, 2000) + band(rng.standard_normal(n), 100, 500) * np.sin(np.pi * y) * .3
 
 
+def struggle():
+    # Two seconds of someone fighting a grip: shoes scuffing and skidding on hard ground, cloth wrenched, and the strained breath
+    # forced out in short bursts through the teeth. It loops while they are held.
+    n = seconds(2.0)
+    t = times(n)
+    out = np.zeros(n)
+    for at in (.05, .32, .51, .88, 1.12, 1.47, 1.70):
+        x = t - at
+        on = (x >= 0) & (x < .18)
+        out += band(rng.standard_normal(n), 400, 3500) * np.exp(-np.clip(x, 0, None) / .05) * on * rng.uniform(.6, 1.0)
+    cloth = band(rng.standard_normal(n), 1500, 6000) * (.3 + .3 * np.sin(2 * np.pi * 2.7 * t) ** 2) * .35
+    breath = np.zeros(n)
+    for at in (.2, .75, 1.3, 1.85):
+        x = t - at
+        on = (x >= 0) & (x < .16)
+        breath += band(rng.standard_normal(n), 500, 2400) * np.sin(np.pi * np.clip(x / .16, 0, 1)) * on * .9
+    edge = np.clip(t / .03, 0, 1) * np.clip((2.0 - t) / .03, 0, 1)
+    return (out + cloth + breath) * edge
+
+
+def hook_in():
+    # The hook's point driven in under a collarbone: a dull, heavy punch through cloth, and under it a short wet give, the iron
+    # grating once on bone.
+    n = seconds(.6)
+    t = times(n)
+    punch = band(rng.standard_normal(n), 60, 400) * np.exp(-t / .045) * 1.4
+    thump = np.sin(2 * np.pi * (95 - 40 * np.clip(t / .1, 0, 1)) * t) * np.exp(-t / .07) * .9
+    wet = band(rng.standard_normal(n), 300, 1800) * (1 + np.sin(2 * np.pi * 38 * t)) * np.exp(-np.clip(t - .04, 0, None) / .09) * (t > .04) * .6
+    x = t - .11
+    grate = band(rng.standard_normal(n), 2000, 6000) * (np.sin(2 * np.pi * 70 * t) > .3) * np.exp(-np.clip(x, 0, None) / .05) * (x >= 0) * .35
+    return punch + thump + wet + grate
+
+
+def hook_out():
+    # The hook wrenched back out: a wet, sucking tear that rises and lets go, with the cloth ripping along with it.
+    n = seconds(.8)
+    t = times(n)
+    y = np.clip(t / .55, 0, 1)
+    suck = band(rng.standard_normal(n), 250, 1400) * (1 + .8 * np.sin(2 * np.pi * (20 + 40 * y) * t)) * np.sin(np.pi * y) ** .7 * .8
+    rip = band(rng.standard_normal(n), 1500, 7000) * (rng.random(n) < .3) * np.sin(np.pi * y) * .5
+    x = t - .55
+    slap = band(rng.standard_normal(n), 120, 900) * np.exp(-np.clip(x, 0, None) / .04) * (x >= 0) * 1.1
+    edge = np.clip((.8 - t) / .1, 0, 1)
+    return (suck + band(rip, 1500, 7000) + slap) * edge
+
+
+def gasp():
+    # A breath caught short in the throat: a voiced catch, sudden and cut off, like a hiccup.
+    n = seconds(.35)
+    t = times(n)
+    f0 = 260 + 120 * np.clip(t / .05, 0, 1)
+    phase = 2 * np.pi * np.cumsum(f0) / RATE
+    voice = sum(np.sin(k * phase) / k for k in range(1, 9))
+    voice = band(voice, 400, 1300) + band(voice, 1600, 2800) * .5
+    air = band(rng.standard_normal(n), 900, 5000) * .4
+    env = np.clip(t / .01, 0, 1) * np.exp(-t / .06)
+    return (voice + air) * env
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
-          'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream}
+          'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed, 'scream': scream,
+          'struggle': struggle, 'hook_in': hook_in, 'hook_out': hook_out, 'gasp': gasp}
 
 
 def main():

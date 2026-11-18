@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "the_oldest_house:item/list_hay_hook"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "the_oldest_house:item/list_hay_hook_bloody"
+    }
+  ]
+}
