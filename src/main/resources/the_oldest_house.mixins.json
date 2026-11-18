@@ -30,7 +30,8 @@
     "ActionBarWrapMixin",
     "TitleSplashMixin",
     "ModelUvRangeMixin",
-    "KingShadowMixin"
+    "KingShadowMixin",
+    "ListWalkMixin"
   ],
   "injectors": {
     "defaultRequire": 1

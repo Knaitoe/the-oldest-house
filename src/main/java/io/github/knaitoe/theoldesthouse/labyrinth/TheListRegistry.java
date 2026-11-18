@@ -64,6 +64,17 @@ public final class TheListRegistry {
     public static final DeferredHolder<SoundEvent,SoundEvent> SPRINKLER=sound("the_list.sprinkler");
     /** 0.4.701: the windmill turning, a pumpjack's knock at the bottom of its stroke, the cattle guard underfoot. */
     public static final DeferredHolder<SoundEvent,SoundEvent> WINDMILL=sound("the_list.windmill"),PUMPJACK=sound("the_list.pumpjack"),GUARD=sound("the_list.guard");
+    /**
+     * 0.4.705, the slasher's body (docs/THE_LIST_0_4_705.md): a heart heard through a wall; a shoulder against a locked door; the door
+     * giving; the feed sack pulled on or off; the slasher's tread, heard by everyone else; the body going down.
+     */
+    public static final DeferredHolder<SoundEvent,SoundEvent> HEART=sound("the_list.heart"),STRIKE=sound("the_list.strike"),SPLINTER=sound("the_list.splinter"),
+        SACK_SOUND=sound("the_list.sack"),TREAD=sound("the_list.tread"),DOWN=sound("the_list.down");
+    /** 0.4.705: a house door that has given, split at the lock, a hole punched through its lower panel; it opens and shuts by hand for anyone. */
+    public static final DeferredBlock<DoorBlock> BROKEN_DOOR=BLOCKS.register("list_broken_door",()->new DoorBlock(BlockSetType.OAK,fixed(Blocks.OAK_DOOR).noOcclusion()));
+    private static final DeferredRegister.Items ITEMS=DeferredRegister.createItems(TheOldestHouse.MOD_ID);
+    /** 0.4.705: the feed sack over the slasher's head. */
+    public static final DeferredItem<TheListSack> SACK=ITEMS.register("list_sack",()->new TheListSack(new net.minecraft.world.item.Item.Properties().stacksTo(1)));
     private TheListRegistry(){}
-    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);SOUNDS.register(bus);}
+    public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);BLOCK_ENTITIES.register(bus);SOUNDS.register(bus);ITEMS.register(bus);}
 }

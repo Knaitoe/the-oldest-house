@@ -4169,7 +4169,7 @@ def textures():
         'door_slide_upper': door_sliding(1), 'tower_paint': tower_paint(), 'tower_rod': tower_rod(), 'grate': grate(), 'beacon': beacon(),
         'tank_wall': tank_wall(), 'tank_1': tank_wall('LA'), 'tank_2': tank_wall('ME'), 'tank_3': tank_wall('SA'), 'tank_roof': tank_roof(),
         'bench_ad': bench_ad(), 'door_glass_lower': door_glass(0), 'door_glass_upper': door_glass(1), 'door_house_lower': house_door(0),
-        'door_house_upper': house_door(1),
+        'door_house_upper': house_door(1), 'door_broken_lower': broken_door(0), 'door_broken_upper': broken_door(1),
     }
     for s in range(4):
         faces[f'cotton_{s}'] = cotton(s)
@@ -4193,8 +4193,216 @@ def textures():
     faces.update(pasture_faces())
     for name, im in faces.items():
         out[f'block/the_list/{name}.png'] = im
+    # 0.4.705: the sack on the head, in the hand, and from inside.
+    out['entity/the_list/sack.png'] = sack_skin()
+    out['item/list_sack.png'] = sack_item()
+    out['gui/list_sack_inside.png'] = sack_inside()
     return out
 
+
+
+# ------------------------------------------------------------------------------------------------ 0.4.705: the slasher's body
+# The feed sack over the slasher's head, at the skin's own density: each face of the bag eight texels across, as the head's faces are.
+# Burlap, a stitched seam over the top, the feed company's stencil faded on the back, twine at the neck; the eyeholes cut out of it
+# (clear, so whatever face is under it shows through), and a face drawn on the front in grease pencil. The same sack seen from inside,
+# across the screen; the sack held, as an item; and a house door that has given.
+BURLAP = '#b39a6a'
+
+
+def burlap(im, x0, y0, w, h, seed, k=0):
+    """A patch of burlap: the weave's over and under in a checker, a thread run darker now and then."""
+    rnd = random.Random(seed)
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            weave = 7 if (x + y) % 2 == 0 else -6
+            dot(im, x, y, shade(BURLAP, weave + k + rnd.randint(-4, 4)))
+    for _ in range(max(1, w * h // 14)):
+        dot(im, rnd.randrange(x0, x0 + w), rnd.randrange(y0, y0 + h), shade(BURLAP, -22 + k))
+
+
+def sack_skin():
+    im = Image.new('RGBA', (64, 32), (0, 0, 0, 0))
+    # The bag: top, bottom, the two sides, the front and the back.
+    burlap(im, 8, 0, 8, 8, 9705)
+    for x in range(8, 16):
+        dot(im, x, 3, '#8a744c' if x % 2 else '#6e5a3a'); dot(im, x, 4, shade(BURLAP, -14))
+    fill(im, 16, 0, 24, 8, '#3a2e20')
+    burlap(im, 0, 8, 8, 8, 9706, -4)
+    burlap(im, 16, 8, 8, 8, 9707, -4)
+    burlap(im, 8, 8, 8, 8, 9708)
+    burlap(im, 24, 8, 8, 8, 9709, -2)
+    # The seams down the sides, and the bag gathered darker at its foot.
+    for y in range(8, 16):
+        dot(im, 0, y, shade(BURLAP, -18)); dot(im, 23, y, shade(BURLAP, -18))
+    for x in range(0, 32):
+        darken(im, x, 15, -16)
+    # The feed company's stencil on the back, faded: a band, and the shape of its lettering, pale in it.
+    for x in range(25, 31):
+        for y in (11, 12, 13):
+            dot(im, x, y, mix('#4a5a3a', BURLAP, .45))
+    for x in (26, 28, 29):
+        dot(im, x, 12, mix('#d8ccaa', BURLAP, .4))
+    for x in (2, 3, 4, 5):
+        dot(im, x, 12, mix('#4a5a3a', BURLAP, .6))
+    # The front: eyeholes cut out, frayed round; the face drawn on in grease pencil.
+    f = (8, 8)
+    for (x, y) in [(1, 3), (2, 3), (1, 4), (2, 4), (5, 3), (6, 3), (5, 4), (6, 4)]:
+        im.putpixel((f[0] + x, f[1] + y), (0, 0, 0, 0))
+    for (x, y) in [(0, 3), (3, 4), (4, 3), (7, 4), (1, 5), (6, 5)]:
+        darken(im, f[0] + x, f[1] + y, -16)
+    # In grease pencil, a mark for a nose and a crooked mouth, the line lifted twice, so it reads as drawn on the sack and not as a
+    # face under it (a fringe and a full mouth read as hair and a moustache at this size).
+    dot(im, f[0] + 4, f[1] + 5, '#5a4e40')
+    for (x, y) in [(1, 6), (2, 6), (3, 7), (4, 6), (5, 6), (6, 7)]:
+        dot(im, f[0] + x, f[1] + y, '#3e3630')
+    # The two corners that stand up off the top.
+    for u in (32, 40):
+        burlap(im, u, 0, 8, 4, 9710 + u, -6)
+        darken(im, u + 2, 0, -14); darken(im, u + 3, 1, -10)
+    # The bunching below the tie: folds down it.
+    burlap(im, 0, 16, 32, 9, 9712, -8)
+    for x in range(0, 32, 2):
+        for y in range(16, 25):
+            darken(im, x, y, -14)
+    # The twine: two strands twisted.
+    rnd = random.Random(9713)
+    for x in range(32, 64):
+        for y in range(16, 25):
+            dot(im, x, y, '#8a6a3a' if (x + y) % 3 else '#a8884e')
+        darken(im, x, 24, rnd.randint(-14, -4))
+    return im
+
+
+def sack_item():
+    # The sack held: tied off at the neck, two corners up, the eyeholes and the drawn face looking out.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(9714)
+    for y in range(2, 13):
+        lo, hi = (3, 13) if y < 11 else (4 + (y - 11), 12 - (y - 11))
+        for x in range(lo, hi):
+            weave = 6 if (x + y) % 2 == 0 else -6
+            light = 10 if x < 6 else -10 if x > 10 else 0
+            dot(im, x, y, shade(BURLAP, weave + light + rnd.randint(-3, 3)))
+    for x, y in [(3, 1), (12, 1)]:
+        dot(im, x, y, shade(BURLAP, -4))
+    for x in range(3, 13):
+        dot(im, x, 2, shade(BURLAP, -16))
+    # The eyeholes cut uneven, the right one longer; a mark for a nose and the same crooked mouth as on the head.
+    for x, y in [(5, 6), (6, 6), (5, 7), (6, 7), (9, 6), (10, 6), (9, 7), (10, 7), (10, 8)]:
+        dot(im, x, y, '#120e0a')
+    dot(im, 8, 8, '#5a4e40')
+    for x, y in [(4, 10), (5, 10), (6, 11), (7, 10), (8, 10), (9, 10), (10, 11), (11, 11)]:
+        dot(im, x, y, '#3e3630')
+    for x in range(6, 10):
+        dot(im, x, 13, '#a8884e' if x % 2 else '#8a6a3a')
+    for x, y in [(6, 14), (7, 14), (8, 14), (9, 14), (7, 15), (8, 15)]:
+        dot(im, x, y, shade(BURLAP, -18))
+    # Outline, a shade darker than the burlap, so the sack reads against any slot.
+    px = im.load()
+    edge = [(x, y) for y in range(16) for x in range(16) if px[x, y][3] == 0 and any(
+        0 <= x + dx < 16 and 0 <= y + dy < 16 and px[x + dx, y + dy][3] > 0 for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
+    for x, y in edge:
+        dot(im, x, y, '#4a3a24')
+    return im
+
+
+def sack_inside():
+    """The sack from inside, laid across the screen's width: burlap close against the eye, its threads going over and under with
+    the night pricking through where they cross, and two eyeholes cut crooked, the left a little lower and smaller, their cut
+    threads frayed into the holes; the strip of sack between them is thin and half clear, as two eyes see past it."""
+    w, h = 128, 64
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    rnd = random.Random(9715)
+    holes = [(41.0, 33.6, 22.0, 19.2, .7), (87.0, 30.4, 23.2, 21.2, 2.3)]
+
+    def reach(x, y, cx, cy, rx, ry, turn):
+        a = math.atan2((y - cy) / ry, (x - cx) / rx)
+        r = 1 + .09 * math.sin(3 * a + turn) + .05 * math.sin(5 * a - 2 * turn) + .03 * math.sin(9 * a + turn)
+        return (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2) / (r * r)
+    # The weave: threads three texels thick with a texel between, the warp's run nudged here and there so the grid is a cloth's.
+    cols = []
+    x = 0
+    while x < w:
+        cols.append(x); x += 4 if rnd.random() < .8 else (3 if rnd.random() < .5 else 5)
+    rows = []
+    y = 0
+    while y < h:
+        rows.append(y); y += 4 if rnd.random() < .8 else (3 if rnd.random() < .5 else 5)
+    col_of = [max(i for i, c in enumerate(cols) if c <= x) for x in range(w)]
+    row_of = [max(i for i, r in enumerate(rows) if r <= y) for y in range(h)]
+    slub_w = {i: rnd.randint(-6, 6) for i in range(len(cols))}
+    slub_h = {i: rnd.randint(-6, 6) for i in range(len(rows))}
+    edge = []
+    for y in range(h):
+        for x in range(w):
+            d = min(reach(x + .5, y + .5, *hole) for hole in holes)
+            fray = rnd.uniform(-.06, .05)
+            if d < 1 + fray:
+                continue
+            ci, ri = col_of[x], row_of[y]
+            nx = cols[ci + 1] if ci + 1 < len(cols) else w + 1
+            ny = rows[ri + 1] if ri + 1 < len(rows) else h + 1
+            gx, gy = x == nx - 1, y == ny - 1
+            near = max(0, 22 - int(12 * (d - 1))) if d < 2.6 else 0
+            if gx and gy:
+                # Where the threads cross apart, the night comes through.
+                dot(im, x, y, (14, 14, 20, rnd.randint(70, 130)))
+                continue
+            if gx:
+                c = shade('#281f15', slub_w[ci] - 6 + near)
+            elif gy:
+                c = shade('#281f15', slub_h[ri] - 6 + near)
+            else:
+                over_h = (ci + ri) % 2 == 0
+                t = (y - rows[ri]) if over_h else (x - cols[ci])
+                span = (ny - rows[ri] - 1) if over_h else (nx - cols[ci] - 1)
+                lift = 7 if 0 < t < span - 1 else (2 if t == 0 else -3)
+                c = shade('#281f15', lift + (slub_h[ri] if over_h else slub_w[ci]) + near + rnd.randint(-2, 2))
+            dot(im, x, y, c)
+            if d < 1.12 + fray:
+                edge.append((x, y))
+    # The cut edge: raw thread ends, paler where they caught the light, a few standing out into the hole.
+    for (x, y) in edge:
+        if rnd.random() < .5:
+            dot(im, x, y, shade('#5a4630', rnd.randint(-6, 8)))
+    for hole in holes:
+        cx, cy = hole[0], hole[1]
+        for _ in range(26):
+            x, y = rnd.choice([e for e in edge if (e[0] - cx) ** 2 + (e[1] - cy) ** 2 < (hole[2] * 1.3) ** 2])
+            dx, dy = cx - x, cy - y; n = math.hypot(dx, dy) or 1
+            for s in range(1, rnd.randint(2, 4)):
+                px, py = int(round(x + dx / n * s)), int(round(y + dy / n * s))
+                if im.getpixel((px, py))[3] == 0:
+                    dot(im, px, py, shade('#4a3a26', rnd.randint(-4, 10), 200 - 40 * s))
+    for y in range(h):
+        for x in range(62, 66):
+            p = im.getpixel((x, y))
+            if p[3] == 255 and 14 < y < 50:
+                im.putpixel((x, y), p[:3] + (120,))
+    return im
+
+
+def broken_door(upper):
+    # A house door that has given: split along the lock side, the lower panel by the knob punched through to the dark, raw wood
+    # showing round the break and down the split, the knob knocked crooked.
+    im = house_door(upper)
+    raw, pale, gap = '#c9a978', '#efe0bc', '#4a3a2c'
+    if not upper:
+        for (x, y) in [(14, 0), (14, 1), (13, 2), (14, 3), (13, 4), (13, 5), (12, 6), (13, 7), (12, 8), (12, 9)]:
+            dot(im, x, y, gap); dot(im, x - 1, y, pale); dot(im, x + 1, y, raw)
+        for (x, y) in [(10, 3), (11, 3), (10, 4), (11, 4), (12, 4), (10, 5), (11, 5)]:
+            im.putpixel((x, y), (0, 0, 0, 0))
+        for (x, y) in [(9, 2), (10, 2), (11, 2), (12, 3), (9, 3), (9, 4), (9, 5), (12, 5), (10, 6), (11, 6), (9, 6)]:
+            dot(im, x, y, raw if (x + y) % 2 else pale)
+        for (x, y) in [(8, 3), (8, 5), (13, 3), (12, 7)]:
+            dot(im, x, y, pale)
+        dot(im, 13, 0, '#3a3026'); dot(im, 12, 1, '#a8822a')
+    else:
+        for (x, y) in [(12, 15), (13, 14), (12, 13), (13, 12), (14, 11), (14, 10)]:
+            dot(im, x, y, gap); dot(im, x - 1, y, pale); dot(im, x + 1, y, raw)
+        for (x, y) in [(10, 14), (11, 13), (9, 15)]:
+            dot(im, x, y, raw)
+    return im
 
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
@@ -4216,9 +4424,13 @@ MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_
                   'turf': 'Field Turf', 'turf_dark': 'Mown Turf', 'turf_line': 'Yard Line', 'turf_side': 'Sideline', 'endzone': 'End Zone',
                   'track_cinder': 'Cinder Track', 'pasture': 'Buffalo Grass', 'mud': 'Trodden Mud'}
 DOORS = {'list_house_door': ('door_house_lower', 'door_house_upper'), 'list_glass_door': ('door_glass_lower', 'door_glass_upper'),
-         'list_steel_door': ('door_steel_lower', 'door_steel_upper')}
+         'list_steel_door': ('door_steel_lower', 'door_steel_upper'), 'list_broken_door': ('door_broken_lower', 'door_broken_upper')}
 NAMES = {'list_fitting': 'Lamesa Fitting', 'list_shingle_stairs': 'Shingle Stairs', 'list_shingle_slab': 'Shingle Slab', 'list_metal_stairs': 'Galvanized Stairs',
-         'list_house_door': 'Panel Door', 'list_glass_door': 'Store Door', 'list_steel_door': 'Steel Door', 'list_machine': 'Lamesa Machine', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
+         'list_house_door': 'Panel Door', 'list_glass_door': 'Store Door', 'list_steel_door': 'Steel Door', 'list_broken_door': 'Broken Door',
+         'list_machine': 'Lamesa Machine', **{f'list_{k}': v for k, v in MATERIAL_NAMES.items()}}
+
+
+ITEM_NAMES = {'list_sack': 'Feed Sack'}
 
 
 def stair_states(model_name):
@@ -4312,6 +4524,10 @@ def files():
                 v['y'] = y
             machine[f'facing={facing},machine={kind}'] = v
     out['blockstates/list_machine.json'] = {'variants': machine}
+    # 0.4.705: the sack, held as a picture and drawn on the head by its own layer, so the game's own drawing of a thing on the head is
+    # given nothing to draw.
+    out['models/item/list_sack.json'] = {'parent': 'minecraft:item/generated', 'textures': {'layer0': NS + 'item/list_sack'},
+                                         'display': {'head': {'scale': [0, 0, 0]}}}
     return out
 
 
@@ -4350,6 +4566,11 @@ def main():
     assert all(ink(images[f'block/the_list/sign_drug_{i}.png'], '#8a2a24') > 6 for i in range(4))
     assert all(ink(images[f'block/the_list/sign_video_{i}.png'], '#f2e6a0') > 4 for i in range(5))
     assert all(ink(images[f'block/the_list/drivein_board_{i}.png'], '#f4ead0') + ink(images[f'block/the_list/drivein_board_{i}.png'], '#f2d070') > 4 for i in range(1, 7))
+    # 0.4.705: the sack's eyeholes are cut clean through; seen from inside, more of the middle is clear than not; the broken door is holed.
+    assert all(images['entity/the_list/sack.png'].getpixel((8 + x, 8 + y))[3] == 0 for x in (1, 2, 5, 6) for y in (3, 4))
+    inside = images['gui/list_sack_inside.png']
+    assert sum(inside.getpixel((x, y))[3] == 0 for x in range(32, 96) for y in (24, 32, 40)) > 120
+    assert images['block/the_list/door_broken_lower.png'].getpixel((11, 4))[3] == 0
     # The tower spells the town across three plates.
     assert all(ink(images[f'block/the_list/tank_{i}.png'], '#2a3e6e') > 8 for i in (1, 2, 3))
     # Cotton stands with its bolls open; the bare stalks have none.
@@ -4379,6 +4600,7 @@ def main():
         print(f'Drew Lamesa under {opts.out}: {len(images)} textures, {len(data)} models and states.'); return
     lang_path = A / 'lang/en_us.json'; lang = json.loads(lang_path.read_text())
     wanted = {f'block.the_oldest_house.{k}': v for k, v in NAMES.items()}
+    wanted.update({f'item.the_oldest_house.{k}': v for k, v in ITEM_NAMES.items()})
     for key, name in wanted.items():
         if check:
             assert lang.get(key) == name, key

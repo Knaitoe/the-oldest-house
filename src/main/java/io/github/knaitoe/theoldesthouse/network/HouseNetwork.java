@@ -13,7 +13,7 @@ public final class HouseNetwork {
     }
 
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar("201")
+        event.registrar("202")
                 .playToServer(BikeKeysPayload.TYPE,BikeKeysPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p&&p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.labyrinth.RiddenBike bike&&bike.getFirstPassenger()==p)bike.keys(payload.jump(),payload.turbo());}))
                 .playToClient(BorrascaLetterPayload.TYPE,BorrascaLetterPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.BorrascaLetterScreen.accept(payload)))
                 .playToServer(BorrascaLetterSeenPayload.TYPE,BorrascaLetterSeenPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->{if(context.player() instanceof net.minecraft.server.level.ServerPlayer p)io.github.knaitoe.theoldesthouse.labyrinth.BorrascaGarritys.seen(p,payload.back());}))
@@ -128,6 +128,7 @@ public final class HouseNetwork {
                 .playToClient(HomeEchoPayload.TYPE,HomeEchoPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.HomeEchoClient.accept(payload)))
                 .playToClient(PersonalProjectionPayload.TYPE,PersonalProjectionPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.PersonalProjectionClient.accept(payload)))
                 .playToClient(NovelScenePayload.TYPE,NovelScenePayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.NovelSceneClient.accept(payload)))
+                .playToClient(TheListBodyPayload.TYPE,TheListBodyPayload.STREAM_CODEC,(payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.TheListBodyClient.accept(payload)))
                 .playToClient(CaverCrawlPayload.TYPE,CaverCrawlPayload.STREAM_CODEC,
                         (payload,context)->context.enqueueWork(()->io.github.knaitoe.theoldesthouse.client.CaverCrawlClient.accept(payload)))
                 .playToClient(GoatmanScenePayload.TYPE,GoatmanScenePayload.STREAM_CODEC,

@@ -41,6 +41,7 @@ public final class PlaytestCommands {
                 .then(vignettes)
                 .then(HomeTestCommands.build())
                 .then(io.github.knaitoe.theoldesthouse.labyrinth.GoatmanCommands.build())
+                .then(io.github.knaitoe.theoldesthouse.labyrinth.TheListCommands.build())
                 .then(io.github.knaitoe.theoldesthouse.labyrinth.GhostsCommands.build())
                 .then(Commands.literal("minotaur").executes(c -> queue(c.getSource(), Start.CELL)))
                 .then(Commands.literal("boy").executes(c -> queue(c.getSource(), Start.CELL)))
