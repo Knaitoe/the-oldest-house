@@ -271,8 +271,9 @@ public final class PlaceForYouTests {
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Rewritten"),"he comes straight in"))
             .thenExecute(()->at(f,p,.5,0,-13.2,0,0))
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("AlexOut")&&f.own(p,P).getBoolean("RenOut"),"Alex and Ren were never in the old evening: gone while nobody looks"))
-            .thenExecute(()->at(f,p,6.5,0,-14.5,90,10))
-            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("MaraStranger"),"Mara doesn't know the reader"))
+            // At the table's north end, clear of it (the table is x 5 to 6, z -17 to -15): Mara, in her chair, can see the reader.
+            .thenExecute(()->at(f,p,6.5,0,-13.5,116,10))
+            .thenWaitUntil(()->{var m=PlaceForYou.actor(l,b,"mara");h.assertTrue(f.own(p,P).getBoolean("MaraStranger"),"Mara doesn't know the reader: stage "+f.own(p,P).getInt("InviteStage")+" mara "+(m==null?"none":m.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))+" seen "+m.hasLineOfSight(p)+" at "+m.distanceTo(p))+" reader "+p.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b)));})
             .thenExecute(()->{talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"invite_mara"),"Mara: "+Talk.key(p));say(h,p,"It's me.");
                 h.assertTrue(Talk.lines(p).contains("Mara: I'm sorry. I don't think we've met."),"she doesn't think they've met: "+Talk.lines(p));})
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("CareHeard"),"his things are out in the bathroom"))
@@ -640,7 +641,7 @@ public final class PlaceForYouTests {
                 own.putInt("Chapter",PlaceForYou.SUPPER);own.putBoolean("Talked_Mara",true);own.putString("Activity","radio");
                 LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
                 h.assertTrue(PlaceForYouAge.kind(own).equals("ANALOG")&&PlaceForYouAge.speaker("ANALOG").equals("Mara")&&!own.getBoolean("AgeShown"),"read as one to be looked after, and nothing said of it yet");
-                at(f,p,6.5,0,-15.5,180,0);})
+                at(f,p,6.5,0,-13.5,180,0);})
             .thenWaitUntil(()->{var m=PlaceForYou.actor(l,b,"mara");h.assertTrue(f.own(p,P).getBoolean("AgeShown")&&m!=null&&m.saidWithin(PlaceForYouAge.shown("ANALOG"),200),"in the kitchen, Mara says it over her head: shown "+f.own(p,P).getBoolean("AgeShown")+" mara "+(m==null?"none":m.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))));})
             .thenExecute(()->{
                 talk(f,p,"mara");
@@ -678,6 +679,61 @@ public final class PlaceForYouTests {
             .thenSucceed();
     }
     @AfterBatch(batch="place_age") public static void ageDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.698, recognition and the right to refuse it: the House read this reader as UNSEEN. Before they come in the hall glass is
+     * covered and the face in their picture is rubbed out, and no coat on the hooks is theirs. They uncover the glass and cover it again
+     * (any reader can). Standing behind their own chair between supper and dinner, looking at it, Ren knows them anyway. The account
+     * and the Witness line say so. Once the account is read, the place card at their place is theirs to take, once, with its line; the
+     * House of Leaves can tell how they left the house. The coats for the other reads, and the other recognitions, from the record.
+     */
+    @GameTest(template="empty",batch="place_unseen",timeoutTicks=4000)
+    public static void theFaceRubbedOut(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_unseen",P);var b=f.base(P);var l=f.level(P);
+        HouseRead.signal(p,HouseRead.Trait.SELF,"UNSEEN",false);HouseRead.signal(p,HouseRead.Trait.SELF,"UNSEEN",true);
+        HouseRead.see(p,HouseReadSites.Room.KITCHEN,t->{t.putBoolean("Hung",true);t.putInt("Face",0xC08A6A);t.putInt("Hands",0xC08A6A);t.putInt("Hair",-1);t.putInt("Clothes",0x3A5A8A);t.putInt("Body",1);t.putInt("Mood",1);});
+        var own0=f.own(p,P);own0.remove("Snap");PlaceForYou.arrive(p,b,own0);LiteraryVignettes.save(f.data(),p.getUUID(),P,own0);
+        welcome(h,f,p)
+            .thenExecute(()->{
+                var snap=f.own(p,P).getCompound("Snap");
+                h.assertTrue(snap.getBoolean("Read")&&snap.getString("Self").equals("UNSEEN")&&snap.getCompound("Drawing").getBoolean("Smudged"),"read as UNSEEN, and the face in the picture rubbed out: "+snap);
+                h.assertTrue(PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.GLASS)))==2&&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.HOOKS)))==0,"the hall glass covered before they came in, and no coat of theirs on the hooks");
+                say(h,p,"It's good to be back.");Talk.end(p);
+                h.assertTrue(click(f,p,PlaceForYouSite.GLASS)&&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.GLASS)))==0&&f.own(p,P).getString("GlassSet").equals("uncovered"),"the cloth taken off the glass");
+                h.assertTrue(click(f,p,PlaceForYouSite.GLASS)&&PlaceForYouBlock.stage(l.getBlockState(b.offset(PlaceForYouSite.GLASS)))==2&&f.own(p,P).getString("GlassSet").equals("covered"),"and put back");
+                h.assertTrue(click(f,p,PlaceForYouSite.HOOKS)&&!Talk.waiting(p),"the hooks answer with a cue");
+                h.assertTrue(chapter(f,p)==PlaceForYou.SUPPER&&PlaceForYouSite.readerChair(l,b),"supper, and the reader's chair at the table");
+                at(f,p,8.5,0,-15.5,90,45);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("KnownBy").equals("Ren")&&f.own(p,P).getString("KnownHow").equals("chair"),"stood behind their chair, Ren knows them anyway: "+f.own(p,P).getString("KnownBy")+" looking "+PlaceForYou.looking(p,b,PlaceForYouSite.READER_CHAIR,4)+" at "+p.position().subtract(b.getX(),b.getY(),b.getZ())))
+            .thenExecute(()->{
+                var ren=PlaceForYou.actor(l,b,"ren");h.assertTrue(ren!=null&&ren.saidWithin("You used to stand like that, behind your chair, till everyone else had sat down.",40),"Ren says so, over Ren's head");
+                var own=f.own(p,P);var text=PlaceForYouSelf.account(own);
+                h.assertTrue(text.equals("The hall glass was covered before I came in, and in my picture on their fridge the face was rubbed out, as if by a thumb. Ren knew me anyway, by how I stood behind my chair until everyone else had sat down. I hung a cloth over the hall glass."),"the account's paragraph: "+text);
+                h.assertTrue(PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own).contains(text),"in the account");
+                h.assertTrue(PlaceForYouSelf.witness(own,"X").equals("X Nobody there knew my face. Ren knew me anyway."),"the Witness line");
+                // The keepsake: once the account is read, the card at their place.
+                own.putInt("Chapter",PlaceForYou.DONE);own.putString("Outcome","took_the_road");own.putBoolean("Ready",true);own.putBoolean("Completed",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                h.assertTrue(click(f,p,PlaceForYouSite.CARD)&&l.getBlockState(b.offset(PlaceForYouSite.CARD)).isAir()&&f.own(p,P).getBoolean("CardTaken"),"the place card taken from the table");
+                var card=p.getInventory().items.stream().filter(s->s.is(net.minecraft.world.item.Items.PAPER)).findFirst().orElse(net.minecraft.world.item.ItemStack.EMPTY);
+                var lore=card.getOrDefault(DataComponents.LORE,net.minecraft.world.item.component.ItemLore.EMPTY).lines().stream().map(c->c.getString()).toList();
+                h.assertTrue(!card.isEmpty()&&card.getHoverName().getString().equals("Place card")&&lore.contains("Your name, in Mara's hand, folded to stand at a place laid for you."),"the card is the reader's keepsake: "+card+" "+lore);
+                h.assertTrue(click(f,p,PlaceForYouSite.CARD)&&p.getInventory().items.stream().filter(s->s.is(net.minecraft.world.item.Items.PAPER)).count()==1,"and only once");
+                var facts=StaircaseAccount.facts(p,new net.minecraft.nbt.CompoundTag());
+                h.assertTrue(facts.stream().anyMatch(x->x.kind().id().equals("expected")&&x.value().equals("by the road")),"the House of Leaves can tell how they left the house: "+facts.stream().map(x->x.kind().id()+"="+x.value()).toList());
+                // The other reads and recognitions, from the record.
+                var e=new net.minecraft.nbt.CompoundTag();var snap=new net.minecraft.nbt.CompoundTag();snap.putBoolean("Read",true);snap.putString("Self","MASC");e.put("Snap",snap.copy());
+                h.assertTrue(PlaceForYouSelf.coat(e.getCompound("Snap"))==1&&PlaceForYouSelf.account(e).equals("A short jacket hung on the end hook for me.")&&PlaceForYouSelf.witness(e,"X").equals("X"),"a short jacket for one read that way, and nothing else said");
+                snap.putString("Self","FEM");h.assertTrue(PlaceForYouSelf.coat(snap)==2,"a long coat");snap.putString("Self","ANDROGYNOUS");h.assertTrue(PlaceForYouSelf.coat(snap)==3,"a knitted coat");
+                snap.putBoolean("Read",false);h.assertTrue(PlaceForYouSelf.coat(snap)==0,"none for a reader the House was asked not to read");
+                snap.putBoolean("Read",true);snap.putString("Self","UNSEEN");snap.putInt("Routine",3);e.put("Snap",snap.copy());e.putString("KnownBy","Ren");e.putString("KnownHow","routine");
+                h.assertTrue(PlaceForYouSelf.account(e).endsWith("Ren knew me anyway, by the order I did my "+PlaceForYouTexts.routine(3)+" in."),"known by the routine: "+PlaceForYouSelf.account(e));
+                e.putString("KnownBy","Mara");e.putString("KnownHow","fold");h.assertTrue(PlaceForYouSelf.account(e).endsWith("Mara knew me anyway, by how I folded a pillowcase."),"known by the folding");
+                for(var out:new String[][]{{"opened_the_house","with its door propped"},{"kept_a_place","with your place laid"},{"invited_the_past","to the man at the door"}}){
+                    e.putBoolean("Completed",true);e.putString("Outcome",out[0]);h.assertTrue(PlaceForYouSelf.leftIt(e).equals(out[1]),"left "+out[0]);}
+                e.putBoolean("Completed",false);h.assertTrue(PlaceForYouSelf.leftIt(e).isEmpty(),"nothing for the leaves before the account");})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_unseen") public static void unseenDone(ServerLevel l){close();}
 
     /**
      * 0.4.694, the reassurance: with somebody at the door, the reader asks Mara if it is him, then tells her it is. She asks them to

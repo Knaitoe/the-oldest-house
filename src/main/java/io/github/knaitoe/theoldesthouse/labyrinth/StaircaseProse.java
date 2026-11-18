@@ -182,7 +182,12 @@ public final class StaircaseProse {
         new Kind("ruled","house",2.4,1,"The King: {x}",
             "In a country ruled into squares you were a thing while you kept its rules, and a line when you did not.",
             "An old man was dreaming a country in squares. On it you were as much of a thing as his dream made of you.",
-            "You crossed a country of squares, a thing on some and a line on others, and left the King {x}."));
+            "You crossed a country of squares, a thing on some and a line on others, and left the King {x}."),
+        // 0.4.698: the house that expected the reader (docs/A_PLACE_FOR_YOU_0_4_698.md), by how the reader left it.
+        new Kind("expected","house",2.3,1,"Mara's house: {x}",
+            "A house you had never lived in laid a place for you. You left it {x}.",
+            "Your name was on a card at somebody's table. You left that house {x}.",
+            "They kept an evening for you in a house across the road. You left it {x}."));
 
     private static final String[] QUIET = {
         "This leaf is nearly blank. Whatever you did before the House, you did quietly.",
@@ -449,6 +454,7 @@ public final class StaircaseProse {
             case "remembered"->"The manor kept "+value+" for you. In the margin, a room has been drawn very small.";
             case "unwound"->"The cave took your line back. A thread runs off the edge of the page.";
             case "ruled"->"You crossed the King's country. The writer has drawn you twice in the margin, once filled in and once in outline.";
+            case "expected"->"A house expected you. In the margin, a folded card with nothing written on it.";
             case "ledger"->"The upper ledger kept a room for everything you killed. The plan of a house is drawn in the margin, its last room empty.";
             default->"The page has room for a memory that has not been written.";};
     }

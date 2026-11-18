@@ -147,6 +147,8 @@ public final class PlaceForYouTexts {
         }
         // 0.4.697: what the household assumed of me, and what I said to it.
         {var age=PlaceForYouAge.account(own);if(!age.isEmpty())t.append(age).append("\n\n");}
+        // 0.4.698: the coat, the hall glass, the picture, and who knew me without a face.
+        {var self=PlaceForYouSelf.account(own);if(!self.isEmpty())t.append(self).append("\n\n");}
         String helper=own.getString("Helper");
         switch(own.getString("Care")){
             case "help"->t.append("In the bathroom I asked "+helper+" to help me, and "+pron(helper)+" did. ");

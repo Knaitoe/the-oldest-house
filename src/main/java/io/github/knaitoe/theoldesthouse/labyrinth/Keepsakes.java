@@ -137,6 +137,7 @@ public final class Keepsakes {
             case "polybius/ServiceKey" -> "A small round key on a ring, with a paper tag: FREE PLAY. At a crafting table, with planks, a pane of glass and redstone, it opens a cabinet of your own.";
             case "last_orders/Chalk" -> "The house chalk, worn hollow on one side. At a crafting table, with wool, planks and iron, it makes a table of your own.";
             case "last_orders/Darts" -> "Three darts in a tin, their flights flattened from years in a pocket. At a crafting table, with string, planks and a target, it makes a board of your own.";
+            case "place_for_you/Card" -> "Your name, in Mara's hand, folded to stand at a place laid for you.";
             case "feet_up/ChalkStub" -> "Worn to a stub. Carried in the House, a short fall costs you nothing, as if the floor only ever counted.";
             default -> Artifacts.line(place, key);
         };

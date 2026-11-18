@@ -90,6 +90,9 @@ public final class StaircaseAccount {
         // 0.4.649: the King's country, by how the reader's ending left him.
         var ruled = KingTexts.leftHim(LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.SLEEPING_KING));
         if (!ruled.isEmpty()) StaircaseProse.fact("ruled", 1, ruled).ifPresent(out::add);
+        // 0.4.698: Mara's house, by how the reader left it.
+        var left = PlaceForYouSelf.leftIt(LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.PLACE_FOR_YOU));
+        if (!left.isEmpty()) StaircaseProse.fact("expected", 1, left).ifPresent(out::add);
         return out;
     }
     /** Who follows this reader home now, in prose, from the rooms' own records. */
