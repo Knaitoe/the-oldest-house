@@ -151,7 +151,8 @@ public final class Artifacts {
         return t.hasUUID(LiteraryVignettes.OWNER)&&t.getUUID(LiteraryVignettes.OWNER).equals(p.getUUID());
     }
     public static boolean carries(Player p,Kind k){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(mine(inv.getItem(i),p,k))return true;return false;}
-    public static boolean ownWorld(Entity e){return !HouseDimensions.isHouseDimension(e.level().dimension());}
+    /** Their own world: never the House, nor a neighbour's world that is not theirs (HouseDimensions.ownWorld). Read on both sides. */
+    public static boolean ownWorld(Entity e){return HouseDimensions.ownWorld(e.level());}
     /** Only the game's own creatures are driven back, slowed or shown; the House's are its own. */
     static boolean vanilla(Entity e){return BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getNamespace().equals("minecraft");}
 
@@ -209,7 +210,7 @@ public final class Artifacts {
     }
     /** The scrawled note: in their world, no zombie breaks a door within sixteen blocks of them. */
     @SubscribeEvent public static void doors(LivingDestroyBlockEvent e){
-        if(!(e.getEntity() instanceof Zombie)||!(e.getState().getBlock() instanceof DoorBlock)||!(e.getEntity().level() instanceof ServerLevel l)||HouseDimensions.isHouseDimension(l.dimension()))return;
+        if(!(e.getEntity() instanceof Zombie)||!(e.getState().getBlock() instanceof DoorBlock)||!(e.getEntity().level() instanceof ServerLevel l)||!HouseDimensions.ownWorld(l))return;
         for(var p:l.players())if(p.blockPosition().distSqr(e.getPos())<=SCRAWL_REACH*SCRAWL_REACH&&carries(p,Kind.SCRAWL)){e.setCanceled(true);return;}
     }
     /** The receipt: in their world, food fills one more point. */

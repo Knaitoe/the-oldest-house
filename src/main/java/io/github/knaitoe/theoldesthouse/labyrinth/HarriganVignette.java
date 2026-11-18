@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseCalendar;
 import io.github.knaitoe.theoldesthouse.house.HouseConfig;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.HouseWriting;
 import java.util.ArrayList;
@@ -806,7 +807,9 @@ public final class HarriganVignette {
         }
         LabyrinthData data = LabyrinthData.get(player.server);
         if (noService(player)) {
-            player.displayClientMessage(Component.literal("No service. Calls cannot leave the House; the clock still keeps the time back home.")
+            player.displayClientMessage(Component.literal(HouseDimensions.isHouseDimension(player.level().dimension())
+                    ? "No service. Calls cannot leave the House; the clock still keeps the time back home."
+                    : "No service. The clock still keeps the time back home.")
                     .withStyle(ChatFormatting.DARK_GRAY), true);
         } else if (playerState(data, player.getUUID()).getBoolean("Contact")) {
             explainCalling(player, data);
@@ -819,9 +822,12 @@ public final class HarriganVignette {
     private static final int THREAD = 40;
     static final String GREETING = "This is Harrigan. I don't pick up this phone. If you have a name for me, leave it after the tone.";
 
-    /** Nothing leaves the House: not a call, not a text. The clock still works. */
-    static boolean noService(ServerPlayer player) {
-        return HouseDimensions.isHouseDimension(player.level().dimension());
+    /**
+     * Nothing leaves the House: not a call, not a text. The clock still works. Nor does anything come or go in a neighbour's world that
+     * is not the reader's own (docs/NEIGHBOURS.md R3): no call, no text, no ring. Public for the tests.
+     */
+    public static boolean noService(ServerPlayer player) {
+        return HouseDimensions.isHouseDimension(player.level().dimension()) || Neighbours.notOwnWorld(player.level());
     }
 
     private static boolean usedToday(CompoundTag p, MinecraftServer server) {

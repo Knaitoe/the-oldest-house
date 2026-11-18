@@ -178,9 +178,9 @@ public final class HotelVignette {
     public static void openProperty(ServerPlayer p,boolean drawer){if(!inside(p,LabyrinthPlace.HOTEL))return;var c=new Property(p,drawer?"Drawers":"LostProperty");p.openMenu(new SimpleMenuProvider((id,inv,who)->new ChestMenu(MenuType.GENERIC_9x6,id,inv,c,6),Component.literal(drawer?"217 — your drawers":"The desk — your lost property")));}
     /**
      * Runs only after a real native chest menu opens; canceled block interactions cannot collect a tab. Never from a container that
-     * stands on a neighbour's district (docs/NEIGHBOURS.md).
+     * stands on a neighbour's district, nor in a neighbour's world that is not the reader's own (docs/NEIGHBOURS.md, R2 and R3).
      */
-    @SubscribeEvent public static void chest(PlayerContainerEvent.Open e){if(e.getEntity() instanceof ServerPlayer p&&e.getContainer() instanceof ChestMenu menu&&!onDistrictLand(p,menu))collectTab(p);}
+    @SubscribeEvent public static void chest(PlayerContainerEvent.Open e){if(e.getEntity() instanceof ServerPlayer p&&e.getContainer() instanceof ChestMenu menu&&!io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level())&&!onDistrictLand(p,menu))collectTab(p);}
     static boolean onDistrictLand(ServerPlayer p,ChestMenu menu){
         for(var at:io.github.knaitoe.theoldesthouse.house.Containers.where(menu.getContainer(),p))if(io.github.knaitoe.theoldesthouse.house.Neighbours.districtLand(p.serverLevel(),at))return true;
         return false;

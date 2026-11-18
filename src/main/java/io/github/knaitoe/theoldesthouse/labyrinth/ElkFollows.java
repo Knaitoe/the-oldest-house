@@ -59,8 +59,12 @@ public final class ElkFollows {
         Map.entry(EntityType.FOX,"foxes"),Map.entry(EntityType.POLAR_BEAR,"polar bears"),Map.entry(EntityType.PANDA,"pandas"),Map.entry(EntityType.TURTLE,"turtles"),
         Map.entry(EntityType.ARMADILLO,"armadillos"),Map.entry(EntityType.SNIFFER,"sniffers"),Map.entry(EntityType.WOLF,"wolves"),Map.entry(EntityType.CAT,"cats"),
         Map.entry(EntityType.OCELOT,"ocelots"),Map.entry(EntityType.PARROT,"parrots"),Map.entry(EntityType.FROG,"frogs"));
-    /** Where the field found each reader on a restless night. */
-    private static final Map<UUID,Vec3> ANCHOR=new HashMap<>();
+    /** Where the field found a reader on a restless night, and in which world: it never brings them back across worlds. */
+    public record Anchor(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension,Vec3 at){}
+    /** Where the field found each reader on a restless night. Let go when they change worlds (PlayerChangedDimensionEvent). */
+    private static final Map<UUID,Anchor> ANCHOR=new HashMap<>();
+    /** Where the field found this reader tonight, if it has. For the tests. */
+    public static Optional<Anchor> anchor(ServerPlayer p){return Optional.ofNullable(ANCHOR.get(p.getUUID()));}
 
     private static CompoundTag own(ServerPlayer p){return LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);}
     private static void save(ServerPlayer p,CompoundTag own){LiteraryVignettes.save(LabyrinthData.get(p.server),p.getUUID(),PLACE,own);}
@@ -141,7 +145,8 @@ public final class ElkFollows {
     }
 
     // ------------------------------------------------------------------------------------------------ what she answers
-    private static boolean outside(net.minecraft.world.level.Level l){return !HouseDimensions.isHouseDimension(l.dimension());}
+    /** The reader's own world (HouseDimensions.ownWorld): never the House, nor a neighbour's world that is not theirs (docs/NEIGHBOURS.md R3). */
+    private static boolean outside(net.minecraft.world.level.Level l){return HouseDimensions.ownWorld(l);}
     private static ServerPlayer killer(net.minecraft.world.damagesource.DamageSource s){return s.getEntity() instanceof ServerPlayer p&&!p.isSpectator()?p:null;}
     /** The meat and the hide spoil as they fall. */
     @SubscribeEvent public static void drops(LivingDropsEvent e){
@@ -206,13 +211,17 @@ public final class ElkFollows {
      * The calf's night: out on open ground in their own world, the reader who walks too far from where the night found them is
      * back where they stood, the herd's eyes in the dark on either side.
      */
-    static void field(ServerPlayer p){
+    public static void field(ServerPlayer p){
         var l=p.serverLevel();
         if(!restless(p)||!outside(l)||!l.isNight()||!l.canSeeSky(p.blockPosition().above())){if(!restless(p))ANCHOR.remove(p.getUUID());return;}
-        var at=ANCHOR.computeIfAbsent(p.getUUID(),id->{hint(p,"The field again.");return p.position();});
+        var anchor=ANCHOR.get(p.getUUID());
+        if(anchor==null||!anchor.dimension().equals(l.dimension())){anchor=new Anchor(l.dimension(),p.position());ANCHOR.put(p.getUUID(),anchor);hint(p,"The field again.");}
+        var at=anchor.at();
         double dx=p.getX()-at.x,dz=p.getZ()-at.z;
         if(dx*dx+dz*dz>FIELD_REACH*FIELD_REACH){p.teleportTo(l,at.x,at.y,at.z,p.getYRot(),p.getXRot());p.fallDistance=0;}
         if(p.tickCount%40==0)for(int side:new int[]{-1,1}){var eye=p.position().add(p.getLookAngle().yRot((float)(side*Math.PI/2.6)).multiply(7,0,7)).add(0,1.4,0);l.sendParticles(p,ParticleTypes.GLOW,true,eye.x,eye.y,eye.z,2,.12,.02,0,0);}
     }
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){ANCHOR.remove(e.getEntity().getUUID());}
+    /** Where the field found them is in the world they left: a night in another world starts from where it finds them there. */
+    @SubscribeEvent public static void changedWorld(PlayerEvent.PlayerChangedDimensionEvent e){ANCHOR.remove(e.getEntity().getUUID());}
 }

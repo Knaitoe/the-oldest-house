@@ -351,7 +351,7 @@ public final class WorkPrint {
         for(var p:s.getPlayerList().getPlayers()){
             if(!LiteraryVignettes.participant(p))continue;
             if(inShop(p)){var b=base(p);if(b!=null){shops.computeIfAbsent(b.asLong(),k->new ArrayList<>()).add(p);shop(p,b,today);}}
-            else if(!p.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD))away(p,today,tick);
+            else if(followsHere(p))away(p,today,tick);
             if(!inShop(p)){strip(p);}
         }
         // A shop everyone has left is set for its next visitor.
@@ -359,6 +359,11 @@ public final class WorkPrint {
         for(var entry:shops.entrySet()){var ids=new HashSet<UUID>();for(var p:entry.getValue())ids.add(p.getUUID());PRESENT.put(entry.getKey(),ids);}
         if(tick%200==0)villagers(s,today);
     }
+    /**
+     * Whether the film is with this reader where they are: away from the Overworld, and never in a neighbour's world that is not their
+     * own (docs/NEIGHBOURS.md R3). Public for the tests.
+     */
+    public static boolean followsHere(ServerPlayer p){return !p.level().dimension().equals(net.minecraft.world.level.Level.OVERWORLD)&&!io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level());}
     /** The House's camera is the House's: nobody carries it out of the shop. */
     static void strip(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(WorkPrintRegistry.CAMERA_ITEM.get()))inv.setItem(i,ItemStack.EMPTY);}
     static void reset(MinecraftServer s,BlockPos b){

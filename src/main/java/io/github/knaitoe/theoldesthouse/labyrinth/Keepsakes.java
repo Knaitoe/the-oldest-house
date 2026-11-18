@@ -151,8 +151,8 @@ public final class Keepsakes {
         lines.add(Component.literal(line).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
         s.set(net.minecraft.core.component.DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lines));
     }
-    /** Their own world: anywhere outside the House's dimensions. */
-    public static boolean ownWorld(ServerPlayer p) { return !HouseDimensions.isHouseDimension(p.level().dimension()); }
+    /** Their own world: anywhere outside the House's dimensions, and never a neighbour's world that is not theirs (HouseDimensions.ownWorld). */
+    public static boolean ownWorld(ServerPlayer p) { return HouseDimensions.ownWorld(p.level()); }
 
     // ------------------------------------------------------------------
     // Carried and worn
@@ -453,7 +453,7 @@ public final class Keepsakes {
      */
     public static final float CHALK_FALL = 6;
     @SubscribeEvent(priority = EventPriority.LOW) public static void chalkFall(net.neoforged.neoforge.event.entity.living.LivingFallEvent e) {
-        if (!(e.getEntity() instanceof ServerPlayer p) || e.getDistance() <= 3 || e.getDistance() > CHALK_FALL || e.getDamageMultiplier() <= 0 || ownWorld(p)) return;
+        if (!(e.getEntity() instanceof ServerPlayer p) || e.getDistance() <= 3 || e.getDistance() > CHALK_FALL || e.getDamageMultiplier() <= 0 || !HouseDimensions.isHouseDimension(p.level().dimension())) return;
         if (!carries(p, LabyrinthPlace.FEET_UP, FeetUp.CHALK_KEY)) return;
         e.setDamageMultiplier(0);var own = record(p);own.putInt("ChalkKept", own.getInt("ChalkKept") + 1);save(p, own);
     }

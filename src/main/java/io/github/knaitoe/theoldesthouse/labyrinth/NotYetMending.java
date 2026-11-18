@@ -147,6 +147,7 @@ public final class NotYetMending {
     }
     static void step(ServerPlayer p,Mend m,long now){
         var l=p.serverLevel();var b=m.base;
+        if(!l.dimension().equals(NovelRooms.dimension(PLACE))){gone(p,m);return;}
         if(now<m.tableAt){
             if(p.position().distanceToSqr(m.hold)>.04)p.teleportTo(l,m.hold.x,m.hold.y,m.hold.z,m.yaw,p.getXRot());
             p.setDeltaMovement(Vec3.ZERO);return;
@@ -194,6 +195,22 @@ public final class NotYetMending {
         var at=NotYetSite.bedside(head);var f=NotYetSite.cotFacing(head);
         p.teleportTo(p.serverLevel(),b.getX()+at.x,b.getY(),b.getZ()+at.z,f.toYRot(),0);
         p.setDeltaMovement(Vec3.ZERO);
+    }
+    /**
+     * A reader taken out of the ward's world while being mended (a neighbour's Games, a command, anything but the machine) is finished at
+     * once where they now are, as one who goes is: the seam and the counter, the machine's hold on them let go and its dark lifted. They
+     * are not brought back to their cot, and nothing is done to them in the world they are in.
+     */
+    static void gone(ServerPlayer p,Mend m){
+        MENDS.remove(m.id);
+        var own=own(p);
+        if(!m.onCot){int times=own.getInt("Mended")+1;own.putInt("Mended",times);if(!own.contains("CountFrom"))own.putLong("CountFrom",p.server.overworld().getGameTime());}
+        save(p,own);
+        if(p.isSleeping())p.stopSleeping();
+        var ward=p.server.getLevel(NovelRooms.dimension(PLACE));
+        if(ward!=null&&ward.hasChunkAt(m.base)&&MENDS.values().stream().noneMatch(o->o.base.equals(m.base)&&o.onTable&&!o.onCot))NotYetSite.arms(ward,m.base,0);
+        HousePackets.send(p,new HouseFadePayload(1,0,20));
+        state(p,own);
     }
     /** A reader who goes while being mended is finished at once: the seam, the cot, the counter, and standing at the cot's side. */
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void logout(PlayerEvent.PlayerLoggedOutEvent e){

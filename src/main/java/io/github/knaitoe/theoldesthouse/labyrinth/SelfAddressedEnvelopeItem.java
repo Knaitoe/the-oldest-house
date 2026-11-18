@@ -44,6 +44,8 @@ public final class SelfAddressedEnvelopeItem extends Item {
         var stack=player.getItemInHand(hand);
         if(player instanceof ServerPlayer p){player.getCooldowns().addCooldown(this,20);
             if(!ownedBy(stack,p))p.displayClientMessage(Component.literal("It is addressed to someone else."),true);
+            // In a neighbour's world that is not the reader's own (docs/NEIGHBOURS.md R3) it neither seals, opens nor returns.
+            else if(Neighbours.notOwnWorld(p.level()))p.displayClientMessage(Component.literal("Nothing happens."),true);
             else if(p.isShiftKeyDown()&&sealed(stack))open(p,stack);
             else if(HouseDimensions.isHouseDimension(p.level().dimension()))recall(p);
             else if(!p.isShiftKeyDown())seal(p,stack,hand);
@@ -101,9 +103,9 @@ public final class SelfAddressedEnvelopeItem extends Item {
         return ItemStack.parseOptional(p.registryAccess(),t.copyTag().getCompound(SEALED));
     }
 
-    /** A sealed envelope its keeper dies with outside the House does not fall with them. */
+    /** A sealed envelope its keeper dies with in their own world (HouseDimensions.ownWorld) does not fall with them. */
     @SubscribeEvent(priority=EventPriority.HIGH) public static void drops(LivingDropsEvent e){
-        if(!(e.getEntity() instanceof ServerPlayer p)||HouseDimensions.isHouseDimension(p.level().dimension()))return;
+        if(!(e.getEntity() instanceof ServerPlayer p)||!HouseDimensions.ownWorld(p.level()))return;
         var own=record(p);var held=own.getList("Held",Tag.TAG_COMPOUND);boolean kept=false;
         for(var it=e.getDrops().iterator();it.hasNext();){var item=it.next();var stack=item.getItem();
             if(stack.getItem() instanceof SelfAddressedEnvelopeItem&&ownedBy(stack,p)&&sealed(stack)){held.add(stack.save(p.registryAccess()));it.remove();kept=true;}}
