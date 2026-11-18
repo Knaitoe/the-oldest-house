@@ -2199,5 +2199,13 @@
   "subtitles.the_oldest_house.the_list.guard": "A cattle guard rattles underfoot",
   "block.the_oldest_house.list_machine": "Lamesa Machine",
   "block.the_oldest_house.list_pasture": "Buffalo Grass",
-  "block.the_oldest_house.list_mud": "Trodden Mud"
+  "block.the_oldest_house.list_mud": "Trodden Mud",
+  "block.the_oldest_house.list_broken_door": "Broken Door",
+  "item.the_oldest_house.list_sack": "Feed Sack",
+  "subtitles.the_oldest_house.the_list.heart": "A heart beats",
+  "subtitles.the_oldest_house.the_list.strike": "A door is struck",
+  "subtitles.the_oldest_house.the_list.splinter": "A door splinters",
+  "subtitles.the_oldest_house.the_list.sack": "Burlap rustles",
+  "subtitles.the_oldest_house.the_list.tread": "Heavy footsteps",
+  "subtitles.the_oldest_house.the_list.down": "A body hits the ground"
 }

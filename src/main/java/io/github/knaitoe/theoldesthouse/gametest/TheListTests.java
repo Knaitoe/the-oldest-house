@@ -4,6 +4,7 @@ import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.labyrinth.*;
 import io.github.knaitoe.theoldesthouse.labyrinth.TheListBlock.Kind;
+import io.github.knaitoe.theoldesthouse.network.TheListBodyPayload;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -504,5 +505,135 @@ public final class TheListTests {
             h.assertTrue(heard(p,TheListRegistry.GUARD.get()),"the cattle guard rattles underfoot");
         })
         .thenExecute(()->{done();h.succeed();});
+    }
+
+    /** Every packet the reader has been sent since last asked. */
+    private static List<net.minecraft.network.protocol.Packet<?>> sent(ServerPlayer p){NativeTestPlayers.flush(p);return new ArrayList<>(NativeTestPlayers.packets(p));}
+    private static boolean sound(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.sounds.SoundEvent sound){
+        for(var packet:packets)if(packet instanceof ClientboundSoundPacket s&&s.getSound().value()==sound)return true;
+        return false;
+    }
+    private static TheListBodyPayload body(List<net.minecraft.network.protocol.Packet<?>> packets){
+        TheListBodyPayload last=null;
+        for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof TheListBodyPayload b)last=b;
+        return last;
+    }
+    private static boolean sack(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(TheListSack.is(inv.getItem(i)))return true;return false;}
+
+    /**
+     * 0.4.705 (docs/THE_LIST_0_4_705.md), part 2: the slasher's body, tried on its own, with a second reader in town who never has it.
+     * Given in the town, it walks at a run's pace and never sprints, and the sack is on its head. Every heart near enough is heard where
+     * it beats, by the slasher alone, and the pull draws toward the nearest name; the name's heart races once she has the body in sight,
+     * and with the sack off she has seen the face, said once. The second reader hears the slasher's tread, and the slasher does not. A
+     * neighbor's locked door takes a blow (a second blow too soon after does nothing), splits at the second and gives at the third, open
+     * and broken, both halves. A blow that is not a death leaves a heart; one that would kill puts the body down where it is, still, and
+     * after five seconds it gets up there. Leaving town strips the body and leaves the sack on the back step; coming back puts it on again.
+     * The body ended, nothing of it is left. A spectator is not given it.
+     */
+    @GameTest(template="empty",batch="the_list_body",timeoutTicks=2400)
+    public static void theSlashersBody(GameTestHelper h){
+        var f=place(h);var p=f.player("list_body",P);var peer=f.player("list_body_peer",P);var l=f.level(P);var b=f.base(P);
+        var bench=TheListPeople.AT[TheListPeople.SHANNON];var door=new BlockPos(-34,0,-37);
+        h.startSequence().thenWaitUntil(()->{
+            TheListPeople.ensure(l,b);
+            h.assertTrue(TheListPeople.find(l,b,TheListPeople.SHANNON)!=null,"waiting for Shannon on the bus bench");
+        }).thenExecute(()->{
+            h.assertTrue(TheListBody.give(p),"the body is given in the town");
+            h.assertTrue(f.own(p,P).getBoolean("Body")&&!f.own(peer,P).getBoolean("Body"),"the body is the one reader's own");
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(TheListBody.walking(p)&&!TheListBody.walking(peer),"the slasher walks the body's walk; the other reader does not");
+            var speed=p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+            h.assertTrue(Math.abs(speed.getValue()-speed.getBaseValue()*(1+TheListBody.WALK))<1e-6,"a walk at a sprint's pace: "+speed.getValue());
+            h.assertTrue(TheListSack.worn(p),"the sack is on the slasher's head");
+            p.setSprinting(true);
+            // Down Main Street from Shannon on the bench, the other reader beside the slasher.
+            f.at(p,P,bench.getX()+.5,0,bench.getZ()-5.5);f.at(peer,P,bench.getX()+2.5,0,bench.getZ()-5.5);
+            p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,Vec3.atCenterOf(b.offset(bench)));
+            sent(p);sent(peer);
+        }).thenIdle(40).thenExecute(()->{
+            h.assertFalse(p.isSprinting(),"the body never sprints");
+            var mine=sent(p);var theirs=sent(peer);
+            h.assertTrue(sound(mine,TheListRegistry.HEART.get()),"the slasher hears the hearts round them");
+            h.assertFalse(sound(theirs,TheListRegistry.HEART.get()),"the other reader hears none of them");
+            var shannon=TheListPeople.find(l,b,TheListPeople.SHANNON);
+            var shown=body(mine);
+            h.assertTrue(shown!=null&&shown.body()&&shown.pull()>0,"the pull is sent to the slasher's own screen: "+shown);
+            h.assertTrue(shannon.getUUID().equals(TheListBody.pulled(p)),"toward the nearest name, Shannon");
+            h.assertTrue(body(theirs)==null,"nothing of the body is sent to the other reader");
+            h.assertTrue(TheListBody.racing(p,shannon.getUUID()),"her heart races: she has the body in sight");
+            h.assertTrue(f.own(p,P).getInt("Faced")==0,"with the sack on, nobody has seen the face");
+            // The sack off: she has seen the face, once.
+            var held=p.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).copy();
+            p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,net.minecraft.world.item.ItemStack.EMPTY);p.getInventory().add(held);
+            cues(p);
+        }).thenIdle(25).thenExecute(()->{
+            var c=cues(p);
+            h.assertTrue((f.own(p,P).getInt("Faced")&1<<TheListPeople.SHANNON)!=0,"Shannon has seen the face, and the record keeps it");
+            h.assertTrue(c.stream().filter(String.format(TheListTexts.FACE,"Shannon")::equals).count()==1,"said once: "+c);
+            for(int i=0;i<p.getInventory().getContainerSize();i++)if(TheListSack.is(p.getInventory().getItem(i))){
+                p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,p.getInventory().getItem(i).copy());p.getInventory().setItem(i,net.minecraft.world.item.ItemStack.EMPTY);break;}
+            h.assertTrue(TheListSack.worn(p),"the sack back on");
+            // The tread: a few steps on the ground, heard by the other reader and not the slasher.
+            p.setOnGround(true);sent(p);sent(peer);
+        }).thenExecute(()->f.at(p,P,bench.getX()+.5,0,bench.getZ()-6.3)).thenIdle(1)
+        .thenExecute(()->f.at(p,P,bench.getX()+.5,0,bench.getZ()-7.1)).thenIdle(1)
+        .thenExecute(()->f.at(p,P,bench.getX()+.5,0,bench.getZ()-7.9)).thenIdle(1)
+        .thenExecute(()->f.at(p,P,bench.getX()+.5,0,bench.getZ()-8.7)).thenIdle(2).thenExecute(()->{
+            h.assertTrue(sound(sent(peer),TheListRegistry.TREAD.get()),"the other reader hears the slasher's tread");
+            h.assertFalse(sound(sent(p),TheListRegistry.TREAD.get()),"the slasher does not hear their own");
+            // A neighbor's locked door: a blow, a second too soon (nothing), then two more a beat apart, and it gives.
+            cues(p);
+            use(p,b,door,door.south(2));
+            h.assertTrue(TheListBody.blows(b.offset(door))==1&&shut(l,b,door)&&cues(p).contains(TheListTexts.STRIKES[0]),"the first blow");
+            use(p,b,door.above(),door.south(2));
+            h.assertTrue(TheListBody.blows(b.offset(door))==1,"a second blow too soon after does nothing");
+        }).thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->{
+            use(p,b,door,door.south(2));
+            h.assertTrue(TheListBody.blows(b.offset(door))==2&&shut(l,b,door)&&cues(p).contains(TheListTexts.STRIKES[1]),"the second blow splits the frame");
+        }).thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->{
+            use(p,b,door,door.south(2));
+            h.assertTrue(cues(p).contains(TheListTexts.STRIKES[2]),"the third blow");
+            var lower=l.getBlockState(b.offset(door));var upper=l.getBlockState(b.offset(door).above());
+            h.assertTrue(lower.is(TheListRegistry.BROKEN_DOOR.get())&&upper.is(TheListRegistry.BROKEN_DOOR.get()),"the door has given, both halves: "+lower+" / "+upper);
+            h.assertTrue(lower.getValue(DoorBlock.OPEN)&&upper.getValue(DoorBlock.OPEN)&&lower.getValue(DoorBlock.HALF)==net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER,"swung open");
+            cues(peer);use(peer,b,door,door.south(2));
+            h.assertTrue(cues(peer).isEmpty(),"a broken door is nobody's to lock: a hand on it is a door's, for anyone");
+            // A blow that is not a death leaves a heart.
+            p.setHealth(6);p.invulnerableTime=0;p.hurt(p.damageSources().generic(),5);
+            h.assertTrue(p.isAlive()&&p.getHealth()==TheListBody.FLOOR&&TheListBody.down(p)==0,"a heart is kept, and the body stays up: "+p.getHealth());
+        }).thenIdle(2).thenExecute(()->{
+            // A blow that would kill puts the body down.
+            p.invulnerableTime=0;var at=p.position();cues(p);
+            p.hurt(p.damageSources().generic(),40);
+            h.assertTrue(p.isAlive()&&p.getHealth()>=TheListBody.FLOOR,"not a death: "+p.getHealth());
+            h.assertTrue(TheListBody.down(p)>0&&p.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING&&p.getPose()==net.minecraft.world.entity.Pose.SWIMMING,"down where it fell");
+            h.assertTrue(cues(p).contains(TheListTexts.DOWN),"said");
+            h.assertTrue(p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue()==0,"lying still");
+            p.invulnerableTime=0;float before=p.getHealth();p.hurt(p.damageSources().generic(),4);
+            h.assertTrue(p.getHealth()==before,"nothing more is taken while down");
+            h.assertTrue(p.position().distanceTo(at)<.01,"where it fell");
+        }).thenIdle(TheListBody.DOWN+5).thenExecute(()->{
+            h.assertTrue(TheListBody.down(p)==0&&p.getForcedPose()==null,"up again after five seconds");
+            h.assertTrue(cues(p).contains(TheListTexts.UP),"said");
+            var speed=p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
+            h.assertTrue(Math.abs(speed.getValue()-speed.getBaseValue()*(1+TheListBody.WALK))<1e-6,"the walk again");
+            // Out of town by the House's way: nothing of the body is left on them, and the sack is left on the back step.
+            f.leave(p);
+        }).thenIdle(3).thenExecute(()->{
+            h.assertFalse(TheListBody.walking(p)||sack(p)||TheListSack.worn(p),"nothing of the body outside the town");
+            h.assertTrue(f.own(p,P).getBoolean("Body")&&f.own(p,P).getInt("Sack")==1,"the body is still theirs, the sack on the back step");
+            h.assertTrue(cues(p).contains(TheListTexts.SACK_LEFT),"said");
+            f.arrive(p,P);
+        }).thenIdle(3).thenExecute(()->{
+            h.assertTrue(TheListBody.walking(p)&&TheListSack.worn(p)&&f.own(p,P).getInt("Sack")==0,"back in town, the walk and the sack on again");
+            h.assertTrue(cues(p).contains(TheListTexts.SACK_WORN),"said");
+            TheListBody.end(p);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertFalse(TheListBody.walking(p)||sack(p)||f.own(p,P).getBoolean("Body"),"the body ended, nothing of it left");
+            peer.setGameMode(GameType.SPECTATOR);
+            h.assertFalse(TheListBody.give(peer),"a spectator is not given the body");
+            h.assertFalse(sound(sent(peer),TheListRegistry.HEART.get()),"and the other reader never heard a heart");
+            done();h.succeed();
+        });
     }
 }

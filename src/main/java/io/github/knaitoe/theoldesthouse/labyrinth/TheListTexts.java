@@ -22,6 +22,19 @@ public final class TheListTexts {
     public static final String EMPTY_DOOR="Nobody has lived here a while. The door gives when you lean on it.";
     /** 0.4.700: Amber's front door, shut for now. */
     public static final String AMBER_DOOR="Locked. The window beside it flickers with a television.";
+    // ------------------------------------------------------------------------------------------------ 0.4.705: the slasher's body
+    /** The body given: the sack over the head, and the town's hearts. */
+    public static final String BODY="A feed sack over your head, the eyeholes cut crooked. Every heart in town is loud.";
+    /** A locked door struck: the first blow, the second, and the third, when it gives. */
+    public static final String[] STRIKES={"The door takes it. Inside, somebody turns the television down.","The frame splits along the lock.",
+        "It gives. The door swings in on what is left of the frame."};
+    /** Down, and up again where they fell. */
+    public static final String DOWN="You go down and stay down.",UP="You get up where you fell.";
+    /** Somebody in town has seen the face under the sack: "%s" is their name. */
+    public static final String FACE="%s has seen your face.";
+    /** Leaving the town by the House's door, the sack stays behind; coming back, it is where it was left. */
+    public static final String SACK_LEFT="You leave the sack on the back step.",SACK_WORN="The sack is on the back step. You pull it on.",
+        SACK_CARRIED="The sack is on the back step. You take it with you.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

@@ -4,7 +4,8 @@ Part 1a has the town's own night: crickets in the yards and the cotton, a dog be
 speakers on Main Street murmuring with nobody in the stalls, a loose sheet of tin on the gin knocking in the wind, a train's horn out past
 the playa, the wind over the flat land, and the water tower ticking as it cools; part 1b (0.4.700) adds a sprinkler working a lawn;
 part 1c (0.4.701) the pasture's windmill turning, a pumpjack's stroke and the cattle guard under a reader's feet.
-Nothing in them is frightening yet.
+Part 2 (0.4.705) is the slasher's body: a heart heard through a wall, a locked door struck and giving, the feed sack pulled on or off,
+the body's heavy tread, and the body going down.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -25,6 +26,12 @@ ROWS = {
     'windmill': ('A windmill turns and creaks', 32),
     'pumpjack': ('A pumpjack knocks on its downstroke', 32),
     'guard': ('A cattle guard rattles underfoot', 16),
+    'heart': ('A heart beats', 16),
+    'strike': ('A door is struck', 32),
+    'splinter': ('A door splinters', 48),
+    'sack': ('Burlap rustles', 12),
+    'tread': ('Heavy footsteps', 24),
+    'down': ('A body hits the ground', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -246,8 +253,114 @@ def guard():
     return out
 
 
+def heart():
+    # One beat of a heart heard through a wall: the first stroke deep and round, the second softer a fifth of a second later; nothing
+    # above the low hundreds gets through. Played higher and closer together when the heart races.
+    n = seconds(.62)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level in ((.02, 1.0), (.2, .62)):
+        x = t - at
+        on = x >= 0
+        env = np.exp(-np.clip(x, 0, None) / .055) * np.clip(x / .006, 0, 1)
+        out += (np.sin(2 * np.pi * 46 * x) + .55 * np.sin(2 * np.pi * 71 * x) + .25 * np.sin(2 * np.pi * 118 * x)) * env * on * level
+        out += band(rng.standard_normal(n), 30, 160) * env * on * level * .35
+    return out
+
+
+def strike():
+    # A shoulder put into a locked panel door: the panel's dull boom, the latch and hinges rattling in the frame after, a creak.
+    n = seconds(.9)
+    t = times(n)
+    x = t - .02
+    on = x >= 0
+    boom = (np.sin(2 * np.pi * 78 * x) + .6 * np.sin(2 * np.pi * 131 * x) + .3 * np.sin(2 * np.pi * 207 * x)) * np.exp(-np.clip(x, 0, None) / .09) * on
+    hit = band(rng.standard_normal(n), 120, 2200) * np.exp(-np.clip(x, 0, None) / .02) * on * 1.3
+    rattle = np.zeros(n)
+    for at in (.05, .09, .12, .17, .23):
+        y = t - at
+        rattle += band(rng.standard_normal(n), 1500, 5000) * np.exp(-np.clip(y, 0, None) / .008) * (y >= 0) * rng.uniform(.2, .45)
+    y = np.clip((t - .25) / .5, 0, 1)
+    creak = np.sin(2 * np.pi * (330 - 60 * y) * t + 3 * np.sin(2 * np.pi * 9 * t)) * np.sin(np.pi * y) ** 2 * (t > .25) * .12
+    return boom + hit + rattle + creak
+
+
+def splinter():
+    # The third blow and the door giving: the boom, wood tearing along the lock in a run of cracks, the door swinging in to hit the
+    # wall, and a few splinters landing.
+    n = seconds(1.6)
+    t = times(n)
+    out = strike_core(t, .02, 1.2)
+    at = .08
+    for _ in range(14):
+        at += rng.uniform(.012, .04)
+        y = t - at
+        out += band(rng.standard_normal(n), 900, 7000) * np.exp(-np.clip(y, 0, None) / .006) * (y >= 0) * rng.uniform(.35, .8)
+    tear = band(rng.standard_normal(n), 600, 3500) * np.clip((t - .1) / .05, 0, 1) * np.exp(-np.clip(t - .1, 0, None) / .25) * (t > .1) * .5
+    y = t - .78
+    wall = (np.sin(2 * np.pi * 92 * y) + .5 * np.sin(2 * np.pi * 160 * y)) * np.exp(-np.clip(y, 0, None) / .07) * (y >= 0) * .8
+    wall += band(rng.standard_normal(n), 150, 2500) * np.exp(-np.clip(y, 0, None) / .015) * (y >= 0) * .7
+    bits = np.zeros(n)
+    for at in (1.0, 1.08, 1.21, 1.3):
+        z = t - at
+        bits += band(rng.standard_normal(n), 2000, 7000) * np.exp(-np.clip(z, 0, None) / .004) * (z >= 0) * .25
+    return out + tear + wall + bits
+
+
+def strike_core(t, at, level):
+    x = t - at
+    on = x >= 0
+    boom = (np.sin(2 * np.pi * 74 * x) + .6 * np.sin(2 * np.pi * 125 * x) + .3 * np.sin(2 * np.pi * 199 * x)) * np.exp(-np.clip(x, 0, None) / .1) * on
+    return (boom + band(rng.standard_normal(len(t)), 120, 2200) * np.exp(-np.clip(x, 0, None) / .02) * on * 1.3) * level
+
+
+def sack():
+    # Burlap dragged over a head: a coarse rustle in two pulls, the weave's scratch over the ears, and the sack settling.
+    n = seconds(.85)
+    t = times(n)
+    out = np.zeros(n)
+    for at, length, level in ((.02, .28, 1.0), (.36, .3, .8), (.7, .1, .35)):
+        y = np.clip((t - at) / length, 0, 1)
+        env = np.sin(np.pi * y) ** 1.5 * ((t >= at) & (t <= at + length))
+        grain = band(rng.standard_normal(n), 900, 6500) * (.6 + .4 * (rng.random(n) < .2))
+        out += grain * env * level
+    return out
+
+
+def tread():
+    # One heavy step on caliche: the heel's dull thump, then the grit crushed under it.
+    n = seconds(.4)
+    t = times(n)
+    x = t - .01
+    on = x >= 0
+    thump = (np.sin(2 * np.pi * 58 * x) + .5 * np.sin(2 * np.pi * 97 * x)) * np.exp(-np.clip(x, 0, None) / .05) * on
+    grit = np.zeros(n)
+    at = .02
+    for _ in range(10):
+        at += rng.uniform(.006, .022)
+        y = t - at
+        grit += band(rng.standard_normal(n), 1800, 6000) * np.exp(-np.clip(y, 0, None) / .004) * (y >= 0) * rng.uniform(.15, .4)
+    return thump + band(rng.standard_normal(n), 80, 700) * np.exp(-np.clip(x, 0, None) / .03) * on * .4 + grit
+
+
+def down():
+    # A body going down full length: knees, then the rest, the breath knocked out of nothing; cloth and grit settling after.
+    n = seconds(1.0)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level, f in ((.02, .55, 70), (.13, 1.0, 52), (.18, .5, 61)):
+        x = t - at
+        on = x >= 0
+        out += (np.sin(2 * np.pi * f * x) + .4 * np.sin(2 * np.pi * f * 1.8 * x)) * np.exp(-np.clip(x, 0, None) / .07) * on * level
+        out += band(rng.standard_normal(n), 100, 1500) * np.exp(-np.clip(x, 0, None) / .025) * on * level * .6
+    y = np.clip((t - .25) / .6, 0, 1)
+    out += band(rng.standard_normal(n), 1200, 6000) * np.sin(np.pi * y) ** 2 * (t > .25) * .18
+    return out
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
-          'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard}
+          'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
+          'tread': tread, 'down': down}
 
 
 def main():
