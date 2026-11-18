@@ -142,6 +142,7 @@ public final class LabyrinthBuilder {
 
     /** The route depth at which explorers can first be dealt a place. */
     public static int requiredDepth(LabyrinthPlace place) {
+        if(HallwayVariants.is(place))return HallwayVariants.firstDepth(place);
         if (CORE.contains(place)) return 0;
         if(HazardVariety.added(place))return HazardVariety.tier(place)==1?6:HazardVariety.tier(place)==2?10:14;
         // 0.4.390: the new ordinary halls stand with the other halls, ready before anyone can be offered them.
@@ -303,6 +304,12 @@ public final class LabyrinthBuilder {
             return;
         }
         if (place != null && !prepared(server, place)) {
+            return;
+        }
+        if(place!=null&&HallwayVariants.is(place)){
+            var site=server.getLevel(NovelRooms.dimension(place));
+            BlockPos base=LabyrinthPlaces.base(pendingOrigin,place);
+            if(site!=null)geometry=BuildBlocks.record(site,()->HallwayVariants.build(site,base,place));
             return;
         }
         if(place!=null&&HazardVariety.added(place)){
@@ -528,6 +535,11 @@ public final class LabyrinthBuilder {
         BlockPos base = LabyrinthPlaces.base(origin, place);
         BoundingBox slot = LabyrinthPlaces.slotBounds(origin, place);
         if (base == null || slot == null) {
+            return;
+        }
+        if(HallwayVariants.is(place)){
+            var site=server.getLevel(NovelRooms.dimension(place));
+            if(site!=null){if(!HallwayVariants.yard(place))fillSolid(site,slot);HallwayVariants.build(site,base,place);registerDoors(dataFor(server),place,base);}
             return;
         }
         if(place==LabyrinthPlace.LAKE_HOUSE_EMPTY){var site=server.getLevel(HouseDimensions.OUTSIDE);if(site!=null){LakeHouse.buildEmpty(site,base);registerDoors(dataFor(server),place,base);}return;}

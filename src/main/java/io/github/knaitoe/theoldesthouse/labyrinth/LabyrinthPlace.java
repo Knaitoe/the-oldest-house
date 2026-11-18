@@ -732,7 +732,38 @@ public enum LabyrinthPlace {
      * night through the back door of the reader's own house, the streets, Main Street, the gin, the seed house, the water tower and the
      * playa (TheListSite); the back yards run south of the door behind the House's own hall. This part, the place. Not dealt until night
      * one. */
-    THE_LIST("the_list",Kind.RECURRING,246,new BoundingBox(TheListSite.WEST,-6,TheListSite.NORTH,TheListSite.EAST,40,TheListSite.SOUTH),literaryEntry());
+    THE_LIST("the_list",Kind.RECURRING,246,new BoundingBox(TheListSite.WEST,-6,TheListSite.NORTH,TheListSite.EAST,40,TheListSite.SOUTH),literaryEntry()),
+    /** 0.4.685 (docs/HALLWAY_VARIANTS_0_4_685.md, the owner): twelve hallway variants; slots 247 to 258 here, after The list (0.4.712). */
+    PARALLEL_PASSAGE("parallel_passage",Kind.GRAY,247,new BoundingBox(-5,-1,-34,5,5,0),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("west",new BlockPos(-5,0,-18),Direction.EAST,LabyrinthData.DEALT),
+        new DoorSpec("east",new BlockPos(5,0,-8),Direction.WEST,LabyrinthData.DEALT))),
+    BACK_STAIR("back_stair",Kind.GRAY,248,new BoundingBox(-7,-1,-24,7,10,0),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("landing",new BlockPos(-7,4,-14),Direction.EAST,LabyrinthData.DEALT),
+        new DoorSpec("under",new BlockPos(7,4,-22),Direction.WEST,LabyrinthData.DEALT))),
+    FALLING_PLASTER("falling_plaster",Kind.GRAY,249,new BoundingBox(-4,-1,-34,4,5,0),grayDoors(0,0,-34)),
+    CROSSED_GALLERIES("crossed_galleries",Kind.GRAY,250,new BoundingBox(-10,-5,-30,10,8,0),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("upper",new BlockPos(0,0,-30),Direction.SOUTH,LabyrinthData.DEALT),
+        new DoorSpec("lower",new BlockPos(10,-4,-15),Direction.WEST,LabyrinthData.DEALT))),
+    THREE_VAULTS("three_vaults",Kind.GRAY,251,new BoundingBox(-8,-1,-44,8,9,0),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("middle",new BlockPos(-8,0,-21),Direction.EAST,LabyrinthData.DEALT),
+        new DoorSpec("far",new BlockPos(0,0,-44),Direction.SOUTH,LabyrinthData.DEALT))),
+    STEAM_WALK("steam_walk",Kind.GRAY,252,new BoundingBox(-4,-1,-36,4,6,0),grayDoors(0,0,-36)),
+    BEHIND_GARAGES("behind_garages",Kind.GRAY,253,new BoundingBox(-14,-3,-40,14,12,0),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("gate",new BlockPos(-14,0,-28),Direction.EAST,LabyrinthData.DEALT),
+        new DoorSpec("drive",new BlockPos(0,0,-40),Direction.SOUTH,LabyrinthData.DEALT))),
+    ORCHARD_ROWS("orchard_rows",Kind.GRAY,254,new BoundingBox(-17,-3,-44,17,13,0),List.of(
+        new DoorSpec("entry",new BlockPos(0,0,1),Direction.SOUTH,LabyrinthData.RETURN),
+        new DoorSpec("gate",new BlockPos(0,0,-44),Direction.SOUTH,LabyrinthData.DEALT),
+        new DoorSpec("side",new BlockPos(17,0,-22),Direction.WEST,LabyrinthData.DEALT))),
+    DOWNED_LINE("downed_line",Kind.GRAY,255,new BoundingBox(-10,-3,-36,10,12,0),grayDoors(0,0,-36)),
+    DIVIDING_WALL("dividing_wall",Kind.GRAY,256,new BoundingBox(-11,-1,-42,11,16,0),grayDoors(0,0,-42)),
+    LOW_LINTELS("low_lintels",Kind.GRAY,257,new BoundingBox(-8,-1,-48,8,15,0),grayDoors(0,0,-48)),
+    OPENING_SEAMS("opening_seams",Kind.GRAY,258,new BoundingBox(-4,-6,-38,5,12,0),grayDoors(0,0,-38));
 
     /** What a place is to the dealer. */
     public enum Kind {
