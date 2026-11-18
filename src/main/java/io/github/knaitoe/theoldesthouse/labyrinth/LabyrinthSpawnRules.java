@@ -23,6 +23,8 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
  */
 public final class LabyrinthSpawnRules {
     public static final String ALLOWED_TAG = "the_oldest_house_labyrinth_allowed";
+    /** 0.4.703: no game monster within this many blocks of a quiet room, where it could be heard through the walls. */
+    public static final double QUIET_MARGIN = 32;
 
     private LabyrinthSpawnRules() {
     }
@@ -46,7 +48,8 @@ public final class LabyrinthSpawnRules {
         if (origin != null && entity.getType().getCategory() == MobCategory.MONSTER && isVanilla(entity.getType())
                 && !entity.getTags().contains(ALLOWED_TAG)
                 && !io.github.knaitoe.theoldesthouse.house.HouseExteriorEntityMirror.isProjection(entity)
-                && insideTheHouse(level, origin, entity.getX(), entity.getY(), entity.getZ())) {
+                && (insideTheHouse(level, origin, entity.getX(), entity.getY(), entity.getZ())
+                    || HouseReadSites.nearRoom(origin, level.dimension(), entity.getX(), entity.getY(), entity.getZ(), QUIET_MARGIN))) {
             event.setCanceled(true);
         }
     }

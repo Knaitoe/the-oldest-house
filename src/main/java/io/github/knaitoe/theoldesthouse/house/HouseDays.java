@@ -1,11 +1,8 @@
 package io.github.knaitoe.theoldesthouse.house;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.level.SleepFinishedTimeEvent;
 
 /**
  * Nights and mornings, as the mod sees them.
@@ -21,23 +18,11 @@ public final class HouseDays {
     private HouseDays() {
     }
 
-    /**
-     * Sleeping in the manor ends the night. The House dimension shares the
-     * Overworld's clock but cannot set it (vanilla skips the night by setting
-     * the sleepers' own dimension's time, which does nothing outside the
-     * Overworld), so without this, everyone in a manor bed was woken at night
-     * and the night never passed.
+    /*
+     * 0.4.703: sleeping in the manor no longer ends the night by itself. The House used to pass its own night and carry the morning to
+     * the Overworld (the House shares the Overworld's clock but cannot set it); now a sleeper in the House counts beside the Overworld's
+     * players and the Overworld alone passes the night for both (HouseSleep).
      */
-    public static void onSleepFinished(SleepFinishedTimeEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level) || !level.dimension().equals(HouseDimensions.INTERIOR)) {
-            return;
-        }
-        ServerLevel overworld = level.getServer().overworld();
-        overworld.setDayTime(event.getNewTime());
-        if (overworld.isRaining() && overworld.getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE)) {
-            overworld.setWeatherParameters(0, 0, false, false);
-        }
-    }
 
     /** Whether this wake-up ends a night's sleep. */
     public static boolean isMorningWake(ServerPlayer player) {

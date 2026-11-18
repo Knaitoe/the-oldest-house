@@ -65,6 +65,23 @@ public final class HouseReadSites {
     public static @Nullable Room kind(LabyrinthPlace place){for(var room:Room.values())if(room.place()==place)return room;return null;}
     public static boolean added139(LabyrinthPlace place){return place==LabyrinthPlace.READ_WAITING||place==LabyrinthPlace.READ_BATHROOM||place==LabyrinthPlace.READ_SHELTER;}
     public static @Nullable BlockPos base(MinecraftServer s,UUID id,Room room){var own=state(s,id);var origin=HouseSavedData.get(s).houseOrigin();return origin==null||!own.contains("Index")?null:new BlockPos(origin.getX()+8192+own.getInt("Index")*4096,80,origin.getZ()-room.offsetZ);}
+    /**
+     * 0.4.703 (owner: "Get rid of monster sounds in clothing room vignette"): whether a point is within {@code margin} blocks of any
+     * reader's quiet room in that dimension. The rooms stand in the game's own ground, whose caves would otherwise hold monsters heard
+     * through the walls.
+     */
+    public static boolean nearRoom(@Nullable BlockPos origin,net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimension,double x,double y,double z,double margin){
+        if(origin==null)return false;
+        int index=(int)Math.round((x-origin.getX()-8192-.5)/4096);if(index<0||index>=4096)return false;
+        for(var room:Room.values()){if(!dimension.equals(room.dimension()))continue;var b=new BlockPos(origin.getX()+8192+index*4096,80,origin.getZ()-room.offsetZ);if(HouseReadRooms.bounds(b,room).inflate(margin).contains(x,y,z))return true;}
+        return false;
+    }
+    /** 0.4.703: whether a sound is one of the game's own ambient, monster or (indoors) weather sounds, kept out of a quiet room. */
+    public static boolean quietens(net.minecraft.resources.ResourceLocation id,net.minecraft.sounds.SoundSource source,boolean outdoors){
+        if(!id.getNamespace().equals("minecraft"))return false;
+        return source==net.minecraft.sounds.SoundSource.AMBIENT||source==net.minecraft.sounds.SoundSource.HOSTILE
+            ||!outdoors&&source==net.minecraft.sounds.SoundSource.WEATHER||id.getPath().startsWith("ambient.");
+    }
     public static @Nullable Room inside(ServerPlayer p){var own=state(p.server,p.getUUID());for(var room:Room.values()){var b=base(p.server,p.getUUID(),room);if(b!=null&&own.getCompound(room.key()).getBoolean("Built")&&p.level().dimension().equals(room.dimension())&&HouseReadRooms.bounds(b,room).contains(p.position()))return room;}return null;}
     /** Native room bounds also shelter an observer; ownership still gates every interaction. */
     public static boolean contains(ServerPlayer p){

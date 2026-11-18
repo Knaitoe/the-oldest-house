@@ -528,9 +528,30 @@ public final class LabyrinthDealer {
         data.rememberNode(player, key, now);
     }
 
-    /** The great staircase waits in the deep labyrinth, never in its early halls. */
+    /**
+     * The great staircase waits in the deep labyrinth, never in its early halls. 0.4.703 (owner: "Ensure player encounters Holloway
+     * prior to encountering staircase"): nor before the reader has been to Holloway's camp. A staircase already found is found again.
+     */
     public static boolean finaleOffered(LabyrinthData data, UUID player) {
-        return data.returnDepth(player) >= LabyrinthPacing.STAIRCASE_DEPTH && FinaleController.canOffer(data, player);
+        return data.returnDepth(player) >= LabyrinthPacing.STAIRCASE_DEPTH && FinaleController.canOffer(data, player)
+                && (metHolloway(data, player) || data.state(FinaleProgress.STATE).getCompound(player.toString()).getBoolean("Discovered"));
+    }
+
+    /** 0.4.703: how many crossings short of the staircase's depth Holloway's camp comes behind the next door for a reader who has not met him. */
+    public static final int HOLLOWAY_LEAD = 4;
+
+    /** 0.4.703: whether a reader has been to Holloway's camp, or has no camp left to be dealt (gone from it, or its story told). */
+    public static boolean metHolloway(LabyrinthData data, UUID player) {
+        return HollowayVignette.personal(data, player).getInt("Visits") > 0 || !HollowayVignette.canDeal(data, player);
+    }
+
+    /**
+     * 0.4.703: a reader nearly as deep as the staircase who has not met Holloway is owed his camp: one door of the next hall leads to
+     * it, before anything else the House would deal there but a scent, a lost pet or a quiet room owed.
+     */
+    public static boolean hollowayOwed(LabyrinthData data, UUID player) {
+        return data.returnDepth(player) >= LabyrinthPacing.STAIRCASE_DEPTH - HOLLOWAY_LEAD && !metHolloway(data, player)
+                && LabyrinthBuilder.isPlaceReady(data, LabyrinthPlace.HOLLOWAY_CAMP);
     }
 
     /** Whether a remembered destination can still be found behind its door by this player. */
@@ -765,7 +786,12 @@ public final class LabyrinthDealer {
         boolean voiceOwed = !owing && !scent && !scentOutside && !rescueNeeded(data, player) && LabyrinthBuilder.isPlaceReady(data, LabyrinthPlace.SPEAK_UP)
                 && SpeakUp.owed(data, player);
         boolean voiceHere = false;
-        if (!owing && (!vignettes.isEmpty() || voiceOwed || outside)
+        // 0.4.703: the staircase is near and Holloway not yet met: his camp is behind one of these doors (hollowayOwed).
+        boolean holloway = !owing && !scent && !scentOutside && !rescueNeeded(data, player) && vignettes.contains(LabyrinthPlace.HOLLOWAY_CAMP)
+                && hollowayOwed(data, player);
+        if (holloway) {
+            lucky = doors.get(random.nextInt(doors.size()));
+        } else if (!owing && (!vignettes.isEmpty() || voiceOwed || outside)
                 && (scent || scentOutside || random.nextInt(100) < (vignettes.isEmpty() ? storyChance(data, player) : vignetteChance(data, player)))) {
             lucky = doors.get(random.nextInt(doors.size()));
             voiceHere = voiceOwed && (vignettes.isEmpty() || SpeakUp.due(data, player) || random.nextInt(3) == 0);
@@ -812,7 +838,7 @@ public final class LabyrinthDealer {
                 // The story waits out in the yard: this door is the back door onto it. A scent goes on with the reader to find it there.
                 data.deal(player, door, LabyrinthPlace.YARD_TURNAROUND.id(), false, scentOutside);
             } else if (door == lucky) {
-                data.deal(player, door, (named != null ? named : pickVignette(data, player, vignettes, random)).id(), true, scent);
+                data.deal(player, door, (named != null ? named : holloway ? LabyrinthPlace.HOLLOWAY_CAMP : pickVignette(data, player, vignettes, random)).id(), true, scent);
                 if (voiceOwed) SpeakUp.storyDealt(data, player);
             } else if (trialOnly) {
                 // A different trial behind each door while there are trials enough.
