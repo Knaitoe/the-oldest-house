@@ -36,18 +36,25 @@ public final class Doorsteps {
     /**
      * Where the letter (and later Hillary) is left: the doorstep of the
      * most-used door near the bed, else of the door nearest the bed, else the
-     * floor beside the bed; never on district land.
+     * floor beside the bed; never on district land. When the most-used door
+     * stands off a district's land but its step is on it, the nearest other
+     * door is tried before the bedside.
      */
     @Nullable
     public static Delivery resolve(ServerLevel level, OpeningPlayerState state, BlockPos bed, int radius) {
-        BlockPos door = mostUsedDoor(level, state, bed, radius);
-        if (door == null) {
-            door = nearestDoor(level, bed);
-        }
+        BlockPos used = mostUsedDoor(level, state, bed, radius);
+        BlockPos door = used != null ? used : nearestDoor(level, bed);
         if (door != null) {
             BlockPos step = doorstep(level, door, bed);
             if (step != null && !Neighbours.districtLand(level, step)) {
                 return new Delivery(step, door);
+            }
+            if (step != null && used != null) {
+                BlockPos other = nearestDoor(level, bed, used);
+                BlockPos otherStep = other == null ? null : doorstep(level, other, bed);
+                if (otherStep != null && !Neighbours.districtLand(level, otherStep)) {
+                    return new Delivery(otherStep, other);
+                }
             }
         }
         BlockPos beside = besideBed(level, bed);
@@ -74,6 +81,12 @@ public final class Doorsteps {
 
     @Nullable
     public static BlockPos nearestDoor(ServerLevel level, BlockPos bed) {
+        return nearestDoor(level, bed, null);
+    }
+
+    /** The door nearest the bed, off any district's land, other than {@code except}. */
+    @Nullable
+    public static BlockPos nearestDoor(ServerLevel level, BlockPos bed, @Nullable BlockPos except) {
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -86,7 +99,7 @@ public final class Doorsteps {
                     }
                     BlockState state = level.getBlockState(pos);
                     if (!isOrdinaryDoor(state) || state.getValue(DoorBlock.HALF) != DoubleBlockHalf.LOWER
-                            || Neighbours.districtLand(level, pos)) {
+                            || pos.equals(except) || Neighbours.districtLand(level, pos)) {
                         continue;
                     }
                     double distance = pos.distSqr(bed);

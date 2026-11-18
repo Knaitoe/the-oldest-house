@@ -509,9 +509,13 @@ public final class FinaleController {
         }
         if(changed)LabyrinthData.get(server).setState(FinaleProgress.STATE,world);
     }
-    /** The pages left at the reader's home (HomeBed), read when they are delivered; beside the reader if they have none. */
+    /**
+     * The pages left at the reader's home (HomeBed), read when they are delivered; beside the reader if they have none, and then only
+     * once they are in the Overworld: where they stand anywhere else is no place there.
+     */
     private static boolean epilogue(ServerPlayer player,CompoundTag record){
-        ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(player.blockPosition());
+        ServerLevel level=player.server.overworld();BlockPos home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(player).orElse(null);
+        if(home==null){if(player.serverLevel()!=level)return false;home=player.blockPosition();}
         level.getChunkAt(home);
         for(BlockPos candidate:BlockPos.betweenClosed(home.offset(-4,0,-4),home.offset(4,2,4)))if(level.getBlockState(candidate).isAir()&&level.getBlockState(candidate.below()).isSolidRender(level,candidate.below())){
             level.setBlock(candidate,Blocks.CHEST.defaultBlockState(),FLAGS);

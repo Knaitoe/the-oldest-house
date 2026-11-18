@@ -17,7 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * A home bed is in the Overworld, is a bed (when its chunk is loaded), is not in {@code #the_oldest_house:not_home}, and is on no
  * neighbour's district land. The reader's home is the first of: their respawn, if it is a home bed; the home bed they last woke in on
- * a morning, which the opening remembers; none. An unloaded bed is trusted: it can only have been set or remembered by using one.
+ * a morning, which the opening remembers; none. An unloaded bed is trusted: it can only have been set or remembered by using one, and
+ * a remembered bed seen gone is forgotten.
  */
 public final class HomeBed {
     /** A reader's home: where, the House's day it became home (-1 when the House never saw it so), and the nights slept in it. */
@@ -46,10 +47,19 @@ public final class HomeBed {
         return home(player).map(Home::pos);
     }
 
-    /** The reader's home, with how long it has been home and how many nights they have slept in it. */
+    /**
+     * The reader's home, with how long it has been home and how many nights they have slept in it. A remembered bed the House sees
+     * gone (its chunk loaded, no bed there) is forgotten, so it is never trusted again once its chunk unloads; one on a district's land
+     * or in {@code #not_home} is only passed over, since those can change back.
+     */
     public static Optional<Home> home(ServerPlayer player) {
         ServerLevel overworld = player.server.overworld();
-        OpeningPlayerState.Home remembered = OpeningSequence.state(player).home();
+        OpeningPlayerState state = OpeningSequence.state(player);
+        OpeningPlayerState.Home remembered = state.home();
+        if (remembered != null && overworld.isLoaded(remembered.pos()) && !overworld.getBlockState(remembered.pos()).is(BlockTags.BEDS)) {
+            state.forgetHome();
+            remembered = null;
+        }
         BlockPos respawn = player.getRespawnPosition();
         if (respawn != null && Level.OVERWORLD.equals(player.getRespawnDimension()) && isHomeBed(overworld, respawn)) {
             return Optional.of(remembered != null && remembered.pos().equals(respawn)

@@ -3,7 +3,12 @@ package io.github.knaitoe.theoldesthouse.gametest;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
 import io.github.knaitoe.theoldesthouse.house.Neighbours;
+import io.github.knaitoe.theoldesthouse.labyrinth.LabyrinthPlace;
+import io.github.knaitoe.theoldesthouse.labyrinth.LiteraryCopies;
 import io.github.knaitoe.theoldesthouse.labyrinth.NovelRooms;
+import io.github.knaitoe.theoldesthouse.labyrinth.SphinxCore;
+import io.github.knaitoe.theoldesthouse.labyrinth.SphinxDream;
+import io.github.knaitoe.theoldesthouse.labyrinth.SphinxField;
 import io.github.knaitoe.theoldesthouse.opening.DeliveredItemEntity;
 import io.github.knaitoe.theoldesthouse.opening.Doorsteps;
 import io.github.knaitoe.theoldesthouse.opening.HomeBed;
@@ -27,6 +32,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -62,6 +69,11 @@ public final class HomeBedTests {
 
     @AfterBatch(batch = "home_bed_letter")
     public static void letterDone(ServerLevel level) {
+        Neighbours.forgetTestDistricts();
+    }
+
+    @AfterBatch(batch = "home_bed_gates")
+    public static void gatesDone(ServerLevel level) {
         Neighbours.forgetTestDistricts();
     }
 
@@ -273,7 +285,8 @@ public final class HomeBedTests {
             p.setRespawnPosition(level.dimension(), given, 0.0F, true, false);
             level.setBlock(other, Blocks.AIR.defaultBlockState(), 3);
             level.setBlock(other.south(), Blocks.AIR.defaultBlockState(), 3);
-            h.assertTrue(HomeBed.of(p).isEmpty(), "with the bed gone and only the district's bed left, they have no home");
+            h.assertTrue(HomeBed.of(p).isEmpty() && state.home() == null,
+                    "with the bed gone and only the district's bed left, they have no home, and the House forgets the bed it saw gone");
         } finally {
             forget.run();
             NativeTestPlayers.remove(p);
@@ -359,5 +372,65 @@ public final class HomeBedTests {
             NativeTestPlayers.remove(inside);
         }
         h.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "home_bed_gates", timeoutTicks = 100)
+    public static void neitherTheSphinxNorTheCopiedHomesTakeABedOnDistrictLand(GameTestHelper h) {
+        ServerLevel level = h.getLevel();
+        var server = level.getServer();
+        var storage = server.overworld().getDataStorage();
+        LiteraryCopies before = LiteraryCopies.get(server);
+        ServerPlayer p = NativeTestPlayers.survival(h, "district_dreamer");
+        Runnable forget = district(h, new BlockPos(0, 0, 0), new BlockPos(15, 8, 15));
+        storage.set("the_oldest_house_literary_copies", new LiteraryCopies());
+        Runnable close = () -> {
+            p.clearSleepingPos();
+            forget.run();
+            LiteraryCopies.clearAll();
+            storage.set("the_oldest_house_literary_copies", before);
+            NativeTestPlayers.remove(p);
+        };
+        try {
+            floor(h, 16);
+            BlockPos head = bed(h, new BlockPos(6, 1, 8), Blocks.WHITE_BED);
+            p.teleportTo(level, head.getX() + 1.5D, head.getY(), head.getZ() + 0.5D, 0.0F, 0.0F);
+            p.setRespawnPosition(level.dimension(), head, 0.0F, true, false);
+            h.assertTrue(!HomeBed.isHomeBed(level, head), "the bed stands on a district's land");
+
+            // A reader who met her, with their own survey in hand, beside a bed on the district's land.
+            for (String riddle : new String[] {"early", "stair", "shelf"}) {
+                SphinxCore.answer(level, p.getUUID(), riddle, true);
+            }
+            h.assertTrue(SphinxDream.met(server, p.getUUID()), "the reader met her");
+            ItemStack survey = SphinxField.survey(p, false);
+            p.setItemInHand(InteractionHand.MAIN_HAND, survey);
+            NativeTestPlayers.messages(p);
+            boolean set = SphinxDream.invite(p, level, head, survey);
+            h.assertTrue(!set && SphinxDream.stage(server, p.getUUID()) == SphinxDream.NONE && survey.getCount() == 1
+                            && level.getEntitiesOfClass(ItemFrame.class, new AABB(head).inflate(3.0D)).isEmpty(),
+                    "she does not find them in a bed on a district's land: the survey stays in their hand and nothing is set down");
+
+            // A night asleep there is neither copied nor counted.
+            p.startSleeping(head);
+            LiteraryCopies.tick(server);
+            h.assertTrue(!LiteraryCopies.begun(server, p.getUUID(), LabyrinthPlace.OLD_CABIN)
+                            && !LiteraryCopies.begun(server, p.getUUID(), LabyrinthPlace.FAMILY_COPY)
+                            && LiteraryCopies.nights(server, p.getUUID()) == 0,
+                    "a night in a district's bed leaves no copy of it and is not one of their nights: " + LiteraryCopies.nights(server, p.getUUID()));
+            p.clearSleepingPos();
+        } catch (RuntimeException e) {
+            close.run();
+            throw e;
+        }
+        // What the reader is told reaches the case on the next tick.
+        h.runAfterDelay(1, () -> {
+            try {
+                var heard = NativeTestPlayers.messages(p);
+                h.assertTrue(heard.contains(SphinxDream.REFUSED_BED), "and they are told it is not their bed: " + heard);
+            } finally {
+                close.run();
+            }
+            h.succeed();
+        });
     }
 }

@@ -136,10 +136,12 @@ public final class CabinBargain {
         else p.displayClientMessage(Component.literal(NAMES[line.who()]+": “"+line.text()+"”").withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
     }
     static void facts(ServerPlayer p,CompoundTag own){
-        // The bed they made is their home (HomeBed): the days since it became home and the nights slept in it. Without one, the world's days and every night anywhere.
-        var stats=p.getStats();var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.home(p).orElse(null);own.putInt("FactDeaths",stats.getValue(Stats.CUSTOM.get(Stats.DEATHS)));
-        own.putInt("FactSlept",home!=null?home.nights():stats.getValue(Stats.CUSTOM.get(Stats.SLEEP_IN_BED)));
-        own.putLong("FactDays",home!=null&&home.since()>=0?io.github.knaitoe.theoldesthouse.house.HouseCalendar.today(p.server)-home.since()+1:p.server.overworld().getDayTime()/24000+1);own.putString("ArmSide",p.getMainArm()==HumanoidArm.RIGHT?"left":"right");
+        // The bed they made is their home (HomeBed): the days since it became home and the nights slept in it. Without one, or with one
+        // the House never saw become home (their respawn, never woken in on a morning), the world's days and every night anywhere, together.
+        var stats=p.getStats();var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.home(p).orElse(null);boolean known=home!=null&&home.since()>=0;
+        own.putInt("FactDeaths",stats.getValue(Stats.CUSTOM.get(Stats.DEATHS)));
+        own.putInt("FactSlept",known?home.nights():stats.getValue(Stats.CUSTOM.get(Stats.SLEEP_IN_BED)));
+        own.putLong("FactDays",known?io.github.knaitoe.theoldesthouse.house.HouseCalendar.today(p.server)-home.since()+1:p.server.overworld().getDayTime()/24000+1);own.putString("ArmSide",p.getMainArm()==HumanoidArm.RIGHT?"left":"right");
         var at=CabinScreen.home(p);
         String biome=p.server.overworld().getBiome(at).unwrapKey().map(k->k.location().getPath().replace('_',' ')).orElse("open country");
         own.putString("FactHome",home!=null?"the bed you made in the "+biome:"the "+biome+" where you first woke");

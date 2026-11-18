@@ -176,6 +176,11 @@ public final class OpeningPlayerState {
         home = new Home(bed.immutable(), day, 1, day);
     }
 
+    /** The remembered home bed is gone: the House forgets it. */
+    public void forgetHome() {
+        home = null;
+    }
+
     public boolean houseDue(long today) {
         return stage.isAtLeast(OpeningStage.HILLARY_ARRIVED)
                 && today > (hillaryDay >= 0L ? hillaryDay : letterDay + 1L);

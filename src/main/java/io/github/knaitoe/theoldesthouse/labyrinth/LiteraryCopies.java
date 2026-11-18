@@ -60,6 +60,9 @@ public final class LiteraryCopies extends SavedData {
         var home=io.github.knaitoe.theoldesthouse.opening.HomeBed.of(p).orElse(null);if(home==null)return null;
         return io.github.knaitoe.theoldesthouse.opening.Doorsteps.mostUsedDoor(p.server.overworld(),io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p),home,io.github.knaitoe.theoldesthouse.opening.OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt());
     }
+    /** For the cases: whether a copy of {@code p} has been begun for this reader, and the nights in a home bed counted for them. */
+    public static boolean begun(MinecraftServer s,UUID reader,LabyrinthPlace p){return get(s).copy(reader,p)!=null;}
+    public static int nights(MinecraftServer s,UUID reader){var own=get(s).readers.get(reader);return own==null?0:own.getInt("Nights");}
     public static @Nullable BlockPos base(MinecraftServer s,UUID reader,LabyrinthPlace p){var c=get(s).copy(reader,p);return c==null||!c.built?null:address(s,c);}
     public static @Nullable LabyrinthPlace placeAt(MinecraftServer s,BlockPos at){for(var c:get(s).copies.values()){var b=address(s,c);if(b!=null&&c.built&&bounds(b,c).contains(Vec3.atCenterOf(at)))return c.place;}return null;}
     private static AABB bounds(BlockPos b,Copy c){var min=c.snapshot==null?new BlockPos(-34,-17,-34):c.snapshot.min();var max=c.snapshot==null?new BlockPos(34,33,34):c.snapshot.max();return new AABB(b.getX()+min.getX()-3,b.getY()+min.getY()-3,b.getZ()+min.getZ()+c.offset()-3,b.getX()+max.getX()+4,b.getY()+max.getY()+4,b.getZ()+10);}

@@ -1225,9 +1225,11 @@ p.teleportTo(f.out,family.getX()+.5,family.getY(),family.getZ()-3,180,0);p.hasCh
             // A pen near where they sleep: one cow inside a ring of fence with a gate.
             for(int x=6;x<=10;x++)for(int z=6;z<=10;z++)if(x==6||x==10||z==6||z==10)h.setBlock(new BlockPos(x,2,z),x==8&&z==6?Blocks.OAK_FENCE_GATE:Blocks.OAK_FENCE);
             var penned=h.spawn(EntityType.COW,new BlockPos(8,2,8));var named=h.spawn(EntityType.SHEEP,new BlockPos(8,2,9));named.setCustomName(net.minecraft.network.chat.Component.literal("Clover"));
-            // A reader with no home of their own (HomeBed) loses nothing in the morning, and still owes it.
+            // A reader with no home of their own (HomeBed) loses nothing in the morning, and still owes it, though the world's spawn is at the pen.
             int owed=LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND);
-            h.assertTrue(!ElkFollows.morning(p)&&penned.isAlive()&&LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND)==owed&&owed>0,"with no home of their own, nothing is taken and the debt is kept");
+            var spawn=h.getLevel().getSharedSpawnPos();float angle=h.getLevel().getSharedSpawnAngle();h.getLevel().setDefaultSpawnPos(h.absolutePos(new BlockPos(8,2,8)),0);
+            try{h.assertTrue(!ElkFollows.morning(p)&&penned.isAlive()&&LiteraryVignettes.personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT).getInt(ElkFollows.IN_KIND)==owed&&owed>0,"with no home of their own, nothing is taken and the debt is kept");}
+            finally{h.getLevel().setDefaultSpawnPos(spawn,angle);}
             var bed=h.absolutePos(new BlockPos(12,2,8));NovelRooms.bed(h.getLevel(),bed,Blocks.WHITE_BED,Direction.NORTH);
             p.setRespawnPosition(h.getLevel().dimension(),bed.north(),0,true,false);
             h.assertTrue(ElkFollows.morning(p),"in the morning she takes one of theirs in kind");

@@ -56,7 +56,7 @@ public final class OpeningSequence {
         bus.addListener(OpeningSequence::onServerTick);
         bus.addListener(OpeningSequence::onPlayerLoggedIn);
         bus.addListener(OpeningSequence::onPlayerWakeUp);
-        // Last, so a click something else refused is not counted as the door's use.
+        // Last, and not for a cancelled event: a click something else refused never reaches the door count.
         bus.addListener(EventPriority.LOWEST, OpeningSequence::onRightClickBlock);
         bus.addListener(OpeningSequence::onServerStopped);
         bus.addListener(Hillary::onEntityInteract);
@@ -121,18 +121,17 @@ public final class OpeningSequence {
 
     /** Counts uses of ordinary doors near the player's home. */
     private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.isCanceled()
-                || event.getLevel().isClientSide()
+        if (event.getLevel().isClientSide()
                 || !(event.getEntity() instanceof ServerPlayer player)
                 || !event.getLevel().dimension().equals(Level.OVERWORLD)) {
             return;
         }
-        BlockPos home = HomeBed.of(player).orElse(null);
-        if (home == null) {
-            return;
-        }
         BlockState clicked = event.getLevel().getBlockState(event.getPos());
         if (!Doorsteps.isOrdinaryDoor(clicked)) {
+            return;
+        }
+        BlockPos home = HomeBed.of(player).orElse(null);
+        if (home == null) {
             return;
         }
         BlockPos lower = clicked.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER
