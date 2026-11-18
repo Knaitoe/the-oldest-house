@@ -269,6 +269,8 @@ public final class FinaleController {
         CompoundTag world=FinaleProgress.world(player.server);if(world.hasUUID("Owner")&&!world.getUUID("Owner").equals(player.getUUID())||imprisoned(player.server)){words(player,FinaleArchitecture.cell(origin),"There is already someone on the other side.");return false;}
         if(looseInArena(player.serverLevel(),origin)){words(player,FinaleArchitecture.cell(origin),"Something heavy is still moving out there in the dark.");return false;}
         if(FinaleProgress.committed(FinaleProgress.phase(player.server,player.getUUID())))return false;
+        // 0.4.704: what the reader left on the hall stand comes to their hand here, and is the one that wounds (HouseKeeping.handOver).
+        io.github.knaitoe.theoldesthouse.house.HouseKeeping.handOver(player);
         UUID weapon=WeaponHistory.favorite(player);
         if(weapon==null){ItemStack fallback=new ItemStack(Items.STONE_SWORD);WeaponHistory.record(player,fallback,1);player.getInventory().add(fallback);weapon=WeaponHistory.favorite(player);}
         world.putUUID("Owner",player.getUUID());LabyrinthData.get(player.server).setState(FinaleProgress.STATE,world);
@@ -349,6 +351,8 @@ public final class FinaleController {
         if(!level.getEntitiesOfClass(FinaleWitness.class,new AABB(at).inflate(5)).isEmpty())return;
         FinaleWitness witness=FinaleRegistry.WITNESS.get().create(level);if(witness!=null){witness.moveTo(Vec3.atBottomCenterOf(at));level.addFreshEntity(witness);}
     }
+    /** 0.4.704: the witness, of the thing on the hall stand (new). */
+    public static final String KEPT_WORDS="The %s you left on the hall stand will be in your hand when the cell opens.";
     public static void inspectWeapon(ServerPlayer player,FinaleWitness witness){
         LabyrinthData data=LabyrinthData.get(player.server);
         if(player.isShiftKeyDown()&&WitnessAccount.count(data,player.getUUID())>0){
@@ -356,6 +360,8 @@ public final class FinaleController {
                     ?"The play has another passage. Read it before you decide what to carry through that door."
                     :"You have written part of it. Other rooms have endings you have not heard yet.");return;
         }
+        // 0.4.704: a reader with something on the hall stand is told it will be in their hand.
+        if(!io.github.knaitoe.theoldesthouse.house.HouseKeeping.of(player).kept.isEmpty()){words(player,witness.blockPosition().above(2),String.format(KEPT_WORDS,io.github.knaitoe.theoldesthouse.house.HouseKeeping.name(io.github.knaitoe.theoldesthouse.house.HouseKeeping.of(player).kept)));return;}
         UUID original=WeaponHistory.favorite(player);
         if(original==null){words(player,witness.blockPosition().above(2),"Bring the weapon your hand remembers. The shield alone will not finish it.");return;}
         ItemStack sample=WeaponHistory.sample(player,original);String name=sample.getHoverName().getString();

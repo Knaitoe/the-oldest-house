@@ -46,6 +46,27 @@ final class HouseStructureChecks {
         failures.addAll(everyRoomIsLit());
         failures.addAll(roomsAreReachable());
         failures.addAll(interiorCountsAsInside());
+        failures.addAll(hallKeepsItsFurniture());
+        return failures;
+    }
+
+    /**
+     * 0.4.704: the chest of drawers and the hall stand are still in the hall once the whole house is built, facing into it. The
+     * builder clears the cells in front of every doorway last, so a piece set in front of one is gone from every new house.
+     */
+    private List<String> hallKeepsItsFurniture() {
+        List<String> failures = new ArrayList<>();
+        var pieces = new Object[][]{{io.github.knaitoe.theoldesthouse.house.HouseKeeping.DRAWERS, io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS},
+            {io.github.knaitoe.theoldesthouse.house.HouseKeeping.STAND, io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.Kind.HALL_STAND}};
+        for (Object[] piece : pieces) {
+            BlockPos at = (BlockPos) piece[0];
+            BlockState state = get(at.getX(), at.getY(), at.getZ());
+            if (!state.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get())
+                    || state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND) != piece[1]
+                    || state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.FACING) != net.minecraft.core.Direction.EAST) {
+                failures.add("the hall's " + piece[1] + " is missing or turned at " + rel(at.getX(), at.getY(), at.getZ()) + ": " + state);
+            }
+        }
         return failures;
     }
 

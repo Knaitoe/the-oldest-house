@@ -25,6 +25,10 @@ public final class HouseSitting {
     public static final DeferredHolder<EntityType<?>, EntityType<SeatEntity>> SEAT = TYPES.register("seat", () ->
             EntityType.Builder.<SeatEntity>of(SeatEntity::new, MobCategory.MISC).sized(0.05F, 0.05F)
                     .clientTrackingRange(8).updateInterval(20).build("seat"));
+    /** 0.4.704: what a reader has left on the hall stand, shown to that reader alone (HallStandDisplay). */
+    public static final DeferredHolder<EntityType<?>, EntityType<HallStandDisplay>> STAND_DISPLAY = TYPES.register("hall_stand_display", () ->
+            EntityType.Builder.<HallStandDisplay>of(HallStandDisplay::new, MobCategory.MISC).sized(0.25F, 0.25F)
+                    .clientTrackingRange(8).updateInterval(20).build("hall_stand_display"));
     private HouseSitting() {}
     public static void register(IEventBus bus) { TYPES.register(bus); }
     private static boolean wardSeat(BlockState state){return state.is(NovelRegistry.NIGHT_WARD.get())&&(state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.CHAIR||state.getValue(NightWardBlock.KIND)==NightWardBlock.Kind.STOOL);}

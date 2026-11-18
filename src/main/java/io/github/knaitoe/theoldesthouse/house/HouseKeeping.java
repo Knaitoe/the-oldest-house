@@ -61,6 +61,13 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * <p>
  * Allowed in: the mod's own items; any item carrying custom data (only the House makes those in ordinary play); food and drink (not
  * chorus fruit, which moves the eater); torches, soul torches, lanterns, soul lanterns and candles.
+ * <p>
+ * 0.4.704 (docs/FAVORITE_ITEM_0_4_704.md; the owner: "items should only be lost on entering the impossible hallway. Not the house
+ * itself", and "the player needs a way to secure their 'favorite' item to slay the Minotaur with"): the House takes nothing at the
+ * front door. What a reader carries in from outside is theirs to hold in the manor (loose) and goes to the drawer only when they
+ * cross from the manor into the rest of the House. Beside the drawers stands a hall stand (STAND) that keeps one thing for each
+ * reader, and arrows with a bow or crossbow; at the bottom of the great staircase, when the cell opens, it is in their hand and it is
+ * what wounds (handOver). Each reader sees only their own thing on the stand.
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class HouseKeeping extends SavedData {
@@ -68,6 +75,18 @@ public final class HouseKeeping extends SavedData {
     public static final Factory<HouseKeeping> FACTORY=new Factory<>(HouseKeeping::new,HouseKeeping::load);
     /** The chest of drawers in the front hall, against its west wall two blocks in from the front door, relative to the manor's origin. */
     public static final BlockPos DRAWERS=new BlockPos(HouseLayout.HALL_MIN_X,1,HouseLayout.FRONT_DOOR_Z+2);
+    /** 0.4.704: the hall stand, just inside the front door, in the corner beside the drawers. (Further in, the great room's double
+     * doorway opens off the same wall, and the builder clears the cells in front of every doorway.) */
+    public static final BlockPos STAND=new BlockPos(HouseLayout.HALL_MIN_X,1,HouseLayout.FRONT_DOOR_Z+1);
+    /** 0.4.704: what the House says, in grey on the action bar. Every one is new in 0.4.704 except CROSSED, reworded from 0.4.255. */
+    public static final String ENTERED="What you brought in goes no further than the end of the hall. The hall stand keeps one thing for you.",
+        CROSSED="Not past the hall: the House has put your own things away in the chest of drawers by the front door.",
+        STAND_EMPTY="The hall stand is empty. One thing left on it goes with you to the last door.",
+        STAND_LEFT="You leave the %s on the hall stand. It will be in your hand at the last door.",
+        STAND_SWAPPED="You take back the %s and leave the %s on the hall stand.",
+        STAND_TAKEN="You take the %s back off the hall stand.",
+        STAND_ARROWS="You put the arrows in with the %s.",
+        HANDED="The %s from the hall stand is in your hand.";
     /** Stacks to a page of the drawer: a chest's six rows. */
     public static final int SHOWN=54;
     /** How many of a reader's taken stacks the House remembers the slots of (0.4.267); the oldest are forgotten first. */
@@ -84,6 +103,8 @@ public final class HouseKeeping extends SavedData {
         /** 0.4.267: where in the reader's inventory each thing was when the House took it, newest first, so it can go back there. */
         public final List<Home> homes=new ArrayList<>();
         @Nullable public Where where;
+        /** 0.4.704: the one thing on the hall stand, and the arrows that go with a bow or crossbow there. */
+        public ItemStack kept=ItemStack.EMPTY,quiver=ItemStack.EMPTY;
     }
     /** A slot something was taken from (0.4.267): which thing, which inventory slot, and how many of it are still to go back there. */
     public static final class Home {
@@ -143,43 +164,50 @@ public final class HouseKeeping extends SavedData {
     @SubscribeEvent public static void tick(PlayerTickEvent.Post e){
         if(!(e.getEntity() instanceof ServerPlayer p)||p.level().isClientSide())return;
         var mode=p.gameMode.getGameModeForPlayer();if(mode==GameType.CREATIVE||mode==GameType.SPECTATOR)return;
-        update(p,where(p));
+        var now=where(p);update(p,now);
+        // 0.4.704: the thing on the hall stand is put back for a reader in the manor, after a restart or once the hall has loaded.
+        if(now==Where.MANOR&&p.tickCount%20==0)HallStandDisplay.show(p);
     }
     /** The reader is now {@code now}: whatever crossing that is, the House does its part. */
     public static void update(ServerPlayer p,Where now){
         var data=get(p.server);var keep=data.keep(p.getUUID());var was=keep.where;if(was==now)return;
         keep.where=now;data.setDirty();
         if(was==null)return;
-        if(was==Where.OUTSIDE)enter(p,data,keep);
+        // 0.4.704: in from outside the reader keeps everything in the manor; straight past it (a door that opens beyond), both at once.
+        if(was==Where.OUTSIDE){enter(p,data,keep);if(now==Where.BEYOND)cross(p,data,keep);}
         else if(now==Where.OUTSIDE)leave(p,data,keep);
         else if(was==Where.MANOR&&now==Where.BEYOND)cross(p,data,keep);
     }
-    /** In from outside: everything the House did not provide goes to the drawer. */
+    /**
+     * In from outside (0.4.704): nothing is taken at the front door. What the House did not provide is the reader's own to hold in the
+     * manor (loose), and the House says once where it stops; what the House gave them earlier comes back in as its own.
+     */
     static void enter(ServerPlayer p,HouseKeeping data,Keep keep){
-        int taken=0;
+        int own=0;
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(allowed(s))continue;
             int ours=take(keep.carried,s,s.getCount());int theirs=s.getCount()-ours;if(theirs<=0)continue;
-            add(keep.drawer,s.copyWithCount(theirs));
-            if(c==p.getInventory())keep.homes.add(0,new Home(s,i,theirs));
-            var left=s.copyWithCount(ours);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=theirs;
+            add(keep.loose,s.copyWithCount(theirs));own+=theirs;
         }
-        while(keep.homes.size()>HOMES)keep.homes.remove(keep.homes.size()-1);
-        if(taken>0){data.setDirty();p.inventoryMenu.broadcastChanges();
-            say(p,"What you carried in from outside, the House has put away in the chest of drawers in the front hall.");
-            p.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_INSERT,SoundSource.PLAYERS,.8F,.8F);}
+        if(own>0){data.setDirty();say(p,ENTERED);}
     }
-    /** From the manor into the rest of the House: the reader's own things taken out of the drawer go back to it. */
+    /**
+     * From the manor into the rest of the House: the reader's own things go to the drawer (0.4.704: this is where the House takes what
+     * was carried in from outside, and remembers the slot each came from, as the front door did before).
+     */
     static void cross(ServerPlayer p,HouseKeeping data,Keep keep){
         if(keep.loose.isEmpty())return;
         int taken=0;
         for(var c:pockets(p))for(int i=0;i<c.getContainerSize();i++){
             var s=c.getItem(i);if(allowed(s))continue;
             int own=take(keep.loose,s,s.getCount());if(own<=0)continue;
-            add(keep.drawer,s.copyWithCount(own));var left=s.copyWithCount(s.getCount()-own);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=own;
+            add(keep.drawer,s.copyWithCount(own));
+            if(c==p.getInventory())keep.homes.add(0,new Home(s,i,own));
+            var left=s.copyWithCount(s.getCount()-own);c.setItem(i,left.isEmpty()?ItemStack.EMPTY:left);taken+=own;
         }
+        while(keep.homes.size()>HOMES)keep.homes.remove(keep.homes.size()-1);
         if(taken>0){data.setDirty();p.inventoryMenu.broadcastChanges();
-            say(p,"Not past the hall: the House has put your own things back in the chest of drawers.");
+            say(p,CROSSED);
             p.playNotifySound(SoundEvents.CHISELED_BOOKSHELF_INSERT,SoundSource.PLAYERS,.8F,.8F);}
     }
     /** Out into the world: the reader's own things go with them; what the House gave them is noted, so it comes back in with them. */
@@ -197,11 +225,78 @@ public final class HouseKeeping extends SavedData {
     @SubscribeEvent public static void use(PlayerInteractEvent.RightClickBlock e){
         if(e.getLevel().isClientSide()||!(e.getEntity() instanceof ServerPlayer p)||p.isSpectator())return;
         if(!p.level().dimension().equals(HouseDimensions.INTERIOR))return;
-        var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null||!e.getPos().equals(origin.offset(DRAWERS)))return;
-        var s=p.level().getBlockState(e.getPos());
-        if(!s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get())||s.getValue(HouseholdFurnitureBlock.KIND)!=HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS)return;
+        var origin=HouseSavedData.get(p.server).houseOrigin();if(origin==null)return;
+        var s=p.level().getBlockState(e.getPos());if(!s.is(HouseBlocks.HOUSEHOLD_FURNITURE.get()))return;
+        var kind=s.getValue(HouseholdFurnitureBlock.KIND);
+        if(e.getPos().equals(origin.offset(STAND))&&kind==HouseholdFurnitureBlock.Kind.HALL_STAND){
+            e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
+            if(e.getHand()==InteractionHand.MAIN_HAND)stand(p,e.getPos());
+            return;
+        }
+        if(!e.getPos().equals(origin.offset(DRAWERS))||kind!=HouseholdFurnitureBlock.Kind.CHEST_OF_DRAWERS)return;
         e.setCanceled(true);e.setCancellationResult(InteractionResult.SUCCESS);
         if(e.getHand()==InteractionHand.MAIN_HAND)open(p,e.getPos());
+    }
+
+    // ------------------------------------------------------------------ the hall stand (0.4.704)
+    /** Arrows go in with a bow or a crossbow left on the stand. */
+    static boolean quivered(ItemStack kept){return kept.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem;}
+    /** A thing's name as said in a line: its own name if it has been given one, else the game's, as a word in a sentence. */
+    public static String name(ItemStack s){
+        var n=s.getHoverName().getString();return s.has(DataComponents.CUSTOM_NAME)?n:n.toLowerCase(Locale.ROOT);
+    }
+    /**
+     * A hand on the hall stand. Holding something: one of it goes on the stand (what was there comes back first); arrows go in with a
+     * bow or crossbow already there. Empty-handed: what is on it comes back. The reader's own things are loose while they hold them in
+     * the manor and struck off it while they stand on the stand, so the drawer and the stand never count one thing twice.
+     */
+    public static void stand(ServerPlayer p,BlockPos at){
+        var data=get(p.server);var keep=data.keep(p.getUUID());var held=p.getMainHandItem();
+        if(!held.isEmpty()&&held.is(ItemTags.ARROWS)&&quivered(keep.kept)){
+            var arrows=held.copy();held.setCount(0);
+            if(!keep.quiver.isEmpty())giveBack(p,keep,keep.quiver);
+            keep.quiver=arrows;if(!allowed(arrows))take(keep.loose,arrows,arrows.getCount());
+            say(p,String.format(STAND_ARROWS,name(keep.kept)));
+        }else if(held.isEmpty()){
+            if(keep.kept.isEmpty()){say(p,STAND_EMPTY);return;}
+            var back=keep.kept;keep.kept=ItemStack.EMPTY;
+            say(p,String.format(STAND_TAKEN,name(back)));
+            giveBack(p,keep,back);
+            if(!keep.quiver.isEmpty()){var q=keep.quiver;keep.quiver=ItemStack.EMPTY;giveBack(p,keep,q);}
+        }else{
+            var one=held.split(1);if(!allowed(one))take(keep.loose,one,1);
+            var old=keep.kept;var oldQuiver=keep.quiver;keep.kept=one;keep.quiver=ItemStack.EMPTY;
+            if(old.isEmpty())say(p,String.format(STAND_LEFT,name(one)));
+            else{say(p,String.format(STAND_SWAPPED,name(old),name(one)));giveBack(p,keep,old);}
+            if(!oldQuiver.isEmpty())giveBack(p,keep,oldQuiver);
+        }
+        data.setDirty();p.inventoryMenu.broadcastChanges();
+        p.serverLevel().playSound(null,at,SoundEvents.CHISELED_BOOKSHELF_INSERT,SoundSource.BLOCKS,.5F,1.2F);
+        HallStandDisplay.show(p);
+    }
+    /** Back into the reader's hand if it is empty, else their pockets, else at their feet; their own again, loose in the manor. */
+    static void giveBack(ServerPlayer p,Keep keep,ItemStack s){
+        if(s.isEmpty())return;
+        if(!allowed(s))add(keep.loose,s.copy());
+        if(p.getMainHandItem().isEmpty())p.setItemInHand(InteractionHand.MAIN_HAND,s);
+        else if(!p.getInventory().add(s))p.drop(s,false);
+    }
+    /**
+     * At the cell door (0.4.704, FinaleController.start): the thing on the hall stand, and its arrows, come to the reader's hand. It
+     * is made theirs to wound with whatever it is (WeaponHistory.keepsake), so it is the one the Minotaur answers to. Empty if
+     * nothing was left on the stand.
+     */
+    public static ItemStack handOver(ServerPlayer p){
+        var data=get(p.server);var keep=data.keep(p.getUUID());if(keep.kept.isEmpty())return ItemStack.EMPTY;
+        var thing=keep.kept;var quiver=keep.quiver;keep.kept=ItemStack.EMPTY;keep.quiver=ItemStack.EMPTY;data.setDirty();
+        io.github.knaitoe.theoldesthouse.labyrinth.WeaponHistory.keepsake(p,thing);
+        var given=thing.copy();
+        if(p.getMainHandItem().isEmpty())p.setItemInHand(InteractionHand.MAIN_HAND,thing);
+        else if(!p.getInventory().add(thing)){var held=p.getMainHandItem();p.setItemInHand(InteractionHand.MAIN_HAND,thing);if(!p.getInventory().add(held))p.drop(held,false);}
+        if(!quiver.isEmpty()&&!p.getInventory().add(quiver))p.drop(quiver,false);
+        p.inventoryMenu.broadcastChanges();say(p,String.format(HANDED,name(given)));
+        HallStandDisplay.show(p);
+        return given;
     }
     /** Opens the reader's own drawer: only their things, and only theirs to take. */
     public static void open(ServerPlayer p,BlockPos at){
@@ -337,6 +432,7 @@ public final class HouseKeeping extends SavedData {
         var all=new CompoundTag();
         for(var en:keeps.entrySet()){var k=en.getValue();var t=new CompoundTag();
             t.put("Drawer",write(k.drawer,r));t.put("Loose",write(k.loose,r));t.put("Carried",write(k.carried,r));if(k.where!=null)t.putString("Where",k.where.name());
+            if(!k.kept.isEmpty())t.put("Kept",k.kept.save(r));if(!k.quiver.isEmpty())t.put("Quiver",k.quiver.save(r));
             var homes=new ListTag();for(var h:k.homes){if(h.count<=0)continue;var e=new CompoundTag();e.put("Item",h.like.save(r));e.putInt("Slot",h.slot);e.putInt("Count",h.count);homes.add(e);}t.put("Homes",homes);
             all.put(en.getKey().toString(),t);}
         tag.put("Readers",all);return tag;
@@ -347,6 +443,7 @@ public final class HouseKeeping extends SavedData {
             var t=all.getCompound(key);var k=data.keep(id);
             read(t.getList("Drawer",Tag.TAG_COMPOUND),k.drawer,r);read(t.getList("Loose",Tag.TAG_COMPOUND),k.loose,r);read(t.getList("Carried",Tag.TAG_COMPOUND),k.carried,r);
             if(t.contains("Where"))try{k.where=Where.valueOf(t.getString("Where"));}catch(IllegalArgumentException ex){k.where=null;}
+            k.kept=ItemStack.parseOptional(r,t.getCompound("Kept"));k.quiver=ItemStack.parseOptional(r,t.getCompound("Quiver"));
             var homes=t.getList("Homes",Tag.TAG_COMPOUND);for(int i=0;i<homes.size();i++){var e=homes.getCompound(i);var like=ItemStack.parseOptional(r,e.getCompound("Item"));if(!like.isEmpty()&&e.getInt("Count")>0)k.homes.add(new Home(like,e.getInt("Slot"),e.getInt("Count")));}}
         return data;
     }
