@@ -436,12 +436,13 @@ public final class FallowTests {
     /**
      * 0.4.693 (run 1718): Otis, spoken to as he comes to the coffee machine, finishes answering the reader before he goes on to pour. While
      * he is turned to them or his answer is still up, his head never swings away from them in a single tick (to the machine, the counter or
-     * his place); he still gets his coffee and comes to the counter afterwards.
+     * his place); he still gets his coffee and comes to the counter afterwards. Run 1735: a second reader speaks to him while
+     * his answer is up, is given the same line again and goes off across the store; he goes back to the first, not to his coffee.
      */
     @GameTest(template="empty",batch="fallow_answer",timeoutTicks=3000)
     public static void aCustomerFinishesAnsweringFirst(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);Fallow.forget(b);
-        var p=f.player("fallow_answer",P);
+        var p=f.player("fallow_answer",P);var q=f.player("fallow_answer_other",P);
         int[] jumps={0};float[] last={Float.NaN};String[] seen={""};
         h.onEachTick(()->{
             var otis=Fallow.find(l,b,Fallow.DRIVER);
@@ -451,7 +452,7 @@ public final class FallowTests {
                 jumps[0]++;seen[0]="head "+head+" from "+last[0]+", the reader at "+toward;}
             last[0]=head;
         });
-        h.startSequence().thenIdle(5).thenExecute(()->f.at(p,P,3.5,0,-9.5))
+        h.startSequence().thenIdle(5).thenExecute(()->{f.at(p,P,3.5,0,-9.5);f.at(q,P,3.5,0,-8.5);})
         // Run 1722: the skip was dropped when the afternoon had not begun yet, and with Faye unserved she went first; Otis was still at
         // his truck when the case timed out. The skip waits for the afternoon and for Otis at his rig: skipped before the cast is placed,
         // he is sent for his coffee before he is there to go.
@@ -461,6 +462,14 @@ public final class FallowTests {
             h.assertTrue(otis!=null&&otis.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(new Vec3(6.5,0,-10.5))<2.5,"Otis nearly at the machine: "+(otis==null?"none":otis.position().subtract(Vec3.atLowerCornerOf(b))));})
         .thenExecute(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);p.interactOn(otis,InteractionHand.MAIN_HAND);
             h.assertTrue(said(otis).startsWith("Hauling seed corn north."),"he answers: "+said(otis));})
+        .thenIdle(4)
+        .thenExecute(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);q.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,otis.getEyePosition());
+            q.interactOn(otis,InteractionHand.MAIN_HAND);
+            h.assertTrue(q.getUUID().equals(otis.addressee()),"the other reader speaks to him too, and he turns to them: "+otis.addressing());})
+        .thenIdle(2).thenExecute(()->f.at(q,P,3.5,0,12.5))
+        .thenIdle(3)
+        .thenExecute(()->{var otis=Fallow.find(l,b,Fallow.DRIVER);
+            h.assertTrue(p.getUUID().equals(otis.addressee()),"that reader gone off, he is turned to the first again: "+otis.addressing());})
         .thenWaitUntil(()->h.assertTrue(Fallow.customer(b)==Fallow.DRIVER,"then gets his coffee and comes to the counter: "+Fallow.customer(b)))
         .thenExecute(()->h.assertTrue(jumps[0]==0,"while he answered, his head never swung away from the reader: "+seen[0]))
         .thenSucceed();
