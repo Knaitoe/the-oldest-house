@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.house.HouseDimensions;
 import io.github.knaitoe.theoldesthouse.house.HouseSavedData;
+import io.github.knaitoe.theoldesthouse.house.Neighbours;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.network.SphinxDreamPayload;
 import io.github.knaitoe.theoldesthouse.network.SphinxVoicePayload;
@@ -172,14 +173,14 @@ public final class SphinxDream {
         return true;
     }
     static final String FRAME_TAG="the_oldest_house_sphinx_survey";
-    /** A free floor cell beside the bed, nearest the reader. */
+    /** A free floor cell beside the bed, nearest the reader, and off any district's land. */
     static @Nullable BlockPos beside(ServerLevel l,BlockPos head,BlockPos near){
         var state=l.getBlockState(head);var foot=state.getBlock() instanceof BedBlock?head.relative(state.getValue(BedBlock.FACING).getOpposite()):head;
         BlockPos best=null;double d=Double.MAX_VALUE;
         for(var part:List.of(head,foot))for(var side:Direction.Plane.HORIZONTAL){
             var at=part.relative(side);if(at.equals(head)||at.equals(foot))continue;
             if(!l.getBlockState(at).canBeReplaced()||!l.getBlockState(at).getFluidState().isEmpty())continue;
-            if(!l.getBlockState(at.below()).isFaceSturdy(l,at.below(),Direction.UP))continue;
+            if(!l.getBlockState(at.below()).isFaceSturdy(l,at.below(),Direction.UP)||Neighbours.districtLand(l,at))continue;
             if(!l.getEntitiesOfClass(ItemFrame.class,new net.minecraft.world.phys.AABB(at)).isEmpty())continue;
             double dd=at.distSqr(near);if(dd<d){d=dd;best=at;}
         }
@@ -499,17 +500,22 @@ public final class SphinxDream {
     }
     /**
      * Their front door near the bed they set the survey beside (the door they use most there, or the nearest), and the sill the stone
-     * sits on; by the bed if there is none.
+     * sits on; by the bed if there is none. A door on a neighbour's district land, or one whose sill is on it, is not theirs: the stone
+     * is set down for the reader as the letter is, and never there.
      */
     static void sill(ServerLevel ow,ServerPlayer p,CompoundTag r){
         var bed=BlockPos.of(r.getLong("Bed"));BlockPos door=null;
         var front=io.github.knaitoe.theoldesthouse.opening.Doorsteps.mostUsedDoor(ow,io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p),bed,io.github.knaitoe.theoldesthouse.opening.OpeningConfig.DOORSTEP_SEARCH_RADIUS.getAsInt());
-        if(front!=null&&ow.getBlockState(front).getBlock() instanceof DoorBlock)door=lower(ow,front);
-        if(door==null){double best=Double.MAX_VALUE;for(var at:BlockPos.betweenClosed(bed.offset(-14,-4,-14),bed.offset(14,4,14))){var s=ow.getBlockState(at);if(s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.HALF)==DoubleBlockHalf.LOWER&&!s.is(Blocks.IRON_DOOR)){double d=at.distSqr(bed)-(outdoorSide(ow,at)?400:0);if(d<best){best=d;door=at.immutable();}}}}
+        if(front!=null&&ow.getBlockState(front).getBlock() instanceof DoorBlock&&!Neighbours.districtLand(ow,sillOf(ow,lower(ow,front),bed)))door=lower(ow,front);
+        if(door==null){double best=Double.MAX_VALUE;for(var at:BlockPos.betweenClosed(bed.offset(-14,-4,-14),bed.offset(14,4,14))){var s=ow.getBlockState(at);if(s.getBlock() instanceof DoorBlock&&s.getValue(DoorBlock.HALF)==DoubleBlockHalf.LOWER&&!s.is(Blocks.IRON_DOOR)&&!Neighbours.districtLand(ow,at)&&!Neighbours.districtLand(ow,sillOf(ow,at,bed))){double d=at.distSqr(bed)-(outdoorSide(ow,at)?400:0);if(d<best){best=d;door=at.immutable();}}}}
         BlockPos sill;
-        if(door!=null){var f=ow.getBlockState(door).getValue(DoorBlock.FACING);var a=door.relative(f);var c=door.relative(f.getOpposite());sill=a.distSqr(bed)<c.distSqr(bed)?a:c;r.putLong("Door",door.asLong());}
+        if(door!=null){sill=sillOf(ow,door,bed);r.putLong("Door",door.asLong());}
         else{sill=beside(ow,bed,bed);if(sill==null)sill=bed.above();r.remove("Door");}
         r.putLong("Sill",sill.asLong());if(ready(ow,sill))placeStone(ow,p,r);
+    }
+    /** The side of a door nearer the bed: the sill inside it, where the stone sits. */
+    static BlockPos sillOf(ServerLevel ow,BlockPos door,BlockPos bed){
+        var f=ow.getBlockState(door).getValue(DoorBlock.FACING);var a=door.relative(f);var c=door.relative(f.getOpposite());return a.distSqr(bed)<c.distSqr(bed)?a:c;
     }
     /**
      * Whether the stone can be looked for and laid at {@code at}: its chunk and the chunk's entities both loaded. Entities load after the
