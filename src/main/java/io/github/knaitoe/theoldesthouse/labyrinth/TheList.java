@@ -78,6 +78,8 @@ public final class TheList {
         if(TheListBlock.is(st,TheListBlock.Kind.PUMPJACK)&&st.getValue(TheListBlock.STAGE)==7&&TheListJack.hand(p,b,rel))return true;
         // 0.4.717: a straight cell of the stock tank's wall, under the slasher's hand with hold of one of the five, is theirs.
         if(TheListBlock.is(st,TheListBlock.Kind.STOCK)&&TheListTank.hand(p,b,rel))return true;
+        // 0.4.718: the gin's switch for anyone; an auger, under the slasher's hand with hold of one of the five on the fourth night, is theirs.
+        if(TheListBlock.is(st,TheListBlock.Kind.GIN)&&TheListGin.hand(p,b,rel))return true;
         // The wire gap opens and shuts by hand, all three of its cells together, for everyone.
         if(TheListBlock.is(st,TheListBlock.Kind.PASTURE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
             boolean open=st.getValue(TheListBlock.STAGE)==2;

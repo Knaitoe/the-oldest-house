@@ -255,6 +255,25 @@ public final class TheListTexts {
     public static final String[] FOUND_TANK_BODY=FOUND_BODY.clone();
     static{FOUND_TANK_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the tank.";}
     public static final String FOUND_TANK="%s hangs over the rim of the stock tank, the head under the water.";
+
+    /** 0.4.718, the gin's auger: what each of them shouts as the screw takes the legs; what the slasher is told; a hand on one in it;
+     * the screw jammed on them; the switch; the gin before the fourth night. */
+    public static final String[] AUGER=new String[TheListPeople.CAST];
+    static{
+        AUGER[TheListPeople.DEEK]="My leg! It's got my leg!";AUGER[TheListPeople.WES]="Turn it off! Somebody turn it off!";
+        AUGER[TheListPeople.MEL]="The switch! By the big door, the switch!";AUGER[TheListPeople.LESLEY]="Pull me out! Grab my arms and pull!";
+        AUGER[TheListPeople.SHANNON]="Jenna! Jenna, I'm in the gin!";
+    }
+    public static final String INTO_AUGER="You force %s down into the auger's trough, feet first, and let go. The screw has them.",
+        AUGER_STILL="The screw jams on what it has taken and the gin stops. %s goes still.",
+        GIN_NOT_TONIGHT="The augers aren't turning tonight. The screw won't take anyone.";
+    public static final String AUGER_HELD="%s is down in the auger's trough, the screw turning on the legs.",
+        AUGER_STILL_BODY="%s is down in the trough to the waist. The screw doesn't turn.";
+    public static final String GIN_OFF="You throw the switch. The augers run down and stop.",GIN_ON="You throw the switch. The gin shudders and the augers turn.",
+        GIN_JAMMED="You throw the switch. Nothing turns; the screw is jammed.",GIN_DARK="The switch clicks. Nothing in the gin moves tonight.";
+    public static final String[] FOUND_AUGER_BODY=FOUND_BODY.clone();
+    static{FOUND_AUGER_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the gin.";}
+    public static final String FOUND_AUGER="%s is down in the auger's trough to the waist.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};

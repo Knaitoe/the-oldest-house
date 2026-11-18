@@ -1026,9 +1026,9 @@ public final class TheListSite {
         int mid=GIN_W+10;
         set(l,b,mid,0,GIN_S-2,fit(Kind.GIN,Direction.SOUTH,0));set(l,b,mid,1,GIN_S-2,fit(Kind.GIN,Direction.SOUTH,1));
         set(l,b,mid+1,0,GIN_S-2,fit(Kind.GIN,Direction.SOUTH,0));set(l,b,mid+1,1,GIN_S-2,fit(Kind.GIN,Direction.SOUTH,1));
-        for(int z=GIN_S-4;z>=GIN_S-8;z--)set(l,b,mid,0,z,fit(Kind.GIN,Direction.NORTH,6));
+        for(int z=GIN_S-4;z>=GIN_S-8;z--)set(l,b,mid,0,z,fit(Kind.GIN,Direction.EAST,6));
         for(int z=GIN_S-10;z>=GIN_N+12;z-=4){set(l,b,mid-3,0,z,fit(Kind.GIN,Direction.EAST,2));set(l,b,mid+3,0,z,fit(Kind.GIN,Direction.WEST,2));set(l,b,mid-3,1,z,fit(Kind.GIN,Direction.EAST,2));set(l,b,mid+3,1,z,fit(Kind.GIN,Direction.WEST,2));}
-        for(int z=GIN_S-9;z>=GIN_N+8;z--)set(l,b,mid,0,z,fit(Kind.GIN,Direction.NORTH,6));
+        for(int z=GIN_S-9;z>=GIN_N+8;z--)set(l,b,mid,0,z,fit(Kind.GIN,Direction.EAST,6));
         set(l,b,mid,0,GIN_N+6,fit(Kind.GIN,Direction.NORTH,3));set(l,b,mid,1,GIN_N+6,fit(Kind.GIN,Direction.NORTH,3));
         set(l,b,GIN_W+4,0,GIN_N+3,fit(Kind.GIN,Direction.NORTH,4));set(l,b,GIN_W+4,1,GIN_N+3,fit(Kind.GIN,Direction.NORTH,5));
         // The suction pipe up through the roof and across over the yard.
