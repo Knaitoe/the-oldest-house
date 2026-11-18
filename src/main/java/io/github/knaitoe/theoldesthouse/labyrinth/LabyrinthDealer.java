@@ -201,6 +201,7 @@ public final class LabyrinthDealer {
     public static List<LabyrinthPlace> grayAvailable(LabyrinthData data, UUID player) {
         int tier = mazeTier(data, player);
         List<LabyrinthPlace> gray = new ArrayList<>();
+        gray.addAll(HallwayVariants.PLACES);
         gray.add(LabyrinthPlace.JUNCTION);
         gray.add(LabyrinthPlace.GRAY_CORRIDOR);
         gray.add(LabyrinthPlace.STRAIGHT_HALL);
@@ -616,6 +617,7 @@ public final class LabyrinthDealer {
     }
 
     public static int grayWeight(LabyrinthPlace place, int depth) {
+        if(HallwayVariants.is(place))return HallwayVariants.weight(place,depth);
         if(HazardVariety.sibling(place))return grayWeight(HazardVariety.original(place),depth);
         return switch (place) {
             case FOLDED_MAZE -> 5 + Math.min(6, Math.max(0, depth - LabyrinthPacing.STRANGE_DEPTH));

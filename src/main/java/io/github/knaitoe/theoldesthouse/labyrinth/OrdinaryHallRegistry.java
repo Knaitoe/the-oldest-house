@@ -44,6 +44,8 @@ public final class OrdinaryHallRegistry {
         fixed(Blocks.WHITE_WOOL).noCollission().noOcclusion().sound(SoundType.WOOL).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<OrdinaryHallBlock>> FITTING_TYPE=CODECS.register("hall_fitting",()->OrdinaryHallBlock.CODEC);
     public static final DeferredBlock<OrdinaryHallBlock> FITTING=BLOCKS.registerBlock("hall_fitting",OrdinaryHallBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion());
+    public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HallwayFittingBlock>> PASSAGE_TYPE=CODECS.register("hallway_fitting",()->HallwayFittingBlock.CODEC);
+    public static final DeferredBlock<HallwayFittingBlock> PASSAGE=BLOCKS.registerBlock("hallway_fitting",HallwayFittingBlock::new,fixed(Blocks.STONE).noOcclusion());
     public static final DeferredHolder<MapCodec<? extends Block>,MapCodec<HallFaceBlock>> FACE_TYPE=CODECS.register("hall_face",()->HallFaceBlock.CODEC);
     /** 0.4.391: painted doors, and 0.4.391 shelves of books, that say what they are when tried (HallFaceBlock). */
     public static final DeferredBlock<HallFaceBlock> FACE=BLOCKS.registerBlock("hall_face",HallFaceBlock::new,fixed(Blocks.SPRUCE_PLANKS));

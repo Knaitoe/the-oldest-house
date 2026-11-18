@@ -21,6 +21,7 @@ public final class LabyrinthPacing {
     private LabyrinthPacing() {}
     public static boolean domestic(int depth) { return depth < STORY_DEPTH; }
     public static boolean ordinary(LabyrinthPlace place) {
+        if(HallwayVariants.is(place))return !HallwayVariants.hazard(place);
         return place==LabyrinthPlace.JUNCTION || place==LabyrinthPlace.GRAY_CORRIDOR
                 || place==LabyrinthPlace.STRAIGHT_HALL || place==LabyrinthPlace.BENT_HALL
                 || place==LabyrinthPlace.CROSS_HALL || place==LabyrinthPlace.ALCOVE_HALL
@@ -39,7 +40,7 @@ public final class LabyrinthPacing {
      * lead to trials, and to its story, if one is dealt there. Nothing changes before. A reader can always go back.
      */
     public static final int TRIAL_ONLY_DEPTH=20,TRIAL_ONLY_IN=4;
-    public static boolean physicalTrial(LabyrinthPlace place){if(HazardVariety.newKind(place)||place==LabyrinthPlace.YARD_FLOOD||place==LabyrinthPlace.YARD_WINDBREAK||place==LabyrinthPlace.YARD_DITCH_FLOOD||place==LabyrinthPlace.YARD_STORM_FIELD)return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
+    public static boolean physicalTrial(LabyrinthPlace place){if(HallwayVariants.hazard(place)||HazardVariety.newKind(place)||place==LabyrinthPlace.YARD_FLOOD||place==LabyrinthPlace.YARD_WINDBREAK||place==LabyrinthPlace.YARD_DITCH_FLOOD||place==LabyrinthPlace.YARD_STORM_FIELD)return true;place=HazardVariety.original(place);return place==LabyrinthPlace.FLOODED_PASSAGE||place==LabyrinthPlace.FRACTURED_WALKWAY||place==LabyrinthPlace.LIGHT_SINK;}
     public static int trialChance(LabyrinthData data,UUID player){
         int depth=data.returnDepth(player);if(domestic(depth))return 0;
         for(var place:LabyrinthPlace.values()){int age=data.recentVisit(player,place);if(physicalTrial(place)&&age>=0&&age<HouseConfig.setting(HouseConfig.HAZARD_SPACING))return 0;}

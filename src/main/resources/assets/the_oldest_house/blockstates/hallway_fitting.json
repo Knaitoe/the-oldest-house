@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "kind=plaster,stage=0": {
+      "model": "the_oldest_house:block/hallway_variants/plaster_0"
+    },
+    "kind=plaster,stage=1": {
+      "model": "the_oldest_house:block/hallway_variants/plaster_1"
+    },
+    "kind=plaster,stage=2": {
+      "model": "the_oldest_house:block/hallway_variants/plaster_2"
+    },
+    "kind=rubble,stage=0": {
+      "model": "the_oldest_house:block/hallway_variants/rubble_0"
+    },
+    "kind=rubble,stage=1": {
+      "model": "the_oldest_house:block/hallway_variants/rubble_1"
+    },
+    "kind=rubble,stage=2": {
+      "model": "the_oldest_house:block/hallway_variants/rubble_2"
+    },
+    "kind=seam,stage=0": {
+      "model": "the_oldest_house:block/hallway_variants/seam_0"
+    },
+    "kind=seam,stage=1": {
+      "model": "the_oldest_house:block/hallway_variants/seam_1"
+    },
+    "kind=seam,stage=2": {
+      "model": "the_oldest_house:block/hallway_variants/seam_2"
+    },
+    "kind=deep_step,stage=0": {
+      "model": "the_oldest_house:block/hallway_variants/deep_step_0"
+    },
+    "kind=deep_step,stage=1": {
+      "model": "the_oldest_house:block/hallway_variants/deep_step_1"
+    },
+    "kind=deep_step,stage=2": {
+      "model": "the_oldest_house:block/hallway_variants/deep_step_2"
+    },
+    "kind=cable,stage=0": {
+      "model": "the_oldest_house:block/hallway_variants/cable_0"
+    },
+    "kind=cable,stage=1": {
+      "model": "the_oldest_house:block/hallway_variants/cable_1"
+    },
+    "kind=cable,stage=2": {
+      "model": "the_oldest_house:block/hallway_variants/cable_2"
+    }
+  }
+}

@@ -32,7 +32,9 @@ public final class TrialMarks {
         Map.entry("still_light","the room that lit for stillness"),Map.entry("soft_floor","the floor that would not hold a pause"),
         Map.entry("rising_stair","the stair the water came up"),
         Map.entry("many_lengths","the hall that would not be hurried"),
-        Map.entry("following_door","the door that would not be looked at"));
+        Map.entry("following_door","the door that would not be looked at"),
+        Map.entry("falling_plaster","the passage whose ceiling fell"),Map.entry("steam_walk","the walk between the steam pipes"),
+        Map.entry("downed_line","the lane beneath the fallen wire"),Map.entry("opening_seams","the floor that opened in seams"));
 
     /** The kind of trial a place is, if it is one: a sibling counts as the room it varies. */
     public static @Nullable LabyrinthPlace kind(@Nullable LabyrinthPlace place){
