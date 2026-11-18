@@ -52,10 +52,23 @@ public final class TheListGin{
     /** Where blood off the screw lands: on the floor beside the trough, on the side toward the feeder's door. */
     public static Vec3 beside(BlockPos b,BlockPos cell){return Vec3.atBottomCenterOf(b.offset(cell)).add(1,0,0);}
 
-    /** A hand or a blow on the gin: the switch for anyone; an auger cell, the hunt's first. False for a look. */
+    /** 0.4.719: the bale press, its lower half the chamber (taken away while someone is in it, put back after); how long the ram takes
+     * to come down. */
+    public static final BlockPos PRESS=new BlockPos(TheListSite.GIN_W+4,0,TheListSite.GIN_N+3);
+    public static final int RAM=80;
+    public static boolean press(BlockPos rel){return rel.getX()==PRESS.getX()&&rel.getZ()==PRESS.getZ()&&(rel.getY()==0||rel.getY()==1);}
+    /** Where one in the chamber stands, and the floor in front of it, toward the press door. */
+    public static Vec3 chamber(BlockPos b){return Vec3.atBottomCenterOf(b.offset(PRESS));}
+    public static Vec3 front(BlockPos b){return Vec3.atBottomCenterOf(b.offset(PRESS.north()));}
+    /** The chamber opened for one shoved in, and shut again: the press's lower half as it was built. */
+    static void open(ServerLevel l,BlockPos b){var at=b.offset(PRESS);if(l.isLoaded(at))l.setBlock(at,net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),3);}
+    public static void shut(ServerLevel l,BlockPos b){var at=b.offset(PRESS);if(l.isLoaded(at))l.setBlock(at,TheListBlock.of(TheListBlock.Kind.GIN,net.minecraft.core.Direction.NORTH,4),3);}
+
+    /** A hand or a blow on the gin: the switch for anyone; an auger cell or the press, the hunt's first. False for a look. */
     public static boolean hand(ServerPlayer p,BlockPos b,BlockPos rel){
         if(p.isSpectator())return false;
         if(feeder(rel)){toggle(p.serverLevel(),b,p);return true;}
+        if(press(rel))return TheListHunt.press(p,b);
         return auger(rel)&&TheListHunt.auger(p,b,rel);
     }
     /** The switch thrown: off, the augers run down and stop; on, they turn again. Before the fourth night, or jammed, nothing moves. */

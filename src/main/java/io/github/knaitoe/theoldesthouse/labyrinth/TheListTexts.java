@@ -274,6 +274,23 @@ public final class TheListTexts {
     public static final String[] FOUND_AUGER_BODY=FOUND_BODY.clone();
     static{FOUND_AUGER_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the gin.";}
     public static final String FOUND_AUGER="%s is down in the auger's trough to the waist.";
+
+    /** 0.4.719, the gin's press: what each of them shouts in its chamber; what the slasher is told; the release; one crushed there. */
+    public static final String[] PRESS=new String[TheListPeople.CAST];
+    static{
+        PRESS[TheListPeople.DEEK]="Get me out of here! Get me out!";PRESS[TheListPeople.WES]="It's coming down! It's coming down on me!";
+        PRESS[TheListPeople.MEL]="There's a release on the side! Somebody pull it!";PRESS[TheListPeople.LESLEY]="I can't stand up in here! I can't stand up!";
+        PRESS[TheListPeople.SHANNON]="Jenna! Jenna, I'm in the press!";
+    }
+    public static final String INTO_PRESS="You shove %s into the press's chamber and drop the latch. The ram starts down.",
+        PRESS_HELD="%s is in the press's chamber, the ram coming down.",
+        PRESS_STILL="The ram comes all the way down. %s goes still.",
+        PRESS_NOT_TONIGHT="The press is shut down tonight. Its chamber won't open.";
+    public static final String PRESS_RELEASE="You haul the release. The ram stops and goes back up, and %s comes out of the chamber.",
+        PRESS_STILL_BODY="%s is folded in the press's chamber under the ram.";
+    public static final String[] FOUND_PRESS_BODY=FOUND_BODY.clone();
+    static{FOUND_PRESS_BODY[TheListPeople.SHANNON]="That's %s. That's %s in the press.";}
+    public static final String FOUND_PRESS="%s is folded in the press's chamber, under the ram.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
