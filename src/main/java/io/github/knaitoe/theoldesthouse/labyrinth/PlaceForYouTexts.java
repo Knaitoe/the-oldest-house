@@ -80,8 +80,8 @@ public final class PlaceForYouTexts {
         return own.getBoolean("LightOff")?"The kitchen light goes out. Nobody is left to switch it on.":"The kitchen light is still on. One chair is empty.";
     }
 
-    static String pron(String who){return who.equals("Mara")?"she":"they";}
-    static String Pron(String who){return who.equals("Mara")?"She":"They";}
+    /** 0.4.694: Mara is she, Alex he, Kit they; Ren has no pronoun, and is named again instead. */
+    static String pron(String who){return switch(who){case "Mara"->"she";case "Alex"->"he";case "Ren"->"Ren";default->"they";};}
 
     /** The account, in the reader's own words. */
     /** 0.4.690: the back passage, as the reader saw it and did it. */
@@ -141,7 +141,7 @@ public final class PlaceForYouTexts {
         switch(own.getString("Activity")){
             case "plates"->t.append("I cleared the plates with Mara. She had heated the supper once already that evening, she said, and it was better the first time.\n\n");
             case "clasp"->t.append("I mended the clasp on Kit's bag. Kit laughed at their own way of explaining it.\n\n");
-            case "tea"->t.append("Ren and I made tea, and Ren couldn't find the cups in a kitchen they had been living in for weeks.\n\n");
+            case "tea"->t.append("Ren and I made tea. After weeks in that kitchen, Ren still couldn't find the cups.\n\n");
             case "radio"->t.append("I sat with Alex by the radio. It only played songs from before.\n\n");
             default->{}
         }
@@ -152,7 +152,7 @@ public final class PlaceForYouTexts {
             case "private"->t.append("In the bathroom I asked to be on my own, and "+helper+" shut the door. ");
             default->{}
         }
-        if(own.getBoolean("Repeated")){t.append("When I had put it away, it was laid out again, ready for the same moment.");if(!own.getString("Care").equals("private")&&!helper.isEmpty())t.append(" "+helper+" hadn't moved it. "+Pron(helper)+" saw it too.");t.append("\n\n");}
+        if(own.getBoolean("Repeated")){t.append("When I had put it away, it was laid out again, ready for the same moment.");if(!own.getString("Care").equals("private")&&!helper.isEmpty())t.append(" "+helper+" hadn't moved it, and saw it too.");t.append("\n\n");}
         if(own.getBoolean("BagSeen")){
             t.append("Kit had packed a bag and left it at the gate. Mara carried it back in.");
             if(own.getBoolean("KitPlan"))t.append(" Kit told me about a room above a workshop, and a course, and a letter that might be from any year.");
@@ -190,7 +190,10 @@ public final class PlaceForYouTexts {
         {var letter=PlaceForYouLetter.letterAccount(own);if(!letter.isEmpty())t.append(letter).append("\n\n");}
         // 0.4.693: the promise, broken.
         {var promise=PlaceForYouPromise.promiseAccount(own);if(!promise.isEmpty())t.append(promise).append("\n\n");}
-        if(own.getInt("OlderStage")>=3)t.append(PlaceForYouOlder.account(own)).append("\n\n");
+        if(own.getInt("OlderStage")>=3){t.append(PlaceForYouOlder.account(own));
+            // 0.4.694: the dog's name asked for.
+            var belief=PlaceForYouBelief.beliefAccount(own);if(!belief.isEmpty())t.append(" ").append(belief);
+            t.append("\n\n");}
         if(own.getInt("Chapter")>=PlaceForYou.DINNER){
             t.append("When we sat down again, the table was laid exactly as it had been.");
             if(own.getBoolean("SpoonTaken"))t.append(" Mara couldn't stop setting it, and I took the spoon out of her hand.");
@@ -218,6 +221,8 @@ public final class PlaceForYouTexts {
         if(outcome.equals("invited_the_past")){t.append(invited(own));return t.toString();}
         t.append("I set the hall chair against the front door, and took my picture down off the fridge.");
         if(own.getBoolean("TheoSilent"))t.append(" After that the voice past the gate said her name once more, and stopped.");
+        // 0.4.694: having said it was him.
+        t.append(PlaceForYouBelief.owedAccount(own));
         if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(own.contains("PorchBag")?" "+PlaceForYouLetter.porchAccount(own):" Kit went out through the gate with the bag.");
         switch(own.getString("MaraEnd")){
             case "sat"->t.append(" Mara asked me to sit with her before she decided. I did. She said she would stay a while, and try it, and see.");
@@ -246,7 +251,7 @@ public final class PlaceForYouTexts {
             t.append(" "+who+" sat down next to me. ");
             t.append(switch(who){
                 case "Mara"->"She rested her hand on my arm while she talked, and said she was glad it was me at the table.";
-                case "Ren"->"Ren knocked my elbow with theirs and said they'd told me she would make too much.";
+                case "Ren"->"Ren nudged my elbow and said, \"Told you she'd make too much.\"";
                 default->"Alex tipped the last of the jug into my glass before his own.";
             });
         }
@@ -256,6 +261,7 @@ public final class PlaceForYouTexts {
             t.append(" She said, \""+own.getString("OldAnswer")+"\" It was what she had said when I came in.");
         }
         if(own.getBoolean("GestureAgain")&&!who.isEmpty())t.append(" A while later "+who+" did it again, the same way, with the same words.");
+        if(own.getBoolean("DogAtTable"))t.append(" "+own.getString("OlderGuide")+" said "+PlaceForYouBelief.DOG+" would have had the scraps by now. "+PlaceForYouBelief.DOG+" was the name I had made up on the landing.");
         if(own.getBoolean("RoutineAgain"))t.append(" In the bathroom my "+routine(own.getCompound("Snap").getInt("Routine"))+" was laid out again, untouched.");
         if(own.getBoolean("KitLeft")||own.getBoolean("KitGoing"))t.append(" Nobody set a place for Kit.");
         if(!own.getString("AlexEnd").isEmpty())t.append(" Alex's chair stayed empty.");
@@ -270,9 +276,10 @@ public final class PlaceForYouTexts {
         t.append(" He came along the road and in at the gate, and straight in without knocking, and dropped his keys under the hall glass.");
         if(own.getBoolean("KitNight"))t.append(" Kit passed him at the gate. They said goodnight to each other.");
         t.append(" Mara said, \"There you are.\"");
+        if(own.getBoolean("RightSaid"))t.append(" Then she said I had been right: it was him.");
         if(own.getBoolean("AlexOut")||own.getBoolean("RenOut")){
             t.append(own.getBoolean("AlexOut")&&own.getBoolean("RenOut")?" After that Alex and Ren weren't in the house.":own.getBoolean("AlexOut")?" After that Alex wasn't in the house.":" After that Ren wasn't in the house.");
-            if(own.getBoolean("RenOut")&&own.getBoolean("AskedPeers"))t.append(" Ren had said they were staying near her.");
+            if(own.getBoolean("RenOut")&&own.getBoolean("AskedPeers"))t.append(" Ren had wanted to stay near her.");
         }
         if(own.getBoolean("MaraStranger")){
             t.append(" Mara asked me if she could help me with something.");
@@ -307,7 +314,7 @@ public final class PlaceForYouTexts {
             int seen=own.getInt("BargainMax");
             if(seen>=1)t.append(" While the door stood open, a man in a work shirt came into the gap in the household's pictures.");
             if(seen>=2)t.append(" My chair went from the table.");
-            if(own.getBoolean("Forgot")){String who=own.getString("Forgetter");t.append(" "+who+" asked if we had met, and then said "+pron(who)+" knew me.");}
+            if(own.getBoolean("Forgot")){String who=own.getString("Forgetter");t.append(" "+who+" asked if we had met, and then said, \"No. I know you.\"");}
             if(own.getBoolean("CostHeard"))t.append(" Ren said that if she let him in, she would have the old evening back, and nobody would remember this one.");
             if(own.getBoolean("Shut"))t.append(" I shut the door on it, and in a while the pictures and the table were as they had been.");
             switch(own.getString("AskedMara")){
@@ -317,6 +324,8 @@ public final class PlaceForYouTexts {
                 default->{}
             }
             if(own.getBoolean("AskedIsHim"))t.append(" I asked her if it was him. She said it sounded like him.");
+            // 0.4.694: and the reader said it was.
+            t.append(PlaceForYouBelief.reassureAccount(own));
             if(own.getBoolean("AskedPeers"))t.append(" Alex was going to the coast, and Ren was staying near Mara. They didn't have to want the same thing.");
         }
         return t.length()==0?"":t+"\n\n";

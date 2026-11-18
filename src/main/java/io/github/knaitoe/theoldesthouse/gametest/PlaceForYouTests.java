@@ -418,7 +418,7 @@ public final class PlaceForYouTests {
                 h.assertTrue(Talk.lines(p).contains("Alex: And that's us. At the lake, the summer we went every weekend. You had the end of the dock and wouldn't give it up."),"the claim: "+Talk.lines(p));
                 h.assertTrue(Talk.lines(p).contains("Alex: That isn't right. I met you tonight, at the table. That's the part that happened.")
                         &&Talk.lines(p).contains("Alex: I liked sitting across from you. That part happened. I don't know where she got the rest."),"what happened, and the rest: "+Talk.lines(p));
-                h.assertTrue(Talk.replies(p).size()==5,"five answers: "+Talk.replies(p));
+                h.assertTrue(Talk.replies(p).size()==6,"six answers: "+Talk.replies(p));
                 say(h,p,"What do you want tomorrow?");
                 var own=f.own(p,P);h.assertTrue(own.getInt("OlderStage")==3&&own.getString("OlderSaid").equals("tomorrow"),"answered");
                 h.assertTrue(click(f,p,PlaceForYouSite.PORTRAIT)&&PlaceForYou.holding(p)==PlaceForYouRegistry.PORTRAIT&&!PlaceForYouSite.portraitUp(l,b),"the picture taken down");
@@ -439,6 +439,118 @@ public final class PlaceForYouTests {
             .thenSucceed();
     }
     @AfterBatch(batch="place_older") public static void olderDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.694, the believed past: on the landing the reader says they remember the summer at the lake. Later Alex asks the name of the
+     * dog that swam out to them; the reader makes one up. The name is in the claims while the picture hangs; taking the picture down
+     * loses it with the rest; the account says what was asked and answered. The other two answers' sentences come from the record.
+     */
+    @GameTest(template="empty",batch="place_believe",timeoutTicks=5000)
+    public static void theBelievedPast(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_believe",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{say(h,p,"It's good to be back.");sinkReady(f,p,b,l);var own=f.own(p,P);own.putBoolean("RoomDeclined",true);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);at(f,p,-4.5,0,-18.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(PlaceForYou.actor(l,b,"alex")!=null,"Alex in the house"))
+            .thenExecute(()->{talk(f,p,"alex");say(h,p,"Show me.");at(f,p,-1.5,PlaceForYouSite.UP,-21.5,0,0);})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"older"),"the pictures shown on the landing: "+Talk.key(p)))
+            .thenExecute(()->{
+                h.assertTrue(Talk.replies(p).size()==6&&Talk.replies(p).contains("I remember. I had the end of the dock."),"six answers, one of them remembering: "+Talk.replies(p));
+                say(h,p,"I remember. I had the end of the dock.");
+                var own=f.own(p,P);h.assertTrue(own.getString("OlderSaid").equals("believe")&&own.getInt("OlderStage")==3,"remembered: "+own.getString("OlderSaid"));
+                h.assertTrue(Talk.lines(p).contains("Alex: You do?")&&Talk.lines(p).contains("Alex: Then I'd like to have it too."),"Alex takes it: "+Talk.lines(p));
+                h.assertFalse(Talk.waiting(p,"believe_detail"),"not asked at once");})
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"believe_detail"),"a while later, near Alex, the dog's name asked for: "+Talk.key(p)+" "+believeState(f,p,b,l)))
+            .thenExecute(()->{
+                h.assertTrue(Talk.lines(p).contains("Alex: There was a dog that swam out to us. What was its name?"),"the question: "+Talk.lines(p));
+                h.assertTrue(Talk.replies(p).size()==3,"three answers: "+Talk.replies(p));
+                say(h,p,"Sailor.");
+                var own=f.own(p,P);h.assertTrue(own.getString("BeliefAnswer").equals("invented")&&PlaceForYouBelief.dogKept(own),"a name made up, and kept");
+                h.assertTrue(Talk.lines(p).contains("Alex: Yes. I can see it now. I couldn't before you said it."),"Alex sees it now: "+Talk.lines(p));
+                h.assertTrue(java.util.Arrays.asList(PlaceForYouOlder.claims(own)).contains("Sailor used to swim out to the end of the dock."),"the dog among the claims");
+                h.assertTrue(click(f,p,PlaceForYouSite.PORTRAIT)&&Talk.lines(p).contains("Alex: There was a dog. You told me its name. That's gone too."),"the picture down, the dog gone with it: "+Talk.lines(p));
+                say(h,p,"Go on.");
+                own=f.own(p,P);h.assertTrue(own.getBoolean("DogLost")&&!PlaceForYouBelief.dogKept(own)&&java.util.Arrays.asList(PlaceForYouOlder.claims(own)).size()==3,"the dog not in the claims now");
+                var text=PlaceForYouTexts.afterwards(p.getGameProfile().getName(),own);
+                for(var said:java.util.List.of("I said I remembered it, and that I'd had the end of the dock.","asked me the name of the dog","I said Sailor","I couldn't before you said it.","the dog went with the rest"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                // The other two answers, from the record alone.
+                var other=own.copy();other.putString("BeliefAnswer","admitted");other.remove("DogLost");
+                h.assertTrue(PlaceForYouBelief.beliefAccount(other).contains("I said I didn't know, and that I had wanted it to be true.")&&PlaceForYouBelief.beliefAccount(other).contains("We could start from there."),"admitted: "+PlaceForYouBelief.beliefAccount(other));
+                other.putString("BeliefAnswer","retracted");
+                h.assertTrue(PlaceForYouBelief.beliefAccount(other).contains("there hadn't been a dog, or a summer")&&!PlaceForYouBelief.beliefAccount(other).contains("went with the rest"),"retracted: "+PlaceForYouBelief.beliefAccount(other));})
+            .thenSucceed();
+    }
+
+    static String believeState(LiteraryTests.Fixture f,ServerPlayer p,net.minecraft.core.BlockPos b,ServerLevel l){
+        var own=f.own(p,P);var a=PlaceForYou.actor(l,b,own.getString("OlderGuide").toLowerCase(java.util.Locale.ROOT));
+        return "chapter "+own.getInt("Chapter")+" older "+own.getInt("OlderStage")+" said "+own.getString("OlderSaid")+" since "+(l.getGameTime()-own.getLong("BelievedAt"))
+            +" waiting "+Talk.waiting(p)+(a==null?" no guide":" guide d2 "+String.format("%.2f",a.distanceToSqr(p))+" los "+a.hasLineOfSight(p)+" at "+a.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))+" reader "+p.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b)));
+    }
+    static String reassureState(LiteraryTests.Fixture f,ServerPlayer p,net.minecraft.core.BlockPos b,ServerLevel l){
+        var own=f.own(p,P);var a=PlaceForYou.actor(l,b,"mara");
+        return "stage "+own.getInt("ReassureStage")+" chapter "+own.getInt("Chapter")+" silent "+own.getBoolean("TheoSilent")+" door "+PlaceForYouSite.doorOpen(l,b)+" waiting "+Talk.waiting(p)+" "+Talk.key(p)
+            +(a==null?" no Mara":" Mara at "+a.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))+" yaw "+String.format(java.util.Locale.ROOT,"%.0f",a.getYRot())+" d2 "+String.format("%.2f",a.distanceToSqr(p))+" reader "+p.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b)));
+    }
+    @AfterBatch(batch="place_believe") public static void believeDone(ServerLevel l){close();}
+
+    /**
+     * 0.4.694, the reassurance: with somebody at the door, the reader asks Mara if it is him, then tells her it is. She asks them to
+     * stand with her; she goes to the front door and waits; with the reader beside her she opens it and calls him, and the voice by the
+     * gate answers. Ren asks whether the reader believes it or wants it to be. Later, with the house opened and the voice gone quiet, she
+     * says it back to them before she decides anything; they answer; then she decides. The account says each.
+     */
+    @GameTest(template="empty",batch="place_reassure",timeoutTicks=7000)
+    public static void theReassurance(GameTestHelper h){
+        var f=fixture(h);var p=f.player("place_reassure",P);var b=f.base(P);var l=f.level(P);
+        welcome(h,f,p)
+            .thenExecute(()->{
+                say(h,p,"Thank you. I'll stay for supper.");f.source(p,P);
+                var own=f.own(p,P);own.putInt("Chapter",PlaceForYou.OPEN);own.putString("Confront","private");own.putString("First","Ren");own.putString("Helper","Ren");
+                own.putString("Activity","tea");own.putBoolean("ActivityDone",true);own.putBoolean("Acknowledged",true);own.putBoolean("TheoTold",true);own.putString("Promise","listen");
+                LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+                at(f,p,.5,0,-14.5,180,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Knocked")&&!PlaceForYouSite.doorOpen(l,b),"somebody knocks once Kit is out"))
+            .thenExecute(()->{
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door"),"through the door");say(h,p,"Leave it shut.");
+                talk(f,p,"mara");h.assertTrue(Talk.waiting(p,"mara_knock"),"Mara, at the knock: "+Talk.key(p));
+                h.assertFalse(Talk.replies(p).contains("It's him. I'm sure."),"not before asking her: "+Talk.replies(p));
+                say(h,p,"Is it him?");
+                h.assertTrue(Talk.replies(p).contains("It's him. I'm sure."),"then it can be said: "+Talk.replies(p));
+                say(h,p,"It's him. I'm sure.");
+                h.assertTrue(Talk.lines(p).contains("Mara: Will you stand with me at the door?"),"she asks: "+Talk.lines(p));
+                say(h,p,"I'll stand with you.");
+                h.assertTrue(f.own(p,P).getInt("ReassureStage")==1&&f.own(p,P).getBoolean("Reassured"),"she goes to the door to wait");
+                at(f,p,.5,0,-14.3,0,0);})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getInt("ReassureStage")>=2&&PlaceForYouSite.doorOpen(l,b),"by the door, the reader beside her: she opens it and calls him: "+reassureState(f,p,b,l)))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"reassure"),"then Ren asks: "+Talk.key(p)))
+            .thenExecute(()->{
+                h.assertTrue(f.own(p,P).getBoolean("ReassureVoice")&&Talk.lines(p).contains("Ren: Do you believe it's him, or do you want it to be?"),"the voice answered, and the question: "+Talk.lines(p));
+                say(h,p,"I want it to be.");
+                var own=f.own(p,P);h.assertTrue(own.getInt("ReassureStage")==3&&own.getString("ReassureSaid").equals("want")&&own.getString("ReassureAsker").equals("Ren"),"answered");
+                h.assertTrue(click(f,p,PlaceForYouSite.FRONT_DOOR)&&Talk.waiting(p,"door_open"),"the open door");say(h,p,"Set the hall chair against it.");
+                at(f,p,6.5,0,-14.5,90,0);h.assertTrue(click(f,p,PlaceForYouSite.FRIDGE)&&f.own(p,P).getBoolean("PictureDown"),"the picture down");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("TheoSilent"),"the voice says her name once more, and stops"))
+            .thenWaitUntil(()->h.assertTrue(Talk.waiting(p,"reassure_owed"),"Mara says it back before she decides anything: "+Talk.key(p)+" "+f.own(p,P).getString("MaraEnd")))
+            .thenExecute(()->{
+                h.assertTrue(f.own(p,P).getString("MaraEnd").isEmpty(),"nothing decided yet");
+                h.assertTrue(Talk.lines(p).contains("Mara: I stood at that door because you said so.")&&Talk.lines(p).contains("Mara: And then you let him stop."),"what she says: "+Talk.lines(p));
+                say(h,p,"It was him.");
+                h.assertTrue(f.own(p,P).getString("ReassureAnswer").equals("him")&&Talk.lines(p).contains("Mara: Then you heard him, and shut him out anyway."),"answered for: "+Talk.lines(p));})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getString("MaraEnd").equals("gate"),"then she decides"))
+            .thenExecute(()->{talk(f,p,"alex");if(Talk.waiting(p,"alex_end"))say(h,p,"No. Good luck.");})
+            .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("Ready"),"the house opened"))
+            .thenExecute(()->{var text=account(f,p);
+                for(var said:java.util.List.of("I told Mara it was him, and that I was sure.","stand with her at the door","\"Who else would it be?\"",
+                        "I said I wanted it to be. So did she, Ren said.","then I had heard him and shut him out anyway"))
+                    h.assertTrue(text.contains(said),"the account has \""+said+"\": "+text);
+                // Taken back at once, and waited for in vain, from the record alone.
+                var own=f.own(p,P).copy();own.putBoolean("ReassureTookBack",true);
+                h.assertTrue(PlaceForYouBelief.reassureAccount(own).contains("Then I took it back."),"taken back: "+PlaceForYouBelief.reassureAccount(own));
+                own.remove("ReassureTookBack");own.putBoolean("ReassureWaited",true);own.remove("ReassureStood");
+                h.assertTrue(PlaceForYouBelief.reassureAccount(own).contains("She waited there for me, and I didn't go."),"waited for: "+PlaceForYouBelief.reassureAccount(own));})
+            .thenSucceed();
+    }
+    @AfterBatch(batch="place_reassure") public static void reassureDone(ServerLevel l){close();}
 
     /**
      * 0.4.692, the letter: the quiet agreed and then broken (the key, asked for and explained before the bag was out). Once the bag is

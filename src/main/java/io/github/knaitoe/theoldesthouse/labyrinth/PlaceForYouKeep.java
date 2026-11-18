@@ -83,6 +83,9 @@ final class PlaceForYouKeep {
                     PlaceForYou.edit(p,o->o.putInt("KeepStage",4));h.keepAt=(int)now;}
             }
             case 4->{if(since==SPEAK)PlaceForYou.above(h,PlaceForYou.actor(l,h,"Mara"),"Same time tomorrow.");
+                // 0.4.694: the dog the reader named on the landing, at the table as if it had always been part of the evening.
+                if(since>=SPEAK*2&&PlaceForYouBelief.dogKept(own)&&!own.getBoolean("DogAtTable")){String guide=own.getString("OlderGuide");var g=PlaceForYou.actor(l,h,guide);
+                    if(g!=null&&staying(own,guide)){PlaceForYou.above(h,g,PlaceForYouBelief.DOG+" would have had the scraps by now.");PlaceForYou.edit(p,o->o.putBoolean("DogAtTable",true));}}
                 if(since>=END&&!Talk.waiting(p)){PlaceForYou.edit(p,o->o.putInt("KeepStage",5));PlaceForYou.finish(p,"kept_a_place");}}
             default->{}
         }
@@ -119,8 +122,8 @@ final class PlaceForYouKeep {
     static void gesture(ServerLevel l,PlaceForYou.House h,ServerPlayer p,String who){
         cue(p,switch(who){
             case "Mara"->"Mara rests her hand on your arm while she talks.";
-            case "Ren"->"Ren knocks your elbow with theirs.";
-            default->"Alex tips the last of the jug into your glass before their own.";
+            case "Ren"->"Ren nudges your elbow.";
+            default->"Alex tips the last of the jug into your glass before his own.";
         });
         PlaceForYou.above(h,PlaceForYou.actor(l,h,who),line(who));
         l.playSound(null,p.blockPosition(),SoundEvents.WOOL_STEP,SoundSource.PLAYERS,.3F,1F);

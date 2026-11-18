@@ -22,6 +22,11 @@ public final class PlaceForYouOlder {
     /** The back room on the landing's west side, where the box is, opened once the picture has come down. */
     static final BlockPos STORE_DOOR=PlaceForYouSite.SHUT_DOORS.get(3);
     static final String[] CLAIMS={"You always had the end of the dock.","The summer at the lake. You remember.","You used to sit with your feet in the water."};
+    /** 0.4.694: the claims while the picture hangs, with the dog's name if the reader made one up and the picture hasn't come down since. */
+    public static String[] claims(CompoundTag own){
+        if(!PlaceForYouBelief.dogKept(own))return CLAIMS;
+        return new String[]{CLAIMS[0],CLAIMS[1],CLAIMS[2],PlaceForYouBelief.DOG+" used to swim out to the end of the dock."};
+    }
 
     static CompoundTag own(ServerPlayer p){return PlaceForYou.own(p);}
     static void cue(ServerPlayer p,String line){PlaceForYou.cue(p,line);}
@@ -55,7 +60,7 @@ public final class PlaceForYouOlder {
         var own=own(p);if(!live(own)||!who.equals(guide(own)))return false;int stage=own.getInt("OlderStage");
         if(stage==0&&!own.getBoolean("OlderDeclined")&&own.getInt("Chapter")==PlaceForYou.SINK){ask(p,h,who);return true;}
         if(stage==1){PlaceForYou.above(h,a,"Up here.");return true;}
-        if(stage>=3&&own.getString("Portrait").equals("hung")){PlaceForYou.above(h,a,CLAIMS[(int)(h.tick/40%CLAIMS.length)]);return true;}
+        if(stage>=3&&own.getString("Portrait").equals("hung")){var claims=claims(own);PlaceForYou.above(h,a,claims[(int)(h.tick/40%claims.length)]);return true;}
         return false;
     }
     static void ask(ServerPlayer p,PlaceForYou.House h,String who){
@@ -78,7 +83,7 @@ public final class PlaceForYouOlder {
         if(stage==1&&onLanding(r)&&!Talk.waiting(p)){own.putInt("OlderStage",2);PlaceForYou.save(p,own);tour(p,h,who,own);return;}
         // The claim, now and then, while the picture hangs and the reader is near it.
         if(stage==3&&own.getString("Portrait").equals("hung")&&h.tick%200==0&&!Talk.waiting(p)&&onLanding(r)){
-            var a=PlaceForYou.actor(l,h,who);if(a!=null&&a.distanceToSqr(p)<64)PlaceForYou.above(h,a,CLAIMS[(int)(h.tick/200%CLAIMS.length)]);
+            var a=PlaceForYou.actor(l,h,who);var claims=claims(own);if(a!=null&&a.distanceToSqr(p)<64)PlaceForYou.above(h,a,claims[(int)(h.tick/200%claims.length)]);
         }
     }
     static void tour(ServerPlayer p,PlaceForYou.House h,String who,CompoundTag own){
@@ -98,7 +103,9 @@ public final class PlaceForYouOlder {
             ,Talk.reply("I'd like to be your friend. That's all.",q->said(q,h,who,"friend","That's plenty, in here."))
             ,Talk.reply("None of that happened. She put me there.",q->said(q,h,who,"challenge","I know. I can hear her doing it while I talk. I'm sorry."))
             ,Talk.reply("I need some room from all this.",q->said(q,h,who,"space","Then take it. I'll go down first. I won't ask you up again."))
-            ,Talk.reply("What do you want tomorrow?",q->said(q,h,who,"tomorrow",who.equals("Alex")?"To wake up somewhere I didn't fall asleep.":"To walk out the front door and have it be a street.")));
+            ,Talk.reply("What do you want tomorrow?",q->said(q,h,who,"tomorrow",who.equals("Alex")?"To wake up somewhere I didn't fall asleep.":"To walk out the front door and have it be a street."))
+            // 0.4.694: the believed past.
+            ,PlaceForYouBelief.remember(h,who));
     }
     static void said(ServerPlayer p,PlaceForYou.House h,String who,String said,String answer){
         PlaceForYou.line(p,h,who,answer);h.sinkAt=(int)h.tick;
@@ -130,7 +137,7 @@ public final class PlaceForYouOlder {
     }
     /** The picture comes down: the guide loses the sentence partway through and starts another. */
     static void down(ServerPlayer p,PlaceForYou.House h,CompoundTag own){
-        var l=p.serverLevel();String who=own.getString("OlderGuide");boolean again=own.getBoolean("Faltered");
+        var l=p.serverLevel();String who=own.getString("OlderGuide");boolean again=own.getBoolean("Faltered");boolean dog=PlaceForYouBelief.dogKept(own);
         PlaceForYouSite.portrait(l,h.base,own.getCompound("Snap").getCompound("Drawing"),false);
         l.playSound(null,h.base.offset(PlaceForYouSite.PORTRAIT),SoundEvents.PAINTING_BREAK,SoundSource.BLOCKS,.5F,1.3F);
         PlaceForYou.take(p,PlaceForYouRegistry.PORTRAIT,"Your picture");
@@ -142,13 +149,16 @@ public final class PlaceForYouOlder {
             PlaceForYou.line(p,h,who,"You always had the end of the dock, with your feet in the—");
             PlaceForYou.line(p,h,who,"...");
             PlaceForYou.line(p,h,who,"I had something there. It's gone.");
+            if(dog)PlaceForYou.line(p,h,who,"There was a dog. You told me its name. That's gone too.");
             PlaceForYou.line(p,h,who,own.getString("OlderSaid").equals("space")?"I don't know where you like to sit. You can tell me or not."
                 :"I don't know where you like to sit. I'd like to find out.");
             PlaceForYou.line(p,h,who,"There's a box in the back room. The ones nobody hangs go in there.");
         }else{
             PlaceForYou.line(p,h,who,"The summer at the—");
             PlaceForYou.line(p,h,who,"No. Gone again.");
+            if(dog)PlaceForYou.line(p,h,who,"The dog as well.");
         }
+        if(dog)PlaceForYou.edit(p,o->o.putBoolean("DogLost",true));
         Talk.ask(p,Talk.act("Go on.",Talk::end));
     }
     /** Hung back on its nail: the claim comes back as it was. */
@@ -156,7 +166,7 @@ public final class PlaceForYouOlder {
         var l=p.serverLevel();var own=own(p);String who=own.getString("OlderGuide");PlaceForYou.release(p,null);
         PlaceForYouSite.portrait(l,h.base,own.getCompound("Snap").getCompound("Drawing"),true);
         l.playSound(null,h.base.offset(PlaceForYouSite.PORTRAIT),SoundEvents.PAINTING_PLACE,SoundSource.BLOCKS,.5F,1.1F);
-        PlaceForYou.edit(p,o->{o.putInt("OlderStage",3);o.putString("Portrait","rehung");o.putInt("Rehung",o.getInt("Rehung")+1);});
+        PlaceForYou.edit(p,o->{o.putInt("OlderStage",3);o.putString("Portrait","rehung");o.putInt("Rehung",o.getInt("Rehung")+1);o.remove("DogLost");});
         cue(p,"Back on its nail.");
         var a=PlaceForYou.actor(l,h,who);PlaceForYou.above(h,a,"You always had the end of the dock, with your feet in the water.");
     }
@@ -184,6 +194,7 @@ public final class PlaceForYouOlder {
             case "challenge"->" I said none of it had happened, and that Mara had put me there.";
             case "space"->" I said I needed some room from all of it.";
             case "tomorrow"->who.equals("Alex")?" I asked what Alex wanted tomorrow. To wake up somewhere he hadn't fallen asleep.":" I asked what Ren wanted tomorrow. To walk out the front door and have it be a street.";
+            case "believe"->" I said I remembered it, and that I'd had the end of the dock.";
             default->"";});
         switch(own.getString("Portrait")){
             case "boxed"->t.append(" When I took my picture down, ").append(who).append(" lost a sentence halfway through and started a new one. I put the picture in the box in the back room, with the ones nobody hangs.");

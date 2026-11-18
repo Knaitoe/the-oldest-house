@@ -95,6 +95,8 @@ final class PlaceForYouInvite {
             }
             case 1->{
                 if(now-h.inviteAt==BEAT)PlaceForYou.above(h,theo,"Here I am. I lost track of the time.");
+                // 0.4.694: a reader who stood at the door with her and said it was him.
+                if(now-h.inviteAt>=BEAT*2&&own.getBoolean("ReassureStood")&&!own.getBoolean("RightSaid")){PlaceForYou.above(h,PlaceForYou.actor(l,h,"Mara"),"You said it was him. You were right.");PlaceForYou.edit(p,o->o.putBoolean("RightSaid",true));}
                 seat(l,h,p,theo);
                 // Mara turns to the reader, once they are near enough and she can see them.
                 var mara=PlaceForYou.actor(l,h,"Mara");
