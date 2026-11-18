@@ -1215,6 +1215,107 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.711, part 4b-1 (docs/THE_LIST_0_4_711.md): the boards. Lesley, taken from behind on the home stands by the slasher on the row
+     * above her, with a second reader under the stands. A plank out of her reach, or a plank under anyone else's hand, does nothing. A hand
+     * on the plank she sits on forces her over the row: her words, the slasher's cue, the scream heard, and the head under the next plank.
+     * Three stamps, the first two on the plank over her neck by hand and by a blow, a second too soon counting for nothing: drops on the
+     * dirt under the stands; then the crack, a spray, the neck's mark and blood on the slasher; then, by a hand on her, still, hung over
+     * the row, a pool under the head, the other reader told a scream stopped, and the kill kept. The other reader, under the stands and
+     * looking up at her head, is told she hangs there. Ended, the stains are taken up and she is back at her place, unmarked.
+     */
+    @GameTest(template="empty",batch="the_list_boards",timeoutTicks=6000)
+    public static void theBoards(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_boards",P);var peer=f.player("list_boards_peer",P);
+        hold(f,b,TheListPeople.AT[TheListPeople.LESLEY],TheListPeople.AT[TheListPeople.MEL],new BlockPos(-150,0,-54));
+        int L=TheListPeople.LESLEY;
+        var plank=new BlockPos(-153,3,-54);var above=new BlockPos(-154,3,-54);
+        List<net.minecraft.network.protocol.Packet<?>> theirs=new ArrayList<>();
+        Vec3[] head=new Vec3[1];
+        h.startSequence().thenWaitUntil(()->{
+            h.assertTrue(f.chunks.ready(),"waiting for the stands");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);
+        }).thenExecute(()->{
+            h.assertTrue(TheListBody.give(p),"the body is given");
+            TheListHunt.start(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's"))
+        .thenExecute(()->{
+            var lesley=TheListPeople.find(l,b,L);
+            h.assertTrue(TheListHunt.row(l,b,plank)==6&&TheListHunt.row(l,b,above)==-1,"her plank is the seventh row, the top row has none above it");
+            f.at(peer,P,-150.5,0,-52.5);sent(peer);cues(peer);
+            f.at(p,P,-153.5,4,-53.5);p.setShiftKeyDown(true);p.setPose(net.minecraft.world.entity.Pose.CROUCHING);p.setYRot(270);p.setYHeadRot(270);sent(p);cues(p);
+            h.assertFalse(TheListHunt.sees(lesley,p),"she does not see the slasher on the row behind her");
+            LiteraryVignettes.talk(p,lesley);
+            h.assertTrue(TheListHunt.state(b,L)==TheListHunt.State.HELD,"taken hold of: "+where(l,b,L));
+            hand(p,b,new BlockPos(-153,3,-62));
+            h.assertTrue(TheListHunt.state(b,L)==TheListHunt.State.HELD,"a plank out of her reach does nothing");
+            hand(peer,b,plank);
+            h.assertTrue(TheListHunt.state(b,L)==TheListHunt.State.HELD,"nor anyone else's hand");
+            cues(p);sent(peer);
+            hand(p,b,plank);
+            h.assertTrue(TheListHunt.state(b,L)==TheListHunt.State.BOARDS&&lesley.gesture()==TheListHunt.OVER,"forced over the row: "+where(l,b,L));
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.FORCED_OVER,"Lesley")),"the slasher is told");
+            h.assertTrue(TheListTexts.OVER[L].equals(said(lesley)),"her words: "+said(lesley));
+            h.assertTrue(TheListHunt.holding(p)&&LiteraryVignettes.retreatLocked(p),"still held, and no retreat");
+            head[0]=TheListHunt.head(b,L);var rel=head[0].subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(rel.x>-154&&rel.x<-153&&rel.y<3.875&&rel.y>3,"the head under the next plank: "+rel);
+            h.assertTrue(lesley.getBbHeight()<1&&Math.abs(lesley.getY()-b.getY()-3.5)<.05,"down on her knees on the plank: "+lesley.getBbHeight()+" at "+(lesley.getY()-b.getY()));
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.SCREAM.get()),"the other reader hears her");
+            hand(p,b,above);
+            h.assertTrue(TheListHunt.stamps(b,L)==1&&cues(p).contains(TheListTexts.STAMPS[0]),"a stamp on the plank over her neck");
+            h.assertTrue(stain(l,new Vec3(head[0].x,b.getY(),head[0].z),TheListHunt.DROPS),"blood drops onto the dirt under the stands");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.STAMP.get()),"the row rings");
+            hand(p,b,above);
+            h.assertTrue(TheListHunt.stamps(b,L)==1,"a second straight after counts for nothing");
+        }).thenIdle(TheListHunt.STAMP_GAP+1).thenExecute(()->{
+            var lesley=TheListPeople.find(l,b,L);
+            var at=b.offset(above);
+            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(p,at,Direction.UP,PlayerInteractEvent.LeftClickBlock.Action.START));
+            h.assertTrue(TheListHunt.stamps(b,L)==2&&cues(p).contains(TheListTexts.STAMPS[1]),"a blow on it is a stamp too");
+            h.assertTrue((lesley.marks()&TheListHunt.NECK)!=0,"the neck is marked");
+            h.assertTrue(TheListBody.blood(p)==1,"blood on the slasher: "+TheListBody.blood(p));
+            h.assertTrue(stain(l,new Vec3(head[0].x,b.getY(),head[0].z),TheListHunt.SPATTER),"blood sprayed onto the dirt");
+            theirs.addAll(sent(peer));
+            h.assertTrue(sound(theirs,TheListRegistry.CRACK.get()),"something gives, heard near");
+            p.setYRot(90);p.setYHeadRot(90);
+        }).thenIdle(TheListHunt.STAMP_GAP+60).thenExecute(()->{
+            var lesley=TheListPeople.find(l,b,L);
+            h.assertTrue(TheListHunt.state(b,L)==TheListHunt.State.BOARDS,"looked away from, she still cannot tear loose: "+where(l,b,L));
+            p.setYRot(270);p.setYHeadRot(270);cues(peer);
+            LiteraryVignettes.talk(p,lesley);
+            h.assertTrue(TheListHunt.stamps(b,L)==3&&cues(p).contains(String.format(TheListTexts.STAMPS[2],"Lesley")),"the third, by a hand on her");
+            h.assertTrue(TheListHunt.dead(b,L)&&lesley.gesture()==TheListHunt.HUNG,"she hangs over the row, dead");
+            h.assertTrue(Math.abs(lesley.getY()-b.getY()-3.5)<.05,"where she knelt: "+(lesley.getY()-b.getY()));
+            h.assertTrue(stain(l,new Vec3(head[0].x,b.getY(),head[0].z),TheListHunt.POOL),"a pool under the head");
+            h.assertTrue(cues(peer).stream().anyMatch(c->c.startsWith("Somewhere to the")&&c.endsWith("a scream stops short.")),"the other reader is told a scream stopped");
+            h.assertTrue((TheListBody.kills(p)&1<<L)!=0,"the slasher's record keeps her");
+            h.assertFalse(TheListHunt.holding(p)||LiteraryVignettes.retreatLocked(p),"let go of: the body walks and may leave");
+            LiteraryVignettes.talk(p,lesley);
+            h.assertTrue(cues(p).contains(String.format(TheListTexts.STILL_BODY,"Lesley")),"a hand on her after: she does not move");
+            // The other reader, under the stands, looking up at the head.
+            var to=head[0].subtract(peer.getEyePosition());
+            peer.setYRot((float)Math.toDegrees(Math.atan2(-to.x,to.z)));peer.setYHeadRot(peer.getYRot());
+            peer.setXRot((float)-Math.toDegrees(Math.atan2(to.y,Math.sqrt(to.x*to.x+to.z*to.z))));cues(peer);
+            TheListHunt.look(l,b);
+            h.assertTrue(cues(peer).contains(String.format(TheListTexts.FOUND_HUNG,"Lesley")),"the other reader finds her from under the stands");
+        }).thenExecute(()->{
+            TheListHunt.end(l,b);
+            h.assertTrue(TheListHunt.stains(l,b)==0,"ended, every stain is taken up");
+            var lesley=TheListPeople.find(l,b,L);
+            h.assertTrue(lesley.marks()==0&&lesley.gesture()==TheListHunt.STILL,"and she is back, unmarked: "+where(l,b,L));
+            TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+    /** A hand on a block where the reader stands, without moving them. */
+    private static void hand(ServerPlayer p,BlockPos b,BlockPos rel){
+        var at=b.offset(rel);
+        NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickBlock(p,InteractionHand.MAIN_HAND,at,new BlockHitResult(at.getCenter(),Direction.UP,at,false)));
+    }
     /** Whether there is blood at least this heavy within a block of a point, at its own height. */
     private static boolean stain(ServerLevel l,Vec3 at,int stage){
         var c=BlockPos.containing(at.x,at.y+.1,at.z);

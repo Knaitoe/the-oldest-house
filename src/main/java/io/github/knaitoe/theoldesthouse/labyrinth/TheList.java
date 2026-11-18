@@ -68,6 +68,8 @@ public final class TheList {
         if(TheListMachineBlock.is(st,TheListMachineBlock.Machine.WINDMILL)){cue(p,TheListTexts.WINDMILL_HEAD);return true;}
         if(TheListMachineBlock.is(st,TheListMachineBlock.Machine.PUMPJACK)){cue(p,TheListTexts.JACK_BEARING);return true;}
         if(!TheListBlock.is(st))return false;
+        // 0.4.711: a hand on a plank of the home stands, with hold of one of the five, forces them over the row; then it is a stamp.
+        if(TheListBlock.is(st,TheListBlock.Kind.STANDS)&&st.getValue(TheListBlock.STAGE)<2&&TheListHunt.boards(p,b,rel))return true;
         // The wire gap opens and shuts by hand, all three of its cells together, for everyone.
         if(TheListBlock.is(st,TheListBlock.Kind.PASTURE)&&(st.getValue(TheListBlock.STAGE)==2||st.getValue(TheListBlock.STAGE)==3)){
             boolean open=st.getValue(TheListBlock.STAGE)==2;

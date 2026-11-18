@@ -484,10 +484,14 @@ public final class TheListBody {
         l.playSound(null,at.getX()+.5,at.getY()+1,at.getZ()+.5,TheListRegistry.SPLINTER.get(),SoundSource.BLOCKS,1.6F,1F);
         l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,Blocks.STRIPPED_OAK_LOG.defaultBlockState()),at.getX()+.5,at.getY()+1,at.getZ()+.5,40,.3,.6,.3,.12);
     }
-    /** A blow with the hand (the game's attack) on a locked door strikes it as a hand on it does. */
+    /** A blow with the hand (the game's attack) on a locked door strikes it as a hand on it does; 0.4.711: on a plank of the home
+     * stands, it is the boards' (TheListHunt.boards). */
     @SubscribeEvent public static void punched(PlayerInteractEvent.LeftClickBlock e){
         if(e.getAction()!=PlayerInteractEvent.LeftClickBlock.Action.START||!(e.getEntity() instanceof ServerPlayer p))return;
-        var b=town(p);if(b!=null&&strike(p,b,e.getPos().subtract(b)))e.setCanceled(true);
+        var b=town(p);if(b==null)return;
+        var st=p.serverLevel().getBlockState(e.getPos());
+        if(TheListBlock.is(st,TheListBlock.Kind.STANDS)&&st.getValue(TheListBlock.STAGE)<2&&TheListHunt.boards(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
+        if(strike(p,b,e.getPos().subtract(b)))e.setCanceled(true);
     }
 
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){LIVE.clear();BLOWS.clear();}

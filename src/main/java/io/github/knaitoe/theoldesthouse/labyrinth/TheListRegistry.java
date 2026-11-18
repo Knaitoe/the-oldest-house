@@ -78,6 +78,8 @@ public final class TheListRegistry {
     /** 0.4.709, the catch: one of them fighting the slasher's grip, the hay hook going in and torn out, and the catch in a throat. */
     public static final DeferredHolder<SoundEvent,SoundEvent> STRUGGLE=sound("the_list.struggle"),HOOK_IN=sound("the_list.hook_in"),
         HOOK_OUT=sound("the_list.hook_out"),GASP=sound("the_list.gasp");
+    /** 0.4.711, the boards: a heel stamped down on a plank of the stands, and something giving under it. */
+    public static final DeferredHolder<SoundEvent,SoundEvent> STAMP=sound("the_list.stamp"),CRACK=sound("the_list.crack");
     private static final DeferredRegister<net.minecraft.core.particles.ParticleType<?>> PARTICLES=DeferredRegister.create(Registries.PARTICLE_TYPE,TheOldestHouse.MOD_ID);
     /** 0.4.709: blood thrown off the hay hook and dripping, drawn by the client (TheListBloodParticles). */
     public static final DeferredHolder<net.minecraft.core.particles.ParticleType<?>,net.minecraft.core.particles.SimpleParticleType> BLOOD=
