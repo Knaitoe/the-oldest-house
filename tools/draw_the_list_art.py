@@ -4407,6 +4407,146 @@ def line_model(stage):
     return model(e, t, 'line_valve', render=None)
 
 
+# ------------------------------------------------------------------------------------------------ 0.4.714: the fryer
+# The drive-in's fryer (docs/THE_LIST_0_4_714.md): a stainless cabinet with two vats of oil let into its top, a backsplash with a rod
+# along it, one basket hung up on the splash and the other hung on the rod over its vat draining, a knob and a burner door on the front.
+# The oil is cold and dull, or hot and moving, and after it has had one of the five it has gone dark.
+def fryer_side():
+    im = steel()
+    for x in range(16):
+        dot(im, x, 0, '#d6d9da'); dot(im, x, 1, '#c8cbcc'); dot(im, x, 15, '#8e9192')
+    # Louvres low on the sides where the burners breathe.
+    for y in (11, 13):
+        for x in range(4, 12):
+            dot(im, x, y, '#5a5d5e'); dot(im, x, y + 1, '#d0d3d4')
+    return im
+
+
+def fryer_front(lit):
+    im = fryer_side()
+    # The maker's plate.
+    fill(im, 3, 3, 10, 5, '#2e3032')
+    for x in (4, 6, 8):
+        dot(im, x, 3, '#9a9c9e')
+    # The thermostat knob: black, a white pointer, round on the steel; off, it points up, lit, round to the right.
+    for (x, y) in [(11, 3), (12, 3), (13, 3), (11, 4), (12, 4), (13, 4), (11, 5), (12, 5), (13, 5)]:
+        dot(im, x, y, '#141414')
+    dot(im, 12, 2, '#3a3a3a'); dot(im, 10, 4, '#3a3a3a'); dot(im, 14, 4, '#3a3a3a'); dot(im, 12, 6, '#3a3a3a')
+    if lit:
+        dot(im, 13, 4, '#f0f0ea'); dot(im, 12, 4, '#f0f0ea')
+    else:
+        dot(im, 12, 3, '#f0f0ea'); dot(im, 12, 4, '#f0f0ea')
+    # The burner door: a dark grate, the slots in it.
+    fill(im, 3, 9, 13, 15, '#1c1d1e')
+    for x in range(4, 12, 2):
+        for y in range(10, 14):
+            dot(im, x, y, '#3a3c3e')
+    for x in range(3, 13):
+        dot(im, x, 9, '#7e8182')
+    # Grease run down the front from the lip.
+    for (x, y0, y1) in ((1, 1, 6), (14, 1, 4), (6, 1, 3)):
+        for y in range(y0, y1):
+            dot(im, x, y, '#9c8a5a')
+    return im
+
+
+def fryer_top(heat, dark):
+    # Two vats let into the steel, the oil in them; a lip round each; the drains between.
+    im = steel()
+    for x in range(16):
+        dot(im, x, 0, '#d6d9da'); dot(im, x, 15, '#8e9192')
+    rnd = random.Random(9714 + heat * 10 + dark)
+    if dark:
+        base, lights, deep = ('#3a2412', ['#4e3018', '#5a1c10'], ['#22140a', '#2c0e08']) if heat < 2 else ('#4a2a14', ['#7a4a24', '#8a5a2a', '#6a2414'], ['#2a160a'])
+    else:
+        base, lights, deep = ('#8a6a2a', ['#9a7a36', '#a8894a'], ['#6e5220']) if heat < 2 else ('#c99a3a', ['#f0d27a', '#e8c66a', '#dab052'], ['#a87c2a'])
+    for x0 in (2, 9):
+        for x in range(x0, x0 + 5):
+            for y in range(2, 14):
+                dot(im, x, y, base)
+        for x in range(x0 - 1, x0 + 6):
+            dot(im, x, 1, '#6e7172'); dot(im, x, 14, '#e2e4e5')
+        for y in range(1, 15):
+            dot(im, x0 - 1, y, '#6e7172'); dot(im, x0 + 5, y, '#e2e4e5')
+        n = 14 if heat == 2 else 5
+        for _ in range(n):
+            dot(im, rnd.randrange(x0, x0 + 5), rnd.randrange(2, 14), rnd.choice(lights))
+        for _ in range(4):
+            dot(im, rnd.randrange(x0, x0 + 5), rnd.randrange(2, 14), rnd.choice(deep))
+        if heat == 2:
+            # Rings where it boils up.
+            for (cx, cy) in ((x0 + 1, 4), (x0 + 3, 9), (x0 + 2, 12)):
+                for (dx, dy) in ((0, -1), (-1, 0), (1, 0), (0, 1)):
+                    dot(im, cx + dx, cy + dy, lights[0])
+        if dark:
+            # What it kept: a scum along the lip and a few pale scraps.
+            for x in range(x0, x0 + 5):
+                if rnd.random() < .6:
+                    dot(im, x, 2, '#6a4a30')
+            for _ in range(3):
+                dot(im, rnd.randrange(x0, x0 + 5), rnd.randrange(3, 13), '#c8a888')
+    return im
+
+
+def fryer_basket():
+    # Wire mesh, drawn cut out: the wires every other pixel, the rim heavier.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    for x in range(16):
+        for y in range(16):
+            if x % 2 == 0 or y % 2 == 0:
+                dot(im, x, y, '#a4a7a8' if (x + y) % 4 else '#c4c7c8')
+    for x in range(16):
+        dot(im, x, 0, '#d0d3d4'); dot(im, x, 15, '#7e8182')
+    return im
+
+
+def fryer_handle():
+    im = new('#1e1e1e', 9715, 3)
+    for x in range(16):
+        dot(im, x, 0, '#3a3a3a')
+    return im
+
+
+def fryer_flame():
+    # The pilot and the burners seen through the grate: tongues of flame, cut out.
+    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(9716)
+    for x in range(1, 15):
+        h = 3 + rnd.randrange(4)
+        for k in range(h):
+            dot(im, x, 15 - k, '#3a5cff' if k < h - 1 else '#9ab8ff')
+        if x % 3 == 0:
+            dot(im, x, 15 - h, '#d8e4ff')
+    return im
+
+
+def fryer_faces():
+    out = {'fryer_side': fryer_side(), 'fryer_front_off': fryer_front(False), 'fryer_front_on': fryer_front(True), 'fryer_basket': fryer_basket(),
+           'fryer_handle': fryer_handle(), 'fryer_flame': fryer_flame()}
+    for heat in range(3):
+        for dark in (0, 1):
+            out[f'fryer_top_{heat}_{dark}'] = fryer_top(heat, dark)
+    return out
+
+
+def fryer_model(stage):
+    """The fryer drawn facing north: its knob and burner door to the north, the backsplash to the south."""
+    heat, dark = stage % 3, 1 if stage >= 3 else 0
+    t = {'s': 'fryer_side', 'f': 'fryer_front_on' if heat else 'fryer_front_off', 'u': f'fryer_top_{heat}_{dark}', 'b': 'fryer_basket',
+         'h': 'fryer_handle', 'l': 'fryer_flame'}
+    e = [element([0, 0, 1], [16, 15, 16], {'north': 'f', 'south': 's', 'east': 's', 'west': 's', 'up': 'u', 'down': 's'}),
+         # The backsplash, and the rod along it the baskets hang from.
+         element([0, 15, 14.5], [16, 21, 16], {'all': 's'}),
+         element([1, 18.5, 13.5], [15, 19, 14.5], {'all': 'h'}),
+         # The west basket hung up flat on the splash, out of the way; the east one on the rod, over its vat, draining.
+         element([2, 15.5, 13], [7, 19, 14.5], {'all': 'b'}),
+         element([9.5, 15.5, 8.5], [14.5, 18, 13.5], {'all': 'b'}),
+         element([11.5, 17.25, 3.5], [12.5, 17.75, 8.5], {'all': 'h'})]
+    if heat:
+        e += glow([element([3.5, 1.5, .9], [12.5, 5.5, .95], {'north': 'l'})], 10)
+    return model(e, t, 'fryer_side', render='cutout')
+
+
 def fitting_models():
     m = {}
     for s in range(4):
@@ -4445,6 +4585,8 @@ def fitting_models():
         m[f'blood_{st}'] = stain_model(st)
     for st in range(8):
         m[f'line_{st}'] = line_model(st)
+    for st in range(6):
+        m[f'fryer_{st}'] = fryer_model(st)
     return m
 
 
@@ -4509,6 +4651,7 @@ def textures():
     faces.update(pasture_faces())
     faces.update(party_faces())
     faces.update(line_faces())
+    faces.update(fryer_faces())
     for name, im in faces.items():
         out[f'block/the_list/{name}.png'] = im
     # 0.4.705: the sack on the head, in the hand, and from inside.
@@ -4529,6 +4672,8 @@ def textures():
     out['entity/the_list/neck.png'] = neck()
     # 0.4.713: where the riser went through.
     out['entity/the_list/gut.png'] = gut()
+    # 0.4.714: the face, scalded in the fryer.
+    out['entity/the_list/burn.png'] = burn()
     for i in (1, 2, 3):
         out[f'entity/the_list/spatter_{i}.png'] = spatter(i)
         out[f'entity/the_list/sack_blood_{i}.png'] = sack_blood(i)
@@ -4787,12 +4932,12 @@ def broken_door(upper):
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
          'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
-         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party', 'blood', 'line']
+         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party', 'blood', 'line', 'fryer']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
           'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
-          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4, 'line': 8}
+          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4, 'line': 8, 'fryer': 6}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_line': 'Painted Line', 'curb': 'Curb', 'sidewalk': 'Sidewalk',
@@ -5086,6 +5231,52 @@ def gut():
     gut_at(half, 145, 87, 97132, 139, 154, 76, 99, True)
     gut_at(half, 71, 55, 97133, 65, 79, 48, 63, False)
     gut_at(half, 173, 87, 97134, 166, 181, 78, 99, False)
+    return half.resize((512, 256), Image.NEAREST)
+
+
+def burn():
+    # 0.4.714, the fryer: the face held down in hot oil, over the five's own skins (512 by 256, painted two pixels to a dot). The whole
+    # face front (u 8 to 16, v 8 to 16) scalded raw, the skin come away in pale sheets and blistered, wet where it shines, the eyes
+    # cooked milky, the mouth open; darkened where the oil was hottest, at the brow and the nose; the front edges of the head's sides
+    # (u 0 to 8 and 16 to 24) and the chin's underside (u 16 to 24, v 0 to 8) caught as well. Only ever worn bent over the fryer, or
+    # running from it.
+    half = Image.new('RGBA', (256, 128), (0, 0, 0, 0))
+    rnd = random.Random(97141)
+    raw = ['#c4504a', '#d8706a', '#b03c38', '#c85a50']
+    pale, wet, dark = ['#e8b8a0', '#f0cdb6', '#dca890'], '#f6dcc8', ['#4a2418', '#6a3020', '#5a2818']
+    x0, y0 = 16, 16
+    for y in range(16):
+        for x in range(16):
+            # The top rows, under the hairline, only partly; the rest of the face all of it.
+            if y < 2 and rnd.random() < .5:
+                continue
+            r = rnd.random()
+            c = rnd.choice(raw) if r < .62 else rnd.choice(pale) if r < .86 else rnd.choice(dark)
+            if 2 <= y <= 4 and rnd.random() < .35 or 9 <= y <= 11 and 6 <= x <= 9 and rnd.random() < .5:
+                c = rnd.choice(dark)
+            dot(half, x0 + x, y0 + y, c)
+    # Blisters, a pale rim and a wet top, and shine.
+    for _ in range(9):
+        bx, by = x0 + rnd.randrange(1, 15), y0 + rnd.randrange(2, 15)
+        dot(half, bx, by, wet); dot(half, bx + 1, by, rnd.choice(pale)); dot(half, bx, by + 1, rnd.choice(pale))
+    # The eyes, cooked: milky, a darker rim.
+    for ex in (2, 10):
+        for (dx, dy) in ((0, 0), (1, 0), (2, 0), (3, 0), (0, 1), (1, 1), (2, 1), (3, 1)):
+            dot(half, x0 + ex + dx, y0 + 8 + dy, '#d8d2c4' if dy == 0 else '#b8b0a2')
+        dot(half, x0 + ex - 1, y0 + 8, '#6a3020'); dot(half, x0 + ex + 4, y0 + 8, '#6a3020')
+    # The mouth, open.
+    for x in range(5, 11):
+        dot(half, x0 + x, y0 + 12, '#2a0e0a'); dot(half, x0 + x, y0 + 13, '#3a1410' if x in (5, 10) else '#1a0806')
+    # The front edges of the sides and the underside of the chin.
+    for y in range(2, 16):
+        for k in range(3):
+            if rnd.random() < .7 - k * .2:
+                dot(half, 15 - k, y0 + y, rnd.choice(raw + pale))
+                dot(half, 32 + k, y0 + y, rnd.choice(raw + pale))
+    for x in range(32, 48):
+        for y in range(0, 16):
+            if rnd.random() < .35:
+                dot(half, x, y, rnd.choice(raw + pale))
     return half.resize((512, 256), Image.NEAREST)
 
 

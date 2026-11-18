@@ -493,6 +493,8 @@ public final class TheListBody {
         if(TheListBlock.is(st,TheListBlock.Kind.STANDS)&&st.getValue(TheListBlock.STAGE)<2&&TheListHunt.boards(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         // 0.4.713: a blow on the line is a hand on it.
         if(TheListBlock.is(st,TheListBlock.Kind.LINE)&&TheListLine.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
+        // 0.4.714: a blow on the fryer is a hand on it.
+        if(TheListBlock.is(st,TheListBlock.Kind.FRYER)&&TheListFryer.hand(p,b,e.getPos().subtract(b))){e.setCanceled(true);return;}
         if(strike(p,b,e.getPos().subtract(b)))e.setCanceled(true);
     }
 

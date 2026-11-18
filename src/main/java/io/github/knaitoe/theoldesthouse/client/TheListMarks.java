@@ -87,11 +87,13 @@ public final class TheListMarks {
     static final ResourceLocation NECK=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/neck.png");
     /** 0.4.713: through the belly and the small of the back, from the riser (TheListHunt.GUT). */
     static final ResourceLocation GUT=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/gut.png");
+    /** 0.4.714: the face, scalded in the fryer (TheListHunt.BURN). */
+    static final ResourceLocation BURN=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"textures/entity/the_list/burn.png");
     public static final class Wound extends RenderLayer<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor,LiteraryRenderers.CastModel> {
         public Wound(RenderLayerParent<io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor,LiteraryRenderers.CastModel> parent){super(parent);}
         public static boolean wounded(io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor a){
             return a.role()==io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.TheListPeople.cast(a.phase())
-                &&(a.marks()&(io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT))!=0;
+                &&(a.marks()&(io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT|io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.BURN))!=0;
         }
         @Override public void render(PoseStack pose,MultiBufferSource out,int light,io.github.knaitoe.theoldesthouse.labyrinth.LiteraryActor a,float walk,float amount,float partial,float age,float yaw,float pitch){
             if(!wounded(a)||a.isInvisible())return;
@@ -99,6 +101,7 @@ public final class TheListMarks {
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.WOUND)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(WOUND)),light,overlay,-1);
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.NECK)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(NECK)),light,overlay,-1);
             if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.GUT)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(GUT)),light,overlay,-1);
+            if((a.marks()&io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.BURN)!=0)getParentModel().renderToBuffer(pose,out.getBuffer(RenderType.entityCutoutNoCull(BURN)),light,overlay,-1);
         }
     }
     @EventBusSubscriber(modid=TheOldestHouse.MOD_ID,bus=EventBusSubscriber.Bus.MOD,value=Dist.CLIENT)

@@ -7238,5 +7238,23 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.the_list.riser"
+  },
+  "the_list.fryer": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/fryer",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.fryer"
+  },
+  "the_list.burner": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:the_list/burner",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.the_list.burner"
   }
 }

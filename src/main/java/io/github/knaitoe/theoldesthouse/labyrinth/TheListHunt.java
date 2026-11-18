@@ -51,13 +51,15 @@ public final class TheListHunt {
     private TheListHunt(){}
     /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
      * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,DEAD}
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,DEAD}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
      * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
      * through the gap under the next, and hanging there dead. */
     public static final int STILL=0,RUNNING=1,HIDING=2,SWINGING=3,COWERING=4,STRUGGLING=5,RECOIL=6,KNEELING=7,SLUMPED=8,FALLEN=9,OVER=10,HUNG=11;
     /** 0.4.713, the line: on the back across the line, arched over the riser through them, the hands at it; and the same, dead. */
     public static final int IMPALED=12,SPITTED=13;
+    /** 0.4.714, the fryer: bent over it with the face held down in the oil, fighting its edges; and the same, still. */
+    public static final int FRYING=14,FRIED=15;
     /** How far one of them sees the body in light, and in the dark; how near they hear it whichever way they face; 0.4.709: how near
      * they hear it creeping, crouched. */
     public static final double SEES_LIT=24,SEES_DARK=12,HEARS=6,HEARS_CROUCHED=1;
@@ -88,6 +90,8 @@ public final class TheListHunt {
     public static final int WOUND=1,NECK=2;
     /** 0.4.713: where the riser went through them, in at the back and out at the belly. */
     public static final int GUT=4;
+    /** 0.4.714: the face, scalded in the fryer. */
+    public static final int BURN=8;
     /** 0.4.711, the boards: how near a plank one held must be for the slasher to force them over it, and how soon after one stamp the
      * next counts. */
     public static final double BOARDS_REACH=3;
@@ -179,18 +183,24 @@ public final class TheListHunt {
         /** 0.4.713: on the line, the riser through them (in the town's coordinates), how long the water has run through them and
          * whether it has started to. */
         @Nullable BlockPos riser;int water;boolean flowed;
+        /** 0.4.714: in the fryer, how long the hot oil has had them. */
+        int fried;
         Runner(int who,UUID id){this.who=who;this.id=id;}
     }
     static final class Hunt{
         final BlockPos base;final Map<Integer,Runner> runners=new LinkedHashMap<>();final Set<BlockPos> bolted=new HashSet<>(),sprung=new HashSet<>();int tick;
         /** 0.4.710: which of the dead each reader has come across, a bit for each. */
         final Map<UUID,Integer> found=new HashMap<>();
+        /** 0.4.714: one of the five has been forced into the fryer this hunt; Jenna stays down in the stand's corner until it ends. */
+        boolean fryer;
         Hunt(BlockPos b){base=b;}
     }
     static final Map<Long,Hunt> HUNTS=new HashMap<>();
     private static final TicketType<UUID> TICKET=TicketType.create("the_list_hunt",UUID::compareTo);
 
     public static boolean on(BlockPos b){return HUNTS.containsKey(b.asLong());}
+    /** 0.4.714: whether one of the five has been forced into the fryer this hunt. */
+    public static boolean fryerUsed(BlockPos b){var h=HUNTS.get(b.asLong());return h!=null&&h.fryer;}
     /** Whether the hunt has one of them now, so that the town's own pass leaves them where they are. */
     public static boolean holds(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r!=null&&r.state!=State.CALM;}
     public static @Nullable State state(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?null:r.state;}
@@ -240,6 +250,7 @@ public final class TheListHunt {
         tidy(l,b);
         doors(l,b);
         TheListSite.line(l,b);
+        TheListSite.fryer(l,b);
         TheListPeople.ensure(l,b);
         var h=new Hunt(b);
         for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID()));}
@@ -258,6 +269,7 @@ public final class TheListHunt {
         sweep(l,b);
         tidy(l,b);
         TheListSite.line(l,b);
+        TheListSite.fryer(l,b);
         TheListPeople.ensure(l,b);
     }
     /** The three doors as they were built: shut, and nobody's bolt on them. */
@@ -273,6 +285,7 @@ public final class TheListHunt {
         var h=HUNTS.get(b.asLong());if(h==null)return;h.tick++;
         var slashers=new ArrayList<ServerPlayer>();
         for(var p:here){var live=TheListBody.LIVE.get(p.getUUID());if(live!=null&&live.down==0&&!p.isSpectator())slashers.add(p);}
+        if(h.fryer)TheListPeople.cornered(l,b);
         // A door the slasher has broken is nobody's to bolt now.
         h.bolted.removeIf(at->{var st=l.getBlockState(b.offset(at));return !(st.getBlock() instanceof DoorBlock)||st.getValue(DoorBlock.OPEN)||st.is(TheListRegistry.BROKEN_DOOR.get());});
         for(var r:h.runners.values()){
@@ -293,6 +306,7 @@ public final class TheListHunt {
                 case FINISH->finishing(l,b,h,r,a,slashers,here);
                 case BOARDS->boarded(l,b,h,r,a,slashers,here);
                 case LINE->lined(l,b,h,r,a,here);
+                case FRYER->frying(l,b,h,r,a,slashers,here);
                 case DEAD->{}
             }
         }
@@ -482,6 +496,8 @@ public final class TheListHunt {
         if(r.state==State.DEAD||gone(r)){TheList.cue(p,String.format(TheListTexts.STILL_BODY,name));return true;}
         // 0.4.713: nobody lifts one off the riser, the slasher included.
         if(r.state==State.LINE){TheList.cue(p,String.format(TheListTexts.PINNED,name));return true;}
+        // 0.4.714: one held in the fryer is the slasher's; anyone else's hand does not get them out.
+        if(r.state==State.FRYER){if(!p.getUUID().equals(r.holder))TheList.cue(p,String.format(TheListTexts.FRYER_HELD,name));return true;}
         if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return r.state!=State.CALM;
         var l=p.serverLevel();var here=TheList.readers(l,b);
         switch(r.state){
@@ -893,6 +909,90 @@ public final class TheListHunt {
         if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.714: the fryer
+    /**
+     * A hand or a blow on the fryer (TheListFryer.hand). The slasher's, with hold of one of the five within reach of it: into the oil
+     * if it is hot, told it is not hot yet if it is heating. Off, it is the knob (false), turned with the other hand. With one already in
+     * it, their own hand on it does nothing more.
+     */
+    public static boolean fryer(ServerPlayer p,BlockPos b){
+        var h=HUNTS.get(b.asLong());if(h==null||p.isSpectator()||!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return false;
+        var l=p.serverLevel();
+        for(var r:h.runners.values()){
+            if(!p.getUUID().equals(r.holder)||!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
+            if(r.state==State.FRYER)return true;
+            if(r.state!=State.HELD)return false;
+            if(Vec3.atCenterOf(b.offset(TheListFryer.AT)).distanceTo(a.position().add(0,.6,0))>TheListFryer.REACH)return false;
+            var st=TheListFryer.state(l,b);if(st==null)return false;
+            int heat=TheListFryer.heat(st);
+            if(heat==TheListFryer.OFF)return false;
+            if(heat==TheListFryer.WARM){TheList.cue(p,TheListTexts.FRYER_NOT_HOT);return true;}
+            into(l,b,h,r,a,p,TheList.readers(l,b));
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Into the oil: stood in front of the fryer, bent over it, the face pushed down into the west vat. Their words as they go over, a
+     * scream, the oil's roar; anyone else on the list near enough hears it and runs. What they had in hand they let fall. Jenna, in the
+     * stand, shouts at the slasher. The hold is still the slasher's: their walk stays stilled while they hold them under.
+     */
+    static void into(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer s,List<ServerPlayer> here){
+        r.state=State.FRYER;r.since=0;r.fried=0;r.dropped=true;r.killer=s.getUUID();h.fryer=true;
+        BorrascaCast.stop(a);a.setPose(Pose.STANDING);a.setNoGravity(true);a.gesture(FRYING);drop(a);
+        bend(b,a);
+        a.marks(a.marks()|BURN);
+        var name=TheListTexts.NAMES[r.who];
+        TheList.cue(s,String.format(TheListTexts.INTO_FRYER,name));
+        say(a,r.who,TheListTexts.FRYER[r.who]);
+        scream(l,a);
+        var vat=TheListFryer.vat(b);
+        l.playSound(null,vat.x,vat.y,vat.z,TheListRegistry.FRYER.get(),SoundSource.NEUTRAL,1.6F,.9F+l.getRandom().nextFloat()*.1F);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,vat.x,vat.y+.2,vat.z,8,.15,.1,.15,.02);
+        l.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE_POP,vat.x,vat.y,vat.z,14,.2,.05,.2,.05);
+        var jenna=TheListPeople.find(l,b,TheListPeople.JENNA);
+        if(jenna!=null&&jenna.distanceTo(a)<=8){say(jenna,TheListPeople.JENNA,String.format(TheListTexts.JENNA_FRYER,name));TheListPeople.backAway(jenna,b);}
+        heard(l,b,h,r,a,here);
+    }
+    /** Kept where they are bent over the fryer, facing into it. */
+    static void bend(BlockPos b,LiteraryActor a){
+        var at=TheListFryer.STAND;float yaw=TheListFryer.FACING.getOpposite().toYRot();
+        a.moveTo(b.getX()+at.x,b.getY()+at.y,b.getZ()+at.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setDeltaMovement(Vec3.ZERO);
+    }
+    /** How long the hot oil has had one of them. */
+    public static int fried(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?0:r.fried;}
+    /**
+     * In the fryer, each tick: kept bent over it, fighting its edges. The slasher gone from the town (or put down), they come up out of
+     * it, burned, and run. While the oil is hot it has them: smoke and spitting, the oil's roar now and then; after UNDER ticks of it,
+     * still. Put out, the count stops until it is hot again.
+     */
+    static void frying(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> slashers,List<ServerPlayer> here){
+        bend(b,a);
+        var s=holder(r,slashers);
+        if(s==null){loose(l,b,h,r,a,null,here);return;}
+        if(r.since%STRUGGLE_EVERY==0)l.playSound(null,a.getX(),a.getY()+.8,a.getZ(),TheListRegistry.STRUGGLE.get(),SoundSource.NEUTRAL,.9F,1F);
+        if(!TheListFryer.hot(l,b))return;
+        r.fried++;
+        var vat=TheListFryer.vat(b);
+        if(r.fried%4==0){
+            l.sendParticles(net.minecraft.core.particles.ParticleTypes.SMOKE,vat.x,vat.y+.15,vat.z,3,.12,.06,.12,.01);
+            l.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE_POP,vat.x,vat.y,vat.z,4,.18,.02,.18,.03);
+        }
+        if(r.fried%20==0&&r.fried<TheListFryer.UNDER)l.playSound(null,vat.x,vat.y,vat.z,TheListRegistry.FRYER.get(),SoundSource.NEUTRAL,.9F,.95F+l.getRandom().nextFloat()*.15F);
+        if(r.fried<TheListFryer.UNDER)return;
+        // Still.
+        stop(l,a,TheListRegistry.SCREAM.get());stop(l,a,TheListRegistry.STRUGGLE.get());
+        a.gesture(FRIED);r.state=State.DEAD;
+        TheListFryer.darken(l,b);
+        var name=TheListTexts.NAMES[r.who];
+        var killer=r.killer==null?null:l.getServer().getPlayerList().getPlayer(r.killer);
+        if(killer!=null)TheList.cue(killer,String.format(TheListTexts.FRYER_STILL,name));
+        for(var q:here)if(q!=killer&&!q.isSpectator()&&q.position().distanceTo(a.position())<=SCREAM_REACH)TheList.cue(q,String.format(TheListTexts.STOPS_SHORT,compass(q.position(),a.position())));
+        if(killer!=null)TheListBody.holding(killer,false);
+        r.holder=null;a.holder(null);
+        if(r.killer!=null)TheListBody.killed(l.getServer(),r.killer,r.who);
+    }
+
     // ------------------------------------------------------------------------------------------------ 0.4.710: blood where it lands
     /** The way from one on the hook toward the slasher (the way they face, with nobody holding them). */
     static Direction toward(LiteraryActor a,@Nullable ServerPlayer s){
@@ -963,22 +1063,23 @@ public final class TheListHunt {
         for(var d:h.runners.values()){
             if(!gone(d)||!(l.getEntity(d.id) instanceof LiteraryActor body)||!body.isAlive())continue;
             // 0.4.711: one hung over a row of the stands is seen by the head under the next plank as well as the body on it.
-            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED;
-            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
+            boolean hung=body.gesture()==HUNG&&d.kneel!=null,spitted=body.gesture()==SPITTED,fried=body.gesture()==FRIED;
+            // 0.4.714: one dead in the fryer is seen by the back, bent over it.
+            var at=hung?d.kneel.add(0,.4,0):body.position().add(0,spitted?.8:fried?1.0:.3,0);var head=hung?d.kneel.add(HEAD):null;var name=TheListTexts.NAMES[d.who];
             for(var r:h.runners.values()){
                 if(r==d||(r.saw&1<<d.who)!=0||r.state!=State.CALM&&r.state!=State.RUN&&r.state!=State.HIDE&&r.state!=State.COWER)continue;
                 if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
                 if(!sight(l,a,a.getYHeadRot(),body,at,head,FINDS_BODY,75))continue;
                 r.saw|=1<<d.who;
                 if(r.state==State.CALM)run(l,b,h,r,a,here,true);
-                say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
+                say(a,r.who,String.format(hung?TheListTexts.FOUND_HUNG_BODY[r.who]:spitted?TheListTexts.FOUND_LINE_BODY[r.who]:fried?TheListTexts.FOUND_FRYER_BODY[r.who]:TheListTexts.FOUND_BODY[r.who],name,name));
             }
             for(var q:here){
                 if(q.isSpectator()||!q.isAlive()||TheListBody.live(q))continue;
                 int seen=h.found.getOrDefault(q.getUUID(),0);if((seen&1<<d.who)!=0)continue;
                 if(!sight(l,q,q.getYHeadRot(),body,at,head,READER_FINDS,READER_LOOK))continue;
                 h.found.put(q.getUUID(),seen|1<<d.who);
-                TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:TheListTexts.FOUND_DEAD,name));
+                TheList.cue(q,String.format(hung?TheListTexts.FOUND_HUNG:spitted?TheListTexts.FOUND_LINE:fried?TheListTexts.FOUND_FRYER:TheListTexts.FOUND_DEAD,name));
                 TheListBody.found(q,d.who);
             }
         }

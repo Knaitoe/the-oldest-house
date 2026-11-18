@@ -1149,6 +1149,20 @@ public final class LiteraryRenderers {
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.SPITTED->{rightLeg.xRot=1.05F;leftLeg.xRot=.95F;rightLeg.yRot=0;leftLeg.yRot=0;rightLeg.zRot=.1F;leftLeg.zRot=-.12F;
                     rightArm.xRot=.35F;leftArm.xRot=.3F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=.95F;leftArm.zRot=-.9F;
                     head.xRot=-1.25F;head.yRot=.2F;head.zRot=0;body.xRot=0;}
+                // 0.4.714, the fryer. Stood in front of it and bent over it from the hips, the face held down in the oil: the hands
+                // flat on its top either side pushing, the head twisting against the hold, the feet scrabbling at the floor.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.FRYING->{float w=net.minecraft.util.Mth.sin(age*1.2F),v=net.minecraft.util.Mth.cos(age*.9F);
+                    low(12F,1.22F+w*.03F,0F);
+                    rightLeg.xRot=.18F+w*.22F;leftLeg.xRot=-.1F-w*.22F;
+                    rightArm.xRot=-.55F+v*.12F;leftArm.xRot=-.55F-v*.12F;rightArm.yRot=0;leftArm.yRot=0;rightArm.zRot=1.05F+w*.1F;leftArm.zRot=-1.05F+w*.1F;
+                    head.xRot=1.75F+v*.06F;head.yRot=w*.3F;head.zRot=0;}
+                // Still there: sunk further over it, the knees given, the face still in the oil. Bent over the west vat, the right
+                // shoulder is at the fryer's edge and that arm hangs straight down its side; the left is over the fryer, and that arm
+                // lies back across its top to the splash.
+                case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.FRIED->{low(13F,1.35F,.12F);
+                    rightLeg.xRot=.14F;leftLeg.xRot=.1F;
+                    rightArm.xRot=.08F;rightArm.yRot=0;rightArm.zRot=.14F;leftArm.xRot=-1.68F;leftArm.yRot=0;leftArm.zRot=-.3F;
+                    head.xRot=1.85F;head.yRot=.15F;head.zRot=.1F;}
                 default->{}
             }
             hat.copyFrom(head);

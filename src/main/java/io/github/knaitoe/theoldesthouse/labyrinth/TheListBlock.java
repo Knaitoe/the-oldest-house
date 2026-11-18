@@ -78,6 +78,8 @@ import net.minecraft.world.phys.shapes.*;
  * <li>0.4.713, the line (docs/THE_LIST_0_4_713.md). LINE, the sprinkler line down the home sideline: a length of aluminum pipe (0), its
  * capped end (1), a riser with its impact head (2) and the same with blood run down it (3), the elbow where the line turns into the hose
  * (4), the hose (5), and the valve on its standpipe, shut (6) and open, its stem up (7). Walked over, all but the valve.</li>
+ * <li>0.4.714, the fryer (docs/THE_LIST_0_4_714.md). FRYER, in the drive-in's stand: off (0), heating (1) and hot (2) with the oil clean,
+ * and the same with the oil gone dark (3-5). Its knob faces the way it faces; lit, the pilot shows through the burner door.</li>
  * </ul>
  */
 public final class TheListBlock extends HorizontalDirectionalBlock {
@@ -89,7 +91,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
         GIN,BALE,SEED,TOWER,TANK,
         FIELD,STANDS,LOCKER,SCORE,AMBER,LOT,
         PASTURE,STOCK,WINDMILL,PUMPJACK,BATTERY,
-        PARTY,BLOOD,LINE;
+        PARTY,BLOOD,LINE,FRYER;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -119,10 +121,15 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case AMBER->stage==0?6:stage==3?12:stage==6?8:0;
             case SHOP->stage==3?12:0;
             case PARTY->stage==3?14:0;
+            case FRYER->stage%3!=0?3:0;
             default->0;
         };
     }
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
+    /** 0.4.714: the fryer's oil come up to heat, HEAT ticks after it was lit (TheListFryer.turn schedules it). */
+    @Override protected void tick(BlockState s,net.minecraft.server.level.ServerLevel l,BlockPos p,net.minecraft.util.RandomSource r){
+        if(is(s,Kind.FRYER))TheListFryer.cameUp(l,p,s);
+    }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     private static VoxelShape t(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){return MarshBlock.turned(f,x0,y0,z0,x1,y1,z1);}
     /** The two ladders, the seed house's and the tower's, are climbed. */
@@ -183,6 +190,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case PARTY->switch(stage){case 0->t(f,2,0,6,14,11,10);case 1->t(f,1.5,0,3.5,14.5,9,12.5);case 2->Block.box(3,0,3,13,4,13);case 3->Block.box(5,0,5,11,11.75,11);
                 case 4->Block.box(0,0,0,16,1.25,16);case 5->t(f,3,0,4,13,5,12);case 6->t(f,4,8.5,8,12,13,16);default->Block.box(6.5,11,6.5,9.5,16,9.5);};
             case BLOOD->Block.box(1,0,1,15,.25,15);
+            case FRYER->t(f,0,0,1,16,15,16);
             case LINE->switch(stage){case 1->t(f,6.5,0,4,9.5,3,16);case 2,3->Shapes.or(t(f,6.5,0,0,9.5,3,16),Block.box(7,0,7,9,15,9));
                 case 4->Shapes.or(t(f,6.5,0,0,9.5,3,9.5),t(f,0,0,6.5,9.5,3,9.5));case 5->t(f,6,0,0,10,1.5,16);case 6->Block.box(5,0,5,11,13,11);
                 case 7->Block.box(5,0,5,11,15,11);default->t(f,6.5,0,0,9.5,3,16);};
