@@ -84,8 +84,13 @@ public final class PlaceForYouSite {
     // between the kitchen, the hall and the sitting room, and on the front of the house; these are the gaps they have to use.
     static final Vec3 KITCHEN_SIDE=new Vec3(3.7,0,-13.5),HALL_BY_KITCHEN=new Vec3(2.2,0,-13.5),SITTING_SIDE=new Vec3(-3.7,0,-15.5),HALL_BY_SITTING=new Vec3(-2.2,0,-15.5),
         DOOR_INSIDE=new Vec3(.5,0,-12.8),DOOR_OUTSIDE=new Vec3(.5,0,-9.9);
-    enum Floor{KITCHEN,SITTING,HALL,OUT,OTHER}
+    /** 0.4.694: the foot of the stair, in the hall in front of the first tread, and its head on the landing, past the top tread. */
+    static final Vec3 STAIR_FOOT=new Vec3(2,0,-15.4),STAIR_HEAD=new Vec3(2,UP,-21.6);
+    enum Floor{KITCHEN,SITTING,HALL,OUT,STAIR,UP,OTHER}
     static Floor floor(Vec3 r){
+        // 0.4.694: the five treads (x 1 and 2, z -17 to -21), and anywhere upstairs.
+        if(r.x>=.95&&r.x<3&&r.z>=-21&&r.z<-16&&r.y>=.3&&r.y<=UP+.1)return Floor.STAIR;
+        if(r.y>=UP-.6&&r.y<UP+3&&r.z>=-28&&r.z<-12)return Floor.UP;
         if(r.y>2||r.y<-1.5)return Floor.OTHER;
         if(r.z>-10.2&&r.z<1&&Math.abs(r.x)<11)return Floor.OUT;
         if(r.x>=3&&r.x<9&&r.z>=-23&&r.z<-11)return Floor.KITCHEN;
@@ -95,17 +100,27 @@ public final class PlaceForYouSite {
     }
     static boolean by(Vec3 r,Vec3 at){double dx=r.x-at.x,dz=r.z-at.z;return dx*dx+dz*dz<.36;}
     /** Where someone at {@code from} heads next on the way to {@code to} (both relative to the house), or null to go straight there. */
+    /** The north half of tread {@code k} (0 at the foot), where a foot goes on the way up or down: its top is {@code k+1}. */
+    static Vec3 tread(int k){return new Vec3(2,k+1,-16.75-k);}
     @javax.annotation.Nullable public static Vec3 via(Vec3 from,Vec3 to){
         Floor a=floor(from),b=floor(to);
         if(a==b||a==Floor.OTHER||b==Floor.OTHER)return null;
+        // 0.4.694 (the guide never reached the landing with the reader already on it): up and down the stair a tread at a time.
+        if(a==Floor.STAIR){int k=Math.max(0,Math.min(4,(int)Math.floor(-16-from.z)));
+            if(b==Floor.UP)return k>=4?STAIR_HEAD:tread(k+1);
+            return k<=0?STAIR_FOOT:tread(k-1);}
+        // 0.4.694 (Mara turned back and forth in the kitchen archway for good): a point once reached stays passed. Each step on from it
+        // used to take the walker out of reach of it again, and they turned round to go back to it.
+        if(a==Floor.UP)return by(from,STAIR_HEAD)||from.x>.95&&from.x<3&&from.z>STAIR_HEAD.z&&from.z<-21?tread(4):STAIR_HEAD;
         return switch(a){
             // Up from a chair at the table's front row, first into the strip of floor in front of the table.
-            case KITCHEN->by(from,KITCHEN_SIDE)?HALL_BY_KITCHEN:from.z>-15.2&&from.z<-14.1&&from.x>4.2?new Vec3(from.x,0,-13.5):KITCHEN_SIDE;
-            case SITTING->by(from,SITTING_SIDE)?HALL_BY_SITTING:SITTING_SIDE;
-            case OUT->by(from,DOOR_OUTSIDE)?DOOR_INSIDE:DOOR_OUTSIDE;
+            case KITCHEN->by(from,KITCHEN_SIDE)||from.x<KITCHEN_SIDE.x&&from.z>-15&&from.z<-13?HALL_BY_KITCHEN:from.z>-15.2&&from.z<-14.1&&from.x>4.2?new Vec3(from.x,0,-13.5):KITCHEN_SIDE;
+            case SITTING->by(from,SITTING_SIDE)||from.x>SITTING_SIDE.x&&from.z>-16&&from.z<-14?HALL_BY_SITTING:SITTING_SIDE;
+            case OUT->by(from,DOOR_OUTSIDE)||from.z<DOOR_OUTSIDE.z&&Math.abs(from.x-.5)<.6?DOOR_INSIDE:DOOR_OUTSIDE;
             case HALL->switch(b){
-                case KITCHEN->by(from,HALL_BY_KITCHEN)?KITCHEN_SIDE:HALL_BY_KITCHEN;
-                case SITTING->by(from,HALL_BY_SITTING)?SITTING_SIDE:HALL_BY_SITTING;
+                case UP,STAIR->by(from,STAIR_FOOT)||from.x>1.4&&from.z<STAIR_FOOT.z&&from.z>-16.2?tread(0):STAIR_FOOT;
+                case KITCHEN->by(from,HALL_BY_KITCHEN)||from.x>HALL_BY_KITCHEN.x&&from.z>-15&&from.z<-13?KITCHEN_SIDE:HALL_BY_KITCHEN;
+                case SITTING->by(from,HALL_BY_SITTING)||from.x<HALL_BY_SITTING.x&&from.z>-16&&from.z<-14?SITTING_SIDE:HALL_BY_SITTING;
                 default->by(from,DOOR_INSIDE)||from.z>-12.4&&Math.abs(from.x-.5)<.4?DOOR_OUTSIDE:DOOR_INSIDE;
             };
             default->null;

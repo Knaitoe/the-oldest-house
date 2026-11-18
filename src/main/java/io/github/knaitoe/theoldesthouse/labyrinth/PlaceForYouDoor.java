@@ -183,6 +183,8 @@ final class PlaceForYouDoor {
                 default->"I wanted them to want to stay. I stopped asking whether they did.";});
             PlaceForYou.edit(q,o->o.putString("AskedMara",how.isEmpty()?"open":how));maraReplies(q,h);}));
         if(!own.getBoolean("AskedIsHim"))replies.add(Talk.reply("Is it him?",q->{PlaceForYou.line(q,h,"Mara","It sounds like him. That's all I know.");PlaceForYou.edit(q,o->o.putBoolean("AskedIsHim",true));maraReplies(q,h);}));
+        // 0.4.694: the reassurance, once she has said it only sounds like him.
+        if(own.getBoolean("AskedIsHim")&&own.getBoolean("VoiceHeard")&&own.getInt("ReassureStage")==0)replies.add(PlaceForYouBelief.reassure(h));
         replies.add(Talk.reply("I'll leave you be.",Talk::end));
         Talk.ask(p,replies);
     }
