@@ -35,6 +35,36 @@ public final class TheListTexts {
     /** Leaving the town by the House's door, the sack stays behind; coming back, it is where it was left. */
     public static final String SACK_LEFT="You leave the sack on the back step.",SACK_WORN="The sack is on the back step. You pull it on.",
         SACK_CARRIED="The sack is on the back step. You take it with you.";
+    // ------------------------------------------------------------------------------------------------ 0.4.706: night one
+    /** Coming into town while the party is on, a cue to that reader. */
+    public static final String PARTY_HEARD="Out past the back fence, a radio. Headlights in the pasture.";
+    /** What each of the five says at the stock tank to a reader: the first line, then the second, and the second again after that. Deek's
+     * to the one he has picked are his own (ASK, RIDE). */
+    private static final String[][] PARTY={
+        {"You came. Get something out of the ice chest.","We're waiting on one more thing. Then we'll go."},
+        {"That's my brother's tape. Don't touch the radio.","Deek's got a plan. Deek always has a plan."},
+        {"Say something for the camera. No, something good.","The battery's at half. I'm saving it for later."},
+        {"Don't lean on the truck. It's his dad's.","Somebody saw coyotes out here last week. Mel wants to film one."},
+        {"Sit if you're staying. There are stickers in the blanket.","Ask Deek what we're doing after. He won't tell me."}};
+    /** The nth line one of the five says at the party (Deek, Wes, Mel, Lesley, Shannon, by their number in TheListPeople). */
+    public static String party(int who,int heard){
+        int i=who==TheListPeople.DEEK?0:who==TheListPeople.WES?1:who==TheListPeople.MEL?2:who==TheListPeople.LESLEY?3:4;
+        var lines=PARTY[i];return lines[Math.min(heard,lines.length-1)];
+    }
+    /** Deek to the one he has picked: the ask, said once when they come near; then, talked to again, the ride. */
+    public static final String ASK="Wes's brother left a case of beer in the seed house at the gin. That door takes two. You and me?",
+        RIDE="Get in the truck.";
+    /** At the gin, the door rolled open: to the one who is going in, and to anybody else who tries. */
+    public static final String GO_IN="It's in the back, past the auger. Go on. I've got the door.",
+        ONE_AT_A_TIME="One at a time in there.";
+    /** The door shut: what the five say outside it, in order (Deek, Wes, Mel, Lesley, Deek, Shannon, Wes). */
+    public static final String[] SHUT_LINES={"Count to a hundred. Then knock.","Lights!","Hold still. I can't get anything.","Deek. Is that the auger?",
+        "I didn't touch it.","Open it. Open it!","It's stuck. Deek, it's stuck."};
+    /** Who says each of SHUT_LINES. */
+    public static final int[] SHUT_SAYS={TheListPeople.DEEK,TheListPeople.WES,TheListPeople.MEL,TheListPeople.LESLEY,TheListPeople.DEEK,TheListPeople.SHANNON,TheListPeople.WES};
+    /** After the cut: the one who went in, coming to; anybody else, where they stood. */
+    public static final String CAME_TO="You come to under the water tower, face down in the caliche.",
+        ALONE="Nobody is left. The trucks are gone. The seed house door is shut, the lamp over it out.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
@@ -151,6 +181,11 @@ public final class TheListTexts {
                 case 7->"The tail, holding the wheel into the wind.";default->"The pump rod, up the middle of the tower to the head.";};
             case PUMPJACK->switch(stage){case 0->"The wellhead. It smells of crude, and the polished rod slides in and out of it.";
                 case 1->"The Samson post. It shakes with every stroke.";default->"The gearbox, warm, oil weeping from its seal. Behind it the motor hums.";};
+            // 0.4.706, night one.
+            case PARTY->switch(stage){case 0->"A radio with a tape in it, turned up as far as it goes.";case 1->"An ice chest. Ice water and two cans floating in it.";
+                case 2->"Empty cans, most of them stepped on.";case 3->"A camp lantern, hissing. Bugs knock against the glass.";
+                case 4->"A blanket spread on the grass. Sandburs in the weave.";case 5->"A cardboard case, torn open. Empty.";
+                case 6->"The lamp over the door. Out.";default->"The bulb. Out.";};
             case BATTERY->switch(stage){case 2->"The separator. A gauge on it, the needle steady.";case 4->"The lease's sign. Somebody has shot a hole through one corner.";
                 case 5,6,7->"A plate with the well's number on it.";default->"A tank on the lease, a hatch on its roof and a ladder up its side.";};
         };

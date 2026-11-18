@@ -21,6 +21,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class TownCar extends Entity implements Voiced {
     private static final EntityDataAccessor<Integer> KIND=SynchedEntityData.defineId(TownCar.class,EntityDataSerializers.INT);
+    /** 0.4.706, The list's night one: one that stands parked with its lights on anyway, at a party in a pasture. */
+    private static final EntityDataAccessor<Boolean> LIT=SynchedEntityData.defineId(TownCar.class,EntityDataSerializers.BOOLEAN);
     /**
      * The four that drive: a station wagon with wood panels, a pickup, a long sedan, and a muscle car with its windows down. And two
      * that stand parked all night (0.4.485): a sedan and a pickup in other paint.
@@ -41,7 +43,10 @@ public final class TownCar extends Entity implements Voiced {
     private double rolled,rolledBefore;
 
     public TownCar(EntityType<? extends TownCar> type,Level level){super(type,level);noPhysics=true;setNoGravity(true);}
-    @Override protected void defineSynchedData(SynchedEntityData.Builder b){b.define(KIND,0);}
+    @Override protected void defineSynchedData(SynchedEntityData.Builder b){b.define(KIND,0);b.define(LIT,false);}
+    /** Whether its headlights are on: always for one that drives; for one that stands parked, only when it is told so. */
+    public boolean lit(){return !parked()||entityData.get(LIT);}
+    public void lit(boolean on){entityData.set(LIT,on);}
     public int kind(){return entityData.get(KIND);}
     public void kind(int kind){entityData.set(KIND,Mth.clamp(kind,0,KINDS-1));setBoundingBox(makeBoundingBox());}
     /**

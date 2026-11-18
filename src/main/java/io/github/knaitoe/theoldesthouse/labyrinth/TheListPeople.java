@@ -55,35 +55,61 @@ public final class TheListPeople {
     public static boolean asleep(int phase){return phase==FIRST+MOTHER||phase==FIRST+FATHER;}
     public static int who(LiteraryActor a){return a.phase()-FIRST;}
 
-    /** Near one's place, where to look for them. */
-    static AABB near(BlockPos b,int who){return new AABB(b.offset(AT[who])).inflate(6);}
-    /** One of the town's people near their place; a second of the same is let go. */
+    /**
+     * 0.4.706: where one of them is now, and which way they face. While night one has the five out they are at the stock tank for the
+     * party and the ride, at the gin's yard for the seed house, and nowhere after it (gone home); everyone else, and the five on any
+     * other night, at their own places.
+     */
+    public record Spot(BlockPos at,Direction facing){}
+    public static @Nullable Spot spot(int phase,int who){
+        int i=-1;for(int k=0;k<TheListNight.FIVE.length;k++)if(TheListNight.FIVE[k]==who)i=k;
+        if(i>=0&&phase!=TheListNight.NONE){
+            if(phase==TheListNight.PARTY||phase==TheListNight.RIDE)return new Spot(TheListNight.AT_TANK[i],TheListNight.FACE_TANK[i]);
+            if(phase==TheListNight.SEED||phase==TheListNight.SHUT)return new Spot(TheListNight.AT_GIN[i],TheListNight.FACE_GIN[i]);
+            return null;
+        }
+        return new Spot(AT[who],FACING[who]);
+    }
+    /** One of the town's people near where they are now; a second of the same is let go. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
+        var s=spot(TheListNight.phase(l.getServer(),b),who);if(s==null)return null;
         LiteraryActor found=null;
-        for(var a:l.getEntitiesOfClass(LiteraryActor.class,near(b,who),x->is(x)&&x.phase()==FIRST+who&&x.isAlive())){if(found==null)found=a;else a.discard();}
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(b.offset(s.at())).inflate(6),x->is(x)&&x.phase()==FIRST+who&&x.isAlive())){if(found==null)found=a;else a.discard();}
         return found;
     }
-    /** Everyone put at their place whose place is loaded, made if they are not there; nothing is made while their entities are unloaded. */
+    /**
+     * Everyone put where they are now, made if they are not there and their place is loaded (nothing is made while it is not); any of them
+     * the night has sent home is let go. One look over the whole town finds them wherever they were, so nobody is made twice.
+     */
     public static void ensure(ServerLevel l,BlockPos b){
+        int phase=TheListNight.phase(l.getServer(),b);
+        var found=new LiteraryActor[CAST];
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.isAlive())){int w=who(a);if(found[w]==null)found[w]=a;else a.discard();}
         for(int who=0;who<CAST;who++){
-            var at=b.offset(AT[who]);
+            var s=spot(phase,who);var a=found[who];
+            if(s==null){if(a!=null)a.discard();continue;}
+            var at=b.offset(s.at());
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;
-            var a=find(l,b,who);
             if(a==null){
                 a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
                 a.bind(TheList.PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
-                place(a,at,who);
+                place(a,at,who,s.facing());
                 if(!l.addFreshEntity(a))continue;
             }
-            place(a,at,who);
+            place(a,at,who,s.facing());
+            // Mel has the camera out from the party until the seed house; nobody else holds anything.
+            boolean camera=who==MEL&&phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT;
+            var held=a.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
+            if(camera&&!held.is(LiteraryRegistry.CAMCORDER.get()))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(LiteraryRegistry.CAMCORDER.get()));
+            else if(!camera&&!held.isEmpty())a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
         }
     }
     /** At the cell, turned the way given, held there: they do not fall from the stands or the catwalk. The parents are laid in bed. */
-    static void place(LiteraryActor a,BlockPos at,int who){
+    static void place(LiteraryActor a,BlockPos at,int who,Direction facing){
         a.setNoGravity(true);a.setDeltaMovement(Vec3.ZERO);
         if(who==MOTHER||who==FATHER){lie(a,at);return;}
         if(a.getPose()==Pose.SLEEPING){a.stopSleeping();a.setPose(Pose.STANDING);}
-        float yaw=FACING[who].toYRot();
+        float yaw=facing.toYRot();
         a.moveTo(at.getX()+.5,at.getY()+lift(who),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);
     }
     /** On their back, the head on the pillow; the renderer lays the body along the bed (LiteraryRenderers.lieOnTheList). Asleep at the
@@ -104,6 +130,8 @@ public final class TheListPeople {
      */
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         if(!is(a))return;
+        // 0.4.706: at the party, the five have the night's own lines, and Deek takes the one he picked.
+        if(TheListNight.talk(p,a,own))return;
         int who=who(a);
         if(who==MOTHER){TheList.cue(p,TheListTexts.MOTHER);return;}
         if(who==FATHER){TheList.cue(p,TheListTexts.FATHER);return;}

@@ -1,0 +1,83 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "f": "the_oldest_house:block/the_list/boombox",
+    "s": "the_oldest_house:block/the_list/boombox_side",
+    "i": "the_oldest_house:block/the_list/ice_chest_side",
+    "l": "the_oldest_house:block/the_list/ice_chest_top",
+    "c": "the_oldest_house:block/the_list/beer_can",
+    "p": "the_oldest_house:block/the_list/can_top",
+    "g": "the_oldest_house:block/the_list/lantern_glass",
+    "m": "the_oldest_house:block/the_list/lantern_metal",
+    "b": "the_oldest_house:block/the_list/blanket",
+    "x": "the_oldest_house:block/the_list/case_box",
+    "o": "the_oldest_house:block/the_list/case_top",
+    "h": "the_oldest_house:block/the_list/barn_shade",
+    "d": "the_oldest_house:block/the_list/bulb_dark",
+    "q": "the_oldest_house:block/the_list/galv",
+    "particle": "the_oldest_house:block/the_list/blanket"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        0.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        },
+        "down": {
+          "texture": "#b"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0.5,
+        12
+      ],
+      "to": [
+        16,
+        1.25,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#b"
+        },
+        "south": {
+          "texture": "#b"
+        },
+        "east": {
+          "texture": "#b"
+        },
+        "west": {
+          "texture": "#b"
+        },
+        "up": {
+          "texture": "#b"
+        }
+      }
+    }
+  ]
+}

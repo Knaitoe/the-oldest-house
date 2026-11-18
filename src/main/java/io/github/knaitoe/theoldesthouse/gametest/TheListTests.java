@@ -43,7 +43,13 @@ public final class TheListTests {
     private TheListTests(){}
     private static final LabyrinthPlace P=LabyrinthPlace.THE_LIST;
     private static LiteraryTests.Fixture active;
-    private static LiteraryTests.Fixture place(GameTestHelper h){done();active=new LiteraryTests.Fixture(h);return active;}
+    /** Every case shares the one town: a night an earlier case left going (one that failed partway) is ended first. */
+    private static LiteraryTests.Fixture place(GameTestHelper h){
+        done();active=new LiteraryTests.Fixture(h);
+        var l=active.level(P);var b=active.base(P);
+        if(TheListNight.phase(l.getServer(),b)!=TheListNight.NONE)TheListNight.end(l,b);
+        return active;
+    }
     private static void done(){if(active!=null){active.close();active=null;}}
     private static boolean is(ServerLevel l,BlockPos b,BlockPos at,net.minecraft.world.level.block.Block block){return l.getBlockState(b.offset(at)).is(block);}
     private static boolean mat(ServerLevel l,BlockPos b,int x,int y,int z,String name){return is(l,b,new BlockPos(x,y,z),TheListRegistry.material(name));}
@@ -343,9 +349,12 @@ public final class TheListTests {
             TheListPeople.ensure(l,b);
             for(int who=0;who<TheListPeople.CAST;who++)h.assertTrue(TheListPeople.find(l,b,who)!=null,"waiting for "+who+" at "+TheListPeople.AT[who].toShortString());
         }).thenIdle(20).thenExecute(()->{
+            // The town's own pass (every five seconds while anyone is in town): it finds anyone an earlier case left elsewhere in the town.
+            TheListPeople.ensure(l,b);
             for(int who=0;who<TheListPeople.CAST;who++){
                 int phase=TheListPeople.FIRST+who;
-                h.assertTrue(l.getEntitiesOfClass(LiteraryActor.class,town,a->a.role()==LiteraryActor.STRANGER&&a.phase()==phase).size()==1,"one of "+who+" in the town, none doubled");
+                int n=l.getEntitiesOfClass(LiteraryActor.class,town,a->a.role()==LiteraryActor.STRANGER&&a.phase()==phase).size();
+                h.assertTrue(n==1,"one of "+who+" in the town, none doubled: "+n);
                 var a=TheListPeople.find(l,b,who);var at=b.offset(TheListPeople.AT[who]);
                 double up=who==TheListPeople.STACE?2/16.0:who>=TheListPeople.MOTHER?TheListPeople.SLEEPER_Y:0;
                 h.assertTrue(a.position().distanceTo(new Vec3(at.getX()+.5,at.getY()+up,at.getZ()+.5))<.05,who+" held at their place after a second: "+a.position()+" for "+at.toShortString());
@@ -508,6 +517,14 @@ public final class TheListTests {
     }
 
     /** Every packet the reader has been sent since last asked. */
+    private static List<String> cuesIn(List<net.minecraft.network.protocol.Packet<?>> packets){
+        var out=new ArrayList<String>();
+        for(var packet:packets){
+            if(packet instanceof ClientboundSetActionBarTextPacket bar)out.add(bar.text().getString());
+            if(packet instanceof ClientboundSystemChatPacket chat&&chat.overlay())out.add(chat.content().getString());
+        }
+        return out;
+    }
     private static List<net.minecraft.network.protocol.Packet<?>> sent(ServerPlayer p){NativeTestPlayers.flush(p);return new ArrayList<>(NativeTestPlayers.packets(p));}
     private static boolean sound(List<net.minecraft.network.protocol.Packet<?>> packets,net.minecraft.sounds.SoundEvent sound){
         for(var packet:packets)if(packet instanceof ClientboundSoundPacket s&&s.getSound().value()==sound)return true;
@@ -633,6 +650,145 @@ public final class TheListTests {
             peer.setGameMode(GameType.SPECTATOR);
             h.assertFalse(TheListBody.give(peer),"a spectator is not given the body");
             h.assertFalse(sound(sent(peer),TheListRegistry.HEART.get()),"and the other reader never heard a heart");
+            done();h.succeed();
+        });
+    }
+
+    /** The night's clock as last sent to a reader, or null. */
+    private static io.github.knaitoe.theoldesthouse.network.TheListNightPayload night(List<net.minecraft.network.protocol.Packet<?>> packets){
+        io.github.knaitoe.theoldesthouse.network.TheListNightPayload last=null;
+        for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.TheListNightPayload n)last=n;
+        return last;
+    }
+    private static boolean faded(List<net.minecraft.network.protocol.Packet<?>> packets){
+        for(var packet:packets)if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.HouseFadePayload)return true;
+        return false;
+    }
+    private static @javax.annotation.Nullable TownCar car(ServerLevel l,BlockPos b,Vec3 rel,int kind){
+        var at=Vec3.atLowerCornerOf(b).add(rel);
+        for(var c:l.getEntitiesOfClass(TownCar.class,new net.minecraft.world.phys.AABB(at,at).inflate(3),c->c.kind()==kind&&c.isAlive()))return c;
+        return null;
+    }
+    private static List<LiteraryActor> fiveInTown(ServerLevel l,BlockPos b){
+        return l.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(b).inflate(200,40,200),a->TheListPeople.is(a)&&a.isAlive()&&TheListNight.five(TheListPeople.who(a)));
+    }
+    private static boolean doorShut(ServerLevel l,BlockPos b){
+        for(int x=TheListNight.DOOR_X-1;x<=TheListNight.DOOR_X+1;x++)for(int y=0;y<=2;y++)if(!fitting(l,b,new BlockPos(x,y,TheListSite.SEED_S),Kind.SEED,y==2?5:4))return false;
+        return true;
+    }
+    private static boolean doorOpen(ServerLevel l,BlockPos b){
+        for(int x=TheListNight.DOOR_X-1;x<=TheListNight.DOOR_X+1;x++)for(int y=0;y<=2;y++)if(!l.getBlockState(b.offset(x,y,TheListSite.SEED_S)).isAir())return false;
+        for(int x=TheListNight.DOOR_X+2;x<=TheListNight.DOOR_X+4;x++)for(int y=0;y<=2;y++)if(!fitting(l,b,new BlockPos(x,y,TheListSite.SEED_S+1),Kind.SEED,y==2?5:4))return false;
+        return true;
+    }
+
+    /**
+     * 0.4.706 (docs/THE_LIST_0_4_706.md), part 3a: night one as far as coming to, with a second reader at the party. The night begins
+     * round the first reader, the one Deek picks, at ten; one night to a town. The party is heard across town; the five stand at the
+     * stock tank, Mel with the camera, by a pickup with its lights on, a radio playing among their things. The second reader hears the
+     * five's own party lines; Deek asks the one he picked when they come near, and talked to again takes everyone at the tank: the view
+     * goes black, and they are set down in the gin's yard at two, the party taken up and the pickup with them. Deek rolls the seed house's
+     * door open and sends them in. The House's door is still theirs. With the second reader inside too, nothing happens; alone, three
+     * blocks in, the door rolls shut and is bolted, the House's door is shut to them (not to the other reader), the lamp and the bulb go
+     * out and the auger is heard. Then black, and three in the morning: the one who went in comes to under the water tower, the body
+     * theirs, lying face down; the five and the pickup are gone; the other reader is where they stood, alone, and is told so. They get up
+     * with the hearts. Ended, the seed house is put back.
+     */
+    @GameTest(template="empty",batch="the_list_seed",timeoutTicks=4000)
+    public static void nightOneTheSeedHouse(GameTestHelper h){
+        var f=place(h);var p=f.player("list_night",P);var peer=f.player("list_night_peer",P);var l=f.level(P);var b=f.base(P);
+        var tank=TheListSite.TANK_AT;var s=l.getServer();
+        h.startSequence().thenExecute(()->{
+            f.at(p,P,tank.getX()+2.5,0,tank.getZ()-14.5);f.at(peer,P,tank.getX()-1.5,0,tank.getZ()-9.5);
+        }).thenWaitUntil(()->h.assertTrue(l.isLoaded(b.offset(tank))&&l.isLoaded(b.offset(TheListNight.AT_TANK[3])),"waiting for the tank"))
+        .thenExecute(()->{
+            cues(p);cues(peer);sent(p);sent(peer);
+            h.assertTrue(TheListNight.begin(p,b),"night one begins round the reader");
+            h.assertFalse(TheListNight.begin(peer,b),"one night to a town");
+            h.assertTrue(p.getUUID().equals(TheListNight.slasher(s,b))&&TheListNight.phase(s,b)==TheListNight.PARTY,"the one Deek picks is the first");
+            h.assertTrue(TheListNight.time(s,b)==TheListNight.TEN,"ten at night");
+            var got=sent(peer);
+            h.assertTrue(cuesIn(got).contains(TheListTexts.PARTY_HEARD),"the party is heard by everyone in town");
+            var clock=night(got);
+            h.assertTrue(clock!=null&&clock.time()==TheListNight.TEN&&clock.rate()>0,"the night's hour is sent, running: "+clock);
+            h.assertTrue(fitting(l,b,TheListNight.PROPS[0],Kind.PARTY,0)&&fitting(l,b,TheListNight.PROPS[4],Kind.PARTY,3),"the radio and the lantern are set out");
+        }).thenWaitUntil(()->{
+            h.assertTrue(l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,b.offset(TheListNight.PROPS[4]))>=13,"waiting for the lantern's light");
+            for(int i=0;i<TheListNight.FIVE.length;i++){var a=TheListPeople.find(l,b,TheListNight.FIVE[i]);
+                h.assertTrue(a!=null&&a.blockPosition().equals(b.offset(TheListNight.AT_TANK[i])),"waiting for the five at the tank: "+TheListTexts.NAMES[TheListNight.FIVE[i]]);}
+            var pickup=car(l,b,TheListNight.PICKUP,TownCar.WHITE);
+            h.assertTrue(pickup!=null&&pickup.lit()&&car(l,b,TheListNight.SEDAN,TownCar.BLUE)!=null,"waiting for the pickup, its lights on, and the sedan");
+            h.assertTrue(heard(p,TheListRegistry.RADIO.get()),"waiting for the radio");
+        }).thenExecute(()->{
+            h.assertTrue(TheListPeople.find(l,b,TheListPeople.MEL).getMainHandItem().is(LiteraryRegistry.CAMCORDER.get()),"Mel has the camera out");
+            // The other reader's word with Wes and with Deek: the party's own lines, no ride.
+            var wes=TheListPeople.find(l,b,TheListPeople.WES);var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
+            f.at(peer,P,TheListNight.AT_TANK[1].getX()+.5,0,TheListNight.AT_TANK[1].getZ()+1.5);LiteraryVignettes.talk(peer,wes);
+            h.assertTrue(f.own(peer,P).getInt("Party"+TheListPeople.WES)==1&&TheListTexts.party(TheListPeople.WES,0).equals(wes.getCustomName().getString()),"Wes's party line");
+            f.at(peer,P,TheListNight.AT_TANK[0].getX()-1.5,0,TheListNight.AT_TANK[0].getZ()+.5);LiteraryVignettes.talk(peer,deek);
+            h.assertTrue(TheListTexts.party(TheListPeople.DEEK,0).equals(deek.getCustomName().getString())&&TheListNight.phase(s,b)==TheListNight.PARTY,"Deek's party line to the other reader, and no ride");
+            // The one he picked comes near.
+            f.at(p,P,TheListNight.AT_TANK[0].getX()+.5,0,TheListNight.AT_TANK[0].getZ()-1.5);
+        }).thenIdle(3).thenExecute(()->{
+            var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
+            h.assertTrue(TheListTexts.ASK.equals(deek.getCustomName().getString()),"Deek asks the one he picked: "+deek.getCustomName().getString());
+            sent(p);sent(peer);
+            LiteraryVignettes.talk(p,deek);
+            h.assertTrue(TheListTexts.RIDE.equals(deek.getCustomName().getString())&&TheListNight.phase(s,b)==TheListNight.RIDE,"talked to again, he takes them");
+            h.assertTrue(faded(sent(p))&&faded(sent(peer)),"the view goes black for everyone at the tank");
+            h.assertFalse(LiteraryVignettes.retreatLocked(p),"the House's door is still theirs");
+        }).thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNight.SEED,"waiting for the ride"))
+        .thenExecute(()->{
+            var r=p.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(r.distanceTo(new Vec3(79.5,0,-72.5))<.5,"set down before the seed house's door: "+r);
+            h.assertTrue(peer.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(new Vec3(82.5,0,-72.5))<.5,"the other reader rode too");
+            h.assertTrue(TheListNight.time(s,b)>=TheListNight.TWO,"two in the morning");
+            h.assertFalse(fitting(l,b,TheListNight.PROPS[0],Kind.PARTY)||fitting(l,b,TheListNight.PROPS[4],Kind.PARTY),"the party is taken up");
+        }).thenWaitUntil(()->{
+            h.assertTrue(car(l,b,TheListNight.PICKUP_GIN,TownCar.WHITE)!=null&&car(l,b,TheListNight.SEDAN,TownCar.BLUE)==null,"waiting for the pickup at the gin");
+            var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
+            h.assertTrue(deek!=null&&deek.blockPosition().equals(b.offset(TheListNight.AT_GIN[0])),"waiting for Deek at the door");
+            h.assertTrue(doorOpen(l,b),"waiting for the door to roll open");
+            h.assertTrue(TheListTexts.GO_IN.equals(deek.getCustomName().getString()),"waiting for Deek to send them in");
+        }).thenExecute(()->{
+            // Both inside: nothing.
+            f.at(peer,P,TheListNight.DOOR_X+2.5,0,TheListSite.SEED_S-5.5);f.at(p,P,TheListNight.DOOR_X-.5,0,TheListSite.SEED_S-4.5);
+        }).thenIdle(10).thenExecute(()->{
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.SEED&&doorOpen(l,b),"with the other reader in there too, the door stays open");
+            f.at(peer,P,82.5,0,-71.5);cues(p);sent(p);
+        }).thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNight.SHUT,"waiting for the door"))
+        .thenExecute(()->{
+            h.assertTrue(TheListNight.locked(p)&&LiteraryVignettes.retreatLocked(p),"the House's door is shut to the one inside");
+            h.assertFalse(LiteraryVignettes.retreatLocked(peer),"and not to the other reader");
+        }).thenWaitUntil(()->h.assertTrue(doorShut(l,b),"waiting for the door to roll shut"))
+        .thenWaitUntil(()->{
+            h.assertTrue(fitting(l,b,TheListNight.LAMP,Kind.PARTY,6)&&fitting(l,b,TheListNight.BULB,Kind.PARTY,7),"waiting for the lights to go out");
+            h.assertTrue(l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,BlockPos.containing(p.getEyePosition()))<=3,"dark inside: "+l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,BlockPos.containing(p.getEyePosition())));
+        }).thenWaitUntil(()->h.assertTrue(heard(p,TheListRegistry.AUGER.get()),"waiting for the auger"))
+        .thenExecute(()->{var shown=night(sent(p));h.assertTrue(shown==null||shown.shake()>=0,"the night still sent");})
+        .thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNight.AFTER,"waiting for the cut"))
+        .thenExecute(()->{
+            var r=p.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(r.distanceTo(TheListNight.UNDER)<.6,"under the water tower: "+r);
+            h.assertTrue(TheListBody.has(p)&&TheListBody.down(p)>0&&p.getForcedPose()==net.minecraft.world.entity.Pose.SWIMMING,"the body theirs, face down");
+            h.assertFalse(TheListBody.has(peer),"the other reader has no body");
+            h.assertTrue(TheListNight.time(s,b)>=TheListNight.THREE,"three in the morning");
+            h.assertTrue(f.own(p,P).getBoolean("CameTo1")&&f.own(peer,P).getBoolean("SawShut1"),"each reader's record keeps their night");
+            h.assertFalse(LiteraryVignettes.retreatLocked(p),"the House's door is theirs again");
+            h.assertTrue(peer.position().subtract(Vec3.atLowerCornerOf(b)).distanceTo(new Vec3(82.5,0,-71.5))<1,"the other reader is where they stood");
+            h.assertTrue(doorShut(l,b)&&fitting(l,b,TheListNight.LAMP,Kind.PARTY,6),"the seed house stays shut and dark");
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(TheListSack.worn(p),"the sack is over their head");
+            h.assertTrue(fiveInTown(l,b).isEmpty(),"the five are gone");
+            h.assertTrue(car(l,b,TheListNight.PICKUP_GIN,TownCar.WHITE)==null,"the pickup is gone");
+        }).thenWaitUntil(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.CAME_TO),"waiting to come to");
+        }).thenExecute(()->h.assertTrue(cues(peer).contains(TheListTexts.ALONE),"the other reader is told they are alone"))
+        .thenWaitUntil(()->h.assertTrue(TheListBody.down(p)==0,"waiting to get up"))
+        .thenExecute(()->{
+            h.assertTrue(p.getForcedPose()==null&&TheListBody.walking(p),"up, with the body's walk");
+            TheListNight.end(l,b);TheListBody.end(p);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.NONE&&doorShut(l,b)&&fitting(l,b,TheListNight.LAMP,Kind.SEED,6)&&fitting(l,b,TheListNight.BULB,Kind.FIXTURE,3),"ended, the seed house put back");
             done();h.succeed();
         });
     }

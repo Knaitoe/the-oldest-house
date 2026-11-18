@@ -55,12 +55,14 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     @Override public ResourceLocation getTextureLocation(TownCar car){return InventoryMenu.BLOCK_ATLAS;}
     @Override public void render(TownCar car,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
         shadowRadius=car.kind()==TownCar.CART?.4F:1.3F;
-        draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),car.kind(),Mth.rotLerp(partial,car.yRotO,car.getYRot()),car.rolled(partial),light);
+        draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),car.kind(),Mth.rotLerp(partial,car.yRotO,car.getYRot()),car.rolled(partial),light,car.lit());
         super.render(car,yaw,partial,pose,buffers,light);
     }
 
     /** A car standing on the road at the pose's origin, its nose toward yaw, having rolled that many blocks. */
-    public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light){
+    public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light){draw(pose,out,kind,yaw,rolled,light,kind<TownCar.MOVING);}
+    /** 0.4.706: and with its lights on or off, whatever it is: The list's pickup stands in the pasture with its lights on. */
+    public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light,boolean lit){
         if(kind==TownCar.CART){cart(pose,out,yaw,light);return;}
         kind=Mth.clamp(kind,0,TownCar.CARS-1);
         pose.pushPose();
@@ -68,7 +70,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
         for(int half=0;half<2;half++){
             pose.pushPose();pose.translate(-(half==0?FRONT:BACK)/16F,0,-ACROSS/16F);
             // 0.4.487: one that stands parked has its lights off: its lamps are drawn in the night's own light, as the rest of it is.
-            part(pose,out,BODY[kind][half],light);part(pose,out,LIT[kind][half],kind>=TownCar.MOVING?light:LightTexture.FULL_BRIGHT);
+            part(pose,out,BODY[kind][half],light);part(pose,out,LIT[kind][half],lit?LightTexture.FULL_BRIGHT:light);
             pose.popPose();
         }
         float angle=rolled/(RADIUS/16F);

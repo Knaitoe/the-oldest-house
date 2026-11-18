@@ -6,6 +6,8 @@ the playa, the wind over the flat land, and the water tower ticking as it cools;
 part 1c (0.4.701) the pasture's windmill turning, a pumpjack's stroke and the cattle guard under a reader's feet.
 Part 2 (0.4.705) is the slasher's body: a heart heard through a wall, a locked door struck and giving, the feed sack pulled on or off,
 the body's heavy tread, and the body going down.
+Part 3a (0.4.706) is night one: a cheap radio playing at the stock tank, the seed house's door rolling on its rail, its bolt, the auger
+turning in its trench, and the seed going.
 
 Synthesized from noise with Movie Night's building blocks; no recordings. Mono, so Minecraft places each one where it happens. Run
 from the repository root. Existing files are kept, so the committed sounds only change when deleted first.
@@ -32,6 +34,11 @@ ROWS = {
     'sack': ('Burlap rustles', 12),
     'tread': ('Heavy footsteps', 24),
     'down': ('A body hits the ground', 16),
+    'radio': ('A radio plays', 48),
+    'slide': ('A heavy door rolls on its rail', 32),
+    'bolt': ('A bolt drops', 24),
+    'auger': ('An auger turns', 40),
+    'seed': ('Seed pours', 16),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -358,9 +365,92 @@ def down():
     return out
 
 
+def radio():
+    # Eight seconds of a portable radio on the ground at a party: a two-chord shuffle, a bass walking under it, a snare on the
+    # backbeat and a voice singing over it, all through a speaker the size of a hand: nothing low, nothing bright, and the station's
+    # hiss under it. It loops, so it ends where it begins.
+    n = seconds(8.0)
+    t = times(n)
+    beat = .5
+    step = (t / beat).astype(int)
+    pos = (t % beat) / beat
+    roots = np.where((t // 2.0).astype(int) % 2 == 0, 196.0, 147.0)
+    chord = sum(np.sin(2 * np.pi * roots * r * t) for r in (1, 1.26, 1.5)) * (np.exp(-pos * 3) * .7 + .3)
+    bass = np.sin(2 * np.pi * roots * .5 * np.where(step % 2 == 0, 1, 1.5) * t) * np.exp(-pos * 2.5)
+    snare = band(rng.standard_normal(n), 900, 4000) * np.exp(-pos * 14) * (step % 2 == 1)
+    kick = np.sin(2 * np.pi * 70 * pos * beat) * np.exp(-pos * 18) * (step % 2 == 0)
+    words = np.zeros(n)
+    at = .3
+    while at < 7.6:
+        length = rng.uniform(.25, .55)
+        x = t - at
+        shape = np.clip(x / .05, 0, 1) * np.clip((length - x) / .08, 0, 1) * (x >= 0)
+        f = rng.choice((294, 330, 392, 349)) * (1 + .012 * np.sin(2 * np.pi * 5.5 * x))
+        voiced = np.sign(np.sin(2 * np.pi * np.cumsum(np.full(n, f)) / RATE)) * .5
+        words += (band(voiced, 500, 1100) + band(voiced, 1300, 2600) * .4) * shape
+        at += length + rng.choice((.08, .15, .5), p=(.5, .3, .2))
+    hiss = band(rng.standard_normal(n), 2500, 5000) * .05
+    small = band(chord * .3 + bass * .5 + snare * .5 + kick * .4 + words * .9, 380, 3400)
+    edge = np.clip(t / .05, 0, 1) * np.clip((8.0 - t) / .05, 0, 1)
+    return (small + hiss) * edge
+
+
+def slide():
+    # The seed house's door rolling shut on its rail: the wheels' iron rumble along the track, a long scrape where the door rubs its
+    # stop, a squeal from one wheel, and the door's edge striking the jamb.
+    n = seconds(2.2)
+    t = times(n)
+    y = np.clip(t / 1.7, 0, 1)
+    roll = band(rng.standard_normal(n), 60, 400) * (.6 + .4 * np.sin(2 * np.pi * 11 * t) ** 2) * (t < 1.7) * np.sin(np.pi * y) ** .5
+    scrape = band(rng.standard_normal(n), 1500, 4500) * (t > .3) * (t < 1.6) * .25 * (.5 + .5 * np.sin(2 * np.pi * 3 * t))
+    squeal = np.sin(2 * np.pi * (1650 + 120 * np.sin(2 * np.pi * 2 * t)) * t) * np.sin(np.pi * np.clip((t - .5) / .6, 0, 1)) ** 2 * (t > .5) * .08
+    x = t - 1.72
+    jamb = (np.sin(2 * np.pi * 68 * x) + .6 * np.sin(2 * np.pi * 113 * x) + .4 * np.sin(2 * np.pi * 241 * x)) * np.exp(-np.clip(x, 0, None) / .18) * (x >= 0) * 1.3
+    jamb += band(rng.standard_normal(n), 200, 3000) * np.exp(-np.clip(x, 0, None) / .02) * (x >= 0) * 1.1
+    return roll + scrape + squeal + jamb
+
+
+def bolt():
+    # A hasp swung over its staple from outside and a bolt dropped through: two iron clacks and a short ringing.
+    n = seconds(.7)
+    t = times(n)
+    out = np.zeros(n)
+    for at, level, f in ((.02, .7, 820), (.21, 1.0, 1240)):
+        x = t - at
+        on = x >= 0
+        out += band(rng.standard_normal(n), 1200, 6000) * np.exp(-np.clip(x, 0, None) / .006) * on * level
+        out += np.sin(2 * np.pi * f * x) * np.exp(-np.clip(x, 0, None) / .09) * on * level * .3
+    return out
+
+
+def auger():
+    # Four seconds of the seed auger running in its trench: the motor's hum and whine, the screw's flights grinding round in their
+    # trough at a few turns a second, and seed hissing through. It loops.
+    n = seconds(4.0)
+    t = times(n)
+    hum = sum(a * np.sin(2 * np.pi * f * t) for f, a in ((60, .5), (120, .8), (180, .35), (240, .2)))
+    whine = np.sin(2 * np.pi * 760 * t + .4 * np.sin(2 * np.pi * 3 * t)) * .15
+    turn = (np.sin(2 * np.pi * 4 * t) > .2)
+    grind = band(rng.standard_normal(n), 200, 1800) * (.5 + .5 * turn) * .8
+    knock = band(rng.standard_normal(n), 80, 400) * (np.sin(2 * np.pi * 4 * t) > .95) * 1.2
+    hiss = band(rng.standard_normal(n), 2500, 7500) * .25
+    edge = np.clip(t / .05, 0, 1) * np.clip((4.0 - t) / .05, 0, 1)
+    return (hum * .6 + whine + grind + knock + hiss) * edge
+
+
+def seed():
+    # Cottonseed going, a lot of it, down into a trench: a dry pouring hiss that swells and settles, with the seed's soft patter.
+    n = seconds(2.0)
+    t = times(n)
+    y = np.clip(t / 2.0, 0, 1)
+    pour = band(rng.standard_normal(n), 1200, 7000) * np.sin(np.pi * y) ** .8 * .6
+    patter = band(rng.standard_normal(n), 300, 2000) * (rng.random(n) < .02) * 3 * np.sin(np.pi * y)
+    return pour + band(patter, 300, 2000) + band(rng.standard_normal(n), 100, 500) * np.sin(np.pi * y) * .3
+
+
 MAKERS = {'insects': insects, 'dog': dog, 'speaker': speaker, 'tin': tin, 'train': train, 'wind': wind, 'tower': tower, 'sprinkler': sprinkler,
           'windmill': windmill, 'pumpjack': pumpjack, 'guard': guard, 'heart': heart, 'strike': strike, 'splinter': splinter, 'sack': sack,
-          'tread': tread, 'down': down}
+          'tread': tread, 'down': down, 'radio': radio, 'slide': slide, 'bolt': bolt, 'auger': auger, 'seed': seed}
 
 
 def main():

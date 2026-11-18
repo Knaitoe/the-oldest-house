@@ -15,6 +15,10 @@ Part 1c (0.4.701) adds the pasture south of town: buffalo grass and trodden mud,
 guard, a stock tank with its windmill (the wheel drawn apart, for its renderer to turn), three pumpjacks (their beam, cranks, pitman arms
 and rod drawn apart for theirs), a tank battery, the lease's sign and the wells' plates, and the machine block's states.
 
+Part 2 (0.4.705) adds the feed sack (on the head, held, and from inside) and the broken door. Part 3a (0.4.706) adds night one's
+party at the stock tank (a portable radio, an ice chest, empty cans, a camp lantern, a blanket, an empty case) and the seed house's lamp
+and bulb gone dark.
+
 Every title, name and word on a box, a sign or a poster here is made up for this town, except the town's and the county's own names.
 
 Writes the models and block states and the blocks' names. --check verifies everything; --out draws them somewhere else for a look.
@@ -4097,6 +4101,165 @@ def pasture_faces():
 
 
 # ------------------------------------------------------------------------------------------------ the whole set
+# ------------------------------------------------------------------------------------------------ 0.4.706: night one
+# The party at the stock tank and the seed house shut: a portable radio, an ice chest, empty cans, a camp lantern, a blanket on the grass,
+# an empty case; then the lamp over the seed house's door and the bulb inside it, both gone dark.
+def boombox_side():
+    # The radio's ends, black plastic with a molded grip and the jack panel.
+    im = new('#2c2d30', 9706, 3)
+    for y in range(3, 13):
+        dot(im, 7, y, '#3e3f43'); dot(im, 8, y, '#1e1f22')
+    fill(im, 2, 11, 5, 13, '#46484c'); dot(im, 3, 12, '#111214'); dot(im, 4, 12, '#111214')
+    return im
+
+
+def ice_chest(top):
+    # A picnic ice chest: the lid pale with its molded grip, the body a faded blue, a drain plug at the foot, scuffed at the corners.
+    if top:
+        im = new('#e4e2da', 9707, 2)
+        fill(im, 4, 6, 11, 9, '#cfccc2'); fill(im, 5, 7, 10, 8, '#b8b4a8')
+        for i in range(16):
+            dot(im, i, 0, '#f2f0ea'); dot(im, i, 15, '#bcb8ac')
+        return im
+    im = new('#4a6e9a', 9708, 4)
+    for x in range(16):
+        dot(im, x, 0, '#e4e2da'); dot(im, x, 1, '#d2cfc4'); dot(im, x, 2, '#3a5a80')
+    fill(im, 1, 4, 3, 6, '#3a5a80'); fill(im, 12, 4, 14, 6, '#3a5a80')
+    fill(im, 2, 12, 3, 13, '#d8d6cc'); dot(im, 2, 12, '#9a9890')
+    for (x, y) in [(0, 15), (15, 15), (0, 3), (15, 3), (7, 15), (8, 14)]:
+        dot(im, x, y, '#6a86a8')
+    return im
+
+
+def beer_can():
+    # A can's side, standing: a silver top band, the label's broad band and a stripe, dented on one side.
+    im = new('#b8bcc0', 9709, 2)
+    fill(im, 0, 3, 15, 11, '#c8a24a'); fill(im, 0, 6, 15, 7, '#9a2e2a')
+    for x in range(16):
+        dot(im, x, 2, '#e2e4e6'); dot(im, x, 12, '#8a8e92')
+    for y in range(4, 10):
+        dot(im, 11, y, '#a88838')
+    return im
+
+
+def can_top():
+    im = new('#c4c8cc', 9710, 2)
+    for x in range(16):
+        dot(im, x, 0, '#e0e2e4'); dot(im, x, 15, '#9a9ea2')
+    fill(im, 6, 4, 9, 6, '#8c9094'); dot(im, 7, 9, '#5a5e62')
+    return im
+
+
+def lantern(lit):
+    # The camp lantern: its globe lit by the mantle, a glare at the middle; or its painted steel.
+    if lit:
+        im = new('#ffe6a4', 9711, 2)
+        fill(im, 5, 5, 10, 10, '#fff6dc'); fill(im, 6, 6, 9, 9, '#ffffff')
+        for x in range(16):
+            dot(im, x, 0, '#d8b870'); dot(im, x, 15, '#d8b870')
+        for y in range(16):
+            dot(im, 3, y, '#e8c880'); dot(im, 12, y, '#e8c880')
+        return im
+    im = new('#3c5a3e', 9712, 3)
+    for x in range(16):
+        dot(im, x, 0, '#56785a'); dot(im, x, 15, '#22341f')
+    dot(im, 4, 6, '#8a8e86'); dot(im, 11, 6, '#8a8e86')
+    return im
+
+
+def blanket():
+    # A wool blanket spread on the grass: broad bands across it, narrow stripes between, the weave showing, a corner turned under.
+    im = new('#7a3a2e', 9713, 3)
+    bands = ['#7a3a2e', '#7a3a2e', '#d8c49a', '#2e4a6a', '#2e4a6a', '#2e4a6a', '#d8c49a', '#c87a32', '#c87a32', '#d8c49a', '#3e5a3a',
+             '#3e5a3a', '#3e5a3a', '#d8c49a', '#7a3a2e', '#7a3a2e']
+    rnd = random.Random(9713)
+    for y in range(16):
+        for x in range(16):
+            c = bands[y]
+            dot(im, x, y, shade(c, -10 if (x + y) % 2 else 0))
+            if rnd.random() < .06:
+                dot(im, x, y, shade(c, -26))
+    return im
+
+
+def case_box(top):
+    # A cardboard case of beer cans, torn open along its top and empty: the printed band round its sides, a twelve on the end.
+    if top:
+        im = new('#2a2218', 9714, 2)
+        for x in range(16):
+            dot(im, x, 0, '#b08a5a'); dot(im, x, 15, '#b08a5a')
+        for y in range(16):
+            dot(im, 0, y, '#b08a5a'); dot(im, 15, y, '#b08a5a')
+        for (x, y) in [(2, 1), (3, 1), (4, 2), (11, 1), (12, 2), (13, 1)]:
+            dot(im, x, y, '#c8a070')
+        return im
+    im = new('#b08a5a', 9715, 3)
+    fill(im, 0, 5, 15, 9, '#9a2e2a'); fill(im, 0, 6, 15, 6, '#c8a24a')
+    for (x, y) in [(6, 7), (7, 7), (8, 7), (9, 8), (7, 8), (8, 8)]:
+        dot(im, x, y, '#e8dcc0')
+    for x in range(16):
+        dot(im, x, 0, '#c8a070')
+    for (x, y) in [(3, 0), (4, 1), (11, 0), (12, 1)]:
+        dot(im, x, y, '#7a5a3a')
+    return im
+
+
+def bulb_dark():
+    # A bulb with its filament gone dark: grey glass and the dull coil behind it.
+    im = new('#5a5a52', 9716, 2)
+    fill(im, 6, 6, 9, 9, '#4a4a44'); dot(im, 7, 7, '#2e2e2a'); dot(im, 8, 8, '#2e2e2a')
+    return im
+
+
+def party_model(stage):
+    t = {'f': 'boombox', 's': 'boombox_side', 'i': 'ice_chest_side', 'l': 'ice_chest_top', 'c': 'beer_can', 'p': 'can_top', 'g': 'lantern_glass',
+         'm': 'lantern_metal', 'b': 'blanket', 'x': 'case_box', 'o': 'case_top', 'h': 'barn_shade', 'd': 'bulb_dark', 'q': 'galv'}
+    if stage == 0:
+        # A portable radio standing on the grass, its handle up and its antenna out.
+        e = [element([2, 0, 6], [14, 8, 10], {'north': 'f', 'south': 's', 'east': 's', 'west': 's', 'up': 's', 'down': 's'}),
+             element([3, 8, 7.5], [4, 10, 8.5], {'all': 's'}), element([12, 8, 7.5], [13, 10, 8.5], {'all': 's'}), element([3, 10, 7.5], [13, 11, 8.5], {'all': 's'}),
+             element([12.5, 8, 8.75], [13, 16, 9.25], {'all': 'q'}, rotation={'angle': -22.5, 'axis': 'z', 'origin': [12.75, 8, 9]})]
+        return model(e, t, 'boombox', render=None)
+    if stage == 1:
+        e = [element([2, 0, 4], [14, 7, 12], {'north': 'i', 'south': 'i', 'east': 'i', 'west': 'i', 'down': 'i', 'up': 'l'}),
+             element([1.5, 7, 3.5], [14.5, 9, 12.5], {'up': 'l', 'north': 'l', 'south': 'l', 'east': 'l', 'west': 'l', 'down': 'l'})]
+        return model(e, t, 'ice_chest_side', render=None)
+    if stage == 2:
+        # Empty cans: two standing, one on its side, one stepped flat.
+        can = {'north': 'c', 'south': 'c', 'east': 'c', 'west': 'c', 'up': 'p', 'down': 'p'}
+        e = [element([3, 0, 3], [5, 4, 5], can), element([11, 0, 10], [13, 4, 12], can),
+             element([7, 0, 6], [11, 2, 8], {'north': 'p', 'south': 'p', 'east': 'c', 'west': 'c', 'up': 'c', 'down': 'c'}, rotation={'angle': 22.5, 'axis': 'y', 'origin': [9, 1, 7]}),
+             element([3, 0, 11], [6, 0.75, 14], {'all': 'c'})]
+        return model(e, t, 'beer_can', render=None)
+    if stage == 3:
+        e = [element([5, 0, 5], [11, 2, 11], {'all': 'm'}), element([5, 8, 5], [11, 9.5, 11], {'all': 'm'}), element([7.5, 9.5, 7.5], [8.5, 11, 8.5], {'all': 'q'}),
+             element([7, 11, 5.5], [9, 11.75, 10.5], {'all': 'q'})]
+        e += glow([element([5.5, 2, 5.5], [10.5, 8, 10.5], {'north': 'g', 'south': 'g', 'east': 'g', 'west': 'g'})], 14)
+        return model(e, t, 'lantern_glass', render=None)
+    if stage == 4:
+        e = [element([0, 0, 0], [16, 0.5, 16], {'up': 'b', 'down': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'}),
+             element([0, 0.5, 12], [16, 1.25, 16], {'up': 'b', 'north': 'b', 'south': 'b', 'east': 'b', 'west': 'b'})]
+        return model(e, t, 'blanket', render=None)
+    if stage == 5:
+        e = [element([3, 0, 4], [13, 5, 12], {'north': 'x', 'south': 'x', 'east': 'x', 'west': 'x', 'down': 'x', 'up': 'o'}),
+             element([3, 5, 4], [13, 8, 4], {'north': 'x', 'south': 'x'}, rotation={'angle': -22.5, 'axis': 'x', 'origin': [8, 5, 4]})]
+        return model(e, t, 'case_box', render=None)
+    if stage == 6:
+        # The lamp over the seed house's door, gone dark.
+        e = [element([7.5, 12, 11], [8.5, 13, 16], {'all': 'q'}), element([4, 9, 8], [12, 12, 14], {'north': 'h', 'south': 'h', 'east': 'h', 'west': 'h', 'up': 'h'}),
+             element([5.5, 8.5, 9.5], [10.5, 9, 12.5], {'down': 'd'})]
+        return model(e, t, 'barn_shade')
+    # The bare bulb inside the seed house, gone dark.
+    e = [element([7, 14, 7], [9, 16, 9], {'all': 'q'}), element([6.5, 11, 6.5], [9.5, 14, 9.5], {'all': 'd'})]
+    return model(e, t, 'bulb_dark')
+
+
+def party_faces():
+    return {'boombox_side': boombox_side(), 'ice_chest_side': ice_chest(0), 'ice_chest_top': ice_chest(1), 'beer_can': beer_can(),
+            'can_top': can_top(), 'lantern_glass': lantern(1), 'lantern_metal': lantern(0), 'blanket': blanket(), 'case_box': case_box(0),
+            'case_top': case_box(1), 'bulb_dark': bulb_dark()}
+
+
 def fitting_models():
     m = {}
     for s in range(4):
@@ -4129,6 +4292,8 @@ def fitting_models():
         m[f'tower_{s}'] = tower_model(s); m[f'tank_{s}'] = tank_model(s)
     m.update(school_models())
     m.update(pasture_models())
+    for st in range(8):
+        m[f'party_{st}'] = party_model(st)
     return m
 
 
@@ -4191,6 +4356,7 @@ def textures():
             faces[f'drivein_board_{1 + row * 3 + col}'] = board.crop((col * 16, row * 16, col * 16 + 16, row * 16 + 16))
     faces.update(school_faces())
     faces.update(pasture_faces())
+    faces.update(party_faces())
     for name, im in faces.items():
         out[f'block/the_list/{name}.png'] = im
     # 0.4.705: the sack on the head, in the hand, and from inside.
@@ -4407,12 +4573,12 @@ def broken_door(upper):
 KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'mailbox', 'window', 'kitchen', 'table', 'bed', 'room', 'poster',
          'den', 'bath', 'rooftop', 'yard', 'shop', 'fixture', 'front', 'sign_drug', 'sign_feed', 'sign_video', 'sign_law', 'sign_drivein', 'drug',
          'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
-         'pasture', 'stock', 'windmill', 'pumpjack', 'battery']
+         'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
           'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
-          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8}
+          'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 MATERIAL_NAMES = {'caliche': 'Caliche', 'asphalt': 'Main Street Asphalt', 'main_line': 'Painted Line', 'curb': 'Curb', 'sidewalk': 'Sidewalk',

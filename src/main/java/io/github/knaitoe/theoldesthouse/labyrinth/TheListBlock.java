@@ -70,6 +70,9 @@ import net.minecraft.world.phys.shapes.*;
  * the equalizer (3), the cranks and weights (4), the pitman arms (5), the rod and carrier (6), the gearbox and motor on the skid (7);
  * 2-6 are drawn moving by the machine's renderer and never stand as blocks. BATTERY: a tank's lower (0) and upper (1) half, the
  * separator (2), the tank's girth (3, drawn by the tank), the lease's sign (4), the wells' plates (5-7).</li>
+ * <li>0.4.706, night one (docs/THE_LIST_0_4_706.md). PARTY, set out at the stock tank for the party and taken up after: a portable radio
+ * (0), an ice chest (1), empty cans (2), a camp lantern, lit (3), a blanket on the grass (4), an empty case (5); and the seed house shut:
+ * the lamp over its door (6) and the bulb inside it (7), both gone dark.</li>
  * </ul>
  */
 public final class TheListBlock extends HorizontalDirectionalBlock {
@@ -80,7 +83,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
         FRONT,SIGN_DRUG,SIGN_FEED,SIGN_VIDEO,SIGN_LAW,SIGN_DRIVEIN,DRUG,VIDEO,LAW,FEED,DRIVEIN,
         GIN,BALE,SEED,TOWER,TANK,
         FIELD,STANDS,LOCKER,SCORE,AMBER,LOT,
-        PASTURE,STOCK,WINDMILL,PUMPJACK,BATTERY;
+        PASTURE,STOCK,WINDMILL,PUMPJACK,BATTERY,
+        PARTY;
         public String getSerializedName(){return name().toLowerCase(java.util.Locale.ROOT);}
     }
     public static final EnumProperty<Kind> KIND=EnumProperty.create("kind",Kind.class);
@@ -109,6 +113,7 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case FRONT->stage==0?8:0;
             case AMBER->stage==0?6:stage==3?12:stage==6?8:0;
             case SHOP->stage==3?12:0;
+            case PARTY->stage==3?14:0;
             default->0;
         };
     }
@@ -170,6 +175,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case WINDMILL->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 6->t(f,0,0,0,6,5,6);case 7->t(f,7,0,0,9,16,16);default->Block.box(7,0,7,9,16,9);};
             case PUMPJACK->switch(stage){case 0->Block.box(5,0,5,11,13,11);case 1->t(f,0,0,5,16,16,11);case 7->t(f,2,0,1,14,16,15);default->Block.box(7,0,7,9,16,9);};
             case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->t(f,0,0,2,16,16,14);case 4->Block.box(0,0,6,16,16,10);default->t(f,6,0,8,10,16,12);};
+            case PARTY->switch(stage){case 0->t(f,2,0,6,14,11,10);case 1->t(f,1.5,0,3.5,14.5,9,12.5);case 2->Block.box(3,0,3,13,4,13);case 3->Block.box(5,0,5,11,11.75,11);
+                case 4->Block.box(0,0,0,16,1.25,16);case 5->t(f,3,0,4,13,5,12);case 6->t(f,4,8.5,8,12,13,16);default->Block.box(6.5,11,6.5,9.5,16,9.5);};
         };
     }
     /** What stands in the way: buildings' fittings, fences and walls, trunks, posts and machines; not crops, weeds, canopies, wires,
@@ -208,6 +215,8 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
             case WINDMILL->stage==0||stage==6?getShape(s,l,p,c):Shapes.empty();
             case PUMPJACK->switch(stage){case 0,7->getShape(s,l,p,c);case 1->t(s.getValue(FACING),0,0,5,16,32,11);default->Shapes.empty();};
             case BATTERY->switch(stage){case 0,1,3->Shapes.block();case 2->getShape(s,l,p,c);case 4->Shapes.or(t(s.getValue(FACING),-13,0,7,-11,16,9),t(s.getValue(FACING),27,0,7,29,16,9));default->t(s.getValue(FACING),7,0,9,9,13,11);};
+            // 0.4.706: the cans, the blanket and the dead lamp and bulb are stepped over or under.
+            case PARTY->stage==2||stage==4||stage>=6?Shapes.empty():getShape(s,l,p,c);
             default->getShape(s,l,p,c);
         };
     }
