@@ -1092,21 +1092,38 @@ public final class LiteraryRenderers {
         /** 0.4.707: Amber's page held up to her window: the right arm straight out toward the glass and a little to her right, where the
          * window is, the hand steady but for a breath. */
         /**
-         * 0.4.708, The list's hunt: running, leaned into it, the arms pumping harder than a walk's; crouched in hiding (the game's crouch)
-         * with the arms drawn in round the knees and the head down, the breath going fast in the shoulders; cowering, the arms up over the
-         * head and the face down into them. A swing is the game's own attack swing.
+         * 0.4.708, The list's hunt: running, leaned into it, the arms pumping harder than a walk's; hidden, sat on the floor with the
+         * knees drawn up, the arms round them and the head down, the breath going fast in the shoulders; cowering, down on the heels and
+         * bent over, the arms up over the head. A swing is the game's own attack swing.
          */
         public void hunted(int gesture,float age,float amount){
             switch(gesture){
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.RUNNING->{body.xRot+=.18F*Math.min(1,amount*1.5F);head.xRot-=.12F*Math.min(1,amount*1.5F);
                     rightArm.xRot*=1.35F;leftArm.xRot*=1.35F;rightArm.zRot+=.08F;leftArm.zRot-=.08F;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.HIDING->{float b=net.minecraft.util.Mth.sin(age*.55F)*.035F;
-                    rightArm.xRot=-1.05F+b;leftArm.xRot=-1.05F+b;rightArm.yRot=-.42F;leftArm.yRot=.42F;rightArm.zRot=.1F;leftArm.zRot=-.1F;head.xRot=.38F-b;}
+                    // 0.4.708, seen in the frames: the game's crouch only bends the back a little, and from the front a hidden name read
+                    // as standing. Down on the floor instead, the knees drawn up, the arms round them and the head down on them.
+                    low(21.5F,.42F+b,-1.95F);
+                    rightArm.xRot=-1.0F+b;leftArm.xRot=-1.0F+b;rightArm.yRot=-.36F;leftArm.yRot=.36F;rightArm.zRot=.06F;leftArm.zRot=-.06F;
+                    head.xRot=.82F-b;head.yRot=0;head.zRot=0;}
                 case io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.COWERING->{float b=net.minecraft.util.Mth.sin(age*.7F)*.03F;
-                    rightArm.xRot=-2.55F+b;leftArm.xRot=-2.55F-b;rightArm.yRot=-.25F;leftArm.yRot=.25F;rightArm.zRot=.42F;leftArm.zRot=-.42F;head.xRot=.62F;}
+                    // Down on the heels, the thighs along the floor, bent over them with the arms up over the head.
+                    low(20F,.62F+b,-1.3F);
+                    rightArm.xRot=-2.55F+b;leftArm.xRot=-2.55F-b;rightArm.yRot=-.25F;leftArm.yRot=.25F;rightArm.zRot=.42F;leftArm.zRot=-.42F;head.xRot=1.0F;head.yRot=0;head.zRot=0;}
                 default->{}
             }
             hat.copyFrom(head);
+        }
+        /**
+         * 0.4.708: sat or knelt low on the floor. The hips at a height in the model's own pixels (the floor is at 24), the thighs swung
+         * forward by an angle from hanging, and the back leaned forward from the hips; the head and arms go with the shoulders.
+         */
+        void low(float hips,float lean,float thigh){
+            float c=net.minecraft.util.Mth.cos(lean),s=net.minecraft.util.Mth.sin(lean);
+            leftLeg.y=rightLeg.y=hips;leftLeg.z=rightLeg.z=0;leftLeg.xRot=rightLeg.xRot=thigh;leftLeg.yRot=-.12F;rightLeg.yRot=.12F;leftLeg.zRot=-.05F;rightLeg.zRot=.05F;
+            body.xRot=lean;body.y=hips-12*c;body.z=-12*s;
+            head.y=body.y;head.z=body.z;
+            leftArm.y=rightArm.y=body.y+2*c;leftArm.z=rightArm.z=body.z+2*s;
         }
         public void pageUp(float age){rightArm.xRot=-1.5F+net.minecraft.util.Mth.sin(age*.05F)*.03F;rightArm.yRot=.55F;rightArm.zRot=0;}
         void fallow(int gesture,float age){
