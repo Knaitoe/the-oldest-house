@@ -330,6 +330,8 @@ public final class TheListHunt {
     /** The town's tick, while someone is in it. */
     static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=HUNTS.get(b.asLong());if(h==null)return;h.tick++;
+        // 0.4.722: one of the five whose place was not loaded when the hunt began is taken on once they are there.
+        if(h.tick%20==0)for(int who:TheListBody.LISTED)if(!h.runners.containsKey(who)){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID()));}
         var slashers=new ArrayList<ServerPlayer>();
         for(var p:here){var live=TheListBody.LIVE.get(p.getUUID());if(live!=null&&live.down==0&&!p.isSpectator())slashers.add(p);}
         if(h.fryer)TheListPeople.cornered(l,b);

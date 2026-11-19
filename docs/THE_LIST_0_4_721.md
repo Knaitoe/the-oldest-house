@@ -19,7 +19,8 @@ tests (the field house's door, the tower), night three's town out with flashligh
    reader the Witness story, as for any other source. Spectators earn nothing.
 
 The town keeps who of the five is dead from one night to the next: one dead on an earlier night is not made again, by the town or by
-the next hunt. A town whose four nights are over, come into by a reader who has not had one and nobody else in it, begins again round
+the next hunt. One of the five whose place is not loaded when a hunt begins is taken into it, once a second, as soon as they are there
+(run 1740 found Deek missing from night three's hunt in the full suite). A town whose four nights are over, come into by a reader who has not had one and nobody else in it, begins again round
 them.
 
 Operators: `/ghosthouse test the_list night three` and `night four` begin those nights round the operator.

@@ -2177,7 +2177,7 @@ public final class TheListTests {
     public static void toTheEnd(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
         var p=f.player("list_end",P);var peer=f.player("list_end_peer",P);var ghost=f.player("list_end_ghost",P);
-        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);hold(f,b,TheListPeople.AT);
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
         .thenExecute(()->{
             f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);cues(p);cues(peer);
@@ -2195,10 +2195,11 @@ public final class TheListTests {
             h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT3&&TheListHunt.on(b)&&TheListNight.time(s,b)==TheListNight.TEN,"back in town, night three: ten o'clock and the hunt on");
             h.assertTrue(cues(p).contains(TheListTexts.NIGHT3)&&TheListBody.has(p),"the hook back, the body theirs");
             h.assertTrue(TheListHunt.state(b,TheListPeople.WES)==null&&TheListPeople.find(l,b,TheListPeople.WES)==null,"Wes, dead the night before, is not made again");
-            h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)!=null,"the rest are hunted");
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)!=null,"the rest are hunted"))
+        .thenExecute(()->{
             TheListNights.dawn(l,b);
             h.assertTrue(TheListNight.phase(s,b)==TheListNights.DONE3&&f.own(p,P).getInt("Night")==3,"first light ends night three");
-            own=f.own(p,P);TheList.arrive(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            var own=f.own(p,P);TheList.arrive(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
             h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT4&&TheListGin.running(b),"night four, the gin running");
             h.assertTrue(cues(p).contains(TheListTexts.NIGHT4),"told");
             cues(p);cues(peer);
