@@ -1,6 +1,6 @@
 # The cursed film — a proposal (October 30)
 
-The owner asked to consider a vignette based on *The Ring*, "focused more on the cursed film element, rather [than] the ghost girl climbing out the tv", with Paul Tremblay's *Horror Movie* as further inspiration. This is a proposal for review, not built yet.
+The owner asked to consider a vignette based on *The Ring*, "focused more on the cursed film element, rather [than] the ghost girl climbing out the tv", with Paul Tremblay's *Horror Movie* as further inspiration. This was a proposal for review; it was built as *Work print* in 0.4.203 (docs/WORK_PRINT_0_4_203.md).
 
 *Owner's notes, October 30: the proposal sounds right; include the monster's costume in the shop, and an Easter egg for the ghost girl. Both are added below.*
 

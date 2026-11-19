@@ -1,7 +1,7 @@
 # After the People Lights Have Gone Off (the owner's proposal)
 
 Recorded verbatim, 2 November 2026: the owner's design for an adaptation of the title story of Stephen Graham Jones's
-collection *After the People Lights Have Gone Off*, sent with the book for reference. Not built. Nothing below is edited;
+collection *After the People Lights Have Gone Off*, sent with the book for reference. Built in 0.4.253 (docs/PEOPLE_LIGHTS_0_4_253.md). Nothing below is edited;
 the owner's line breaks, tables and headings are kept as sent. The book itself is not in the repository.
 
 ---
