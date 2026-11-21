@@ -60,6 +60,8 @@ public final class TheListNights{
         if(n.phase==HUNT3||n.phase==HUNT4)TheListDeputy.tick(l,n,here);
         // 0.4.726: Stace's plan, on night four; she may end the night.
         if(n.phase==HUNT4){TheListStace.tick(l,n,here);if(n.phase!=HUNT4)return true;TheListBus.tick(l,n,here);}
+        // 0.4.732: the rules from the tapes, tried by readers on Amber's side.
+        TheListRules.tick(l,n,here);
         if(n.time>=TheListNight.LIGHT||n.phase==HUNT4&&alive(n)==0){light(l,n,false);return true;}
         return false;
     }
@@ -86,6 +88,8 @@ public final class TheListNights{
         for(int who:TheListBody.LISTED){if(TheListHunt.dead(n.base,who))n.dead|=1<<who;if(TheListHunt.left(n.base,who))n.left|=1<<who;}
         // 0.4.729: every name out of town alive, none dead.
         boolean allGone=night==4&&n.dead==0&&n.left==ALL;
+        // 0.4.732: first light, seen from town, is the one rule from the tapes that holds.
+        if(!bed)TheListRules.dawn(l,n);
         TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);TheListBus.reset(n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;

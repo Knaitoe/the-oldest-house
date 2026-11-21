@@ -2686,6 +2686,47 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /** 0.4.732: the rules from the tapes tried for real by a reader on Amber's side; a spectator and the one who went in try none. */
+    @GameTest(template="empty",batch="the_list_rules",timeoutTicks=6000)
+    public static void theRules(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_rules",P);var q=f.player("list_rules_one",P);var ghost=f.player("list_rules_ghost",P);
+        var door=new BlockPos(-34,0,-37);var stand=door.south(2);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE,door);hold(f,b,TheListPeople.AT);
+        var seq=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(q,P,-2.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);
+            ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            h.assertTrue(TheListDen.begin(p,b),"night two begins");TheListNights.toRan(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT2,"waiting for the hunt"))
+        .thenExecute(()->{
+            cues(q);cues(ghost);
+            f.at(p,P,stand.getX()+.5,0,stand.getZ()+.5);
+            f.at(q,P,stand.getX()+4.5,0,stand.getZ()+.5);f.at(ghost,P,stand.getX()+3.5,0,stand.getZ()+1.5);
+            for(var r:List.of(q,ghost,p)){r.setItemInHand(InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TORCH));}
+            for(var r:List.of(q,ghost))r.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,p.getEyePosition());
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p)&&TheListBody.down(p)==0,"waiting for the body"))
+        .thenWaitUntil(()->h.assertTrue(TheListRules.tried(f.own(q,P),TheListRules.LIGHT),"waiting for the light to be held on it: "+f.own(q,P)))
+        .thenExecute(()->{
+            h.assertTrue(cues(q).contains(TheListTexts.RULE_LIGHT),"told the light doesn't keep it back");
+            h.assertFalse(TheListRules.tried(f.own(ghost,P),TheListRules.LIGHT)||TheListRules.tried(f.own(p,P),TheListRules.LIGHT),"neither the spectator nor the one who went in tries it");
+            p.setItemInHand(InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+        });
+        for(int i=1;i<=TheListBody.STRIKES;i++){
+            seq=seq.thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->use(p,b,door,stand));}
+        seq.thenExecute(()->{
+            h.assertTrue(l.getBlockState(b.offset(door)).is(TheListRegistry.BROKEN_DOOR.get()),"the door gives");
+            h.assertTrue(TheListRules.tried(f.own(q,P),TheListRules.ASKED)&&cues(q).contains(TheListTexts.RULE_ASKED),"the one by it saw it come in unasked");
+            h.assertFalse(TheListRules.tried(f.own(ghost,P),TheListRules.ASKED)||TheListRules.tried(f.own(p,P),TheListRules.ASKED),"nobody else");
+            TheListNights.dawn(l,b);
+            h.assertTrue(TheListRules.tried(f.own(q,P),TheListRules.NIGHT)&&cues(q).contains(TheListTexts.RULE_NIGHT),"first light: the one rule that holds");
+            h.assertTrue(f.own(ghost,P).getInt("Tried")==0&&f.own(p,P).getInt("Tried")==0,"the spectator and the one who went in tried nothing");
+            var a=String.join(" ",pages(TheListTexts.account("x",f.own(q,P))));
+            h.assertTrue(a.contains("came on anyway")&&a.contains("I watched it come in")&&a.contains("That one held"),"the account says what was tried: "+a);
+            TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="the_list_end",timeoutTicks=6000)
     public static void toTheEnd(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
