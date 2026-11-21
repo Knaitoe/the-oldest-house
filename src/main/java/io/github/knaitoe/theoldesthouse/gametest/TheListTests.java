@@ -2537,7 +2537,16 @@ public final class TheListTests {
             h.assertFalse(cues(third).contains(TheListTexts.BUS_DUE),"nor the third");
             for(var q:List.of(p,peer,third,ghost))f.at(q,P,TheListBus.BENCH.x+(q==p?0:q==peer?1:q==third?-1:.5),0,TheListBus.BENCH.z+.5);
         }).thenWaitUntil(()->h.assertTrue(TheListBus.atBench(p,b)&&TheListBus.atBench(peer,b),"waiting for them at the bench"))
+        // 0.4.735: the bus itself, standing in the lane with its door at the bench before first light.
+        .thenExecute(()->TheListNights.clockTo(l,b,TheListBus.STANDS))
+        .thenWaitUntil(()->{
+            var bus=TheListBus.bus(l,b);var at=bus==null?null:bus.position().subtract(Vec3.atLowerCornerOf(b));
+            h.assertTrue(at!=null&&bus.kind()==TownCar.BUS&&Math.abs(at.x-TheListBus.STOP_X)<.3&&Math.abs(at.z-TheListBus.LANE_Z)<.3,"waiting for the bus at the bench: "+at);
+        })
         .thenExecute(()->{
+            var bus=TheListBus.bus(l,b);
+            h.assertTrue(bus.lit()&&!bus.canBeCollidedWith(),"its lamps are on, and it is no wall");
+            h.assertTrue(Math.abs(b.getX()+TheListBus.STOP_X+4.375-(b.getX()+TheListBus.BENCH.x))<.01,"its door is at the bench");
             TheListNights.dawn(l,b);
             h.assertTrue(TheListNight.phase(s,b)==TheListNights.OVER,"first light ends the four nights");
             var own=f.own(p,P);
@@ -2555,6 +2564,9 @@ public final class TheListTests {
             h.assertTrue(account.contains("first bus out"),"the account says so");
             h.assertFalse(String.join(" ",pages(TheListTexts.account("x",peers))).contains("first bus out"),"theirs does not");
             h.assertFalse(TheListBus.told(b,p.getUUID()),"the night put away, who was told is forgotten");
+            h.assertTrue(TheListBus.bus(l,b)!=null,"the bus is still there, pulling out");
+        }).thenWaitUntil(()->h.assertTrue(TheListBus.bus(l,b)==null,"waiting for the bus to pull out and be gone"))
+        .thenExecute(()->{
             TheListNight.end(l,b);
             done();h.succeed();
         });

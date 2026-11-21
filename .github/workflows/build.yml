@@ -103,6 +103,7 @@ jobs:
           python3 tools/generate_fallow_audio.py --check
           python3 tools/draw_the_list_art.py --check
           python3 tools/generate_the_list_audio.py --check
+          python3 tools/draw_list_bus.py --check
           python3 tools/draw_pell_tapes.py --check
           python3 tools/draw_calder_art.py --check
           python3 tools/draw_calder_signs.py --check
