@@ -231,8 +231,8 @@ public final class CastConductTests {
      * that he can be the claimant; otherwise this is a first meeting.
      */
     private static void johnny(LiteraryTests.Fixture f,ServerPlayer p,LabyrinthPlace place,@Nullable Truant.Turn turn,boolean veteran){
-        var b=f.base(place);f.chunks.hold(f.in,slot(f,place));
-        TruantPlaces.build(f.in,b,place);LabyrinthBuilder.registerDoors(f.data(),place,b);
+        var b=f.base(place);var l=f.level(place);f.chunks.hold(l,slot(f,place));
+        TruantPlaces.build(l,b,place);LabyrinthBuilder.registerDoors(f.data(),place,b);
         Truant.fresh();Truant.apart();Truant.force(turn);
         if(veteran){
             var exp=HouseExperience.record(f.data(),p.getUUID());exp.putInt("Deepest",25);HouseExperience.save(f.data(),p.getUUID(),exp);
@@ -240,10 +240,10 @@ public final class CastConductTests {
         }
         after=()->{
             Talk.clearAll();
-            for(var a:f.in.getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(b,place),Truant::isTruant))a.discard();
+            for(var a:l.getEntitiesOfClass(LiteraryActor.class,IndianLakeRooms.bounds(b,place),Truant::isTruant))a.discard();
             Truant.fresh();Truant.apart();Truant.force(null);
         };
-        throughTheDoor(f,p,b);
+        p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3,180,0);p.hasChangedDimension();p.setDeltaMovement(Vec3.ZERO);
     }
     @GameTest(template="empty",batch="cast_truant_lamp",timeoutTicks=TIMEOUT) public static void johnnyAtHisLamp(GameTestHelper h){
         sweep(h,TruantPlaces.LAMP,(f,p)->johnny(f,p,TruantPlaces.LAMP,Truant.Turn.HELP,false),c->{});
@@ -257,6 +257,52 @@ public final class CastConductTests {
         sweep(h,TruantPlaces.DOOR,(f,p)->johnny(f,p,TruantPlaces.DOOR,Truant.Turn.HELP,false),c->{});
     }
     @AfterBatch(batch="cast_truant_door") public static void truantDoorDone(ServerLevel l){close();}
+    // 0.4.744: his other turns, each at its own place, with a reader he can turn on (the claimant's history).
+    @GameTest(template="empty",batch="cast_truant_doorway",timeoutTicks=TIMEOUT) public static void johnnyTheHandInTheDoorway(GameTestHelper h){
+        sweep(h,TruantPlaces.DOOR,(f,p)->johnny(f,p,TruantPlaces.DOOR,Truant.Turn.DOORWAY,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_doorway") public static void truantDoorwayDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_cover",timeoutTicks=TIMEOUT) public static void johnnyTheCoveredLight(GameTestHelper h){
+        sweep(h,TruantPlaces.LAMP,(f,p)->johnny(f,p,TruantPlaces.LAMP,Truant.Turn.COVER,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_cover") public static void truantCoverDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_shove",timeoutTicks=TIMEOUT) public static void johnnyTheShove(GameTestHelper h){
+        sweep(h,TruantPlaces.LEDGE,(f,p)->johnny(f,p,TruantPlaces.LEDGE,Truant.Turn.SHOVE,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_shove") public static void truantShoveDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_arrow",timeoutTicks=TIMEOUT) public static void johnnyTheChalkArrow(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_CHALK,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_CHALK,Truant.Turn.ARROW,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_arrow") public static void truantArrowDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_knock",timeoutTicks=TIMEOUT) public static void johnnyTheKnock(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_KNOCK,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_KNOCK,Truant.Turn.KNOCK,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_knock") public static void truantKnockDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_brake",timeoutTicks=TIMEOUT) public static void johnnyTheLiftBrake(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_LIFT,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_LIFT,Truant.Turn.BRAKE,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_brake") public static void truantBrakeDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_shed",timeoutTicks=TIMEOUT) public static void johnnyTheShed(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_SHED,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_SHED,Truant.Turn.SHED,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_shed") public static void truantShedDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_signal",timeoutTicks=TIMEOUT) public static void johnnyTheFalseSignal(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_LANTERN,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_LANTERN,Truant.Turn.SIGNAL,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_signal") public static void truantSignalDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_herd",timeoutTicks=TIMEOUT) public static void johnnyTheHerd(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_STOCK_GATE,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_STOCK_GATE,Truant.Turn.HERD,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_herd") public static void truantHerdDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="cast_truant_sentence",timeoutTicks=TIMEOUT) public static void johnnyTheSentence(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TRUANT_SENTENCE,(f,p)->johnny(f,p,LabyrinthPlace.TRUANT_SENTENCE,Truant.Turn.SENTENCE,true),c->{});
+    }
+    @AfterBatch(batch="cast_truant_sentence") public static void truantSentenceDone(ServerLevel l){close();}
+    /** 0.4.744: the tall grass with one reader; the together cases hold it to the checks with two. Its one person is the driver, who comes only at the end, so the end is begun at once and his stop, walk and going are watched. */
+    @GameTest(template="empty",batch="cast_tall_grass",timeoutTicks=TIMEOUT) public static void tallGrassWithOneReader(GameTestHelper h){
+        sweep(h,LabyrinthPlace.TALL_GRASS,c->{var f=open;var p=f.players.get(0);TallGrass.beginNow(f.level(LabyrinthPlace.TALL_GRASS),LiteraryVignettes.base(p,LabyrinthPlace.TALL_GRASS));});
+    }
+    @AfterBatch(batch="cast_tall_grass") public static void tallGrassDone(ServerLevel l){close();}
 
     /** Seconds a visitor has sat at the kitchen table before the case has them finish their visit, so that their going is watched too. */
     static final int KITCHEN_STAY=7;

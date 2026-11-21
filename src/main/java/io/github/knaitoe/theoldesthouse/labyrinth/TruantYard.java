@@ -39,10 +39,10 @@ public final class TruantYard {
      */
     public static final Vec3 SHED_HOME=new Vec3(1.5,0,-13.6),LANTERN_HOME=new Vec3(-1.5,0,-24.5),GATE_HOME=new Vec3(-.5,0,-19.5);
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
-    private static boolean acted,signalled;private static int shedOut;private static final Set<UUID> HELPED=new HashSet<>(),CAUGHT=new HashSet<>();
+    private static boolean acted,signalled;private static int shedOut,signals;private static final Set<UUID> HELPED=new HashSet<>(),CAUGHT=new HashSet<>();
     public static boolean is(@Nullable LabyrinthPlace p){return p!=null&&PLACES.contains(p);}
     public static void clearAll(){newScene();}
-    static void newScene(){acted=false;signalled=false;shedOut=0;HELPED.clear();CAUGHT.clear();}
+    static void newScene(){acted=false;signalled=false;shedOut=0;signals=0;HELPED.clear();CAUGHT.clear();}
     static Vec3 home(LabyrinthPlace p){return p==SHED?SHED_HOME:p==LANTERN?LANTERN_HOME:GATE_HOME;}
     public static CompoundTag state(ServerLevel l,LabyrinthPlace p){return LabyrinthData.get(l.getServer()).stateEntry(STATE,p.id());}
     private static void save(ServerLevel l,LabyrinthPlace p,CompoundTag s){LabyrinthData.get(l.getServer()).setStateEntry(STATE,p.id(),s);}
@@ -157,10 +157,12 @@ public final class TruantYard {
         }
         if(acted)Truant.face(a,Vec3.atCenterOf(b.offset(1,0,-17)));
     }
+    private static final String[] CALLS={"It's dropped. This side, under the roof.","Now. While it's quiet.","Go on."},FALSE_CALLS={"Now. Come on. I'll wait here.","It's dropped. Come across.","Now."};
     private static void lantern(ServerLevel l,BlockPos b,LiteraryActor a,List<ServerPlayer> readers,Truant.Scene sc){
         long clock=state(l,LANTERN).getLong("Clock");boolean wind=gust(clock),falseSignal=mayAct(sc,readers,Truant.Turn.SIGNAL),raised=falseSignal?wind:!wind;
         Truant.gesture(a,raised?Truant.LAMP:0);
-        if(raised&&!signalled){Truant.say(a,falseSignal?"Now. Come on. I'll wait here.":"It's dropped. This side, under the roof.");signalled=true;}if(!raised)signalled=false;
+        // What he calls with the lamp the first three times it goes up; after that the lamp alone.
+        if(raised&&!signalled){var said=falseSignal?FALSE_CALLS:CALLS;if(signals<said.length)Truant.say(a,said[signals]);signals++;signalled=true;}if(!raised)signalled=false;
         for(var p:readers){var r=p.position().subtract(Vec3.atLowerCornerOf(b));if(r.z< -12&&r.z> -24&&r.x> -1&&r.x<3){
             if(!wind&&sc.turn==Truant.Turn.HELP)helped(p,LANTERN,HELP_LANTERN,clock);
             if(wind&&falseSignal&&p.getUUID().equals(sc.target)&&CAUGHT.add(p.getUUID()))Truant.harm(p,"false_wind_signal","FalseWindSignals");

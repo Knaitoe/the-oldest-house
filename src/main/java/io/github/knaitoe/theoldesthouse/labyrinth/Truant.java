@@ -453,7 +453,7 @@ public final class Truant {
                     if(a.position().distanceToSqr(spot)<.01&&!sc.saidOut){sc.saidOut=true;say(a,TruantTexts.OUT);}
                     break;
                 }
-                var spot=base.add(TruantPlaces.LAMP_SPOT);walk(a,spot,.07);
+                var spot=base.add(TruantPlaces.LAMP_SPOT);walk(a,toAlcove(a,base),.07);
                 if(sc.turn==Turn.COVER&&t!=null&&sc.cover==0&&a.position().distanceToSqr(spot)<.01&&t.distanceToSqr(a)<2.6*2.6&&!gated(readers)&&!withdrawn(t)){sc.cover=1;sc.coverTicks=0;cover(l,b,a,t,readers);break;}
                 if(a.position().distanceToSqr(spot)<.01){
                     var r=nearest(a,readers);if(r!=null)face(a,r.position());else{a.setYRot(0);a.setYBodyRot(0);a.setYHeadRot(0);}
@@ -792,6 +792,11 @@ public final class Truant {
             case 3->{face(a,t.position());gesture(a,REACH);if(sc.coverTicks>=WRIST_HOLD)release(l,b,a,t);}
             default->{}
         }
+    }
+    /** Back to his place by the lamp from out in the corridor: along the corridor to the alcove's mouth first, then in, so that the corner of its wall is never cut. */
+    static Vec3 toAlcove(LiteraryActor a,Vec3 base){
+        var rel=a.position().subtract(base);var spot=TruantPlaces.LAMP_SPOT;
+        return Math.abs(rel.x-spot.x)>.05&&rel.z>-9.1?base.add(new Vec3(spot.x,0,-8.5)):base.add(spot);
     }
     /** He lets go: the lamp lit again, his effects gone, and the one he held asked what he asks. */
     static void release(ServerLevel l,BlockPos b,LiteraryActor a,@Nullable ServerPlayer t){

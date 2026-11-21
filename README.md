@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.743** adds the stories built for each reader where they are (the backseat's road, the silo, Drisking) to the multiplayer sweep: three readers, one dropping out while their site is being built, a reconnect and a spectator (`docs/MULTIPLAYER_AUDIT.md`). No game change.
+Development candidate **0.4.744** holds Johnny's other turns, and the tall grass with one reader, to the cast checks. They found two faults, both fixed. After the covered light Johnny cut through the corner of the corridor wall on his way back to his lamp. At the lantern yard he called the same line every time the wind dropped (`docs/CAST_MANNERS_0_4_600.md`).
 
-Previous: 0.4.742: a reader who drops out in the middle of a story with a job no longer holds up the others. At Pinehook a reader who logs out carrying the cooler leaves it back on the porch. Three new cases cover dropping out mid-story at the Last Crossing, Pinehook and the Goatman (`docs/MULTIPLAYER_AUDIT.md`).
+Previous: 0.4.743 adds the stories built for each reader where they are (the backseat's road, the silo, Drisking) to the multiplayer sweep: three readers, one dropping out while their site is being built, a reconnect and a spectator (`docs/MULTIPLAYER_AUDIT.md`). No game change.
 
 Earlier: 0.4.707 finished night one of *The list* (part 3b; `docs/THE_LIST_0_4_707.md`), and the House now deals the town: from ten crossings down, to a reader who has not had night one, five readers to a town. The first through the door is the one Deek picks, and the night begins round them. After the reader comes to under the water tower, Amber is up at her front window with a page out of a notebook. Each reader who passes in the street gets a page of their own held up to the glass, then a second: TOMORROW. BACK DOOR. AFTER TEN. A knock on her glass is answered. Night one ends when the one who went in lies down on their own bed, or when first light comes round on its own; each reader keeps that they have had it and where they were when it got light.
 

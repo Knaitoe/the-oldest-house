@@ -90,10 +90,10 @@ Local runs on the release's tree, before the workflow's own:
 
 The client's proof chain was not run: nothing a client draws has changed.
 
-## Not covered
+## Not covered (until 0.4.744)
 
-- **Johnny's other turns.** Only the lamp (as stranger and as claimant) and the heavy door (helping) go round under the checks. The hand in the doorway, the covered light, the shove, and his service halls, yard and copying room are walked by his own cases, which do not hold him to the checks.
-- **The Tall Grass with one reader.** It is under the two-reader checks only.
+- **Johnny's other turns** (0.4.744). Each of his ten hostile turns now goes round under the checks at its own place, with a reader who has the claimant's history: the hand in the doorway, the covered light, the shove, the chalk arrow, the knock, the lift brake, the shed, the false signal, the herd and the sentence (`CastConductTests#johnnyThe...`). Two faults were found and fixed. After the covered light he walked straight back to his lamp and cut through the corner of the corridor wall; he now goes along the corridor to the alcove's mouth and then in. At the lantern he called the same line each time the wind dropped; he now has three calls and then raises the lamp without a word.
+- **The Tall Grass with one reader** (0.4.744). `CastConductTests#tallGrassWithOneReader`. Its one person is the driver, who comes only at the end, so the case begins the end at once and watches him stop, walk and go.
 - **No client has drawn it.** Nobody has watched the kitchen's door open for a visitor in a client.
 - **The passage as a reader leaves it.** After a reader has arrived, the passage behind the kitchen's door is a copy of the hall they came from. The cases run with the plain passage a new kitchen has. A visitor is made only where there is room to stand, so a passage with something in the way has them made to one side, or not at all until it is clear; no case builds one.
 - **Two readers in two places.** No case puts one reader in the kitchen with Johnny and another in his hall. The rule is two lines (`elsewhere`, `Truant.withSomeone`).
