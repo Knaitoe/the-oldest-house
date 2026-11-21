@@ -310,6 +310,8 @@ public final class TheListTexts {
     /** 0.4.726: where Stace's plan ends the night, told to the one who went in: the gin, the tower, the playa. */
     public static final String[] STACE_PLAN={"Over by the tracks, the gin's lights come on all at once.","A flashlight at the foot of the water tower swings once toward you and holds.","Out on the playa a pair of headlights comes on and stays on."};
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
+    /** 0.4.737: the three out with flashlights (TheListSearch). */
+    public static final String[] SEARCHER_NAMES={"Mr. Purcell","Ronnie","Mrs. Teague"};
     /** What each says to a reader: the first line, then the second, and the second again after that. */
     private static final String[][] SAID={
         {"It's one in the morning. Mom's asleep across the hall.","Go home. I'll see you in first period."},
@@ -566,6 +568,10 @@ public final class TheListTexts {
         /** 0.4.736: the deputy's patrol car, its spotlight on the one who went in; and what comes over its radio. */
         CRUISER_SPOT="A spotlight swings off the road and stays on you.",
         CRUISER_RADIO="Over the radio, from the car: they're out by the road, come on.",
+        // 0.4.737: the town out with flashlights.
+        SEARCH_SHOUT="Over here! There's somebody over here!",
+        SEARCH_SEEN="Another flashlight swings round and finds you.",
+        SEARCH_HOUSE="Flashlights stop in the street in front of your house.",
         NIGHT4="Ten o'clock. Over the highway the gin is running. You can hear it from the kitchen.",
         // 0.4.721: first light after the fourth night: the one who went in, and anyone else.
         END_WENT_IN="It gets light over the gin, and the hands are your own again. The tape deck in your room is running.",

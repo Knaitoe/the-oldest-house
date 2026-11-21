@@ -411,7 +411,7 @@ public final class TheListBody {
         PacketDistributor.sendToPlayer(p,new TheListBodyPayload(true,live.down,yaw,strength));
     }
     /** Standing in light: a street lamp, a porch light, a lit window. */
-    public static boolean lit(ServerPlayer p,ServerLevel l){return TheListCruiser.spotting(p)||l.getBrightness(LightLayer.BLOCK,BlockPos.containing(p.getEyePosition()))>=10;}
+    public static boolean lit(ServerPlayer p,ServerLevel l){return TheListCruiser.spotting(p)||TheListSearch.spotting(p)||l.getBrightness(LightLayer.BLOCK,BlockPos.containing(p.getEyePosition()))>=10;}
 
     // ------------------------------------------------------------------------------------------------ the tread
     static void tread(ServerPlayer p,ServerLevel l,Live live){

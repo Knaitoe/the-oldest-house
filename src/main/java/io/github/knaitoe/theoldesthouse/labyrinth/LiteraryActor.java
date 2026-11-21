@@ -331,7 +331,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
     @Override public void travel(net.minecraft.world.phys.Vec3 input){
         // 0.4.708: The list's five walk the same way when the hunt sends them running, at the body's own pace (TheListHunt).
         if(!level().isClientSide&&scene.equals(LabyrinthPlace.BORRASCA.id()))input=BorrascaCast.input(this);
-        else if(!level().isClientSide&&scene.equals(LabyrinthPlace.THE_LIST.id())&&role()==STRANGER&&TheListPeople.cast(phase())){TheListHunt.steer(this);input=BorrascaCast.input(this);setSpeed(getSpeed()*TheListHunt.pace(this));}
+        else if(!level().isClientSide&&scene.equals(LabyrinthPlace.THE_LIST.id())&&role()==STRANGER&&(TheListPeople.cast(phase())||TheListSearch.cast(phase()))){TheListHunt.steer(this);input=BorrascaCast.input(this);setSpeed(getSpeed()*TheListHunt.pace(this));}
         super.travel(input);}
     @Override public void move(MoverType type,net.minecraft.world.phys.Vec3 movement){
         if(type==MoverType.SELF&&role()==KILLER&&scene.equals(LabyrinthPlace.ELK_CARCASSES.id())&&owner().isPresent()&&KillerNavigation.moving(this)){

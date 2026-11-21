@@ -995,11 +995,23 @@
   "limbs": 0.97,
   "shoulders": 1
  },
- "literary_list_shannon": {
+ "literary_list_searcher_a": {
   "depth": 0.84,
   "height": 1.02,
   "limbs": 0.88,
   "shoulders": 0.9
+ },
+ "literary_list_searcher_b": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_list_shannon": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
  },
  "literary_list_stace": {
   "depth": 1.16,
