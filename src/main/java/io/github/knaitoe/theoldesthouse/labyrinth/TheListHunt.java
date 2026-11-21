@@ -223,6 +223,8 @@ public final class TheListHunt {
         final Step[][] ways;final Step[] back;final boolean huddled;
         /** 0.4.729: who on Amber's side warned them off, and how long they have been on their way out of town. */
         @Nullable UUID warnedBy;int leaving;
+        /** 0.4.730: whether a reader on Amber's side is keeping their heart quiet now, and who has, this hunt. */
+        boolean hush;final Set<UUID> hushers=new HashSet<>();
         Runner(int who,UUID id,int night){this.who=who;this.id=id;huddled=TheListHuddle.huddled(night);ways=huddled?TheListHuddle.WAYS[who]:WAYS[who];back=huddled?TheListHuddle.BACK[who]:BACK[who];}
     }
     static final class Hunt{
@@ -261,6 +263,10 @@ public final class TheListHunt {
     /** 0.4.709: whether one of the five is dead, or as good as: the hook out of them. Their heart is not heard, they see nothing, and
      * nothing draws the slasher to them. */
     public static boolean gone(Entity e){var r=runner(e);return r!=null&&gone(r);}
+    /** For a check: one of the five hidden where they stand, as at the end of a way. */
+    public static void hideNow(ServerLevel l,BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);if(r!=null&&l.getEntity(r.id) instanceof LiteraryActor a){BorrascaCast.stop(a);hide(r,a,a.position(),Direction.NORTH);}}
+    /** 0.4.730: whether one of the five has their heart kept quiet now (TheListAmber). */
+    public static boolean hushed(Entity e){var r=runner(e);return r!=null&&r.hush;}
     static boolean gone(Runner r){return r.state==State.DEAD||r.state==State.LEFT||r.state==State.FINISH&&r.since>=OUT;}
     static @Nullable Runner runner(Entity e){
         if(!(e instanceof LiteraryActor a)||!TheListPeople.is(a))return null;
@@ -316,7 +322,7 @@ public final class TheListHunt {
     /** Ended: everyone stood up and sent back to their place, the doors put back. */
     public static void end(ServerLevel l,BlockPos b){
         var h=HUNTS.remove(b.asLong());if(h==null)return;
-        TheListGin.reset(b);
+        TheListGin.reset(b);TheListAmber.clear(b);
         for(var r:h.runners.values()){
             release(l,r);
             if(r.holder!=null){var p=l.getServer().getPlayerList().getPlayer(r.holder);if(p!=null)TheListBody.holding(p,false);}
@@ -358,6 +364,9 @@ public final class TheListHunt {
         for(var r:h.runners.values()){
             if(!(l.getEntity(r.id) instanceof LiteraryActor a)||!a.isAlive())continue;
             r.since++;
+            // 0.4.730: hidden or cornered, a heart kept quiet by a reader crouched beside them.
+            r.hush=false;
+            if(r.state==State.HIDE||r.state==State.COWER)for(var q:here)if(TheListAmber.hushes(q,a)){r.hush=true;if(r.hushers.add(q.getUUID()))TheListAmber.hushed(q,r.who);}
             switch(r.state){
                 case CALM->{if(h.tick%5==0)for(var s:slashers)if(notices(l,a,s)){run(l,b,h,r,a,here,true);break;}}
                 case RUN->{

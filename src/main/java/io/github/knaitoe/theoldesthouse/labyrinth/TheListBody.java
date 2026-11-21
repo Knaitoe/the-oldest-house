@@ -345,7 +345,7 @@ public final class TheListBody {
     static void hearts(ServerPlayer p,ServerLevel l,Live live,long now){
         var heard=new HashSet<UUID>();
         for(var a:live.people){
-            if(!a.isAlive()||TheListHunt.gone(a))continue;boolean name=listed(TheListPeople.who(a));
+            if(!a.isAlive()||TheListHunt.gone(a)||TheListHunt.hushed(a))continue;boolean name=listed(TheListPeople.who(a));
             double reach=name?NAME_HEART:HEART;if(a.distanceToSqr(p)>reach*reach)continue;
             beat(p,a,name,TheListPeople.asleep(a.phase()),live,now,heard);
         }
@@ -397,7 +397,7 @@ public final class TheListBody {
     /** The nearest name, and how hard they draw the reader now, sent to the reader's own screen. */
     static void pull(ServerPlayer p,ServerLevel l,Live live){
         LiteraryActor near=null;double best=PULL;
-        for(var a:live.people){if(!a.isAlive()||!listed(TheListPeople.who(a))||TheListHunt.gone(a))continue;double d=a.distanceTo(p);if(d<best){best=d;near=a;}}
+        for(var a:live.people){if(!a.isAlive()||!listed(TheListPeople.who(a))||TheListHunt.gone(a)||TheListHunt.hushed(a))continue;double d=a.distanceTo(p);if(d<best){best=d;near=a;}}
         float strength=0,yaw=0;
         if(near!=null){
             var to=near.position().subtract(p.position());yaw=(float)Math.toDegrees(Math.atan2(-to.x,to.z));
@@ -500,20 +500,24 @@ public final class TheListBody {
         if(blows!=null&&now-blows[1]<STRIKE_GAP)return true;
         int n=blows==null?1:(int)blows[0]+1;BLOWS.put(at.asLong(),new long[]{n,now});
         p.swing(InteractionHand.MAIN_HAND,true);
+        // 0.4.730: a door braced by readers on Amber's side takes more (TheListAmber); the last cue waits for the last blow.
+        int base=steel?STEEL_STRIKES:STRIKES,need=base+TheListAmber.extra(l,at);
+        String cue=n>=need?(steel?TheListTexts.STEEL_STRIKES:TheListTexts.STRIKES)[base-1]:n>=base?TheListTexts.BRACE_HOLDS:(steel?TheListTexts.STEEL_STRIKES:TheListTexts.STRIKES)[n-1];
+        int crack=Math.min(9,n*9/need);
         if(steel){
             l.playSound(null,at.getX()+.5,at.getY()+1,at.getZ()+.5,net.minecraft.sounds.SoundEvents.ZOMBIE_ATTACK_IRON_DOOR,SoundSource.BLOCKS,1.4F,.8F+l.getRandom().nextFloat()*.1F);
-            TheList.cue(p,TheListTexts.STEEL_STRIKES[Math.min(n,STEEL_STRIKES)-1]);
-            if(n<STEEL_STRIKES){l.destroyBlockProgress(breaker(at),at,n*2);l.destroyBlockProgress(breaker(at.above()),at.above(),n*2);return true;}
-            BLOWS.remove(at.asLong());
+            TheList.cue(p,cue);
+            if(n<need){l.destroyBlockProgress(breaker(at),at,crack);l.destroyBlockProgress(breaker(at.above()),at.above(),crack);return true;}
+            BLOWS.remove(at.asLong());TheListAmber.unbrace(at);
             l.destroyBlockProgress(breaker(at),at,-1);l.destroyBlockProgress(breaker(at.above()),at.above(),-1);
             TheListHunt.spring(l,b,lower);
             return true;
         }
         l.playSound(null,at.getX()+.5,at.getY()+1,at.getZ()+.5,TheListRegistry.STRIKE.get(),SoundSource.BLOCKS,1.4F,.9F+l.getRandom().nextFloat()*.15F);
         l.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK,Blocks.STRIPPED_OAK_LOG.defaultBlockState()),at.getX()+.5,at.getY()+1,at.getZ()+.5,6+4*n,.25,.4,.25,.05);
-        TheList.cue(p,TheListTexts.STRIKES[Math.min(n,STRIKES)-1]);
-        if(n<STRIKES){l.destroyBlockProgress(breaker(at),at,n*3);l.destroyBlockProgress(breaker(at.above()),at.above(),n*3);return true;}
-        BLOWS.remove(at.asLong());
+        TheList.cue(p,cue);
+        if(n<need){l.destroyBlockProgress(breaker(at),at,crack);l.destroyBlockProgress(breaker(at.above()),at.above(),crack);return true;}
+        BLOWS.remove(at.asLong());TheListAmber.unbrace(at);
         l.destroyBlockProgress(breaker(at),at,-1);l.destroyBlockProgress(breaker(at.above()),at.above(),-1);
         give(l,at);
         return true;
