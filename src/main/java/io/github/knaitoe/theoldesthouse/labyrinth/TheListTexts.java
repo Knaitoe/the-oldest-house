@@ -125,6 +125,11 @@ public final class TheListTexts {
     public static final String STOPS_SHORT="Somewhere to the %s, a scream stops short.";
     /** To anyone's hand on one of them after. */
     public static final String STILL_BODY="%s doesn't move.";
+    /** 0.4.729, Amber's side: what each of the five says, warned off; the cues. */
+    public static final String[] LEAVING={null,null,null,"Fine. I've got the truck. I'm gone.","Where am I supposed to go? Okay. Okay, I'm going.","My aunt's in Big Spring. I can walk to the highway.",
+        "I'm not waiting around to find out.","Tell Jenna I'm going to my sister's. Tell her I'm sorry.",null,null,null,null};
+    public static final String WARNED="%s goes off toward the highway.",ALREADY_LEAVING="%s is already on the way out.",
+        GOT_OUT="Nobody has seen %s since the highway.",HEART_GONE="One of the hearts goes quiet, a long way off.";
     // ------------------------------------------------------------------------------------------------ 0.4.710: the dead found
     /** What each of the five says on coming across one of the others dead (the dead one's name). */
     public static final String[] FOUND_BODY=new String[TheListPeople.CAST];
@@ -351,10 +356,19 @@ public final class TheListTexts {
             // 0.4.727: Stace, on the last night.
             if(own.getBoolean("StaceDead"))parts.add("On the last night Stace Goodkin came out with a shovel to finish it. She is the one I didn't plan on.");
             else if(own.getBoolean("Stopped"))parts.add("On the last night Stace Goodkin came out with a shovel and finished it. I didn't get up the third time.");
+            // 0.4.729: every name out of town.
+            if(own.getBoolean("AllGone"))parts.add("By the last morning every one of them had left town. I walked out onto the playa and stood there until it was light.");
             // 0.4.728: the dawn bus.
             if(own.getBoolean("Bus"))parts.add("When it got light the last time I was on the bench outside the feed store, and I got on the first bus out with the sack folded in my bag. I never went back for the rest of my things.");
             if((own.getInt("Rules")&1)!=0)parts.add("Amber wrote one rule in her notebook from the field, in her own hand: he can't run, and doesn't need to.");
-        }else parts.add("Somebody else had the sack and the hook. I was in town when it got light the last time.");
+        }else{
+            parts.add("Somebody else had the sack and the hook. I was in town when it got light the last time.");
+            // 0.4.729: whom they got out.
+            int out=own.getInt("GotOut");var names=new ArrayList<String>();
+            for(int who:TheListBody.LISTED)if((out&1<<who)!=0)names.add(NAMES[who]);
+            if(!names.isEmpty())parts.add("I told "+join(names)+" to get out of town, and nobody in Lamesa saw "+(names.size()==1?"that one":"them")+" again.");
+            if(own.getBoolean("SawAllGone"))parts.add("By the last morning there was nobody on the list left in Lamesa.");
+        }
         parts.add("The list was five names long.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.THE_LIST),name,pages(parts.toArray(String[]::new)));
     }
@@ -535,5 +549,6 @@ public final class TheListTexts {
         END_OTHER="It gets light over the gin. Nobody is out on the streets yet.",
         // 0.4.728: the dawn bus.
         BUS_DUE="The first bus out stops at the feed store at first light.",
+        END_ALL_GONE="There's nobody left in town to go to. You walk out onto the playa as it gets light, and the hands are your own again.",
         BUS_TAKEN="The bus comes in off the highway with its lights on. You get on with the sack in your bag.";
 }

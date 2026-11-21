@@ -126,6 +126,8 @@ public final class TheListNight {
         final BlockPos base;@Nullable UUID slasher;int phase,since;double time=TEN;boolean asked,bed;
         /** 0.4.721: which of the five are dead from an earlier night, a bit for each; the town does not make them again. */
         int dead;
+        /** 0.4.729: which of the five have left town on an earlier night, warned off; the town does not make them again either. */
+        int left;
         final Set<UUID> riders=new LinkedHashSet<>();@Nullable UUID pickup,sedan;int sent;
         Night(BlockPos b){base=b;}
     }
@@ -138,14 +140,14 @@ public final class TheListNight {
         var n=NIGHTS.get(b.asLong());if(n!=null)return n;
         var t=LiteraryVignettes.shared(LabyrinthData.get(s),TheList.PLACE,copy(s,b)).getCompound("Night");
         if(!t.contains("Phase"))return null;
-        n=new Night(b);n.slasher=t.hasUUID("Slasher")?t.getUUID("Slasher"):null;n.phase=t.getInt("Phase");n.since=t.getInt("Since");n.time=t.getDouble("Time");n.asked=t.getBoolean("Asked");n.bed=t.getBoolean("Bed");n.dead=t.getInt("Dead");
+        n=new Night(b);n.slasher=t.hasUUID("Slasher")?t.getUUID("Slasher"):null;n.phase=t.getInt("Phase");n.since=t.getInt("Since");n.time=t.getDouble("Time");n.asked=t.getBoolean("Asked");n.bed=t.getBoolean("Bed");n.dead=t.getInt("Dead");n.left=t.getInt("Left");
         for(var r:t.getList("Riders",Tag.TAG_INT_ARRAY))n.riders.add(NbtUtils.loadUUID(r));
         NIGHTS.put(b.asLong(),n);return n;
     }
     static void save(MinecraftServer s,Night n){
         var d=LabyrinthData.get(s);int copy=copy(s,n.base);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);
         var t=new CompoundTag();if(n.slasher!=null)t.putUUID("Slasher",n.slasher);
-        t.putInt("Phase",n.phase);t.putInt("Since",n.since);t.putDouble("Time",n.time);t.putBoolean("Asked",n.asked);t.putBoolean("Bed",n.bed);t.putInt("Dead",n.dead);
+        t.putInt("Phase",n.phase);t.putInt("Since",n.since);t.putDouble("Time",n.time);t.putBoolean("Asked",n.asked);t.putBoolean("Bed",n.bed);t.putInt("Dead",n.dead);t.putInt("Left",n.left);
         var r=new ListTag();for(var id:n.riders)r.add(NbtUtils.createUUID(id));t.put("Riders",r);
         w.put("Night",t);LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
     }
@@ -156,7 +158,7 @@ public final class TheListNight {
     /** Whose night it is: the one Deek picks, who comes to with the body. */
     public static @Nullable UUID slasher(MinecraftServer s,BlockPos b){var n=night(s,b);return n==null?null:n.slasher;}
     /** 0.4.721: whether one of the five is dead from an earlier night. */
-    public static boolean gone(MinecraftServer s,BlockPos b,int who){var n=night(s,b);return n!=null&&TheListNights.dead(n,who);}
+    public static boolean gone(MinecraftServer s,BlockPos b,int who){var n=night(s,b);return n!=null&&(TheListNights.dead(n,who)||(n.left&1<<who)!=0);}
     public static int since(MinecraftServer s,BlockPos b){var n=night(s,b);return n==null?0:n.since;}
 
     /**

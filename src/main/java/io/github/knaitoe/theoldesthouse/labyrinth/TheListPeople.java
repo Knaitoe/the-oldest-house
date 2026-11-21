@@ -129,6 +129,8 @@ public final class TheListPeople {
         for(int who=0;who<CAST;who++){
             var s=spot(phase,who);var a=found[who];
             if(s!=null&&TheListNight.gone(l.getServer(),b,who)&&!TheListHunt.holds(b,who))s=null;
+            // 0.4.729: one who has left town tonight is not made again.
+            if(TheListHunt.left(b,who))s=null;
             if(s==null){if(a!=null)a.discard();continue;}
             var at=b.offset(s.at());
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;

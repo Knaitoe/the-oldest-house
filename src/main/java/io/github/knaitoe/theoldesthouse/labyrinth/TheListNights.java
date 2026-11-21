@@ -26,6 +26,8 @@ public final class TheListNights{
     public static final int HUNT2=12,DONE2=13,HUNT3=14,DONE3=15,HUNT4=16,OVER=17;
     /** How long after the first rule is written the first name goes out. */
     public static final int NAME_AFTER=100;
+    /** 0.4.729: all five on the list, a bit for each. */
+    static final int ALL=java.util.Arrays.stream(TheListBody.LISTED).map(w->1<<w).sum();
 
     /** 0.4.723: whether a thrown hook comes back in this town rather than straight to the hand: from night three's hunt on. */
     static boolean comesBack(net.minecraft.server.MinecraftServer s,net.minecraft.core.BlockPos b){
@@ -63,7 +65,7 @@ public final class TheListNights{
     }
     /** How many of the five are still alive: neither dead on an earlier night nor dead in this one's hunt. */
     static int alive(TheListNight.Night n){
-        int alive=0;for(int who:TheListBody.LISTED)if((n.dead&1<<who)==0&&!TheListHunt.dead(n.base,who))alive++;return alive;
+        int alive=0;for(int who:TheListBody.LISTED)if(((n.dead|n.left)&1<<who)==0&&!TheListHunt.dead(n.base,who)&&!TheListHunt.left(n.base,who))alive++;return alive;
     }
 
     /** The one who went in lying down on their own bed during a hunt: the night ends behind a black. The record in hand keeps it too. */
@@ -81,7 +83,9 @@ public final class TheListNights{
      */
     static void light(ServerLevel l,TheListNight.Night n,boolean bed){
         int night=nightOf(n.phase);
-        for(int who:TheListBody.LISTED)if(TheListHunt.dead(n.base,who))n.dead|=1<<who;
+        for(int who:TheListBody.LISTED){if(TheListHunt.dead(n.base,who))n.dead|=1<<who;if(TheListHunt.left(n.base,who))n.left|=1<<who;}
+        // 0.4.729: every name out of town alive, none dead.
+        boolean allGone=night==4&&n.dead==0&&n.left==ALL;
         TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);TheListBus.reset(n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;
@@ -96,9 +100,10 @@ public final class TheListNights{
             if(night==4){
                 // 0.4.728: the dawn bus, for the one who went in read as running, at the bench.
                 boolean bus=him&&TheListBus.boards(q,n,own);
-                if(him){own.putBoolean("WentIn",true);TheListBody.end(q);own=LiteraryVignettes.personal(d,q.getUUID(),TheList.PLACE);own.putInt("Night",4);own.putBoolean("WentIn",true);if(bus)own.putBoolean("Bus",true);}
+                if(him){own.putBoolean("WentIn",true);TheListBody.end(q);own=LiteraryVignettes.personal(d,q.getUUID(),TheList.PLACE);own.putInt("Night",4);own.putBoolean("WentIn",true);if(bus)own.putBoolean("Bus",true);if(allGone)own.putBoolean("AllGone",true);}
+                if(allGone)own.putBoolean("SawAllGone",true);
                 LiteraryVignettes.ready(q,TheList.PLACE,own,outcome(own,him));
-                TheList.cue(q,bus?TheListTexts.BUS_TAKEN:him?TheListTexts.END_WENT_IN:TheListTexts.END_OTHER);
+                TheList.cue(q,bus?TheListTexts.BUS_TAKEN:him?(allGone?TheListTexts.END_ALL_GONE:TheListTexts.END_WENT_IN):TheListTexts.END_OTHER);
                 if(bus)TheListBus.board(q,n.base);
             }else TheList.cue(q,him?(bed?TheListTexts.LIGHT_BED:TheListTexts.LIGHT_OUT):TheListTexts.LIGHT_OTHER);
             LiteraryVignettes.save(d,q.getUUID(),TheList.PLACE,own);
@@ -107,18 +112,20 @@ public final class TheListNights{
         if(!slasherHere&&n.slasher!=null){
             var own=LiteraryVignettes.personal(d,n.slasher,TheList.PLACE);
             own.putInt("Night",Math.max(night,own.getInt("Night")));
-            if(night==4&&!own.getBoolean("Ready")){own.putBoolean("WentIn",true);own.putBoolean("Ready",true);own.putString("Outcome",outcome(own,true));}
+            if(night==4&&!own.getBoolean("Ready")){own.putBoolean("WentIn",true);if(allGone)own.putBoolean("AllGone",true);own.putBoolean("Ready",true);own.putString("Outcome",outcome(own,true));}
             LiteraryVignettes.save(d,n.slasher,TheList.PLACE,own);
         }
         TheListNight.save(l.getServer(),n);TheListPeople.ensure(l,n.base);TheListNight.send(l,n,true);
     }
     /** How the four nights came out for a reader: for the one who went in, by how many of the five they finished. */
     static String outcome(CompoundTag own,boolean wentIn){
-        if(!wentIn)return "was_in_town_at_the_end";
+        // 0.4.729: one on Amber's side who got any of the five out of town.
+        if(!wentIn)return own.getInt("GotOut")!=0?"got_them_out":"was_in_town_at_the_end";
         // 0.4.726: Stace finished it.
         if(own.getBoolean("Stopped"))return "was_stopped";
         // 0.4.728: on the dawn bus.
         if(own.getBoolean("Bus"))return "took_the_bus";
+        if(own.getBoolean("AllGone"))return "everyone_got_away";
         int kills=Integer.bitCount(own.getInt("Kills"));
         return kills>=TheListBody.LISTED.length?"went_down_the_whole_list":kills>0?"crossed_names_off":"crossed_no_names_off";
     }
