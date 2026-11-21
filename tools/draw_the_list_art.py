@@ -1354,6 +1354,21 @@ def poster(stage):
         write(im, 3, 6, 'LHS', TALL, '#e3c870')
         for y in range(2, 14):
             dot(im, 1, y, '#3a2a1e')
+    elif stage == 6:
+        # 0.4.723: the flyer taped up on night three. A photocopy: the drawing of the face in the sack, gone grey, two holes cut for
+        # the eyes and the grease-pencil mouth; under it the curfew. Tape at the top corners.
+        fill(im, 2, 1, 14, 15, '#e4e0d4')
+        for y in range(2, 9):
+            for x in range(4, 12):
+                if not ((y == 2 and x in (4, 11)) or (y == 8 and x in (4, 11))):
+                    dot(im, x, y, '#9a968c' if (x + y) % 3 else '#8c887e')
+        for x, y in ((5, 4), (6, 4), (9, 4), (10, 4)):
+            dot(im, x, y, '#1a1a1a')
+        for x, y in ((6, 7), (7, 6), (8, 6), (9, 7)):
+            dot(im, x, y, '#3a3630')
+        centre(im, 10, '9 PM', TALL, '#1a1a1a', width=16)
+        for x in (2, 3, 13, 14):
+            dot(im, x, 1, '#d8d0a8')
     elif stage == 4:
         fill(im, 1, 1, 15, 15, '#5a3e26'); fill(im, 3, 3, 13, 13, '#c8bfa8'); fill(im, 3, 9, 13, 13, '#9a8a6a')
         for cx in (6, 10):
@@ -4578,6 +4593,7 @@ def fitting_models():
     m['track_0'] = track_model(); m['mailbox_0'] = mailbox_model()
     for s in range(6):
         m[f'window_{s}'] = window_model(s); m[f'poster_{s}'] = poster_model(s); m[f'den_{s}'] = den_model(s); m[f'front_{s}'] = front_model(s)
+    m['poster_6'] = poster_model(6)
     for s in range(8):
         m[f'kitchen_{s}'] = kitchen_model(s); m[f'yard_{s}'] = yard_model(s); m[f'drug_{s}'] = drug_model(s); m[f'video_{s}'] = video_model(s)
         m[f'law_{s}'] = law_model(s); m[f'feed_{s}'] = feed_model(s); m[f'drivein_{s}'] = drivein_model(s); m[f'gin_{s}'] = gin_model(s)
@@ -4649,6 +4665,7 @@ def textures():
         faces[f'cotton_{s}'] = cotton(s)
     for s in range(6):
         faces[f'window_{s}'] = window_glass(s); faces[f'poster_{s}'] = poster(s)
+    faces['poster_6'] = poster(6)
     for s, (street, avenue) in SIGN_NAMES.items():
         faces[f'blade_{s}_street'] = blade(street); faces[f'blade_{s}_avenue'] = blade(avenue)
     for i, im in enumerate(split(drug_sign(), 4)):
@@ -4955,7 +4972,7 @@ KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'ma
          'video', 'law', 'feed', 'drivein', 'gin', 'bale', 'seed', 'tower', 'tank', 'field', 'stands', 'locker', 'score', 'amber', 'lot',
          'pasture', 'stock', 'windmill', 'pumpjack', 'battery', 'party', 'blood', 'line', 'fryer']
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
-          'poster': 6, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
+          'poster': 7, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
           'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
           'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4, 'line': 8, 'fryer': 6}

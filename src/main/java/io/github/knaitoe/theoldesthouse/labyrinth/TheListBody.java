@@ -174,7 +174,7 @@ public final class TheListBody {
             if(--live.down==0)up(p,live);
         }else tread(p,l,live);
         if(live.tick%20==1)live.people=l.getEntitiesOfClass(LiteraryActor.class,bounds(b),a->TheListPeople.is(a)&&a.isAlive());
-        if(live.tick%20==3)hook(p);
+        if(live.tick%20==3){if(!comesBack(p,b,l))hook(p);}
         // 0.4.710: the blood on them, to every viewer now and then, so that one who comes into town later sees it too.
         if(live.tick%40==5&&blood(p)>0)shown(p,blood(p));
         if(live.tick%10==2)seen(p,l,live,now);
@@ -225,7 +225,14 @@ public final class TheListBody {
      * of; thrown, it is back in the slasher's hands within the second (hook). */
     @SubscribeEvent public static void tossed(ItemTossEvent e){
         if(TheListSack.is(e.getEntity().getItem()))e.getEntity().setUnlimitedLifetime();
-        else if(e.getEntity().getItem().is(TheListRegistry.HAY_HOOK.get())&&e.getPlayer() instanceof ServerPlayer p&&has(p))e.setCanceled(true);
+        else if(e.getEntity().getItem().is(TheListRegistry.HAY_HOOK.get())&&e.getPlayer() instanceof ServerPlayer p&&has(p)){
+            // 0.4.723: from night three on it can be thrown away. It is not gone (comesBack).
+            var b=town(p);
+            if(b!=null&&TheListNights.comesBack(p.server,b)){
+                e.getEntity().setUnlimitedLifetime();e.getEntity().getPersistentData().putUUID(HOOK_OF,p.getUUID());
+                var own=own(p);own.putBoolean("HookAway",true);own.remove("HookBed");save(p,own);
+            }else e.setCanceled(true);
+        }
     }
 
     // ------------------------------------------------------------------------------------------------ 0.4.709: the hay hook and the grip
@@ -239,6 +246,42 @@ public final class TheListBody {
         var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))return true;
         return p.containerMenu.getCarried().is(TheListRegistry.HAY_HOOK.get());
     }
+    // ------------------------------------------------------------------------------------------------ 0.4.723: what comes back
+    /** Whose hook a thrown one is. */
+    static final String HOOK_OF="ListHookOf";
+    /** How near the bed, and how straight at it, the reader must look to see what is on it. */
+    static final double BED_SEEN=6,BED_LOOK=40;
+    /**
+     * From night three on: a hook thrown away is not given back to the hand. The next time the reader is in their own house and not
+     * looking at their bed, wherever the thrown one lies it is gone, and the hook is on the bed; when they look at the bed they are told.
+     * Picked up again (or never let go), it is theirs as before. True while it is away or on the bed, so the hand is not given another.
+     */
+    static boolean comesBack(ServerPlayer p,BlockPos b,ServerLevel l){
+        var own=own(p);boolean away=own.getBoolean("HookAway");int bed=own.getInt("HookBed");
+        if(!away&&bed==0)return false;
+        if(hasHook(p)){own.remove("HookAway");own.remove("HookBed");save(p,own);return false;}
+        var rel=p.position().subtract(Vec3.atLowerCornerOf(b));
+        var onBed=Vec3.atLowerCornerOf(b.offset(TheListSite.BED_HEAD)).add(.5,.7,.5);
+        boolean looking=p.getEyePosition().distanceTo(onBed)<=BED_SEEN&&facing(p.getYHeadRot(),p.getEyePosition(),onBed,BED_LOOK)
+            &&l.clip(new net.minecraft.world.level.ClipContext(p.getEyePosition(),onBed,net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,p)).getType()==net.minecraft.world.phys.HitResult.Type.MISS;
+        if(away){
+            if(!TheListSite.inHouse(rel)||looking)return true;
+            for(var e:l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,bounds(b),i->i.getPersistentData().hasUUID(HOOK_OF)&&i.getPersistentData().getUUID(HOOK_OF).equals(p.getUUID())))e.discard();
+            var stack=new ItemStack(TheListRegistry.HAY_HOOK.get());
+            if(own.getInt("Hook")==2)stack.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,new net.minecraft.world.item.component.CustomModelData(1));
+            var it=new net.minecraft.world.entity.item.ItemEntity(l,onBed.x,onBed.y-.15,onBed.z,stack,0,0,0);
+            it.setUnlimitedLifetime();it.setNoPickUpDelay();it.getPersistentData().putUUID(HOOK_OF,p.getUUID());it.getPersistentData().putBoolean("OnBed",true);
+            l.addFreshEntity(it);
+            own.remove("HookAway");own.putInt("HookBed",1);save(p,own);
+            return true;
+        }
+        if(bed==1&&looking){own.putInt("HookBed",2);save(p,own);TheList.cue(p,TheListTexts.HOOK_BACK);}
+        return true;
+    }
+    /** Whether the reader's hook is on their bed now (for a check): 1 put there, 2 seen there. */
+    public static int hookOnBed(ServerPlayer p){return own(p).getInt("HookBed");}
+    /** Whether the reader's hook is away, thrown and not yet back (for a check). */
+    public static boolean hookAway(ServerPlayer p){return own(p).getBoolean("HookAway");}
     /** The hook the record owes the reader, back in their hands if they have none: clean, or bloodied. */
     static void hook(ServerPlayer p){
         int owed=own(p).getInt("Hook");if(owed==0||hasHook(p))return;

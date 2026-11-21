@@ -2250,6 +2250,70 @@ public final class TheListTests {
         });
     }
     /**
+     * 0.4.723, part 6a: what comes back, and what the town knows. Night three begins: the flyers are up along Main Street and the reader
+     * is told of the one on the kitchen window. The hay hook, which on night one could not be let go of, can be thrown away now: it is
+     * not given back to the hand. Out in the street it stays away; in the house, not looking at the bed, the thrown one is gone and the
+     * hook is on the bed, and looking at the bed they are told. Taken up again, it is theirs as before. Ended, the flyers come down.
+     */
+    @GameTest(template="empty",batch="the_list_back",timeoutTicks=4000)
+    public static void whatComesBack(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_back",P);
+        hold(f,b,TheListSite.BED_HEAD,TheListDen.DEN_AT);
+        for(int x=-48;x<=66;x+=24)hold(f,b,new BlockPos(x,0,TheListSite.MAIN_LINE));
+        Vec3[] bed={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);cues(p);
+            h.assertTrue(TheListNights.begin(p,b,3),"night three begins round the one who went in");
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT3,"night three");
+            var said=cues(p);
+            h.assertTrue(said.contains(TheListTexts.NIGHT3)&&said.contains(TheListTexts.FLYERS),"the hook on the table, and the flyer on the window: "+said);
+            h.assertTrue(TheListFlyers.up(l,b)>=4,"the flyers are up along Main Street: "+TheListFlyers.up(l,b));
+            bed[0]=Vec3.atLowerCornerOf(b.offset(TheListSite.BED_HEAD)).add(.5,.7,.5);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.hookInHand(p)||hook(p)>=0,"waiting for the hook in hand"))
+        .thenExecute(()->{
+            // Out in the street, thrown away.
+            f.at(p,P,0.5,0,-28.5);
+            var inv=p.getInventory();inv.selected=hook(p);
+            p.drop(false);
+            h.assertTrue(hook(p)<0&&TheListBody.hookAway(p),"thrown away, it is not in their hands: "+hook(p));
+        }).thenIdle(45)
+        .thenExecute(()->{
+            h.assertTrue(hook(p)<0&&TheListBody.hookAway(p),"out of the house, it is not given back");
+            // In the bedroom, looking the other way.
+            f.at(p,P,7.5,0,-3.5);face(p,bed[0],true);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.hookOnBed(p)==1,"waiting for it to be on the bed"))
+        .thenExecute(()->{
+            var thrown=l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(b).inflate(200),
+                i->i.getItem().is(TheListRegistry.HAY_HOOK.get()));
+            h.assertTrue(thrown.size()==1&&thrown.get(0).position().distanceTo(bed[0])<1,"the one in the street is gone; one lies on the bed: "+thrown.size());
+            h.assertTrue(hook(p)<0,"and not in their hands");
+            cues(p);face(p,bed[0],false);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.hookOnBed(p)==2,"waiting for them to see it"))
+        .thenExecute(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.HOOK_BACK),"told it is on the bed");
+            for(var e:l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(b).inflate(200),i->i.getItem().is(TheListRegistry.HAY_HOOK.get()))){
+                p.getInventory().add(e.getItem().copy());e.discard();
+            }
+        }).thenWaitUntil(()->h.assertTrue(!TheListBody.hookAway(p)&&TheListBody.hookOnBed(p)==0,"waiting for it to be theirs again"))
+        .thenIdle(30)
+        .thenExecute(()->{
+            int n=0;var inv=p.getInventory();for(int i=0;i<inv.getContainerSize();i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))n++;
+            h.assertTrue(n==1,"one hook, not two: "+n);
+            TheListNight.end(l,b);TheListBody.end(p);
+            h.assertTrue(TheListFlyers.up(l,b)==0,"ended, the flyers are down");
+            done();h.succeed();
+        });
+    }
+    /** Which inventory slot holds the hay hook, or -1. */
+    private static int hook(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<9;i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))return i;return -1;}
+    /** The reader turned toward a point, or away from it. */
+    private static void face(ServerPlayer p,Vec3 at,boolean away){
+        var d=at.subtract(p.getEyePosition());float yaw=(float)Math.toDegrees(Math.atan2(-d.x,d.z))+(away?180:0);
+        p.setYRot(yaw);p.setYHeadRot(yaw);p.setXRot(away?0:(float)-Math.toDegrees(Math.atan2(d.y,Math.hypot(d.x,d.z))));
+    }
+    /**
      * 0.4.721, the skeleton to its end: the first name goes out after the field and night two's hunt begins; the one who went in lies down
      * on their own bed and night two is over. Back in town, night three begins with the hook and the hunt; one of the five dead on an
      * earlier night is not made again; first light ends it. Night four, the gin running; first light, and the end: the body is the

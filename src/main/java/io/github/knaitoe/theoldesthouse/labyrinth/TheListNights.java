@@ -27,6 +27,10 @@ public final class TheListNights{
     /** How long after the first rule is written the first name goes out. */
     public static final int NAME_AFTER=100;
 
+    /** 0.4.723: whether a thrown hook comes back in this town rather than straight to the hand: from night three's hunt on. */
+    static boolean comesBack(net.minecraft.server.MinecraftServer s,net.minecraft.core.BlockPos b){
+        var n=TheListNight.night(s,b);return n!=null&&n.phase>=HUNT3&&n.phase<OVER;
+    }
     public static boolean hunting(int phase){return phase==HUNT2||phase==HUNT3||phase==HUNT4;}
     /** Which of the four nights a phase from night two on belongs to. */
     public static int nightOf(int phase){return phase<=DONE2?2:phase<=DONE3?3:4;}
@@ -121,6 +125,9 @@ public final class TheListNights{
         hunt(l,n,night);
         TheListNight.save(p.server,n);TheListPeople.ensure(l,n.base);
         TheList.cue(p,night==3?TheListTexts.NIGHT3:TheListTexts.NIGHT4);
+        // 0.4.723: the town knows by now.
+        TheListFlyers.post(l,n.base);
+        if(night==3)for(var q:TheList.readers(l,n.base))if(LiteraryVignettes.participant(q))TheList.cue(q,TheListTexts.FLYERS);
         TheListNight.send(l,n,true);
     }
     /** For an operator or a check: night three or four begun round this reader, the nights before put behind them. False if they cannot be. */
