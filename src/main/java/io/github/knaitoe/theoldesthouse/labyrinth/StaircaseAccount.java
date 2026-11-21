@@ -93,6 +93,9 @@ public final class StaircaseAccount {
         // 0.4.698: Mara's house, by how the reader left it.
         var left = PlaceForYouSelf.leftIt(LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.PLACE_FOR_YOU));
         if (!left.isEmpty()) StaircaseProse.fact("expected", 1, left).ifPresent(out::add);
+        // 0.4.734: the list, by how the reader's four nights left it.
+        var listed = TheListAfter.leftIt(LiteraryVignettes.personal(d, p.getUUID(), LabyrinthPlace.THE_LIST));
+        if (!listed.isEmpty()) StaircaseProse.fact("listed", 1, listed).ifPresent(out::add);
         return out;
     }
     /** Who follows this reader home now, in prose, from the rooms' own records. */

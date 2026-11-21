@@ -32,6 +32,20 @@ public final class TheListAfter{
             case "was_stopped"->STOPPED;
             default->OTHER;};
     }
+    /** 0.4.734: how the reader's nights left the list, for the House of Leaves (24 characters at most); empty until the account has been read. */
+    public static String leftIt(CompoundTag own){
+        if(!own.getBoolean("Completed"))return "";
+        return switch(own.getString("Outcome")){
+            case "crossed_names_off"->"with names crossed off";
+            case "went_down_the_whole_list"->"with every name struck";
+            case "crossed_no_names_off"->"with no name crossed off";
+            case "everyone_got_away"->"with every name gone";
+            case "got_them_out"->"with some names gone";
+            case "took_the_bus"->"on the first bus out";
+            case "was_stopped"->"where Stace stopped you";
+            case "was_in_town_at_the_end"->"in somebody else's hands";
+            default->"";};
+    }
     /** A finished reader in through the back door of a town only finished readers are in: noon, the line, and nothing begins. */
     static boolean arrive(ServerPlayer p,BlockPos b,CompoundTag own){
         if(!Aftermath.finished(own)||!Aftermath.alone(TheList.readers(p.serverLevel(),b),TheList.PLACE))return false;
