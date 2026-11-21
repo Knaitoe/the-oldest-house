@@ -34,6 +34,7 @@ public final class KitchenTests {
     @AfterBatch(batch="kitchen_visitors") public static void doneVisitors(ServerLevel l){close();}
     @AfterBatch(batch="kitchen_weight") public static void doneWeight(ServerLevel l){close();}
     @AfterBatch(batch="kitchen_unseen") public static void doneUnseen(ServerLevel l){close();}
+    @AfterBatch(batch="kitchen_johnny_two") public static void doneJohnnyTwo(ServerLevel l){close();Truant.fresh();Truant.apart();}
     private static void hold(LiteraryTests.Fixture f,LabyrinthPlace place){var slot=LabyrinthPlaces.slotBounds(f.origin,place);f.chunks.hold(f.in,new AABB(slot.minX(),slot.minY(),slot.minZ(),slot.maxX()+1,slot.maxY()+1,slot.maxZ()+1));}
     private static ItemStack water(){return PotionContents.createItemStack(Items.POTION,Potions.WATER);}
 
@@ -155,6 +156,39 @@ public final class KitchenTests {
                 hollo.putBoolean("ActorDead",false);f.data().setState(HollowayVignette.ID,hollo);
             })
             .thenWaitUntil(()->h.assertTrue(KitchenVisitors.current(l)==null,"and is gone"))
+            .thenSucceed();
+    }
+    /**
+     * 0.4.741, Johnny in two places (docs/MULTIPLAYER_AUDIT.md, the 0.4.600 entry: "No case has one reader in each place"). One reader
+     * sits with him at the kitchen table; a second walks into his lamp's hall. He is one man: he gets up from the table and goes out by
+     * the kitchen's door, and he cannot be dealt to the kitchen while the second reader is with him at home. When they have left his
+     * hall, he can come to the kitchen again.
+     */
+    @GameTest(template="empty",batch="kitchen_johnny_two",timeoutTicks=2400)
+    public static void johnnyAtHomeWithOneReaderGetsUpFromTheKitchenTableOfAnother(GameTestHelper h){
+        var f=new LiteraryTests.Fixture(h);active=f;var place=LabyrinthPlace.FAMILIAR_KITCHEN;var b=f.base(place);var l=f.in;hold(f,place);KitchenFittings.clearAll();
+        var home=TruantPlaces.LAMP;var hb=f.base(home);hold(f,home);Truant.fresh();Truant.apart();
+        var p=NativeTestPlayers.survival(h,"kitchen_johnny_host");f.players.add(p);var q=NativeTestPlayers.survival(h,"kitchen_johnny_visitor");f.players.add(q);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the kitchen and his hall are resident"))
+            .thenExecute(()->{
+                FamiliarRoom.build(l,b);LabyrinthBuilder.registerDoors(f.data(),place,b);
+                TruantPlaces.build(l,hb,home);LabyrinthBuilder.registerDoors(f.data(),home,hb);
+                p.teleportTo(l,b.getX()-3.5,b.getY(),b.getZ()-4.5,0,0);
+                q.teleportTo(l,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);q.setNoGravity(true);
+                h.assertTrue(!Truant.withSomeone()&&KitchenVisitors.availablePhases(l.getServer()).contains(KitchenVisitors.JOHNNY),"with nobody in his hall, Johnny can come to the kitchen");
+                h.assertTrue(KitchenVisitors.arrive(l,b,KitchenVisitors.JOHNNY)!=null,"he comes");
+            })
+            .thenWaitUntil(()->{var a=KitchenVisitors.current(l);h.assertTrue(a!=null&&TraceBlock.is(l.getBlockState(a.blockPosition()),TraceBlock.Kind.CHAIR),"he sits at the table");})
+            .thenExecute(()->{q.teleportTo(l,hb.getX()+.5,hb.getY(),hb.getZ()-3,180,0);q.setNoGravity(true);})
+            .thenWaitUntil(()->h.assertTrue(Truant.withSomeone(),"the second reader is in his hall: "+Truant.debug(l.getServer())))
+            .thenExecute(()->h.assertTrue(!KitchenVisitors.availablePhases(l.getServer()).contains(KitchenVisitors.JOHNNY),"while they are, he cannot be dealt to the kitchen"))
+            .thenWaitUntil(()->h.assertTrue(KitchenVisitors.current(l)==null,"he gets up from the kitchen table and goes: "+f.data().stateEntry(KitchenVisitors.STATE,KitchenVisitors.SHARED)))
+            .thenExecute(()->{
+                h.assertTrue(f.data().stateEntry(KitchenVisitors.STATE,KitchenVisitors.SHARED).getInt("LastWho")==KitchenVisitors.JOHNNY,"it was him who left");
+                q.teleportTo(l,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);
+            })
+            .thenWaitUntil(()->h.assertTrue(!Truant.withSomeone(),"the second reader has left his hall"))
+            .thenExecute(()->h.assertTrue(KitchenVisitors.availablePhases(l.getServer()).contains(KitchenVisitors.JOHNNY),"and he can come to the kitchen again"))
             .thenSucceed();
     }
     /**

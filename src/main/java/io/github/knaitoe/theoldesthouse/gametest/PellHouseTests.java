@@ -4806,6 +4806,44 @@ public final class PellHouseTests {
     @AfterBatch(batch="pell_catch") public static void catchDone(ServerLevel l){done();}
 
     /**
+     * 0.4.741, two readers at catch (docs/MULTIPLAYER_AUDIT.md, the 0.4.601 entry: "no case has two readers at catch"). One house, one
+     * ball. The first reader throws it down the hall to Callum and he throws it back to them: their catch, not the second reader's. The
+     * first throws it away down the hall; the second picks it up, throws it to him, and has it back: now theirs, and the first reader's
+     * count is as it was. Each is told what they caught, and nobody else is.
+     */
+    @GameTest(template="empty",batch="pell_catch_two",timeoutTicks=4000)
+    public static void twoReadersPlayCatchWithCallumAndEachCatchIsTheirOwn(GameTestHelper h){
+        var f=house(h);var p=f.player("pell_catch_first",P);var q=f.player("pell_catch_second",P);var l=f.level(P);var b=f.base(P);
+        f.at(p,P,.5,0,-44);f.at(q,P,1.5,0,-44);
+        h.startSequence().thenWaitUntil(()->{for(int i=0;i<PellPeople.COUNT;i++)h.assertTrue(PellPeople.find(l,b,i)!=null,"waiting for "+PellPeople.name(i));h.assertTrue(PellVisit.car(l,b)!=null,"waiting for the visit to begin");})
+        .thenIdle(12).thenExecute(()->{
+            pickUp(h,f,p,l,b);PellVisit.settle(l,b);
+            f.at(q,P,-2.5,0,-63.5);f.at(p,P,-2.5,0,-65.5);told(p);told(q);throwBall(p,90,-12);
+            h.assertTrue(PellCatch.flying(l,b)!=null,"the first reader throws it down the hall to him");
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.HELD,"Callum catches it: "+ballAt(p,l,b)))
+        .thenWaitUntil(()->h.assertTrue(has(p,PellRegistry.BALL.get()),"and it comes back to the one who threw it: "+ballAt(p,l,b)))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getInt(PellCatch.CATCHES)==1&&f.own(q,P).getInt(PellCatch.CATCHES)==0,"the first reader's catch, not the second's: "+f.own(p,P).getInt(PellCatch.CATCHES)+" / "+f.own(q,P).getInt(PellCatch.CATCHES));
+            h.assertTrue(!has(q,PellRegistry.BALL.get()),"the second reader has no ball");
+            h.assertTrue(told(p).contains(PellTexts.BALL_BACK)&&!told(q).contains(PellTexts.BALL_BACK),"only the catcher is told of it");
+            // Thrown away the other way, to lie in the hall for the second reader.
+            throwBall(p,-90,-5);
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.NONE&&PellCatch.lying(l,b)!=null,"it lies in the hall: "+ballAt(p,l,b)))
+        // As anything dropped, it cannot be picked up for half a second.
+        .thenIdle(12).thenExecute(()->{
+            pickUp(h,f,q,l,b);f.at(q,P,-2.5,0,-65.5);f.at(p,P,4.5,0,-65.5);told(p);told(q);throwBall(q,90,-12);
+            h.assertTrue(PellCatch.flying(l,b)!=null,"the second reader throws it to him");
+        }).thenWaitUntil(()->h.assertTrue(PellCatch.state(b)==PellCatch.HELD,"Callum catches the second reader's throw: "+ballAt(q,l,b)))
+        .thenWaitUntil(()->h.assertTrue(has(q,PellRegistry.BALL.get()),"and throws it back to them: "+ballAt(q,l,b)))
+        .thenIdle(1).thenExecute(()->{
+            h.assertTrue(f.own(q,P).getInt(PellCatch.CATCHES)==1&&f.own(p,P).getInt(PellCatch.CATCHES)==1,"each has one catch of their own: "+f.own(p,P).getInt(PellCatch.CATCHES)+" / "+f.own(q,P).getInt(PellCatch.CATCHES));
+            h.assertTrue(!has(p,PellRegistry.BALL.get())&&PellCatch.lying(l,b)==null,"one ball, in the second reader's hand");
+            h.assertTrue(told(q).contains(PellTexts.BALL_BACK)&&!told(p).contains(PellTexts.BALL_BACK),"only the second reader is told this time");
+        }).thenSucceed();
+    }
+    @AfterBatch(batch="pell_catch_two") public static void catchTwoDone(ServerLevel l){done();}
+
+    /**
      * 0.4.601, taking Tilly round the house by the arm. The owner: "ways to interact with tilly, for singleplayer characters". In the
      * afternoon Tilly's asking has one more answer: "Come on. Take my arm and I'll show you." She takes it, and has her word. Out in
      * the hall she comes after the reader and stands beside them; a hand on the photographs gets her own hand on them and what she
