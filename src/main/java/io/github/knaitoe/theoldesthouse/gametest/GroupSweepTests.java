@@ -169,6 +169,16 @@ public final class GroupSweepTests {
                 h.assertTrue(!LiteraryVignettes.inside(s,place),tag()+": a spectator is not in the story");
                 h.assertTrue(!f.own(s,place).getBoolean("Read_Source"),tag()+": a spectator at the paper reads nothing");
                 h.assertTrue(WitnessAccount.record(f.data(),s.getUUID()).getCompound("Stories").isEmpty(),tag()+": a spectator earns no Witness story");
+                // 0.4.746: what a spectator is sent is what they see. A reader's own cast (bound to them, or to their thread) is never sent
+                // to a spectator; the shared cast is, as it is to anyone there. The counts go to the log for the audit.
+                int shared=0,own=0;
+                for(var a:l.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(b).inflate(96))){
+                    boolean bound=a.owner().isPresent()||a.getPersistentData().contains(VignetteThreads.ACTOR_TAG);
+                    boolean copy=a.scene().equals(LabyrinthPlace.FAMILY_COPY.id())||a.scene().equals(LabyrinthPlace.OLD_CABIN.id());
+                    if(bound&&!copy){own++;h.assertTrue(!a.broadcastToPlayer(s),tag()+": a reader's own "+a.getName().getString()+" (role "+a.role()+") is not sent to a spectator");}
+                    else if(a.broadcastToPlayer(s))shared++;
+                }
+                TheOldestHouse.LOGGER.info("GROUP SWEEP spectator {}: {} shared cast sent, {} readers' own cast withheld",place.id(),shared,own);
                 if(SceneInstances.copyable(place)){
                     int now=SceneInstances.held(f.in.getServer(),place,0,new UUID(0,0));
                     h.assertTrue(now==before,tag()+": a spectator holds no place: "+before+" held before, "+now+" with them there");
