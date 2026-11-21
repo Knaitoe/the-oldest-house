@@ -102,6 +102,8 @@ public final class UncannySocketClient {
         if((phase==2||phase==3)&&age>30){var fake=actor(mc,LiteraryActor.UNCANNY_FALSE_WAITRESS);if(fake!=null){look(mc,fake.getEyePosition());if(phase==2&&fake.phase()==1||phase==3&&fake.phase()>=2)ack(mc,phase==2?"diner-translucent":"diner-solid");}}
         if(phase==4&&UncannyClient.room().equals("tunnel_periphery")&&age>=20&&vanillaTunnel==null){vanillaTunnel=net.minecraft.client.resources.sounds.SimpleSoundInstance.forMusic(net.minecraft.sounds.SoundEvents.MUSIC_GAME.value());mc.getSoundManager().play(vanillaTunnel);}
         if(phase==4&&age>50&&UncannyClient.room().equals("tunnel_periphery")){
+            // Run 1757: on a loaded runner the sound engine may start the traffic later than 2.5 s in; wait for it (20 s at most), then require it.
+            if(!(trafficHeard&&TunnelAtmosphere.playing())&&age<400){if(age%40==0)TheOldestHouse.LOGGER.info("UNCANNY CLIENT {} waiting for tunnel traffic: heard={} playing={} age={}",role(),trafficHeard,TunnelAtmosphere.playing(),age);return;}
             require(trafficHeard&&TunnelAtmosphere.playing(),"the original traffic asset reaches an actual native audio source");require(vanillaTunnel!=null&&!mc.getSoundManager().isActive(vanillaTunnel),"vanilla music is refused while actual tunnel traffic plays");require(mc.player.onGround()&&Math.abs(mc.player.getY()-b.getY())<.1,"a grounded reader sees the tunnel woman from the actual floor");
             var giant=actor(mc,LiteraryActor.UNCANNY_GIANT);
             if(age%100==0){
