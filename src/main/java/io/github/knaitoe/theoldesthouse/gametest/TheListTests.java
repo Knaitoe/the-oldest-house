@@ -2428,9 +2428,14 @@ public final class TheListTests {
             h.assertTrue(TheListStace.where(b)==TheListStace.GIN,"with all five alive it ends at the gin");
             h.assertTrue(cues(p).contains(TheListTexts.STACE_PLAN[TheListStace.GIN]),"they are told where");
             h.assertTrue(TheListNight.locked(p),"from her plan, the House's door is shut to them");
+            h.assertTrue(TheListStace.stage(b)==TheListStace.CATWALK,"she sets off from the catwalk");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);h.assertTrue(TheListStace.stage(b)==TheListStace.LADDER,"waiting for her at the ladder: stage "+TheListStace.stage(b));})
+        .thenWaitUntil(()->h.assertTrue(TheListStace.stage(b)==TheListStace.THERE,"waiting for her to come down and walk to the gin: stage "+TheListStace.stage(b)))
+        .thenExecute(()->{
             var st=TheListPeople.find(l,b,TheListPeople.STACE);
             var spot=Vec3.atLowerCornerOf(b).add(TheListStace.at(b,TheListStace.GIN));
             h.assertTrue(st!=null&&st.position().subtract(spot).horizontalDistance()<1.5,"she is at the gin: "+(st==null?"nowhere":st.position().subtract(Vec3.atLowerCornerOf(b))));
+            h.assertTrue(st.getMainHandItem().is(net.minecraft.world.item.Items.IRON_SHOVEL),"with the shovel");
             var at=st.position().subtract(Vec3.atLowerCornerOf(b));
             f.at(p,P,at.x+1.5,at.y,at.z);
         }).thenWaitUntil(()->h.assertTrue(TheListStace.blows(b)>=1&&TheListBody.down(p)>0,"waiting for her first blow"))
@@ -2442,6 +2447,44 @@ public final class TheListTests {
             var own=f.own(p,P);
             h.assertTrue(own.getBoolean("Ready")&&"was_stopped".equals(own.getString("Outcome")),"the four nights end stopped: "+own.getString("Outcome"));
             h.assertFalse(TheListStace.on(b),"her plan is put away");
+            TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+    /**
+     * 0.4.727, part 7b: Stace fought. Her plan begun, she comes down from the tower; struck by the one who went in she staggers twice
+     * and goes down at the third blow; a blow with the hay hook in hand there finishes her, and their own record keeps it. At first
+     * light she is stood up at her place again.
+     */
+    @GameTest(template="empty",batch="the_list_stace_fought",timeoutTicks=6000)
+    public static void staceFought(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_stace_fought",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);hold(f,b,TheListPeople.AT);
+        hold(f,b,BlockPos.containing(TheListStace.at(b,TheListStace.GIN)));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{f.at(p,P,-3.5,0,-3.5);h.assertTrue(TheListNights.begin(p,b,4),"night four begins");})
+        .thenWaitUntil(()->{TheListPeople.ensure(l,b);h.assertTrue(TheListPeople.find(l,b,TheListPeople.STACE)!=null,"waiting for Stace");})
+        .thenExecute(()->TheListStace.planNow(l,b))
+        .thenWaitUntil(()->h.assertTrue(TheListStace.stage(b)>=TheListStace.WALKING,"waiting for her to come down the ladder: stage "+TheListStace.stage(b)))
+        .thenExecute(()->{
+            var st=TheListPeople.find(l,b,TheListPeople.STACE);var at=st.position().subtract(Vec3.atLowerCornerOf(b));
+            // Behind her, at a distance she will not close on before the blows land.
+            f.at(p,P,at.x-1.5,at.y,at.z);int slot=hook(p);if(slot>=0)p.getInventory().selected=slot;cues(p);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's"))
+        .thenExecute(()->{TheListHunt.struck(p,TheListPeople.find(l,b,TheListPeople.STACE));h.assertTrue(TheListStace.taken(b)==1&&cues(p).contains(TheListTexts.STACE_STAGGERS),"the first blow staggers her");})
+        .thenIdle(12).thenExecute(()->TheListHunt.struck(p,TheListPeople.find(l,b,TheListPeople.STACE)))
+        .thenIdle(12).thenExecute(()->{
+            TheListHunt.struck(p,TheListPeople.find(l,b,TheListPeople.STACE));
+            h.assertTrue(TheListStace.stage(b)==TheListStace.DOWN&&cues(p).contains(TheListTexts.STACE_FALLS),"the third puts her down: stage "+TheListStace.stage(b));
+            h.assertTrue(TheListBody.hookInHand(p),"the hook in hand");
+            TheListHunt.struck(p,TheListPeople.find(l,b,TheListPeople.STACE));
+            h.assertTrue(TheListStace.stage(b)==TheListStace.DEAD&&cues(p).contains(TheListTexts.STACE_KILLED)&&TheListStace.dead(p),"with the hook, finished; their record keeps it");
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT4,"the night goes on");
+            TheListNights.dawn(l,b);TheListPeople.ensure(l,b);
+            var st=TheListPeople.find(l,b,TheListPeople.STACE);
+            h.assertTrue(st!=null&&st.marks()==0&&st.blockPosition().subtract(b).equals(TheListPeople.AT[TheListPeople.STACE]),"at first light she is back at her place");
+            h.assertTrue(TheListStace.dead(p),"and it is still theirs");
             TheListNight.end(l,b);TheListBody.end(p);
             done();h.succeed();
         });
