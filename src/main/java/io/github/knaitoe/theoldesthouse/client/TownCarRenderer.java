@@ -39,12 +39,21 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     private static final ModelResourceLocation[] OPEN={BikeLook.standalone("calder_car/blue_open_front"),BikeLook.standalone("calder_car/blue_open_back")};
     private static final ModelResourceLocation DOOR=BikeLook.standalone("calder_car/blue_door");
     public static final float DOOR_DX=3,DOOR_DZ=24,HINGE_X=13,HINGE_Z=-15;
+    /**
+     * 0.4.735, The list's dawn bus (tools/draw_list_bus.py): five models end to end, each a fifth of its length moved into a model's reach
+     * (its back end at -4), and each fifth's lamps over it; and what was added to its y and z. Its axles, how far out its wheels stand
+     * and their radius: the cars' wide wheel, drawn larger.
+     */
+    public static final int BUS_PARTS=5;
+    public static final float BUS_L=80,BUS_PART=32,BUS_DY=-12,BUS_DZ=8,BUS_REAR=-50,BUS_FRONT=54,BUS_OUT=16.3F,BUS_RADIUS=8;
+    private static final ModelResourceLocation[] BUS=new ModelResourceLocation[BUS_PARTS],BUS_LIT=new ModelResourceLocation[BUS_PARTS];
     static{
         for(int k=0;k<TownCar.CARS;k++){
             String name="calder_car/"+TownCar.NAMES[k];
             BODY[k]=new ModelResourceLocation[]{BikeLook.standalone(name+"_front"),BikeLook.standalone(name+"_back")};
             LIT[k]=new ModelResourceLocation[]{BikeLook.standalone(name+"_lit_front"),BikeLook.standalone(name+"_lit_back")};
         }
+        for(int i=0;i<BUS_PARTS;i++){BUS[i]=BikeLook.standalone("list_bus/part"+i);BUS_LIT[i]=BikeLook.standalone("list_bus/lit"+i);}
     }
     /** Every model a car is drawn from, which no block state names. */
     static void register(java.util.function.Consumer<ModelResourceLocation> to){
@@ -52,6 +61,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
         for(var pair:LIT)for(var m:pair)to.accept(m);
         to.accept(WHEEL);to.accept(WHEEL_WIDE);
         for(var m:OPEN)to.accept(m);to.accept(DOOR);
+        for(var m:BUS)to.accept(m);for(var m:BUS_LIT)to.accept(m);
     }
     /** Any of them that is missing, for the proof. */
     static java.util.List<ModelResourceLocation> missing(){
@@ -63,7 +73,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     public TownCarRenderer(EntityRendererProvider.Context c){super(c);shadowRadius=1.3F;}
     @Override public ResourceLocation getTextureLocation(TownCar car){return InventoryMenu.BLOCK_ATLAS;}
     @Override public void render(TownCar car,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
-        shadowRadius=car.kind()==TownCar.CART?.4F:1.3F;
+        shadowRadius=car.kind()==TownCar.CART?.4F:car.kind()==TownCar.BUS?2F:1.3F;
         draw(pose,buffers.getBuffer(Sheets.cutoutBlockSheet()),car.kind(),Mth.rotLerp(partial,car.yRotO,car.getYRot()),car.rolled(partial),light,car.lit(),car.working()?car.doorAt(partial):0);
         super.render(car,yaw,partial,pose,buffers,light);
     }
@@ -75,6 +85,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     /** 0.4.715: and the blue sedan with its driver's door that far out from shut, in degrees. */
     public static void draw(PoseStack pose,VertexConsumer out,int kind,float yaw,float rolled,int light,boolean lit,float door){
         if(kind==TownCar.CART){cart(pose,out,yaw,light);return;}
+        if(kind==TownCar.BUS){bus(pose,out,yaw,rolled,light);return;}
         boolean open=kind==TownCar.BLUE&&door>.5F;
         kind=Mth.clamp(kind,0,TownCar.CARS-1);
         pose.pushPose();
@@ -98,6 +109,24 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
             boolean wide=kind==TownCar.MUSCLE&&end<0;
             pose.pushPose();pose.translate(end*AXLE/16F,HUB/16F,side*(wide?OUT_WIDE:OUT)/16F);pose.mulPose(Axis.ZP.rotation(-angle));pose.translate(-.5F,-.5F,-.5F);
             part(pose,out,wide?WHEEL_WIDE:WHEEL,light);
+            pose.popPose();
+        }
+        pose.popPose();
+    }
+    /** 0.4.735: The list's dawn bus, its nose toward yaw: its five fifths end to end, their lamps lit, and its four wheels turning. */
+    private static void bus(PoseStack pose,VertexConsumer out,float yaw,float rolled,int light){
+        pose.pushPose();
+        pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));
+        for(int i=0;i<BUS_PARTS;i++){
+            float dx=-4-(-BUS_L+BUS_PART*i);
+            pose.pushPose();pose.translate(-dx/16F,-BUS_DY/16F,-BUS_DZ/16F);
+            part(pose,out,BUS[i],light);part(pose,out,BUS_LIT[i],LightTexture.FULL_BRIGHT);
+            pose.popPose();
+        }
+        float angle=rolled/(BUS_RADIUS/16F),scale=BUS_RADIUS/RADIUS;
+        for(float axle:new float[]{BUS_REAR,BUS_FRONT})for(int side=-1;side<=1;side+=2){
+            pose.pushPose();pose.translate(axle/16F,BUS_RADIUS/16F,side*BUS_OUT/16F);pose.mulPose(Axis.ZP.rotation(-angle));pose.scale(scale,scale,scale);pose.translate(-.5F,-.5F,-.5F);
+            part(pose,out,WHEEL_WIDE,light);
             pose.popPose();
         }
         pose.popPose();

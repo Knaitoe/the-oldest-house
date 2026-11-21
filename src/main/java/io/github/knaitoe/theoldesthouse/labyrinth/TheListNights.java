@@ -91,6 +91,8 @@ public final class TheListNights{
         // 0.4.732: first light, seen from town, is the one rule from the tapes that holds.
         if(!bed)TheListRules.dawn(l,n);
         TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);TheListBus.reset(n.base);
+        // 0.4.735: the bus, if it came, pulls out.
+        if(night==4)TheListBus.leave(l,n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;
         var d=LabyrinthData.get(l.getServer());

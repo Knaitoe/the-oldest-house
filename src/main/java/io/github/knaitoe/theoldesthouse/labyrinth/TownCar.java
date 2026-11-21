@@ -35,8 +35,15 @@ public final class TownCar extends Entity implements Voiced {
      */
     public static final int WAGON=0,PICKUP=1,SEDAN=2,MUSCLE=3,BLUE=4,WHITE=5,MOVING=4,CARS=6;
     /** 0.4.488: and a grocery cart, one of the stock boy's chain: the same kind of body, moved by the night. */
-    public static final int CART=6,KINDS=7;
-    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white","cart"};
+    public static final int CART=6;
+    /**
+     * 0.4.735: and The list's dawn bus, ten blocks long (TheListBus). It drives, so it is no thing in the way and its lamps are lit, as
+     * the four that drive are.
+     */
+    public static final int BUS=7,KINDS=8;
+    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white","cart","bus"};
+    /** Half the bus's length. */
+    public static final double BUS_LONG=5.1;
     /** Half a cart's length and half its width; and how high it is as a thing in the way: over what a bike rolls up. */
     public static final double CART_LONG=.42,CART_WIDE=.3,CART_HIGH=1.1;
     /** Half a car's length and half its width, in blocks; and how long one goes untold where it is before it is gone, in ticks. */
@@ -69,7 +76,7 @@ public final class TownCar extends Entity implements Voiced {
      * and a bike that meets it has met a wall (so a rider going fast comes off, by the bike's own rule). The four that drive are
      * not: they are never where anybody is, by their own rule.
      */
-    public boolean parked(){return kind()>=MOVING;}
+    public boolean parked(){return kind()>=MOVING&&kind()!=BUS;}
     @Override public boolean canBeCollidedWith(){return parked();}
     /** A parked car's own length and width, along whichever way it stands: it stands square to the streets. */
     @Override protected net.minecraft.world.phys.AABB makeBoundingBox(){
@@ -116,5 +123,5 @@ public final class TownCar extends Entity implements Voiced {
     }
     @Override public boolean canBeHitByProjectile(){return false;}
     @Override public boolean shouldRenderAtSqrDistance(double distance){return distance<160*160;}
-    @Override public AABB getBoundingBoxForCulling(){return getBoundingBox().inflate(LONG,.4,LONG);}
+    @Override public AABB getBoundingBoxForCulling(){double far=kind()==BUS?BUS_LONG:LONG;return getBoundingBox().inflate(far,kind()==BUS?1.4:.4,far);}
 }

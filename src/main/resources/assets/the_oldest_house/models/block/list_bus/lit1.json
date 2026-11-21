@@ -1,0 +1,8 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "the_oldest_house:block/list_bus/sign"
+  },
+  "elements": []
+}
