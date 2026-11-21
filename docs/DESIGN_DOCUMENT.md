@@ -2,6 +2,8 @@ November 15 candidate 0.4.609 (docs/ONES_INSIDE_OFFER_0_4_609.md), The Ones Alre
 
 November 15 candidate 0.4.610 (docs/ONES_INSIDE_CELLAR_0_4_610.md), The Ones Already Inside 10, N9: no layout, protocol or Witness change; the lodging house is still not dealt. LodgingCellar: a crouched hand on the dead post or its shoe kicks the wedge out (shoe stage 2, WedgeOutAt0610 by the house clock) or drives it back (stage 1, the body TIED); a plain hand gets DEAD_POST and WEDGE_DRIVEN or WEDGE_LIES. While out, the FAILED_POST body takes gestures LOOSE 16-19, one every LOOSEN (140) ticks, onFloor still seated, and says PUT_IT_BACK every PLEADS (120) ticks within earshot. A reader within 10 blocks with line of sight from stage 2 gets THIRD_WAY once (SawLoose0610, KnowsThird0610), and then R_CELLAR with Vera before answering (VERA_CELLAR, VeraCellar0610).
 
+November 21 candidate 0.4.743 (docs/MULTIPLAYER_AUDIT.md): OwnPlaceSweepTests puts the silo, the backseat's road and Drisking through the sweep in the group namespace. No game change.
+
 November 21 candidate 0.4.742 (docs/MULTIPLAYER_AUDIT.md): at Pinehook a reader who logs out carrying one of the weekend's things leaves it where it belongs (Pinehook.droppedOut), as one who walks out already did. Three cases for dropping out mid-story: LastCrossingTests#aReaderWhoDropsOutHoldingTheBrakeComesBackToTheirPlace, PinehookTests#aReaderWhoDropsOutWithTheCoolerLeavesItOnThePorch, GoatmanTests#aGasReaderWhoDropsOutAtTheShedDoesNotHoldTheNight.
 
 November 21 candidate 0.4.741 (docs/MULTIPLAYER_AUDIT.md), two cases for the audit's named gaps: PellHouseTests#twoReadersPlayCatchWithCallumAndEachCatchIsTheirOwn and KitchenTests#johnnyAtHomeWithOneReaderGetsUpFromTheKitchenTableOfAnother. No game change.
