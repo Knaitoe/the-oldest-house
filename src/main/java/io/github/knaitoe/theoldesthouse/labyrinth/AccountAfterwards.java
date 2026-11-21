@@ -28,6 +28,7 @@ public final class AccountAfterwards {
             case SECOND_WAITRESS -> plate(LiteraryVignettes.personal(d, id, LabyrinthPlace.SECOND_WAITRESS));
             case BORRASCA -> patch(d.stateEntry(Keepsakes.STATE, id.toString()));
             case FEET_UP -> chalk(d.stateEntry(Keepsakes.STATE, id.toString()));
+            case THE_LIST -> list(d.stateEntry(Keepsakes.STATE, id.toString()));
             default -> "";
         };
         String manor = manor(d.stateEntry(HouseRemembers.STATE, id.toString()), story);
@@ -47,6 +48,13 @@ public final class AccountAfterwards {
         return n <= 0 ? "" : "Afterwards, " + times(n) + ", a short fall in the House cost me nothing. The chalk was in my pocket.";
     }
 
+    /** 0.4.731: the strip of the sack, and Amber's page, out in the reader's world. */
+    public static String list(CompoundTag keepsakes) {
+        int up = keepsakes.getInt("GotUp"), heard = keepsakes.getInt("PageHeard");
+        String a = up <= 0 ? "" : "Afterwards, " + times(up) + ", out in my world, something should have killed me and only put me down. I got up.";
+        String b = heard <= 0 ? "" : (up > 0 ? " " : "") + "Afterwards I heard a heart before I saw what wanted me, " + times(heard) + ".";
+        return a + b;
+    }
     /** Kept, he is freed; buried, the rot goes as far as the names he has carried. */
     public static String harrigan(CompoundTag s) {
         if (s.getBoolean("KeptHarriganPhone") && !s.getBoolean("Contact"))

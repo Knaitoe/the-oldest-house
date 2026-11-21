@@ -75,7 +75,7 @@ the narrator's part and has their own House body; nobody in the town carries the
 | 6 | **Night three.** 6a, the flyers and what comes back (0.4.723, built: `docs/THE_LIST_0_4_723.md`); 6b, the deputy out on his round (0.4.724, built: `docs/THE_LIST_0_4_724.md`); 6c, the field house (0.4.725, built: `docs/THE_LIST_0_4_725.md`). The hook that comes back, the flyers and the curfew, the deputy's car, the town out with flashlights, the field house. |
 | 7 | **Night four.** 7a, Stace's plan and the stopped ending (0.4.726, built: `docs/THE_LIST_0_4_726.md`); 7b, Stace on foot and fought (0.4.727, built: `docs/THE_LIST_0_4_727.md`); 7c, the dawn bus (0.4.728, built: `docs/THE_LIST_0_4_728.md`). Stace's plan, built on the rules she believes; the night ending at the gin, the tower or the playa; the endings. |
 | 8 | **Amber's side.** 8a, warned off (0.4.729, built: `docs/THE_LIST_0_4_729.md`); 8b, a door held, a heart kept quiet, the slasher put down (0.4.730, built: `docs/THE_LIST_0_4_730.md`). Other readers in the den from night two: warning names, driving them out, hiding them, barricading, keeping a heart quiet, knocking the slasher down, testing the rules for real. |
-| 9 | **What is kept.** The account, the Witness line, the keepsake, the House of Leaves fact, the house afterwards and the together lines. |
+| 9 | **What is kept.** 9a, the keepsakes (0.4.731, built: `docs/THE_LIST_0_4_731.md`). The account, the Witness line, the keepsake, the House of Leaves fact, the house afterwards and the together lines. |
 
 ## The beats, as the House keeps them
 

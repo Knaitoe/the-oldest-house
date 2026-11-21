@@ -138,6 +138,8 @@ public final class Keepsakes {
             case "last_orders/Chalk" -> "The house chalk, worn hollow on one side. At a crafting table, with wool, planks and iron, it makes a table of your own.";
             case "last_orders/Darts" -> "Three darts in a tin, their flights flattened from years in a pocket. At a crafting table, with string, planks and a target, it makes a board of your own.";
             case "place_for_you/Card" -> "Your name, in Mara's hand, folded to stand at a place laid for you.";
+            case "the_list/Strip" -> "Torn from the sack at an eyehole, stiff where the blood dried. Out in your world, once a day, what should kill you only puts you down.";
+            case "the_list/Page" -> "One of her rules, in her hand: they can hear you. Out in your world, you hear them first.";
             case "feet_up/ChalkStub" -> "Worn to a stub. Carried in the House, a short fall costs you nothing, as if the floor only ever counted.";
             default -> Artifacts.line(place, key);
         };
@@ -319,6 +321,7 @@ public final class Keepsakes {
         if (!(e.getNewAboutToBeSetTarget() instanceof ServerPlayer p)) return;
         if (e.getEntity().getType().is(EntityTypeTags.UNDEAD) && unnoticed(p, e.getEntity())) e.setCanceled(true);
         else if (e.getEntity() instanceof Enemy && lostTrack(p, e.getEntity())) e.setCanceled(true);
+        else if (e.getEntity() instanceof Enemy) heard(p);
     }
     /** The dead pass over a reader the house wrote among them, until close, or until struck by them. */
     public static boolean unnoticed(ServerPlayer p, LivingEntity dead) {
@@ -488,9 +491,49 @@ public final class Keepsakes {
         return true;
     }
 
+    // ------------------------------------------------------------------
+    // The list (0.4.731): the strip of the sack and Amber's page
+    // ------------------------------------------------------------------
+
+    /** A plain item with a name of its own, for a keepsake that is not a thing of the mod's. */
+    public static ItemStack named(Item item, String name) {
+        var s = new ItemStack(item);s.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal(name).withStyle(s2 -> s2.withItalic(false)));return s;
+    }
+    /** How long after one heart heard through the page the next can be. */
+    public static final int PAGE_QUIET = 200;
+    private static final Map<UUID, Long> HEARD = new HashMap<>();
+    /** Something that hunts turning on a reader carrying Amber's page, in their own world: they hear its heart, alone. */
+    public static boolean heard(ServerPlayer p) {
+        if (!ownWorld(p) || p.isSpectator() || !carries(p, LabyrinthPlace.THE_LIST, "Page")) return false;
+        long now = p.serverLevel().getGameTime();Long last = HEARD.get(p.getUUID());
+        if (last != null && now - last < PAGE_QUIET) return false;
+        HEARD.put(p.getUUID(), now);
+        p.playNotifySound(TheListRegistry.HEART.get(), net.minecraft.sounds.SoundSource.PLAYERS, .9F, 1F);
+        var own = record(p);own.putInt("PageHeard", own.getInt("PageHeard") + 1);save(p, own);
+        return true;
+    }
+    /** For a check: the page's quiet forgotten. */
+    public static void rest(UUID id) { HEARD.remove(id); }
+    /** Out in their own world with the strip of the sack, once a House day: a blow that would kill leaves half a heart, and they go down. */
+    @SubscribeEvent(priority = EventPriority.LOWEST) public static void getUp(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre e) {
+        if (!(e.getEntity() instanceof ServerPlayer p) || e.getNewDamage() < p.getHealth()) return;
+        if (e.getSource().is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL) || e.getSource().is(net.minecraft.world.damagesource.DamageTypes.FELL_OUT_OF_WORLD)) return;
+        if (gotUp(p)) e.setNewDamage(Math.max(0, p.getHealth() - 1));
+    }
+    /** Whether the strip keeps this reader up now, and if so, puts them down for five seconds and counts it. */
+    public static boolean gotUp(ServerPlayer p) {
+        if (!ownWorld(p) || !carries(p, LabyrinthPlace.THE_LIST, "Strip")) return false;
+        var own = record(p);long today = io.github.knaitoe.theoldesthouse.house.HouseCalendar.today(p.server);
+        if (own.contains("StripDay") && own.getLong("StripDay") == today) return false;
+        own.putLong("StripDay", today);own.putInt("GotUp", own.getInt("GotUp") + 1);save(p, own);
+        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 4, true, false, true));
+        p.displayClientMessage(Component.literal("You go down. You get up.").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC), true);
+        return true;
+    }
+
     @SubscribeEvent public static void serverTick(ServerTickEvent.Post e) {
         if (e.getServer().getTickCount() % 20 == 0) lightsOut(e.getServer(), false);
         if (e.getServer().getTickCount() % 200 == 0) WARDS.removeIf(w -> { var l = e.getServer().getLevel(w.level());return l == null || l.isLoaded(w.pos()) && !playing(l, w); });
     }
-    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e) { lightsOut(e.getServer(), true);WARDS.clear();STILL.clear(); }
+    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e) { lightsOut(e.getServer(), true);WARDS.clear();STILL.clear();HEARD.clear(); }
 }

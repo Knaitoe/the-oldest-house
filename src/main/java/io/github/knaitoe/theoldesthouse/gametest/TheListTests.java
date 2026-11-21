@@ -2730,7 +2730,19 @@ public final class TheListTests {
             for(var q:List.of(p,peer)){f.read(q,P,TheListSite.SOURCE);f.read(q,P,TheListSite.ENDING);}
             h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.THE_LIST)&&WitnessAccount.has(f.data(),peer.getUUID(),WitnessAccount.Story.THE_LIST),"each reads their own account, and the story is theirs");
             h.assertTrue(WitnessAccount.Story.THE_LIST.kind.equals("memory")&&WitnessAccount.Story.values().length==WitnessPool.SOURCES,"a memory story, in the pinned pool");
+            // 0.4.731: what is kept. The one who went in takes a strip of the sack; the other reader a page of Amber's rules.
+            h.assertTrue(Keepsakes.carries(p,P,"Strip")&&!Keepsakes.carries(p,P,"Page"),"the one who went in keeps a strip of the sack");
+            h.assertTrue(Keepsakes.carries(peer,P,"Page")&&!Keepsakes.carries(peer,P,"Strip"),"the other reader keeps a page of the notebook");
+            h.assertFalse(Keepsakes.carries(ghost,P,"Page")||Keepsakes.carries(ghost,P,"Strip"),"the spectator keeps nothing");
             TheListNight.end(l,b);
+            // Out in their own world.
+            var home=h.absoluteVec(new Vec3(2.5,1,2.5));
+            for(var q:List.of(p,peer))q.teleportTo(h.getLevel(),home.x,home.y,home.z,0,0);
+            h.assertFalse(Keepsakes.heard(p),"no page, no heart");
+            h.assertTrue(Keepsakes.heard(peer)&&!Keepsakes.heard(peer),"something turning on them, they hear its heart, and not again at once");
+            h.assertTrue(Keepsakes.gotUp(p)&&!Keepsakes.gotUp(p)&&!Keepsakes.gotUp(peer),"a killing blow puts the one with the strip down once a day; nobody else");
+            h.assertTrue(AccountAfterwards.list(Keepsakes.record(p)).contains("I got up")&&AccountAfterwards.list(Keepsakes.record(peer)).contains("I heard a heart before I saw"),"the accounts say what each kept did");
+            Keepsakes.rest(peer.getUUID());
             done();h.succeed();
         });
     }
