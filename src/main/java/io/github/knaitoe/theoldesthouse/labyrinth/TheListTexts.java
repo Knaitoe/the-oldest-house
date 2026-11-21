@@ -504,6 +504,12 @@ public final class TheListTexts {
         // 0.4.723: what comes back, and what the town knows.
         HOOK_BACK="The hay hook is on your bed.",
         FLYERS="There's a flyer taped to the kitchen window. CURFEW 9 PM, and under it somebody's drawing of a face in a sack.",
+        // 0.4.724: the deputy, out on his round.
+        DEPUTY_HEY="Hey. You. Stay right where you are.",
+        DEPUTY_SEEN="A flashlight finds you from down the street.",
+        DEPUTY_SHOT="Something hits you in the chest, and then you hear it.",
+        DEPUTY_FIRED="Stay down.",
+        DEPUTY_CURFEW="There's a curfew. Go home and stay there.",
         NIGHT4="Ten o'clock. Over the highway the gin is running. You can hear it from the kitchen.",
         // 0.4.721: first light after the fourth night: the one who went in, and anyone else.
         END_WENT_IN="It gets light over the gin, and the hands are your own again. The tape deck in your room is running.",
