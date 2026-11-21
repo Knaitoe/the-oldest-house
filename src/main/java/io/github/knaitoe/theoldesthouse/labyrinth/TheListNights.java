@@ -12,7 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
  * Each night is the hunt (TheListHunt) begun on that night and ended by the one who went in lying down on their own bed or by first
  * light. The town keeps who of the five is dead from one night to the next (TheListNight.Night.dead); the dead are not made again.
  * <ol>
- * <li><b>The first name</b>: five seconds after Amber writes the first rule down she says the first one is out, and night two's hunt
+ * <li><b>The first name</b>: five seconds after Amber writes the last of her tests' rules down (0.4.722; the first in 0.4.721) she says the first one is out, and night two's hunt
  * begins ({@link #HUNT2}).</li>
  * <li><b>Night two's end</b> ({@link #DONE2}): the one who went in has had two nights.</li>
  * <li><b>Night three</b> ({@link #HUNT3}): back in the town, ten o'clock in their kitchen with the hay hook back; the hunt begins at once.</li>
@@ -33,7 +33,8 @@ public final class TheListNights{
 
     /** At RAN: once the wait is up, Amber says the first name is out, and night two's hunt begins. True if it did. */
     static boolean ran(ServerLevel l,TheListNight.Night n){
-        if(n.since<NAME_AFTER)return false;
+        // 0.4.722: after the last of Amber's tests.
+        if(n.since<NAME_AFTER||!TheListDen.tested(l,n))return false;
         var amber=TheListPeople.find(l,n.base,TheListPeople.AMBER);
         if(amber!=null){amber.say(TheListTexts.NAMES[TheListPeople.AMBER],TheListTexts.FIRST_NAME);amber.speaks(TheListTexts.FIRST_NAME);}
         for(var q:TheList.readers(l,n.base))if(LiteraryVignettes.participant(q))TheList.cue(q,q.getUUID().equals(n.slasher)?TheListTexts.FIRST_NAME_CUE:TheListTexts.HUNT_OTHER);
@@ -142,6 +143,9 @@ public final class TheListNights{
     public static void toRan(ServerLevel l,net.minecraft.core.BlockPos b){
         var n=TheListNight.night(l.getServer(),b);if(n==null)return;
         n.phase=TheListNight.RAN;n.since=0;TheListNight.save(l.getServer(),n);
+        // 0.4.722: with every test had.
+        if(n.slasher!=null){var d=LabyrinthData.get(l.getServer());var own=LiteraryVignettes.personal(d,n.slasher,TheList.PLACE);
+            own.putInt("Rules",own.getInt("Rules")|1|1<<TheListDen.RULE_DOOR|1<<TheListDen.RULE_HEART|1<<TheListDen.RULE_TOWER);LiteraryVignettes.save(d,n.slasher,TheList.PLACE,own);}
     }
     /** For a check: one of the five dead on an earlier night by this reader's hand, as the hook would leave them. */
     public static void slain(ServerLevel l,net.minecraft.core.BlockPos b,int who,java.util.UUID killer){

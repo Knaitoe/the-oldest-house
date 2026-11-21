@@ -471,7 +471,29 @@ public final class TheListTexts {
     /** Her count at the end zone; on the last she runs. */
     public static final String[] COUNT={"On three.","One.","Two.","Three!"};
     /** The rules the tests write, in the notebook's own words. */
-    public static final String[] RULES={"1. He can't run. He doesn't need to. You don't get away from him. (The field.)"};
+    public static final String[] RULES={"1. He can't run. He doesn't need to. You don't get away from him. (The field.)",
+        "2. Locks don't stop him. Steel doesn't either. Five hits. (The field house.)",
+        "3. He hears your heart through a wall, and he knows it's yours. (The field house again.)",
+        "3. He hears hearts through a wall, but he can't tell whose. He has to guess. (The field house again.)",
+        "4. If he falls he stays down a while. Five seconds off the tower. Higher, longer. (The water tower.)"};
+    /** 0.4.722, the rest of night two's tests. Amber's lines over her head; the cues to the one who went in. */
+    public static final String DOOR_ASK="Field house. I'm going in and locking it. You get in.",
+        DOOR_OUT="Out first. You have to be on the other side of it.",
+        DOOR_BOLTED="The field house doors bang shut. A bolt goes across on the inside.",
+        DOOR_DONE="Five. I counted. That's a steel door.",
+        HEART_ASK="Now go back out. Stay out till I bang on something.",
+        HEART_OUT="Out. Both feet.",
+        HEART_KNOCK="Inside the field house a locker door bangs once.",
+        HEART_RIGHT="How'd you know which one? There's a wall.",
+        HEART_WRONG="Wrong room. Ha. So you can't tell.",
+        HEART_TALK="I'm not telling you where I am. That's the whole test.",
+        TOWER_ASK="Last one. The water tower. You go up and you come off it.",
+        TOWER_UP="All the way up. Now off. Not the ladder.",
+        TOWER_LADDER="That's the ladder. Off the side.",
+        TOWER_DONE="Five seconds and you got up. Higher would be longer, right? Has to be.",
+        TOWER_TALK="Up the ladder, off the catwalk. I'll watch from here.",
+        TESTS_DONE="That's all of them. That's what we know.",
+        FELL="The ground comes up all at once.";
 
     /** 0.4.721: the first name out, said by Amber over her head; the cue to the one who went in, and to anyone else in town. */
     public static final String FIRST_NAME="That's the first one. They're out there now. Go on.",
