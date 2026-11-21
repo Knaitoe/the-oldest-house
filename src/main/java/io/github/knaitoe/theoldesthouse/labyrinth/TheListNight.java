@@ -181,6 +181,8 @@ public final class TheListNight {
      * that is on, they hear the party if it is on, and the night's hour is theirs at once.
      */
     static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
+        // 0.4.733: a finished reader, alone with other finished readers, finds the town at noon.
+        if(TheListAfter.arrive(p,b,own))return;
         var n=night(p.server,b);
         boolean owed=LiteraryVignettes.participant(p)&&own.getInt("Night")<1;
         if(n==null||n.phase==NONE){if(owed&&!quiet(p.server,b))begin(p,b);return;}

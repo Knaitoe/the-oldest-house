@@ -2727,6 +2727,33 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /** 0.4.733: the town afterwards, for a reader who has finished, alone with finished readers; not while an unfinished one is in it. */
+    @GameTest(template="empty",batch="the_list_after",timeoutTicks=3000)
+    public static void theTownAfter(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_after",P);var q=f.player("list_after_new",P);
+        hold(f,b,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);q.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);f.at(q,P,40.5,0,40.5);
+            var own=f.own(p,P);own.putBoolean("Completed",true);own.putString("Outcome","took_the_bus");own.putInt("Night",4);own.putInt("Visit",5);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            h.assertTrue(Aftermath.canDeal(f.data(),p.getUUID(),P),"a finished reader can be dealt the town again");
+            cues(p);own=f.own(p,P);TheList.arrive(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            h.assertTrue(cues(p).contains(TheListAfter.BUS)&&Aftermath.returns(f.data(),p.getUUID(),P)==1,"noon, and the bench empty: "+f.own(p,P));
+            h.assertTrue(TheListNight.phase(l.getServer(),b)==TheListNight.NONE&&!TheListHunt.on(b),"no night begins");
+            own=f.own(p,P);TheList.arrive(p,b,own);LiteraryVignettes.save(f.data(),p.getUUID(),P,own);
+            h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"the same visit counts once");
+            // A reader who has not had a night, in the town with them: no aftermath, and night one begins round them.
+            q.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);f.at(q,P,-2.5,0,-3.5);
+            var mine=f.own(p,P);mine.putInt("Visit",6);LiteraryVignettes.save(f.data(),p.getUUID(),P,mine);
+            h.assertFalse(Aftermath.alone(TheList.readers(l,b),P),"not alone with an unfinished reader");
+            cues(p);mine=f.own(p,P);TheList.arrive(p,b,mine);
+            h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"and no return counted");
+            h.assertTrue(TheListAfter.line(f.own(p,P)).equals(TheListAfter.BUS),"the line follows the record");
+            TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="the_list_end",timeoutTicks=6000)
     public static void toTheEnd(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
