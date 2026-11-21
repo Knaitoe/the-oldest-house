@@ -85,6 +85,12 @@ public final class TheListHuddle{
     }
     /** The field's lights on or off: each light set in air where it falls, or taken out. */
     static void lights(ServerLevel l,BlockPos b,boolean on){
+        // 0.4.738: the banks on the four towers lit or dark with them.
+        for(var t:TheListSite.LIGHT_TOWERS){
+            var at=b.offset(t[0],TheListSite.BANK_Y,t[1]);if(!l.isLoaded(at))continue;var st=l.getBlockState(at);
+            var want=on?TheListBlock.of(TheListBlock.Kind.TOWER,TheListSite.bankFacing(t),7):TheListBlock.of(TheListBlock.Kind.FIELD,TheListSite.bankFacing(t),7);
+            if(TheListBlock.is(st)&&(TheListBlock.is(st,TheListBlock.Kind.FIELD)||TheListBlock.is(st,TheListBlock.Kind.TOWER))&&st.getValue(TheListBlock.STAGE)==7&&st!=want)l.setBlock(at,want,Block.UPDATE_CLIENTS);
+        }
         for(var rel:LIGHTS){
             var at=b.offset(rel);if(!l.isLoaded(at))continue;var st=l.getBlockState(at);
             if(on&&st.isAir())l.setBlock(at,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,LEVEL),Block.UPDATE_CLIENTS);
@@ -92,6 +98,8 @@ public final class TheListHuddle{
         }
     }
     /** Whether the field's lights are on (for a check): every one of them that is loaded is lit. */
+    /** Whether a tower's bank shows lit (for a check). */
+    public static boolean bankLit(ServerLevel l,BlockPos b,int i){var t=TheListSite.LIGHT_TOWERS[i];var st=l.getBlockState(b.offset(t[0],TheListSite.BANK_Y,t[1]));return TheListBlock.is(st,TheListBlock.Kind.TOWER)&&st.getValue(TheListBlock.STAGE)==7;}
     public static boolean lit(ServerLevel l,BlockPos b){
         boolean any=false;
         for(var rel:LIGHTS){var at=b.offset(rel);if(!l.isLoaded(at))continue;if(!l.getBlockState(at).is(Blocks.LIGHT))return false;any=true;}
