@@ -54,6 +54,8 @@ public final class TheListNights{
     static boolean tick(ServerLevel l,TheListNight.Night n,List<ServerPlayer> here){
         n.time=Math.min(TheListNight.LIGHT,n.time+TheListNight.RATE);
         if(!hunting(n.phase))return false;
+        // 0.4.724: the deputy's round, on nights three and four.
+        if(n.phase==HUNT3||n.phase==HUNT4)TheListDeputy.tick(l,n,here);
         if(n.time>=TheListNight.LIGHT||n.phase==HUNT4&&alive(n)==0){light(l,n,false);return true;}
         return false;
     }
@@ -78,7 +80,7 @@ public final class TheListNights{
     static void light(ServerLevel l,TheListNight.Night n,boolean bed){
         int night=nightOf(n.phase);
         for(int who:TheListBody.LISTED)if(TheListHunt.dead(n.base,who))n.dead|=1<<who;
-        TheListHunt.end(l,n.base);
+        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;
         var d=LabyrinthData.get(l.getServer());

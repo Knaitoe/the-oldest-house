@@ -207,7 +207,7 @@ public final class TheListNight {
     public static void end(ServerLevel l,BlockPos b){
         var n=night(l.getServer(),b);
         if(n!=null){cars(l,n,false);}
-        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);TheListHunt.end(l,b);TheListFlyers.down(l,b);
+        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);TheListHunt.end(l,b);TheListFlyers.down(l,b);TheListDeputy.reset(l,b);
         NIGHTS.remove(b.asLong());
         var d=LabyrinthData.get(l.getServer());int copy=copy(l.getServer(),b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);w.remove("Night");LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
         TheListPeople.ensure(l,b);

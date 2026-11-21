@@ -129,7 +129,7 @@ public final class TheList {
     public static boolean active(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     public static int clock(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.tick;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){ACTIVE.clear();}
-    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();TheListDen.clearAll();}
+    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();TheListDen.clearAll();TheListDeputy.clearAll();}
     /**
      * Every few seconds while someone is in town, its night, each heard where it is: crickets near a reader who is outdoors, a dog behind
      * the back fence nearest them, the drive-in's nearest speaker post to anyone on that stretch of Main Street, the loose tin on whichever

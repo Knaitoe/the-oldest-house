@@ -2306,6 +2306,60 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.724, part 6b: the deputy out on his round. Night three begun, he leaves his place with a flashlight in his hand and walks; its
+     * beam is a light ahead of him. Another reader near him in the street is told there is a curfew, once. The one who went in, put in
+     * front of him, is seen: he calls out, keeps the light on them, and fires; the body goes down. Out of his sight, he walks on. At first
+     * light he is back at his place and the beam is out.
+     */
+    @GameTest(template="empty",batch="the_list_deputy",timeoutTicks=4000)
+    public static void theDeputy(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_deputy",P);var peer=f.player("list_deputy_peer",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD);hold(f,b,TheListPeople.AT);
+        for(int x=-48;x<=48;x+=24)hold(f,b,new BlockPos(x,0,TheListSite.WALK_S_S));
+        BlockPos[] start={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);
+            h.assertTrue(TheListNights.begin(p,b,3),"night three begins");
+            h.assertTrue(TheListDeputy.on(s,b),"the deputy is out");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);var d=TheListPeople.find(l,b,TheListPeople.DEPUTY);
+            h.assertTrue(d!=null&&TheListDeputy.step(b)>=0,"waiting for the deputy on his round");
+            start[0]=d.blockPosition();})
+        .thenWaitUntil(()->{var d=TheListPeople.find(l,b,TheListPeople.DEPUTY);
+            h.assertTrue(d!=null&&d.blockPosition().distManhattan(start[0])>=3,"waiting for him to walk off: "+(d==null?"nowhere":d.blockPosition().subtract(b)));
+            h.assertTrue(d.getMainHandItem().is(io.github.knaitoe.theoldesthouse.labyrinth.BorrascaRegistry.FLASHLIGHT.get()),"a flashlight in his hand");})
+        .thenExecute(()->{
+            var beam=TheListDeputy.beamAt(b);
+            h.assertTrue(beam!=null&&l.getBlockState(beam).is(net.minecraft.world.level.block.Blocks.LIGHT),"its beam is a light ahead of him");
+            // Another reader just in front of him in the street.
+            var d=TheListPeople.find(l,b,TheListPeople.DEPUTY);var look=Vec3.directionFromRotation(0,d.getYHeadRot());
+            var at=d.position().add(look.scale(3)).subtract(Vec3.atLowerCornerOf(b));
+            f.at(peer,P,at.x,0,at.z);
+        }).thenWaitUntil(()->h.assertTrue(said(TheListPeople.find(l,b,TheListPeople.DEPUTY)).equals(TheListTexts.DEPUTY_CURFEW),"waiting for the curfew"))
+        .thenExecute(()->{
+            f.at(peer,P,-2.5,0,-3.5);
+            var d=TheListPeople.find(l,b,TheListPeople.DEPUTY);var look=Vec3.directionFromRotation(0,d.getYHeadRot());
+            var at=d.position().add(look.scale(8)).subtract(Vec3.atLowerCornerOf(b));
+            f.at(p,P,at.x,0,at.z);cues(p);
+        }).thenWaitUntil(()->h.assertTrue(TheListDeputy.aiming(b),"waiting for him to see them"))
+        .thenExecute(()->h.assertTrue(cues(p).contains(TheListTexts.DEPUTY_SEEN),"the flashlight finds them"))
+        .thenWaitUntil(()->h.assertTrue(TheListDeputy.fired(b)&&TheListBody.down(p)>0,"waiting for the shot"))
+        .thenExecute(()->{
+            h.assertTrue(p.isAlive()&&TheListBody.has(p),"down, not dead");
+            f.at(p,P,-3.5,0,-3.5);
+        }).thenWaitUntil(()->h.assertTrue(!TheListDeputy.aiming(b),"waiting for him to walk on"))
+        .thenExecute(()->{
+            TheListNights.dawn(l,b);TheListPeople.ensure(l,b);
+            h.assertFalse(TheListDeputy.on(s,b),"first light: his round is over");
+            var d=TheListPeople.find(l,b,TheListPeople.DEPUTY);
+            h.assertTrue(d!=null&&d.blockPosition().subtract(b).equals(TheListPeople.AT[TheListPeople.DEPUTY]),"he is back at his place");
+            h.assertTrue(TheListDeputy.beamAt(b)==null,"the beam is out");
+            TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Which inventory slot holds the hay hook, or -1. */
     private static int hook(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<9;i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))return i;return -1;}
     /** The reader turned toward a point, or away from it. */

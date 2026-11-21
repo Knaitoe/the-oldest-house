@@ -104,6 +104,8 @@ public final class TheListPeople {
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
         if(TheListHunt.holds(b,who))return TheListHunt.actor(l,b,who);
         // 0.4.720: Amber, out on night two's tests, is wherever she has got to.
+        // 0.4.724: the deputy, out on his round on nights three and four, is wherever he has got to.
+        if(TheListDeputy.holds(l.getServer(),b,who)){for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.phase()==FIRST+who&&x.isAlive()))return a;return null;}
         if(TheListDen.holds(l.getServer(),b,who)){for(var a:l.getEntitiesOfClass(LiteraryActor.class,TheListBody.bounds(b),x->is(x)&&x.phase()==FIRST+who&&x.isAlive()))return a;return null;}
         // 0.4.721: one dead on an earlier night is nowhere.
         if(TheListNight.gone(l.getServer(),b,who))return null;
@@ -136,11 +138,12 @@ public final class TheListPeople {
             // 0.4.708: one the hunt has sent running or hiding is left where they are. 0.4.714: Jenna, once the fryer has been used, is
             // left to her corner.
             if(who==JENNA&&TheListHunt.fryerUsed(b))cornered(l,b);
-            else if(!TheListHunt.holds(b,who)&&!TheListDen.holds(l.getServer(),b,who))place(a,at,who,s.facing());
+            else if(!TheListHunt.holds(b,who)&&!TheListDen.holds(l.getServer(),b,who)&&!TheListDeputy.holds(l.getServer(),b,who))place(a,at,who,s.facing());
             // Mel has the camera out from the party until the seed house, and through a hunt until she lets it fall (0.4.709); Amber, at her window after the cut, a page out of a notebook
             // (0.4.707); nobody else holds anything.
             var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b)&&!TheListHunt.dropped(b,MEL))?LiteraryRegistry.CAMCORDER.get()
-                :who==AMBER&&phase==TheListNight.AFTER?net.minecraft.world.item.Items.PAPER:null;
+                :who==AMBER&&phase==TheListNight.AFTER?net.minecraft.world.item.Items.PAPER
+                :who==DEPUTY&&TheListDeputy.on(l.getServer(),b)?BorrascaRegistry.FLASHLIGHT.get():null;
             var held=a.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
             if(want!=null&&!held.is(want))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(want));
             else if(want==null&&!held.isEmpty())a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
