@@ -2380,8 +2380,13 @@ public final class TheListTests {
             f.at(p,P,-3.5,0,-3.5);
             h.assertTrue(TheListNights.begin(p,b,3),"night three begins");
             h.assertTrue(cues(p).contains(TheListTexts.FIELD_LIT),"told the field's lights are on");
+            // 0.4.739: they are not set there; they come in off the sidewalk at the street door, which stands open for them.
+            h.assertTrue(TheListHuddle.arriving(b),"the five are on their way in");
+            h.assertFalse(shut(l,b,TheListHuddle.STREET_DOOR)||TheListHunt.bolted(b,TheListHuddle.STREET_DOOR),"the street door is open for them");
+            for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);h.assertTrue(a!=null&&a.getZ()-b.getZ()<TheListHuddle.STREET_DOOR.getZ(),"they start outside, on the sidewalk: "+TheListTexts.NAMES[who]);}
         }).thenWaitUntil(()->{TheListPeople.ensure(l,b);
-            for(int who:TheListBody.LISTED)h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.CALM&&near(l,b,who,Vec3.atBottomCenterOf(TheListHuddle.AT[who])),"waiting for "+TheListTexts.NAMES[who]+" in the field house");})
+            h.assertFalse(TheListHuddle.arriving(b),"waiting for them all to come in");
+            for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.CALM&&near(l,b,who,Vec3.atBottomCenterOf(TheListHuddle.AT[who])),"waiting for "+TheListTexts.NAMES[who]+" in the field house"+(a==null?"":" at "+a.position().subtract(Vec3.atLowerCornerOf(b))));}})
         .thenExecute(()->{
             for(var d:new BlockPos[]{TheListHunt.FIELD_DOOR,TheListHunt.FIELD_DOOR.east(),TheListHuddle.STREET_DOOR})h.assertTrue(TheListHunt.bolted(b,d)&&shut(l,b,d),"the field house's doors are bolted: "+d);
             h.assertTrue(TheListHuddle.lit(l,b),"the field's lights are on");

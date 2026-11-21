@@ -317,11 +317,13 @@ public final class TheListHunt {
         if(TheListHuddle.huddled(h.night))TheListHuddle.bolt(h);
         TheListHuddle.lights(l,b,TheListHuddle.huddled(h.night));
         HUNTS.put(b.asLong(),h);
+        // 0.4.739: on night three they walk in from the sidewalk.
+        if(TheListHuddle.huddled(h.night))TheListHuddle.arrive(l,b);
         TheListPeople.ensure(l,b);
     }
     /** Ended: everyone stood up and sent back to their place, the doors put back. */
     public static void end(ServerLevel l,BlockPos b){
-        var h=HUNTS.remove(b.asLong());if(h==null)return;
+        TheListHuddle.reset(b);var h=HUNTS.remove(b.asLong());if(h==null)return;
         TheListGin.reset(b);TheListAmber.clear(b);
         for(var r:h.runners.values()){
             release(l,r);
@@ -359,6 +361,7 @@ public final class TheListHunt {
         var slashers=new ArrayList<ServerPlayer>();
         for(var p:here){var live=TheListBody.LIVE.get(p.getUUID());if(live!=null&&live.down==0&&!p.isSpectator())slashers.add(p);}
         if(h.fryer)TheListPeople.cornered(l,b);
+        TheListHuddle.walkIn(l,b,h);
         // A door the slasher has broken is nobody's to bolt now.
         h.bolted.removeIf(at->{var st=l.getBlockState(b.offset(at));return !(st.getBlock() instanceof DoorBlock)||st.getValue(DoorBlock.OPEN)||st.is(TheListRegistry.BROKEN_DOOR.get());});
         for(var r:h.runners.values()){

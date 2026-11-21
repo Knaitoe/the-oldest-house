@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.738** lights *The list*'s football field properly (`docs/THE_LIST_0_4_738.md`): when the field's lights come on, the banks on the four towers are drawn lit and give light of their own.
+Development candidate **0.4.739** finishes *The list*'s stand-ins (`docs/THE_LIST_0_4_739.md`): on night three the five walk into the field house off the sidewalk, one after another, and the street door is bolted behind the last of them.
 
-Previous: 0.4.737 sends *The list*'s town out with flashlights (`docs/THE_LIST_0_4_737.md`): three searchers walk their own streets on nights three and four, call the deputy when they find the one who went in, and go to that reader's house first when the House read their home as a danger.
+Previous: 0.4.738 lights *The list*'s football field properly (`docs/THE_LIST_0_4_738.md`): when the field's lights come on, the banks on the four towers are drawn lit and give light of their own.
 
 Earlier: 0.4.707 finished night one of *The list* (part 3b; `docs/THE_LIST_0_4_707.md`), and the House now deals the town: from ten crossings down, to a reader who has not had night one, five readers to a town. The first through the door is the one Deek picks, and the night begins round them. After the reader comes to under the water tower, Amber is up at her front window with a page out of a notebook. Each reader who passes in the street gets a page of their own held up to the glass, then a second: TOMORROW. BACK DOOR. AFTER TEN. A knock on her glass is answered. Night one ends when the one who went in lies down on their own bed, or when first light comes round on its own; each reader keeps that they have had it and where they were when it got light.
 
