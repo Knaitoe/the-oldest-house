@@ -2564,6 +2564,57 @@ public final class TheListTests {
         });
     }
     /**
+     * 0.4.737, stand-ins 3: the town out with flashlights. The one who went in is read as DANGER at home, so on night three the three
+     * searchers come out with their lights and go to the street in front of that reader's house first; only that reader is told. Let go
+     * from there, one who has the one who went in in sight stops, shouts, calls the deputy over, and holds them in light; the other
+     * reader is never stood in it, and the spectator hears nothing. First light takes them home.
+     */
+    @GameTest(template="empty",batch="the_list_search",timeoutTicks=4000)
+    public static void theSearchers(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_search",P);var peer=f.player("list_search_peer",P);var ghost=f.player("list_search_ghost",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.FRONT_DOOR);hold(f,b,TheListPeople.AT);
+        for(int z=-120;z<=-24;z+=16){hold(f,b,new BlockPos(21,0,z));hold(f,b,new BlockPos(5,0,z));}
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);
+            ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",false);HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",true);
+            h.assertTrue(TheListNights.begin(p,b,3),"night three begins");
+            cues(p);cues(peer);cues(ghost);
+        }).thenWaitUntil(()->{for(int i=0;i<TheListSearch.COUNT;i++)h.assertTrue(TheListSearch.searcher(l,b,i)!=null,"waiting for searcher "+i);})
+        .thenExecute(()->{
+            for(int i=0;i<TheListSearch.COUNT;i++){var a=TheListSearch.searcher(l,b,i);
+                h.assertTrue(a.getMainHandItem().is(BorrascaRegistry.FLASHLIGHT.get()),"each carries a flashlight");}
+            h.assertTrue(TheListSearch.goingToHouse(b),"read as DANGER: the town goes to their house first");
+        }).thenWaitUntil(()->h.assertTrue(TheListSearch.atHouse(b),"waiting for them to stand in front of the house"))
+        .thenExecute(()->{
+            for(int i=0;i<TheListSearch.COUNT;i++){var a=TheListSearch.searcher(l,b,i);
+                h.assertTrue(a.position().distanceTo(Vec3.atLowerCornerOf(b).add(TheListSearch.HOUSE[i]))<1,"each in the street in front of the house: "+i);}
+            h.assertTrue(cues(p).contains(TheListTexts.SEARCH_HOUSE),"the one who went in is told");
+            h.assertFalse(cues(peer).contains(TheListTexts.SEARCH_HOUSE),"nobody else is");
+            h.assertTrue(TheListSearch.beamAt(b,0)!=null&&l.getBlockState(TheListSearch.beamAt(b,0)).is(net.minecraft.world.level.block.Blocks.LIGHT),"a flashlight's beam is a light");
+            TheListSearch.leaveHouse(b);
+        }).thenWaitUntil(()->h.assertTrue(TheListSearch.searcher(l,b,1).position().distanceTo(Vec3.atLowerCornerOf(b).add(TheListSearch.HOUSE[1]))>3,"waiting for them to go off along their streets"))
+        .thenWaitUntil(()->{
+            // Stood in front of the second searcher, the way they face, six blocks off; the other reader beside them.
+            var a=TheListSearch.searcher(l,b,1);
+            if(!TheListSearch.seeing(b,1)){var look=Vec3.directionFromRotation(0,a.getYHeadRot());var at=a.position().add(look.scale(6)).subtract(Vec3.atLowerCornerOf(b));
+                f.at(p,P,at.x,0,at.z);f.at(peer,P,at.x+look.z*2,0,at.z-look.x*2);}
+            h.assertTrue(TheListSearch.seeing(b,1),"waiting for a searcher to find them");
+        }).thenExecute(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.SEARCH_SEEN),"the one who went in is told");
+            h.assertTrue(TheListDeputy.called(b)!=null,"the deputy is called over");
+            h.assertTrue(TheListBody.lit(p,l),"the hunt reads them as standing in light");
+            h.assertFalse(TheListSearch.spotting(peer),"the other reader is not looked for");
+            h.assertTrue(cues(ghost).isEmpty(),"the spectator hears nothing: "+cues(ghost));
+            TheListNights.dawn(l,b);
+            for(int i=0;i<TheListSearch.COUNT;i++)h.assertTrue(TheListSearch.searcher(l,b,i)==null,"first light: home");
+            TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
+    /**
      * 0.4.728, part 7c: the dawn bus. Three readers and a spectator: the one who went in and one on Amber's side are both read as
      * running, the third is not. Late in night four only the one who went in is told the bus is due. At first light, all at the bench,
      * only the one who went in gets on: took_the_bus, set down in their room; the others end as they would have, and the spectator

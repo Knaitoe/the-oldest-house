@@ -450,6 +450,10 @@ LOOKS = {
     'literary_list_stace': Look('#d2a07e','#2a1e18','short','#5a5e44','#2e3038','jacket','#7a7e64',eyes='#4a4036',sleeve=10,shoes='#2a2626'),
     'literary_list_deputy': Look('#c49274','#3a3230','close','#8a7a5a','#3a3428','uniform','#5a4e3a',eyes='#4a4036',age=1,beard='moustache',sleeve=4,shoes='#1e1e22'),
     'literary_list_mother': Look('#c99474','#4a3226','tied','#c8bcae','#5a5e6a','tee','#d8d0c0',eyes='#4a3e32',age=1,sleeve=4,shoes='#c99474'),
+    # 0.4.737: the town out with flashlights on nights three and four: a man from the feed store, a younger one in a cap, a woman in a barn coat.
+    'literary_list_searcher_a': Look('#c89a78','#4a3a2a','receding','#6a5a3e','#3a3e46','jacket','#c8bca4',eyes='#4a4036',age=1,beard='moustache',sleeve=10,shoes='#3a2e26'),
+    'literary_list_searcher_b': Look('#b8865e','#2a2220','buzz','#3a4a3a','#2e3038','flannel','#8a7a5a',eyes='#3a3026',mark='bike_cap',sleeve=10,shoes='#2a2626'),
+    'literary_list_searcher_c': Look('#d8ae8c','#7a5a3a','tied','#7a6a4a','#3a3a44','jacket','#d8d0c0',eyes='#4a5a62',age=1,sleeve=10,shoes='#4a3a30'),
     'literary_list_father': Look('#c08e6e','#3a3230','receding','#e4e0d4','#3a3e4a','tee','#d8d2c4',eyes='#3a3026',age=1,beard='stubble',sleeve=4,shoes='#c08e6e'),
     'literary_notyet_odile': Look('#d6bda8','#a8a49c','short','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#5a6066',age=2,mark='notyet_odile',sleeve=4,level_eyes=True,shoes='#ccb39e'),
     # Last orders (0.4.416): the man in booth four, pale as cut stone in a good dark coat; the two in booth three; the three at the board

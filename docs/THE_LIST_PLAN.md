@@ -103,7 +103,7 @@ the porch light on (HAVEN), brings the town to the reader's house first on night
 
 ## Still stand-ins
 
-Every part is built. These are still drawn or done more simply than the plan asks (the dawn bus was the first, 0.4.735: `docs/THE_LIST_0_4_735.md`; the deputy's patrol car the second, 0.4.736: `docs/THE_LIST_0_4_736.md`): the town out on night three carries no flashlights; the field's light banks have no lit art; and the five
+Every part is built. These are still drawn or done more simply than the plan asks (the dawn bus was the first, 0.4.735: `docs/THE_LIST_0_4_735.md`; the deputy's patrol car the second, 0.4.736: `docs/THE_LIST_0_4_736.md`; the town out with flashlights the third, 0.4.737: `docs/THE_LIST_0_4_737.md`, which also builds HOME DANGER): the field's light banks have no lit art; and the five
 do not walk to the field house on their own on night three, they are set there.
 
 ## Checks
