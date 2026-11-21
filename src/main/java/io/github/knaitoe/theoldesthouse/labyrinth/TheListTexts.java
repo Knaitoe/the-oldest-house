@@ -128,6 +128,11 @@ public final class TheListTexts {
     /** 0.4.729, Amber's side: what each of the five says, warned off; the cues. */
     public static final String[] LEAVING={null,null,null,"Fine. I've got the truck. I'm gone.","Where am I supposed to go? Okay. Okay, I'm going.","My aunt's in Big Spring. I can walk to the highway.",
         "I'm not waiting around to find out.","Tell Jenna I'm going to my sister's. Tell her I'm sorry.",null,null,null,null};
+    /** 0.4.730, Amber's side: bracing a door, putting the slasher down, keeping a heart quiet. */
+    public static final String BRACED="You get your shoulder against the door and your feet set.",BRACED_ALREADY="You're already holding it.",
+        BRACED_FULL="There's no room on the door for anyone else.",BRACE_HOLDS="The door jumps in its frame. Somebody on this side is holding it.",
+        KNOCKED_DOWN="Something catches you across the back of the head.",KNOCKED_IT="It goes down in the dirt.",KNOCK_SOON="Your arm won't come up again yet.",
+        HUSHED="You get down next to %s and put a hand flat on their back. The breathing slows.";
     public static final String WARNED="%s goes off toward the highway.",ALREADY_LEAVING="%s is already on the way out.",
         GOT_OUT="Nobody has seen %s since the highway.",HEART_GONE="One of the hearts goes quiet, a long way off.";
     // ------------------------------------------------------------------------------------------------ 0.4.710: the dead found
@@ -368,6 +373,12 @@ public final class TheListTexts {
             for(int who:TheListBody.LISTED)if((out&1<<who)!=0)names.add(NAMES[who]);
             if(!names.isEmpty())parts.add("I told "+join(names)+" to get out of town, and nobody in Lamesa saw "+(names.size()==1?"that one":"them")+" again.");
             if(own.getBoolean("SawAllGone"))parts.add("By the last morning there was nobody on the list left in Lamesa.");
+            // 0.4.730: the rest of what they did.
+            int braced=own.getInt("Braced"),knocked=own.getInt("Knocked"),hushed=own.getInt("Hushed");
+            if(braced>0)parts.add(braced==1?"I held a door shut once with my back against it while it shook.":"I held doors shut with my back against them, "+braced+" times, while they shook.");
+            if(knocked>0)parts.add(knocked==1?"Once I hit it from behind as hard as I could and it went down. It got up.":"I hit it from behind as hard as I could, "+knocked+" times, and it went down every time. It got up every time.");
+            var hush=new ArrayList<String>();for(int who:TheListBody.LISTED)if((hushed&1<<who)!=0)hush.add(NAMES[who]);
+            if(!hush.isEmpty())parts.add("I lay next to "+join(hush)+" in the dark and kept a hand on them until the breathing slowed.");
         }
         parts.add("The list was five names long.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.THE_LIST),name,pages(parts.toArray(String[]::new)));

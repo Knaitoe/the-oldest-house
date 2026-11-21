@@ -55,7 +55,7 @@ public final class TheList {
         if(st.getBlock() instanceof DoorBlock){
             // 0.4.708: a door one of the five has bolted behind them opens to nobody's hand; the slasher can strike it.
             var held=TheListHunt.lower(l,b,rel);
-            if(held!=null&&(TheListHunt.bolted(b,held)||TheListDen.bolted(b,held))){if(!TheListBody.strike(p,b,rel))cue(p,TheListTexts.BOLTED);return true;}
+            if(held!=null&&(TheListHunt.bolted(b,held)||TheListDen.bolted(b,held))){if(!TheListBody.strike(p,b,rel)&&!TheListAmber.brace(p,b,held,own))cue(p,TheListTexts.BOLTED);return true;}
             if(!st.is(TheListRegistry.HOUSE_DOOR.get()))return false;
             var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
             // 0.4.720: Amber's back door on night two.
@@ -63,6 +63,8 @@ public final class TheList {
             if(TheListSite.inHouse(Vec3.atCenterOf(lower))||lower.equals(TheListSite.FRONT_DOOR))return false;
             // 0.4.705: with the slasher's body, a hand on a locked door is a blow; the third gives.
             if(TheListBody.strike(p,b,rel))return true;
+            // 0.4.730: a reader on Amber's side braces it.
+            if(!lower.equals(TheListSite.ONWARD)&&TheListAmber.brace(p,b,lower,own))return true;
             cue(p,lower.equals(TheListSite.AMBER_FRONT)?TheListTexts.AMBER_DOOR:TheListTexts.SHUT_DOOR);
             return true;
         }
@@ -129,7 +131,7 @@ public final class TheList {
     public static boolean active(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     public static int clock(BlockPos b){var s=ACTIVE.get(b.asLong());return s==null?-1:s.tick;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){ACTIVE.clear();}
-    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();TheListDen.clearAll();TheListDeputy.clearAll();TheListStace.clearAll();TheListBus.clearAll();}
+    public static void clearAll(){ACTIVE.clear();TheListBody.clearAll();TheListNight.clearAll();TheListHunt.clearAll();TheListDen.clearAll();TheListDeputy.clearAll();TheListStace.clearAll();TheListBus.clearAll();TheListAmber.clearAll();}
     /**
      * Every few seconds while someone is in town, its night, each heard where it is: crickets near a reader who is outdoors, a dog behind
      * the back fence nearest them, the drive-in's nearest speaker post to anyone on that stretch of Main Street, the loose tin on whichever

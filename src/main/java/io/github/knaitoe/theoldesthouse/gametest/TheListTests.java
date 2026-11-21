@@ -937,8 +937,12 @@ public final class TheListTests {
                 &&Math.abs(s.getX()-mel.getX())<1&&Math.abs(s.getZ()-mel.getZ())<1&&s.getPitch()>1.15F);
             h.assertTrue(racing,"Mel, hidden, has a racing heart in the slasher's ears");
             // The other reader's hand on the bolted steel.
+            // 0.4.730: from out of reach, so as not to brace it (TheListAmber; a hand in reach braces it, the amberSide case).
+            // 0.4.730: from Amber's side a hand on it braces it (TheListAmber), and it holds only while they stay by it.
             cues(peer);f.click(peer,P,TheListHunt.FIELD_DOOR);
-            h.assertTrue(cues(peer).contains(TheListTexts.BOLTED)&&shut(l,b,TheListHunt.FIELD_DOOR),"bolted, to the other reader's hand");
+            var pc=cues(peer);h.assertTrue(pc.contains(TheListTexts.BRACED)&&shut(l,b,TheListHunt.FIELD_DOOR),"braced, to the other reader's hand: "+pc);
+            f.at(peer,P,TheListHunt.FIELD_DOOR.getX()+.5,0,TheListHunt.FIELD_DOOR.getZ()+12.5);
+            h.assertTrue(TheListAmber.extra(l,b.offset(TheListHunt.FIELD_DOOR))==0,"stepped away, it is not held");
             cues(p);use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98));
         }).thenIdle(10).thenExecute(()->use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98)))
         .thenIdle(10).thenExecute(()->use(p,b,TheListHunt.FIELD_DOOR,new BlockPos(-125,0,-98)))
@@ -2612,6 +2616,73 @@ public final class TheListTests {
             var theirs=String.join(" ",pages(TheListTexts.account("x",one)));
             h.assertTrue(theirs.contains("I told Deek and Mel to get out of town")&&theirs.contains("nobody on the list left"),"the first reader's says whom: "+theirs);
             TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
+    /**
+     * 0.4.730, part 8b: more of Amber's side, on night two's hunt, with the one who went in, two readers on Amber's side and a spectator.
+     * Both brace a neighbor's door (a third brace from the same reader does nothing, the spectator's hand nothing): it takes nine blows,
+     * the extra six held. One knocks the slasher down from behind, and cannot again at once; the spectator cannot. The other crouches by
+     * Mel, hidden, and her heart is kept from the slasher's pull until they move off. Each record and account keeps its own.
+     */
+    @GameTest(template="empty",batch="the_list_amber",timeoutTicks=6000)
+    public static void amberSide(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_amber",P);var q1=f.player("list_amber_one",P);var q2=f.player("list_amber_two",P);var ghost=f.player("list_amber_ghost",P);
+        var door=new BlockPos(-34,0,-37);var stand=door.south(2);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE,door);hold(f,b,TheListPeople.AT);
+        var seq=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(q1,P,-2.5,0,-3.5);f.at(q2,P,-1.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);
+            ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            h.assertTrue(TheListDen.begin(p,b),"night two begins");TheListNights.toRan(l,b);
+        }).thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT2,"waiting for the hunt"))
+        .thenExecute(()->{
+            cues(q1);cues(q2);
+            use(q1,b,door,stand);h.assertTrue(cues(q1).contains(TheListTexts.BRACED),"the first braces the door");
+            use(q1,b,door,stand);h.assertTrue(cues(q1).contains(TheListTexts.BRACED_ALREADY)&&TheListAmber.braces(b.offset(door))==1,"not twice");
+            use(ghost,b,door,stand);h.assertTrue(TheListAmber.braces(b.offset(door))==1,"the spectator's hand does nothing");
+            use(q2,b,door,stand);h.assertTrue(TheListAmber.braces(b.offset(door))==2,"the second braces it too");
+            f.at(q1,P,stand.getX()+2.5,0,stand.getZ()+.5);f.at(q2,P,stand.getX()-1.5,0,stand.getZ()+.5);
+            f.at(p,P,stand.getX()+.5,0,stand.getZ()+.5);cues(p);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p)&&TheListBody.down(p)==0,"waiting for the body"));
+        int need=TheListBody.STRIKES+2*TheListAmber.BRACE;
+        for(int i=1;i<=need;i++){final int n=i;
+            seq=seq.thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->{
+                use(p,b,door,stand);
+                if(n<need)h.assertTrue(shut(l,b,door)&&TheListBody.blows(b.offset(door))==n,"blow "+n+" of "+need+" and it holds: "+TheListBody.blows(b.offset(door)));
+                if(n==TheListBody.STRIKES)h.assertTrue(cues(p).contains(TheListTexts.BRACE_HOLDS),"the third blow is held from the other side");
+            });}
+        seq.thenExecute(()->{
+            h.assertTrue(l.getBlockState(b.offset(door)).is(TheListRegistry.BROKEN_DOOR.get()),"the ninth gives");
+            h.assertTrue(TheListAmber.braces(b.offset(door))==0,"and the bracing goes with it");
+            h.assertFalse(TheListAmber.knock(ghost,p),"the spectator cannot put the body down");
+            h.assertTrue(TheListAmber.knock(q1,p)&&TheListBody.down(p)>0,"a blow from behind puts it down");
+            h.assertTrue(cues(p).contains(TheListTexts.KNOCKED_DOWN)&&cues(q1).contains(TheListTexts.KNOCKED_IT),"each told");
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.down(p)==0,"waiting for the body to get up"))
+        .thenExecute(()->{
+            h.assertTrue(TheListAmber.knock(q1,p)&&TheListBody.down(p)==0&&cues(q1).contains(TheListTexts.KNOCK_SOON),"not again at once");
+            TheListHunt.hideNow(l,b,TheListPeople.MEL);
+            var mel=TheListHunt.actor(l,b,TheListPeople.MEL);
+            h.assertTrue(mel!=null&&TheListHunt.state(b,TheListPeople.MEL)==TheListHunt.State.HIDE,"Mel is hidden");
+            f.at(q2,P,mel.getX()-b.getX()+1.2,mel.getY()-b.getY(),mel.getZ()-b.getZ());q2.setPose(net.minecraft.world.entity.Pose.CROUCHING);
+            f.at(p,P,mel.getX()-b.getX()+5,mel.getY()-b.getY(),mel.getZ()-b.getZ());
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.hushed(TheListHunt.actor(l,b,TheListPeople.MEL)),"waiting for her heart to be kept quiet"))
+        .thenIdle(3).thenExecute(()->{
+            var mel=TheListHunt.actor(l,b,TheListPeople.MEL);
+            h.assertFalse(mel.getUUID().equals(TheListBody.pulled(p)),"the slasher's pull is not to her");
+            h.assertTrue(cues(q2).contains(String.format(TheListTexts.HUSHED,"Mel")),"the one beside her is told");
+            q2.setPose(net.minecraft.world.entity.Pose.STANDING);f.at(q2,P,-1.5,0,-3.5);
+        }).thenWaitUntil(()->h.assertFalse(TheListHunt.hushed(TheListHunt.actor(l,b,TheListPeople.MEL)),"waiting for her heart to be heard again"))
+        .thenExecute(()->{
+            var one=f.own(q1,P);var two=f.own(q2,P);
+            h.assertTrue(one.getInt("Braced")==1&&one.getInt("Knocked")==1&&one.getInt("Hushed")==0,"the first's record: "+one);
+            h.assertTrue(two.getInt("Braced")==1&&two.getInt("Knocked")==0&&two.getInt("Hushed")==1<<TheListPeople.MEL,"the second's: "+two);
+            var ghostOwn=f.own(ghost,P);h.assertTrue(ghostOwn.getInt("Braced")==0&&ghostOwn.getInt("Knocked")==0,"the spectator's nothing");
+            var a1=String.join(" ",pages(TheListTexts.account("x",one)));var a2=String.join(" ",pages(TheListTexts.account("x",two)));
+            h.assertTrue(a1.contains("held a door shut once")&&a1.contains("hit it from behind"),"the first's account: "+a1);
+            h.assertTrue(a2.contains("I lay next to Mel")&&!a2.contains("hit it from behind"),"the second's: "+a2);
+            TheListNight.end(l,b);TheListBody.end(p);
             done();h.succeed();
         });
     }
