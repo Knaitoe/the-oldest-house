@@ -52,7 +52,7 @@ public final class TheListHunt {
     /** Sitting at their place; running; hidden; cornered with nothing left; 0.4.709: held by the slasher; on the hook; 0.4.711: held
      * down over a row of the stands; 0.4.713: on a riser of the sprinkler line; 0.4.714: in the fryer; 0.4.715: the head in a car's
      * door; 0.4.716: the head under a pumpjack's weight; 0.4.717: held under at the stock tank; dead. */
-    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,AUGER,PRESS,DEAD}
+    public enum State{CALM,RUN,HIDE,COWER,HELD,FINISH,BOARDS,LINE,FRYER,CAR,JACK,TANK,AUGER,PRESS,DEAD,LEAVING,LEFT}
     /** Their gestures, drawn by the client: sat or stood at their place, running, crouched hidden, swinging, cowering; 0.4.709: fighting a
      * grip, flinching from the hook, on the knees on it, slumped over it, fallen; 0.4.711: on the knees over a row of the stands, the head
      * through the gap under the next, and hanging there dead. */
@@ -221,6 +221,8 @@ public final class TheListHunt {
         boolean pressed;int ram;
         /** 0.4.725: the ways they have tonight: their own, or on night three the field house's (TheListHuddle). */
         final Step[][] ways;final Step[] back;final boolean huddled;
+        /** 0.4.729: who on Amber's side warned them off, and how long they have been on their way out of town. */
+        @Nullable UUID warnedBy;int leaving;
         Runner(int who,UUID id,int night){this.who=who;this.id=id;huddled=TheListHuddle.huddled(night);ways=huddled?TheListHuddle.WAYS[who]:WAYS[who];back=huddled?TheListHuddle.BACK[who]:BACK[who];}
     }
     static final class Hunt{
@@ -259,7 +261,7 @@ public final class TheListHunt {
     /** 0.4.709: whether one of the five is dead, or as good as: the hook out of them. Their heart is not heard, they see nothing, and
      * nothing draws the slasher to them. */
     public static boolean gone(Entity e){var r=runner(e);return r!=null&&gone(r);}
-    static boolean gone(Runner r){return r.state==State.DEAD||r.state==State.FINISH&&r.since>=OUT;}
+    static boolean gone(Runner r){return r.state==State.DEAD||r.state==State.LEFT||r.state==State.FINISH&&r.since>=OUT;}
     static @Nullable Runner runner(Entity e){
         if(!(e instanceof LiteraryActor a)||!TheListPeople.is(a))return null;
         for(var h:HUNTS.values()){var r=h.runners.get(TheListPeople.who(a));if(r!=null&&r.id.equals(a.getUUID()))return r;}
@@ -269,6 +271,14 @@ public final class TheListHunt {
     public static boolean holding(ServerPlayer p){for(var h:HUNTS.values())for(var r:h.runners.values())if(p.getUUID().equals(r.holder))return true;return false;}
     /** Whether one of them is dead. */
     public static boolean dead(BlockPos b,int who){return state(b,who)==State.DEAD;}
+    /** 0.4.729: whether one of them has left town tonight, warned off by a reader on Amber's side; and who warned them. */
+    public static boolean left(BlockPos b,int who){return state(b,who)==State.LEFT;}
+    public static @Nullable UUID warnedBy(BlockPos b,int who){var h=HUNTS.get(b.asLong());var r=h==null?null:h.runners.get(who);return r==null?null:r.warnedBy;}
+    /** 0.4.729: how long one warned off must be on their way before they can be gone, and how far they are seen. */
+    public static final int LEAVE_MIN=100;
+    public static final double LEAVE_SEEN=48;
+    /** 0.4.729: where they make for, out of town: south down Avenue K, past the pasture. */
+    public static final Vec3 OUT_OF_TOWN=new Vec3(TheListSite.AVE_LINE+.5,0,TheListSite.SOUTH-8.5);
     /** How far one of them turns in a tick while running, on top of the walk's own turn: a body running for its life pivots at a
      * corner. At the walk's twelve degrees a tick, a runner turning a corner in a doorway circled the next point and never reached it. */
     public static final float TURN=45F;
@@ -369,7 +379,17 @@ public final class TheListHunt {
                 case TANK->tanking(l,b,h,r,a,slashers,here);
                 case AUGER->augering(l,b,h,r,a,here);
                 case PRESS->pressing(l,b,h,r,a,here);
-                case DEAD->{}
+                case DEAD,LEFT->{}
+                // 0.4.729: on their way out of town; caught up with, they fight once, then cower; out of everyone's sight, gone.
+                case LEAVING->{
+                    lease(l,r,a);r.leaving++;
+                    var s=nearest(a,slashers);
+                    if(s!=null&&a.distanceTo(s)<=CAUGHT){
+                        if(!r.fought)fight(l,b,h,r,a,s,here);
+                        else{r.state=State.COWER;BorrascaCast.stop(a);a.setPose(Pose.CROUCHING);a.gesture(COWERING);face(a,s.position());say(a,r.who,TheListTexts.COWER[r.who]);}
+                    }else if(r.leaving>=LEAVE_MIN&&unseen(l,a))leave(l,b,h,r,a,here);
+                    else if(!a.getPersistentData().contains("BorrascaSpeed"))BorrascaCast.walk(a,Vec3.atLowerCornerOf(b).add(OUT_OF_TOWN),1.0);
+                }
             }
         }
         if(h.tick%5==1)bodies(l,b,h,here);
@@ -524,6 +544,35 @@ public final class TheListHunt {
             else{r.state=State.COWER;a.setPose(Pose.CROUCHING);a.gesture(COWERING);}
         }else a.gesture(RUNNING);
     }
+    /**
+     * 0.4.729: warned off by a reader on Amber's side: up from wherever they are and away out of town, south down the highway. The
+     * one who warned them is told so; the town's hearts lose that one once they are out of everyone's sight.
+     */
+    static void warn(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,ServerPlayer p){
+        boolean seated=r.state==State.CALM&&a.gesture()==STILL;
+        r.state=State.LEAVING;r.warnedBy=p.getUUID();r.leaving=0;r.since=0;r.stuck=0;r.last=null;
+        a.setPose(Pose.STANDING);a.gesture(RUNNING);a.setNoGravity(false);
+        if(seated&&!r.huddled){var up=UP[r.who];a.moveTo(b.getX()+up.x,b.getY()+up.y,b.getZ()+up.z,a.getYRot(),0);}
+        face(a,p.position());
+        say(a,r.who,TheListTexts.LEAVING[r.who]);
+        TheList.cue(p,String.format(TheListTexts.WARNED,TheListTexts.NAMES[r.who]));
+        BorrascaCast.walk(a,Vec3.atLowerCornerOf(b).add(OUT_OF_TOWN),1.0);
+    }
+    /** 0.4.729: whether nobody in the level, reader or spectator, can see them. */
+    static boolean unseen(ServerLevel l,LiteraryActor a){
+        for(var q:l.players())if(q.distanceTo(a)<=LEAVE_SEEN&&q.hasLineOfSight(a))return false;
+        return true;
+    }
+    /** 0.4.729: out of town. The one who warned them keeps it; the slasher hears one heart fewer. */
+    static void leave(ServerLevel l,BlockPos b,Hunt h,Runner r,LiteraryActor a,List<ServerPlayer> here){
+        r.state=State.LEFT;BorrascaCast.stop(a);release(l,r);a.discard();
+        var d=LabyrinthData.get(l.getServer());
+        if(r.warnedBy!=null){var own=LiteraryVignettes.personal(d,r.warnedBy,TheList.PLACE);own.putInt("GotOut",own.getInt("GotOut")|1<<r.who);LiteraryVignettes.save(d,r.warnedBy,TheList.PLACE,own);}
+        for(var q:here){
+            if(TheListBody.LIVE.containsKey(q.getUUID()))TheList.cue(q,TheListTexts.HEART_GONE);
+            else if(q.getUUID().equals(r.warnedBy))TheList.cue(q,String.format(TheListTexts.GOT_OUT,TheListTexts.NAMES[r.who]));
+        }
+    }
     /** A blow from the slasher on one of them: one at their place runs; one hiding is found; one running fights back if they have not. */
     public static void struck(ServerPlayer p,LiteraryActor a){
         var b=TheListBody.town(p);if(b==null)return;var h=HUNTS.get(b.asLong());if(h==null)return;
@@ -534,7 +583,7 @@ public final class TheListHunt {
         switch(r.state){
             case CALM->run(l,b,h,r,a,here,true);
             case HIDE->found(l,b,h,r,a,p,here);
-            case RUN->{if(!r.fought)fight(l,b,h,r,a,p,here);}
+            case RUN,LEAVING->{if(!r.fought)fight(l,b,h,r,a,p,here);}
             // 0.4.709: a blow on one cornered takes hold of them; on one held, with the hook in hand, it is the hook.
             case COWER->take(l,b,h,r,a,p,here);
             case HELD->{if(p.getUUID().equals(r.holder)&&TheListBody.hookInHand(p))finish(r,a,p);}
@@ -585,11 +634,15 @@ public final class TheListHunt {
             else TheList.cue(p,String.format(TheListTexts.JACK_HELD,name));
             return true;
         }
+        // 0.4.729: a hand from a reader on Amber's side, on one still able to run: warned off, and on their way out of town.
+        if(!TheListBody.LIVE.containsKey(p.getUUID())&&LiteraryVignettes.participant(p)
+            &&(r.state==State.CALM||r.state==State.RUN||r.state==State.HIDE||r.state==State.COWER)){warn(p.serverLevel(),b,h,r,a,p);return true;}
+        if(r.state==State.LEAVING&&!TheListBody.LIVE.containsKey(p.getUUID())){TheList.cue(p,String.format(TheListTexts.ALREADY_LEAVING,name));return true;}
         if(!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return r.state!=State.CALM;
         var l=p.serverLevel();var here=TheList.readers(l,b);
         switch(r.state){
             case CALM->{if(sees(a,p))run(l,b,h,r,a,here,true);else take(l,b,h,r,a,p,here);}
-            case RUN->TheList.cue(p,String.format(TheListTexts.TWIST,name));
+            case RUN,LEAVING->TheList.cue(p,String.format(TheListTexts.TWIST,name));
             case HIDE->found(l,b,h,r,a,p,here);
             case COWER->take(l,b,h,r,a,p,here);
             case HELD->{if(p.getUUID().equals(r.holder)&&TheListBody.hookInHand(p))finish(r,a,p);}

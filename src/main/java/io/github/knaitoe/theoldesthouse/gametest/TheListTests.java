@@ -2555,6 +2555,66 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.729, part 8a: warned off. On night four, the one who went in, two readers on Amber's side and a spectator. The spectator's hand
+     * does nothing. Warned by a reader on Amber's side, each of the five makes for the highway; caught up with by the one who went in,
+     * Deek fights once and goes on, and caught again cowers, until warned again. Out of everyone's sight they are gone, the night ends
+     * when the last is, and everyone gone is the ending: each reader keeps whom they got out, the spectator nothing.
+     */
+    @GameTest(template="empty",batch="the_list_warn",timeoutTicks=6000)
+    public static void warnedOff(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_warn",P);var q1=f.player("list_warn_one",P);var q2=f.player("list_warn_two",P);var ghost=f.player("list_warn_ghost",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE,BlockPos.containing(TheListHunt.OUT_OF_TOWN));hold(f,b,TheListPeople.AT);
+        int[] firsts={TheListPeople.DEEK,TheListPeople.MEL},seconds={TheListPeople.LESLEY,TheListPeople.SHANNON,TheListPeople.WES};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(q1,P,-2.5,0,-3.5);f.at(q2,P,-1.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);
+            ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            h.assertTrue(TheListNights.begin(p,b,4),"night four begins");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);for(int who:TheListBody.LISTED)h.assertTrue(TheListHunt.actor(l,b,who)!=null,"waiting for "+TheListTexts.NAMES[who]);})
+        .thenExecute(()->{
+            var deek=TheListHunt.actor(l,b,TheListPeople.DEEK);
+            h.assertTrue(TheListHunt.hand(ghost,deek)&&TheListHunt.state(b,TheListPeople.DEEK)==TheListHunt.State.CALM,"a spectator's hand does nothing");
+            cues(q1);cues(q2);
+            for(int who:firsts)h.assertTrue(TheListHunt.hand(q1,TheListHunt.actor(l,b,who)),"warned by the first");
+            for(int who:seconds)h.assertTrue(TheListHunt.hand(q2,TheListHunt.actor(l,b,who)),"warned by the second");
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.LEAVING,TheListTexts.NAMES[who]+" is on the way out");
+            h.assertTrue(cues(q1).contains(String.format(TheListTexts.WARNED,TheListTexts.NAMES[TheListPeople.DEEK])),"the first is told");
+            h.assertTrue(TheListHunt.warnedBy(b,TheListPeople.WES).equals(q2.getUUID()),"each keeps who warned them");
+            var at=deek.position().subtract(Vec3.atLowerCornerOf(b));f.at(p,P,at.x+1,at.y,at.z);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.fought(b,TheListPeople.DEEK),"waiting for Deek to fight the one who went in"))
+        .thenExecute(()->h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)==TheListHunt.State.LEAVING,"and go on his way"))
+        .thenWaitUntil(()->h.assertTrue(TheListBody.down(p)==0,"waiting for the body to get up"))
+        .thenExecute(()->{var deek=TheListHunt.actor(l,b,TheListPeople.DEEK);var at=deek.position().subtract(Vec3.atLowerCornerOf(b));f.at(p,P,at.x+1,at.y,at.z);})
+        .thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,TheListPeople.DEEK)==TheListHunt.State.COWER,"waiting for Deek, caught again, to cower: "+TheListHunt.state(b,TheListPeople.DEEK)))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);
+            var deek=TheListHunt.actor(l,b,TheListPeople.DEEK);f.at(q1,P,deek.getX()-b.getX()+1,deek.getY()-b.getY(),deek.getZ()-b.getZ());
+            h.assertTrue(TheListHunt.hand(q1,deek)&&TheListHunt.state(b,TheListPeople.DEEK)==TheListHunt.State.LEAVING,"warned again, he goes");
+            // Anyone else caught up with beside him (Wes walks out with Deek) is warned again by the one who warned them.
+            for(int who:TheListBody.LISTED)if(TheListHunt.state(b,who)==TheListHunt.State.COWER){var a=TheListHunt.actor(l,b,who);var by=TheListHunt.warnedBy(b,who).equals(q1.getUUID())?q1:q2;
+                f.at(by,P,a.getX()-b.getX()+1,a.getY()-b.getY(),a.getZ()-b.getZ());h.assertTrue(TheListHunt.hand(by,a),"warned again");}
+            f.at(q1,P,-2.5,0,-3.5);f.at(q2,P,-1.5,0,-3.5);
+        }).thenWaitUntil(()->{for(int who:TheListBody.LISTED)h.assertTrue(TheListHunt.left(b,who)||TheListNight.phase(s,b)==TheListNights.OVER,"waiting for "+TheListTexts.NAMES[who]+" to be out of sight: "+TheListHunt.state(b,who));})
+        .thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNights.OVER,"the last of them gone ends the night"))
+        .thenExecute(()->{
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("Ready")&&"everyone_got_away".equals(own.getString("Outcome")),"everyone gone: "+own.getString("Outcome"));
+            h.assertTrue(cues(p).contains(TheListTexts.END_ALL_GONE),"and told so");
+            var one=f.own(q1,P);var two=f.own(q2,P);
+            h.assertTrue(one.getInt("GotOut")==(1<<TheListPeople.DEEK|1<<TheListPeople.MEL)&&"got_them_out".equals(one.getString("Outcome")),"the first got Deek and Mel out: "+one.getInt("GotOut"));
+            h.assertTrue(two.getInt("GotOut")==(1<<TheListPeople.LESLEY|1<<TheListPeople.SHANNON|1<<TheListPeople.WES),"the second the other three: "+two.getInt("GotOut"));
+            h.assertFalse(f.own(ghost,P).getBoolean("Ready"),"the spectator keeps nothing");
+            TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListPeople.find(l,b,who)==null,TheListTexts.NAMES[who]+" is not made again");
+            h.assertTrue(String.join(" ",pages(TheListTexts.account("x",own))).contains("every one of them had left town"),"the account says so");
+            var theirs=String.join(" ",pages(TheListTexts.account("x",one)));
+            h.assertTrue(theirs.contains("I told Deek and Mel to get out of town")&&theirs.contains("nobody on the list left"),"the first reader's says whom: "+theirs);
+            TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="the_list_end",timeoutTicks=6000)
     public static void toTheEnd(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
