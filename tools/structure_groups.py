@@ -5,14 +5,15 @@ Run 1575 took 97m48s for it. In run 1576 the job's own 100-minute limit stopped 
 failed. It now runs in two halves, in two jobs at the same time:
 
   rest   the long vignettes in REST, in the structure-rest job (about 50 minutes of run 1575's complete suite);
+  sweep  the multiplayer sweep in SWEEP (0.4.740), in the group-sweep job;
   main   every other namespace in the default list, in the build job (about 47 minutes).
 
 The main half is the default list less REST, so a namespace added to that list is run without a second list to keep here. A case's
 namespace is the one NeoForge filters it by: its @GameTest templateNamespace when it has one, otherwise its class's @GameTestHolder.
 
 Usage:
-  python3 tools/structure_groups.py namespaces main|rest   the half's namespaces, comma-separated, for -PgameTestNamespaces
-  python3 tools/structure_groups.py declared main|rest     how many cases the half declares
+  python3 tools/structure_groups.py namespaces main|rest|sweep   the half's namespaces, comma-separated, for -PgameTestNamespaces
+  python3 tools/structure_groups.py declared main|rest|sweep     how many cases the half declares
   python3 tools/structure_groups.py --check                every REST namespace is in the default list, every declared case is in a
                                                            namespace the default list runs, and the halves add up to every case
 """
@@ -28,6 +29,10 @@ SOURCES = 'src/main/java'
 # pell 2.2. Every one of them also has a focused job of its own. 0.4.564: together, the two-reader cast checks (each
 # builds a copy for a private story's second reader), joins them.
 REST = ['pinehook', 'bike_night', 'borrasca', 'lake_house', 'playtest492', 'pell', 'together']
+# 0.4.740: the multiplayer sweep (GroupSweepTests), every story with as many readers as its door is written for and one more. It
+# runs in its own job, group-sweep, beside the other two halves.
+SWEEP = ['group']
+GROUPS = ('main', 'rest', 'sweep')
 
 
 def default_namespaces():
@@ -89,7 +94,8 @@ def cases():
 def halves():
     every = default_namespaces()
     rest = [MOD + '_' + name for name in REST]
-    return {'main': [n for n in every if n not in rest], 'rest': rest}, every
+    sweep = [MOD + '_' + name for name in SWEEP]
+    return {'main': [n for n in every if n not in rest and n not in sweep], 'rest': rest, 'sweep': sweep}, every
 
 
 def declared(half):
@@ -99,25 +105,25 @@ def declared(half):
 
 def check():
     groups, every = halves()
-    missing = [n for n in groups['rest'] if n not in every]
+    missing = [n for n in groups['rest'] + groups['sweep'] if n not in every]
     if missing:
-        raise SystemExit(f'REST names namespaces build.gradle does not run: {missing}')
+        raise SystemExit(f'REST or SWEEP names namespaces build.gradle does not run: {missing}')
     all_cases = cases()
     outside = sorted({n for n in all_cases if n not in every})
     if outside:
         raise SystemExit(f'cases are declared in namespaces the complete suite never runs: {outside}')
-    main, rest = declared('main'), declared('rest')
-    if main + rest != len(all_cases) or not main or not rest:
-        raise SystemExit(f'the halves do not add up: main {main} + rest {rest} != {len(all_cases)}')
-    print(f'main {main} cases in {len(groups["main"])} namespaces; rest {rest} in {len(groups["rest"])}; {len(all_cases)} declared')
+    main, rest, sweep = declared('main'), declared('rest'), declared('sweep')
+    if main + rest + sweep != len(all_cases) or not main or not rest or not sweep:
+        raise SystemExit(f'the groups do not add up: main {main} + rest {rest} + sweep {sweep} != {len(all_cases)}')
+    print(f'main {main} cases in {len(groups["main"])} namespaces; rest {rest} in {len(groups["rest"])}; sweep {sweep}; {len(all_cases)} declared')
 
 
 def main(argv):
     if argv == ['--check']:
         check()
-    elif len(argv) == 2 and argv[0] == 'namespaces' and argv[1] in ('main', 'rest'):
+    elif len(argv) == 2 and argv[0] == 'namespaces' and argv[1] in GROUPS:
         print(','.join(halves()[0][argv[1]]))
-    elif len(argv) == 2 and argv[0] == 'declared' and argv[1] in ('main', 'rest'):
+    elif len(argv) == 2 and argv[0] == 'declared' and argv[1] in GROUPS:
         print(declared(argv[1]))
     else:
         raise SystemExit(__doc__)
