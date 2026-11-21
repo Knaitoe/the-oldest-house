@@ -57,7 +57,7 @@ public final class TheListNights{
         // 0.4.724: the deputy's round, on nights three and four.
         if(n.phase==HUNT3||n.phase==HUNT4)TheListDeputy.tick(l,n,here);
         // 0.4.726: Stace's plan, on night four; she may end the night.
-        if(n.phase==HUNT4){TheListStace.tick(l,n,here);if(n.phase!=HUNT4)return true;}
+        if(n.phase==HUNT4){TheListStace.tick(l,n,here);if(n.phase!=HUNT4)return true;TheListBus.tick(l,n,here);}
         if(n.time>=TheListNight.LIGHT||n.phase==HUNT4&&alive(n)==0){light(l,n,false);return true;}
         return false;
     }
@@ -82,7 +82,7 @@ public final class TheListNights{
     static void light(ServerLevel l,TheListNight.Night n,boolean bed){
         int night=nightOf(n.phase);
         for(int who:TheListBody.LISTED)if(TheListHunt.dead(n.base,who))n.dead|=1<<who;
-        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);
+        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);TheListBus.reset(n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;
         var d=LabyrinthData.get(l.getServer());
@@ -94,9 +94,12 @@ public final class TheListNights{
             var own=LiteraryVignettes.personal(d,q.getUUID(),TheList.PLACE);
             if(him)own.putInt("Night",Math.max(night,own.getInt("Night")));
             if(night==4){
-                if(him){own.putBoolean("WentIn",true);TheListBody.end(q);own=LiteraryVignettes.personal(d,q.getUUID(),TheList.PLACE);own.putInt("Night",4);own.putBoolean("WentIn",true);}
+                // 0.4.728: the dawn bus, for the one who went in read as running, at the bench.
+                boolean bus=him&&TheListBus.boards(q,n,own);
+                if(him){own.putBoolean("WentIn",true);TheListBody.end(q);own=LiteraryVignettes.personal(d,q.getUUID(),TheList.PLACE);own.putInt("Night",4);own.putBoolean("WentIn",true);if(bus)own.putBoolean("Bus",true);}
                 LiteraryVignettes.ready(q,TheList.PLACE,own,outcome(own,him));
-                TheList.cue(q,him?TheListTexts.END_WENT_IN:TheListTexts.END_OTHER);
+                TheList.cue(q,bus?TheListTexts.BUS_TAKEN:him?TheListTexts.END_WENT_IN:TheListTexts.END_OTHER);
+                if(bus)TheListBus.board(q,n.base);
             }else TheList.cue(q,him?(bed?TheListTexts.LIGHT_BED:TheListTexts.LIGHT_OUT):TheListTexts.LIGHT_OTHER);
             LiteraryVignettes.save(d,q.getUUID(),TheList.PLACE,own);
         }
@@ -114,6 +117,8 @@ public final class TheListNights{
         if(!wentIn)return "was_in_town_at_the_end";
         // 0.4.726: Stace finished it.
         if(own.getBoolean("Stopped"))return "was_stopped";
+        // 0.4.728: on the dawn bus.
+        if(own.getBoolean("Bus"))return "took_the_bus";
         int kills=Integer.bitCount(own.getInt("Kills"));
         return kills>=TheListBody.LISTED.length?"went_down_the_whole_list":kills>0?"crossed_names_off":"crossed_no_names_off";
     }
@@ -148,6 +153,10 @@ public final class TheListNights{
         own.putInt("Night",night-1);LiteraryVignettes.save(d,p.getUUID(),TheList.PLACE,own);
         begin(p,n);
         return true;
+    }
+    /** For a check: the night's clock set to this hour, the hunt going on. */
+    public static void clockTo(ServerLevel l,net.minecraft.core.BlockPos b,long time){
+        var n=TheListNight.night(l.getServer(),b);if(n==null)return;n.time=time;TheListNight.save(l.getServer(),n);
     }
     /** For a check: the night's clock brought round to first light, as if it had come. */
     public static void dawn(ServerLevel l,net.minecraft.core.BlockPos b){

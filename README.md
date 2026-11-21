@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.727** fleshes out Stace on night four of *The list* (part 7b; `docs/THE_LIST_0_4_727.md`). She comes down the water tower's ladder and walks to where it ends with a shovel; the one who went in can stagger her, put her down and finish her with the hook, and the account says so.
+Development candidate **0.4.728** gives *The list* its dawn bus (part 7c; `docs/THE_LIST_0_4_728.md`). For the one who went in whom the House has read as running, the first bus out stops at the feed store at first light on the last night; standing at the bench then, they are on it, and the account says so.
 
-Previous: 0.4.726 begins night four of *The list* (part 7a; `docs/THE_LIST_0_4_726.md`). Half a minute in, Stace has worked out where it ends: the gin, the water tower or the playa, by how many of the five are left. From then the House's door is shut to the one who went in; at her place she puts them down, and the third time she finishes it.
+Previous: 0.4.727 fleshes out Stace on night four of *The list* (part 7b; `docs/THE_LIST_0_4_727.md`). She comes down the water tower's ladder and walks to where it ends with a shovel; the one who went in can stagger her, put her down and finish her with the hook, and the account says so.
 
 Earlier: 0.4.707 finished night one of *The list* (part 3b; `docs/THE_LIST_0_4_707.md`), and the House now deals the town: from ten crossings down, to a reader who has not had night one, five readers to a town. The first through the door is the one Deek picks, and the night begins round them. After the reader comes to under the water tower, Amber is up at her front window with a page out of a notebook. Each reader who passes in the street gets a page of their own held up to the glass, then a second: TOMORROW. BACK DOOR. AFTER TEN. A knock on her glass is answered. Night one ends when the one who went in lies down on their own bed, or when first light comes round on its own; each reader keeps that they have had it and where they were when it got light.
 

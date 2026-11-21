@@ -2505,6 +2505,56 @@ public final class TheListTests {
      * reader's own, both readers are ready, the account on the tape deck names whom the one who went in finished, and reading the pad
      * then the account gives each their own Witness story. A spectator earns nothing.
      */
+    /**
+     * 0.4.728, part 7c: the dawn bus. Three readers and a spectator: the one who went in and one on Amber's side are both read as
+     * running, the third is not. Late in night four only the one who went in is told the bus is due. At first light, all at the bench,
+     * only the one who went in gets on: took_the_bus, set down in their room; the others end as they would have, and the spectator
+     * keeps nothing.
+     */
+    @GameTest(template="empty",batch="the_list_bus",timeoutTicks=4000)
+    public static void theDawnBus(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_bus",P);var peer=f.player("list_bus_peer",P);var third=f.player("list_bus_third",P);var ghost=f.player("list_bus_ghost",P);
+        var bench=BlockPos.containing(TheListBus.BENCH);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE,bench);hold(f,b,TheListPeople.AT);
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);f.at(third,P,-1.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);
+            ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+            for(var q:List.of(p,peer)){HouseRead.signal(q,HouseRead.Trait.HOME,"RUNAWAY",false);HouseRead.signal(q,HouseRead.Trait.HOME,"RUNAWAY",true);}
+            h.assertTrue(TheListBus.runaway(p)&&TheListBus.runaway(peer)&&!TheListBus.runaway(third),"the read: two running, one not");
+            h.assertTrue(TheListNights.begin(p,b,4),"night four begins");
+            cues(p);cues(peer);cues(third);
+            TheListNights.clockTo(l,b,TheListBus.DUE);
+        }).thenWaitUntil(()->h.assertTrue(TheListBus.told(b,p.getUUID()),"waiting for the one who went in to be told the bus is due"))
+        .thenExecute(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.BUS_DUE),"told, as a cue");
+            h.assertFalse(TheListBus.told(b,peer.getUUID())||cues(peer).contains(TheListTexts.BUS_DUE),"the other running reader is not told: it is not their night");
+            h.assertFalse(cues(third).contains(TheListTexts.BUS_DUE),"nor the third");
+            for(var q:List.of(p,peer,third,ghost))f.at(q,P,TheListBus.BENCH.x+(q==p?0:q==peer?1:q==third?-1:.5),0,TheListBus.BENCH.z+.5);
+        }).thenWaitUntil(()->h.assertTrue(TheListBus.atBench(p,b)&&TheListBus.atBench(peer,b),"waiting for them at the bench"))
+        .thenExecute(()->{
+            TheListNights.dawn(l,b);
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.OVER,"first light ends the four nights");
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("Ready")&&"took_the_bus".equals(own.getString("Outcome"))&&own.getBoolean("Bus"),"the one who went in is on the bus: "+own.getString("Outcome"));
+            h.assertTrue(cues(p).contains(TheListTexts.BUS_TAKEN),"and told so");
+            var room=Vec3.atLowerCornerOf(b).add(TheListBus.ROOM);
+            h.assertTrue(p.position().distanceTo(room)<1,"set down in their room: "+p.position().subtract(Vec3.atLowerCornerOf(b)));
+            h.assertFalse(TheListBody.has(p),"the body is their own again");
+            var peers=f.own(peer,P);
+            h.assertTrue(peers.getBoolean("Ready")&&"was_in_town_at_the_end".equals(peers.getString("Outcome"))&&!peers.getBoolean("Bus"),"the other running reader is not on it: "+peers.getString("Outcome"));
+            h.assertTrue(TheListBus.atBench(peer,b),"and is still at the bench");
+            h.assertTrue("was_in_town_at_the_end".equals(f.own(third,P).getString("Outcome")),"the third as before");
+            h.assertFalse(f.own(ghost,P).getBoolean("Ready"),"the spectator keeps nothing");
+            var account=String.join(" ",pages(TheListTexts.account("x",own)));
+            h.assertTrue(account.contains("first bus out"),"the account says so");
+            h.assertFalse(String.join(" ",pages(TheListTexts.account("x",peers))).contains("first bus out"),"theirs does not");
+            h.assertFalse(TheListBus.told(b,p.getUUID()),"the night put away, who was told is forgotten");
+            TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
     @GameTest(template="empty",batch="the_list_end",timeoutTicks=6000)
     public static void toTheEnd(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
