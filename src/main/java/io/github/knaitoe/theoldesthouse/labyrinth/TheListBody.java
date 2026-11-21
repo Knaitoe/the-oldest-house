@@ -398,6 +398,8 @@ public final class TheListBody {
         p.knockback(.6,from.x-p.getX(),from.z-p.getZ());p.hurtMarked=true;
         down(p,live,cue);
     }
+    /** 0.4.722: a long fall landed (off the water tower's catwalk, TheListDen): the body goes down whatever it had left. */
+    public static void fall(ServerPlayer p){var live=LIVE.get(p.getUUID());if(live==null||live.down>0)return;down(p,live,TheListTexts.FELL);}
     /** Face down and still: no walking, no jumping. */
     static void still(ServerPlayer p){
         var speed=p.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -446,7 +448,7 @@ public final class TheListBody {
         boolean steel=st.is(TheListRegistry.STEEL_DOOR.get());
         if(!st.is(TheListRegistry.HOUSE_DOOR.get())&&!steel)return false;
         var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
-        if(steel&&!TheListHunt.bolted(b,lower))return false;
+        if(steel&&!TheListHunt.bolted(b,lower)&&!TheListDen.bolted(b,lower))return false;
         if(TheListSite.inHouse(Vec3.atCenterOf(lower))||lower.equals(TheListSite.FRONT_DOOR)||lower.equals(TheListSite.ONWARD))return false;
         var at=b.offset(lower);var door=l.getBlockState(at);
         if(!door.is(st.getBlock())||door.getValue(DoorBlock.OPEN))return false;

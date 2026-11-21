@@ -34,7 +34,18 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * the south end zone.</li>
  * <li><b>The field</b> ({@link TheListNight#FIELD}): with the one who went in beside her she counts three and runs the length of the field.
  * If they are still with her at the far end she writes the first rule down; if not, she walks back to try again.</li>
- * <li><b>Ran</b> ({@link TheListNight#RAN}): the rule is written; the next test is the field house's door (part 5b).</li>
+ * <li><b>Ran</b> ({@link TheListNight#RAN}): the rule is written, and the rest of the tests follow (0.4.722, part 5b), each in turn
+ * by the rules written so far:
+ * <ul>
+ * <li><b>The door</b>: she goes in through the field house's back doors and bolts them behind her once the one who went in is outside.
+ * The bolted steel takes five blows (TheListBody.strike); when one swings in, the second rule is written.</li>
+ * <li><b>The heart</b>: she sends them back out, goes into the coach's office or the showers, both behind the block wall, and bangs a
+ * locker. The first of the two rooms they come into is their guess: the right one writes that he knows whose heart it is; the wrong
+ * one writes that he cannot tell, which is not so.</li>
+ * <li><b>The tower</b>: she walks out to the water tower. Up the ladder to the catwalk and off it: the body lands, goes down and gets up,
+ * and she writes that it stays down longer the higher it falls, which is not so either. Climbing back down the ladder does not count.</li>
+ * </ul>
+ * After the last, the first name goes out (TheListNights.ran).</li>
  * </ol>
  * Amber is one person in the town, heard and seen by everyone in it; the den's talk, the notebook and the tests are the one who went in's.
  * Where she is walking or running is kept per town and never saved: a town picked up again mid-walk finds her at the end zone.
@@ -56,7 +67,9 @@ public final class TheListDen{
     static final int STUCK=100,COUNT=20;
 
     /** Per town: where Amber is on her way, how long she has stood still, the count before the run. Never saved. */
-    static final class Den{int step;int still;@Nullable Vec3 last;int count=-1;boolean running,back;}
+    static final class Den{int step;int still;@Nullable Vec3 last;int count=-1;boolean running,back;
+        /** 0.4.722: which test she is on, how far along its way, and what it has seen. */
+        int test=-1,way,room=-1,stage;boolean there,climbed,fell;@Nullable Vec3[] path;final java.util.Set<BlockPos> bolted=new java.util.HashSet<>();}
     static final Map<Long,Den> DENS=new HashMap<>();
     public static void clearAll(){DENS.clear();}
 
@@ -146,7 +159,8 @@ public final class TheListDen{
             }
             case TheListNight.TO_FIELD->say(a,p,name,TheListTexts.ON_THE_WAY);
             case TheListNight.FIELD->say(a,p,name,TheListTexts.AT_THE_END);
-            case TheListNight.RAN->say(a,p,name,TheListTexts.NEXT_DOOR);
+            case TheListNight.RAN->say(a,p,name,switch(test(own.getInt("Rules"))){case DOOR->TheListTexts.NEXT_DOOR;case HEART->TheListTexts.HEART_TALK;
+                case TOWER->TheListTexts.TOWER_TALK;default->TheListTexts.TESTS_DONE;});
             default->{return false;}
         }
         return true;
@@ -175,8 +189,14 @@ public final class TheListDen{
     public static final String OWNER="ListNotebook";
     static ItemStack book(ServerPlayer p,int rules){
         var pages=new ArrayList<String>();pages.add(TheListTexts.RULES_TAPES);
-        var tested=new StringBuilder(TheListTexts.RULES_TESTED);
-        for(int i=0;i<TheListTexts.RULES.length;i++)if((rules&1<<i)!=0)tested.append("\n\n").append(TheListTexts.RULES[i]);
+        // 0.4.722: two rules to a page, so a page never runs past what a book shows.
+        var tested=new StringBuilder(TheListTexts.RULES_TESTED);int on=0;
+        for(int i=0;i<TheListTexts.RULES.length;i++){
+            if((rules&1<<i)==0)continue;
+            if(on==2){pages.add(tested.toString());tested=new StringBuilder();on=0;}
+            if(tested.length()>0)tested.append("\n\n");
+            tested.append(TheListTexts.RULES[i]);on++;
+        }
         if(rules!=0)pages.add(tested.toString());
         var book=HouseWriting.book(TheListTexts.NOTEBOOK_TITLE,TheListTexts.NAMES[TheListPeople.AMBER],HouseWriting.WritingStyle.PLAIN,pages);
         var tag=new CompoundTag();tag.putUUID(OWNER,p.getUUID());
@@ -211,6 +231,7 @@ public final class TheListDen{
         switch(n.phase){
             case TheListNight.TO_FIELD->{if(amber!=null)return toField(l,n,amber);}
             case TheListNight.FIELD->{if(amber!=null)return field(l,n,amber,TheListNight.slasher(l,n));}
+            case TheListNight.RAN->{if(amber!=null)return tests(l,n,amber,TheListNight.slasher(l,n));}
             default->{}
         }
         return false;
@@ -281,6 +302,171 @@ public final class TheListDen{
         return false;
     }
 
+    // ------------------------------------------------------------------------------------------------ 0.4.722, the rest of the tests
+    /** The tests after the field, by the rules they write: RULES[1] the door, RULES[2] or [3] the heart (right or wrong), RULES[4] the tower. */
+    public static final int DOOR=1,HEART=2,TOWER=3,DONE=0;
+    public static final int RULE_DOOR=1,RULE_HEART=2,RULE_NO_HEART=3,RULE_TOWER=4;
+    /** Which test is next for the rules written so far. */
+    public static int test(int rules){
+        if((rules&1<<RULE_DOOR)==0)return DOOR;
+        if((rules&(1<<RULE_HEART|1<<RULE_NO_HEART))==0)return HEART;
+        if((rules&1<<RULE_TOWER)==0)return TOWER;
+        return DONE;
+    }
+    /** Whether the one who went in has had every test: the first name can go out. */
+    static boolean tested(ServerLevel l,TheListNight.Night n){
+        if(n.slasher==null)return false;
+        return test(LiteraryVignettes.personal(LabyrinthData.get(l.getServer()),n.slasher,TheList.PLACE).getInt("Rules"))==DONE;
+    }
+    static Vec3 v(double x,double z){return new Vec3(x,0,z);}
+    /** The field house's two back doors, where they stand in the town. */
+    public static final BlockPos BACK_L=new BlockPos(TheListSite.FIELD_X-1,0,TheListSite.FIELD_HOUSE_S),BACK_R=new BlockPos(TheListSite.FIELD_X,0,TheListSite.FIELD_HOUSE_S);
+    /** From the north end zone through the gap in the fence to the field house's back doors, and in; the doors opened at DOOR_AT. */
+    static final Vec3[] DOOR_WAY={v(-124.5,-90.5),v(-124.5,-97.5),v(-124.5,-98.6),v(-124.5,-101.5),v(-124.5,-102.5)};
+    /** Where she stands behind the bolted doors. */
+    public static final Vec3 BEHIND=v(-124.5,-102.5);
+    /** Her way from behind the doors into each room, and where she stands there: the coach's office, the showers. */
+    static final Vec3[][] ROOM_WAY={{v(-121.5,-102.5),v(-121.5,-105.5),v(-118.5,-105.5)},{v(-121.5,-102.5),v(-121.5,-101.5),v(-117.5,-101.5)}};
+    /** Back out of each room to behind the doors. */
+    static final Vec3[][] ROOM_OUT={{v(-121.5,-105.5),v(-121.5,-101.5)},{v(-121.5,-101.5)}};
+    /** Out of the field house, across the field to its gate, east along Seventh and over the highway and the tracks to the tower's foot. */
+    static final Vec3[] TOWER_WAY={v(-124.5,-101.5),v(-124.5,-98.6),v(-124.5,-96.5),v(-98.5,-71.5),v(-94.5,-71.5),v(-60.5,-71.5),v(54.5,-71.5),
+        v(60.5,-74.5),v(61.5,-76.5)};
+    /** Where she stands under the tower. */
+    public static final Vec3 UNDER=v(61.5,-76.5);
+    /** Ticks before she bangs the locker once she is in her room. */
+    static final int KNOCK_AFTER=40;
+    /** Ticks after a rule is written before she starts the next test. */
+    static final int ASK_AFTER=40;
+
+    /** Which room of the field house's far side a point in the town is in: 0 the coach's office, 1 the showers, -1 neither. */
+    public static int room(Vec3 r){
+        if(r.x<=TheListSite.FIELD_X+3.5||r.x>=TheListSite.FIELD_X+12||r.y<-.5||r.y>3)return -1;
+        if(r.z>TheListSite.MAIN_FRONT_S+1&&r.z<TheListSite.FIELD_HOUSE_S-3)return 0;
+        if(r.z>TheListSite.FIELD_HOUSE_S-3+1&&r.z<TheListSite.FIELD_HOUSE_S)return 1;
+        return -1;
+    }
+    /** Whether a door of the field house is one she has bolted behind her: it opens to nobody's hand, and the body can strike it. */
+    public static boolean bolted(BlockPos b,BlockPos lower){var d=DENS.get(b.asLong());return d!=null&&d.bolted.contains(lower);}
+    /** Whether the town's slasher, at a point relative to the town, is up on the tower's catwalk. */
+    static boolean onCatwalk(Vec3 r){return r.y>=TheListSite.CATWALK_Y-.1&&Math.abs(r.x-TheListSite.TOWER_X-.5)<4.5&&Math.abs(r.z-TheListSite.TOWER_Z-.5)<4.5;}
+
+    /** One tick of the tests after the field. True if the night changed. */
+    static boolean tests(ServerLevel l,TheListNight.Night n,LiteraryActor a,@Nullable ServerPlayer p){
+        if(p==null)return false;
+        var b=n.base;var d=den(b);var name=TheListTexts.NAMES[TheListPeople.AMBER];
+        int test=test(rules(p));
+        if(test!=d.test){
+            if(n.since<ASK_AFTER)return false;
+            d.test=test;d.way=0;d.there=false;d.stage=0;d.room=-1;d.climbed=d.fell=false;d.still=0;d.last=null;d.path=null;
+            if(test==TOWER){int in=room(a.position().subtract(Vec3.atLowerCornerOf(b)));
+                d.path=in<0?TOWER_WAY:java.util.stream.Stream.concat(java.util.Arrays.stream(ROOM_OUT[in]),java.util.Arrays.stream(TOWER_WAY)).toArray(Vec3[]::new);}
+            switch(test){
+                case DOOR->say(a,name,TheListTexts.DOOR_ASK);
+                case HEART->say(a,name,TheListTexts.HEART_ASK);
+                case TOWER->say(a,name,TheListTexts.TOWER_ASK);
+                default->{}
+            }
+        }
+        var r=p.position().subtract(Vec3.atLowerCornerOf(b));
+        switch(test){
+            case DOOR->{
+                if(!d.there){if(along(l,n,a,d,DOOR_WAY))d.there=true;return false;}
+                if(d.stage==0){
+                    // She waits for them to be outside before she shuts the doors on them.
+                    if(TheListSite.inFieldHouse(r)){if(d.still++%200==0)say(a,name,TheListTexts.DOOR_OUT);return false;}
+                    open(l,b,BACK_L,false);open(l,b,BACK_R,false);d.bolted.add(BACK_L);d.bolted.add(BACK_R);d.stage=1;
+                    l.playSound(null,b.getX()+BACK_R.getX()+.5,b.getY()+1,b.getZ()+BACK_R.getZ()+.5,SoundEvents.IRON_DOOR_CLOSE,SoundSource.BLOCKS,1.2F,.8F);
+                    TheList.cue(p,TheListTexts.DOOR_BOLTED);
+                    return false;
+                }
+                d.bolted.removeIf(at->isOpen(l,b,at));
+                if(d.bolted.size()==2)return false;
+                d.bolted.clear();
+                say(a,name,TheListTexts.DOOR_DONE);write(p,RULE_DOOR);n.since=0;
+                return true;
+            }
+            case HEART->{
+                if(d.stage==0){
+                    // Back out first; then she goes in to one of the two rooms.
+                    if(TheListSite.inFieldHouse(r)){if(d.still++%200==0)say(a,name,TheListTexts.HEART_OUT);return false;}
+                    d.room=l.getRandom().nextInt(2);d.stage=1;d.way=0;d.still=0;d.last=null;
+                    return false;
+                }
+                if(d.stage==1){if(along(l,n,a,d,ROOM_WAY[d.room])){d.stage=2;d.still=0;}return false;}
+                if(d.stage==2){
+                    if(++d.still<KNOCK_AFTER)return false;
+                    l.playSound(null,a.getX(),a.getY()+1,a.getZ(),SoundEvents.IRON_TRAPDOOR_CLOSE,SoundSource.BLOCKS,1.4F,.7F);
+                    TheList.cue(p,TheListTexts.HEART_KNOCK);d.stage=3;return false;
+                }
+                int in=room(r);if(in<0)return false;
+                boolean right=in==d.room;
+                say(a,name,right?TheListTexts.HEART_RIGHT:TheListTexts.HEART_WRONG);
+                write(p,right?RULE_HEART:RULE_NO_HEART);n.since=0;
+                return true;
+            }
+            case TOWER->{
+                if(!d.there){if(along(l,n,a,d,d.path==null?TOWER_WAY:d.path)){d.there=true;face(a,Vec3.atLowerCornerOf(b).add(TheListSite.TOWER_X+.5,10,TheListSite.TOWER_Z+.5));}return false;}
+                boolean down=TheListBody.down(p)>0;
+                if(!d.climbed){if(onCatwalk(r)){d.climbed=true;say(a,name,TheListTexts.TOWER_UP);}return false;}
+                if(!d.fell){
+                    if(down){d.fell=true;return false;}
+                    // Off the catwalk and dropping (not on the ladder); landed, it puts the body down whatever it had left.
+                    if(!p.onGround()&&!p.onClimbable()&&r.y<TheListSite.CATWALK_Y-1)d.stage=1;
+                    if(p.onGround()&&d.stage==1){TheListBody.fall(p);d.fell=true;return false;}
+                    if(p.onGround()&&r.y<2){d.climbed=false;say(a,name,TheListTexts.TOWER_LADDER);}
+                    return false;
+                }
+                if(down)return false;
+                say(a,name,TheListTexts.TOWER_DONE);write(p,RULE_TOWER);n.since=0;
+                return true;
+            }
+            default->{return false;}
+        }
+    }
+    static void say(LiteraryActor a,String name,String line){a.say(name,line);a.speaks(line);}
+    /** Along one of the tests' ways a step at a time, the field house's back doors opened as she comes to them. True once at its end. */
+    static boolean along(ServerLevel l,TheListNight.Night n,LiteraryActor a,Den d,Vec3[] way){
+        var b=n.base;if(d.way>=way.length)return true;
+        var goal=Vec3.atLowerCornerOf(b).add(way[d.way]);
+        if(a.position().distanceToSqr(goal)>.36){
+            moving(a,d,goal);
+            if(!a.getPersistentData().contains("BorrascaSpeed"))walk(a,b,way[d.way],WALK);
+            return false;
+        }
+        d.still=0;
+        // At the back doors, from either side, she opens them.
+        var at=way[d.way];if(Math.abs(at.x-BEHIND.x)<.1&&at.z>TheListSite.FIELD_HOUSE_S-2.5&&at.z<TheListSite.FIELD_HOUSE_S+3){open(l,b,BACK_L,true);open(l,b,BACK_R,true);}
+        if(++d.way<way.length){walk(a,b,way[d.way],WALK);return false;}
+        BorrascaCast.stop(a);d.still=0;d.last=null;
+        return true;
+    }
+    /** For a check: Amber set down at the end of the way to this test, as if she had walked it. */
+    public static void atTest(ServerLevel l,BlockPos b,int test){
+        var a=TheListPeople.find(l,b,TheListPeople.AMBER);if(a==null)return;
+        var d=den(b);var way=test==DOOR?DOOR_WAY:test==TOWER?TOWER_WAY:null;if(way==null)return;
+        var at=Vec3.atLowerCornerOf(b).add(way[way.length-1]);BorrascaCast.stop(a);a.moveTo(at.x,at.y,at.z,0,0);
+        if(way==DOOR_WAY){open(l,b,BACK_L,true);open(l,b,BACK_R,true);}
+        d.test=test;d.way=way.length;d.path=way;d.there=false;d.stage=0;d.still=0;d.last=null;d.climbed=d.fell=false;
+    }
+    /** For a check: night two brought to the tests after the field, the first rule written, the notebook given, Amber at the north end. */
+    public static void toTests(ServerPlayer p,BlockPos b){
+        var l=p.serverLevel();var n=TheListNight.night(p.server,b);if(n==null)return;
+        var d=LabyrinthData.get(p.server);var own=LiteraryVignettes.personal(d,p.getUUID(),TheList.PLACE);
+        notebook(p,own);own.putInt("Den2",TheListTexts.DEN.length);LiteraryVignettes.save(d,p.getUUID(),TheList.PLACE,own);
+        write(p,0);
+        var a=TheListPeople.find(l,b,TheListPeople.AMBER);
+        if(a!=null){var at=Vec3.atLowerCornerOf(b).add(END_N);BorrascaCast.stop(a);a.moveTo(at.x,at.y,at.z,0,0);}
+        var den=new Den();den.step=TO_FIELD_WAY.length;DENS.put(b.asLong(),den);
+        n.phase=TheListNight.RAN;n.since=ASK_AFTER;TheListNight.save(p.server,n);
+    }
+    /** Which room she went into for the heart test, -1 before she has gone (for a check). */
+    public static int heartRoom(BlockPos b){var d=DENS.get(b.asLong());return d==null||d.test!=HEART||d.stage<1?-1:d.room;}
+    /** Whether she has banged the locker (for a check). */
+    public static boolean knocked(BlockPos b){var d=DENS.get(b.asLong());return d!=null&&d.test==HEART&&d.stage>=3;}
+    /** Whether the slasher has been up on the catwalk this test, and has come off it (for a check). */
+    public static boolean climbed(BlockPos b){var d=DENS.get(b.asLong());return d!=null&&d.test==TOWER&&d.climbed;}
+
     /** For a check: Amber set down at the south end zone with the walk there done, as if she had walked it. */
     public static void atField(ServerLevel l,BlockPos b){
         var n=TheListNight.night(l.getServer(),b);if(n==null)return;
@@ -298,6 +484,7 @@ public final class TheListDen{
     /** The town's night two put away: Amber's doors shut, her walk forgotten. */
     static void reset(ServerLevel l,BlockPos b){
         DENS.remove(b.asLong());
+        open(l,b,BACK_L,false);open(l,b,BACK_R,false);
         open(l,b,TheListSite.AMBER_BACK,false);open(l,b,TheListSite.AMBER_FRONT,false);
     }
     /** Whether Amber is running now (for a check). */

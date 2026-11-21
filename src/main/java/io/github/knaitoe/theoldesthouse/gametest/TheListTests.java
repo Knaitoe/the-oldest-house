@@ -2167,6 +2167,89 @@ public final class TheListTests {
         });
     }
     /**
+     * 0.4.722, the rest of night two's tests. The door: Amber goes in through the field house's back doors and bolts them once the one
+     * who went in is outside; nobody's hand opens them, and the fifth blow springs one, and the second rule is written. The heart: sent
+     * back out, she goes into one of the two rooms behind the block wall and bangs a locker; coming into the other room first writes the
+     * wrong rule, that he cannot tell whose heart it is. The tower: up on the catwalk and off it, the body lands, goes down and gets up,
+     * and the last rule is written, wrong too. Only then does the first name go out.
+     */
+    @GameTest(template="empty",batch="the_list_tests",timeoutTicks=8000)
+    public static void nightTwoTests(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_tests",P);
+        hold(f,b,TheListDen.DEN_AT,BlockPos.containing(TheListDen.END_N),BlockPos.containing(TheListDen.BEHIND),BlockPos.containing(TheListDen.UNDER));hold(f,b,TheListPeople.AT);
+        List<String> seen=new ArrayList<>();int[] room={-1};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);
+            h.assertTrue(TheListDen.begin(p,b),"night two begins round the one who went in");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);h.assertTrue(TheListPeople.find(l,b,TheListPeople.AMBER)!=null,"waiting for Amber");})
+        .thenExecute(()->{
+            TheListDen.toTests(p,b);
+            h.assertTrue(TheListDen.rules(p)==1&&TheListDen.test(TheListDen.rules(p))==TheListDen.DOOR,"after the field, the door is next");
+            TheListDen.atTest(l,b,TheListDen.DOOR);
+            f.at(p,P,TheListDen.BEHIND.x,0,TheListDen.BEHIND.z+1);cues(p);
+        }).thenWaitUntil(()->{seen.addAll(cues(p));h.assertTrue(TheListDen.bolted(b,TheListDen.BACK_L)==false&&seen.contains(TheListTexts.DOOR_BOLTED)==false,"not while they are inside");})
+        .thenIdle(30)
+        .thenExecute(()->{
+            seen.addAll(cues(p));
+            h.assertFalse(TheListDen.bolted(b,TheListDen.BACK_L),"she waits for them to be outside");
+            f.at(p,P,TheListDen.BEHIND.x,0,TheListSite.FIELD_HOUSE_S+3.5);
+        }).thenWaitUntil(()->{seen.addAll(cues(p));h.assertTrue(TheListDen.bolted(b,TheListDen.BACK_L)&&TheListDen.bolted(b,TheListDen.BACK_R),"waiting for the bolt");})
+        .thenExecute(()->{
+            seen.addAll(cues(p));
+            h.assertTrue(seen.contains(TheListTexts.DOOR_BOLTED)&&shut(l,b,TheListDen.BACK_L)&&shut(l,b,TheListDen.BACK_R),"both doors shut and bolted, and they hear it");
+            f.click(p,P,TheListDen.BACK_L);
+            h.assertTrue(shut(l,b,TheListDen.BACK_L),"a hand does not open it");
+        }).thenIdle(10).thenExecute(()->f.click(p,P,TheListDen.BACK_L))
+        .thenIdle(10).thenExecute(()->f.click(p,P,TheListDen.BACK_L))
+        .thenIdle(10).thenExecute(()->f.click(p,P,TheListDen.BACK_L))
+        .thenIdle(10).thenExecute(()->{
+            h.assertTrue(shut(l,b,TheListDen.BACK_L),"four blows do not do it");
+            f.click(p,P,TheListDen.BACK_L);
+        }).thenWaitUntil(()->h.assertTrue((TheListDen.rules(p)&1<<TheListDen.RULE_DOOR)!=0,"waiting for the second rule: "+TheListDen.rules(p)))
+        .thenExecute(()->{
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(!shut(l,b,TheListDen.BACK_L)&&TheListTexts.DOOR_DONE.equals(said(amber)),"the fifth springs it, and she counted: "+said(amber));
+            f.at(p,P,TheListDen.BEHIND.x,0,TheListSite.FIELD_HOUSE_S+3.5);cues(p);
+        }).thenWaitUntil(()->{seen.addAll(cues(p));room[0]=TheListDen.heartRoom(b);h.assertTrue(TheListDen.knocked(b),"waiting for her to hide and bang a locker");})
+        .thenExecute(()->{
+            seen.addAll(cues(p));
+            h.assertTrue(seen.contains(TheListTexts.HEART_KNOCK)&&room[0]>=0,"a locker bangs inside");
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(TheListDen.room(amber.position().subtract(Vec3.atLowerCornerOf(b)))==room[0],"she is in the room she chose");
+            // The other room first: the wrong guess.
+            if(room[0]==0)f.at(p,P,TheListSite.FIELD_X+6.5,0,TheListSite.FIELD_HOUSE_S-1.5);else f.at(p,P,TheListSite.FIELD_X+6.5,0,TheListSite.FIELD_HOUSE_S-5.5);
+        }).thenWaitUntil(()->h.assertTrue((TheListDen.rules(p)&1<<TheListDen.RULE_NO_HEART)!=0,"waiting for the wrong rule: "+TheListDen.rules(p)))
+        .thenExecute(()->{
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(TheListTexts.HEART_WRONG.equals(said(amber))&&(TheListDen.rules(p)&1<<TheListDen.RULE_HEART)==0,"wrong room, so he can't tell: "+said(amber));
+            h.assertTrue(TheListNight.phase(s,b)==TheListNight.RAN,"no name out yet");
+        }).thenIdle(45).thenExecute(()->{
+            TheListDen.atTest(l,b,TheListDen.TOWER);
+            f.at(p,P,TheListSite.TOWER_X+.5,TheListSite.CATWALK_Y+.2,TheListSite.TOWER_Z+3.5);
+        }).thenWaitUntil(()->h.assertTrue(TheListDen.climbed(b),"waiting for her to see them up on the catwalk"))
+        // Off the side: a test player is not moved by the game, so it is carried through the fall and set on the ground.
+        .thenExecute(()->{f.at(p,P,TheListSite.TOWER_X+.5,12,TheListSite.TOWER_Z+5.5);p.setOnGround(false);})
+        .thenIdle(3)
+        .thenExecute(()->{f.at(p,P,TheListSite.TOWER_X+.5,0,TheListSite.TOWER_Z+5.5);p.setOnGround(true);})
+        .thenWaitUntil(()->h.assertTrue(TheListBody.down(p)>0,"waiting for the body to go down on landing"))
+        .thenWaitUntil(()->h.assertTrue((TheListDen.rules(p)&1<<TheListDen.RULE_TOWER)!=0,"waiting for them to get up and the last rule"))
+        .thenExecute(()->{
+            var amber=TheListPeople.find(l,b,TheListPeople.AMBER);
+            h.assertTrue(TheListTexts.TOWER_DONE.equals(said(amber))&&TheListBody.has(p)&&p.isAlive(),"down and up, and higher would be longer: "+said(amber));
+            var book=notebook(p);var tested=String.join("\n",pages(book).subList(1,pages(book).size()));
+            h.assertTrue(pages(book).size()==3,"four rules on two pages: "+pages(book));
+            h.assertTrue(tested.contains(TheListTexts.RULES[1].substring(0,20))&&tested.contains(TheListTexts.RULES[3].substring(0,20))&&tested.contains(TheListTexts.RULES[4].substring(0,20))
+                &&!tested.contains(TheListTexts.RULES[2].substring(0,20)),"the notebook they carry has the four, the wrong ones too: "+tested);
+            h.assertTrue(TheListDen.test(TheListDen.rules(p))==TheListDen.DONE,"every test had");
+        }).thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNights.HUNT2,"waiting for the first name: "+TheListNight.NAMES[TheListNight.phase(s,b)]))
+        .thenExecute(()->{
+            TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+    /**
      * 0.4.721, the skeleton to its end: the first name goes out after the field and night two's hunt begins; the one who went in lies down
      * on their own bed and night two is over. Back in town, night three begins with the hook and the hunt; one of the five dead on an
      * earlier night is not made again; first light ends it. Night four, the gin running; first light, and the end: the body is the

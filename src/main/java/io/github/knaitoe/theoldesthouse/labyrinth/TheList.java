@@ -55,7 +55,7 @@ public final class TheList {
         if(st.getBlock() instanceof DoorBlock){
             // 0.4.708: a door one of the five has bolted behind them opens to nobody's hand; the slasher can strike it.
             var held=TheListHunt.lower(l,b,rel);
-            if(held!=null&&TheListHunt.bolted(b,held)){if(!TheListBody.strike(p,b,rel))cue(p,TheListTexts.BOLTED);return true;}
+            if(held!=null&&(TheListHunt.bolted(b,held)||TheListDen.bolted(b,held))){if(!TheListBody.strike(p,b,rel))cue(p,TheListTexts.BOLTED);return true;}
             if(!st.is(TheListRegistry.HOUSE_DOOR.get()))return false;
             var lower=st.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?rel.below():rel;
             // 0.4.720: Amber's back door on night two.
