@@ -27,6 +27,10 @@ public final class TheListSite {
     public static final LabyrinthPlace PLACE=LabyrinthPlace.THE_LIST;
     /** The scene's edges. South of the House's door are the back yard, the cotton behind it and, from 0.4.701, the pasture. */
     public static final int WEST=-164,EAST=96,NORTH=-176,SOUTH=140;
+    /** The field's four towers of lights (x, z), their banks BANK_Y up, aimed in at the field (0.4.738: lit by TheListHuddle.lights). */
+    public static final int[][] LIGHT_TOWERS={{-148,-90},{-148,-26},{-100,-90},{-100,-26}};
+    public static final int BANK_Y=16;
+    public static Direction bankFacing(int[] t){return t[0]<FIELD_X?Direction.EAST:Direction.WEST;}
     /** The town stands at its own height, as the other tall places outside do, so the water tower's catwalk and tank are in it. */
     public static final int BASE_Y=96;
     /** The reader's house: its outer walls, the wallboard inside them, the ceiling's height. */
@@ -569,9 +573,9 @@ public final class TheListSite {
         // The team benches at the sidelines, the home team's on the west.
         for(int z=FIELD_Z-10;z<=FIELD_Z+10;z++){if(z==FIELD_Z)continue;set(l,b,FIELD_W-2,0,z,fit(Kind.STANDS,Direction.EAST,4));set(l,b,FIELD_E+2,0,z,fit(Kind.STANDS,Direction.WEST,4));}
         // The towers of lights at the corners, their banks aimed in at the field, all of them dark tonight.
-        for(int[] t:new int[][]{{FIELD_X-24,FIELD_N-2},{FIELD_X-24,FIELD_S+2},{FIELD_X+24,FIELD_N-2},{FIELD_X+24,FIELD_S+2}}){
-            for(int y=0;y<16;y++)set(l,b,t[0],y,t[1],fit(Kind.FIELD,Direction.NORTH,6));
-            set(l,b,t[0],16,t[1],fit(Kind.FIELD,t[0]<FIELD_X?Direction.EAST:Direction.WEST,7));
+        for(int[] t:LIGHT_TOWERS){
+            for(int y=0;y<BANK_Y;y++)set(l,b,t[0],y,t[1],fit(Kind.FIELD,Direction.NORTH,6));
+            set(l,b,t[0],BANK_Y,t[1],fit(Kind.FIELD,bankFacing(t),7));
         }
         scoreboard(l,b);
         concession(l,b);

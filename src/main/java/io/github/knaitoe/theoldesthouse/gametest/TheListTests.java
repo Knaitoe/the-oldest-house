@@ -2374,6 +2374,7 @@ public final class TheListTests {
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
         var p=f.player("list_field_house",P);
         hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD);hold(f,b,TheListPeople.AT);hold(f,b,huddle());
+        for(var t:TheListSite.LIGHT_TOWERS)hold(f,b,new BlockPos(t[0],TheListSite.BANK_Y,t[1]));
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
         .thenExecute(()->{
             f.at(p,P,-3.5,0,-3.5);
@@ -2384,6 +2385,8 @@ public final class TheListTests {
         .thenExecute(()->{
             for(var d:new BlockPos[]{TheListHunt.FIELD_DOOR,TheListHunt.FIELD_DOOR.east(),TheListHuddle.STREET_DOOR})h.assertTrue(TheListHunt.bolted(b,d)&&shut(l,b,d),"the field house's doors are bolted: "+d);
             h.assertTrue(TheListHuddle.lit(l,b),"the field's lights are on");
+            // 0.4.738: and the banks on the four towers show lit.
+            for(int i=0;i<TheListSite.LIGHT_TOWERS.length;i++)h.assertTrue(TheListHuddle.bankLit(l,b,i),"the bank on tower "+i+" is lit");
             f.at(p,P,TheListHunt.FIELD_DOOR.getX()+.5,0,TheListHunt.FIELD_DOOR.getZ()+2.5);
         }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's in the street"))
         .thenExecute(()->{
@@ -2403,6 +2406,7 @@ public final class TheListTests {
         .thenExecute(()->{
             TheListNights.dawn(l,b);TheListPeople.ensure(l,b);
             h.assertFalse(TheListHuddle.lit(l,b),"first light: the field's lights are out");
+            for(int i=0;i<TheListSite.LIGHT_TOWERS.length;i++)h.assertFalse(TheListHuddle.bankLit(l,b,i),"first light: the bank on tower "+i+" is dark");
             var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
             h.assertTrue(deek!=null&&deek.blockPosition().subtract(b).equals(TheListPeople.AT[TheListPeople.DEEK]),"they are back at their places");
             h.assertTrue(TheListNight.phase(s,b)==TheListNights.DONE3,"night three is over");

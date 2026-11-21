@@ -2787,6 +2787,14 @@ def tower_model(stage):
         e = [element([6, 0, 6], [10, 3, 10], {'all': 'r'})]
         e += glow([element([5.5, 3, 5.5], [10.5, 8, 10.5], {'all': 'b'})], 15)
         return model(e, t, 'beacon')
+    if stage == 7:
+        # 0.4.738: a light tower's bank of floodlights, lit: the field's bank (field 7) with its lamps on and glowing.
+        t2 = {'g': 'galv', 'b': 'light_bank_lit'}
+        e = [element([6, 0, 6], [10, 4, 10], {'all': 'g'})]
+        e += glow([element([-4, 4, 2], [20, 16, 6], {'north': 'b', 'south': 'g', 'east': 'g', 'west': 'g', 'up': 'g', 'down': 'g'},
+                           uv={'north': [0, 0, 16, 16], 'east': [0, 0, 4, 12], 'west': [0, 0, 4, 12], 'up': [0, 0, 16, 4], 'down': [0, 0, 16, 4]},
+                           rotation={'angle': -22.5, 'axis': 'x', 'origin': [8, 10, 4]})], 15)
+        return model(e, t2, 'light_bank_lit', render=None)
     return model([element([4, 0, 4], [12, 16, 12], {'north': 'o', 'south': 'o', 'east': 'o', 'west': 'o', 'up': 'p', 'down': 'p'})], t, 'pipe', render=None)
 
 
@@ -2875,6 +2883,17 @@ def light_bank():
         for cy in (1, 8):
             fill(im, cx + 1, cy + 1, cx + 5, cy + 6, '#2a2e30')
             dot(im, cx + 2, cy + 2, '#8a9294'); dot(im, cx + 3, cy + 3, '#4e5456')
+    return im
+
+
+def light_bank_lit():
+    # 0.4.738: the same bank with its lamps on, each lens burning in its housing, the frame between them catching the glare.
+    im = new('#a8acaa', 9609, 3)
+    for cx in (0, 5, 10):
+        for cy in (1, 8):
+            fill(im, cx + 1, cy + 1, cx + 5, cy + 6, '#f2ecd0')
+            fill(im, cx + 2, cy + 2, cx + 4, cy + 5, '#fffbea')
+            dot(im, cx + 1, cy + 1, '#d8d0aa'); dot(im, cx + 4, cy + 5, '#d8d0aa')
     return im
 
 
@@ -3386,7 +3405,7 @@ def school_models():
 
 
 def school_faces():
-    faces = {'goal_paint': goal_paint(), 'goal_pad': goal_pad(), 'light_bank': light_bank(), 'alum': alum(0), 'alum_edge': alum(1),
+    faces = {'goal_paint': goal_paint(), 'goal_pad': goal_pad(), 'light_bank': light_bank(), 'light_bank_lit': light_bank_lit(), 'alum': alum(0), 'alum_edge': alum(1),
              'press_glass': press_glass(), 'plywood': plywood(), 'pa_horn': pa_horn(), 'locker_lower': locker(0), 'locker_upper': locker(1),
              'locker_side': locker_side(), 'chalkboard': chalkboard(), 'concession_menu': concession_menu(), 'ticket_window': ticket_window(), 'door_steel_lower': door_steel(0),
              'door_steel_upper': door_steel(1), 'vcr': vcr(), 'rental_tapes': rental_tapes(), 'tape_case': tape_case(), 'notebook': notebook(),
@@ -4609,6 +4628,7 @@ def fitting_models():
         m[f'sign_law_{s}'] = board_model(f'sign_law_{s}')
     for s in range(7):
         m[f'tower_{s}'] = tower_model(s); m[f'tank_{s}'] = tank_model(s)
+    m['tower_7'] = tower_model(7)
     m.update(school_models())
     m.update(pasture_models())
     for st in range(8):
@@ -4974,7 +4994,7 @@ KINDS = ['cotton', 'mesquite', 'weed', 'pole', 'fence', 'signpost', 'track', 'ma
 STAGES = {'cotton': 4, 'mesquite': 5, 'weed': 5, 'pole': 7, 'fence': 4, 'signpost': 6, 'window': 6, 'kitchen': 8, 'table': 2, 'bed': 2, 'room': 5,
           'poster': 7, 'den': 6, 'bath': 5, 'rooftop': 4, 'yard': 8, 'shop': 4, 'fixture': 5, 'front': 6, 'sign_drug': 4, 'sign_feed': 4,
           'sign_video': 5, 'sign_law': 4, 'sign_drivein': 8, 'drug': 8, 'video': 8, 'law': 8, 'feed': 8, 'drivein': 8, 'gin': 8, 'bale': 4, 'seed': 8,
-          'tower': 7, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
+          'tower': 8, 'tank': 7, 'field': 8, 'stands': 8, 'locker': 8, 'score': 8, 'amber': 8, 'lot': 8,
           'pasture': 8, 'stock': 5, 'windmill': 8, 'pumpjack': 8, 'battery': 8, 'party': 8, 'blood': 4, 'line': 8, 'fryer': 6}
 STAGE_MAX = 8
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
