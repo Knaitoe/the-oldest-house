@@ -2510,6 +2510,60 @@ public final class TheListTests {
      * then the account gives each their own Witness story. A spectator earns nothing.
      */
     /**
+     * 0.4.736, stand-ins 2: the deputy's patrol car. Night three: the car drives its loop with its headlights a light ahead of it. A reader
+     * on Amber's side in front of it is not spotted; the one who went in is: the car stops, its spotlight is a light on them, they are told,
+     * the reader near the car hears the radio and the deputy is called there. Gone from its sight, they are let go and it drives on; at
+     * first light it is gone and its lights are out.
+     */
+    @GameTest(template="empty",batch="the_list_cruiser",timeoutTicks=3000)
+    public static void theCruiser(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);
+        var p=f.player("list_cruiser",P);var peer=f.player("list_cruiser_peer",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD);hold(f,b,TheListPeople.AT);
+        for(int x=-88;x<=24;x+=16){hold(f,b,new BlockPos(x,0,-70));hold(f,b,new BlockPos(x,0,-28));}
+        Vec3[] seen={null};BlockPos[] spot={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);
+            h.assertTrue(TheListNights.begin(p,b,3),"night three begins");
+        }).thenWaitUntil(()->{var c=TheListCruiser.car(l,b);h.assertTrue(c!=null,"waiting for the patrol car");seen[0]=c.position();})
+        .thenWaitUntil(()->{var c=TheListCruiser.car(l,b);h.assertTrue(c!=null&&c.position().distanceTo(seen[0])>=3,"waiting for it to drive");})
+        .thenExecute(()->{
+            var c=TheListCruiser.car(l,b);
+            h.assertTrue(c.kind()==TownCar.CRUISER&&c.lit()&&!c.canBeCollidedWith(),"a patrol car, lamps lit, no wall");
+            // Put it a way along Seventh, heading east, and a reader on Amber's side in front of it.
+            TheListCruiser.moveTo(b,60);
+            f.at(peer,P,-12.5,0,-69.5);cues(peer);cues(p);
+        }).thenIdle(20)
+        .thenExecute(()->{
+            h.assertFalse(TheListCruiser.holding(b),"a reader who did not go in is not spotted");
+            // The one who went in, eight blocks ahead of where the car is now; the other reader a little behind it.
+            var c=TheListCruiser.car(l,b).position().subtract(Vec3.atLowerCornerOf(b));
+            f.at(p,P,c.x+8,0,-69.5);f.at(peer,P,c.x-3,0,-70.5);
+        }).thenWaitUntil(()->h.assertTrue(TheListCruiser.holding(b),"waiting for the spotlight"))
+        .thenExecute(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.CRUISER_SPOT),"the one who went in is told");
+            var heard=cues(peer);h.assertTrue(heard.contains(TheListTexts.CRUISER_RADIO),"the reader by the car hears the radio: "+heard);
+            spot[0]=TheListCruiser.spotAt(b);
+            h.assertTrue(spot[0]!=null&&l.getBlockState(spot[0]).is(net.minecraft.world.level.block.Blocks.LIGHT),"the spotlight is a light on them");
+            h.assertTrue(TheListDeputy.called(b)!=null,"the deputy is called there");
+            seen[0]=TheListCruiser.car(l,b).position();
+            h.assertTrue(TheListBody.lit(p,l)&&!TheListBody.lit(peer,l),"the hunt reads the one in the spotlight as standing in light, and nobody else");
+        }).thenIdle(10)
+        .thenExecute(()->{
+            h.assertTrue(TheListCruiser.car(l,b).position().distanceTo(seen[0])<.01,"the car stays stopped");
+            f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);
+        }).thenWaitUntil(()->h.assertTrue(!TheListCruiser.holding(b),"waiting for it to let them go"))
+        .thenWaitUntil(()->{var c=TheListCruiser.car(l,b);h.assertTrue(c!=null&&c.position().distanceTo(seen[0])>=2,"waiting for it to drive on");})
+        .thenExecute(()->{
+            h.assertFalse(l.getBlockState(spot[0]).is(net.minecraft.world.level.block.Blocks.LIGHT),"the spotlight is out");
+            TheListNights.dawn(l,b);
+            h.assertTrue(TheListCruiser.car(l,b)==null,"first light: the car is gone");
+            TheListNight.end(l,b);
+            done();h.succeed();
+        });
+    }
+    /**
      * 0.4.728, part 7c: the dawn bus. Three readers and a spectator: the one who went in and one on Amber's side are both read as
      * running, the third is not. Late in night four only the one who went in is told the bus is due. At first light, all at the bench,
      * only the one who went in gets on: took_the_bus, set down in their room; the others end as they would have, and the spectator

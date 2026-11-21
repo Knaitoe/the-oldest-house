@@ -57,7 +57,7 @@ public final class TheListNights{
         n.time=Math.min(TheListNight.LIGHT,n.time+TheListNight.RATE);
         if(!hunting(n.phase))return false;
         // 0.4.724: the deputy's round, on nights three and four.
-        if(n.phase==HUNT3||n.phase==HUNT4)TheListDeputy.tick(l,n,here);
+        if(n.phase==HUNT3||n.phase==HUNT4){TheListDeputy.tick(l,n,here);TheListCruiser.tick(l,n,here);}
         // 0.4.726: Stace's plan, on night four; she may end the night.
         if(n.phase==HUNT4){TheListStace.tick(l,n,here);if(n.phase!=HUNT4)return true;TheListBus.tick(l,n,here);}
         // 0.4.732: the rules from the tapes, tried by readers on Amber's side.
@@ -90,7 +90,7 @@ public final class TheListNights{
         boolean allGone=night==4&&n.dead==0&&n.left==ALL;
         // 0.4.732: first light, seen from town, is the one rule from the tapes that holds.
         if(!bed)TheListRules.dawn(l,n);
-        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);TheListBus.reset(n.base);
+        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListCruiser.reset(l,n.base);TheListStace.reset(l,n.base);TheListBus.reset(n.base);
         // 0.4.735: the bus, if it came, pulls out.
         if(night==4)TheListBus.leave(l,n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;

@@ -563,6 +563,9 @@ public final class TheListTexts {
         DEPUTY_SHOT="Something hits you in the chest, and then you hear it.",
         DEPUTY_FIRED="Stay down.",
         DEPUTY_CURFEW="There's a curfew. Go home and stay there.",
+        /** 0.4.736: the deputy's patrol car, its spotlight on the one who went in; and what comes over its radio. */
+        CRUISER_SPOT="A spotlight swings off the road and stays on you.",
+        CRUISER_RADIO="Over the radio, from the car: they're out by the road, come on.",
         NIGHT4="Ten o'clock. Over the highway the gin is running. You can hear it from the kitchen.",
         // 0.4.721: first light after the fourth night: the one who went in, and anyone else.
         END_WENT_IN="It gets light over the gin, and the hands are your own again. The tape deck in your room is running.",

@@ -29,7 +29,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
      * own middle is, the fast car's back ones being wider.
      */
     public static final float FRONT=-10,BACK=26,ACROSS=8,AXLE=21,HUB=5.5F,RADIUS=5.5F,OUT=13,OUT_WIDE=12.5F;
-    private static final ModelResourceLocation[][] BODY=new ModelResourceLocation[TownCar.CARS][],LIT=new ModelResourceLocation[TownCar.CARS][];
+    private static final ModelResourceLocation[][] BODY=new ModelResourceLocation[TownCar.KINDS][],LIT=new ModelResourceLocation[TownCar.KINDS][];
     private static final ModelResourceLocation WHEEL=BikeLook.standalone("calder_car/wheel"),WHEEL_WIDE=BikeLook.standalone("calder_car/wheel_wide");
     /**
      * 0.4.715, The list's drive-in car: the blue sedan's body with its driver's door cut out of it, its two halves, and the door, drawn
@@ -48,7 +48,8 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     public static final float BUS_L=80,BUS_PART=32,BUS_DY=-12,BUS_DZ=8,BUS_REAR=-50,BUS_FRONT=54,BUS_OUT=16.3F,BUS_RADIUS=8;
     private static final ModelResourceLocation[] BUS=new ModelResourceLocation[BUS_PARTS],BUS_LIT=new ModelResourceLocation[BUS_PARTS];
     static{
-        for(int k=0;k<TownCar.CARS;k++){
+        for(int k=0;k<TownCar.KINDS;k++){
+            if(k>=TownCar.CARS&&k!=TownCar.CRUISER)continue;
             String name="calder_car/"+TownCar.NAMES[k];
             BODY[k]=new ModelResourceLocation[]{BikeLook.standalone(name+"_front"),BikeLook.standalone(name+"_back")};
             LIT[k]=new ModelResourceLocation[]{BikeLook.standalone(name+"_lit_front"),BikeLook.standalone(name+"_lit_back")};
@@ -57,8 +58,8 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
     }
     /** Every model a car is drawn from, which no block state names. */
     static void register(java.util.function.Consumer<ModelResourceLocation> to){
-        for(var pair:BODY)for(var m:pair)to.accept(m);
-        for(var pair:LIT)for(var m:pair)to.accept(m);
+        for(var pair:BODY)if(pair!=null)for(var m:pair)to.accept(m);
+        for(var pair:LIT)if(pair!=null)for(var m:pair)to.accept(m);
         to.accept(WHEEL);to.accept(WHEEL_WIDE);
         for(var m:OPEN)to.accept(m);to.accept(DOOR);
         for(var m:BUS)to.accept(m);for(var m:BUS_LIT)to.accept(m);
@@ -87,7 +88,7 @@ public final class TownCarRenderer extends EntityRenderer<TownCar> {
         if(kind==TownCar.CART){cart(pose,out,yaw,light);return;}
         if(kind==TownCar.BUS){bus(pose,out,yaw,rolled,light);return;}
         boolean open=kind==TownCar.BLUE&&door>.5F;
-        kind=Mth.clamp(kind,0,TownCar.CARS-1);
+        if(kind!=TownCar.CRUISER)kind=Mth.clamp(kind,0,TownCar.CARS-1);
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));
         for(int half=0;half<2;half++){

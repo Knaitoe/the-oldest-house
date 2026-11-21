@@ -40,8 +40,10 @@ public final class TownCar extends Entity implements Voiced {
      * 0.4.735: and The list's dawn bus, ten blocks long (TheListBus). It drives, so it is no thing in the way and its lamps are lit, as
      * the four that drive are.
      */
-    public static final int BUS=7,KINDS=8;
-    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white","cart","bus"};
+    public static final int BUS=7;
+    /** 0.4.736: and the deputy's patrol car (TheListCruiser), drawn from the cars' models (tools/draw_calder_cars.py). It drives too. */
+    public static final int CRUISER=8,KINDS=9;
+    public static final String[] NAMES={"wagon","pickup","sedan","muscle","blue","white","cart","bus","cruiser"};
     /** Half the bus's length. */
     public static final double BUS_LONG=5.1;
     /** Half a cart's length and half its width; and how high it is as a thing in the way: over what a bike rolls up. */
@@ -76,7 +78,7 @@ public final class TownCar extends Entity implements Voiced {
      * and a bike that meets it has met a wall (so a rider going fast comes off, by the bike's own rule). The four that drive are
      * not: they are never where anybody is, by their own rule.
      */
-    public boolean parked(){return kind()>=MOVING&&kind()!=BUS;}
+    public boolean parked(){return kind()>=MOVING&&kind()!=BUS&&kind()!=CRUISER;}
     @Override public boolean canBeCollidedWith(){return parked();}
     /** A parked car's own length and width, along whichever way it stands: it stands square to the streets. */
     @Override protected net.minecraft.world.phys.AABB makeBoundingBox(){
