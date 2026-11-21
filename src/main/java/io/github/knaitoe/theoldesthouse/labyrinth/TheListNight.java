@@ -207,7 +207,7 @@ public final class TheListNight {
     public static void end(ServerLevel l,BlockPos b){
         var n=night(l.getServer(),b);
         if(n!=null){cars(l,n,false);}
-        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);TheListHunt.end(l,b);TheListFlyers.down(l,b);TheListDeputy.reset(l,b);
+        props(l,b,false);seedHouse(l,b,true,true);TheListDen.reset(l,b);TheListHunt.end(l,b);TheListFlyers.down(l,b);TheListDeputy.reset(l,b);TheListStace.reset(b);
         NIGHTS.remove(b.asLong());
         var d=LabyrinthData.get(l.getServer());int copy=copy(l.getServer(),b);var w=LiteraryVignettes.shared(d,TheList.PLACE,copy);w.remove("Night");LiteraryVignettes.shared(d,TheList.PLACE,copy,w);
         TheListPeople.ensure(l,b);
@@ -225,7 +225,8 @@ public final class TheListNight {
     /** Whether this reader is shut in: the one who went in, from the door rolling shut until the cut. The House's door is not theirs. */
     public static boolean locked(ServerPlayer p){
         var b=TheListBody.town(p);if(b==null)return false;
-        var n=night(p.server,b);return n!=null&&n.phase==SHUT&&p.getUUID().equals(n.slasher);
+        // 0.4.726: on night four, from the moment Stace's plan begins.
+        var n=night(p.server,b);return n!=null&&(n.phase==SHUT||n.phase==TheListNights.HUNT4&&TheListStace.on(b))&&p.getUUID().equals(n.slasher);
     }
 
     // ------------------------------------------------------------------------------------------------ each tick

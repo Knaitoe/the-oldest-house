@@ -56,6 +56,8 @@ public final class TheListNights{
         if(!hunting(n.phase))return false;
         // 0.4.724: the deputy's round, on nights three and four.
         if(n.phase==HUNT3||n.phase==HUNT4)TheListDeputy.tick(l,n,here);
+        // 0.4.726: Stace's plan, on night four; she may end the night.
+        if(n.phase==HUNT4){TheListStace.tick(l,n,here);if(n.phase!=HUNT4)return true;}
         if(n.time>=TheListNight.LIGHT||n.phase==HUNT4&&alive(n)==0){light(l,n,false);return true;}
         return false;
     }
@@ -80,7 +82,7 @@ public final class TheListNights{
     static void light(ServerLevel l,TheListNight.Night n,boolean bed){
         int night=nightOf(n.phase);
         for(int who:TheListBody.LISTED)if(TheListHunt.dead(n.base,who))n.dead|=1<<who;
-        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);
+        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;
         var d=LabyrinthData.get(l.getServer());
@@ -110,6 +112,8 @@ public final class TheListNights{
     /** How the four nights came out for a reader: for the one who went in, by how many of the five they finished. */
     static String outcome(CompoundTag own,boolean wentIn){
         if(!wentIn)return "was_in_town_at_the_end";
+        // 0.4.726: Stace finished it.
+        if(own.getBoolean("Stopped"))return "was_stopped";
         int kills=Integer.bitCount(own.getInt("Kills"));
         return kills>=TheListBody.LISTED.length?"went_down_the_whole_list":kills>0?"crossed_names_off":"crossed_no_names_off";
     }
