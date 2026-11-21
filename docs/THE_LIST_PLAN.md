@@ -101,10 +101,9 @@ the porch light on (HAVEN), brings the town to the reader's house first on night
 - **Sounds** by `tools/generate_the_list_audio.py`, every one subtitled: night insects, the pumpjacks, sprinklers, dogs, the
   drive-in's speakers, the gin, hearts, the pull, the slasher's tread, doors splintering, strikes, screams, the VCR.
 
-## Still stand-ins
+## Stand-ins, since built
 
-Every part is built. These are still drawn or done more simply than the plan asks (the dawn bus was the first, 0.4.735: `docs/THE_LIST_0_4_735.md`; the deputy's patrol car the second, 0.4.736: `docs/THE_LIST_0_4_736.md`; the town out with flashlights the third, 0.4.737: `docs/THE_LIST_0_4_737.md`, which also builds HOME DANGER; the field's lit banks the fourth, 0.4.738: `docs/THE_LIST_0_4_738.md`): the five
-do not walk to the field house on their own on night three, they are set there.
+Every part is built. Five things were first drawn or done more simply than the plan asked; all five are now built: the dawn bus, 0.4.735: `docs/THE_LIST_0_4_735.md`; the deputy's patrol car, 0.4.736: `docs/THE_LIST_0_4_736.md`; the town out with flashlights, 0.4.737: `docs/THE_LIST_0_4_737.md`, which also builds HOME DANGER; the field's lit banks, 0.4.738: `docs/THE_LIST_0_4_738.md`; and the five walking to the field house, 0.4.739: `docs/THE_LIST_0_4_739.md`.
 
 ## Checks
 

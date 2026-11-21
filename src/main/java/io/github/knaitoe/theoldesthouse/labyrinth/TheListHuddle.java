@@ -2,7 +2,9 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.labyrinth.TheListHunt.Step;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -70,8 +72,82 @@ public final class TheListHuddle{
     /** Where one of them hides at the end of their first or second way inside the field house. */
     public static Vec3 hidingPlace(int who,int way){var steps=WAYS[who][way];return steps[steps.length-1].at();}
 
-    /** Night three's hunt begun: the field house's doors bolted behind them. */
-    static void bolt(TheListHunt.Hunt h){for(var d:DOORS)h.bolted.add(d);}
+    /** Night three's hunt begun: the field house's back doors bolted; the street door is bolted once they are all in (0.4.739). */
+    static void bolt(TheListHunt.Hunt h){h.bolted.add(DOORS[0]);h.bolted.add(DOORS[1]);}
+
+    // ------------------------------------------------------------------------------------------------ 0.4.739: walking in
+    /**
+     * 0.4.739 (docs/THE_LIST_0_4_739.md): they are not set in the locker room; they come to it. When night three's hunt begins the five
+     * are on Main Street's sidewalk beside the field house, and one after another, a second apart, they go in at the street door, through
+     * the gap in the bench to where each stands. When the last is in, the street door is shut and bolted behind them. One the slasher
+     * startles on the way is the hunt's from there; one held up for {@link #ARRIVE_LIMIT} ticks is let in where they stand.
+     */
+    static final Map<Long,Map<Integer,Arrival>> ARRIVING=new HashMap<>();
+    static final class Arrival{int step;int wait;int still;double best=Double.MAX_VALUE;}
+    public static final int ARRIVE_LIMIT=900,SPACING=20,STUCK=80;
+    static final double WALK=.9;
+    /** Where each starts on the sidewalk, east of the street door, in the order they go in. */
+    static Vec3 start(int i){return new Vec3(-127.5+i*2,0,TheListSite.WALK_S_S-.5);}
+    /** The way in: to the street door from outside, through it, round the corner to the gap in the bench, through it, to their place. */
+    static Vec3[] route(int who){
+        var at=Vec3.atBottomCenterOf(AT[who]);
+        return new Vec3[]{new Vec3(-129.5,0,-109.5),new Vec3(-129.5,0,-107.5),new Vec3(-130.5,0,-106.5),new Vec3(-130.5,0,-103.5),new Vec3(-130.5,0,-102.5),at};
+    }
+    /** The hunt on night three begun: the five put out on the sidewalk, the street door opened for them. */
+    static void arrive(net.minecraft.server.level.ServerLevel l,BlockPos b){
+        var going=new HashMap<Integer,Arrival>();int i=0;
+        for(int who:TheListBody.LISTED){
+            var a=TheListPeople.find(l,b,who);if(a==null||AT[who]==null)continue;
+            var s=Vec3.atLowerCornerOf(b).add(start(i));
+            BorrascaCast.stop(a);a.moveTo(s.x,s.y,s.z,90,0);a.setYBodyRot(90);a.setYHeadRot(90);
+            var r=new Arrival();r.wait=i*SPACING;going.put(who,r);i++;
+        }
+        if(going.isEmpty())return;
+        ARRIVING.put(b.asLong(),going);
+        open(l,b,true);
+    }
+    /** Whether one of them is still on their way in (the town's people leave them be). */
+    public static boolean arriving(BlockPos b,int who){var m=ARRIVING.get(b.asLong());return m!=null&&m.containsKey(who);}
+    /** Whether any of them is still on their way in (for a check). */
+    public static boolean arriving(BlockPos b){var m=ARRIVING.get(b.asLong());return m!=null&&!m.isEmpty();}
+    /** One tick of their walk in. */
+    static void walkIn(net.minecraft.server.level.ServerLevel l,BlockPos b,TheListHunt.Hunt h){
+        var m=ARRIVING.get(b.asLong());if(m==null)return;
+        boolean late=h.tick>=ARRIVE_LIMIT;
+        for(var it=m.entrySet().iterator();it.hasNext();){
+            var e=it.next();int who=e.getKey();var r=e.getValue();
+            var a=TheListPeople.find(l,b,who);
+            if(a==null||TheListHunt.state(b,who)!=TheListHunt.State.CALM){it.remove();continue;}
+            var route=route(who);
+            if(late){settle(a,b,who);it.remove();continue;}
+            if(r.wait>0){r.wait--;continue;}
+            var goal=Vec3.atLowerCornerOf(b).add(route[r.step]);
+            double d=horizontal(a.position(),goal);
+            if(d<.6){
+                if(++r.step>=route.length){settle(a,b,who);it.remove();continue;}
+                goal=Vec3.atLowerCornerOf(b).add(route[r.step]);r.still=0;r.best=Double.MAX_VALUE;d=horizontal(a.position(),goal);
+            }
+            // Held up (by a wall, a bench end, or one of the others in the way): no nearer for a few seconds, they are let past.
+            if(d<r.best-.05){r.best=d;r.still=0;}else if(++r.still>=STUCK){a.moveTo(goal.x,goal.y,goal.z,a.getYRot(),0);r.still=0;r.best=Double.MAX_VALUE;}
+            BorrascaCast.walk(a,goal,WALK);
+        }
+        if(m.isEmpty()){ARRIVING.remove(b.asLong());open(l,b,false);h.bolted.add(STREET_DOOR);}
+    }
+    static double horizontal(Vec3 a,Vec3 g){return Math.hypot(a.x-g.x,a.z-g.z);}
+    /** At their place in the locker room, facing the street door's wall as they all stand. */
+    static void settle(LiteraryActor a,BlockPos b,int who){
+        BorrascaCast.stop(a);var at=Vec3.atBottomCenterOf(b.offset(AT[who]));
+        a.moveTo(at.x,at.y,at.z,180,0);a.setYBodyRot(180);a.setYHeadRot(180);a.setNoGravity(true);
+    }
+    static void open(net.minecraft.server.level.ServerLevel l,BlockPos b,boolean open){
+        for(var at:new BlockPos[]{b.offset(STREET_DOOR),b.offset(STREET_DOOR).above()}){
+            var st=l.getBlockState(at);if(st.getBlock() instanceof net.minecraft.world.level.block.DoorBlock&&st.getValue(net.minecraft.world.level.block.DoorBlock.OPEN)!=open)
+                l.setBlock(at,st.setValue(net.minecraft.world.level.block.DoorBlock.OPEN,open),Block.UPDATE_CLIENTS);
+        }
+    }
+    /** The night put away: nobody is on their way in. */
+    static void reset(BlockPos b){ARRIVING.remove(b.asLong());}
+    public static void clearAll(){ARRIVING.clear();}
 
     // ------------------------------------------------------------------------------------------------ the field's lights
     /** Where the field's lights fall, as light blocks a few blocks over the field and the ground between it and the field house. */
