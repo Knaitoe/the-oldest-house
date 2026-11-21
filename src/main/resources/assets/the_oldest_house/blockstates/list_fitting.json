@@ -1579,7 +1579,7 @@
       "model": "the_oldest_house:block/the_list/poster_5"
     },
     "facing=north,kind=poster,stage=6": {
-      "model": "the_oldest_house:block/the_list/poster_0"
+      "model": "the_oldest_house:block/the_list/poster_6"
     },
     "facing=north,kind=poster,stage=7": {
       "model": "the_oldest_house:block/the_list/poster_0"
@@ -1609,7 +1609,7 @@
       "y": 90
     },
     "facing=east,kind=poster,stage=6": {
-      "model": "the_oldest_house:block/the_list/poster_0",
+      "model": "the_oldest_house:block/the_list/poster_6",
       "y": 90
     },
     "facing=east,kind=poster,stage=7": {
@@ -1641,7 +1641,7 @@
       "y": 180
     },
     "facing=south,kind=poster,stage=6": {
-      "model": "the_oldest_house:block/the_list/poster_0",
+      "model": "the_oldest_house:block/the_list/poster_6",
       "y": 180
     },
     "facing=south,kind=poster,stage=7": {
@@ -1673,7 +1673,7 @@
       "y": 270
     },
     "facing=west,kind=poster,stage=6": {
-      "model": "the_oldest_house:block/the_list/poster_0",
+      "model": "the_oldest_house:block/the_list/poster_6",
       "y": 270
     },
     "facing=west,kind=poster,stage=7": {

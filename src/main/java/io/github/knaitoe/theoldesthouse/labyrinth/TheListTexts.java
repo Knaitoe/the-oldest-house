@@ -372,7 +372,7 @@ public final class TheListTexts {
             case TABLE->stage==1?"A dinette chair. The vinyl is split on the seat.":"The table. Someone's left the salt out.";
             case BED->stage==1?"The foot of the bed. A blanket kicked down.":"Your pillow. It still has the shape of your head in it.";
             case ROOM->switch(stage){case 1->"Your desk. The tape deck has a tape in it, rewound.";case 2->"The clock radio. The numbers glow.";case 3->"The closet. Clothes on hangers, shoes in a heap.";case 4->"A low shelf. Paperbacks with broken spines.";default->"A dresser. The top drawer won't shut all the way.";};
-            case POSTER->switch(stage){case 0->"A band. You know every song on the tape.";case 1->"A film poster, a hooded figure. Tacked up at the corners.";case 2->"The feed store's calendar, still on last month.";case 3->"A pennant from the high school.";case 4->"A picture in a frame. You don't look at it long.";case 5->"Mountains. Somewhere a long way from here.";default->null;};
+            case POSTER->switch(stage){case 6->"A flyer. CURFEW 9 PM, and a drawing of the face in the sack. A phone number under it.";case 0->"A band. You know every song on the tape.";case 1->"A film poster, a hooded figure. Tacked up at the corners.";case 2->"The feed store's calendar, still on last month.";case 3->"A pennant from the high school.";case 4->"A picture in a frame. You don't look at it long.";case 5->"Mountains. Somewhere a long way from here.";default->null;};
             case DEN->switch(stage){case 0,1->"The couch. There's change down between the cushions.";case 2->"The recliner. It leans back on its own.";case 3->"The television. Off. Your face is in it.";case 4->"The lamp on the end table. It's on.";case 5->"The coffee table. Magazines and a coaster.";default->null;};
             case BATH->switch(stage){case 0,1->"The tub. A ring round it at the water line.";case 2->"The toilet. The handle has to be held down.";case 3->"The vanity. A toothbrush in a cup.";case 4->"The mirror. You don't look long.";default->null;};
             case ROOFTOP->switch(stage){case 0->"The swamp cooler, off. It smells of wet straw.";case 1->"The cooler's duct.";case 2->"The aerial. It's bent a little toward Lubbock.";case 3->"A vent stack.";default->null;};
@@ -501,6 +501,9 @@ public final class TheListTexts {
         HUNT_OTHER="Somewhere a screen door bangs, and somebody starts running.",
         // 0.4.721: ten o'clock again on nights three and four, in the kitchen.
         NIGHT3="Ten o'clock. The hay hook is on the kitchen table where you didn't leave it.",
+        // 0.4.723: what comes back, and what the town knows.
+        HOOK_BACK="The hay hook is on your bed.",
+        FLYERS="There's a flyer taped to the kitchen window. CURFEW 9 PM, and under it somebody's drawing of a face in a sack.",
         NIGHT4="Ten o'clock. Over the highway the gin is running. You can hear it from the kitchen.",
         // 0.4.721: first light after the fourth night: the one who went in, and anyone else.
         END_WENT_IN="It gets light over the gin, and the hands are your own again. The tape deck in your room is running.",
