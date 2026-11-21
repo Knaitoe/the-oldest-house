@@ -293,6 +293,8 @@ public final class TheListTexts {
     public static final String FOUND_PRESS="%s is folded in the press's chamber, under the ram.";
     // ------------------------------------------------------------------------------------------------ 0.4.702: the town's people
     /** Who each of them is, as their captions name them; the deputy and the reader's parents go unnamed. */
+    /** 0.4.726: where Stace's plan ends the night, told to the one who went in: the gin, the tower, the playa. */
+    public static final String[] STACE_PLAN={"Over by the tracks, the gin's lights come on all at once.","A flashlight at the foot of the water tower swings once toward you and holds.","Out on the playa a pair of headlights comes on and stays on."};
     public static final String[] NAMES={"Amber","Jenna","Janice","Deek","Wes","Mel","Lesley","Shannon","Stace","The deputy",null,null};
     /** What each says to a reader: the first line, then the second, and the second again after that. */
     private static final String[][] SAID={
@@ -505,6 +507,12 @@ public final class TheListTexts {
         HOOK_BACK="The hay hook is on your bed.",
         FLYERS="There's a flyer taped to the kitchen window. CURFEW 9 PM, and under it somebody's drawing of a face in a sack.",
         // 0.4.724: the deputy, out on his round.
+        /** 0.4.726: Stace's plan, to the one who went in: where it ends (the gin, the tower, the playa); her blow; her last. */
+        STACE_HIT="Something heavy catches you behind the knees.",
+        STACE_FINISHED="She doesn't stop until you stop moving.",
+        /** 0.4.726: Stace, over her head. */
+        STACE_DOWN="Stay there.",
+        STACE_FINISH="That's the last of it.",
         /** 0.4.725: night three, to the one who went in. */
         FIELD_LIT="Over at the school, the field's lights are on.",
         DEPUTY_HEY="Hey. You. Stay right where you are.",

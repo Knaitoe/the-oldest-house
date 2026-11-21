@@ -2406,6 +2406,46 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.726, part 7a: night four, Stace's plan. Begun with all five alive, it ends at the gin: she is there, the one who went in is
+     * told and the House's door is shut to them. Brought to her, they are put down; up again, put down again; the third time she
+     * finishes it, the night is over and the four nights end stopped.
+     */
+    @GameTest(template="empty",batch="the_list_stace",timeoutTicks=6000)
+    public static void stacesPlan(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_stace",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);hold(f,b,TheListPeople.AT);
+        hold(f,b,BlockPos.containing(TheListStace.at(b,TheListStace.GIN)),BlockPos.containing(TheListStace.at(b,TheListStace.TOWER)),BlockPos.containing(TheListStace.at(b,TheListStace.PLAYA)));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);
+            h.assertTrue(TheListNights.begin(p,b,4),"night four begins");
+            h.assertFalse(TheListNight.locked(p),"before her plan the House's door is open");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);h.assertTrue(TheListPeople.find(l,b,TheListPeople.STACE)!=null,"waiting for Stace");})
+        .thenExecute(()->{
+            cues(p);TheListStace.planNow(l,b);
+            h.assertTrue(TheListStace.where(b)==TheListStace.GIN,"with all five alive it ends at the gin");
+            h.assertTrue(cues(p).contains(TheListTexts.STACE_PLAN[TheListStace.GIN]),"they are told where");
+            h.assertTrue(TheListNight.locked(p),"from her plan, the House's door is shut to them");
+            var st=TheListPeople.find(l,b,TheListPeople.STACE);
+            var spot=Vec3.atLowerCornerOf(b).add(TheListStace.at(b,TheListStace.GIN));
+            h.assertTrue(st!=null&&st.position().subtract(spot).horizontalDistance()<1.5,"she is at the gin: "+(st==null?"nowhere":st.position().subtract(Vec3.atLowerCornerOf(b))));
+            var at=st.position().subtract(Vec3.atLowerCornerOf(b));
+            f.at(p,P,at.x+1.5,at.y,at.z);
+        }).thenWaitUntil(()->h.assertTrue(TheListStace.blows(b)>=1&&TheListBody.down(p)>0,"waiting for her first blow"))
+        .thenExecute(()->h.assertTrue(cues(p).contains(TheListTexts.STACE_HIT)&&p.isAlive(),"put down, not dead"))
+        .thenWaitUntil(()->h.assertTrue(TheListStace.blows(b)>=2,"waiting for the second, once they are up: down "+TheListBody.down(p)))
+        .thenWaitUntil(()->h.assertTrue(TheListNight.phase(s,b)==TheListNights.OVER,"waiting for the third: blows "+TheListStace.blows(b)+", down "+TheListBody.down(p)))
+        .thenExecute(()->{
+            h.assertTrue(cues(p).contains(TheListTexts.STACE_FINISHED),"she finishes it");
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("Ready")&&"was_stopped".equals(own.getString("Outcome")),"the four nights end stopped: "+own.getString("Outcome"));
+            h.assertFalse(TheListStace.on(b),"her plan is put away");
+            TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
     /** Where the five stand in the field house on night three. */
     private static BlockPos[] huddle(){var out=new java.util.ArrayList<BlockPos>();for(var a:TheListHuddle.AT)if(a!=null)out.add(a);return out.toArray(BlockPos[]::new);}
     /** Which inventory slot holds the hay hook, or -1. */
