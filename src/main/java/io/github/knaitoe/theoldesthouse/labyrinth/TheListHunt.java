@@ -184,7 +184,7 @@ public final class TheListHunt {
         }
     }
     /** The steps of the way one is on now: their first, their second, or back. */
-    static Step[] steps(Runner r){return r.way<WAYS[r.who].length?WAYS[r.who][r.way]:BACK[r.who];}
+    static Step[] steps(Runner r){return r.way<r.ways.length?r.ways[r.way]:r.back;}
 
     // ------------------------------------------------------------------------------------------------ the town's hunt
     /** One of the five, on the hunt: what they are doing, which way and how far along it, whether they have fought back yet. */
@@ -219,7 +219,9 @@ public final class TheListHunt {
         @Nullable BlockPos augerAt;int drawn;
         /** 0.4.719: in the gin's press (kept when dead), and how far the ram has come. */
         boolean pressed;int ram;
-        Runner(int who,UUID id){this.who=who;this.id=id;}
+        /** 0.4.725: the ways they have tonight: their own, or on night three the field house's (TheListHuddle). */
+        final Step[][] ways;final Step[] back;final boolean huddled;
+        Runner(int who,UUID id,int night){this.who=who;this.id=id;huddled=TheListHuddle.huddled(night);ways=huddled?TheListHuddle.WAYS[who]:WAYS[who];back=huddled?TheListHuddle.BACK[who]:BACK[who];}
     }
     static final class Hunt{
         final BlockPos base;final Map<Integer,Runner> runners=new LinkedHashMap<>();final Set<BlockPos> bolted=new HashSet<>(),sprung=new HashSet<>();int tick;
@@ -294,7 +296,10 @@ public final class TheListHunt {
         TheListPeople.ensure(l,b);
         TheListGin.reset(b);
         var h=new Hunt(b);h.night=Math.max(1,Math.min(4,night));
-        for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID()));}
+        for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID(),h.night));}
+        // 0.4.725: on night three they are in the field house with its doors bolted, and the field's lights are on.
+        if(TheListHuddle.huddled(h.night))TheListHuddle.bolt(h);
+        TheListHuddle.lights(l,b,TheListHuddle.huddled(h.night));
         HUNTS.put(b.asLong(),h);
         TheListPeople.ensure(l,b);
     }
@@ -310,6 +315,7 @@ public final class TheListHunt {
                 if(r.pressed){var out=TheListGin.front(b);a.moveTo(out.x,out.y,out.z,a.getYRot(),0);}}
         }
         TheListGin.shut(l,b);
+        TheListHuddle.lights(l,b,false);
         doors(l,b);
         sweep(l,b);
         tidy(l,b);
@@ -324,6 +330,8 @@ public final class TheListHunt {
         TheListSite.steelDoor(l,b,FIELD_DOOR,Direction.NORTH,false);TheListSite.steelDoor(l,b,FIELD_DOOR.east(),Direction.NORTH,true);
         TheListSite.steelDoor(l,b,PRESS_DOOR,Direction.WEST,false);
         TheListSite.door(l,b,STAND_DOOR,Direction.EAST,true);
+        // 0.4.725: the field house's street door, bolted on night three.
+        TheListSite.steelDoor(l,b,TheListHuddle.STREET_DOOR,Direction.SOUTH,false);
     }
 
     // ------------------------------------------------------------------------------------------------ each tick
@@ -331,7 +339,7 @@ public final class TheListHunt {
     static void tick(ServerLevel l,BlockPos b,List<ServerPlayer> here){
         var h=HUNTS.get(b.asLong());if(h==null)return;h.tick++;
         // 0.4.722: one of the five whose place was not loaded when the hunt began is taken on once they are there.
-        if(h.tick%20==0)for(int who:TheListBody.LISTED)if(!h.runners.containsKey(who)){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID()));}
+        if(h.tick%20==0)for(int who:TheListBody.LISTED)if(!h.runners.containsKey(who)){var a=TheListPeople.find(l,b,who);if(a!=null)h.runners.put(who,new Runner(who,a.getUUID(),h.night));}
         var slashers=new ArrayList<ServerPlayer>();
         for(var p:here){var live=TheListBody.LIVE.get(p.getUUID());if(live!=null&&live.down==0&&!p.isSpectator())slashers.add(p);}
         if(h.fryer)TheListPeople.cornered(l,b);
@@ -386,7 +394,7 @@ public final class TheListHunt {
         boolean seated=a.gesture()==STILL;
         a.setPose(Pose.STANDING);a.gesture(RUNNING);a.setNoGravity(false);
         if(first){
-            if(seated){var up=UP[r.who];a.moveTo(b.getX()+up.x,b.getY()+up.y,b.getZ()+up.z,a.getYRot(),0);}
+            if(seated&&!r.huddled){var up=UP[r.who];a.moveTo(b.getX()+up.x,b.getY()+up.y,b.getZ()+up.z,a.getYRot(),0);}
             scream(l,a);
             say(a,r.who,TheListTexts.RUN[r.who]);
             heard(l,b,h,r,a,here);
@@ -512,7 +520,7 @@ public final class TheListHunt {
         if(r.who==TheListPeople.LESLEY)TheListBody.mark(s,TheListSack.DIRT);
         TheListBody.felled(s,TheListTexts.FELLED[r.who],a.position());
         if(r.state==State.HIDE){
-            if(r.way+1<WAYS[r.who].length){r.way++;run(l,b,h,r,a,here,false);}
+            if(r.way+1<r.ways.length){r.way++;run(l,b,h,r,a,here,false);}
             else{r.state=State.COWER;a.setPose(Pose.CROUCHING);a.gesture(COWERING);}
         }else a.gesture(RUNNING);
     }
