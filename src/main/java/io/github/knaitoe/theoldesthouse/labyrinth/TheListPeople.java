@@ -146,7 +146,9 @@ public final class TheListPeople {
             // (0.4.707); nobody else holds anything.
             var want=who==MEL&&(phase>=TheListNight.PARTY&&phase<=TheListNight.SHUT||TheListHunt.on(b)&&!TheListHunt.dropped(b,MEL))?LiteraryRegistry.CAMCORDER.get()
                 :who==AMBER&&phase==TheListNight.AFTER?net.minecraft.world.item.Items.PAPER
-                :who==DEPUTY&&TheListDeputy.on(l.getServer(),b)?BorrascaRegistry.FLASHLIGHT.get():null;
+                :who==DEPUTY&&TheListDeputy.on(l.getServer(),b)?BorrascaRegistry.FLASHLIGHT.get()
+                // 0.4.727: Stace, from her plan, with the shovel.
+                :who==STACE&&TheListStace.on(b)?net.minecraft.world.item.Items.IRON_SHOVEL:null;
             var held=a.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND);
             if(want!=null&&!held.is(want))a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,new net.minecraft.world.item.ItemStack(want));
             else if(want==null&&!held.isEmpty())a.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);

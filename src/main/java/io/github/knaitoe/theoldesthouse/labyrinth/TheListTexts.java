@@ -348,6 +348,9 @@ public final class TheListTexts {
             if(names.isEmpty())parts.add("I had the hook in my hand. At the end every name on the list was still walking around town.");
             else if(names.size()==TheListBody.LISTED.length)parts.add("There were five names on the list. By the last morning I had been to every one of them.");
             else parts.add("There were five names on the list. By the last morning I had been to "+join(names)+".");
+            // 0.4.727: Stace, on the last night.
+            if(own.getBoolean("StaceDead"))parts.add("On the last night Stace Goodkin came out with a shovel to finish it. She is the one I didn't plan on.");
+            else if(own.getBoolean("Stopped"))parts.add("On the last night Stace Goodkin came out with a shovel and finished it. I didn't get up the third time.");
             if((own.getInt("Rules")&1)!=0)parts.add("Amber wrote one rule in her notebook from the field, in her own hand: he can't run, and doesn't need to.");
         }else parts.add("Somebody else had the sack and the hook. I was in town when it got light the last time.");
         parts.add("The list was five names long.");
@@ -510,6 +513,10 @@ public final class TheListTexts {
         /** 0.4.726: Stace's plan, to the one who went in: where it ends (the gin, the tower, the playa); her blow; her last. */
         STACE_HIT="Something heavy catches you behind the knees.",
         STACE_FINISHED="She doesn't stop until you stop moving.",
+        /** 0.4.727: Stace fought: staggered, down, finished. */
+        STACE_STAGGERS="She stumbles back with the shovel up, and keeps her feet.",
+        STACE_FALLS="She goes down in the dirt. The shovel is under her.",
+        STACE_KILLED="Stace Goodkin stops moving.",
         /** 0.4.726: Stace, over her head. */
         STACE_DOWN="Stay there.",
         STACE_FINISH="That's the last of it.",

@@ -527,6 +527,8 @@ public final class TheListHunt {
     /** A blow from the slasher on one of them: one at their place runs; one hiding is found; one running fights back if they have not. */
     public static void struck(ServerPlayer p,LiteraryActor a){
         var b=TheListBody.town(p);if(b==null)return;var h=HUNTS.get(b.asLong());if(h==null)return;
+        // 0.4.727: Stace, once her plan has begun, is fought on her own terms.
+        if(TheListPeople.who(a)==TheListPeople.STACE){if(TheListStace.on(b))TheListStace.struck(p,a,b);return;}
         var r=h.runners.get(TheListPeople.who(a));if(r==null||!r.id.equals(a.getUUID())||!TheListBody.LIVE.containsKey(p.getUUID())||TheListBody.down(p)>0)return;
         var l=p.serverLevel();var here=TheList.readers(l,b);
         switch(r.state){

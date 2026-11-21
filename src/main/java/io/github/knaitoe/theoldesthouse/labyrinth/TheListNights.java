@@ -82,7 +82,7 @@ public final class TheListNights{
     static void light(ServerLevel l,TheListNight.Night n,boolean bed){
         int night=nightOf(n.phase);
         for(int who:TheListBody.LISTED)if(TheListHunt.dead(n.base,who))n.dead|=1<<who;
-        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(n.base);
+        TheListHunt.end(l,n.base);TheListDeputy.reset(l,n.base);TheListStace.reset(l,n.base);
         n.time=TheListNight.LIGHT;n.since=0;n.bed=bed;
         n.phase=night==2?DONE2:night==3?DONE3:OVER;
         var d=LabyrinthData.get(l.getServer());
