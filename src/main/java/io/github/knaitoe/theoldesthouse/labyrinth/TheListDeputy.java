@@ -40,7 +40,7 @@ public final class TheListDeputy{
     /** Never fired: far enough back that the wait before firing again is long over. */
     static final long NEVER=-1_000_000L;
 
-    static final class Patrol{int step;int still;@Nullable Vec3 last;@Nullable BlockPos beam;int seen;int unseen;long firedAt=NEVER;boolean called;}
+    static final class Patrol{int step;int still;@Nullable Vec3 last;@Nullable BlockPos beam;int seen;int unseen;long firedAt=NEVER;boolean called;@Nullable Vec3 radio;long radioUntil;}
     static final Map<Long,Patrol> PATROLS=new HashMap<>();
     public static void clearAll(){PATROLS.clear();}
 
@@ -89,6 +89,14 @@ public final class TheListDeputy{
         walk(l,a,b,p);
     }
     static void walk(ServerLevel l,LiteraryActor a,BlockPos b,Patrol p){
+        // 0.4.736: called by the patrol car, he goes where it saw them, quicker, until he gets there or the call is old.
+        if(p.radio!=null){
+            if(l.getGameTime()<p.radioUntil&&a.position().distanceToSqr(p.radio)>2.25){
+                if(p.last!=null&&a.position().distanceToSqr(p.last)<.0004){if(++p.still>=STUCK){a.moveTo(p.radio.x,p.radio.y,p.radio.z,a.getYRot(),0);p.still=0;}}else p.still=0;
+                p.last=a.position();BorrascaCast.walk(a,p.radio,WALK*1.6);return;
+            }
+            p.radio=null;p.step=nearest(a,b);
+        }
         var goal=Vec3.atLowerCornerOf(b).add(ROUND[p.step]);
         if(a.position().distanceToSqr(goal)>.5){
             if(p.last!=null&&a.position().distanceToSqr(p.last)<.0004){if(++p.still>=STUCK){a.moveTo(goal.x,goal.y,goal.z,a.getYRot(),0);p.still=0;}}else p.still=0;
@@ -131,6 +139,10 @@ public final class TheListDeputy{
     public static boolean aiming(BlockPos b){var p=PATROLS.get(b.asLong());return p!=null&&p.seen>0;}
     public static boolean fired(BlockPos b){var p=PATROLS.get(b.asLong());return p!=null&&p.firedAt!=NEVER;}
     public static @Nullable BlockPos beamAt(BlockPos b){var p=PATROLS.get(b.asLong());return p==null?null:p.beam;}
+    /** 0.4.736: the patrol car has seen the one who went in: the deputy goes there, for so many ticks at most. */
+    static void radio(ServerLevel l,BlockPos b,Vec3 at,int ticks){var p=PATROLS.get(b.asLong());if(p==null)return;p.radio=at;p.radioUntil=l.getGameTime()+ticks;p.still=0;p.last=null;}
+    /** Where the patrol car last called him to, if he is still on his way (for a check). */
+    public static @Nullable Vec3 called(BlockPos b){var p=PATROLS.get(b.asLong());return p==null?null:p.radio;}
     /** Which point of his round he is walking to (for a check). */
     public static int step(BlockPos b){var p=PATROLS.get(b.asLong());return p==null?-1:p.step;}
 }

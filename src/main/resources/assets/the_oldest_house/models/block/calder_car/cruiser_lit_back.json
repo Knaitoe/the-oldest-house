@@ -1,0 +1,266 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bar_blue": "the_oldest_house:block/calder_car/bar_blue",
+    "bar_red": "the_oldest_house:block/calder_car/bar_red",
+    "taillight": "the_oldest_house:block/calder_car/taillight",
+    "particle": "the_oldest_house:block/calder_car/taillight"
+  },
+  "elements": [
+    {
+      "from": [
+        -10.35,
+        8,
+        -6
+      ],
+      "to": [
+        -10,
+        11,
+        -1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#taillight",
+          "uv": [
+            4,
+            5,
+            4.35,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            5,
+            12,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#taillight",
+          "uv": [
+            9,
+            5,
+            14,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#taillight",
+          "uv": [
+            2,
+            5,
+            7,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            2,
+            12,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            9,
+            12,
+            14
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        -10.35,
+        8,
+        17
+      ],
+      "to": [
+        -10,
+        11,
+        22
+      ],
+      "faces": {
+        "north": {
+          "texture": "#taillight",
+          "uv": [
+            4,
+            5,
+            4.35,
+            8
+          ]
+        },
+        "south": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            5,
+            12,
+            8
+          ]
+        },
+        "east": {
+          "texture": "#taillight",
+          "uv": [
+            2,
+            5,
+            7,
+            8
+          ]
+        },
+        "west": {
+          "texture": "#taillight",
+          "uv": [
+            9,
+            5,
+            14,
+            8
+          ]
+        },
+        "up": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            9,
+            12,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#taillight",
+          "uv": [
+            11.65,
+            2,
+            12,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        23,
+        23.6,
+        -2.5
+      ],
+      "to": [
+        26,
+        25.4,
+        7.8
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bar_red",
+          "uv": [
+            0,
+            6.6,
+            3,
+            8.4
+          ]
+        },
+        "south": {
+          "texture": "#bar_red",
+          "uv": [
+            13,
+            6.6,
+            16,
+            8.4
+          ]
+        },
+        "west": {
+          "texture": "#bar_red",
+          "uv": [
+            5.5,
+            6.6,
+            15.8,
+            8.4
+          ]
+        },
+        "up": {
+          "texture": "#bar_red",
+          "uv": [
+            13,
+            5.5,
+            16,
+            15.8
+          ]
+        },
+        "down": {
+          "texture": "#bar_red",
+          "uv": [
+            13,
+            0.2,
+            16,
+            10.5
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        23,
+        23.6,
+        8.2
+      ],
+      "to": [
+        26,
+        25.4,
+        18.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#bar_blue",
+          "uv": [
+            0,
+            6.6,
+            3,
+            8.4
+          ]
+        },
+        "south": {
+          "texture": "#bar_blue",
+          "uv": [
+            13,
+            6.6,
+            16,
+            8.4
+          ]
+        },
+        "west": {
+          "texture": "#bar_blue",
+          "uv": [
+            0.2,
+            6.6,
+            10.5,
+            8.4
+          ]
+        },
+        "up": {
+          "texture": "#bar_blue",
+          "uv": [
+            13,
+            0.2,
+            16,
+            10.5
+          ]
+        },
+        "down": {
+          "texture": "#bar_blue",
+          "uv": [
+            13,
+            5.5,
+            16,
+            15.8
+          ]
+        }
+      }
+    }
+  ]
+}

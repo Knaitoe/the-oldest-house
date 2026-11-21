@@ -43,14 +43,15 @@ NS = 'the_oldest_house:'
 DIR = 'block/calder_car/'
 P = NS + DIR
 # The four that drive, and two that stand in the burger place's lot all night (0.4.485): a sedan and a pickup in other paint.
-KINDS = ('wagon', 'pickup', 'sedan', 'muscle', 'blue', 'white')
+# 0.4.736: and The list's deputy's patrol car, a sedan in two tones with a light bar (TownCar.CRUISER).
+KINDS = ('wagon', 'pickup', 'sedan', 'muscle', 'blue', 'white', 'cruiser')
 FACES = ('north', 'south', 'east', 'west', 'up', 'down')
 # Half a car's length and half its width, in pixels; where its axles are along it; a wheel's radius, and how high its hub is.
 L, W = 36, 15
 AXLE, RADIUS, HUB = 21, 5.5, 5.5
 # What is added to a car's own x to put each half inside a model's reach, and to its z.
 FRONT, BACK, ACROSS = -10, 26, 8
-PAINT = {'wagon': '#c4b188', 'pickup': '#8c392c', 'sedan': '#2e4a3d', 'muscle': '#b5461f', 'blue': '#4f7391', 'white': '#d6d2c6'}
+PAINT = {'wagon': '#c4b188', 'pickup': '#8c392c', 'sedan': '#2e4a3d', 'muscle': '#b5461f', 'blue': '#4f7391', 'white': '#d6d2c6', 'cruiser': '#dcdbd5'}
 SLIP = .05
 # 0.4.715: the blue sedan's driver's door, along the car between its back and front edges; where it hinges (x, z); and what is added to
 # the car's own x and z to put the door's model in a model's reach.
@@ -71,6 +72,12 @@ def side(kind, seed):
         dot(im, 0, y, shade(PAINT[kind], -30))
     fill(im, 0, 6, 16, 7, '#c9ccd0')
     fill(im, 0, 11, 16, 13, shade(PAINT[kind], -42))
+    if kind == 'cruiser':
+        # 0.4.736: the patrol car's two tones: dark below the belt, its own paint above.
+        for y in range(7, 16):
+            for x in range(1, 16):
+                dot(im, x, y, shade('#1d1f22', (x * 7 + y * 3) % 5 - 2))
+        fill(im, 0, 7, 16, 8, '#c9ccd0')
     return im
 
 
@@ -211,7 +218,8 @@ def textures():
     out.update({DIR + 'muscle_top.png': striped('muscle', 48140), DIR + 'wood.png': wood(), DIR + 'vinyl.png': vinyl(), DIR + 'glass.png': glass(),
                 DIR + 'inside.png': inside(), DIR + 'chrome.png': chrome(), DIR + 'grille.png': grille(), DIR + 'headlight.png': headlight(),
                 DIR + 'taillight.png': taillight(), DIR + 'tyre.png': tyre(), DIR + 'hubcap.png': hubcap(), DIR + 'under.png': under(),
-                DIR + 'pumpkin.png': pumpkin(), DIR + 'bed.png': bed(), DIR + 'doorcard.png': doorcard(), DIR + 'seat.png': seat()})
+                DIR + 'pumpkin.png': pumpkin(), DIR + 'bed.png': bed(), DIR + 'doorcard.png': doorcard(), DIR + 'seat.png': seat(),
+                DIR + 'bar_red.png': bar('#d0281f', 48150), DIR + 'bar_blue.png': bar('#2a52c9', 48151)})
     return out
 
 
@@ -359,6 +367,26 @@ def sedan(name='sedan', door=None):
     return c
 
 
+def cruiser():
+    """0.4.736: The list's deputy's patrol car: the sedan in two tones with its own roof, a spotlight on the driver's pillar, and a light
+    bar across the roof whose two lamps are lit."""
+    c = Car('cruiser'); lower(c)
+    cabin(c, -17, 13, pillars=((11, 13, False), (-3, -1, True), (-17, -15, False)))
+    box(c.body, [10.6, 17.4, -16.2], [12.4, 18.8, -14.6], 'chrome')                      # the spotlight, on the driver's pillar
+    box(c.body, [-3.5, 23.05, -11], [3.5, 23.6, 11], {'all': 'chrome', 'under': 'under'})   # the bar's base, on the roof
+    box(c.lit, [-3, 23.6, -10.5], [3, 25.4, -0.2], 'bar_red')                            # the bar: one lamp each side
+    box(c.lit, [-3, 23.6, 0.2], [3, 25.4, 10.5], 'bar_blue')
+    return c
+
+
+def bar(colour, seed):
+    """0.4.736: a lamp of the patrol car's light bar, lit: its colour behind ribbed glass."""
+    im = new(colour, seed, 4)
+    for x in range(0, 16, 3):
+        fill(im, x, 0, x + 1, 16, shade(colour, 40))
+    return im
+
+
 def interior(c, door):
     """0.4.715: what is seen through the open door: the far side's lining, the bench seat and its back, the wheel on its column, the
     dash, and the inside of the windscreen and of the roof over the front."""
@@ -404,7 +432,7 @@ def muscle():
     return c
 
 
-CARS = {'wagon': wagon, 'pickup': pickup, 'sedan': sedan, 'muscle': muscle, 'blue': lambda: sedan('blue'), 'white': lambda: pickup('white', False)}
+CARS = {'wagon': wagon, 'pickup': pickup, 'sedan': sedan, 'muscle': muscle, 'blue': lambda: sedan('blue'), 'white': lambda: pickup('white', False), 'cruiser': cruiser}
 
 
 def wheel(wide):
