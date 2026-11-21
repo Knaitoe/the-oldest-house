@@ -275,6 +275,52 @@ public final class StaircaseLeakTests {
                 h.assertTrue(f.level.getBlockState(door[0]).equals(wall[0])&&f.level.getBlockState(door[0].west(4)).equals(wall[1]),"once used and left behind, the wall and the landing's rail are put back as they were");s[0]=99;}
         });
     }
+    /**
+     * Two readers read the same household sheet and go through the one door: each is given their own room, the chores one does
+     * leave the other's room and count alone, a spectator at the door is let into nothing, and a reader who logs out part way is
+     * set back outside without touching the other's room, then comes back and is given a room of their own again.
+     */
+    @GameTest(template="empty",batch="household_two",timeoutTicks=3000)
+    public static void twoReadersThroughOneHouseholdDoorEachHaveTheirOwnRoom(GameTestHelper h){
+        ServerPlayer[] p={null,null,null};BlockPos[] door={null},bases={null,null};long[] born={0};String[] name={null};java.util.UUID[] id={null};
+        run(h,666000,2900,(f,s)->{
+            long now=f.level.getGameTime();var paper=paper(f);
+            if(s[0]==0){door[0]=StaircaseHousehold.doorAt(f.origin,paper);f.chunks.hold(f.level,new AABB(door[0]).inflate(8));
+                p[0]=f.player(h,"house_two_a");p[1]=f.player(h,"house_two_b");read(f,p[0],15);read(f,p[1],15);
+                p[2]=f.player(h,"house_two_eye");p[2].setGameMode(net.minecraft.world.level.GameType.SPECTATOR);born[0]=now;s[0]=1;return;}
+            if(s[0]==1&&now-born[0]>=22){throughDoor(f,p[0],door[0]);throughDoor(f,p[1],door[0]);throughDoor(f,p[2],door[0]);s[0]=2;return;}
+            if(s[0]==2&&StaircaseLeaks.active(p[0])&&StaircaseLeaks.active(p[1])){
+                bases[0]=StaircaseLeaks.activeBase(p[0]);bases[1]=StaircaseLeaks.activeBase(p[1]);
+                h.assertTrue(!bases[0].equals(bases[1]),"each reader through the one door is given their own room: "+bases[0]+" / "+bases[1]);
+                h.assertTrue(StaircaseLeaks.activeKind(p[0])==StaircaseLeakRooms.Kind.BEDROOM&&StaircaseLeaks.activeKind(p[1])==StaircaseLeakRooms.Kind.BEDROOM,"both sheets open Fresh sheets");
+                h.assertTrue(!StaircaseLeaks.active(p[2])&&!StaircaseLeaks.offered(p[2]),"a spectator at the door is let into nothing");
+                var before=StaircaseLeaks.progress(p[1]).copy();
+                p[0].teleportTo(f.level,bases[0].getX()+.5,bases[0].getY(),bases[0].getZ()-3.5,180,0);
+                StaircaseLeakChores.interact(p[0],bases[0].offset(StaircaseHouseholdRooms.BASKET));StaircaseLeakChores.interact(p[0],bases[0].offset(StaircaseHouseholdRooms.FOLD));
+                h.assertTrue(prop(f,bases[0].offset(StaircaseHouseholdRooms.FOLD))==StaircaseLeakProps.Kind.SHEET_ONE_END,"one end of the first reader's sheet in their hands");
+                h.assertTrue(prop(f,bases[1].offset(StaircaseHouseholdRooms.FOLD))!=StaircaseLeakProps.Kind.SHEET_ONE_END,"the second reader's sheet is not lifted");
+                h.assertTrue(StaircaseLeaks.progress(p[1]).equals(before),"and the second reader's progress is as it was: "+StaircaseLeaks.progress(p[1]));
+                // The first reader cannot work the second's room from inside their own.
+                StaircaseLeakChores.interact(p[0],bases[1].offset(StaircaseHouseholdRooms.BASKET));
+                h.assertTrue(StaircaseLeaks.progress(p[1]).equals(before),"a chore aimed at the other's room counts for nobody");
+                name[0]=p[1].getGameProfile().getName();id[0]=p[1].getUUID();f.players.remove(p[1]);NativeTestPlayers.remove(p[1]);s[0]=3;return;}
+            if(s[0]==3){
+                h.assertTrue(!StaircaseLeaks.active(f.level.getServer(),id[0]),"the reader who logged out is no longer in their room");
+                h.assertTrue(StaircaseLeaks.active(p[0])&&StaircaseLeaks.activeBase(p[0]).equals(bases[0]),"the one who stayed is still in their own room");
+                h.assertTrue(prop(f,bases[0].offset(StaircaseHouseholdRooms.FOLD))==StaircaseLeakProps.Kind.SHEET_ONE_END,"with the sheet still in their hands");
+                p[1]=NativeTestPlayers.survival(h,name[0],id[0]);p[1].setNoGravity(true);f.players.add(p[1]);born[0]=now;s[0]=4;return;}
+            if(s[0]==4&&now-born[0]>=5){
+                h.assertTrue(!StaircaseLeaks.active(p[1]),"back on the same id, the reader is outside the room");
+                p[1].teleportTo(f.level,paper.getX()+.5,paper.getY(),paper.getZ()+1.5,0,0);read(f,p[1],15);born[0]=now;s[0]=5;return;}
+            if(s[0]==5&&now-born[0]>=22){throughDoor(f,p[1],door[0]);s[0]=6;return;}
+            if(s[0]==6&&StaircaseLeaks.active(p[1])){
+                var b=StaircaseLeaks.activeBase(p[1]);
+                h.assertTrue(!b.equals(StaircaseLeaks.activeBase(p[0])),"the returning reader is given a room of their own again: "+b);
+                h.assertTrue(StaircaseLeaks.activeKind(p[1])==StaircaseLeakRooms.Kind.BEDROOM&&StaircaseLeaks.progress(p[1]).getInt("Folded")==0,"Fresh sheets again, with nothing folded");
+                var fold=prop(f,bases[0].offset(StaircaseHouseholdRooms.FOLD));
+                h.assertTrue(StaircaseLeaks.active(p[0])&&StaircaseLeaks.activeBase(p[0]).equals(bases[0])&&fold!=null,"and the first reader is still in their own room with their sheet: "+fold);s[0]=99;}
+        });
+    }
     /** Reads a household source and goes through the door it leaves. */
     private static void throughDoor(StaircaseAccessTests.Fixture f,ServerPlayer p,BlockPos door){p.closeContainer();p.teleportTo(f.level,door.getX()-1.5,door.getY(),door.getZ()+.5,-90,0);StaircaseHousehold.useDoor(p,door);}
     private static StaircaseLeakProps.Kind prop(StaircaseAccessTests.Fixture f,BlockPos at){var st=f.level.getBlockState(at);return st.is(StaircaseLeakRegistry.PROP.get())?st.getValue(StaircaseLeakProps.KIND):null;}
