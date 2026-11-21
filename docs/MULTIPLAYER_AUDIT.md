@@ -27,6 +27,14 @@ a story that changes how it holds readers changes its row here.
   people are held to the cast checks for each reader (`CastConduct`).
 - **`TogetherConductTests`** (namespace `together`, 18 cases, 0.4.564): the same for the talking scenes, with both readers walking the
   conversation panel's branches.
+- **`GroupSweepTests`** (namespace `group`, 90 cases, 0.4.740, its own CI job `group-sweep`): more than two. Each story is built as
+  the House builds it and readers come in one at a time through the House's door: a party's story takes a full party and one more
+  (two, three and the full party are each checked in one copy, the one more goes to a second); the lake house and the Pell house take
+  three (the pair together, the third in a second house); a private story takes three, each in a copy of their own, and a fourth is
+  turned away while the server allows no more copies; a story that is one room for everyone takes six. Each reads their own paper, and
+  nobody's reading is anybody else's. A spectator walks into the first copy: not in the story, no place held, nothing read or earned at
+  the paper. The first reader drops out of the game: every copy stands, nobody else is put out of their copy or loses what they read.
+  The first reader comes back as the same player: their door opens onto the copy they were in, with their reading still theirs.
 - **The copy cases** (`LiteraryTests`, and each story's own): a party or a one-at-a-time story full to the next reader, who goes to a
   copy that matches the first block for block, with its own people and clock.
 
@@ -155,6 +163,20 @@ test's reader who has just been put down beside someone or has turned round, the
 Lady gliding out over Bly's pond, somebody who has said something new looking where that goes, and Camp Blood's man killing a reader
 who walks up to him.
 
+## The sweep (0.4.740)
+
+The owner: "running additional redundancy tests for multiplayer capabilities for each vignette", and "Two or more. Looking for
+exclusively two may cause you to overlook things". `GroupSweepTests` (above) takes every story in the two-reader cases, 90, plus the
+lodging house and the List, which the two-reader sweep did not have.
+
+The first run: 89 of 90 passed. The one failure was the check: at Camp Blood the man kills whoever he reaches while a party of seven
+gathers at the door, as the story is written, and a dead reader cannot read. The readers he reaches are no longer asked to read; the
+living still are, and still keep what they read when one drops out. With that corrected, all 90 pass.
+
+What the sweep does not reach: the stories the House builds for each reader where they are (the backseat's road, the silo, Drisking,
+the family copy); a reader who drops out mid-way through a story's own later beats (the sweep drops them after arrival and the paper;
+each story's own cases cover its later beats); and a spectator's view, which only the client checks see.
+
 ## Since the audit
 
 What has changed in how readers are held, release by release, since 0.4.565:
@@ -242,6 +264,7 @@ What has changed in how readers are held, release by release, since 0.4.565:
 - **0.4.716, The list: the pumpjack.** Each well's stroke, brake and stall are shared: everyone who can see a jack sees it nod, stop and stand, and everyone near hears the brake and the motor. The brake is anyone's who is not a spectator, with or without a hunt. Only the reader holding one of the five forces them down under the weight, and only with the weight clear; with one of them under it, another reader's hand on them finds them held down, and their hand on the gearbox hauls the brake on, which keeps the weight off until the slasher's hand knocks it off again. The kill is the record of the slasher, even logged off. The holder's walk stays stilled and the House's door shut until the one under the weight is dead. Everyone in town within forty blocks who is not the slasher is told from which way the scream stopped, and each reader who is not the slasher finds the body at the jack for themselves, once a hunt. Proved by `TheListTests.theJack`: a second reader hauls the brake on and knocks it off, the well standing for them and running on from where it stood; their hand on the one under the weight changes nothing; their brake keeps the weight off until the slasher's hand; they hear the scream and the motor, are told the scream stopped, and find him at the pumpjack.
 - **0.4.717, The list: the stock tank.** The splash, the churn and the gasps are heard and seen by everyone near. Only the reader holding one of the five puts them over the rim, and only theirs puts the head back under; another reader's hand on them, or on the wall there, finds them held under and changes nothing. The kill is the record of the slasher, even logged off. The holder's walk stays stilled and the House's door shut until the one in the water is dead. Everyone in town within forty blocks who is not the slasher is told from which way the scream stopped, and each reader who is not the slasher finds the body at the tank for themselves, once a hunt. Proved by `TheListTests.theTank`: a second reader's hand on the wall is a look, their hand on the one held under and on the wall changes nothing, they hear him go under, are told the scream stopped, and find him at the tank.
 - **0.4.718, The list: the gin's auger.** The line running, its switch, the lint and the blood are the same for everyone in town; the switch is anyone's who is not a spectator, so another reader can stop the screw and let the one in it fight free, and the slasher, let go once the screw has them, can throw it on again. A hand on the one in the trough, the slasher's or anyone's, changes nothing. The kill is the record of the slasher who put them in, even logged off. Everyone in town within forty blocks who is not the slasher is told from which way the scream stopped, and each reader who is not the slasher finds the body in the auger for themselves, once a hunt. The gin runs only on the fourth night. Proved by `TheListTests.theAuger`: the switch only clicks on the first night; a second reader's hand on him and on the auger changes nothing; they hear him go in, throw the switch and stop the screw, are told the scream stopped, find the switch jammed and find him in the auger.
+- **0.4.740, the sweep.** No change in how any story holds readers; the sweep above checks it at more than two.
 - **0.4.739, The list: the five walk in.** Shared actors seen by everyone; one the slasher startles on the way is the hunt's at once, and the street door stays open until the last is in, so any reader can follow them in or be shut out.
 - **0.4.738, The list: the field's banks lit.** Shared scenery: the banks come on and go out with the field's lights, the same for everyone in town.
 - **0.4.737, The list: the town out with flashlights.** Three searchers per town, seen by everyone; they look only for the one who went in, only that reader is told when they come to the house (their own read), and a spectator is never found or told.

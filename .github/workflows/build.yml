@@ -1317,6 +1317,104 @@ jobs:
             build/native-gametest-rest.log
           if-no-files-found: ignore
 
+  group-sweep:
+    # 0.4.740: the multiplayer sweep (GroupSweepTests, docs/MULTIPLAYER_AUDIT.md), every story with as many readers as its door is
+    # written for and one more, a reader who drops out and comes back, and a spectator. The third group in tools/structure_groups.py.
+    needs: quick
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.1'
+      - name: Multiplayer sweep, every story
+        # The limit is for a hang, not a slow machine: these cases took about 50 minutes inside run 1575's complete suite.
+        timeout-minutes: 95
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx6g
+        run: |
+          mkdir -p build run
+          printf 'view-distance=3\nsimulation-distance=3\n' > run/server.properties
+          python3 - <<'PY' &
+          import pathlib, subprocess, time
+          folder = pathlib.Path('build/gametest-diagnostics')
+          folder.mkdir(parents=True, exist_ok=True)
+          # JVM housekeeping threads; everything else is printed to the log so
+          # a stalled game server can be read without downloading the artifact.
+          quiet = ('GC Thread', 'G1 ', 'CompilerThread', 'VM Thread', 'VM Periodic', 'Signal Dispatcher',
+                   'Finalizer', 'Reference Handler', 'Common-Cleaner', 'Notification Thread', 'Service Thread',
+                   'Attach Listener', 'Monitor Deflation', 'JNI global', 'Heap', 'Timer hack thread')
+          for elapsed in (90, 180):
+              time.sleep(90)
+              listing = subprocess.check_output(['jps', '-l'], text=True)
+              (folder / f'processes-{elapsed}.txt').write_text(listing)
+              for process in listing.splitlines():
+                  if not any(name in process for name in ('BootstrapLauncher', 'devlaunch.Main', 'gametest.Main')):
+                      continue
+                  pid = process.split()[0]
+                  dump = subprocess.run(['jstack', pid], capture_output=True, text=True, timeout=30).stdout
+                  (folder / f'threads-{elapsed}-{pid}.txt').write_text(dump)
+                  blocks = [b for b in dump.split('\n\n') if b.strip() and not any(q in b.split('\n')[0] for q in quiet)]
+                  print(f'::group::Game server threads at {elapsed}s ({process})', flush=True)
+                  print('\n\n'.join(blocks), flush=True)
+                  print('::endgroup::', flush=True)
+          PY
+          diagnostic=$!
+          trap 'kill "$diagnostic" 2>/dev/null || true' EXIT
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 90m gradle runGameTestServer "-PgameTestNamespaces=$(python3 tools/structure_groups.py namespaces sweep)" --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/native-gametest-sweep.log
+          python3 - <<'PY'
+          import re, subprocess
+          from pathlib import Path
+          log = Path('build/native-gametest-sweep.log').read_text()
+          passed = re.findall(r'All (\d+) required tests passed', log)
+          assert 'OutOfMemoryError' not in log, 'The native test server exhausted its heap; failed native chunk saves are not valid verification.'
+          declared = int(subprocess.check_output(['python3', 'tools/structure_groups.py', 'declared', 'sweep'], text=True))
+          assert passed, 'The native server never completed its required tests; a successful process exit is insufficient.'
+          assert int(passed[-1]) >= declared, f'Only {passed[-1]} native tests completed; {declared} are declared in the sweep.'
+          print(f'Native gameplay verified, the multiplayer sweep: {passed[-1]} completed tests, {declared} declared. The build job runs the main half.')
+          PY
+
+      - name: Publish failed game tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          log = Path('build/native-gametest-sweep.log')
+          if not log.exists():
+              print('::error title=Failed game test::no game test log was written')
+              raise SystemExit(0)
+          lines = log.read_text(errors='replace').splitlines()
+          keys = re.compile(r'(failed|FAILED|Exception|exception|Error|required tests|timed out|Caused by)')
+          picked = []
+          for i, line in enumerate(lines):
+              if keys.search(line) and 'Node.js' not in line:
+                  text = re.sub(r'^\[[^]]*\] \[[^]]*\] \[[^]]*\]: ', '', line).strip()
+                  detail = ' | '.join(l.strip() for l in lines[i + 1:i + 3])
+                  entry = (text + ' :: ' + detail)[:900]
+                  if entry not in picked:
+                      picked.append(entry)
+          tail = ' | '.join(l.strip() for l in lines[-12:])[:3000]
+          for entry in picked[:9]:
+              print('::error title=Failed game test::' + entry.replace('%', '%25'))
+          print('::error title=Game test log tail::' + tail.replace('%', '%25'))
+          PY
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: group-sweep-diagnostics-${{ github.sha }}
+          path: |
+            build/gametest-diagnostics/
+            build/native-gametest-sweep.log
+          if-no-files-found: ignore
+
   hotel-gameplay:
     needs: quick
     runs-on: ubuntu-latest

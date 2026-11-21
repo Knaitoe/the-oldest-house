@@ -138,6 +138,7 @@ public final class TogetherSceneTests {
     }
     /** Stories whose people kill a reader who walks up to them, as these readers walk up to everyone: Camp Blood's man. */
     private static final Set<LabyrinthPlace> DEADLY=EnumSet.of(LabyrinthPlace.CAMP_BLOOD);
+    static boolean deadly(LabyrinthPlace place){return DEADLY.contains(place);}
     /** A story whose paper is read on its own native page surface, at {@link LiteraryRooms#source}. */
     private static boolean paper(LabyrinthPlace place){return LiteraryRooms.isLiterary(place)&&!NO_PAPER.contains(place);}
     /** Literary stories whose source is not read on a page surface where the reader stands: each case says why. */
