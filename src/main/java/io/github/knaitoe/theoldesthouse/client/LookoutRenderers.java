@@ -79,5 +79,5 @@ public final class LookoutRenderers {
         @Override protected boolean shouldShowName(LiteraryActor a){return false;}
     }
     /** Only the reader whose tower it is sees their own figures. */
-    public static boolean owned(LiteraryActor a){var p=Minecraft.getInstance().player;return a.owner().isEmpty()||p!=null&&a.owner().get().equals(p.getUUID());}
+    public static boolean owned(LiteraryActor a){return a.owner().isEmpty()||SpectatorView.is(a.owner().get());}
 }

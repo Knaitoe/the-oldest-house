@@ -25,7 +25,7 @@ public final class LakeHouseDress extends Display.BlockDisplay {
     }
     private static net.minecraft.nbt.ListTag floats(float... values){var list=new net.minecraft.nbt.ListTag();for(float v:values)list.add(net.minecraft.nbt.FloatTag.valueOf(v));return list;}
     /** Only the reader sees their displays; 0.4.156: the dresses are also seen by the reader who goes down in Tess's place with them. */
-    @Override public boolean broadcastToPlayer(ServerPlayer p){return reader!=null&&(reader.equals(p.getUUID())||dress()&&LakeHousePairs.sharesWith(p,reader))&&!p.isSpectator()&&super.broadcastToPlayer(p);}
+    @Override public boolean broadcastToPlayer(ServerPlayer p){if(p.isSpectator()){var watch=SpectatorWatch.watched(p);if(watch!=null)return broadcastToPlayer(watch);}return reader!=null&&(reader.equals(p.getUUID())||dress()&&LakeHousePairs.sharesWith(p,reader))&&!p.isSpectator()&&super.broadcastToPlayer(p);}
     private boolean dress(){return paintedState.is(LakeHouseRegistry.FITTING.get())&&paintedState.getValue(LakeHouseFittingBlock.KIND)==LakeHouseFittingBlock.Kind.DRESS;}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);if(reader!=null)t.putUUID("LakeReader",reader);}
     @Override public void readAdditionalSaveData(CompoundTag t){super.readAdditionalSaveData(t);reader=t.hasUUID("LakeReader")?t.getUUID("LakeReader"):null;paintedState=net.minecraft.nbt.NbtUtils.readBlockState(level().holderLookup(net.minecraft.core.registries.Registries.BLOCK),t.getCompound("block_state"));}

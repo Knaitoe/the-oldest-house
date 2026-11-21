@@ -124,6 +124,7 @@ public final class LakeWitchEntity extends PathfinderMob {
     @Override public boolean isPickable(){return (!memory()||memoryPhase()<=Shallows.CARRIED)&&super.isPickable();}
     public @Nullable UUID memoryOwner() { return memoryOwner; }
     @Override public boolean broadcastToPlayer(ServerPlayer player){
+        if(player.isSpectator()){var watch=SpectatorWatch.watched(player);if(watch!=null)return broadcastToPlayer(watch);}
         // 0.4.157: a recollection is also sent to the readers who joined it.
         return (!memory()||memoryOwner!=null&&(memoryOwner.equals(player.getUUID())||Shallows.sharesMemory(player,memoryOwner)))&&super.broadcastToPlayer(player);
     }

@@ -27,7 +27,7 @@ public final class GoatmanChildRenderer extends MobRenderer<GoatmanChild,Goatman
     }
     @Override public boolean shouldRender(GoatmanChild e,Frustum f,double x,double y,double z){
         var player=Minecraft.getInstance().player;
-        if(e.girl()&&(player==null||!e.viewer().get().equals(player.getUUID())))return false;
+        if(e.girl()&&(player==null||!SpectatorView.is(e.viewer().orElse(null))))return false;
         if(e.isInvisible())return false; // 0.4.145: crawling to a bed unseen, eyes and all
         return super.shouldRender(e,f,x,y,z);
     }

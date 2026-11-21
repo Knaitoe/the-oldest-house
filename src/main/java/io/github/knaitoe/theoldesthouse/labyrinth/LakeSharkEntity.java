@@ -90,7 +90,7 @@ public final class LakeSharkEntity extends Entity {
         setPos(next.x,next.y,next.z);
     }
     @Override public void remove(RemovalReason reason){if(owner!=null&&OWNED.get(owner)==this)OWNED.remove(owner);super.remove(reason);}
-    @Override public boolean broadcastToPlayer(ServerPlayer player){return owner!=null&&owner.equals(player.getUUID());}
+    @Override public boolean broadcastToPlayer(ServerPlayer player){if(player.isSpectator()){var watch=SpectatorWatch.watched(player);if(watch!=null)return broadcastToPlayer(watch);}return owner!=null&&owner.equals(player.getUUID());}
     @Override public boolean isPickable(){return false;}
     @Override public boolean isPushable(){return false;}
     @Override public boolean isPushedByFluid(){return false;}

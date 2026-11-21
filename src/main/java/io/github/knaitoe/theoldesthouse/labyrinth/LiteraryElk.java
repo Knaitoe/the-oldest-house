@@ -18,7 +18,7 @@ public final class LiteraryElk extends PathfinderMob {
     public Optional<UUID> owner(){return entityData.get(OWNER);}public void owner(UUID id){entityData.set(OWNER,Optional.of(id));}
     public boolean wounded(){return entityData.get(WOUND);}public void wound(){entityData.set(WOUND,true);}
     @Override public void tick(){super.tick();LiteraryMotion.tickElk(this);}
-    @Override public boolean broadcastToPlayer(ServerPlayer p){return (owner().isEmpty()||owner().get().equals(p.getUUID()))&&super.broadcastToPlayer(p);}
+    @Override public boolean broadcastToPlayer(ServerPlayer p){if(p.isSpectator()){var watch=SpectatorWatch.watched(p);if(watch!=null)return broadcastToPlayer(watch);}return (owner().isEmpty()||owner().get().equals(p.getUUID()))&&super.broadcastToPlayer(p);}
     @Override public boolean hurt(DamageSource s,float a){if(owner().isPresent())return false;if(s.getEntity() instanceof ServerPlayer p&&LiteraryVignettes.inside(p,LabyrinthPlace.ELK_LOT)){if(getHealth()<=2)return false;boolean hit=super.hurt(s,Math.min(3,a));if(hit){wound();LiteraryVignettes.elkWound(p);}return hit;}return false;}
     @Override public boolean removeWhenFarAway(double d){return false;}
     @Override public void addAdditionalSaveData(CompoundTag t){super.addAdditionalSaveData(t);t.putBoolean("Wound",wounded());owner().ifPresent(id->t.putUUID("HerdOwner0492",id));}

@@ -20,7 +20,7 @@ public final class GoatmanFigureRenderer extends MobRenderer<GoatmanFigure,Goatm
     }
     @Override public boolean shouldRender(GoatmanFigure e,Frustum f,double x,double y,double z){
         var player=Minecraft.getInstance().player;
-        return player!=null&&e.viewer().filter(player.getUUID()::equals).isPresent()&&super.shouldRender(e,f,x,y,z);
+        return player!=null&&SpectatorView.is(e.viewer().orElse(null))&&super.shouldRender(e,f,x,y,z);
     }
     @Override public void render(GoatmanFigure e,float yaw,float partial,com.mojang.blaze3d.vertex.PoseStack poses,net.minecraft.client.renderer.MultiBufferSource buffers,int light){
         // During the vigil a figure is the private lap round the trailer: give it the same dim light floor as the

@@ -402,6 +402,8 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
         }
         if(role()==FATHER&&LiteraryVignettes.inside(p,LabyrinthPlace.HOLY_RABBIT)){if(getHealth()<=1)return false;boolean hit=super.hurt(source,Math.min(Math.min(1,amount),getHealth()-1));if(hit)LiteraryVignettes.attacked(p,this);return hit;}LiteraryVignettes.attacked(p,this);}return false;}
     @Override public boolean broadcastToPlayer(ServerPlayer p){
+        // 0.4.747: a spectator is sent what the reader they watch is sent.
+        if(p.isSpectator()){var watch=SpectatorWatch.watched(p);if(watch!=null)return broadcastToPlayer(watch);}
         // Match the renderer's privacy rule at native tracking too. A hidden peer's
         // overlapping cast must not remain on this client and intercept its entity pick.
         boolean sharedCopy=scene.equals(LabyrinthPlace.FAMILY_COPY.id())||scene.equals(LabyrinthPlace.OLD_CABIN.id());

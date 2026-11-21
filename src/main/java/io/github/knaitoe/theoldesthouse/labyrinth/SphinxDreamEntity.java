@@ -54,7 +54,7 @@ public final class SphinxDreamEntity extends Entity {
         // With nobody to dream her she is gone; SphinxDream stands her again if the dream resumes.
         if(level() instanceof ServerLevel level){var p=owner==null?null:level.getServer().getPlayerList().getPlayer(owner);if(p==null||p.level()!=level)discard();}
     }
-    @Override public boolean broadcastToPlayer(ServerPlayer player){return owner!=null&&owner.equals(player.getUUID());}
+    @Override public boolean broadcastToPlayer(ServerPlayer player){if(player.isSpectator()){var watch=SpectatorWatch.watched(player);if(watch!=null)return broadcastToPlayer(watch);}return owner!=null&&owner.equals(player.getUUID());}
     /** Her wings reach far past her body: she is drawn whenever any of her could be on screen. */
     @Override public AABB getBoundingBoxForCulling(){return getBoundingBox().inflate(160);}
     @Override public boolean shouldRenderAtSqrDistance(double d){return d<320*320;}

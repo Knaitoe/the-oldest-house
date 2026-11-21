@@ -169,16 +169,17 @@ public final class GroupSweepTests {
                 h.assertTrue(!LiteraryVignettes.inside(s,place),tag()+": a spectator is not in the story");
                 h.assertTrue(!f.own(s,place).getBoolean("Read_Source"),tag()+": a spectator at the paper reads nothing");
                 h.assertTrue(WitnessAccount.record(f.data(),s.getUUID()).getCompound("Stories").isEmpty(),tag()+": a spectator earns no Witness story");
-                // 0.4.746: what a spectator is sent is what they see. A reader's own cast (bound to them, or to their thread) is never sent
-                // to a spectator; the shared cast is, as it is to anyone there. The counts go to the log for the audit.
+                // What a spectator is sent is what they see. Since 0.4.747 a spectator sees the cast of the reader they watch (the nearest
+                // here): every cast member is sent to them exactly when it is sent to that reader. The counts go to the log for the audit.
+                var watched=SpectatorWatch.watched(s);
+                h.assertTrue(watched!=null&&group.contains(watched),tag()+": a spectator in the first copy watches one of its readers, not "+(watched==null?"nobody":watched.getGameProfile().getName()));
                 int shared=0,own=0;
                 for(var a:l.getEntitiesOfClass(LiteraryActor.class,new net.minecraft.world.phys.AABB(b).inflate(96))){
                     boolean bound=a.owner().isPresent()||a.getPersistentData().contains(VignetteThreads.ACTOR_TAG);
-                    boolean copy=a.scene().equals(LabyrinthPlace.FAMILY_COPY.id())||a.scene().equals(LabyrinthPlace.OLD_CABIN.id());
-                    if(bound&&!copy){own++;h.assertTrue(!a.broadcastToPlayer(s),tag()+": a reader's own "+a.getName().getString()+" (role "+a.role()+") is not sent to a spectator");}
-                    else if(a.broadcastToPlayer(s))shared++;
+                    h.assertTrue(a.broadcastToPlayer(s)==a.broadcastToPlayer(watched),tag()+": the spectator is sent "+a.getName().getString()+" (role "+a.role()+") exactly when the reader they watch is");
+                    if(a.broadcastToPlayer(s)){if(bound)own++;else shared++;}
                 }
-                TheOldestHouse.LOGGER.info("GROUP SWEEP spectator {}: {} shared cast sent, {} readers' own cast withheld",place.id(),shared,own);
+                TheOldestHouse.LOGGER.info("GROUP SWEEP spectator {}: {} shared and {} readers' own cast sent",place.id(),shared,own);
                 if(SceneInstances.copyable(place)){
                     int now=SceneInstances.held(f.in.getServer(),place,0,new UUID(0,0));
                     h.assertTrue(now==before,tag()+": a spectator holds no place: "+before+" held before, "+now+" with them there");
