@@ -75,7 +75,7 @@ the narrator's part and has their own House body; nobody in the town carries the
 | 6 | **Night three.** 6a, the flyers and what comes back (0.4.723, built: `docs/THE_LIST_0_4_723.md`); 6b, the deputy out on his round (0.4.724, built: `docs/THE_LIST_0_4_724.md`); 6c, the field house (0.4.725, built: `docs/THE_LIST_0_4_725.md`). The hook that comes back, the flyers and the curfew, the deputy's car, the town out with flashlights, the field house. |
 | 7 | **Night four.** 7a, Stace's plan and the stopped ending (0.4.726, built: `docs/THE_LIST_0_4_726.md`); 7b, Stace on foot and fought (0.4.727, built: `docs/THE_LIST_0_4_727.md`); 7c, the dawn bus (0.4.728, built: `docs/THE_LIST_0_4_728.md`). Stace's plan, built on the rules she believes; the night ending at the gin, the tower or the playa; the endings. |
 | 8 | **Amber's side.** 8a, warned off (0.4.729, built: `docs/THE_LIST_0_4_729.md`); 8b, a door held, a heart kept quiet, the slasher put down (0.4.730, built: `docs/THE_LIST_0_4_730.md`); 8c, the rules tried for real (0.4.732, built: `docs/THE_LIST_0_4_732.md`). Other readers in the den from night two: warning names, driving them out, hiding them, barricading, keeping a heart quiet, knocking the slasher down, testing the rules for real. |
-| 9 | **What is kept.** 9a, the keepsakes (0.4.731, built: `docs/THE_LIST_0_4_731.md`); 9b, the town afterwards (0.4.733, built: `docs/THE_LIST_0_4_733.md`). The account, the Witness line, the keepsake, the House of Leaves fact, the house afterwards and the together lines. |
+| 9 | **What is kept.** 9a, the keepsakes (0.4.731, built: `docs/THE_LIST_0_4_731.md`); 9b, the town afterwards (0.4.733, built: `docs/THE_LIST_0_4_733.md`); 9c, the House of Leaves (0.4.734, built: `docs/THE_LIST_0_4_734.md`). The account, the Witness line, the keepsake, the House of Leaves fact, the house afterwards and the together lines. |
 
 ## The beats, as the House keeps them
 
@@ -100,6 +100,12 @@ the porch light on (HAVEN), brings the town to the reader's house first on night
   hook, blood, stains and wounds.
 - **Sounds** by `tools/generate_the_list_audio.py`, every one subtitled: night insects, the pumpjacks, sprinklers, dogs, the
   drive-in's speakers, the gin, hearts, the pull, the slasher's tread, doors splintering, strikes, screams, the VCR.
+
+## Still stand-ins
+
+Every part is built. These are still drawn or done more simply than the plan asks: the dawn bus is a fade, not a bus at the bench;
+the deputy's round has no car; the town out on night three carries no flashlights; the field's light banks have no lit art; and the five
+do not walk to the field house on their own on night three, they are set there.
 
 ## Checks
 

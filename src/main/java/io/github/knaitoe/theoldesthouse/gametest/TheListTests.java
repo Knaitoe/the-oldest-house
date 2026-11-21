@@ -2750,6 +2750,10 @@ public final class TheListTests {
             cues(p);mine=f.own(p,P);TheList.arrive(p,b,mine);
             h.assertTrue(Aftermath.returns(f.data(),p.getUUID(),P)==1,"and no return counted");
             h.assertTrue(TheListAfter.line(f.own(p,P)).equals(TheListAfter.BUS),"the line follows the record");
+            // 0.4.734: and the reader's House of Leaves can tell it.
+            var facts=StaircaseAccount.facts(p,new net.minecraft.nbt.CompoundTag());
+            h.assertTrue(facts.stream().anyMatch(x->x.kind().id().equals("listed")&&x.value().equals("on the first bus out")),"the House of Leaves tells how they left the list: "+facts.stream().map(x->x.kind().id()+"="+x.value()).toList());
+            h.assertTrue(StaircaseAccount.facts(q,new net.minecraft.nbt.CompoundTag()).stream().noneMatch(x->x.kind().id().equals("listed")),"not for a reader who has not finished it");
             TheListNight.end(l,b);
             done();h.succeed();
         });

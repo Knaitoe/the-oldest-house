@@ -187,7 +187,12 @@ public final class StaircaseProse {
         new Kind("expected","house",2.3,1,"Mara's house: {x}",
             "A house you had never lived in laid a place for you. You left it {x}.",
             "Your name was on a card at somebody's table. You left that house {x}.",
-            "They kept an evening for you in a house across the road. You left it {x}."));
+            "They kept an evening for you in a house across the road. You left it {x}."),
+        // 0.4.734: the list (docs/THE_LIST_0_4_734.md), by how the reader's four nights left it.
+        new Kind("listed","house",2.3,1,"Lamesa: {x}",
+            "A town kept a list five names long. You left it {x}.",
+            "In a town on the high plains there was a list of five names. You left it {x}.",
+            "Four nights running it was ten o'clock in Lamesa. You left the list {x}."));
 
     private static final String[] QUIET = {
         "This leaf is nearly blank. Whatever you did before the House, you did quietly.",
@@ -456,6 +461,7 @@ public final class StaircaseProse {
             case "unwound"->"The cave took your line back. A thread runs off the edge of the page.";
             case "ruled"->"You crossed the King's country. The writer has drawn you twice in the margin, once filled in and once in outline.";
             case "expected"->"A house expected you. In the margin, a folded card with nothing written on it.";
+            case "listed"->"You were in a town with a list in it. In the margin, five short lines, some of them struck through.";
             case "ledger"->"The upper ledger kept a room for everything you killed. The plan of a house is drawn in the margin, its last room empty.";
             default->"The page has room for a memory that has not been written.";};
     }
