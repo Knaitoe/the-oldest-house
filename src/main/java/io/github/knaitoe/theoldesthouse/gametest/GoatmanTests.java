@@ -701,6 +701,8 @@ public final class GoatmanTests {
         }).thenSucceed();
     }
     @AfterBatch(batch="goat_gas_lost0150") public static void cleanGasLost(ServerLevel l){if(gasLost!=null){gasLost.close();gasLost=null;}}
+    private static Fixture gasDropped;
+    @AfterBatch(batch="goat_gas_dropped") public static void cleanGasDropped(ServerLevel l){if(gasDropped!=null){gasDropped.close();gasDropped=null;}}
     @AfterBatch(batch="goat_condiments0150") public static void cleanCondiments(ServerLevel l){if(condiments!=null){condiments.close();condiments=null;}}
     /** Two readers enrol together, facing back down the trail, and supper's first plate goes down with both inside. */
     private static CompoundTag supperTogether(Fixture f,ServerPlayer first,ServerPlayer second){return supperTogether(f,first,second,null);}
@@ -768,6 +770,24 @@ public final class GoatmanTests {
             h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_LOST&&lost.getBoolean("Failed")&&lost.getBoolean("LostOutside0150"),"the woods went quiet with them outside: they are gone");
             h.assertTrue(GoatmanHaunt.haunted(LabyrinthData.get(f.server),second.getUUID())&&!GoatmanVignette.inside(second),"carried off home, with something that knows their face");
             h.assertTrue(!r.getCompound("Cohort").getCompound(first.getStringUUID()).getBoolean("Failed")&&GoatmanVignette.inside(first),"the reader inside is still in the trailer");
+        }).thenSucceed();
+    }
+    /** A gas reader who drops out while away at the shed does not hold the night: the quiet comes, the place is lost, the reader inside goes on. */
+    @GameTest(template="empty",batch="goat_gas_dropped",timeoutTicks=400)
+    public static void aGasReaderWhoDropsOutAtTheShedDoesNotHoldTheNight(GameTestHelper h){
+        gasDropped=new Fixture(h,32500);var f=gasDropped;f.finishedCamper();var first=f.player();var second=f.player();f.chunks.hold(f.l,IndianLakeRooms.bounds(f.b,LabyrinthPlace.GOATMAN));
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the camp is natively loaded")).thenExecute(()->{
+            supperTogether(f,first,second);second.moveTo(f.b.getX()+12.5,f.b.getY(),f.b.getZ()-62.5,90,0);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(f.run().getInt("RunnerState")==GoatmanVignette.R_AWAY,"the gas reader is out at the shed");
+            f.server.getPlayerList().remove(second);f.players.remove(second);
+        }).thenIdle(3).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_AWAY&&r.getInt("Phase")==GoatmanVignette.GATHERING,"gone, they are still away and the evening goes on: "+r.getInt("RunnerState"));
+            r.putInt("QuietAt04123",r.getInt("Clock"));r.putInt("NightAt04123",r.getInt("Clock")+40);f.run(r);
+        }).thenIdle(3).thenExecute(()->{
+            var r=f.run();h.assertTrue(r.getInt("RunnerState")==GoatmanVignette.R_LOST&&r.getBoolean("Silence"),"the woods went quiet on time with the place empty: it is lost");
+            h.assertTrue(!r.getCompound("Cohort").getCompound(first.getStringUUID()).getBoolean("Failed")&&GoatmanVignette.inside(first),"the reader inside is still in the trailer");
+            h.assertTrue(!GoatmanHaunt.haunted(LabyrinthData.get(f.server),second.getUUID()),"one who was not there is not the one taken");
         }).thenSucceed();
     }
     /** 0.4.150: with several readers, a reader can fetch the bottles from the cooler and set them out before the cousins go. */

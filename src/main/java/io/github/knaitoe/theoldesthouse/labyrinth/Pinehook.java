@@ -1047,6 +1047,11 @@ public final class Pinehook {
         if(!(e.getEntity() instanceof ServerPlayer p))return;var own=LiteraryVignettes.personal(LabyrinthData.get(p.server),p.getUUID(),PLACE);
         if(own.contains("OwedFamily"))resolve(p,own.getString("OwedFamily"));
     }
+    /** A reader who drops out leaves the weekend's things behind as they go: logged out, they are no longer on the server for the next pass. */
+    @SubscribeEvent public static void droppedOut(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e){
+        if(!(e.getEntity() instanceof ServerPlayer p)||RUNS.isEmpty())return;var l=p.server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        var mine=runOf(p);for(var r:RUNS.values())if(r==mine||r.present.contains(p.getUUID())){strip(l,r,p);r.present.remove(p.getUUID());}
+    }
     /** Whoever leaves the cabin's world leaves the weekend's things behind: the cooler goes back on the porch, the plan in Casey's bag, the
      * costume under the tarp, the tie on the dock. */
     static void leavers(ServerLevel l,Run r,List<ServerPlayer> here){

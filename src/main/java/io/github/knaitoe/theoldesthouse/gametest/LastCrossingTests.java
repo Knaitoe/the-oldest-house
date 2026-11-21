@@ -92,6 +92,7 @@ public final class LastCrossingTests {
     @AfterBatch(batch="last_crossing_cleared") public static void clearedDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_breath") public static void breathDone(ServerLevel l){close();}
     @AfterBatch(batch="last_crossing_taken") public static void takenDone(ServerLevel l){close();}
+    @AfterBatch(batch="last_crossing_dropped") public static void droppedDone(ServerLevel l){close();}
     private static void look(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){var b=f.base(P);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z));}
     /** A crew through Day One and Night One untouched, into the morning and Day Two. */
     private static GameTestSequence dayTwo(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer[] c,String prefix,Runnable atStart){
@@ -118,6 +119,56 @@ public final class LastCrossingTests {
             .thenWaitUntil(()->{answer(c);h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAY,"the roll taken");});
     }
     private static void sign(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer p){h.assertTrue(use(f,p,LastCrossingSite.CLIPBOARD),"the clipboard opens");h.assertTrue(Talk.choose(p,"Sign"),"the roll offered to "+p.getGameProfile().getName());}
+
+    /** The intake made ready for the brake: the wrench, the bleed screw, the gauge called, the called valve turned. */
+    private static void intake(LiteraryTests.Fixture f,GameTestHelper h,ServerPlayer worker,ServerPlayer reader){
+        var b=f.base(P);
+        f.at(worker,P,15.5,-6,-62.5);f.at(reader,P,21.5,0,-62.5);
+        if(!LastCrossing.flag(b,"bleed")){
+            if(!carries(worker,"wrench"))h.assertTrue(use(f,worker,LastCrossingSite.WRENCH_RUN)&&carries(worker,"wrench"),"the wrench off the pipe");
+            select(worker,"wrench");
+            h.assertTrue(use(f,worker,LastCrossingSite.BLEED)&&LastCrossing.flag(b,"bleed")&&LastCrossing.needle(b)>=0,"the bleed screw open");
+        }
+        h.assertTrue(use(f,reader,LastCrossingSite.GAUGE)&&Talk.choose(reader,"Call it"),"the gauge read and called down the pipe");
+        h.assertTrue(use(f,worker,LastCrossingSite.VALVES.get(LastCrossing.needle(b))),"the called valve turned");
+        f.at(reader,P,21.5,0,-63.5);
+    }
+    /**
+     * 0.4.742, a reader who drops out halfway (docs/MULTIPLAYER_AUDIT.md, the sweep's gaps). A crew of three, the day running; one reads
+     * the gauge and holds the brake open, and drops out of the game with it held. The brake springs back and the pump is not primed off
+     * an absent hand; the crossing keeps their place on the roll. They come back as the same player: still signed, still answered, on
+     * the roll once, and the brake held again by them primes the pump.
+     */
+    @GameTest(template="empty",batch="last_crossing_dropped",timeoutTicks=6000)
+    public static void aReaderWhoDropsOutHoldingTheBrakeComesBackToTheirPlace(GameTestHelper h){
+        var f=fixture(h);var b=f.base(P);var l=f.level(P);f.build(P);
+        ServerPlayer[] c=new ServerPlayer[3];UUID[] id={null};String[] name={null};
+        crew(f,h,c,"lc_drop")
+            .thenExecute(()->{
+                intake(f,h,c[0],c[1]);
+                h.assertTrue(use(f,c[1],LastCrossingSite.BRAKE)&&is(l,b,LastCrossingSite.BRAKE,Kind.BRAKE,1),"the brake held open");
+                id[0]=c[1].getUUID();name[0]=c[1].getGameProfile().getName();
+                f.players.remove(c[1]);NativeTestPlayers.remove(c[1]);
+            })
+            .thenIdle(3)
+            .thenExecute(()->{
+                h.assertTrue(is(l,b,LastCrossingSite.BRAKE,Kind.BRAKE,0)&&!LastCrossing.flag(b,"primed"),"with nobody on it the brake springs back, and nothing is primed off an absent hand");
+                h.assertTrue(LastCrossing.places(b).contains(id[0])&&LastCrossing.crew(b).size()==3,"their place on the roll is kept: "+LastCrossing.crew(b));
+                h.assertTrue(LastCrossing.phase(b)==LastCrossing.DAY,"the day goes on for the two still here");
+                var back=NativeTestPlayers.survival(h,name[0],id[0]);f.players.add(back);f.arrive(back,P);c[1]=back;
+            })
+            .thenIdle(2)
+            .thenExecute(()->{
+                var own=f.own(c[1],P);
+                h.assertTrue(own.getBoolean("Signed")&&own.getBoolean("Answered")&&own.getInt("RollOrder")==2,"back as themselves: signed, answered, second on the roll: "+own);
+                h.assertTrue(LastCrossing.crew(b).size()==3&&LastCrossing.places(b).contains(id[0]),"on the roll once: "+LastCrossing.crew(b));
+                intake(f,h,c[0],c[1]);
+                h.assertTrue(use(f,c[1],LastCrossingSite.BRAKE)&&is(l,b,LastCrossingSite.BRAKE,Kind.BRAKE,1),"they hold the brake again");
+            })
+            .thenWaitUntil(()->h.assertTrue(LastCrossing.flag(b,"primed"),"and the pump takes the load"))
+            .thenExecute(()->h.assertTrue(f.own(c[1],P).getBoolean("Primed")&&f.own(c[1],P).getString("Jobs").contains("gauge"),"the priming theirs: "+f.own(c[1],P)))
+            .thenSucceed();
+    }
 
     @GameTest(template="empty",batch="last_crossing",timeoutTicks=9000)
     public static void aCrewSignsTheRoll(GameTestHelper h){

@@ -52,6 +52,7 @@ public final class PinehookTests {
     @AfterBatch(batch="pinehook_protected") public static void protectedDone(ServerLevel l){close();}
     @AfterBatch(batch="pinehook_rowed") public static void rowedDone(ServerLevel l){close();}
     @AfterBatch(batch="pinehook_hook") public static void hookDone(ServerLevel l){close();}
+    @AfterBatch(batch="pinehook_dropped") public static void droppedDone(ServerLevel l){close();}
     private static boolean near(LiteraryTests.Fixture f,String who,Vec3 rel,double d){var a=cast(f,who);var b=f.base(P);return a!=null&&a.position().distanceTo(new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z))<d;}
     private static String account(LiteraryTests.Fixture f,ServerPlayer p){return String.join(" ",LiteraryTexts.ending(p.getGameProfile().getName(),P,f.own(p,P)).get(DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(pg->pg.raw().getString()).toList());}
     private static void look(LiteraryTests.Fixture f,ServerPlayer p,Vec3 rel){var b=f.base(P);p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,new Vec3(b.getX()+rel.x,b.getY()+rel.y,b.getZ()+rel.z));}
@@ -627,4 +628,28 @@ public final class PinehookTests {
             }).thenSucceed();
     }
     @AfterBatch(batch="pinehook_copy") public static void copyDone(ServerLevel l){SceneInstances.fixtureCap(null);SceneInstances.clear();close();}
+
+    /** A reader who drops out carrying the cooler leaves it on the porch for the others; back on the same id, their part is theirs. */
+    @GameTest(template="empty",batch="pinehook_dropped",timeoutTicks=3000)
+    public static void aReaderWhoDropsOutWithTheCoolerLeavesItOnThePorch(GameTestHelper h){
+        var f=fixture(h);var c=new ServerPlayer[2];var b=f.base(P);var l=f.level(P);var name=new String[1];var id=new UUID[1];
+        parts(f,h,c,"phd","The Skeptic","The Athlete")
+            .thenExecute(()->{
+                h.assertTrue(use(f,c[1],PinehookSite.COOLER_START)&&Pinehook.cooler(b).equals("carried"),"the cooler lifted off the porch");
+                name[0]=c[1].getGameProfile().getName();id[0]=c[1].getUUID();
+                f.players.remove(c[1]);NativeTestPlayers.remove(c[1]);})
+            .thenIdle(3)
+            .thenExecute(()->{
+                h.assertTrue(Pinehook.cooler(b).equals("porch")&&stage(l,b,PinehookSite.COOLER_START)==0&&l.getBlockState(b.offset(PinehookSite.COOLER_START)).getBlock() instanceof PinehookBlock,"the cooler back on the porch: "+Pinehook.cooler(b));
+                h.assertTrue(Pinehook.places(b).contains(id[0]),"their place kept");
+                h.assertTrue(Pinehook.phase(b)==Pinehook.EVENING,"the evening goes on");
+                h.assertTrue(use(f,c[0],PinehookSite.COOLER_START)&&Pinehook.cooler(b).equals("carried")&&!thing(c[0],"cooler").isEmpty(),"another reader can carry it");})
+            .thenExecute(()->{var back=NativeTestPlayers.survival(h,name[0],id[0]);f.players.add(back);f.arrive(back,P);c[1]=back;})
+            .thenIdle(20)
+            .thenExecute(()->{
+                h.assertTrue(f.own(c[1],P).getString("Part").equals("ATHLETE"),"their part kept: "+f.own(c[1],P).getString("Part"));
+                h.assertTrue(Pinehook.places(b).contains(id[0])&&Pinehook.places(b).size()==2,"one place each");
+                h.assertTrue(thing(c[1],"cooler").isEmpty(),"no second cooler");
+                h.succeed();});
+    }
 }
