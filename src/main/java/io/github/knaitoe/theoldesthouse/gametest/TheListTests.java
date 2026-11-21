@@ -2360,6 +2360,54 @@ public final class TheListTests {
             done();h.succeed();
         });
     }
+    /**
+     * 0.4.725, part 6c: night three, the five together in the field house. Begun, each of them stands in the locker room, both of its
+     * doors are bolted and the field's lights are on. The back door gives at the fifth blow; the one who went in in the doorway is heard,
+     * and they scream and run, each to their first hiding place inside. First light: the lights are out and they are back at their places.
+     */
+    @GameTest(template="empty",batch="the_list_field_house",timeoutTicks=4000)
+    public static void theFieldHouse(GameTestHelper h){
+        var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
+        var p=f.player("list_field_house",P);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD);hold(f,b,TheListPeople.AT);hold(f,b,huddle());
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
+        .thenExecute(()->{
+            f.at(p,P,-3.5,0,-3.5);
+            h.assertTrue(TheListNights.begin(p,b,3),"night three begins");
+            h.assertTrue(cues(p).contains(TheListTexts.FIELD_LIT),"told the field's lights are on");
+        }).thenWaitUntil(()->{TheListPeople.ensure(l,b);
+            for(int who:TheListBody.LISTED)h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.CALM&&near(l,b,who,Vec3.atBottomCenterOf(TheListHuddle.AT[who])),"waiting for "+TheListTexts.NAMES[who]+" in the field house");})
+        .thenExecute(()->{
+            for(var d:new BlockPos[]{TheListHunt.FIELD_DOOR,TheListHunt.FIELD_DOOR.east(),TheListHuddle.STREET_DOOR})h.assertTrue(TheListHunt.bolted(b,d)&&shut(l,b,d),"the field house's doors are bolted: "+d);
+            h.assertTrue(TheListHuddle.lit(l,b),"the field's lights are on");
+            f.at(p,P,TheListHunt.FIELD_DOOR.getX()+.5,0,TheListHunt.FIELD_DOOR.getZ()+2.5);
+        }).thenWaitUntil(()->h.assertTrue(TheListBody.live(p),"waiting for the body to be the reader's in the street"))
+        .thenExecute(()->{
+            h.assertTrue(TheListBody.strike(p,b,TheListHunt.FIELD_DOOR),"the first blow: has "+TheListBody.has(p)+", live "+TheListBody.live(p)+", town "+TheListBody.town(p)+", at "+p.position().subtract(Vec3.atLowerCornerOf(b))+", down "+TheListBody.down(p)+", door "+l.getBlockState(b.offset(TheListHunt.FIELD_DOOR)));
+        }).thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->TheListBody.strike(p,b,TheListHunt.FIELD_DOOR))
+        .thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->TheListBody.strike(p,b,TheListHunt.FIELD_DOOR))
+        .thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->TheListBody.strike(p,b,TheListHunt.FIELD_DOOR))
+        .thenIdle(TheListBody.STRIKE_GAP).thenExecute(()->{
+            TheListBody.strike(p,b,TheListHunt.FIELD_DOOR);
+            h.assertFalse(shut(l,b,TheListHunt.FIELD_DOOR),"the back door gives at the fifth blow");
+            // In the doorway, close enough to be heard.
+            f.at(p,P,TheListHunt.FIELD_DOOR.getX()+.5,0,TheListHunt.FIELD_DOOR.getZ()+.5);
+        }).thenWaitUntil(()->h.assertTrue(TheListHunt.state(b,TheListPeople.SHANNON)!=TheListHunt.State.CALM,"waiting for them to hear"))
+        .thenExecute(()->f.at(p,P,TheListHunt.FIELD_DOOR.getX()+.5,0,TheListHunt.FIELD_DOOR.getZ()+5.5))
+        .thenWaitUntil(()->{for(int who:TheListBody.LISTED){var a=TheListPeople.find(l,b,who);
+            h.assertTrue(TheListHunt.state(b,who)==TheListHunt.State.HIDE&&TheListHunt.way(b,who)==0&&near(l,b,who,TheListHuddle.hidingPlace(who,0)),"waiting for "+TheListTexts.NAMES[who]+" to hide: "+TheListHunt.state(b,who)+(a==null?"":" at "+a.position().subtract(Vec3.atLowerCornerOf(b))));}})
+        .thenExecute(()->{
+            TheListNights.dawn(l,b);TheListPeople.ensure(l,b);
+            h.assertFalse(TheListHuddle.lit(l,b),"first light: the field's lights are out");
+            var deek=TheListPeople.find(l,b,TheListPeople.DEEK);
+            h.assertTrue(deek!=null&&deek.blockPosition().subtract(b).equals(TheListPeople.AT[TheListPeople.DEEK]),"they are back at their places");
+            h.assertTrue(TheListNight.phase(s,b)==TheListNights.DONE3,"night three is over");
+            TheListNight.end(l,b);TheListBody.end(p);
+            done();h.succeed();
+        });
+    }
+    /** Where the five stand in the field house on night three. */
+    private static BlockPos[] huddle(){var out=new java.util.ArrayList<BlockPos>();for(var a:TheListHuddle.AT)if(a!=null)out.add(a);return out.toArray(BlockPos[]::new);}
     /** Which inventory slot holds the hay hook, or -1. */
     private static int hook(ServerPlayer p){var inv=p.getInventory();for(int i=0;i<9;i++)if(inv.getItem(i).is(TheListRegistry.HAY_HOOK.get()))return i;return -1;}
     /** The reader turned toward a point, or away from it. */
@@ -2378,7 +2426,7 @@ public final class TheListTests {
     public static void toTheEnd(GameTestHelper h){
         var f=place(h);var l=f.level(P);var b=f.base(P);var s=l.getServer();
         var p=f.player("list_end",P);var peer=f.player("list_end_peer",P);var ghost=f.player("list_end_ghost",P);
-        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);hold(f,b,TheListPeople.AT);
+        hold(f,b,TheListDen.DEN_AT,TheListSite.BED_HEAD,TheListSite.ENDING,TheListSite.SOURCE);hold(f,b,TheListPeople.AT);hold(f,b,huddle());
         h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"waiting for the ground"))
         .thenExecute(()->{
             f.at(p,P,-3.5,0,-3.5);f.at(peer,P,-2.5,0,-3.5);f.at(ghost,P,-4.5,0,-3.5);ghost.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);cues(p);cues(peer);

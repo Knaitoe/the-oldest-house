@@ -505,6 +505,8 @@ public final class TheListTexts {
         HOOK_BACK="The hay hook is on your bed.",
         FLYERS="There's a flyer taped to the kitchen window. CURFEW 9 PM, and under it somebody's drawing of a face in a sack.",
         // 0.4.724: the deputy, out on his round.
+        /** 0.4.725: night three, to the one who went in. */
+        FIELD_LIT="Over at the school, the field's lights are on.",
         DEPUTY_HEY="Hey. You. Stay right where you are.",
         DEPUTY_SEEN="A flashlight finds you from down the street.",
         DEPUTY_SHOT="Something hits you in the chest, and then you hear it.",

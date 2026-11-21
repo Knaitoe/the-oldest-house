@@ -93,6 +93,8 @@ public final class TheListPeople {
             if(phase==TheListNight.SEED||phase==TheListNight.SHUT)return new Spot(TheListNight.AT_GIN[i],TheListNight.FACE_GIN[i]);
             return null;
         }
+        // 0.4.725: on night three the five are in the field house together.
+        if(i>=0&&phase==TheListNights.HUNT3)return new Spot(TheListHuddle.AT[who],Direction.NORTH);
         // 0.4.707: from the cut until first light Amber is up at her window, over the street.
         if(who==AMBER&&phase==TheListNight.AFTER)return new Spot(TheListNight.AT_WINDOW,Direction.SOUTH);
         // 0.4.720: on night two she is in her den, in front of the television, until she sets off for the field.

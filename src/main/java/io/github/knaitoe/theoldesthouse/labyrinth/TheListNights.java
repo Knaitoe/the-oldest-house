@@ -127,6 +127,8 @@ public final class TheListNights{
         hunt(l,n,night);
         TheListNight.save(p.server,n);TheListPeople.ensure(l,n.base);
         TheList.cue(p,night==3?TheListTexts.NIGHT3:TheListTexts.NIGHT4);
+        // 0.4.725: the five are at the field house tonight, and its lights are on.
+        if(night==3)TheList.cue(p,TheListTexts.FIELD_LIT);
         // 0.4.723: the town knows by now.
         TheListFlyers.post(l,n.base);
         if(night==3)for(var q:TheList.readers(l,n.base))if(LiteraryVignettes.participant(q))TheList.cue(q,TheListTexts.FLYERS);
