@@ -511,6 +511,7 @@ public final class TheListBody {
             BLOWS.remove(at.asLong());TheListAmber.unbrace(at);
             l.destroyBlockProgress(breaker(at),at,-1);l.destroyBlockProgress(breaker(at.above()),at.above(),-1);
             TheListHunt.spring(l,b,lower);
+            TheListRules.cameIn(l,b,at);
             return true;
         }
         l.playSound(null,at.getX()+.5,at.getY()+1,at.getZ()+.5,TheListRegistry.STRIKE.get(),SoundSource.BLOCKS,1.4F,.9F+l.getRandom().nextFloat()*.15F);
@@ -520,6 +521,8 @@ public final class TheListBody {
         BLOWS.remove(at.asLong());TheListAmber.unbrace(at);
         l.destroyBlockProgress(breaker(at),at,-1);l.destroyBlockProgress(breaker(at.above()),at.above(),-1);
         give(l,at);
+        // 0.4.732: nobody asked it in.
+        TheListRules.cameIn(l,b,at);
         return true;
     }
     /** Who the cracks drawn on a struck door are drawn for: nobody's own id, so every client in reach is sent them. */

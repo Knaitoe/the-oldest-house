@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.731** gives *The list* its keepsakes (part 9a; `docs/THE_LIST_0_4_731.md`): the one who went in keeps a strip of the feed sack that gets them up once a day from a blow that should kill them; everyone else in town keeps a page of Amber's rules that lets them hear what hunts them.
+Development candidate **0.4.732** lets readers on Amber's side of *The list* try the rules from her tapes for real (part 8c; `docs/THE_LIST_0_4_732.md`): a light held on the slasher, a door broken down unasked, and first light.
 
-Previous: 0.4.730 gives more of Amber's side of *The list* (part 8b; `docs/THE_LIST_0_4_730.md`): readers who are not the one who went in can hold a door against the slasher, keep a hidden name's heart quiet, and put the slasher down from behind.
+Previous: 0.4.731 gives *The list* its keepsakes (part 9a; `docs/THE_LIST_0_4_731.md`): the one who went in keeps a strip of the feed sack that gets them up once a day from a blow that should kill them; everyone else in town keeps a page of Amber's rules that lets them hear what hunts them.
 
 Earlier: 0.4.707 finished night one of *The list* (part 3b; `docs/THE_LIST_0_4_707.md`), and the House now deals the town: from ten crossings down, to a reader who has not had night one, five readers to a town. The first through the door is the one Deek picks, and the night begins round them. After the reader comes to under the water tower, Amber is up at her front window with a page out of a notebook. Each reader who passes in the street gets a page of their own held up to the glass, then a second: TOMORROW. BACK DOOR. AFTER TEN. A knock on her glass is answered. Night one ends when the one who went in lies down on their own bed, or when first light comes round on its own; each reader keeps that they have had it and where they were when it got light.
 

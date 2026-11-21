@@ -129,6 +129,10 @@ public final class TheListTexts {
     public static final String[] LEAVING={null,null,null,"Fine. I've got the truck. I'm gone.","Where am I supposed to go? Okay. Okay, I'm going.","My aunt's in Big Spring. I can walk to the highway.",
         "I'm not waiting around to find out.","Tell Jenna I'm going to my sister's. Tell her I'm sorry.",null,null,null,null};
     /** 0.4.730, Amber's side: bracing a door, putting the slasher down, keeping a heart quiet. */
+    /** 0.4.732: the rules from the tapes, tried by a reader on Amber's side. */
+    public static final String RULE_LIGHT="You hold the light full on it. It doesn't look away, and it doesn't stop. That one's wrong.",
+        RULE_ASKED="Nobody asked it in. It came in anyway. That one's wrong.",
+        RULE_NIGHT="First light, and it's gone. Only at night. That one was right.";
     public static final String BRACED="You get your shoulder against the door and your feet set.",BRACED_ALREADY="You're already holding it.",
         BRACED_FULL="There's no room on the door for anyone else.",BRACE_HOLDS="The door jumps in its frame. Somebody on this side is holding it.",
         KNOCKED_DOWN="Something catches you across the back of the head.",KNOCKED_IT="It goes down in the dirt.",KNOCK_SOON="Your arm won't come up again yet.",
@@ -379,6 +383,11 @@ public final class TheListTexts {
             if(knocked>0)parts.add(knocked==1?"Once I hit it from behind as hard as I could and it went down. It got up.":"I hit it from behind as hard as I could, "+knocked+" times, and it went down every time. It got up every time.");
             var hush=new ArrayList<String>();for(int who:TheListBody.LISTED)if((hushed&1<<who)!=0)hush.add(NAMES[who]);
             if(!hush.isEmpty())parts.add("I lay next to "+join(hush)+" in the dark and kept a hand on them until the breathing slowed.");
+            // 0.4.732: the rules from the tapes, tried.
+            int tried=own.getInt("Tried");
+            if((tried&TheListRules.LIGHT)!=0)parts.add("Amber's tapes said light kept it back. I held a light right on it, and it came on anyway.");
+            if((tried&TheListRules.ASKED)!=0)parts.add("The tapes said it couldn't come in unless you asked. Nobody asked. I watched it come in.");
+            if((tried&TheListRules.NIGHT)!=0)parts.add("They said only at night. That one held. At first light it was gone.");
         }
         parts.add("The list was five names long.");
         return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.THE_LIST),name,pages(parts.toArray(String[]::new)));
