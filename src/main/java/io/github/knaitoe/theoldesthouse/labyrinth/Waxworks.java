@@ -119,7 +119,7 @@ public final class Waxworks {
             case PLINTH->cue(p,WaxTexts.PLINTH);
             case ROPE->cue(p,WaxTexts.ROPE);
             case CAMERA->cue(p,WaxTexts.CAMERA);
-            case MONITOR->cue(p,WaxTexts.MONITOR);
+            case MONITOR->WaxMonitors.sit(p,b,own);
             case DESK->cue(p,stage==1?WaxShift.log(b):stage==2?WaxTexts.DESK_PHONE:WaxTexts.DESK);
             case CHAIR->cue(p,WaxTexts.CHAIR);
             case CLOCK->cue(p,WaxTexts.CLOCK);

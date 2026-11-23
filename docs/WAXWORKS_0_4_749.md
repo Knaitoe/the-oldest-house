@@ -8,7 +8,7 @@ This part is the place alone: Merriman's Wax Museum after closing, its staff cor
 
 1. **The museum** (this release, 0.4.749): the place and its figures.
 2. **The flashlight and the figures** (0.4.750, `docs/WAXWORKS_0_4_750.md`): the locker's flashlight, the look at the edge of the view, the blink, the mirror.
-3. **The shift** (0.4.751, `docs/WAXWORKS_0_4_751.md`; the monitors' feeds follow): the shared clock from 11:52 to six, the rounds and the log, the monitors on the CCTV renderer, irregularities, failure and success.
+3. **The shift** (0.4.751, `docs/WAXWORKS_0_4_751.md`; the monitors 0.4.752, `docs/WAXWORKS_0_4_752.md`): the shared clock from 11:52 to six, the rounds and the log, the monitors on the CCTV renderer, irregularities, failure and success.
 4. **The account**, dealt from here: the log in the reader's hand, the Witness story, the stair's company and the shared accounts.
 
 ## The place

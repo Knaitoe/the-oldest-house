@@ -190,7 +190,7 @@ public final class WaxShift {
         var can=new ArrayList<Integer>();
         for(int who=0;who<Waxworks.FIGURES;who++){
             var f=WaxSite.FIGURES.get(who);
-            if(who==WaxSite.STRANGER||who==WaxSite.MIRROR||f.pose()==WaxSite.COVERED||taken.contains(who)||occupied.contains(f.gallery()))continue;
+            if(who==WaxSite.STRANGER||who==WaxSite.MIRROR||f.pose()==WaxSite.COVERED||taken.contains(who)||occupied.contains(f.gallery())||WaxMonitors.watched(f.gallery()))continue;
             var a=Waxworks.find(l,b,who);if(a==null||seen(l,readers,a.getEyePosition()))continue;
             can.add(who);
         }
@@ -204,6 +204,8 @@ public final class WaxShift {
         for(var it=n.irregular.iterator();it.hasNext();){
             var i=it.next();var a=Waxworks.find(l,b,i.who);if(a==null)continue;
             var f=WaxSite.FIGURES.get(i.who);
+            int feed=WaxMonitors.feedOf(i.who,i.stage),nextFeed=WaxMonitors.feedOf(i.who,Math.min(ARRIVED,i.stage+1));
+            if(feed>=0&&WaxMonitors.watched(feed)||!i.noticed&&nextFeed>=0&&WaxMonitors.watched(nextFeed))continue;
             if(i.noticed){
                 if(!seen(l,readers,a.getEyePosition())&&!seen(l,readers,WaxSite.feet(f).add(b.getX(),b.getY()+1.6,b.getZ()))){it.remove();WaxNight.unturn(i.who);Waxworks.stand(a,b,f,0);}
                 continue;
@@ -231,15 +233,22 @@ public final class WaxShift {
             int ticks=had/100==key?had%100+5:5;
             if(ticks<NOTICE_HOLD){LOOKING.put(p.getUUID(),key*100+ticks);continue;}
             LOOKING.remove(p.getUUID());
-            seen.noticed=true;n.noticed++;
-            var own=LiteraryVignettes.personal(data,p.getUUID(),Waxworks.PLACE);own.putInt("Noticed",own.getInt("Noticed")+1);LiteraryVignettes.save(data,p.getUUID(),Waxworks.PLACE,own);
-            Waxworks.cue(p,WaxTexts.noticed(seen.stage,seen.kind));
+            noticed(p,n,seen,false);
         }
     }
 
+    /** Noticed, in person or on a monitor: in the log and on the reader's record. */
+    static void noticed(ServerPlayer p,Night n,Irr i,boolean onScreen){
+        i.noticed=true;n.noticed++;
+        var data=LabyrinthData.get(p.server);
+        var own=LiteraryVignettes.personal(data,p.getUUID(),Waxworks.PLACE);own.putInt("Noticed",own.getInt("Noticed")+1);if(onScreen)own.putInt("NoticedOnScreen",own.getInt("NoticedOnScreen")+1);
+        LiteraryVignettes.save(data,p.getUUID(),Waxworks.PLACE,own);
+        Waxworks.cue(p,WaxTexts.noticed(i.stage,i.kind));
+    }
     /** Three in the office: the screens go dark, the lights go out, and the shift is put out of the museum. Nobody is harmed. */
     static void fail(ServerLevel l,BlockPos b,Night n,List<ServerPlayer> shift,LabyrinthData data){
         n.failed=true;n.over=true;screens(l,b,0);
+        for(var p:shift)if(WaxMonitors.WATCHING.containsKey(p.getUUID()))io.github.knaitoe.theoldesthouse.network.HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.WaxMonitorPayload(b,true,time(n.t)));
         l.playSound(null,b.offset(0,1,-14),SoundEvents.BEACON_DEACTIVATE,SoundSource.BLOCKS,.6F,.5F);
         for(var p:shift){
             WaxNight.reclaim(p);WaxNight.unbeam(l,p.getUUID());

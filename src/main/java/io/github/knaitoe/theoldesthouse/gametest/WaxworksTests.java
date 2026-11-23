@@ -159,7 +159,7 @@ public final class WaxworksTests {
             for(int who=0;who<Waxworks.FIGURES;who++)Waxworks.talk(p,Waxworks.find(l,b,who),f.own(p,P));
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
-            for(String line:List.of(WaxTexts.punched("11:52"),WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.log(0,0,false),WaxTexts.DESK_PHONE,WaxTexts.MONITOR,WaxTexts.CHAIR,WaxTexts.CLOCK,
+            for(String line:List.of(WaxTexts.punched("11:52"),WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.log(0,0,false),WaxTexts.DESK_PHONE,WaxTexts.CHAIR,WaxTexts.CLOCK,
                 WaxTexts.CAMERA,WaxTexts.FRONT,WaxTexts.SIGN,WaxTexts.BOOTH,WaxTexts.TABLE,WaxTexts.DRESSER,WaxTexts.STOVE,WaxTexts.ROPE,WaxTexts.COFFIN,WaxTexts.GRAVESTONE,
                 WaxTexts.VAT,WaxTexts.BENCH,WaxTexts.BENCH_HEAD,WaxTexts.BENCH_HANDS,WaxTexts.HEADS,WaxTexts.PLINTH,WaxTexts.plaque(0)))
                 h.assertTrue(why.contains(line),"each says what it is: missing \""+line+"\" in "+why);
@@ -364,6 +364,61 @@ public final class WaxworksTests {
             h.assertTrue(stage(l,b,WaxSite.CLOCK)==7,"and the clock says six");
             h.assertFalse(f.own(q,P).getBoolean("Kept"),"and kept for whoever punched in, nobody else");
             h.assertTrue(told(p).contains(WaxTexts.KEPT),"the key turns in the front door");
+            done();h.succeed();
+        });
+    }
+
+    private static boolean sat(ServerPlayer p){
+        NativeTestPlayers.flush(p);
+        for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.WaxMonitorPayload)return true;
+        return false;
+    }
+    /**
+     * 0.4.752, the monitors. A hand on a screen from the office sits the reader down at the bank (their client is told where the
+     * cameras are); from the corridor it is only a screen. The feed they have up is watched, and standing up or walking out leaves it.
+     * "Something's moved" on a feed that shows nothing out of place notes nothing, and a second mark straight after is not taken; on the
+     * feed that shows an irregular figure, it is noted, in the log and on the reader's record as seen on a screen. Someone not on the
+     * shift writes nothing in the log. A spectator does not sit down.
+     */
+    @GameTest(template="empty",batch="waxworks_monitors",timeoutTicks=1200)
+    public static void theMonitorsAndWhatTheyShow(GameTestHelper h){
+        var f=place(h);var p=f.player("wax_desk",P);var q=f.player("wax_caller",P);var l=f.level(P);var b=f.base(P);WaxShift.forget(l,b);
+        h.startSequence().thenIdle(5).thenExecute(()->Waxworks.ensure(l,b)).thenWaitUntil(()->{
+            Waxworks.ensure(l,b);
+            for(int who=0;who<Waxworks.FIGURES;who++)h.assertTrue(Waxworks.find(l,b,who)!=null,"figure "+who+" is on its mark");
+        }).thenExecute(()->{
+            Waxworks.arrive(p,b,f.own(p,P));Waxworks.arrive(q,b,f.own(q,P));
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,90,0);f.click(p,P,WaxSite.TIMECLOCK);
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-7.5,180,0);sat(p);
+            WaxMonitors.sit(p,b,f.own(p,P));
+            h.assertFalse(sat(p),"from the corridor it is only a screen");
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-15.5,180,0);q.teleportTo(l,b.getX()+2.5,b.getY(),b.getZ()-15.5,180,0);
+            var mine=f.own(p,P);WaxMonitors.sit(p,b,mine);LiteraryVignettes.save(f.data(),p.getUUID(),P,mine);
+            h.assertTrue(sat(p)&&f.own(p,P).getBoolean("Monitors"),"from the office, a hand on a screen sits the reader down at the bank");
+            var s=NativeTestPlayers.survival(h,"wax_watcher");f.players.add(s);s.setGameMode(GameType.SPECTATOR);s.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-14.5,180,0);sat(s);
+            WaxMonitors.sit(s,b,f.own(s,P));
+            h.assertFalse(sat(s),"a spectator does not sit down");
+            WaxMonitors.feed(p,2,false);
+            h.assertTrue(WaxMonitors.watched(2)&&!WaxMonitors.watched(1),"the feed the reader has up is watched");
+            // An irregularity in the Hall of Statesmen.
+            var n=WaxShift.night(b);var i=new WaxShift.Irr(3,0);n.irregular.add(i);told(p);
+            WaxMonitors.feed(p,2,true);
+            h.assertTrue(told(p).contains(WaxTexts.NOTHING_MOVED)&&!i.noticed,"on a feed that shows nothing out of place, nothing is noted");
+            WaxMonitors.feed(p,1,true);
+            h.assertFalse(i.noticed,"and a second mark straight after is not taken");
+        }).thenIdle(WaxMonitors.AGAIN+2).thenExecute(()->{
+            var n=WaxShift.night(b);var i=n.irregular.get(0);
+            WaxMonitors.feed(p,1,true);
+            h.assertTrue(i.noticed&&n.noticed==1,"on the feed that shows it, it is noted");
+            h.assertTrue(f.own(p,P).getInt("Noticed")==1&&f.own(p,P).getInt("NoticedOnScreen")==1,"and kept on the reader's record as seen on a screen");
+            h.assertTrue(told(p).contains(WaxTexts.noticed(0,0)),"they are told");
+            WaxMonitors.feed(q,1,true);
+            h.assertTrue(told(q).contains(WaxTexts.NOT_ON_SHIFT)&&n.noticed==1,"someone not on the shift writes nothing in the log");
+            WaxMonitors.feed(p,-1,false);
+            h.assertTrue(WaxMonitors.watching(p.getUUID())==-1,"standing up leaves the feed");
+            WaxMonitors.feed(p,4,false);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-5.5,0,0);
+        }).thenIdle(12).thenExecute(()->{
+            h.assertTrue(WaxMonitors.watching(p.getUUID())==-1&&!WaxMonitors.watched(4),"and so does walking out of the office");
             done();h.succeed();
         });
     }

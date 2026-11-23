@@ -48,7 +48,9 @@ public final class WaxTexts {
         PUNCH_OVER="The time clock has stopped taking cards for tonight.",
         FAILED="The screens go dark. The flashlight dies in your hand. Something stands in the office doorway with its hands at its sides, and the night is over.",
         KEPT="Six. A key turns in the front door, and the day man calls hello down the corridor.",
-        SHORT="Six. The log is short a round, and nobody comes to the front door.";
+        SHORT="Six. The log is short a round, and nobody comes to the front door.",
+        NOTHING_MOVED="You look again. Nothing on that screen is out of place.",
+        NOT_ON_SHIFT="The log is not yours to write in. Your card is not in the rack.";
     private static final String[] HOURS={"twelve","one","two","three","four","five"};
     private static final String[] NUMBERS={"none","one","two","three","four","five","six","seven","eight","nine","ten"};
     private static final String[] GALLERY_NAMES={"The foyer","The Hall of Statesmen","The kitchen","The chamber","The workshop"};
