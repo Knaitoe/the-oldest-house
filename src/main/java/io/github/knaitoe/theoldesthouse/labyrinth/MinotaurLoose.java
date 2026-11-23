@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * The Minotaur out of its cell (0.4.84). It has killed the one who opened it. It waits by the bars until they wake on the
  * other side of them, looks at them a while, then lumbers off up the corridor and into the dark of the stairs, where it
  * stays. It harms nobody once it is out; it walks, stops, and walks again, and moves without being seen only when stuck.
+ * From 0.4.748 it shies: a living reader within {@link #SHY} blocks sends it along the stairs away from them.
  * <p>At most {@link #KEPT} roam at once: an older one goes, unseen, when a newer one gets out.
  */
 public final class MinotaurLoose {
@@ -30,6 +31,9 @@ public final class MinotaurLoose {
     public static final double PACE=.11;
     /** How far up the stairs it goes, at most, before it settles; and how long it rests between walks. */
     public static final int CLIMB=360,REST=160;
+    /** 0.4.748: a reader coming within this many blocks sends it off the other way along the stairs, a little quicker. */
+    public static final double SHY=7,SHY_PACE=.17;
+    public static final int SHY_STEPS=36;
     private MinotaurLoose(){}
 
     /** Remember a newly loose one; the oldest beyond the limit is told to go. */
@@ -82,15 +86,34 @@ public final class MinotaurLoose {
                 List<BlockPos> route=FinaleArchitecture.staircaseRoute(origin);int step=Math.max(0,Math.min(route.size()-1,m.looseStep()));
                 CompoundTag own=m.getPersistentData();
                 if(!own.contains("Goal0484"))own.putInt("Goal0484",Math.max(0,route.size()-1-40-m.getRandom().nextInt(CLIMB)));
-                if(now<own.getLong("RestUntil0484")){m.getNavigation().stop();return;}
+                // 0.4.748: it shies from a reader on the stairs: off along them away from whoever comes near, and on until it is far.
+                ServerPlayer near=nearest(level,m);
+                if(near!=null){int at=closest(route,near.position());
+                    int away=Math.max(0,Math.min(route.size()-1,at>step?step-SHY_STEPS:step+SHY_STEPS));
+                    if(away!=step){if(!own.getBoolean("Shying0748"))m.playSound(SoundEvent.createVariableRangeEvent(Growl.Kind.FAR.sound()),.5F,.9F);
+                        own.putBoolean("Shying0748",true);own.putInt("Goal0484",away);own.remove("RestUntil0484");}}
+                boolean shying=own.getBoolean("Shying0748");
+                if(!shying&&now<own.getLong("RestUntil0484")){m.getNavigation().stop();return;}
                 int goal=own.getInt("Goal0484");
+                if(shying&&step==goal){own.putBoolean("Shying0748",false);own.putLong("RestUntil0484",now+REST);return;}
                 if(step==goal){own.putLong("RestUntil0484",now+REST+m.getRandom().nextInt(REST));
                     own.putInt("Goal0484",Math.max(0,Math.min(route.size()-1,route.size()-1-20-m.getRandom().nextInt(CLIMB))));
                     if(m.getRandom().nextInt(3)==0)m.playSound(SoundEvent.createVariableRangeEvent(Growl.Kind.FAR.sound()),.8F,.7F);return;}
                 int next=step+(goal<step?-1:1);
-                if(walk(m,Vec3.atBottomCenterOf(route.get(next)),PACE))m.looseStep(next);
+                if(walk(m,Vec3.atBottomCenterOf(route.get(next)),shying?SHY_PACE:PACE))m.looseStep(next);
             }
         }
+    }
+    /** The nearest living reader (never a spectator) within {@link #SHY} blocks of it, or null. */
+    static ServerPlayer nearest(ServerLevel level,MinotaurEntity m){
+        ServerPlayer best=null;double d=SHY*SHY;
+        for(ServerPlayer p:level.players()){if(p.isSpectator()||!p.isAlive())continue;double e=p.distanceToSqr(m);if(e<d){d=e;best=p;}}
+        return best;
+    }
+    private static int closest(List<BlockPos> route,Vec3 at){
+        int best=0;double d=Double.MAX_VALUE;
+        for(int i=0;i<route.size();i++){double e=Vec3.atBottomCenterOf(route.get(i)).distanceToSqr(at);if(e<d){d=e;best=i;}}
+        return best;
     }
     /** One lumbering step toward a point; true once there. A body wedged for three seconds moves on only where nobody sees. */
     private static boolean walk(MinotaurEntity m,Vec3 to,double pace){

@@ -84,6 +84,7 @@ public final class PlaytestCommandTests {
     @AfterBatch(batch="test_command_defeat") public static void defeatCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_cell_door") public static void cellDoorCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_cancel") public static void cancelCleanup(ServerLevel l){cleanup();}
+    @AfterBatch(batch="test_command_shy") public static void shyCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_escape_route") public static void escapeRouteCleanup(ServerLevel l){cleanup();}
     @AfterBatch(batch="test_command_route_peer") public static void routePeerCleanup(ServerLevel l){cleanup();}
     private static ServerPlayer source(GameTestHelper h, StaircaseAccessTests.Fixture f, String name) {
@@ -325,4 +326,35 @@ public final class PlaytestCommandTests {
         PlaytestCommands.tick(p.server);
         h.assertTrue(p.isAlive()&&command(d,p,"cancel")==0&&FinaleProgress.phase(p.server,p.getUUID())==FinaleProgress.Phase.UNSEEN,"reset cancels even when a House immediately respawns at exactly the same coordinates");return true;
     });}
+
+    /** 0.4.748: loose on the stairs it shies from a living reader who comes near, and not from a spectator. */
+    @GameTest(template="empty",batch="test_command_shy",timeoutTicks=1600)
+    public static void theLooseMinotaurShiesFromAReaderOnTheStairsAndNotFromASpectator(GameTestHelper h){
+        MinotaurEntity[] loose={null};ServerPlayer[] who={null,null};int[] stage={0},mid={0};long[] since={0};
+        run(h,546500,(f,t)->{
+            var route=FinaleArchitecture.staircaseRoute(f.origin);long now=f.level.getGameTime();
+            if(stage[0]==0){
+                mid[0]=route.size()/2;
+                for(int i=Math.max(0,mid[0]-60);i<Math.min(route.size(),mid[0]+60);i++){var at=route.get(i);
+                    f.put(f.level,at.below(),Blocks.DEEPSLATE_TILES.defaultBlockState());for(int y=0;y<5;y++)f.put(f.level,at.above(y),Blocks.AIR.defaultBlockState());}
+                var m=prisoner(f);m.loose(java.util.UUID.randomUUID(),now);m.looseStage(2,now);m.looseStep(mid[0]);
+                var at=net.minecraft.world.phys.Vec3.atBottomCenterOf(route.get(mid[0]));m.moveTo(at.x,at.y,at.z,0,0);
+                m.getPersistentData().putInt("Goal0484",mid[0]);m.getPersistentData().putLong("RestUntil0484",now+100000);
+                MinotaurLoose.register(f.level.getServer(),m.getUUID());loose[0]=m;
+                var eye=source(h,f,"shy_eye");eye.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);var e=route.get(mid[0]+3);eye.teleportTo(f.level,e.getX()+.5,e.getY(),e.getZ()+.5,0,0);who[1]=eye;
+                since[0]=now;stage[0]=1;return false;
+            }
+            var m=loose[0];
+            if(stage[0]==1){
+                if(now-since[0]<60)return false;
+                h.assertTrue(m.looseStep()==mid[0]&&!m.getPersistentData().getBoolean("Shying0748"),"a spectator beside it sends it nowhere: step "+m.looseStep());
+                var p=source(h,f,"shy_reader");var r=route.get(mid[0]+3);p.teleportTo(f.level,r.getX()+.5,r.getY(),r.getZ()+.5,0,0);p.setNoGravity(true);who[0]=p;
+                since[0]=now;stage[0]=2;return false;
+            }
+            if(m.looseStep()>mid[0]-12){h.assertTrue(now-since[0]<900,"a reader three steps below it, and it has not gone off up the stairs: step "+m.looseStep()+" of "+mid[0]);return false;}
+            h.assertTrue(m.isAlive()&&m.motion()==MinotaurEntity.LOOSE&&m.position().distanceTo(who[0].position())>MinotaurLoose.SHY,"it went up the stairs away from the reader, and harmed nobody: "+m.position().distanceTo(who[0].position()));
+            h.assertTrue(who[0].getHealth()==who[0].getMaxHealth(),"the reader is untouched");
+            return true;
+        });
+    }
 }

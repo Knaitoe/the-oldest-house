@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.747**: a spectator sees the cast of the reader they watch, the one whose camera they have taken or else the nearest reader within 64 blocks. Before, a spectator saw a reader in a private story alone (`docs/MULTIPLAYER_AUDIT.md`).
+Development candidate **0.4.748**: the Minotaur loose on the great staircase shies from readers. A living reader within seven blocks sends it off along the stairs the other way, a little quicker, until it is well clear; a spectator does not. It still harms nobody.
 
-Previous: 0.4.746 checks what a spectator is sent in every story of the multiplayer sweep. They are sent the shared cast and never a reader's own; in eighteen stories, whose people are all a reader's own, a spectator sees the readers alone (`docs/MULTIPLAYER_AUDIT.md`).
+Previous: 0.4.747: a spectator sees the cast of the reader they watch, the one whose camera they have taken or else the nearest reader within 64 blocks. Before, a spectator saw a reader in a private story alone (`docs/MULTIPLAYER_AUDIT.md`).
 
 Earlier: 0.4.707 finished night one of *The list* (part 3b; `docs/THE_LIST_0_4_707.md`), and the House now deals the town: from ten crossings down, to a reader who has not had night one, five readers to a town. The first through the door is the one Deek picks, and the night begins round them. After the reader comes to under the water tower, Amber is up at her front window with a page out of a notebook. Each reader who passes in the street gets a page of their own held up to the glass, then a second: TOMORROW. BACK DOOR. AFTER TEN. A knock on her glass is answered. Night one ends when the one who went in lies down on their own bed, or when first light comes round on its own; each reader keeps that they have had it and where they were when it got light.
 
