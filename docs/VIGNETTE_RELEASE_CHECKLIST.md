@@ -18,6 +18,8 @@ November 17 candidate 0.4.673 (docs/FALLOW_0_4_673.md): a shared afternoon with 
 
 November 17 candidate 0.4.672 (docs/FALLOW_0_4_672.md): a place built for what will happen in it. Can a reader walk every way the later parts will need (the House's door round the counter, out to the road, down into the cellar) with only what the place gives them, and are the ways that must stay shut (the trailer, the pads, a shut door) really shut? Does anything that looks walked through (wheat, a lifted flap, an open door's curb) have no more body than it shows, and anything a body must climb down (the cellar's steps) leave room over the head at every step? Is the haze near enough that the scene's edge is never seen, and gone under a roof?
 
+November 23 candidate 0.4.757 (docs/COLD_ROOM_0_4_757.md): a source of the understanding kind (pool 97, quota 33). Is the offer made only from what the House really kept of that reader, and can a reader alone still finish (by saying the line, or by waiting for the morning)?
+
 November 23 candidate 0.4.756 (docs/COLD_ROOM_0_4_756.md): a shared rite with harm. Does the cold stop short of the last three hearts and of freezing anyone through, and does a reader alone still have a way through it?
 
 November 23 candidate 0.4.755 (docs/COLD_ROOM_0_4_755.md): a voice made from a reader's records. Does every line come from a record the House really kept, or from what is true in the room, and does no reader ever see another's?

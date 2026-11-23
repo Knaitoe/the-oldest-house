@@ -845,6 +845,7 @@ public final class PellTexts {
         case "the_list"->"I went down the list myself, one name a night.";
         // 0.4.753: the waxworks becomes a Witness story.
         case "waxworks"->"I put one of them back on its mark myself.";
+        case "cold_room"->"I said the line that is not in the book, and I came back up the steps by myself.";
         default->"";
     };}
     /** The cane behind a door that will not open: when it starts; and, at the door, June calling and the answer she gets. */

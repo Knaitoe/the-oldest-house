@@ -151,7 +151,8 @@ public final class WitnessAccount {
         THE_LIST("the_list","The list","memory","Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list."),
         // 0.4.753 (docs/WAXWORKS_0_4_753.md): resolved by the night guard's log on the security office desk, ready to everyone still on
         // the shift at six with every hour's round in the log.
-        WAXWORKS("waxworks","The night shift","survival","I kept a night shift in a wax museum with a flashlight and counted the figures every hour. The plaques said twenty-three.");
+        WAXWORKS("waxworks","The night shift","survival","I kept a night shift in a wax museum with a flashlight and counted the figures every hour. The plaques said twenty-three."),
+        COLD_ROOM("cold_room","The back bedroom","understanding","I knelt by a bed in a cold house on a hill and read from a book, while something in the bed said my name.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

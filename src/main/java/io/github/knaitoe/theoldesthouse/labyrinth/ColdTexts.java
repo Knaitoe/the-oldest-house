@@ -96,4 +96,57 @@ public final class ColdTexts {
             "I have the book. When you come up, kneel where I can see you, and read when I read. Whatever it says to you, it says so that you will stop.",
             "I have done this once before, a long time ago, and it cost more than I was told it would. I am not counting on being lucky twice.\n\nT. Aske"));
     }
+    // ------------------------------------------------------------------------------------------------ the offer and the end (0.4.757)
+    public static String offerPet(String pet){return "I have "+pet+" here. Let me out of her and "+pet+" comes back to you, the way it was before.";}
+    public static String offerDeath(String message,String place){return end(message+(place.isBlank()?"":", "+place))+" I can make it so that never happened. Let me out of her.";}
+    public static final String OFFER_HOME="Let me out of her and I'll show you the way home. Not the House's way. Yours.";
+    public static final String ANSWER="Where?",KEEP_READING="Keep reading",TAKE_ME="Take me instead.",SAY_NOTHING="Say nothing";
+    public static final String LAUGH="She laughs. It goes on for a long time. Nothing is given back.",
+        SENT_DOWN="You are at the foot of the stairs, by the front door. The book is upstairs, and your place in it is gone.",
+        LAST_PAGE_OPEN="The last page of the book is blank. Whatever goes there has to be said by someone in the room.",
+        WHITE="Everything goes white.",
+        AT_WINDOW="You are at the window, your hands flat on the glass. Far below, the lamp at the foot of the steps.",
+        AT_FOOT="You are at the foot of the steps, under the lamp. There is snow on your coat. You are breathing.",
+        IN_KITCHEN="The kitchen. Her mother looks up from the table, and then past you, at the stairs.",
+        DAWN="The window goes grey. She is asleep, and breathing. The cold has lifted a little. On the stairs, slow steps: her mother has come up, and stops on the landing.";
+    public static String takenOthers(String who){return "The cold goes out of the room all at once. She is asleep. "+who+" is not in the room.";}
+
+    /** The account, in the reader's hand: what they read and held, what the voice had of them, what it offered, and how the night ended. */
+    public static ItemStack account(String name,net.minecraft.nbt.CompoundTag own){
+        var out=new ArrayList<String>();
+        var company=own.getString("Company").isBlank()?List.<String>of():List.of(own.getString("Company").split("\n"));
+        out.add("A letter asked for two, and I went to the house on the hill. The door did not lock. The mother stayed in the kitchen; her daughter was in the back bedroom. I went up."
+            +(company.isEmpty()?"":" "+names(company)+(company.size()==1?" was":" were")+" in the room with me."));
+        int read=own.getInt("ReadSeconds"),held=own.getInt("HeldSeconds"),water=own.getInt("Sprinkled");
+        String rite=read==0?"I did not read from the book.":"I knelt where the priest could see me and read when he read"+(read<60?", for less than a minute all told.":", for "+minutes(read)+" all told.");
+        if(held>0)rite+=" When the bed came up off the boards, I held her down by the shoulders.";
+        if(water>0)rite+=" I shook water over her "+times(water)+", and each time she was quiet for a moment.";
+        out.add(rite);
+        int used=own.getInt("VoiceUsed");
+        String voice="What talked in that bed knew my name.";
+        if((used&ColdNight.COMPANION)!=0)voice+=" It knew the name of a companion I lost, and how.";
+        if((used&ColdNight.DEATH)!=0)voice+=" It knew how I had died, and where.";
+        if((used&ColdNight.WROTE)!=0)voice+=" It said back to me a line I had written down.";
+        if((used&(ColdNight.COMPANION|ColdNight.DEATH|ColdNight.WROTE))==0)voice+=" Past that, it only said what was true in the room.";
+        int stirs=own.getInt("StirsHeard");
+        if(stirs>0)voice+=" Things in that room moved when nobody was looking. I heard "+(stirs==1?"one":"each of them")+". I never saw one move.";
+        out.add(voice);
+        int offered=own.getInt("Offered");
+        if(offered>0){
+            String what=own.getString("OfferedWhat");
+            String offer=switch(offered){case ColdEnd.COMPANION->"At the ninth page it offered me "+what+" back.";case ColdEnd.DEATH->"At the ninth page it offered to take back a death of mine.";default->"At the ninth page it offered me the way home.";};
+            if(own.getInt("Answered")>0)offer+=" Once, I asked it where. It laughed, and I was at the foot of the stairs with nothing.";
+            if(own.getBoolean("KeptReading"))offer+=" I kept reading.";
+            out.add(offer);
+        }
+        if(own.getInt("Pages")>=ColdRite.PRIEST_GIVES_OUT)out.add("At the eleventh page the priest stopped between one word and the next. He was in the chair by the bed with his hands open, and he did not answer again.");
+        String taker=own.getString("Taker");
+        if(own.getBoolean("TookHerPlace"))out.add("The last page was blank. I said what goes there. Then I was at the window with my hands on the glass, and then at the bottom of the steps under the lamp, in the snow. Whatever went down the steps with me has not said anything since.");
+        else if(!taker.isBlank())out.add("The last page was blank. "+taker+" said what goes there. The cold went out of the room all at once, and "+taker+" was not in it.");
+        else if(own.getBoolean("SawMorning"))out.add("The last page was blank, and nobody said anything. In the morning she was asleep, the cold had lifted a little, and her mother came up the stairs and stood on the landing. It was over. Nobody knows for how long.");
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.COLD_ROOM),name,pages(out.toArray(String[]::new)));
+    }
+    private static String names(List<String> n){return n.size()==1?n.get(0):String.join(", ",n.subList(0,n.size()-1))+" and "+n.get(n.size()-1);}
+    private static String times(int n){return n==1?"once":n==2?"twice":n+" times";}
+    private static String minutes(int s){int m=Math.max(1,Math.round(s/60F));return m==1?"about a minute":"about "+m+" minutes";}
 }

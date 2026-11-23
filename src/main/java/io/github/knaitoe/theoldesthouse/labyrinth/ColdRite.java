@@ -50,6 +50,12 @@ public final class ColdRite {
         final Map<UUID,Integer> lost=new HashMap<>();
         /** For the tests: this reader's place found, as if they had looked back. */
         public void lostClear(ServerPlayer p){lost.remove(p.getUUID());}final Set<UUID> holding=new HashSet<>();final Map<UUID,Integer> felt=new HashMap<>();
+        /** 0.4.757 (ColdEnd): who has had the offer, who answered it, who has been asked to say the last line; who read or held her. */
+        final Set<UUID> offered=new HashSet<>(),answered=new HashSet<>(),asked=new HashSet<>();final Map<UUID,String> company=new java.util.LinkedHashMap<>();
+        /** When the blank page was reached (night ticks); how it ended ("" while it goes on); who was taken, when (game time), and whether they are back indoors. */
+        int lastAt=-1;public String end="";public @javax.annotation.Nullable UUID taken;long takenAt;boolean home;
+        public boolean over(){return !end.isEmpty();}
+        public boolean answered(ServerPlayer p){return answered.contains(p.getUUID());}
     }
 
     public static boolean quiet(ColdNight.Night n){return n.rite.on&&n.t<n.rite.quietUntil;}
@@ -79,22 +85,23 @@ public final class ColdRite {
     }
     /** She spoke to this reader: their place in the book is lost. */
     public static void lose(ColdNight.Night n,ServerPlayer p){
-        if(!n.rite.on||n.rite.page>=PAGES)return;
+        if(!n.rite.on||n.rite.page>=PAGES||n.rite.answered(p))return;
         if(n.rite.lost.put(p.getUUID(),n.t)==null)ColdRoom.cue(p,ColdTexts.LOST_PLACE);
     }
     static boolean crouched(ServerPlayer p){return p.isShiftKeyDown()||p.isCrouching();}
     /** How far off where a reader looks something is, in degrees. */
     static double off(ServerPlayer p,Vec3 at){var to=at.subtract(p.getEyePosition());if(to.lengthSqr()<1e-6)return 0;return Math.toDegrees(Math.acos(Mth.clamp(p.getLookAngle().dot(to.normalize()),-1,1)));}
     static Vec3 bookAt(BlockPos b){return Vec3.atCenterOf(b.offset(ColdSite.BOOK)).add(0,-.4,0);}
-    static Vec3 bedAt(BlockPos b){return Vec3.atBottomCenterOf(b.offset(ColdSite.BED_HEAD)).add(-.5,.6,0);}
+    public static Vec3 bedAt(BlockPos b){return Vec3.atBottomCenterOf(b.offset(ColdSite.BED_HEAD)).add(-.5,.6,0);}
     /** A reader kneeling at the bedside, within reach of her: holding her down. */
     public static boolean holds(ServerPlayer p,BlockPos b){
+        var r=ColdNight.rite(b);if(r!=null&&(r.over()||r.answered(p)))return false;
         if(p.isSpectator()||!crouched(p)||!ColdSite.inBedroom(ColdNight.rel(p,b)))return false;
         var bed=bedAt(b);return Math.abs(p.getX()-bed.x)<2.2&&Math.abs(p.getZ()-bed.z)<1.7;
     }
     /** A reader kneeling in the bedroom with their eyes on the open book, and their place not lost. */
     public static boolean reads(ColdNight.Night n,ServerPlayer p,BlockPos b){
-        var r=n.rite;if(!r.on||r.page>=PAGES||p.isSpectator()||!crouched(p)||!ColdSite.inBedroom(ColdNight.rel(p,b)))return false;
+        var r=n.rite;if(!r.on||r.page>=PAGES||r.over()||r.answered(p)||p.isSpectator()||!crouched(p)||!ColdSite.inBedroom(ColdNight.rel(p,b)))return false;
         boolean looking=p.getEyePosition().distanceTo(bookAt(b))<7&&off(p,bookAt(b))<35;
         Integer lost=r.lost.get(p.getUUID());
         if(lost!=null){if(n.t-lost<INTERRUPT||!looking)return false;r.lost.remove(p.getUUID());ColdRoom.cue(p,ColdTexts.FOUND_PLACE);}
@@ -105,6 +112,7 @@ public final class ColdRite {
     /** Every second of the rite: who reads and who holds her, the pages, the cold. */
     static void tick(ServerLevel l,BlockPos b,ColdNight.Night n,List<ServerPlayer> readers){
         var r=n.rite;if(!r.on)return;
+        if(r.over()){r.cold=0;return;}
         int reading=0;var nowHolding=new HashSet<UUID>();
         for(var p:readers){
             if(reads(n,p,b)){reading++;mark(p,"ReadSeconds",1);}
@@ -118,6 +126,7 @@ public final class ColdRite {
         }
         if(!quiet(n))r.cold=Mth.clamp(r.cold+(reading>0?-3:4),0,100);
         for(var p:readers)cold(l,n,p);
+        ColdEnd.tick(l,b,n,readers);
     }
     /** A page read: said to everyone in the room; at the eleventh the priest gives out; the twelfth is blank. */
     static void turn(ServerLevel l,BlockPos b,ColdNight.Night n,List<ServerPlayer> readers){

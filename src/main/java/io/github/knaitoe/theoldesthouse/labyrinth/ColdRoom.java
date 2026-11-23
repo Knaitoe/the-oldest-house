@@ -38,8 +38,8 @@ public final class ColdRoom {
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int which(LiteraryActor a){return a.phase()-FIRST;}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until part 4. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /** 0.4.757: dealt like any other story, now that it has its end. */
+    public static boolean dealable(LabyrinthData d,UUID reader){return true;}
 
     /** A reader in: the three are put where they keep if they are not there, and the house's night sound goes round once. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -52,7 +52,9 @@ public final class ColdRoom {
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
         var at=b.offset(home(who));
         // 0.4.756: the priest moves about the bedroom in the rite (the window, the bedside, the chair), so he is looked for in all of it.
-        var box=who==PRIEST?new AABB(b.offset(ColdSite.BEDROOM.x0()-1,ColdSite.BEDROOM.y0()-1,ColdSite.BEDROOM.z0()-1)).minmax(new AABB(b.offset(ColdSite.BEDROOM.x1()+1,ColdSite.BEDROOM.y1()+1,ColdSite.BEDROOM.z1()+1))):new AABB(at).inflate(4);
+        // 0.4.757: the mother goes up to the landing in the morning, so she too is looked for in the whole house.
+        var box=who==PRIEST?new AABB(b.offset(ColdSite.BEDROOM.x0()-1,ColdSite.BEDROOM.y0()-1,ColdSite.BEDROOM.z0()-1)).minmax(new AABB(b.offset(ColdSite.BEDROOM.x1()+1,ColdSite.BEDROOM.y1()+1,ColdSite.BEDROOM.z1()+1)))
+            :who==MOTHER?new AABB(b.offset(-9,-1,-22)).minmax(new AABB(b.offset(4,8,0))):new AABB(at).inflate(4);
         for(var a:l.getEntitiesOfClass(LiteraryActor.class,box,x->is(x)&&x.phase()==FIRST+who))if(a.isAlive())return a;
         return null;
     }
@@ -77,7 +79,10 @@ public final class ColdRoom {
      */
     static void place(LiteraryActor a,BlockPos b,int who){
         switch(who){
-            case MOTHER->{var at=b.offset(ColdSite.MOTHER_CHAIR);float yaw=net.minecraft.core.Direction.EAST.toYRot();a.moveTo(at.getX()+.5,at.getY()+10/16.0,at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);}
+            case MOTHER->{
+                // 0.4.757: in the morning she has come up the stairs, and waits on the landing, facing the bedroom's door.
+                if(ColdNight.dawn(b)){var at=b.offset(ColdEnd.LANDING);float yaw=net.minecraft.core.Direction.NORTH.toYRot();a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setPose(Pose.STANDING);a.gesture(0);break;}
+                var at=b.offset(ColdSite.MOTHER_CHAIR);float yaw=net.minecraft.core.Direction.EAST.toYRot();a.moveTo(at.getX()+.5,at.getY()+10/16.0,at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);}
             case GIRL->{
                 var head=b.offset(ColdSite.BED_HEAD);float yaw=ColdSite.BED_FACING.toYRot();
                 a.moveTo(head.getX()+.5,head.getY()+10/16.0,head.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);

@@ -62,6 +62,8 @@ public final class ColdNight {
     /** For the tests and the account: the rite in this house, if the house has a night. */
     public static @Nullable ColdRite.Rite rite(BlockPos b){var n=night(b);return n==null?null:n.rite;}
     /** Where the priest is: at the window, kneeling by the bed, or found in the chair. */
+    /** 0.4.757: whether the night ended in the morning (her mother then waits on the landing). */
+    public static boolean dawn(BlockPos b){var n=night(b);return n!=null&&ColdEnd.MORNING.equals(n.rite.end);}
     public static int priest(BlockPos b){var n=night(b);return n==null?ColdRite.AT_WINDOW:n.rite.priest;}
     /** For the tests: one second of the rite, now. */
     public static void riteNow(ServerLevel l,BlockPos b){var n=night(b);if(n!=null)ColdRite.tick(l,b,n,who(l,b).get(0));}
@@ -81,11 +83,12 @@ public final class ColdNight {
         var l=e.getServer().getLevel(NovelRooms.dimension(ColdRoom.PLACE));if(l==null)return;
         for(long s:List.copyOf(NIGHTS.keySet())){
             var b=BlockPos.of(s);var n=NIGHTS.get(s);if(n==null)continue;
+            ColdEnd.taken(l,b,n);
             var w=who(l,b);var readers=w.get(0);var watchers=w.get(1);
             if(readers.isEmpty()){if(++n.empty>=EMPTY){putBack(l,b);NIGHTS.remove(s);ColdRoom.ensure(l,b);}continue;}
             n.empty=0;n.t++;
             if(n.t%20==10)ColdRite.tick(l,b,n,readers);
-            if(ColdRite.quiet(n))continue;
+            if(ColdRite.quiet(n)||n.rite.over())continue;
             if(n.t>=FIRST_STIR&&n.t-n.lastStir>=STIR&&n.t%20==0)stir(l,b,n,readers,watchers);
             if(n.t>=FIRST_VOICE&&n.t%20==5)speak(l,b,n,readers);
         }
@@ -118,6 +121,7 @@ public final class ColdNight {
     }
     /** One thing moves, if one can move unseen: the bed up, or down after a while up; the drawers out; the cross turned. */
     static void stir(ServerLevel l,BlockPos b,Night n,List<ServerPlayer> readers,List<ServerPlayer> watchers){
+        if(n.rite.over())return;
         var head=b.offset(ColdSite.BED_HEAD);var hs=l.getBlockState(head);
         boolean risen=ColdBlock.is(hs,ColdBlock.Kind.BED)&&hs.getValue(ColdBlock.STAGE)>=2;
         var options=new ArrayList<Runnable>();
@@ -158,6 +162,7 @@ public final class ColdNight {
     // ------------------------------------------------------------------------------------------------ the voice
     /** Her turn to speak: to the next reader in the bedroom, in turn, the next thing she has for them. */
     static void speak(ServerLevel l,BlockPos b,Night n,List<ServerPlayer> readers){
+        if(n.rite.over())return;
         if(n.t-n.lastVoice<(n.rite.on?VOICE_RITE:VOICE)&&n.lastVoice>=0)return;
         var here=new ArrayList<ServerPlayer>();for(var p:readers)if(ColdSite.inBedroom(rel(p,b)))here.add(p);
         if(here.isEmpty())return;

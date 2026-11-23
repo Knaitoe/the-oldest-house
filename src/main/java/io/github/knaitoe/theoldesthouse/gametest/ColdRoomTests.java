@@ -129,7 +129,7 @@ public final class ColdRoomTests {
             var paper=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);String text=String.join(" ",paper.pages().stream().map(pg->pg.raw().getString()).toList());
             h.assertTrue(text.contains("back bedroom")&&text.contains("Keep your coat on"),"the letter tells whoever comes where she is");
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            h.assertTrue(ColdRoom.dealable(f.data(),p.getUUID()),"0.4.757: the House deals it, now that it has its end");
             done();h.succeed();
         });
     }
@@ -282,6 +282,126 @@ public final class ColdRoomTests {
             h.assertTrue(r.page==ColdRite.PAGES&&told(p).contains(ColdTexts.LAST_PAGE),"the twelfth page is blank: "+r.page);
             for(int i=0;i<10;i++)ColdNight.riteNow(l,b);
             h.assertTrue(r.page==ColdRite.PAGES,"and the reading stops there");
+            done();h.succeed();
+        });
+    }
+    private static String text(net.minecraft.world.item.ItemStack book){
+        var c=book.get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT);var out=new StringBuilder();
+        if(c!=null)for(var page:c.pages())out.append(page.raw().getString()).append(' ');
+        return out.toString().replace('\n',' ');
+    }
+    private static void kneel(ServerPlayer p,ServerLevel l,BlockPos b,double z){p.teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()+z,90,20);p.setShiftKeyDown(true);}
+    private static void toPage(ServerLevel l,BlockPos b,int page,ServerPlayer... readers){
+        var r=ColdNight.rite(b);r.page=page-1;r.progress=ColdRite.PAGE*(page-1);r.quietUntil=-1;
+        for(int i=0;i<ColdRite.PAGE/10&&r.page<page;i++){for(var p:readers)r.lostClear(p);ColdNight.riteNow(l,b);}
+    }
+    private static boolean in(ServerPlayer p,BlockPos b,ColdSite.Area a){return a.contains(p.position().subtract(b.getX(),b.getY(),b.getZ()));}
+
+    /**
+     * 0.4.757, the offer and the one who is taken. From the ninth page she makes each reader in the bedroom an offer from their own
+     * records: to the first their lost companion, by name; to the second, who has lost nothing the House saw, the way home. The second
+     * answers her: they are sent down to the hall, and read no more that night. The first keeps reading. At the blank last page the first,
+     * within reach of the bed, is asked; the second, who answered, is not, and a spectator is never asked. The first says it: they are
+     * taken, at the window, at the foot of the steps, and back in the kitchen; they took her place. The one who answered is not finished.
+     * The account says what the taker did.
+     */
+    @GameTest(template="empty",batch="cold_room_offer",timeoutTicks=2400)
+    public static void theOfferAnsweredAndTheOneWhoIsTaken(GameTestHelper h){
+        var f=place(h);var p=f.player("cold_keeps",P);var q=f.player("cold_answers",P);var l=f.level(P);var b=f.base(P);
+        ServerPlayer[] s={null};
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            ColdRoom.ensure(l,b);ColdRoom.arrive(p,b,f.own(p,P));ColdRoom.arrive(q,b,f.own(q,P));
+        }).thenWaitUntil(()->h.assertTrue(ColdRoom.find(l,b,ColdRoom.PRIEST)!=null,"the priest is in the house")).thenExecute(()->{
+            var d=f.data();var rec=HotelVignette.personal(d,p.getUUID());var lost=new net.minecraft.nbt.ListTag();var pet=new net.minecraft.nbt.CompoundTag();
+            pet.putString("Name","Biscuit");pet.putString("Message","Biscuit was slain by Zombie");lost.add(pet);rec.put("LostPets",lost);HotelVignette.save(d,p.getUUID(),rec);
+            kneel(p,l,b,-16.5);kneel(q,l,b,-17.5);
+            f.click(p,P,ColdSite.BOOK);
+            s[0]=NativeTestPlayers.survival(h,"cold_offer_watch");f.players.add(s[0]);s[0].setGameMode(GameType.SPECTATOR);s[0].teleportTo(l,b.getX()+.5,b.getY()+5,b.getZ()-15.5,90,20);
+        }).thenIdle(2).thenExecute(()->{
+            toPage(l,b,ColdEnd.OFFER_PAGE,p,q);
+            var r=ColdNight.rite(b);
+            h.assertTrue(r.page==ColdEnd.OFFER_PAGE,"the ninth page is read: "+r.page);
+            h.assertTrue(Talk.waiting(p,ColdEnd.OFFER)&&Talk.waiting(q,ColdEnd.OFFER),"at the ninth page she makes each reader in the room an offer");
+            h.assertFalse(Talk.waiting(s[0],ColdEnd.OFFER),"a spectator is offered nothing");
+            h.assertTrue(f.own(p,P).getInt("Offered")==ColdEnd.COMPANION&&f.own(p,P).getString("OfferedWhat").equals("Biscuit")&&Talk.lines(p).stream().anyMatch(x->x.contains("Biscuit")),"to the first, the companion the House saw them lose, by name: "+Talk.lines(p));
+            h.assertTrue(f.own(q,P).getInt("Offered")==ColdEnd.HOME&&Talk.lines(q).stream().noneMatch(x->x.contains("Biscuit")),"to the second, who lost nothing the House saw, only the way home, and nothing of the first's");
+            h.assertTrue(Talk.replies(p).equals(List.of(ColdTexts.ANSWER,ColdTexts.KEEP_READING)),"she can be answered, or the reading kept: "+Talk.replies(p));
+            Talk.choose(q,ColdTexts.ANSWER);Talk.choose(p,ColdTexts.KEEP_READING);
+            h.assertTrue(r.answered(q)&&f.own(q,P).getInt("Answered")==1&&in(q,b,ColdSite.HALL),"the one who answered is sent down to the hall, by the door: "+q.position().subtract(b.getX(),b.getY(),b.getZ()));
+            h.assertTrue(f.own(p,P).getBoolean("KeptReading")&&!r.answered(p),"the other keeps reading");
+            kneel(q,l,b,-17.5);
+        }).thenIdle(2).thenExecute(()->{
+            var n=ColdNight.night(b);var r=ColdNight.rite(b);r.lostClear(q);
+            h.assertFalse(ColdRite.reads(n,q,b),"the one who answered reads no more that night, even kneeling at the book");
+            toPage(l,b,ColdRite.PAGES,p);
+            h.assertTrue(r.page==ColdRite.PAGES,"the last page is reached: "+r.page);
+            p.teleportTo(l,b.getX()+1.5,b.getY()+5,b.getZ()-16.5,90,30);q.teleportTo(l,b.getX()+1.5,b.getY()+5,b.getZ()-17.8,90,30);s[0].teleportTo(l,b.getX()+1.5,b.getY()+5,b.getZ()-15.6,90,30);
+        }).thenIdle(2).thenExecute(()->{
+            ColdNight.riteNow(l,b);
+            h.assertTrue(Talk.waiting(p,ColdEnd.LAST)&&Talk.replies(p).equals(List.of(ColdTexts.TAKE_ME,ColdTexts.SAY_NOTHING)),"within reach of the bed, the reader is asked to say what the book does not: "+Talk.replies(p));
+            h.assertFalse(Talk.waiting(q,ColdEnd.LAST),"the one who answered her is not asked");
+            h.assertFalse(Talk.waiting(s[0],ColdEnd.LAST),"nor is a spectator");
+            Talk.choose(p,ColdTexts.TAKE_ME);
+            var r=ColdNight.rite(b);
+            h.assertTrue(r.over()&&p.getUUID().equals(r.taken)&&r.cold==0,"the first to say it is taken, and the cold goes");
+            var own=f.own(p,P);
+            h.assertTrue(own.getBoolean("TookHerPlace")&&own.getBoolean("Ready")&&own.getString("Outcome").equals("took_her_place"),"they took her place: "+own.getString("Outcome"));
+            h.assertFalse(f.own(q,P).getBoolean("Ready"),"the one who answered her is not finished");
+            h.assertFalse(f.own(s[0],P).getBoolean("Ready"),"nor is the spectator");
+        }).thenIdle(ColdEnd.AT_WINDOW+3).thenExecute(()->{
+            h.assertTrue(in(p,b,ColdSite.BEDROOM)&&p.getZ()-b.getZ()<-19,"they are at the window: "+p.position().subtract(b.getX(),b.getY(),b.getZ()));
+        }).thenIdle(ColdEnd.AT_FOOT-ColdEnd.AT_WINDOW).thenExecute(()->{
+            h.assertTrue(Math.abs(p.getY()-b.getY()-ColdSite.FOOT_Y)<1.01&&p.getZ()-b.getZ()<ColdSite.FOOT_Z0+.5,"then at the foot of the steps: "+p.position().subtract(b.getX(),b.getY(),b.getZ()));
+        }).thenIdle(ColdEnd.IN_KITCHEN-ColdEnd.AT_FOOT+2).thenExecute(()->{
+            h.assertTrue(in(p,b,ColdSite.KITCHEN),"and back in the kitchen: "+p.position().subtract(b.getX(),b.getY(),b.getZ()));
+            f.click(p,P,ColdSite.KITCHEN_TABLE);
+            h.assertTrue(f.own(p,P).contains("Original_Ending"),"the account waits on the kitchen table");
+            String account=text(ColdTexts.account(p.getName().getString(),f.own(p,P)));
+            h.assertTrue(account.contains("I said what goes there")&&account.contains("Biscuit")&&account.contains("I kept reading"),"the account says what the taker did: "+account);
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.757, nobody says it. Two readers read to the last page and are both asked; both say nothing (a spectator is never asked). At
+     * dawn she sleeps, the cold goes and her mother comes up to the landing, and stays there (one of her, however often the house is
+     * looked after). Both saw the morning; each account names the other reader and how it ended.
+     */
+    @GameTest(template="empty",batch="cold_room_dawn",timeoutTicks=1600)
+    public static void nobodySaysItAndTheMorningComes(GameTestHelper h){
+        var f=place(h);var p=f.player("cold_dawn_one",P);var q=f.player("cold_dawn_two",P);var l=f.level(P);var b=f.base(P);
+        ServerPlayer[] s={null};
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            ColdRoom.ensure(l,b);ColdRoom.arrive(p,b,f.own(p,P));ColdRoom.arrive(q,b,f.own(q,P));
+        }).thenWaitUntil(()->h.assertTrue(ColdRoom.find(l,b,ColdRoom.MOTHER)!=null&&ColdRoom.find(l,b,ColdRoom.PRIEST)!=null,"the mother and the priest are in the house")).thenExecute(()->{
+            kneel(p,l,b,-16.5);kneel(q,l,b,-17.5);f.click(p,P,ColdSite.BOOK);
+            s[0]=NativeTestPlayers.survival(h,"cold_dawn_watch");f.players.add(s[0]);s[0].setGameMode(GameType.SPECTATOR);
+        }).thenIdle(2).thenExecute(()->{
+            toPage(l,b,ColdRite.PAGES,p,q);
+            for(var x:List.of(p,q))if(Talk.waiting(x,ColdEnd.OFFER))Talk.choose(x,ColdTexts.KEEP_READING);
+            h.assertTrue(ColdNight.rite(b).page==ColdRite.PAGES,"the last page is reached");
+            p.teleportTo(l,b.getX()+1.5,b.getY()+5,b.getZ()-16.2,90,30);q.teleportTo(l,b.getX()+1.5,b.getY()+5,b.getZ()-17.8,90,30);s[0].teleportTo(l,b.getX()+1.5,b.getY()+5,b.getZ()-15.6,90,30);
+        }).thenIdle(2).thenExecute(()->{
+            ColdNight.riteNow(l,b);
+            h.assertTrue(Talk.waiting(p,ColdEnd.LAST)&&Talk.waiting(q,ColdEnd.LAST),"both are asked");
+            h.assertFalse(Talk.waiting(s[0],ColdEnd.LAST),"the spectator is not");
+            Talk.choose(p,ColdTexts.SAY_NOTHING);Talk.choose(q,ColdTexts.SAY_NOTHING);
+            h.assertFalse(ColdNight.rite(b).over(),"saying nothing ends nothing");
+            ColdNight.riteNow(l,b);
+            h.assertFalse(Talk.waiting(p,ColdEnd.LAST),"a reader who said nothing is not asked again");
+            ColdEnd.dawnNow(l,b);
+            var r=ColdNight.rite(b);
+            h.assertTrue(r.over()&&ColdNight.dawn(b)&&r.cold==0,"the morning comes, and the cold goes");
+            var mother=ColdRoom.find(l,b,ColdRoom.MOTHER);
+            h.assertTrue(mother!=null&&mother.blockPosition().equals(b.offset(ColdEnd.LANDING)),"her mother has come up to the landing: "+(mother==null?"gone":mother.blockPosition().subtract(b)));
+            ColdRoom.ensure(l,b);ColdRoom.arrive(p,b,f.own(p,P));
+            int mothers=l.getEntitiesOfClass(LiteraryActor.class,new AABB(b).inflate(64),a->ColdRoom.is(a)&&ColdRoom.which(a)==ColdRoom.MOTHER).size();
+            h.assertTrue(mothers==1&&ColdRoom.find(l,b,ColdRoom.MOTHER).blockPosition().equals(b.offset(ColdEnd.LANDING)),"and stays there, one of her: "+mothers);
+            for(var x:List.of(p,q)){var own=f.own(x,P);h.assertTrue(own.getBoolean("Ready")&&own.getString("Outcome").equals("saw_the_morning"),x.getName().getString()+" saw the morning: "+own.getString("Outcome"));}
+            h.assertFalse(f.own(s[0],P).getBoolean("Ready"),"the spectator is not finished");
+            String one=text(ColdTexts.account(p.getName().getString(),f.own(p,P)));
+            h.assertTrue(one.contains(q.getName().getString())&&one.contains("nobody said anything"),"the account names the other reader and how it ended: "+one);
+            h.assertFalse(ColdNight.stirNow(l,b),"after the morning nothing in the room moves");
             done();h.succeed();
         });
     }

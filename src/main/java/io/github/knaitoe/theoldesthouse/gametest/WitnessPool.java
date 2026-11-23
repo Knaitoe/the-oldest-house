@@ -34,5 +34,5 @@ package io.github.knaitoe.theoldesthouse.gametest;
  */
 final class WitnessPool {
     private WitnessPool(){}
-    static final int SOURCES=96,REQUIRED=33,LITERARY=72;
+    static final int SOURCES=97,REQUIRED=33,LITERARY=73;
 }
