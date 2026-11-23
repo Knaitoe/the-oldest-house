@@ -117,12 +117,13 @@ public final class ColdRoomTests {
             var girl=ColdRoom.find(l,b,ColdRoom.GIRL);
             h.assertTrue(girl!=null&&girl.getPose()==Pose.SLEEPING,"with a reader in the room she still lies there");
             for(var at:List.of(ColdSite.HOOKS,ColdSite.KITCHEN_TABLE,ColdSite.STOVE,ColdSite.SINK,ColdSite.MOTHER_CHAIR,ColdSite.CHAIR,ColdSite.BED_HEAD,ColdSite.BED_FOOT,
-                ColdSite.DRESSER,ColdSite.BOOK,ColdSite.CRUCIFIX,ColdSite.LAMP_TABLE,ColdSite.FLASK_TABLE,ColdSite.RADIATOR[0],ColdSite.BULBS[0],new BlockPos(-1,6,-22)))f.click(p,P,at);
+                ColdSite.DRESSER,ColdSite.CRUCIFIX,ColdSite.LAMP_TABLE,ColdSite.FLASK_TABLE,ColdSite.RADIATOR[0],ColdSite.BULBS[0],new BlockPos(-1,6,-22)))f.click(p,P,at);
             for(int who=0;who<ColdRoom.CAST;who++)ColdRoom.talk(p,ColdRoom.find(l,b,who),f.own(p,P));
+            f.click(p,P,ColdSite.BOOK);
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
             for(String line:List.of(ColdTexts.HOOKS,ColdTexts.KITCHEN_TABLE,ColdTexts.STOVE,ColdTexts.SINK,ColdTexts.CHAIR,ColdTexts.BEDSIDE_CHAIR,ColdTexts.PILLOW,ColdTexts.BED,
-                ColdTexts.DRESSER,ColdTexts.BOOK,ColdTexts.CRUCIFIX,ColdTexts.LAMP_TABLE,ColdTexts.FLASK_TABLE,ColdTexts.RADIATOR,ColdTexts.BULB,ColdTexts.WINDOW))
+                ColdTexts.DRESSER,ColdTexts.RITE_BEGINS,ColdTexts.CRUCIFIX,ColdTexts.LAMP_TABLE,ColdTexts.FLASK_TABLE,ColdTexts.RADIATOR,ColdTexts.BULB,ColdTexts.WINDOW))
                 h.assertTrue(why.contains(line),"each says what it is: missing \""+line+"\" in "+why);
             for(int who=0;who<ColdRoom.CAST;who++)h.assertTrue(why.contains(ColdTexts.touch(who)),"person "+who+" answers a hand");
             var paper=LiteraryTexts.source(P).get(DataComponents.WRITTEN_BOOK_CONTENT);String text=String.join(" ",paper.pages().stream().map(pg->pg.raw().getString()).toList());
@@ -211,6 +212,76 @@ public final class ColdRoomTests {
             h.assertTrue(mine.stream().anyMatch(x->x.startsWith("From the bed")&&x.contains(p.getName().getString())),"the first hears their own name: "+mine);
             h.assertTrue(theirs.stream().anyMatch(x->x.contains(q.getName().getString()))&&theirs.stream().noneMatch(x->x.contains(p.getName().getString()+". That's")),"the second hears their own, not the first's: "+theirs);
             h.assertTrue((f.own(p,P).getInt("VoiceUsed")&ColdNight.NAME)!=0,"what she used is kept for the account");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.756, the rite. A hand on the book opens it and the priest kneels by the bed. A reader kneeling with their eyes on the book reads,
+     * and the pages turn and are said to them; a spectator kneeling there reads nothing. When she speaks to the reader, they lose their
+     * place and read again only after looking back at the page. Nobody reading, the cold rises: breath, frost short of frozen, and a hurt
+     * that never takes the last three hearts. The flask holds six. A second reader kneeling at the bedside holds her, and the risen bed
+     * comes down under them. At the eleventh page the priest is found in the chair; the twelfth page is blank, and reading stops there.
+     */
+    @GameTest(template="empty",batch="cold_room_rite",timeoutTicks=2400)
+    public static void theRiteItsPagesTheColdTheWaterAndThePriest(GameTestHelper h){
+        var f=place(h);var p=f.player("cold_reads",P);var q=f.player("cold_holds",P);var l=f.level(P);var b=f.base(P);
+        net.minecraft.server.level.ServerPlayer[] s={null};float[] progress={0};
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            ColdRoom.ensure(l,b);ColdRoom.arrive(p,b,f.own(p,P));ColdRoom.arrive(q,b,f.own(q,P));
+            p.teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()-16.5,90,20);q.teleportTo(l,b.getX()-6.5,b.getY(),b.getZ()-5.5,0,0);
+        }).thenWaitUntil(()->h.assertTrue(ColdRoom.find(l,b,ColdRoom.PRIEST)!=null,"the priest is in the house")).thenExecute(()->{
+            p.teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()-16.5,90,20);p.setShiftKeyDown(true);told(p);
+            f.click(p,P,ColdSite.BOOK);
+            var r=ColdNight.rite(b);
+            h.assertTrue(r!=null&&r.on&&stage(l,b,ColdSite.BOOK)==1,"a hand on the book opens it and the rite begins: "+(r==null?"no night":r.on+" "+stage(l,b,ColdSite.BOOK))+" at "+p.position().subtract(b.getX(),b.getY(),b.getZ())+" "+told(p));
+            var priest=ColdRoom.find(l,b,ColdRoom.PRIEST);
+            h.assertTrue(priest.getPose()==Pose.CROUCHING&&priest.blockPosition().equals(b.offset(ColdRite.KNEEL)),"the priest kneels by the bed: "+priest.blockPosition().subtract(b));
+            for(int i=0;i<ColdRite.PAGE/20;i++)ColdNight.riteNow(l,b);
+            h.assertTrue(r.page>=1&&f.own(p,P).getInt("Pages")>=1,"kneeling with eyes on the book, a page is read: "+r.page);
+            h.assertTrue(told(p).stream().anyMatch(x->x.startsWith("The priest reads, and you read with him")),"the page is said to the reader");
+            s[0]=NativeTestPlayers.survival(h,"cold_kneels");f.players.add(s[0]);s[0].setGameMode(GameType.SPECTATOR);
+            s[0].teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()-15.5,90,20);s[0].setShiftKeyDown(true);
+        }).thenIdle(2).thenExecute(()->{
+            var r=ColdNight.rite(b);
+            h.assertFalse(ColdRite.reads(ColdNight.night(b),s[0],b),"a spectator kneeling at the book reads nothing");
+            ColdNight.voiceNow(l,b);progress[0]=(float)r.progress;ColdNight.riteNow(l,b);
+            h.assertTrue(r.progress==progress[0],"spoken to, the reader has lost their place: "+progress[0]+" "+r.progress);
+            h.assertTrue(told(p).contains(ColdTexts.LOST_PLACE),"and is told so");
+        }).thenIdle(ColdRite.INTERRUPT+5).thenExecute(()->{
+            var r=ColdNight.rite(b);progress[0]=(float)r.progress;ColdNight.riteNow(l,b);
+            h.assertTrue(r.progress>progress[0],"looking back at the page after a moment, they read again");
+            p.setShiftKeyDown(false);double before=r.cold;
+            for(int i=0;i<10;i++)ColdNight.riteNow(l,b);
+            h.assertTrue(r.cold>before+20,"nobody reading, the cold rises: "+before+" > "+r.cold);
+            h.assertTrue(p.getTicksFrozen()>0&&p.getTicksFrozen()<p.getTicksRequiredToFreeze(),"the frost comes, short of frozen: "+p.getTicksFrozen());
+            r.cold=100;p.setHealth(8);
+        }).thenIdle(220).thenExecute(()->{
+            h.assertTrue(p.getHealth()>=6&&p.getHealth()<8,"the worst of the cold hurts, never past the last three hearts: "+p.getHealth());
+            h.assertTrue(p.getTicksFrozen()<p.getTicksRequiredToFreeze(),"and never freezes anyone through");
+            p.teleportTo(l,b.getX()+2.5,b.getY()+5,b.getZ()-20.5,0,30);
+            for(int i=0;i<ColdRite.WATER;i++)f.click(p,P,ColdSite.FLASK_TABLE);
+            var r=ColdNight.rite(b);
+            h.assertTrue(r.water==0&&ColdRite.quiet(ColdNight.night(b))&&f.own(p,P).getInt("Sprinkled")==ColdRite.WATER,"the flask holds six, and the water quiets her: "+r.water+" "+f.own(p,P).getInt("Sprinkled")+" "+told(p));
+            told(p);f.click(p,P,ColdSite.FLASK_TABLE);
+            h.assertTrue(told(p).contains(ColdTexts.FLASK_EMPTY),"then it is empty");
+            q.teleportTo(l,b.getX()+1.3,b.getY()+5,b.getZ()-16.4,90,30);q.setShiftKeyDown(true);
+            for(var at:List.of(ColdSite.BED_HEAD,ColdSite.BED_FOOT)){var st=l.getBlockState(b.offset(at));l.setBlock(b.offset(at),st.setValue(ColdBlock.STAGE,st.getValue(ColdBlock.STAGE)%2+2),3);}
+        }).thenIdle(2).thenExecute(()->{
+            ColdNight.riteNow(l,b);
+            h.assertTrue(ColdRite.holds(q,b)&&stage(l,b,ColdSite.BED_HEAD)==0&&f.own(q,P).getInt("HeldSeconds")>=1,"kneeling at the bedside holds her, and the bed comes down under them");
+            for(int i=0;i<4;i++)h.assertFalse(ColdNight.stirNow(l,b)&&stage(l,b,ColdSite.BED_HEAD)>=2,"while she is held, the bed does not rise");
+            var r=ColdNight.rite(b);r.progress=ColdRite.PAGE*(ColdRite.PRIEST_GIVES_OUT)-1;r.page=ColdRite.PRIEST_GIVES_OUT-1;r.quietUntil=-1;
+            p.setShiftKeyDown(true);p.teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()-16.5,90,20);
+        }).thenIdle(2).thenExecute(()->{
+            var r=ColdNight.rite(b);r.lostClear(p);told(p);ColdNight.riteNow(l,b);
+            h.assertTrue(r.page==ColdRite.PRIEST_GIVES_OUT&&r.priest==ColdRite.DOWN,"at the eleventh page the priest gives out: "+r.page);
+            h.assertTrue(ActorSeat.of(ColdRoom.find(l,b,ColdRoom.PRIEST))!=null,"he is found in the chair by the bed");
+            h.assertTrue(told(p).contains(ColdTexts.PRIEST_DOWN),"and the reader is told");
+            for(int i=0;i<ColdRite.PAGE/10;i++){r.lostClear(p);ColdNight.riteNow(l,b);}
+            h.assertTrue(r.page==ColdRite.PAGES&&told(p).contains(ColdTexts.LAST_PAGE),"the twelfth page is blank: "+r.page);
+            for(int i=0;i<10;i++)ColdNight.riteNow(l,b);
+            h.assertTrue(r.page==ColdRite.PAGES,"and the reading stops there");
             done();h.succeed();
         });
     }

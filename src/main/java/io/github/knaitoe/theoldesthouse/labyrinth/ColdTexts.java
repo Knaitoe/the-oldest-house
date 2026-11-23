@@ -42,6 +42,32 @@ public final class ColdTexts {
         "He does not turn from the window. \"Not yet,\" he says. \"When it's time, I'll call you. Keep your coat on.\""};
     public static String touch(int i){return i>=0&&i<TOUCH.length?TOUCH[i]:TOUCH[0];}
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
+    // ------------------------------------------------------------------------------------------------ the rite (0.4.756)
+    public static final String RITE_BEGINS="The priest kneels by the bed and opens his own copy. \"Kneel there, where I can see you,\" he says. \"Read when I read. Don't stop for anything she says.\"",
+        PRIEST_KNEELING="\"Read,\" he says, and does not look up.",
+        PRIEST_DOWN="The priest stops between one word and the next. He is sitting in the chair by the bed, his hands open in his lap, and he does not answer.",
+        PRIEST_STILL="His hands are cold. He does not answer.",
+        LOST_PLACE="You have lost your place in the book.",FOUND_PLACE="You find your place again.",
+        HOLD="You hold her down by the shoulders. The bed stays where it is.",
+        SPRINKLE="You shake water from the flask over the bed. She goes quiet.",FLASK_EMPTY="The flask is empty.",
+        COLD_BREATH="Your breath stands in the air.",COLD_HANDS="The cold is in your hands now. The pages are hard to turn.",
+        LAST_PAGE="The last page of the book is blank.";
+    /** The rite's pages, one to eleven; the twelfth is blank. */
+    private static final String[] RITE={
+        "I name this house, its doors and its stairs, and everything in it that was not asked in.",
+        "I name the cold in this room. It is not hers. Let it go back where it came from.",
+        "Whatever has her by the wrists, listen. You were not asked here, and nobody here wants you.",
+        "Her name is her own. You have no use for it. Give it back.",
+        "Every word you say is a borrowed word. Give them back to the ones you took them from.",
+        "We will still be here when you are tired.",
+        "Leave the bed. Leave the drawers. Leave the cross where it hangs.",
+        "You can have nobody in this house who does not give themselves to you.",
+        "Go out of her by the way you came in.",
+        "Go out of her. Go out of her. Go out of her.",
+        "Nothing is owed you here. Nothing was ever owed you."};
+    public static String read(int page,boolean withPriest){return (withPriest?"The priest reads, and you read with him: ":"You read: ")+"\""+RITE[Math.max(1,Math.min(RITE.length,page))-1]+"\"";}
+    public static String bookAt(int page){return "The book lies open at page "+page+" of twelve.";}
+
     // ------------------------------------------------------------------------------------------------ the voice (0.4.755)
     /** How her words come: the first time to each reader, and after. */
     public static final String VOICE_FIRST="From the bed, in a voice that is not hers: ",VOICE_AGAIN="From the bed: ";

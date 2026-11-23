@@ -99,6 +99,7 @@ public final class ColdSite {
     private static final Direction N=Direction.NORTH,S=Direction.SOUTH,E=Direction.EAST,W=Direction.WEST;
 
     public static void build(ServerLevel l,BlockPos b){
+        ColdNight.forget(b);
         box(l,b,WEST,BOTTOM,NORTH,EAST,TOP,0,NIGHT);
         box(l,b,HOUSE_WEST,-1,HOUSE_NORTH,HOUSE_EAST,HOUSE_TOP,0,mat("brick"));
         for(var a:AREAS)box(l,b,a.x0(),a.y0(),a.z0(),a.x1(),a.y1(),a.z1(),AIR);

@@ -45,15 +45,26 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public final class ColdNight {
     private ColdNight(){}
     /** Ticks: the first stir, and how often one is tried after it; how long the bed stays up before it may come down; the voice's turn. */
-    public static final int FIRST_STIR=300,STIR=200,RISEN=60,VOICE=240,FIRST_VOICE=60,EMPTY=600;
+    public static final int FIRST_STIR=300,STIR=200,RISEN=60,VOICE=240,FIRST_VOICE=60,EMPTY=600,VOICE_RITE=160;
     /** Bits of what the voice has used for a reader, kept for the account: their name, a companion, a death, their own words. */
     public static final int NAME=1,COMPANION=2,DEATH=4,WROTE=8;
 
-    static final class Night {
+    public static final class Night {
         int t,empty,stirs,turn,lastStir=-1000,risenAt=-1000;long lastVoice=-1000;
+        /** 0.4.756: the rite, one to the house. */
+        final ColdRite.Rite rite=new ColdRite.Rite();
     }
     static final Map<Long,Night> NIGHTS=new ConcurrentHashMap<>();
+    /** A house built afresh starts a fresh night. */
+    public static void forget(BlockPos b){NIGHTS.remove(b.asLong());}
     public static void open(BlockPos b){NIGHTS.computeIfAbsent(b.asLong(),k->new Night());}
+    public static @Nullable Night night(BlockPos b){return NIGHTS.get(b.asLong());}
+    /** For the tests and the account: the rite in this house, if the house has a night. */
+    public static @Nullable ColdRite.Rite rite(BlockPos b){var n=night(b);return n==null?null:n.rite;}
+    /** Where the priest is: at the window, kneeling by the bed, or found in the chair. */
+    public static int priest(BlockPos b){var n=night(b);return n==null?ColdRite.AT_WINDOW:n.rite.priest;}
+    /** For the tests: one second of the rite, now. */
+    public static void riteNow(ServerLevel l,BlockPos b){var n=night(b);if(n!=null)ColdRite.tick(l,b,n,who(l,b).get(0));}
     public static int stirs(BlockPos b){var n=NIGHTS.get(b.asLong());return n==null?0:n.stirs;}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){NIGHTS.clear();}
 
@@ -71,8 +82,10 @@ public final class ColdNight {
         for(long s:List.copyOf(NIGHTS.keySet())){
             var b=BlockPos.of(s);var n=NIGHTS.get(s);if(n==null)continue;
             var w=who(l,b);var readers=w.get(0);var watchers=w.get(1);
-            if(readers.isEmpty()){if(++n.empty>=EMPTY){putBack(l,b);NIGHTS.remove(s);}continue;}
+            if(readers.isEmpty()){if(++n.empty>=EMPTY){putBack(l,b);NIGHTS.remove(s);ColdRoom.ensure(l,b);}continue;}
             n.empty=0;n.t++;
+            if(n.t%20==10)ColdRite.tick(l,b,n,readers);
+            if(ColdRite.quiet(n))continue;
             if(n.t>=FIRST_STIR&&n.t-n.lastStir>=STIR&&n.t%20==0)stir(l,b,n,readers,watchers);
             if(n.t>=FIRST_VOICE&&n.t%20==5)speak(l,b,n,readers);
         }
@@ -110,7 +123,7 @@ public final class ColdNight {
         var options=new ArrayList<Runnable>();
         var bedAt=Vec3.atCenterOf(head).add(-.5,0,0);
         if(!seen(l,watchers,bedAt)&&!seen(l,watchers,Vec3.atCenterOf(b.offset(ColdSite.BED_FOOT)))){
-            if(!risen)options.add(()->{bed(l,b,true);n.risenAt=n.t;});
+            if(!risen&&!ColdRite.held(n))options.add(()->{bed(l,b,true);n.risenAt=n.t;});
             else if(n.t-n.risenAt>=RISEN)options.add(()->bed(l,b,false));
         }
         var dresser=b.offset(ColdSite.DRESSER);var ds=l.getBlockState(dresser);
@@ -127,28 +140,29 @@ public final class ColdNight {
     }
     /** The bed's head and foot up off the boards together, or down again, with the knock of its legs. */
     static void bed(ServerLevel l,BlockPos b,boolean up){
+        boolean moved=false;
         for(var rel:new BlockPos[]{ColdSite.BED_HEAD,ColdSite.BED_FOOT}){
             var at=b.offset(rel);var st=l.getBlockState(at);if(!ColdBlock.is(st,ColdBlock.Kind.BED))continue;
             int stage=st.getValue(ColdBlock.STAGE)%2+(up?2:0);
-            if(stage!=st.getValue(ColdBlock.STAGE))l.setBlock(at,st.setValue(ColdBlock.STAGE,stage),Block.UPDATE_CLIENTS);
+            if(stage!=st.getValue(ColdBlock.STAGE)){l.setBlock(at,st.setValue(ColdBlock.STAGE,stage),Block.UPDATE_CLIENTS);moved=true;}
         }
-        l.playSound(null,b.offset(ColdSite.BED_HEAD),ColdRegistry.BED.get(),SoundSource.BLOCKS,1F,up?1F:.85F);
+        if(moved)l.playSound(null,b.offset(ColdSite.BED_HEAD),ColdRegistry.BED.get(),SoundSource.BLOCKS,1F,up?1F:.85F);
     }
     /** The bedroom as it was: the bed down, the drawers shut, the cross upright. Only where the house is loaded. */
     public static void putBack(ServerLevel l,BlockPos b){
         if(!l.isLoaded(b.offset(ColdSite.BED_HEAD)))return;
-        bed(l,b,false);
+        bed(l,b,false);ColdRite.putBack(l,b);
         for(var rel:new BlockPos[]{ColdSite.DRESSER,ColdSite.CRUCIFIX}){var at=b.offset(rel);var st=l.getBlockState(at);if(ColdBlock.is(st)&&st.getValue(ColdBlock.STAGE)!=0)l.setBlock(at,st.setValue(ColdBlock.STAGE,0),Block.UPDATE_CLIENTS);}
     }
 
     // ------------------------------------------------------------------------------------------------ the voice
     /** Her turn to speak: to the next reader in the bedroom, in turn, the next thing she has for them. */
     static void speak(ServerLevel l,BlockPos b,Night n,List<ServerPlayer> readers){
-        if(n.t-n.lastVoice<VOICE&&n.lastVoice>=0)return;
+        if(n.t-n.lastVoice<(n.rite.on?VOICE_RITE:VOICE)&&n.lastVoice>=0)return;
         var here=new ArrayList<ServerPlayer>();for(var p:readers)if(ColdSite.inBedroom(rel(p,b)))here.add(p);
         if(here.isEmpty())return;
         var to=here.get(Math.floorMod(n.turn++,here.size()));n.lastVoice=n.t;
-        say(to,b,here);
+        say(to,b,here);ColdRite.lose(n,to);
     }
     /** One line to one reader, from what the House has kept of them; the breath under it is theirs alone to hear. */
     public static void say(ServerPlayer p,BlockPos b,List<ServerPlayer> here){

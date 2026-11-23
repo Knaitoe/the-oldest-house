@@ -51,7 +51,9 @@ public final class ColdRoom {
     /** The one with this part, if their body is there. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
         var at=b.offset(home(who));
-        for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(at).inflate(4),x->is(x)&&x.phase()==FIRST+who))if(a.isAlive())return a;
+        // 0.4.756: the priest moves about the bedroom in the rite (the window, the bedside, the chair), so he is looked for in all of it.
+        var box=who==PRIEST?new AABB(b.offset(ColdSite.BEDROOM.x0()-1,ColdSite.BEDROOM.y0()-1,ColdSite.BEDROOM.z0()-1)).minmax(new AABB(b.offset(ColdSite.BEDROOM.x1()+1,ColdSite.BEDROOM.y1()+1,ColdSite.BEDROOM.z1()+1))):new AABB(at).inflate(4);
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,box,x->is(x)&&x.phase()==FIRST+who))if(a.isAlive())return a;
         return null;
     }
     /** Each of the three is made where they keep if they are not there; nobody is made where the house's entities are not loaded. */
@@ -81,7 +83,13 @@ public final class ColdRoom {
                 a.moveTo(head.getX()+.5,head.getY()+10/16.0,head.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);
                 a.setSleepingPos(head);a.setPose(Pose.SLEEPING);a.gesture(0);
             }
-            default->{var at=b.offset(ColdSite.PRIEST);float yaw=net.minecraft.core.Direction.NORTH.toYRot();a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.gesture(0);}
+            default->{
+                // 0.4.756: at the window until the rite begins; then kneeling by the bed, facing it; at the eleventh page, found in the chair.
+                int mode=ColdNight.priest(b);
+                if(mode==ColdRite.KNEELING){var at=b.offset(ColdRite.KNEEL);float yaw=net.minecraft.core.Direction.EAST.toYRot();a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,20);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setPose(Pose.CROUCHING);a.gesture(0);}
+                else if(mode==ColdRite.DOWN){var at=b.offset(ColdSite.CHAIR);float yaw=net.minecraft.core.Direction.EAST.toYRot();a.moveTo(at.getX()+.5,at.getY()+10/16.0,at.getZ()+.5,yaw,50);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setXRot(50);a.setPose(Pose.STANDING);a.gesture(0);}
+                else{var at=b.offset(ColdSite.PRIEST);float yaw=net.minecraft.core.Direction.NORTH.toYRot();a.moveTo(at.getX()+.5,at.getY(),at.getZ()+.5,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw);a.setPose(Pose.STANDING);a.gesture(0);}
+            }
         }
         a.setDeltaMovement(Vec3.ZERO);
     }
@@ -89,10 +97,17 @@ public final class ColdRoom {
     @SubscribeEvent public static void keepLying(CanContinueSleepingEvent e){
         if(e.getEntity() instanceof LiteraryActor a&&is(a)&&which(a)==GIRL)e.setContinueSleeping(true);
     }
+    /** The house a person of the three keeps in: the night's copy nearest them. */
+    private static BlockPos b(LiteraryActor a){
+        BlockPos best=null;double d=Double.MAX_VALUE;
+        for(long s:ColdNight.NIGHTS.keySet()){var at=BlockPos.of(s);double e=a.distanceToSqr(at.getCenter());if(e<d){d=e;best=at;}}
+        return best==null?a.blockPosition():best;
+    }
     /** A hand on one of the three. */
     public static void talk(ServerPlayer p,LiteraryActor a,CompoundTag own){
         int who=which(a);
-        cue(p,ColdTexts.touch(who));
+        int mode=who==PRIEST?ColdNight.priest(b(a)):ColdRite.AT_WINDOW;
+        cue(p,mode==ColdRite.KNEELING?ColdTexts.PRIEST_KNEELING:mode==ColdRite.DOWN?ColdTexts.PRIEST_STILL:ColdTexts.touch(who));
         own.putInt("Touched",own.getInt("Touched")|1<<who);
     }
     /** A hand on something of the house's. True if it was theirs to answer. The letter on the hall table is the House's own reading. */
@@ -110,9 +125,9 @@ public final class ColdRoom {
             case CHAIR->cue(p,rel.equals(ColdSite.CHAIR)?ColdTexts.BEDSIDE_CHAIR:ColdTexts.CHAIR);
             case BED->cue(p,stage>=2?ColdTexts.BED_RISEN:stage%2==0?ColdTexts.PILLOW:ColdTexts.BED);
             case DRESSER->cue(p,stage==0?ColdTexts.DRESSER:ColdTexts.DRESSER_OUT);
-            case BOOK->cue(p,ColdTexts.BOOK);
+            case BOOK->ColdRite.book(p,b,own);
             case CRUCIFIX->cue(p,stage==0?ColdTexts.CRUCIFIX:ColdTexts.CRUCIFIX_TURNED);
-            case NIGHTSTAND->cue(p,stage==0?ColdTexts.LAMP_TABLE:ColdTexts.FLASK_TABLE);
+            case NIGHTSTAND->{if(stage==0||!ColdRite.flask(p,b,own))cue(p,stage==0?ColdTexts.LAMP_TABLE:ColdTexts.FLASK_TABLE);}
             case RADIATOR->cue(p,ColdTexts.RADIATOR);
             case BULB->cue(p,ColdTexts.BULB);
             case STREETLAMP->cue(p,ColdTexts.STREETLAMP);
