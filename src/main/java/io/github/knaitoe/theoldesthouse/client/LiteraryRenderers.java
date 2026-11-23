@@ -651,7 +651,7 @@ public final class LiteraryRenderers {
          * 0.4.749, the waxworks: a figure on its mark, set the way the modeller set it. Nothing moves, not the breath, not the eyes:
          * no blink, no sway. The head keeps the turn the server gives it (part 2's look), and the rest holds its pose.
          */
-        public void wax(LiteraryActor a){wax(a.gesture());var copy=WaxClient.mirror(a);if(copy!=null)copied(copy);eyelids.visible=WaxClient.blinking(a);}
+        public void wax(LiteraryActor a){wax(a.gesture());head.yRot+=WaxClient.turn(a)*net.minecraft.util.Mth.DEG_TO_RAD;hat.copyFrom(head);var copy=WaxClient.mirror(a);if(copy!=null)copied(copy);eyelids.visible=WaxClient.blinking(a);}
         /** 0.4.750: the statesman copying the reader in front of him (WaxClient.mirror). */
         void copied(float[] c){
             head.yRot=c[0]*net.minecraft.util.Mth.DEG_TO_RAD;head.xRot=c[1]*net.minecraft.util.Mth.DEG_TO_RAD;

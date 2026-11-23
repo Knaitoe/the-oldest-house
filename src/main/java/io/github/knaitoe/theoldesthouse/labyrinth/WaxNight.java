@@ -3,6 +3,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import io.github.knaitoe.theoldesthouse.network.HousePackets;
 import io.github.knaitoe.theoldesthouse.network.WaxBlinkPayload;
+import io.github.knaitoe.theoldesthouse.network.WaxLookPayload;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
@@ -34,9 +35,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <ul>
  * <li><b>The flashlight.</b> The NIGHTS locker gives each reader one, lent: it lights where it is pointed while it is in either hand, and
  *   it stays in the museum.</li>
- * <li><b>The look.</b> A figure that somebody has at the edge of their sight, and nobody has in front of them, turns its head toward them,
- *   a little at a time, and keeps the turn. It is the same for everyone in the museum: anyone who looks at it sees the head where it got
- *   to.</li>
+ * <li><b>The look.</b> A figure that a reader has at the edge of their sight, while nobody has it in front of them, turns its head
+ *   toward that reader, a little at a time, and keeps the turn; it is that reader's own (0.4.751), drawn on their client
+ *   (WaxLookPayload), and nobody else sees the head move.</li>
  * <li><b>The blink.</b> A figure whose face a reader holds in the beam, close, for four seconds, blinks once for that reader alone. Nobody
  *   else sees it, and nothing is heard.</li>
  * <li><b>The mirror.</b> The statesman across from the Hall's door, for a reader standing in front of him and facing him, does what they
@@ -49,7 +50,7 @@ public final class WaxNight {
     private WaxNight(){}
     public static final String LENT="WaxworksLent";
     /** The beam's reach and the light it leaves where it lands. */
-    public static final double BEAM=18;public static final int BEAM_LIGHT=12;
+    public static final double BEAM=9.5;public static final int BEAM_LIGHT=12;
     /** The look: who has a figure at the edge of their sight (between these angles off where they look, within this distance), how far
      *  a head goes in a step, and how far it can turn from where the modeller set it. Nobody may be looking straight at it. */
     public static final double EDGE_NEAR=35,EDGE_FAR=75,STRAIGHT=22,SIGHT=16;public static final float STEP=2.5F,TURN_MAX=55;
@@ -60,7 +61,9 @@ public final class WaxNight {
 
     /** Every reader's lit cell, and where each figure's head has got to at each museum. */
     static final Map<UUID,BlockPos> BEAMS=new ConcurrentHashMap<>();
-    static final Map<Long,float[]> TURNED=new ConcurrentHashMap<>();
+    /** 0.4.751: each reader's own head turns, figure by figure, and what was last sent to them. */
+    static final Map<UUID,float[]> TURNED=new ConcurrentHashMap<>();
+    static final Map<UUID,float[]> SENT=new ConcurrentHashMap<>();
     /** Per reader: the figure under the beam and for how long; the mirror's count. */
     record Focus(int who,int ticks){}
     static final Map<UUID,Focus> FOCUS=new ConcurrentHashMap<>();
@@ -108,8 +111,21 @@ public final class WaxNight {
     static Vec3 eyes(LiteraryActor a){return a.getEyePosition();}
     /** How far off where a reader looks something is, in degrees. */
     static double off(ServerPlayer p,Vec3 at){var to=at.subtract(p.getEyePosition());if(to.lengthSqr()<1e-6)return 0;return Math.toDegrees(Math.acos(Mth.clamp(p.getLookAngle().dot(to.normalize()),-1,1)));}
-    static boolean clear(ServerLevel l,ServerPlayer p,Vec3 at){var hit=l.clip(new ClipContext(p.getEyePosition(),at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));return hit.getType()==HitResult.Type.MISS||hit.getLocation().distanceToSqr(at)<.36;}
-    public static float turned(BlockPos site,int who){var t=TURNED.get(site.asLong());return t==null?0:t[who];}
+    /** Nothing in the way of the eye but what can be seen past: the booth's glass, a rope, a plaque. */
+    static boolean clear(ServerLevel l,ServerPlayer p,Vec3 at){
+        var from=p.getEyePosition();
+        for(int tries=0;tries<5;tries++){
+            var hit=l.clip(new ClipContext(from,at,ClipContext.Block.VISUAL,ClipContext.Fluid.NONE,p));
+            if(hit.getType()==HitResult.Type.MISS||hit.getLocation().distanceToSqr(at)<.36)return true;
+            var st=l.getBlockState(hit.getBlockPos());
+            if(!(WaxBlock.is(st,WaxBlock.Kind.BOOTH_TOP)||WaxBlock.is(st,WaxBlock.Kind.ROPE)||WaxBlock.is(st,WaxBlock.Kind.PLAQUE)))return false;
+            var step=at.subtract(from).normalize();from=hit.getLocation().add(step.scale(.05));
+            while(l.getBlockState(BlockPos.containing(from)).equals(st)&&BlockPos.containing(from).equals(hit.getBlockPos())&&from.distanceToSqr(at)>.04)from=from.add(step.scale(.1));
+        }
+        return false;
+    }
+    /** How far this figure's head has turned for this reader. */
+    public static float turned(UUID reader,int who){var t=TURNED.get(reader);return t==null?0:t[who];}
 
     // ------------------------------------------------------------------------------------------------ each tick
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
@@ -119,8 +135,9 @@ public final class WaxNight {
         // Lights out where the readers have gone, and lent lights back from anyone outside the museum.
         for(var id:List.copyOf(BEAMS.keySet())){var p=server.getPlayerList().getPlayer(id);if(p==null||p.level()!=l||!onShift(p)||!holding(p)||site(p)==null)unbeam(l,id);}
         if(server.getTickCount()%10==3)for(var p:server.getPlayerList().getPlayers())if(site(p)==null&&has(p))reclaim(p);
-        if(Waxworks.SITES.isEmpty()){if(!TURNED.isEmpty())TURNED.clear();return;}
-        TURNED.keySet().removeIf(k->!Waxworks.SITES.contains(k));
+        if(Waxworks.SITES.isEmpty()){if(!TURNED.isEmpty()){TURNED.clear();SENT.clear();}return;}
+        // A reader who has left forgets what turned.
+        if(server.getTickCount()%20==7)for(var id:List.copyOf(TURNED.keySet())){var p=server.getPlayerList().getPlayer(id);if(p==null||site(p)==null){TURNED.remove(id);SENT.remove(id);if(p!=null)HousePackets.send(p,new WaxLookPayload(new int[0],new float[0]));}}
         var data=LabyrinthData.get(server);
         for(long s:List.copyOf(Waxworks.SITES)){
             var b=BlockPos.of(s);
@@ -129,13 +146,14 @@ public final class WaxNight {
             for(var p:readers)if(holding(p))beam(l,p);
             if(readers.isEmpty())continue;
             look(l,b,readers);
+            if(server.getTickCount()%4==0)for(var p:readers)sendLook(l,b,p);
             for(var p:readers){blink(l,b,p,data);mirror(l,b,p,data);}
         }
     }
     @SubscribeEvent public static void stopping(ServerStoppingEvent e){
         var l=e.getServer().getLevel(NovelRooms.dimension(Waxworks.PLACE));
         if(l!=null)for(var id:List.copyOf(BEAMS.keySet()))unbeam(l,id);
-        BEAMS.clear();TURNED.clear();FOCUS.clear();MIRRORED.clear();
+        BEAMS.clear();TURNED.clear();SENT.clear();FOCUS.clear();MIRRORED.clear();
     }
 
     /** The beam: a lit cell where it lands, in front of whatever it hits. */
@@ -157,35 +175,45 @@ public final class WaxNight {
     }
     public static @Nullable BlockPos beamOf(UUID id){return BEAMS.get(id);}
 
-    /** The look, shared: a figure no one is looking at, that someone has at the edge of their sight, turns its head a little toward them. */
+    /** The look, each reader's own: a figure nobody is looking straight at, that a reader has at the edge of their sight, turns its head
+     *  a little toward that reader. */
     static void look(ServerLevel l,BlockPos b,List<ServerPlayer> readers){
-        var turn=TURNED.computeIfAbsent(b.asLong(),k->new float[Waxworks.FIGURES]);
         for(int who=0;who<Waxworks.FIGURES;who++){
             if(who==WaxSite.MIRROR||WaxSite.FIGURES.get(who).pose()==WaxSite.COVERED)continue;
-            var a=Waxworks.find(l,b,who);if(a==null)continue;
-            var at=eyes(a);boolean watched=false;ServerPlayer edge=null;double nearest=Double.MAX_VALUE;
+            var a=Waxworks.find(l,b,who);if(a==null||a.isInvisible())continue;
+            var at=eyes(a);boolean watched=false;
+            for(var p:readers){double d=p.getEyePosition().distanceTo(at);if(d<=SIGHT&&off(p,at)<STRAIGHT&&clear(l,p,at)){watched=true;break;}}
+            if(watched)continue;
+            float set=a.getYRot();
             for(var p:readers){
                 double d=p.getEyePosition().distanceTo(at);if(d>SIGHT)continue;
-                double off=off(p,at);
-                if(off<STRAIGHT&&clear(l,p,at)){watched=true;break;}
-                if(off>=EDGE_NEAR&&off<=EDGE_FAR&&d<nearest&&clear(l,p,at)){edge=p;nearest=d;}
+                double off=off(p,at);if(off<EDGE_NEAR||off>EDGE_FAR||!clear(l,p,at))continue;
+                var to=p.getEyePosition().subtract(at);
+                float want=Mth.clamp(Mth.wrapDegrees((float)(Mth.atan2(to.z,to.x)*Mth.RAD_TO_DEG)-90-set),-TURN_MAX,TURN_MAX);
+                var turn=TURNED.computeIfAbsent(p.getUUID(),k->new float[Waxworks.FIGURES]);
+                float now=turn[who];if(Math.abs(want-now)<.5F)continue;
+                turn[who]=now+Mth.clamp(want-now,-STEP,STEP);
             }
-            if(watched||edge==null)continue;
-            float set=WaxSite.FIGURES.get(who).yaw();
-            var to=edge.getEyePosition().subtract(at);
-            float want=Mth.clamp(Mth.wrapDegrees((float)(Mth.atan2(to.z,to.x)*Mth.RAD_TO_DEG)-90-set),-TURN_MAX,TURN_MAX);
-            float now=turn[who];if(Math.abs(want-now)<.5F)continue;
-            turn[who]=now+Mth.clamp(want-now,-STEP,STEP);
-            a.setYHeadRot(set+turn[who]);
         }
     }
+    /** What has turned for this reader, sent to their client when it changes. */
+    static void sendLook(ServerLevel l,BlockPos b,ServerPlayer p){
+        var turn=TURNED.get(p.getUUID());if(turn==null)return;
+        var last=SENT.get(p.getUUID());if(last!=null&&java.util.Arrays.equals(last,turn))return;
+        int n=0;for(float t:turn)if(t!=0)n++;
+        int[] ids=new int[n];float[] by=new float[n];int k=0;
+        for(int who=0;who<Waxworks.FIGURES;who++)if(turn[who]!=0){var a=Waxworks.find(l,b,who);ids[k]=a==null?-1:a.getId();by[k]=turn[who];k++;}
+        HousePackets.send(p,new WaxLookPayload(ids,by));SENT.put(p.getUUID(),turn.clone());
+    }
+    /** A figure that has been moved (WaxShift) starts again from where it was set: nobody's turn of its head carries over. */
+    static void unturn(int who){for(var t:TURNED.values())t[who]=0;}
 
     /** The blink, private: the beam held on a face, close, for four seconds. */
     static void blink(ServerLevel l,BlockPos b,ServerPlayer p,LabyrinthData data){
         int who=-1;
         if(holding(p))for(int i=0;i<Waxworks.FIGURES;i++){
             if(WaxSite.FIGURES.get(i).pose()==WaxSite.COVERED)continue;
-            var a=Waxworks.find(l,b,i);if(a==null)continue;var at=eyes(a);
+            var a=Waxworks.find(l,b,i);if(a==null||a.isInvisible())continue;var at=eyes(a);
             if(p.getEyePosition().distanceTo(at)<=FACE_NEAR&&off(p,at)<=FACE_ANGLE&&clear(l,p,at)){who=i;break;}
         }
         var f=FOCUS.get(p.getUUID());

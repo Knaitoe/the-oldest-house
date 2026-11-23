@@ -24,6 +24,10 @@ public final class WaxClient {
     private static final float[][] SEEN=new float[32][];private static final long[] AT=new long[32];
 
     public static void blink(WaxBlinkPayload p){var l=Minecraft.getInstance().level;if(l==null)return;BLINKS.put(p.entity(),l.getGameTime()+p.ticks());if(BLINKS.size()>64)BLINKS.entrySet().removeIf(e->e.getValue()<l.getGameTime());}
+    private static final Map<Integer,Float> TURNS=new HashMap<>();
+    /** 0.4.751: this reader's own head turns. */
+    public static void look(io.github.knaitoe.theoldesthouse.network.WaxLookPayload p){TURNS.clear();for(int i=0;i<p.ids().length;i++)if(p.ids()[i]>=0)TURNS.put(p.ids()[i],p.turns()[i]);}
+    public static float turn(LiteraryActor a){var t=TURNS.get(a.getId());return t==null?0:t;}
     public static boolean blinking(LiteraryActor a){var until=BLINKS.get(a.getId());return until!=null&&a.level().getGameTime()<=until;}
 
     /** The copy for this figure: head yaw offset and pitch (degrees) and whether crouched, or null when it is not the mirror or nobody here is in front of it. */

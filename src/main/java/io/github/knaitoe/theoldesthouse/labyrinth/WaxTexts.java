@@ -43,6 +43,28 @@ public final class WaxTexts {
         BENCH_HEAD="A head on a stand at the bench, bald, its eyes not set. The sockets have been smoothed and are waiting.",
         BENCH_HANDS="Hands laid out in a row on a cloth, each one a little different, as if they were taken from different people.",
         HEADS="A shelf of finished heads, each on its own stand, each turned the same way. They have eyes.";
+    // 0.4.751, the shift.
+    public static final String PUNCH_AGAIN="Your card is already in the rack, stamped.",
+        PUNCH_OVER="The time clock has stopped taking cards for tonight.",
+        FAILED="The screens go dark. The flashlight dies in your hand. Something stands in the office doorway with its hands at its sides, and the night is over.",
+        KEPT="Six. A key turns in the front door, and the day man calls hello down the corridor.",
+        SHORT="Six. The log is short a round, and nobody comes to the front door.";
+    private static final String[] HOURS={"twelve","one","two","three","four","five"};
+    private static final String[] NUMBERS={"none","one","two","three","four","five","six","seven","eight","nine","ten"};
+    private static final String[] GALLERY_NAMES={"The foyer","The Hall of Statesmen","The kitchen","The chamber","The workshop"};
+    static String number(int n){return n>=0&&n<NUMBERS.length?NUMBERS[n]:String.valueOf(n);}
+    public static String punched(String time){return "The clock takes the card and stamps it "+time+". The night shift has begun.";}
+    public static String hour(int h){return h==0?"The office clock says twelve. The log wants a round this hour: every gallery counted.":"The office clock says "+HOURS[Math.min(5,h)]+". Another round.";}
+    public static String counted(int g,int n){return GALLERY_NAMES[g]+", counted: "+number(n)+". It goes in the log.";}
+    public static String round(int h){return "The "+HOURS[Math.min(5,h)]+" o'clock round is in the log.";}
+    public static String noticed(int stage,int kind){
+        String what=switch(stage){case 0->kind==1?"The plinth is empty.":"That one has turned to face the door.";case 1->"That one is out in the corridor.";case 2->"That one is in the corridor by the office.";default->"That one is in the office.";};
+        return what+" It goes in the log.";
+    }
+    public static String log(int rounds,int noticed,boolean kept){
+        return "The shift log. "+cap(number(rounds))+" of six rounds written up"+(noticed>0?", and "+number(noticed)+(noticed==1?" thing":" things")+" noted out of place":"")+"."+(kept?" At the bottom, in a hand that is not yours: Seen. Day man.":"");
+    }
+    static String cap(String s){return s.isEmpty()?s:Character.toUpperCase(s.charAt(0))+s.substring(1);}
     /** What each figure's plaque says, in the order of WaxSite.FIGURES. The twenty-fourth has none. */
     private static final String[] PLAQUES={
         "EDWIN MERRIMAN. Founder of this museum. Modelled from his own death mask, as he asked.",

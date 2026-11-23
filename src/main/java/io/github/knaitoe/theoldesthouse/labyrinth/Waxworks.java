@@ -2,6 +2,7 @@ package io.github.knaitoe.theoldesthouse.labyrinth;
 
 import io.github.knaitoe.theoldesthouse.TheOldestHouse;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -21,7 +22,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
  * 0.4.749, the waxworks, the first part (docs/WAXWORKS_0_4_749.md), from the owner's request of 23 November. The place alone:
  * Merriman's Wax Museum after closing, the staff corridor, the security office under its monitors, the ring corridor and the five
  * galleries, and its twenty-four figures (stranger phases 290 to 313), each on its mark. Nothing moves yet; the House does not deal it
- * until part 3, when the reader has a shift (part 2, the flashlight and what the figures do, is WaxNight).
+ * until part 4, when it has its account (part 2, the flashlight and what the figures do, is WaxNight).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Waxworks {
@@ -36,7 +37,7 @@ public final class Waxworks {
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int which(LiteraryActor a){return a.phase()-FIRST;}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until part 3. */
+    /** Not dealt until part 4, when it has its account. */
     public static boolean dealable(LabyrinthData d,UUID reader){return false;}
 
     /** A reader in: the figures are put on their marks if they are not there, and the building's night sound goes round them once. */
@@ -61,12 +62,16 @@ public final class Waxworks {
             else SITES.remove(site);
         }
     }
-    @SubscribeEvent public static void stopped(net.neoforged.neoforge.event.server.ServerStoppedEvent e){SITES.clear();}
+    @SubscribeEvent public static void stopped(net.neoforged.neoforge.event.server.ServerStoppedEvent e){SITES.clear();FOUND.clear();}
 
-    /** The figure with this index, if its body is there. */
+    /** The figure with this index, if its body is there: where it was last found, else by its mark, else (when the shift has moved it) anywhere in the museum. */
+    static final Map<Long,int[]> FOUND=new java.util.concurrent.ConcurrentHashMap<>();
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
+        var ids=FOUND.computeIfAbsent(b.asLong(),k->{var a=new int[FIGURES];java.util.Arrays.fill(a,-1);return a;});
+        if(ids[who]>=0&&l.getEntity(ids[who]) instanceof LiteraryActor a&&a.isAlive()&&is(a)&&a.phase()==FIRST+who&&a.distanceToSqr(Vec3.atCenterOf(b))<110*110)return a;
         var at=b.offset(WaxSite.FIGURES.get(who).at());
-        for(var a:l.getEntitiesOfClass(LiteraryActor.class,new AABB(at).inflate(3),x->is(x)&&x.phase()==FIRST+who))if(a.isAlive())return a;
+        var box=WaxShift.place(b,who)==null?new AABB(at).inflate(3):new AABB(b.offset(WaxSite.WEST,-1,WaxSite.NORTH)).minmax(new AABB(b.offset(WaxSite.EAST,WaxSite.TOP,1)));
+        for(var a:l.getEntitiesOfClass(LiteraryActor.class,box,x->is(x)&&x.phase()==FIRST+who))if(a.isAlive()){ids[who]=a.getId();return a;}
         return null;
     }
     /** Each figure is made on its mark if it is not there; nothing is made where the galleries' entities are not loaded. */
@@ -78,17 +83,19 @@ public final class Waxworks {
             if(a==null){
                 a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
                 a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
-                stand(a,b,f,WaxNight.turned(b,who));
+                stand(a,b,f,0);
                 if(!l.addFreshEntity(a))continue;
                 continue;
             }
-            stand(a,b,f,WaxNight.turned(b,who));
+            stand(a,b,f,0);
         }
     }
-    /** On its mark, turned the way the gallery shows it, in its pose; only the head keeps the turn it has taken (WaxNight's look). */
+    /** On its mark, turned the way the gallery shows it, in its pose; or wherever the shift has it (WaxShift.place), turned or gone. */
     static void stand(LiteraryActor a,BlockPos b,WaxSite.Figure f,float turned){
-        var feet=WaxSite.feet(f).add(b.getX(),b.getY(),b.getZ());
-        a.moveTo(feet.x,feet.y,feet.z,f.yaw(),0);a.setYBodyRot(f.yaw());a.setYHeadRot(f.yaw()+turned);a.gesture(f.pose());a.setDeltaMovement(Vec3.ZERO);
+        var moved=WaxShift.place(b,WaxSite.FIGURES.indexOf(f));
+        var feet=(moved==null?WaxSite.feet(f):moved.at()).add(b.getX(),b.getY(),b.getZ());float yaw=moved==null?f.yaw():moved.yaw();
+        a.setInvisible(moved!=null&&moved.gone());
+        a.moveTo(feet.x,feet.y,feet.z,yaw,0);a.setYBodyRot(yaw);a.setYHeadRot(yaw+turned);a.gesture(f.pose());a.setDeltaMovement(Vec3.ZERO);
     }
 
     /** A hand on a figure: it is wax, cold and a little tacky, and it does not answer. Each says what it is. */
@@ -113,10 +120,10 @@ public final class Waxworks {
             case ROPE->cue(p,WaxTexts.ROPE);
             case CAMERA->cue(p,WaxTexts.CAMERA);
             case MONITOR->cue(p,WaxTexts.MONITOR);
-            case DESK->cue(p,stage==1?WaxTexts.DESK_LOG:stage==2?WaxTexts.DESK_PHONE:WaxTexts.DESK);
+            case DESK->cue(p,stage==1?WaxShift.log(b):stage==2?WaxTexts.DESK_PHONE:WaxTexts.DESK);
             case CHAIR->cue(p,WaxTexts.CHAIR);
             case CLOCK->cue(p,WaxTexts.CLOCK);
-            case TIMECLOCK->{cue(p,WaxTexts.TIMECLOCK);l.playSound(null,b.offset(rel),WaxRegistry.PUNCH.get(),SoundSource.BLOCKS,.5F,1F);}
+            case TIMECLOCK->WaxShift.punch(p,b,own);
             case LOCKER,LOCKER_TOP->WaxNight.locker(p,own);
             case FRONT->cue(p,WaxTexts.FRONT);
             case SIGN->cue(p,WaxTexts.SIGN);

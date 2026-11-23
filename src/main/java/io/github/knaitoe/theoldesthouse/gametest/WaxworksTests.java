@@ -75,6 +75,11 @@ public final class WaxworksTests {
     private static void pocket(ServerPlayer p){for(int i=0;i<9;i++)if(!WaxNight.mine(p.getInventory().getItem(i),p)&&!WaxNight.mine(p.getOffhandItem(),p)){p.getInventory().selected=i;return;}}
     private static void hold(ServerPlayer p){for(int i=0;i<9;i++)if(WaxNight.mine(p.getInventory().getItem(i),p)){p.getInventory().selected=i;return;}}
     private static float headTurn(LiteraryActor a,int who){return net.minecraft.util.Mth.wrapDegrees(a.getYHeadRot()-WaxSite.FIGURES.get(who).yaw());}
+    private static boolean looked(ServerPlayer p){
+        NativeTestPlayers.flush(p);
+        for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.WaxLookPayload look&&look.ids().length>0)return true;
+        return false;
+    }
     private static boolean blinkSent(ServerPlayer p){
         NativeTestPlayers.flush(p);
         for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.WaxBlinkPayload)return true;
@@ -154,7 +159,7 @@ public final class WaxworksTests {
             for(int who=0;who<Waxworks.FIGURES;who++)Waxworks.talk(p,Waxworks.find(l,b,who),f.own(p,P));
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
-            for(String line:List.of(WaxTexts.TIMECLOCK,WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.DESK_LOG,WaxTexts.DESK_PHONE,WaxTexts.MONITOR,WaxTexts.CHAIR,WaxTexts.CLOCK,
+            for(String line:List.of(WaxTexts.punched("11:52"),WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.log(0,0,false),WaxTexts.DESK_PHONE,WaxTexts.MONITOR,WaxTexts.CHAIR,WaxTexts.CLOCK,
                 WaxTexts.CAMERA,WaxTexts.FRONT,WaxTexts.SIGN,WaxTexts.BOOTH,WaxTexts.TABLE,WaxTexts.DRESSER,WaxTexts.STOVE,WaxTexts.ROPE,WaxTexts.COFFIN,WaxTexts.GRAVESTONE,
                 WaxTexts.VAT,WaxTexts.BENCH,WaxTexts.BENCH_HEAD,WaxTexts.BENCH_HANDS,WaxTexts.HEADS,WaxTexts.PLINTH,WaxTexts.plaque(0)))
                 h.assertTrue(why.contains(line),"each says what it is: missing \""+line+"\" in "+why);
@@ -209,14 +214,15 @@ public final class WaxworksTests {
             // Looked at straight, a statesman keeps his head where it was set.
             var lapel=Waxworks.find(l,b,LAPEL);aim(p,l,b,-6.5,-27.5,lapel.getEyePosition(),0);
         }).thenIdle(40).thenExecute(()->{
-            var lapel=Waxworks.find(l,b,LAPEL);
-            h.assertTrue(Math.abs(headTurn(lapel,LAPEL))<1,"watched, his head stays where it was set: "+headTurn(lapel,LAPEL));
-            aim(p,l,b,-6.5,-27.5,lapel.getEyePosition(),-50);
+            h.assertTrue(Math.abs(WaxNight.turned(p.getUUID(),LAPEL))<1,"watched, his head stays where it was set: "+WaxNight.turned(p.getUUID(),LAPEL));
+            aim(p,l,b,-6.5,-27.5,Waxworks.find(l,b,LAPEL).getEyePosition(),-50);looked(p);
         }).thenIdle(40).thenExecute(()->{
-            var lapel=Waxworks.find(l,b,LAPEL);float turn=headTurn(lapel,LAPEL);
+            float turn=WaxNight.turned(p.getUUID(),LAPEL);
             h.assertTrue(turn>20&&turn<=WaxNight.TURN_MAX,"at the edge of sight, his head has turned toward the reader: "+turn);
-            Waxworks.ensure(l,b);
-            h.assertTrue(Math.abs(headTurn(Waxworks.find(l,b,LAPEL),LAPEL)-turn)<1,"and keeps the turn when the figures are put on their marks again");
+            h.assertTrue(looked(p),"and the turn is sent to that reader's own client");
+            h.assertTrue(WaxNight.turned(q.getUUID(),LAPEL)==0&&!looked(q),"the other reader's statesman has not moved");
+            var lapel=Waxworks.find(l,b,LAPEL);
+            h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(lapel.getYHeadRot()-WaxSite.FIGURES.get(LAPEL).yaw()))<1,"the body in the world keeps its head where it was set");
             // The blink: without the light, nothing.
             var scroll=Waxworks.find(l,b,SCROLL);pocket(p);aim(p,l,b,-6.5,-28.5,scroll.getEyePosition(),0);told(p);
         }).thenIdle(WaxNight.HOLD+20).thenExecute(()->{
@@ -236,6 +242,128 @@ public final class WaxworksTests {
         }).thenIdle(25).thenExecute(()->{
             h.assertFalse(WaxNight.has(p),"out of the museum, the flashlight goes back on its hook");
             h.assertTrue(WaxNight.beamOf(p.getUUID())==null,"and its light is out");
+            done();h.succeed();
+        });
+    }
+
+    /** A free spot in front of a figure, the way it faces, a few blocks off, relative to the museum. */
+    private static net.minecraft.world.phys.Vec3 before(ServerLevel l,BlockPos b,int who){
+        var f=WaxSite.FIGURES.get(who);var feet=WaxSite.feet(f);double yaw=Math.toRadians(f.yaw());
+        for(double d:new double[]{2.5,3.5,1.6,4.5}){
+            double x=feet.x-Math.sin(yaw)*d,z=feet.z+Math.cos(yaw)*d;var cell=BlockPos.containing(x,0,z);
+            if(l.getBlockState(b.offset(cell)).getCollisionShape(l,b.offset(cell)).isEmpty()&&l.getBlockState(b.offset(cell).above()).getCollisionShape(l,b.offset(cell).above()).isEmpty()&&WaxSite.gallery(new net.minecraft.world.phys.Vec3(x,.5,z))==f.gallery())
+                return new net.minecraft.world.phys.Vec3(cell.getX()+.5,0,cell.getZ()+.5);
+        }
+        return new net.minecraft.world.phys.Vec3(feet.x-Math.sin(yaw)*2.5,0,feet.z+Math.cos(yaw)*2.5);
+    }
+
+    /**
+     * 0.4.751, the shift. The time clock puts a reader on the shift and starts the night's one clock; a second card is refused and a
+     * spectator punches nothing. With the flashlight on each figure of the foyer and the Hall, those galleries are counted, the Hall's
+     * count taking the twenty-fourth when the beam finds him; with every gallery counted the hour's round is in the log, which says so.
+     * An irregularity is made only where nobody is, comes into the ring when it has gone unnoticed, is noticed by someone on the shift
+     * who looks at it with the light, and goes back to its mark when nobody sees it. A reader not on the shift notices nothing. Three
+     * in the office end the night: the screens go dark, the light is taken, the shift is unfinished, and the reader not on it is not
+     * failed. In a second night, six o'clock with every round in the log keeps the shift for whoever punched in, and for nobody else.
+     */
+    @GameTest(template="empty",batch="waxworks_shift",timeoutTicks=3000)
+    public static void theShiftItsRoundsAndWhatMoves(GameTestHelper h){
+        var f=place(h);var p=f.player("wax_night",P);var q=f.player("wax_visitor",P);var l=f.level(P);var b=f.base(P);
+        final int[] irr={-1};WaxShift.forget(l,b);
+        h.startSequence().thenIdle(5).thenExecute(()->Waxworks.ensure(l,b)).thenWaitUntil(()->{
+            Waxworks.ensure(l,b);
+            for(int who=0;who<Waxworks.FIGURES;who++)h.assertTrue(Waxworks.find(l,b,who)!=null,"figure "+who+" is on its mark");
+        }).thenExecute(()->{
+            Waxworks.arrive(p,b,f.own(p,P));Waxworks.arrive(q,b,f.own(q,P));
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,90,0);q.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-2.5,90,0);
+            h.assertTrue(WaxShift.night(b)==null,"no night until a card is punched");
+            f.click(p,P,WaxSite.TIMECLOCK);f.click(p,P,WaxSite.TIMECLOCK);
+            var n=WaxShift.night(b);
+            h.assertTrue(n!=null&&n.punched.contains(p.getUUID())&&n.punched.size()==1&&f.own(p,P).getBoolean("Punched"),"the time clock puts the reader on the shift");
+            var why=told(p);h.assertTrue(why.contains(WaxTexts.punched("11:52"))&&why.contains(WaxTexts.PUNCH_AGAIN),"stamped once, and a second card refused: "+why);
+            var s=NativeTestPlayers.survival(h,"wax_onlooker");f.players.add(s);s.setGameMode(GameType.SPECTATOR);s.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,90,0);
+            WaxShift.punch(s,b,f.own(s,P));
+            h.assertFalse(n.punched.contains(s.getUUID()),"a spectator punches nothing");
+            f.click(p,P,WaxSite.LOCKERS[0]);hold(p);
+            h.assertTrue(n.t<=2,"the clock has only just started: "+n.t);
+        }).thenIdle(20).thenExecute(()->{
+            var n=WaxShift.night(b);
+            h.assertTrue(n.t>=19&&n.t<=22,"one clock, running while someone is on the shift: "+n.t);
+            // The foyer and the Hall, figure by figure.
+            var missed=new java.util.ArrayList<String>();
+            for(int who=0;who<Waxworks.FIGURES;who++){
+                var fig=WaxSite.FIGURES.get(who);if(fig.gallery()>1)continue;
+                var a=Waxworks.find(l,b,who);var at=before(l,b,who);
+                aim(p,l,b,at.x,at.z,a.position().add(0,a.getBbHeight()*.6,0),0);
+                WaxShift.step(l,b);
+                if((n.lit&1<<who)==0)missed.add(fig.key()+" from "+at);
+            }
+            h.assertTrue(missed.isEmpty(),"the beam on each figure counts it: missed "+missed);
+            h.assertTrue((n.counted&3)==3,"the foyer and the Hall are counted: "+n.counted);
+            h.assertTrue(n.counts[0][0]==3&&n.counts[0][1]==8&&f.own(p,P).getBoolean("FoundTwentyFourth"),"three in the foyer, and eight in the Hall with the one who has no plaque: "+n.counts[0][0]+", "+n.counts[0][1]);
+            var why=told(p);h.assertTrue(why.contains(WaxTexts.counted(1,8)),"the count goes in the log: "+why);
+            // The other galleries, counted the same way (their figures lit).
+            for(int who=0;who<Waxworks.FIGURES;who++)if(WaxSite.FIGURES.get(who).gallery()>1)n.lit|=1<<who;
+            for(int g=2;g<5;g++){var c=WaxSite.GALLERIES.get(g);p.teleportTo(l,b.getX()+(c.x0()+c.x1())/2.0+.5,b.getY(),b.getZ()+(c.z0()+c.z1())/2.0+.5,0,0);WaxShift.step(l,b);}
+            h.assertTrue(n.rounds==1,"every gallery counted: the twelve o'clock round is in the log: "+n.rounds+" counted "+n.counted);
+            h.assertTrue(told(p).contains(WaxTexts.round(0)),"and the reader is told");
+            h.assertTrue(WaxShift.log(b).startsWith("The shift log. One of six rounds"),"the log on the desk says so: "+WaxShift.log(b));
+            h.assertTrue(f.own(q,P).getInt("Lit")==0,"the reader not on the shift has counted nothing");
+            // An irregularity, made while everyone is in the office.
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-13.5,0,0);q.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-13.5,0,0);
+            n.t=WaxShift.FIRST-30;
+        }).thenWaitUntil(()->h.assertTrue(!WaxShift.night(b).irregular.isEmpty(),"an irregularity, once the half hour comes: t "+WaxShift.night(b).t)).thenExecute(()->{
+            var n=WaxShift.night(b);var i=n.irregular.get(0);irr[0]=i.who;
+            var fig=WaxSite.FIGURES.get(i.who);var a=Waxworks.find(l,b,i.who);
+            h.assertTrue(i.who!=WaxSite.STRANGER&&i.who!=WaxSite.MIRROR&&fig.pose()!=WaxSite.COVERED,"never the twenty-fourth, the mirror or the one under the sheet: "+fig.key());
+            if(i.kind==1)h.assertTrue(a.isInvisible(),"gone from its plinth: "+fig.key());
+            else h.assertTrue(Math.abs(net.minecraft.util.Mth.wrapDegrees(a.getYRot()-fig.yaw()))>5,"turned on its mark: "+fig.key()+" "+a.getYRot());
+            i.since=WaxShift.NEARER;
+        }).thenWaitUntil(()->h.assertTrue(WaxShift.night(b).irregular.get(0).stage==1,"unnoticed, it comes out into the ring")).thenExecute(()->{
+            var n=WaxShift.night(b);var i=n.irregular.get(0);var a=Waxworks.find(l,b,i.who);
+            var ring=WaxShift.place(b,i.who).at().add(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(a!=null&&a.position().distanceTo(ring)<.5&&!a.isInvisible(),"and stands in the ring outside its gallery: "+(a==null?null:a.position())+" for "+ring);
+            // The visitor looks at it: nothing. The night guard with the light: noticed.
+            aim(q,l,b,ring.x-b.getX()+(ring.z-b.getZ()>-40?0:0),ring.z-b.getZ()+3,a.getEyePosition(),0);
+        }).thenIdle(45).thenExecute(()->{
+            var n=WaxShift.night(b);var i=n.irregular.get(0);var a=Waxworks.find(l,b,i.who);
+            h.assertFalse(i.noticed,"somebody not on the shift notices nothing");
+            q.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-13.5,0,0);
+            var ring=a.position();aim(p,l,b,ring.x-b.getX(),ring.z-b.getZ()+3,a.getEyePosition(),0);told(p);
+        }).thenIdle(45).thenExecute(()->{
+            var n=WaxShift.night(b);
+            h.assertTrue(n.irregular.isEmpty()||n.irregular.get(0).noticed,"the night guard, looking at it with the light, notices");
+            h.assertTrue(n.noticed==1&&f.own(p,P).getInt("Noticed")==1,"it goes in the log, and on that reader's record");
+            h.assertTrue(told(p).stream().anyMatch(t->t.endsWith("It goes in the log.")&&t.startsWith("That one")),"and they are told what they saw");
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-13.5,0,0);
+        }).thenWaitUntil(()->h.assertTrue(WaxShift.night(b).irregular.isEmpty(),"unseen, it goes back")).thenExecute(()->{
+            var a=Waxworks.find(l,b,irr[0]);var feet=WaxSite.feet(WaxSite.FIGURES.get(irr[0])).add(b.getX(),b.getY(),b.getZ());
+            h.assertTrue(a!=null&&a.position().distanceTo(feet)<.3&&!a.isInvisible(),"to its own mark");
+            // Three in the office end the night.
+            var n=WaxShift.night(b);
+            for(int who:new int[]{0,1,6}){var i=new WaxShift.Irr(who,0);i.stage=WaxShift.ARRIVED;n.irregular.add(i);}
+        }).thenIdle(3).thenExecute(()->{
+            var n=WaxShift.night(b);
+            h.assertTrue(n!=null&&n.failed&&n.over,"three in the office: the night is over");
+            for(var m:WaxSite.MONITORS)h.assertTrue(stage(l,b,m)==0,"the screens go dark");
+            h.assertTrue(!WaxNight.has(p)&&WaxNight.beamOf(p.getUUID())==null,"the flashlight is gone and its light out");
+            h.assertTrue(f.own(p,P).getBoolean("Failed")&&!f.own(p,P).getBoolean("Kept"),"the shift is unfinished");
+            h.assertFalse(f.own(q,P).getBoolean("Failed"),"the reader not on the shift is not failed");
+            h.assertTrue(told(p).contains(WaxTexts.FAILED),"and they are told");
+            // The museum empty, the night is forgotten.
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+30.5,0,0);q.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()+30.5,0,0);
+        }).thenWaitUntil(()->h.assertTrue(WaxShift.night(b)==null,"emptied, the night is forgotten")).thenExecute(()->{
+            for(var m:WaxSite.MONITORS)h.assertTrue(stage(l,b,m)==1,"and the screens are back");
+            h.assertTrue(stage(l,b,WaxSite.CLOCK)==0,"and the clock at eight minutes to");
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,90,0);q.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-2.5,90,0);
+            f.click(p,P,WaxSite.TIMECLOCK);
+            var n=WaxShift.night(b);n.rounds=(1<<WaxShift.HOURS)-1;n.t=WaxShift.SIX-3;
+        }).thenIdle(6).thenExecute(()->{
+            var n=WaxShift.night(b);
+            h.assertTrue(n.over&&n.kept&&f.own(p,P).getBoolean("Kept"),"six, every round in the log: the shift is kept");
+            h.assertTrue(stage(l,b,WaxSite.CLOCK)==7,"and the clock says six");
+            h.assertFalse(f.own(q,P).getBoolean("Kept"),"and kept for whoever punched in, nobody else");
+            h.assertTrue(told(p).contains(WaxTexts.KEPT),"the key turns in the front door");
             done();h.succeed();
         });
     }

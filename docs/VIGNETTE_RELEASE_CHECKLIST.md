@@ -18,6 +18,8 @@ November 17 candidate 0.4.673 (docs/FALLOW_0_4_673.md): a shared afternoon with 
 
 November 17 candidate 0.4.672 (docs/FALLOW_0_4_672.md): a place built for what will happen in it. Can a reader walk every way the later parts will need (the House's door round the counter, out to the road, down into the cellar) with only what the place gives them, and are the ways that must stay shut (the trailer, the pads, a shut door) really shut? Does anything that looks walked through (wheat, a lifted flap, an open door's curb) have no more body than it shows, and anything a body must climb down (the cellar's steps) leave room over the head at every step? Is the haze near enough that the scene's edge is never seen, and gone under a roof?
 
+November 23 candidate 0.4.751 (docs/WAXWORKS_0_4_751.md): a shared clock with a personal start. Does a reader who never joined the shift share its failure or its credit? Can every figure the count needs be seen from somewhere a reader can stand?
+
 November 23 candidate 0.4.750 (docs/WAXWORKS_0_4_750.md): effects that are partly shared and partly private. For each one, is it written down which it is, and does the test check the other reader too? Is a lent tool taken back when the reader leaves, and kept when they drop it?
 
 November 23 candidate 0.4.749 (docs/WAXWORKS_0_4_749.md): a large place built from a plan. Is everything it lays worked out from the plan rather than read back from the world, so a recorded or sliced build comes out the same? Can a reader step up on anything beside a rope and over it? Are figures that must never answer a reader kept from turning to them, blinking and speaking?

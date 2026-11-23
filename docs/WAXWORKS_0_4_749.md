@@ -2,14 +2,14 @@
 
 The first part of the waxworks, the first of the two vignettes the owner asked for on 23 November ("House of wax vignette ... wax models slowly coming to life ... FNF style central security room with camera display for various rooms, watching for irregularities"). The design is `docs/WAXWORKS_AND_COLD_ROOM_0_4_749.md`, section 1.
 
-This part is the place alone: Merriman's Wax Museum after closing, its staff corridor, the security office, the ring corridor, the five galleries and the twenty-four figures on their marks. Nothing moves yet. The House does not deal the place until part 3, when the reader has a shift, and it is no Witness source until its account.
+This part is the place alone: Merriman's Wax Museum after closing, its staff corridor, the security office, the ring corridor, the five galleries and the twenty-four figures on their marks. Nothing moves yet. The House does not deal the place until part 4, when it has its account, and it is no Witness source until its account.
 
 ## The parts
 
 1. **The museum** (this release, 0.4.749): the place and its figures.
 2. **The flashlight and the figures** (0.4.750, `docs/WAXWORKS_0_4_750.md`): the locker's flashlight, the look at the edge of the view, the blink, the mirror.
-3. **The shift**: dealt from here; the shared clock from 11:52 to six, the rounds and the log, the monitors on the CCTV renderer, irregularities, failure and success.
-4. **The account**: the log in the reader's hand, the Witness story, the stair's company and the shared accounts.
+3. **The shift** (0.4.751, `docs/WAXWORKS_0_4_751.md`; the monitors' feeds follow): the shared clock from 11:52 to six, the rounds and the log, the monitors on the CCTV renderer, irregularities, failure and success.
+4. **The account**, dealt from here: the log in the reader's hand, the Witness story, the stair's company and the shared accounts.
 
 ## The place
 
