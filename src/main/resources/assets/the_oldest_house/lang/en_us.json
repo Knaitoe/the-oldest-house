@@ -2261,5 +2261,8 @@
   "block.the_oldest_house.cold_room_steps": "Outside Steps",
   "subtitles.the_oldest_house.cold_room.room": "Wind presses at the windows",
   "subtitles.the_oldest_house.cold_room.boards": "Stair boards creak",
-  "subtitles.the_oldest_house.bleed.cold_room": "Wind presses at a window, behind a door"
+  "subtitles.the_oldest_house.bleed.cold_room": "Wind presses at a window, behind a door",
+  "subtitles.the_oldest_house.cold_room.bed": "A bed frame knocks",
+  "subtitles.the_oldest_house.cold_room.drawer": "A drawer slides out",
+  "subtitles.the_oldest_house.cold_room.voice": "Someone speaks low"
 }

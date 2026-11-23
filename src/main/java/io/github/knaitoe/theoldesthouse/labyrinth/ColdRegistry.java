@@ -34,7 +34,8 @@ public final class ColdRegistry {
     public static final DeferredBlock<ColdBlock> FITTING=BLOCKS.registerBlock("cold_room_fitting",ColdBlock::new,fixed(Blocks.SPRUCE_PLANKS).noOcclusion().lightLevel(ColdBlock::light));
     private static DeferredHolder<SoundEvent,SoundEvent> sound(String id){return SOUNDS.register(id,()->SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,id)));}
     /** The house at night (wind at the glass, the radiator's tick); the stairs' boards under a foot. */
-    public static final DeferredHolder<SoundEvent,SoundEvent> ROOM=sound("cold_room.room"),BOARDS=sound("cold_room.boards");
+    public static final DeferredHolder<SoundEvent,SoundEvent> ROOM=sound("cold_room.room"),BOARDS=sound("cold_room.boards"),
+        BED=sound("cold_room.bed"),DRAWER=sound("cold_room.drawer"),VOICE=sound("cold_room.voice");
     private ColdRegistry(){}
     public static void register(IEventBus bus){CODECS.register(bus);BLOCKS.register(bus);SOUNDS.register(bus);}
 }

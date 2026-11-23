@@ -23,6 +23,7 @@ public final class ColdTexts {
         BEDSIDE_CHAIR="A kitchen chair, carried up the stairs and set by the bed. The seat is still warm.",
         BED="An iron bed. The straps are buckled to the frame on both sides. The sheets are damp, and very cold.",
         PILLOW="The pillow is damp through.",
+        BED_RISEN="The bed stands clear of the floor. All four legs are off the boards.",
         DRESSER="A chest of drawers. The drawers are shut.",
         DRESSER_OUT="Every drawer of the chest is pulled out, each to the same length.",
         BOOK="A small worn book with a ribbon in it, shut. The priest has not opened it yet.",
@@ -41,6 +42,24 @@ public final class ColdTexts {
         "He does not turn from the window. \"Not yet,\" he says. \"When it's time, I'll call you. Keep your coat on.\""};
     public static String touch(int i){return i>=0&&i<TOUCH.length?TOUCH[i]:TOUCH[0];}
     private static List<Component> pages(String... texts){var out=new ArrayList<Component>();for(String text:texts)for(String p:LookoutTexts.pages(text,150))out.add(HouseWriting.page(HouseWriting.WritingStyle.PLAIN,p));return out;}
+    // ------------------------------------------------------------------------------------------------ the voice (0.4.755)
+    /** How her words come: the first time to each reader, and after. */
+    public static final String VOICE_FIRST="From the bed, in a voice that is not hers: ",VOICE_AGAIN="From the bed: ";
+    private static final String[] NAME={"%s. That's what they call you, isn't it? %s.","Come closer, %s. You can hear me from there. Come closer anyway."};
+    public static String voiceName(String name,int i){return String.format(NAME[i],name,name);}
+    public static String voicePet(String pet){return pet+" is here with me. Not all of it.";}
+    public static String voicePetDeath(String pet,String message){return "I know how it went for "+pet+". "+end(message)+" Ask me what it heard last.";}
+    public static String voiceDeath(String message,String place){return end(message+(place.isBlank()?"":", "+place))+" I was there. I had the best view.";}
+    public static String voiceDeaths(long times){return "You have died "+times+" times in this house. I was counting. You weren't.";}
+    public static String voiceWrote(String line){return "\u201c"+line+"\u201d You wrote that. I read everything you write.";}
+    public static final String VOICE_ALONE="Nobody came up with you. He asked for two.";
+    public static String voiceOthers(java.util.List<String> others){return (others.size()==1?others.get(0):String.join(" and ",others))+" can't hear me. Only you can. Don't tell them what I said.";}
+    public static final String[] VOICE_ROOM={
+        "Keep your coat on. He told you that. I read it over his shoulder.",
+        "Five stairs up. You'll go down them again. Not the way you came.",
+        "He's at the window. He won't look at you while I'm talking to you.",
+        "The lamp is the only warm thing in here. Go and stand by it. I'll wait."};
+    private static String end(String s){s=s.strip();return s.endsWith(".")||s.endsWith("!")||s.endsWith("?")?s:s+".";}
     /** The first paper: the priest's letter, left on the hall table for whoever he sent for. */
     public static ItemStack source(){
         return HouseWriting.book("A letter on the hall table","T. Aske",pages(

@@ -43,7 +43,7 @@ public final class ColdRoom {
 
     /** A reader in: the three are put where they keep if they are not there, and the house's night sound goes round once. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        var l=p.serverLevel();ensure(l,b);
+        var l=p.serverLevel();ensure(l,b);ColdNight.open(b);
         own.putInt("Visits",own.getInt("Visits")+1);
         l.playSound(null,b.offset(0,1,-4),ColdRegistry.ROOM.get(),SoundSource.AMBIENT,.6F,1F);
     }
@@ -108,7 +108,7 @@ public final class ColdRoom {
             case STOVE->cue(p,ColdTexts.STOVE);
             case SINK->cue(p,ColdTexts.SINK);
             case CHAIR->cue(p,rel.equals(ColdSite.CHAIR)?ColdTexts.BEDSIDE_CHAIR:ColdTexts.CHAIR);
-            case BED->cue(p,stage==0?ColdTexts.PILLOW:ColdTexts.BED);
+            case BED->cue(p,stage>=2?ColdTexts.BED_RISEN:stage%2==0?ColdTexts.PILLOW:ColdTexts.BED);
             case DRESSER->cue(p,stage==0?ColdTexts.DRESSER:ColdTexts.DRESSER_OUT);
             case BOOK->cue(p,ColdTexts.BOOK);
             case CRUCIFIX->cue(p,stage==0?ColdTexts.CRUCIFIX:ColdTexts.CRUCIFIX_TURNED);

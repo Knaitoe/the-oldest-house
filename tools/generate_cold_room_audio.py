@@ -13,6 +13,9 @@ from pathlib import Path
 ROWS = {
     'room': ('Wind presses at the windows', 24),
     'boards': ('Stair boards creak', 12),
+    'bed': ('A bed frame knocks', 20),
+    'drawer': ('A drawer slides out', 12),
+    'voice': ('Someone speaks low', 10),
 }
 ASSET_ROOT = Path(__file__).resolve().parents[1] / 'src/main/resources/assets/the_oldest_house'
 
@@ -66,7 +69,38 @@ def boards():
     return creak + grain + knock
 
 
-MAKERS = {'room': room, 'boards': boards}
+def bed():
+    # 0.4.755: an iron frame lifted and let down: three knocks of its legs on the boards, closer together, and the springs' ring.
+    n = seconds(1.4)
+    t = times(n)
+    out = np.zeros(n)
+    for at, size in ((.0, 1.0), (.42, .8), (.7, .9)):
+        knock = band(rng.standard_normal(n), 60, 500) * np.exp(-np.clip(t - at, 0, None) / .05) * (t >= at)
+        ring = np.sin(2 * np.pi * 410 * (t - at)) * np.exp(-np.clip(t - at, 0, None) / .25) * (t >= at) * .12
+        out += (knock + ring) * size
+    return out
+
+
+def drawer():
+    # 0.4.755: wood on wood, a drawer pulled out its whole length, and the knock of it stopping on its runners.
+    n = seconds(1.1)
+    t = times(n)
+    slide = band(rng.standard_normal(n), 250, 1800) * (.3 + .2 * np.sin(2 * np.pi * 23 * t)) * np.clip(t / .05, 0, 1) * (t < .8)
+    stop = band(rng.standard_normal(n), 80, 700) * np.exp(-np.clip(t - .8, 0, None) / .03) * (t >= .8) * .9
+    return slide + stop
+
+
+def voice():
+    # 0.4.755: under the words, a breath drawn too long and let out through a throat: no words in it, low and close.
+    n = seconds(2.2)
+    t = times(n)
+    breath = band(rng.standard_normal(n), 120, 1400) * np.clip(np.sin(np.pi * t / 2.2), 0, None)
+    throat = np.sin(2 * np.pi * (62 + 6 * np.sin(2 * np.pi * 3.1 * t)) * t) * .35 * np.clip((t - .6) / .4, 0, 1) * np.clip((2.1 - t) / .4, 0, 1)
+    rasp = band(rng.standard_normal(n), 60, 300) * np.abs(np.sin(2 * np.pi * 11 * t)) * .4 * (t > .6)
+    return breath * .6 + throat + rasp
+
+
+MAKERS = {'room': room, 'boards': boards, 'bed': bed, 'drawer': drawer, 'voice': voice}
 
 
 def main():

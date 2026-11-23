@@ -490,6 +490,12 @@ def model(elements, textures, particle, cutout=True):
 
 
 def bed_model(stage):
+    if stage >= 2:
+        # 0.4.755: the bed risen off the floor, head (2) or foot (3): the same frame three pixels up, its legs clear of the boards.
+        m = bed_model(stage - 2)
+        for e in m['elements']:
+            e['from'] = [e['from'][0], e['from'][1] + 3, e['from'][2]]; e['to'] = [e['to'][0], e['to'][1] + 3, e['to'][2]]
+        return m
     t = {'i': 'iron', 's': 'sheet', 'k': 'ticking', 'p': 'pillow', 'r': 'strap'}
     e = [element([0, 5, 0], [16, 10, 16], {'all': 'k', 'up': 's'})]
     if stage == 0:
@@ -618,6 +624,7 @@ def fitting_models():
         m[f'bed_{s}'] = bed_model(s); m[f'dresser_{s}'] = dresser_model(s); m[f'book_{s}'] = book_model(s)
         m[f'crucifix_{s}'] = crucifix_model(s); m[f'nightstand_{s}'] = nightstand_model(s); m[f'hall_table_{s}'] = hall_table_model(s)
         m[f'streetlamp_{s}'] = streetlamp_model(s)
+    m['bed_2'] = bed_model(2); m['bed_3'] = bed_model(3)
     return m
 
 
@@ -641,7 +648,7 @@ def textures():
 
 
 KINDS = ['bed', 'dresser', 'book', 'crucifix', 'nightstand', 'radiator', 'chair', 'hall_table', 'hooks', 'kitchen_table', 'stove', 'sink', 'bulb', 'streetlamp']
-STAGES = {'bed': 2, 'dresser': 2, 'book': 2, 'crucifix': 2, 'nightstand': 2, 'hall_table': 2, 'streetlamp': 2}
+STAGES = {'bed': 4, 'dresser': 2, 'book': 2, 'crucifix': 2, 'nightstand': 2, 'hall_table': 2, 'streetlamp': 2}
 STAGE_MAX = 4
 FACING_Y = {'north': 0, 'east': 90, 'south': 180, 'west': 270}
 NAMES = {'cold_room_fitting': 'Rented House Fitting', 'cold_room_boards': 'Hall Boards', 'cold_room_runner': 'Stair Runner',

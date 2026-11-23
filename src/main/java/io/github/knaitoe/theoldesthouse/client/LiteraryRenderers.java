@@ -1490,7 +1490,7 @@ public final class LiteraryRenderers {
     public static boolean lieOnColdBed(net.minecraft.world.entity.LivingEntity a,PoseStack p,float scale){
         var at=a.blockPosition();var s=a.level().getBlockState(at);
         if(!io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.is(s,io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.Kind.BED)){at=at.below();s=a.level().getBlockState(at);if(!io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.is(s,io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.Kind.BED))return false;}
-        lie(a,p,scale,at,s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.FACING).getOpposite(),10/16.0);
+        lie(a,p,scale,at,s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.FACING).getOpposite(),(s.getValue(io.github.knaitoe.theoldesthouse.labyrinth.ColdBlock.STAGE)>=2?13:10)/16.0);
         return true;
     }
     /** The body laid along a bed whose pillow is in this cell and whose head is this way, its top this high above the cell's floor. */

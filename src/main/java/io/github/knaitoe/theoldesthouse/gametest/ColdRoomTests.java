@@ -159,4 +159,59 @@ public final class ColdRoomTests {
             done();h.succeed();
         });
     }
+
+    /**
+     * 0.4.755, what moves and her voice. A reader in the back bedroom looking out of the window: behind and beside them the bed rises off
+     * the boards, the drawers slide out and the cross turns, one at a time, and each is heard. Turned to the bed, the bed and the cross
+     * stay as they are and only the drawers behind them move; a spectator looking at the drawers keeps those still too. Put back, the room
+     * is as it was. The voice speaks to one reader at a time, in turn: to the first by name, and from what the House really kept of them
+     * (here, a companion lost); the second hears their own lines and not the first's. A spectator is never spoken to.
+     */
+    @GameTest(template="empty",batch="cold_room_night",timeoutTicks=1600)
+    public static void whatMovesUnseenAndTheVoice(GameTestHelper h){
+        var f=place(h);var p=f.player("cold_still",P);var q=f.player("cold_other",P);var l=f.level(P);var b=f.base(P);
+        net.minecraft.server.level.ServerPlayer[] s={null};
+        h.startSequence().thenIdle(5).thenExecute(()->{
+            ColdRoom.ensure(l,b);ColdRoom.arrive(p,b,f.own(p,P));ColdRoom.arrive(q,b,f.own(q,P));
+            p.teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()-16.5,180,0);q.teleportTo(l,b.getX()+.5,b.getY()+1,b.getZ()-1.5,180,0);
+        }).thenIdle(3).thenExecute(()->{
+            boolean rose=false;
+            for(int i=0;i<12;i++){
+                h.assertTrue(ColdNight.stirNow(l,b),"something moves while nobody looks, try "+i);
+                if(stage(l,b,ColdSite.BED_HEAD)>=2&&stage(l,b,ColdSite.BED_FOOT)>=2)rose=true;
+                h.assertTrue(stage(l,b,ColdSite.BED_HEAD)/2==stage(l,b,ColdSite.BED_FOOT)/2,"the bed's head and foot rise and fall together");
+            }
+            h.assertTrue(rose,"the bed rose off the boards");
+            h.assertTrue(stage(l,b,ColdSite.DRESSER)==1&&stage(l,b,ColdSite.CRUCIFIX)==1,"the drawers out and the cross turned");
+            h.assertTrue(f.own(p,P).getInt("StirsHeard")>=12&&f.own(q,P).getInt("StirsHeard")>=12,"everyone in the house heard each: "+f.own(q,P).getInt("StirsHeard"));
+            ColdNight.putBack(l,b);
+            h.assertTrue(stage(l,b,ColdSite.BED_HEAD)==0&&stage(l,b,ColdSite.BED_FOOT)==1&&stage(l,b,ColdSite.DRESSER)==0&&stage(l,b,ColdSite.CRUCIFIX)==0,"put back, the room is as it was");
+            p.teleportTo(l,b.getX()-1.5,b.getY()+5,b.getZ()-16.5,-90,0);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertTrue(ColdNight.stirNow(l,b),"with the reader turned to the bed, the drawers behind them still move");
+            h.assertTrue(stage(l,b,ColdSite.DRESSER)==1&&stage(l,b,ColdSite.BED_HEAD)==0&&stage(l,b,ColdSite.CRUCIFIX)==0,"what is looked at stays as it is");
+            ColdNight.putBack(l,b);
+            s[0]=NativeTestPlayers.survival(h,"cold_camera");f.players.add(s[0]);s[0].setGameMode(GameType.SPECTATOR);
+            s[0].teleportTo(l,b.getX()-.5,b.getY()+5,b.getZ()-17.5,90,0);
+        }).thenIdle(2).thenExecute(()->{
+            h.assertFalse(ColdNight.stirNow(l,b),"a spectator's camera on the drawers keeps them still as well");
+            h.assertTrue(stage(l,b,ColdSite.DRESSER)==0,"the drawers shut");
+            var d=f.data();var rec=HotelVignette.personal(d,p.getUUID());var lost=new net.minecraft.nbt.ListTag();var pet=new net.minecraft.nbt.CompoundTag();
+            pet.putString("Name","Biscuit");pet.putString("Message","Biscuit was slain by Zombie");lost.add(pet);rec.put("LostPets",lost);HotelVignette.save(d,p.getUUID(),rec);
+            var lines=ColdNight.lines(p,List.of(p,q));
+            h.assertTrue(lines.get(0).text().contains(p.getName().getString())&&lines.stream().anyMatch(x->x.text().contains("Biscuit")&&x.kind()==ColdNight.COMPANION),"what she has for the first is from what the House kept: "+lines);
+            h.assertFalse(ColdNight.lines(q,List.of(p,q)).stream().anyMatch(x->x.text().contains("Biscuit")),"nothing of the first's in what she has for the second");
+            q.teleportTo(l,b.getX()+.5,b.getY()+5,b.getZ()-19.5,0,0);told(p);told(q);
+        }).thenIdle(2).thenExecute(()->{
+            int pv=f.own(p,P).getInt("Voice"),qv=f.own(q,P).getInt("Voice");
+            ColdNight.voiceNow(l,b);ColdNight.voiceNow(l,b);
+            h.assertTrue(f.own(p,P).getInt("Voice")==pv+1&&f.own(q,P).getInt("Voice")==qv+1,"she speaks to each in turn: "+pv+">"+f.own(p,P).getInt("Voice")+" "+qv+">"+f.own(q,P).getInt("Voice"));
+            h.assertTrue(f.own(s[0],P).getInt("Voice")==0,"a spectator is never spoken to");
+            var mine=told(p);var theirs=told(q);
+            h.assertTrue(mine.stream().anyMatch(x->x.startsWith("From the bed")&&x.contains(p.getName().getString())),"the first hears their own name: "+mine);
+            h.assertTrue(theirs.stream().anyMatch(x->x.contains(q.getName().getString()))&&theirs.stream().noneMatch(x->x.contains(p.getName().getString()+". That's")),"the second hears their own, not the first's: "+theirs);
+            h.assertTrue((f.own(p,P).getInt("VoiceUsed")&ColdNight.NAME)!=0,"what she used is kept for the account");
+            done();h.succeed();
+        });
+    }
 }

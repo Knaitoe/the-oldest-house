@@ -7,10 +7,10 @@
       "model": "the_oldest_house:block/cold_room/bed_1"
     },
     "facing=north,kind=bed,stage=2": {
-      "model": "the_oldest_house:block/cold_room/bed_0"
+      "model": "the_oldest_house:block/cold_room/bed_2"
     },
     "facing=north,kind=bed,stage=3": {
-      "model": "the_oldest_house:block/cold_room/bed_0"
+      "model": "the_oldest_house:block/cold_room/bed_3"
     },
     "facing=east,kind=bed,stage=0": {
       "model": "the_oldest_house:block/cold_room/bed_0",
@@ -21,11 +21,11 @@
       "y": 90
     },
     "facing=east,kind=bed,stage=2": {
-      "model": "the_oldest_house:block/cold_room/bed_0",
+      "model": "the_oldest_house:block/cold_room/bed_2",
       "y": 90
     },
     "facing=east,kind=bed,stage=3": {
-      "model": "the_oldest_house:block/cold_room/bed_0",
+      "model": "the_oldest_house:block/cold_room/bed_3",
       "y": 90
     },
     "facing=south,kind=bed,stage=0": {
@@ -37,11 +37,11 @@
       "y": 180
     },
     "facing=south,kind=bed,stage=2": {
-      "model": "the_oldest_house:block/cold_room/bed_0",
+      "model": "the_oldest_house:block/cold_room/bed_2",
       "y": 180
     },
     "facing=south,kind=bed,stage=3": {
-      "model": "the_oldest_house:block/cold_room/bed_0",
+      "model": "the_oldest_house:block/cold_room/bed_3",
       "y": 180
     },
     "facing=west,kind=bed,stage=0": {
@@ -53,11 +53,11 @@
       "y": 270
     },
     "facing=west,kind=bed,stage=2": {
-      "model": "the_oldest_house:block/cold_room/bed_0",
+      "model": "the_oldest_house:block/cold_room/bed_2",
       "y": 270
     },
     "facing=west,kind=bed,stage=3": {
-      "model": "the_oldest_house:block/cold_room/bed_0",
+      "model": "the_oldest_house:block/cold_room/bed_3",
       "y": 270
     },
     "facing=north,kind=dresser,stage=0": {

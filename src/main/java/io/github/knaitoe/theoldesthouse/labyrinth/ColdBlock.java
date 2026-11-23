@@ -44,7 +44,7 @@ public final class ColdBlock extends HorizontalDirectionalBlock {
         return switch(s.getValue(KIND)){case BULB->10;case NIGHTSTAND->s.getValue(STAGE)==0?7:0;case STREETLAMP->s.getValue(STAGE)==1?12:0;default->0;};
     }
     /** The bed's head is a bed to the game, so whoever lies in it lies along it, the head on the pillow. */
-    @Override public boolean isBed(BlockState s,BlockGetter level,BlockPos pos,@javax.annotation.Nullable LivingEntity sleeper){return is(s,Kind.BED)&&s.getValue(STAGE)==0;}
+    @Override public boolean isBed(BlockState s,BlockGetter level,BlockPos pos,@javax.annotation.Nullable LivingEntity sleeper){return is(s,Kind.BED)&&s.getValue(STAGE)%2==0;}
     @Override public void setBedOccupied(BlockState s,Level level,BlockPos pos,LivingEntity sleeper,boolean occupied){}
     @Override public Direction getBedDirection(BlockState s,LevelReader level,BlockPos pos){return is(s,Kind.BED)?s.getValue(FACING).getOpposite():s.getValue(FACING);}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
@@ -53,7 +53,7 @@ public final class ColdBlock extends HorizontalDirectionalBlock {
     @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
-            case BED->Block.box(0,0,0,16,10,16);
+            case BED->s.getValue(STAGE)>=2?Block.box(0,3,0,16,13,16):Block.box(0,0,0,16,10,16);
             case DRESSER->t(f,1,0,3,15,16,16);
             case BOOK->Block.box(3,0,4,13,2,12);
             case CRUCIFIX->t(f,5,2,14,11,14,16);
