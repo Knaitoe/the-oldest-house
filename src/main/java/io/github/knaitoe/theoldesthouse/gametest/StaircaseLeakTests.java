@@ -309,8 +309,9 @@ public final class StaircaseLeakTests {
                 h.assertTrue(StaircaseLeaks.active(p[0])&&StaircaseLeaks.activeBase(p[0]).equals(bases[0]),"the one who stayed is still in their own room");
                 h.assertTrue(prop(f,bases[0].offset(StaircaseHouseholdRooms.FOLD))==StaircaseLeakProps.Kind.SHEET_ONE_END,"with the sheet still in their hands");
                 p[1]=NativeTestPlayers.survival(h,name[0],id[0]);p[1].setNoGravity(true);f.players.add(p[1]);born[0]=now;s[0]=4;return;}
+            // Back on the same id the reader is returned out of the room; the return waits for the place they read from to load.
             if(s[0]==4&&now-born[0]>=5){
-                h.assertTrue(!StaircaseLeaks.active(p[1]),"back on the same id, the reader is outside the room");
+                if(StaircaseLeaks.active(p[1])){h.assertTrue(now-born[0]<400,"back on the same id, the reader is still in the room after "+(now-born[0])+" ticks");return;}
                 p[1].teleportTo(f.level,paper.getX()+.5,paper.getY(),paper.getZ()+1.5,0,0);read(f,p[1],15);born[0]=now;s[0]=5;return;}
             if(s[0]==5&&now-born[0]>=22){throughDoor(f,p[1],door[0]);s[0]=6;return;}
             if(s[0]==6&&StaircaseLeaks.active(p[1])){
