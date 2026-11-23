@@ -1463,6 +1463,132 @@
   "limbs": 1,
   "shoulders": 1
  },
+ "literary_wax_apprentice": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_wax_count": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_wax_covered": {
+  "depth": 1,
+  "height": 1.06,
+  "limbs": 0.97,
+  "shoulders": 1
+ },
+ "literary_wax_daughter": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_wax_doorman": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_wax_father": {
+  "depth": 0.9,
+  "height": 0.96,
+  "limbs": 0.9,
+  "shoulders": 0.92
+ },
+ "literary_wax_gravedigger": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_wax_hooded": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_wax_modeller": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_wax_mother": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_wax_risen": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_wax_sleepwalker": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
+ "literary_wax_son": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_wax_statesman_general": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_wax_statesman_lady": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_wax_statesman_lapel": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
+ "literary_wax_statesman_mirror": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_wax_statesman_orator": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_wax_statesman_scroll": {
+  "depth": 1.3,
+  "height": 1,
+  "limbs": 1.1,
+  "shoulders": 1.14
+ },
+ "literary_wax_stranger": {
+  "depth": 0.88,
+  "height": 1.07,
+  "limbs": 0.88,
+  "shoulders": 0.92
+ },
+ "literary_wax_unfinished": {
+  "depth": 1.06,
+  "height": 1.02,
+  "limbs": 1.06,
+  "shoulders": 1.12
+ },
  "literary_window_cleaner": {
   "depth": 0.9,
   "height": 0.96,

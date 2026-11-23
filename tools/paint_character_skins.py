@@ -392,6 +392,32 @@ LOOKS = {
     # 0.4.663, Not Yet (docs/NOT_YET_0_4_663.md): the three the machine has mended too often, in the long room past its ward. They
     # lie in their cots with their eyes open and can no longer move. Ward pyjamas washed thin, bare feet, and on each the seams of its
     # mending: a ridge of healed skin with the thread's stitches still across it, on the face, round the wrists and up the arms.
+    # 0.4.749, the waxworks (docs/WAXWORKS_0_4_749.md): Merriman's figures, in wax. Their skin is a shade too even, their eyes too
+    # clear; their clothes are real. The twenty-fourth is dressed as plainly as a visitor.
+    'literary_wax_founder': Look('#d8bfa4','#d8d4cc','receding','#2a2a30','#24242a','suit','#e8e4da',eyes='#4a5a62',age=2,mark='museum',beard='full'),
+    'literary_wax_doorman': Look('#ccb094','#3a2c24','short','#3a2a4a','#2a2236','uniform','#c8a858',eyes='#4a4036',age=1,mark='museum',beard='moustache'),
+    'literary_wax_tickets': Look('#e0c4aa','#6a4428','bun','#5a2a30','#2a2a30','cardigan','#e8e2d4',eyes='#4a5a4a',mark='museum'),
+    'literary_wax_statesman_lapel': Look('#d6b89c','#8a8278','part','#22242a','#1e2026','suit','#e8e4da',eyes='#3e4a52',age=1,mark='museum',beard='chops'),
+    'literary_wax_statesman_scroll': Look('#dabca0','#2a221e','short','#1e1e24','#1a1a20','coat','#d8d2c4',eyes='#4a4036',age=1,mark='museum',beard='full'),
+    'literary_wax_statesman_mirror': Look('#d2b498','#4a3a2e','part','#26282e','#202228','suit','#e4e0d6',eyes='#5a5040',mark='museum'),
+    'literary_wax_statesman_general': Look('#cfae92','#cfcac0','receding','#3a4a3a','#2a3428','uniform','#c8a858',eyes='#4a5a62',age=2,mark='museum',beard='handlebar'),
+    'literary_wax_statesman_judge': Look('#d8bea4','#e0dcd4','long','#141418','#141418','cleric','#e8e4da',eyes='#3a3a3a',age=2,mark='museum'),
+    'literary_wax_statesman_lady': Look('#e4ccb4','#5a3a26','bun','#3a3a5a','#2a2a40','dress','#e8e2d4',eyes='#4a5a6a',age=1,mark='museum'),
+    'literary_wax_statesman_orator': Look('#c49c7e','#1e1a18','close','#2a2622','#22201c','waistcoat','#e0dccf',eyes='#3a2e26',age=1,mark='museum',beard='goatee'),
+    'literary_wax_father': Look('#d4b294','#5a4430','part','#6a5a44','#3a3228','waistcoat','#d8d0bc',eyes='#4a4036',age=1,mark='museum',beard='moustache'),
+    'literary_wax_mother': Look('#dcbea2','#7a5232','tied','#7a6a5a','#4a4038','apron','#e4dccb',eyes='#4a5a4a',age=1,mark='museum'),
+    'literary_wax_daughter': Look('#e0c6ac','#8a6a3a','braids','#7a8aa0','#4a5468','dress','#ece6d8',eyes='#4a5a6a',face_style='child',mark='museum'),
+    'literary_wax_son': Look('#d8baa0','#4a3426','short','#5a6a5a','#3a3a40','shirt','#e0dacc',eyes='#4a4036',face_style='child',mark='museum'),
+    'literary_wax_risen': Look('#c8c0b4','#1a1818','long','#e4e0d6','#d8d4ca','dress','#e4e0d6',eyes='#3a3a3a',mark='museum'),
+    'literary_wax_gravedigger': Look('#c09a7a','#4a3e34','messy','#4a4438','#3a3428','coat','#5a5444',eyes='#3e3a30',age=2,mark='museum',beard='stubble'),
+    'literary_wax_sleepwalker': Look('#e2d2c2','#2a201a','long','#dcd6c8','#d0cabc','dress','#e6e0d2',eyes='#4a5a62',mark='museum'),
+    'literary_wax_hooded': Look('#b49a84','#141210','close','#2a2622','#221e1a','cleric','#3a3430',eyes='#2a2622',mark='museum'),
+    'literary_wax_count': Look('#d8ccc0','#121214','part','#141418','#141418','suit','#6a1c22',eyes='#5a2a2a',age=1,mark='museum'),
+    'literary_wax_apprentice': Look('#d0ae90','#6a4a2a','messy','#d8d2c0','#3a3a40','apron','#c8b48a',eyes='#4a5040',mark='museum'),
+    'literary_wax_modeller': Look('#ccaa8c','#9a948a','receding','#d8d2c0','#3a3630','apron','#c8b48a',eyes='#4a4036',age=2,glasses=True,mark='museum',beard='full'),
+    'literary_wax_unfinished': Look('#d8b49a','#d8b49a','close','#d8b49a','#d8b49a','shirt','#d8b49a',eyes='#e8e8e0',mark='museum'),
+    'literary_wax_covered': Look('#cac4b4','#cac4b4','close','#cac4b4','#cac4b4','smock','#cac4b4',eyes='#cac4b4',mark='museum'),
+    'literary_wax_stranger': Look('#d2b49a','#3a2e26','short','#4a4e54','#2e3238','jacket','#d8d2c4',eyes='#4a4a46',mark='museum'),
     'literary_notyet_ines': Look('#c9a48a','#3a2c24','long','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4a4036',mark='notyet_ines',sleeve=4,level_eyes=True,shoes='#c09a80'),
     'literary_notyet_bram': Look('#b4876a','#5a4a3c','close','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4e4a3e',age=1,beard='stubble',mark='notyet_bram',sleeve=4,level_eyes=True,shoes='#a87e62'),
     # 0.4.667, Last Seen (docs/LAST_SEEN_0_4_667.md): the ten who come back to the park, each in what they were last seen in, the
@@ -1361,6 +1387,24 @@ def earth_side(art,look,side):
         x=x if side=='left' else 15-x;art.putpixel((x,y),mix(art.getpixel((x,y)),'#6e5840',t)+(255,))
 
 
+def museum_face(im,look):
+    """0.4.749, the waxworks: a face cast in wax. The whites of the eyes too clean and a glint set into each, the same on every
+    figure; a gloss along the brow, the bridge of the nose and the top of each cheek, where a modeller's wax catches a light."""
+    if look.mark!='museum':return im
+    px=im.load()
+    for y in range(16):
+        for x in range(16):
+            if px[x,y][:3]==(233,226,206):px[x,y]=(247,245,238,255)
+    for x in (4,11):
+        if px[x,7][:3]!=(247,245,238):px[x,7]=(252,252,250,255)
+    def lift(x,y,k):
+        r,g,b,a=px[x,y];px[x,y]=(min(255,r+k),min(255,g+k),min(255,b+k),a)
+    for x in range(5,11):lift(x,3,14)
+    for y in (8,9):lift(7,y,12)
+    for x in (2,3,12,13):lift(x,10,12)
+    return im
+
+
 def face(look):
     if look.face_style and look.face_style not in ('young_teen','child'):return hollow_face(look)
     if look.mark.startswith('family_'):return family_face(look)
@@ -2034,7 +2078,7 @@ def paint(look):
         for side,box in islands.items():put(box,panel((round((box[2]-box[0])*S),round((box[3]-box[1])*S)),color,kind,side))
     # Face features belong only on the front; ears belong only on side faces.
     head=net(0,0,8,8,8);fill_net(head,look.hair,'hair')
-    put(head['front'],face(look));put(head['bottom'],panel((16,16),look.hair if look.beard=='full' else look.skin,'hair' if look.beard=='full' else 'skin'))
+    put(head['front'],museum_face(face(look),look));put(head['bottom'],panel((16,16),look.hair if look.beard=='full' else look.skin,'hair' if look.beard=='full' else 'skin'))
     if look.cut=='receding':
         art=panel((16,16),look.skin,'skin');d=ImageDraw.Draw(art)
         d.rectangle((0,0,1,15),fill=rgb(look.hair));d.rectangle((14,0,15,15),fill=rgb(look.hair));d.rectangle((0,13,15,15),fill=rgb(look.hair));put(head['top'],art)

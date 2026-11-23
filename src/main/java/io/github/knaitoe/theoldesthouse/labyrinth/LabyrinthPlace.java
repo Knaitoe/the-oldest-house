@@ -763,7 +763,10 @@ public enum LabyrinthPlace {
     DOWNED_LINE("downed_line",Kind.GRAY,255,new BoundingBox(-10,-3,-36,10,12,0),grayDoors(0,0,-36)),
     DIVIDING_WALL("dividing_wall",Kind.GRAY,256,new BoundingBox(-11,-1,-42,11,16,0),grayDoors(0,0,-42)),
     LOW_LINTELS("low_lintels",Kind.GRAY,257,new BoundingBox(-8,-1,-48,8,15,0),grayDoors(0,0,-48)),
-    OPENING_SEAMS("opening_seams",Kind.GRAY,258,new BoundingBox(-4,-6,-38,5,12,0),grayDoors(0,0,-38));
+    OPENING_SEAMS("opening_seams",Kind.GRAY,258,new BoundingBox(-4,-6,-38,5,12,0),grayDoors(0,0,-38)),
+    /** 0.4.749, the waxworks (Waxworks, docs/WAXWORKS_0_4_749.md): Merriman's Wax Museum after closing, the staff corridor, the security
+     * office under its six monitors, the ring corridor and five dark galleries of figures (WaxSite). This part, the place. Not dealt until part 2. */
+    WAXWORKS("waxworks",Kind.RECURRING,259,new BoundingBox(WaxSite.WEST,WaxSite.BOTTOM,WaxSite.NORTH,WaxSite.EAST,WaxSite.TOP,0),literaryEntry());
 
     /** What a place is to the dealer. */
     public enum Kind {

@@ -2231,5 +2231,19 @@
   "subtitles.the_oldest_house.the_list.strain": "A motor strains",
   "subtitles.the_oldest_house.the_list.dunk": "Someone is held under water",
   "advancements.the_oldest_house.account.the_list.title": "The list",
-  "advancements.the_oldest_house.account.the_list.description": "Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list."
+  "advancements.the_oldest_house.account.the_list.description": "Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list.",
+  "block.the_oldest_house.waxworks_fitting": "Museum Fitting",
+  "block.the_oldest_house.waxworks_block": "Painted Block",
+  "block.the_oldest_house.waxworks_lino": "Staff Linoleum",
+  "block.the_oldest_house.waxworks_tile": "Ceiling Tile",
+  "block.the_oldest_house.waxworks_panel": "Gallery Panelling",
+  "block.the_oldest_house.waxworks_paper": "Gallery Wallpaper",
+  "block.the_oldest_house.waxworks_parquet": "Gallery Parquet",
+  "block.the_oldest_house.waxworks_runner": "Corridor Runner",
+  "block.the_oldest_house.waxworks_plaster": "Gallery Ceiling",
+  "block.the_oldest_house.waxworks_brick": "Museum Brick",
+  "subtitles.the_oldest_house.waxworks.room": "The museum ventilation hums",
+  "subtitles.the_oldest_house.waxworks.punch": "A time clock stamps a card",
+  "subtitles.the_oldest_house.waxworks.monitors": "Monitors whine",
+  "subtitles.the_oldest_house.bleed.waxworks": "Ventilation hums in an empty building, behind a door"
 }

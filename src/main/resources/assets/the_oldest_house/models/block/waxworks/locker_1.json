@@ -1,0 +1,98 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "s": "the_oldest_house:block/waxworks/steel",
+    "f": "the_oldest_house:block/waxworks/locker_low_open",
+    "particle": "the_oldest_house:block/waxworks/steel"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        4
+      ],
+      "to": [
+        15,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#f"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s"
+        },
+        "west": {
+          "texture": "#s"
+        },
+        "up": {
+          "texture": "#s"
+        },
+        "down": {
+          "texture": "#s"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        0,
+        -9
+      ],
+      "to": [
+        2,
+        16,
+        4
+      ],
+      "faces": {
+        "north": {
+          "texture": "#s"
+        },
+        "south": {
+          "texture": "#s"
+        },
+        "east": {
+          "texture": "#s",
+          "uv": [
+            0,
+            0,
+            13,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#s",
+          "uv": [
+            3,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#s",
+          "uv": [
+            1,
+            3,
+            2,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#s",
+          "uv": [
+            1,
+            0,
+            2,
+            13
+          ]
+        }
+      }
+    }
+  ]
+}

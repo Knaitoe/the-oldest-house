@@ -50,7 +50,7 @@ public final class SceneInstances {
         LabyrinthPlace.LAST_CROSSING,LabyrinthPlace.PINEHOOK,LabyrinthPlace.ONES_INSIDE,LabyrinthPlace.GOATMAN,LabyrinthPlace.GHOSTS_SET,LabyrinthPlace.SHALLOWS,
         LabyrinthPlace.MARSH_SUPPER,LabyrinthPlace.TALL_GRASS,LabyrinthPlace.GROWING_THINGS,LabyrinthPlace.POLYBIUS,LabyrinthPlace.LAST_ORDERS,LabyrinthPlace.SEANCE,
         LabyrinthPlace.MOVIE_NIGHT,LabyrinthPlace.COSTUME_NIGHT,LabyrinthPlace.WINTER_LAKE,LabyrinthPlace.CAMP_BLOOD,
-        LabyrinthPlace.LITTLE_LONGER,LabyrinthPlace.SLEEPING_KING,LabyrinthPlace.THE_LIST);
+        LabyrinthPlace.LITTLE_LONGER,LabyrinthPlace.SLEEPING_KING,LabyrinthPlace.THE_LIST,LabyrinthPlace.WAXWORKS);
     /**
      * 0.4.551 (owner, 13 November: "All multiplayer vignettes should be hooked through that system. If full"): the stories written
      * for a party, and how many readers one copy of each holds. A copy whose places are all held ({@link #held}) is full: the next
@@ -66,7 +66,7 @@ public final class SceneInstances {
      * Things four, a pair of hands at each end of the kitchen table and two more; Polybius four, Block Party's four seats. 0.4.556: Last orders
      * five, one to each stool along the bar but Benny's. 0.4.557: the séance four, an unseen guest for each of the family at the table.
      * 0.4.562: Movie Night four, one to each canoe at the dock; Costume Night six; Winter Lake four, one to each of the boys at the fire.
-     * 0.4.563: Camp Blood six, a counselor to each cabin. 0.4.707: The list five, the one who comes back wrong and four on Amber's side.
+     * 0.4.563: Camp Blood six, a counselor to each cabin. 0.4.707: The list five, the one who comes back wrong and four on Amber's side. 0.4.749: the waxworks four, a guard and three more on the night shift.
      */
     private static final Map<LabyrinthPlace,Integer> PARTIES=Map.ofEntries(Map.entry(LabyrinthPlace.BIKE_NIGHT,BikeNight.RIDERS),Map.entry(LabyrinthPlace.LAST_CROSSING,LastCrossing.MAX_CREW),
         Map.entry(LabyrinthPlace.PINEHOOK,Pinehook.MAX_PARTY),Map.entry(LabyrinthPlace.ONES_INSIDE,LodgingHouse.PARTY),Map.entry(LabyrinthPlace.GOATMAN,GoatmanVignette.MAX_PLAYERS),
@@ -74,7 +74,7 @@ public final class SceneInstances {
         Map.entry(LabyrinthPlace.MARSH_SUPPER,MarshSupper.PLACES),Map.entry(LabyrinthPlace.TALL_GRASS,TallGrass.PLACES),Map.entry(LabyrinthPlace.GROWING_THINGS,GrowingThings.PLACES),
         Map.entry(LabyrinthPlace.POLYBIUS,Polybius.PLACES),Map.entry(LabyrinthPlace.LAST_ORDERS,LastOrders.PLACES),Map.entry(LabyrinthPlace.SEANCE,ClassicsVignettes.PLACES),
         Map.entry(LabyrinthPlace.MOVIE_NIGHT,MovieNight.PLACES),Map.entry(LabyrinthPlace.COSTUME_NIGHT,CostumeNight.PLACES),Map.entry(LabyrinthPlace.WINTER_LAKE,WinterLake.PLACES),
-        Map.entry(LabyrinthPlace.CAMP_BLOOD,CampSession.PLACES),Map.entry(LabyrinthPlace.SLEEPING_KING,King.PARTY),Map.entry(LabyrinthPlace.THE_LIST,TheList.PARTY));
+        Map.entry(LabyrinthPlace.CAMP_BLOOD,CampSession.PLACES),Map.entry(LabyrinthPlace.SLEEPING_KING,King.PARTY),Map.entry(LabyrinthPlace.THE_LIST,TheList.PARTY),Map.entry(LabyrinthPlace.WAXWORKS,Waxworks.PARTY));
     /** How many readers one copy of a party's story holds, or 0 for a scene that is not one. */
     public static int party(@Nullable LabyrinthPlace p){return p==null?0:PARTIES.getOrDefault(p,0);}
     /**

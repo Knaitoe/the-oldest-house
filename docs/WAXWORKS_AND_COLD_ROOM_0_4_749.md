@@ -10,7 +10,7 @@ single and multiplayer play."
 Both are built in parts, as every recent vignette has been: the place first (never dealt, no Witness source), then the story, then the
 account. Each part runs the full multiplayer set (the group sweep, the cast and together checks) as soon as the place exists.
 
-## 1. The waxworks (`waxworks`, slot 247)
+## 1. The waxworks (`waxworks`, slot 259)
 
 A small-town wax museum after closing. The reader is the night guard on their first shift. Kind: survival.
 
@@ -79,7 +79,7 @@ The account is the night guard's log, in the reader's hand. It records:
 If they called, the men came at five, walked the galleries with the lights up, counted twenty-three and left. The log never says
 what the twenty-fourth was.
 
-## 2. The cold room (`cold_room`, slot 248)
+## 2. The cold room (`cold_room`, slot 260)
 
 The shape of the book and the film, with every name, line and date the House's own. A rented house on a steep street in winter: a
 mother, her daughter in the back bedroom, and an old priest who has come for the last time. The readers come as the ones he sent for.

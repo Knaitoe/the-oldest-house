@@ -191,7 +191,7 @@ public final class LiteraryActor extends PathfinderMob implements Voiced {
      * 1595, the Harrigan dialogue case): Harrigan dead in his chair, or in his casket, is a dead man to the story though his body lives;
      * he followed the reader's head when clicked.
      */
-    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&!company()&&role()!=SP_RESIDENT&&role()!=LODGING_DOUBLE&&!(role()==HARRIGAN&&phase()!=HarriganVignette.ALIVE_PHASE);}
+    public boolean addresses(){return isAlive()&&!isInvisible()&&!isSleeping()&&!waitingUnseen()&&!pellStandIn()&&!company()&&role()!=SP_RESIDENT&&role()!=LODGING_DOUBLE&&!(role()==STRANGER&&Waxworks.cast(phase()))&&!(role()==HARRIGAN&&phase()!=HarriganVignette.ALIVE_PHASE);}
     /** A reader has just spoken to this person: what they say back is said to that reader. */
     private void spokenTo(ServerPlayer reader){
         if(reader.isSpectator()||!addresses())return;

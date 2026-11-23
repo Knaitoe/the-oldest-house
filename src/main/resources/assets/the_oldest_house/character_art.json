@@ -1608,6 +1608,198 @@
     "phase": 227
   },
   {
+    "name": "literary_wax_founder",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 290
+  },
+  {
+    "name": "literary_wax_doorman",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 291
+  },
+  {
+    "name": "literary_wax_tickets",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 292
+  },
+  {
+    "name": "literary_wax_statesman_lapel",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 293
+  },
+  {
+    "name": "literary_wax_statesman_scroll",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 294
+  },
+  {
+    "name": "literary_wax_statesman_mirror",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 295
+  },
+  {
+    "name": "literary_wax_statesman_general",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 296
+  },
+  {
+    "name": "literary_wax_statesman_judge",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 297
+  },
+  {
+    "name": "literary_wax_statesman_lady",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 298
+  },
+  {
+    "name": "literary_wax_statesman_orator",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 299
+  },
+  {
+    "name": "literary_wax_father",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 300
+  },
+  {
+    "name": "literary_wax_mother",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 301
+  },
+  {
+    "name": "literary_wax_daughter",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 302
+  },
+  {
+    "name": "literary_wax_son",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 303
+  },
+  {
+    "name": "literary_wax_risen",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 304
+  },
+  {
+    "name": "literary_wax_gravedigger",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 305
+  },
+  {
+    "name": "literary_wax_sleepwalker",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 306
+  },
+  {
+    "name": "literary_wax_hooded",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 307
+  },
+  {
+    "name": "literary_wax_count",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 308
+  },
+  {
+    "name": "literary_wax_apprentice",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 309
+  },
+  {
+    "name": "literary_wax_modeller",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 310
+  },
+  {
+    "name": "literary_wax_unfinished",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 311
+  },
+  {
+    "name": "literary_wax_covered",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 312
+  },
+  {
+    "name": "literary_wax_stranger",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 313
+  },
+  {
     "name": "literary_notyet_ines",
     "logical": 128,
     "model": "literary",

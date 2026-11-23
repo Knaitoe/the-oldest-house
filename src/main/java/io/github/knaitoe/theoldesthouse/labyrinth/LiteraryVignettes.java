@@ -127,6 +127,8 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.NOT_YET&&!NotYet.dealable(d,p))return false;
         // 0.4.668: Last Seen is dealt from depth eight.
         if(place==LabyrinthPlace.LAST_SEEN&&!LastSeen.dealable(d,p))return false;
+        // 0.4.749: the waxworks is not dealt until part 2.
+        if(place==LabyrinthPlace.WAXWORKS&&!Waxworks.dealable(d,p))return false;
         // 0.4.672: Fallow is not dealt until part 2.
         if(place==LabyrinthPlace.FALLOW&&!Fallow.dealable(d,p))return false;
         // 0.4.707: The list is dealt from ten crossings down, to a reader who has not had night one.
@@ -186,6 +188,7 @@ public final class LiteraryVignettes {
         if(place==LabyrinthPlace.KEPT){Kept.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.NOT_YET){NotYet.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_SEEN){LastSeen.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
+        if(place==LabyrinthPlace.WAXWORKS){Waxworks.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.FALLOW){Fallow.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.THE_LIST){TheList.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
         if(place==LabyrinthPlace.LAST_ORDERS){LastOrders.arrive(p,base(p,place),own);save(d,p.getUUID(),place,own);}
@@ -311,6 +314,7 @@ public final class LiteraryVignettes {
             case KEPT->handled=Kept.click(p,b,rel,own);
             case NOT_YET->handled=NotYet.click(p,b,rel,own);
             case LAST_SEEN->handled=LastSeen.click(p,b,rel,own);
+            case WAXWORKS->handled=Waxworks.click(p,b,rel,own);
             case FALLOW->handled=Fallow.click(p,b,rel,own);
             case THE_LIST->handled=TheList.click(p,b,rel,own);
             case LAST_ORDERS->handled=LastOrders.click(p,b,rel,own);
@@ -401,6 +405,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.BIKE_NIGHT){if(BikeNightBullies.is(actor))BikeNightBullies.talk(p,actor);else if(CalderPeople.is(actor))CalderPeople.talk(p,actor);else if(!BikeNightSpecters.is(actor))BikeNightGus.talk(p,actor);}
         else if(place==LabyrinthPlace.KEPT)Kept.talk(p,actor);
         else if(place==LabyrinthPlace.NOT_YET){if(NotYet.is(actor))NotYet.talk(p,actor,own);}
+        else if(place==LabyrinthPlace.WAXWORKS){if(Waxworks.is(actor))Waxworks.talk(p,actor,own);}
         else if(place==LabyrinthPlace.LAST_SEEN){if(LastSeen.is(actor))LastSeen.talk(p,actor,own);else if(LastSeen.corner(actor))LastSeen.cornerHand(p,actor,own);}
         else if(place==LabyrinthPlace.FALLOW){if(Fallow.is(actor))Fallow.talk(p,actor,own);}
         else if(place==LabyrinthPlace.THE_LIST){if(TheListPeople.is(actor))TheListPeople.talk(p,actor,own);}

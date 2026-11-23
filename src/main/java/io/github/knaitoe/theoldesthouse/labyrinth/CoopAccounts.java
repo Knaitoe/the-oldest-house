@@ -124,6 +124,7 @@ final class CoopAccounts {
         together(BLACK_CITY,with("%s {was} on the ice with me."));
         together(KEPT,with("%s walked the machine with me."));
         // 0.4.666: Not Yet. Each lies down on their own cot, and the machine looks away from each in turn.
+        together(WAXWORKS,with("%s {was} on the night shift with me."));
         together(NOT_YET,party("%s had stayed down before me. The far door had been opened once already, and had shut again.",
             "When the far door slid open for me, %s {was} still lying under a lamp in the ward."));
         // 0.4.671: Last Seen. Each finds their own folder in the drawer; the others' are under it.

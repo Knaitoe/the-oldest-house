@@ -63,7 +63,7 @@ def entry(name,logical):
 
 
 def entries():
-    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_','literary_king','literary_notyet_','literary_lastseen_','literary_fallow_','literary_list_'))]
+    rows=[entry('backseat_stowaway',64)]+[entry(name,look.logical) for name,look in sorted(LOOKS.items()) if not name.startswith(('literary_paw_','literary_longer_','literary_movie_','literary_costume_','literary_hollow_','literary_winter_','literary_usher_','literary_closing_','literary_polybius_','literary_replacement','literary_swimmer_','literary_vacant_','literary_pitt_','literary_window_','literary_night_','literary_people_','literary_place_','literary_truant','literary_flat_','literary_supper_','literary_kitchen_','literary_marsh_','literary_grass_','literary_crossing_','literary_pinehook_','literary_drawing_','literary_corner_','literary_kept_','literary_orders_','literary_drisking_','literary_bike_','literary_calder_','literary_pell_','literary_lodging_','literary_king','literary_notyet_','literary_wax_','literary_lastseen_','literary_fallow_','literary_list_'))]
     for i,name in enumerate(['walter','ruth','will','sergeant','messenger']):
         rows.append({'name':'literary_paw_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':9+i})
     # Movie Night (0.4.102): the lake's audience on stranger phases fourteen to twenty.
@@ -127,6 +127,9 @@ def entries():
     # 0.4.647: the Knight in the forest, on two hundred and twenty-seven.
     for name,phase in (('dum',218),('dee',219),('queen',220),('guard',221),('caterpillar',222),('hearts_king',223),('hearts_queen',224),('herald',225),('cat',226),('knight',227)):
         rows.append({'name':'literary_king_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
+    # 0.4.749, the waxworks: Merriman's twenty-four figures, on two hundred and ninety to three hundred and thirteen.
+    for i,name in enumerate(['founder', 'doorman', 'tickets', 'statesman_lapel', 'statesman_scroll', 'statesman_mirror', 'statesman_general', 'statesman_judge', 'statesman_lady', 'statesman_orator', 'father', 'mother', 'daughter', 'son', 'risen', 'gravedigger', 'sleepwalker', 'hooded', 'count', 'apprentice', 'modeller', 'unfinished', 'covered', 'stranger']):
+        rows.append({'name':'literary_wax_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':290+i})
     # 0.4.663, Not Yet: the three the machine has mended too often, lying in its long room, on two hundred and forty to forty-two.
     for name,phase in (('ines',240),('bram',241),('odile',242)):
         rows.append({'name':'literary_notyet_'+name,'logical':128,'model':'literary','role':'STRANGER','number':0,'phase':phase})
