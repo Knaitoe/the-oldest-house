@@ -21,7 +21,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
  * 0.4.749, the waxworks, the first part (docs/WAXWORKS_0_4_749.md), from the owner's request of 23 November. The place alone:
  * Merriman's Wax Museum after closing, the staff corridor, the security office under its monitors, the ring corridor and the five
  * galleries, and its twenty-four figures (stranger phases 290 to 313), each on its mark. Nothing moves yet; the House does not deal it
- * until part 2, when the reader has a flashlight and a shift.
+ * until part 3, when the reader has a shift (part 2, the flashlight and what the figures do, is WaxNight).
  */
 @EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Waxworks {
@@ -36,7 +36,7 @@ public final class Waxworks {
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int which(LiteraryActor a){return a.phase()-FIRST;}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until part 2. */
+    /** Not dealt until part 3. */
     public static boolean dealable(LabyrinthData d,UUID reader){return false;}
 
     /** A reader in: the figures are put on their marks if they are not there, and the building's night sound goes round them once. */
@@ -78,17 +78,17 @@ public final class Waxworks {
             if(a==null){
                 a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)continue;
                 a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
-                stand(a,b,f);
+                stand(a,b,f,WaxNight.turned(b,who));
                 if(!l.addFreshEntity(a))continue;
                 continue;
             }
-            stand(a,b,f);
+            stand(a,b,f,WaxNight.turned(b,who));
         }
     }
-    /** On its mark, turned the way the gallery shows it, in its pose; nothing of it moves. */
-    static void stand(LiteraryActor a,BlockPos b,WaxSite.Figure f){
+    /** On its mark, turned the way the gallery shows it, in its pose; only the head keeps the turn it has taken (WaxNight's look). */
+    static void stand(LiteraryActor a,BlockPos b,WaxSite.Figure f,float turned){
         var feet=WaxSite.feet(f).add(b.getX(),b.getY(),b.getZ());
-        a.moveTo(feet.x,feet.y,feet.z,f.yaw(),0);a.setYBodyRot(f.yaw());a.setYHeadRot(f.yaw());a.gesture(f.pose());a.setDeltaMovement(Vec3.ZERO);
+        a.moveTo(feet.x,feet.y,feet.z,f.yaw(),0);a.setYBodyRot(f.yaw());a.setYHeadRot(f.yaw()+turned);a.gesture(f.pose());a.setDeltaMovement(Vec3.ZERO);
     }
 
     /** A hand on a figure: it is wax, cold and a little tacky, and it does not answer. Each says what it is. */
@@ -117,7 +117,7 @@ public final class Waxworks {
             case CHAIR->cue(p,WaxTexts.CHAIR);
             case CLOCK->cue(p,WaxTexts.CLOCK);
             case TIMECLOCK->{cue(p,WaxTexts.TIMECLOCK);l.playSound(null,b.offset(rel),WaxRegistry.PUNCH.get(),SoundSource.BLOCKS,.5F,1F);}
-            case LOCKER,LOCKER_TOP->cue(p,WaxTexts.LOCKER);
+            case LOCKER,LOCKER_TOP->WaxNight.locker(p,own);
             case FRONT->cue(p,WaxTexts.FRONT);
             case SIGN->cue(p,WaxTexts.SIGN);
             case BOOTH,BOOTH_TOP->cue(p,WaxTexts.BOOTH);

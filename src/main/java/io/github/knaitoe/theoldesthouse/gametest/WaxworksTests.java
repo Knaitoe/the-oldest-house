@@ -20,7 +20,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * 0.4.749, the waxworks (docs/WAXWORKS_0_4_749.md). Each case builds the place itself, one case to a batch, as Not Yet's do.
+ * 0.4.749 and 0.4.750, the waxworks (docs/WAXWORKS_0_4_749.md, docs/WAXWORKS_0_4_750.md). Each case builds the place itself, one case
+ * to a batch, as Not Yet's do.
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_waxworks") @PrefixGameTestTemplate(false)
 public final class WaxworksTests {
@@ -63,6 +64,21 @@ public final class WaxworksTests {
         }
         seen.removeIf(c->Double.isNaN(feet(l,b,c)));
         return seen;
+    }
+
+    /** Stand a reader at a place relative to the museum, looking at a point, turned off it by so many degrees. */
+    private static void aim(ServerPlayer p,ServerLevel l,BlockPos b,double x,double z,net.minecraft.world.phys.Vec3 at,float off){
+        double ex=b.getX()+x,ey=b.getY()+p.getEyeHeight(),ez=b.getZ()+z;var to=at.subtract(ex,ey,ez);
+        float yaw=(float)(Math.toDegrees(Math.atan2(to.z,to.x))-90)+off;float pitch=(float)-Math.toDegrees(Math.atan2(to.y,Math.sqrt(to.x*to.x+to.z*to.z)));
+        p.teleportTo(l,b.getX()+x,b.getY(),b.getZ()+z,yaw,off==0?pitch:0);p.setYHeadRot(yaw);p.setXRot(off==0?pitch:0);p.setYRot(yaw);
+    }
+    private static void pocket(ServerPlayer p){for(int i=0;i<9;i++)if(!WaxNight.mine(p.getInventory().getItem(i),p)&&!WaxNight.mine(p.getOffhandItem(),p)){p.getInventory().selected=i;return;}}
+    private static void hold(ServerPlayer p){for(int i=0;i<9;i++)if(WaxNight.mine(p.getInventory().getItem(i),p)){p.getInventory().selected=i;return;}}
+    private static float headTurn(LiteraryActor a,int who){return net.minecraft.util.Mth.wrapDegrees(a.getYHeadRot()-WaxSite.FIGURES.get(who).yaw());}
+    private static boolean blinkSent(ServerPlayer p){
+        NativeTestPlayers.flush(p);
+        for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.WaxBlinkPayload)return true;
+        return false;
     }
 
     /**
@@ -138,7 +154,7 @@ public final class WaxworksTests {
             for(int who=0;who<Waxworks.FIGURES;who++)Waxworks.talk(p,Waxworks.find(l,b,who),f.own(p,P));
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
-            for(String line:List.of(WaxTexts.TIMECLOCK,WaxTexts.LOCKER,WaxTexts.DESK,WaxTexts.DESK_LOG,WaxTexts.DESK_PHONE,WaxTexts.MONITOR,WaxTexts.CHAIR,WaxTexts.CLOCK,
+            for(String line:List.of(WaxTexts.TIMECLOCK,WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.DESK_LOG,WaxTexts.DESK_PHONE,WaxTexts.MONITOR,WaxTexts.CHAIR,WaxTexts.CLOCK,
                 WaxTexts.CAMERA,WaxTexts.FRONT,WaxTexts.SIGN,WaxTexts.BOOTH,WaxTexts.TABLE,WaxTexts.DRESSER,WaxTexts.STOVE,WaxTexts.ROPE,WaxTexts.COFFIN,WaxTexts.GRAVESTONE,
                 WaxTexts.VAT,WaxTexts.BENCH,WaxTexts.BENCH_HEAD,WaxTexts.BENCH_HANDS,WaxTexts.HEADS,WaxTexts.PLINTH,WaxTexts.plaque(0)))
                 h.assertTrue(why.contains(line),"each says what it is: missing \""+line+"\" in "+why);
@@ -150,6 +166,76 @@ public final class WaxworksTests {
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the notice says nothing of who has the night: "+word);
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
             h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            done();h.succeed();
+        });
+    }
+
+    /**
+     * 0.4.750, the flashlight and the figures. The NIGHTS locker lends one flashlight to a reader, and no second; it lights where it is
+     * pointed while it is held, and goes out when it is not. A statesman looked straight at keeps his head where it was set; one at
+     * the edge of the reader's sight turns his head toward them, and keeps the turn when the figures are put on their marks again. A
+     * face held in the beam, close, blinks for that reader after four seconds, and not without the light. The statesman across from
+     * the door counts as copying a reader who stands in front of him facing him. The second reader has none of it, nor does the
+     * spectator, who is lent nothing. Out of the museum the flashlight goes back.
+     */
+    @GameTest(template="empty",batch="waxworks_night",timeoutTicks=1600)
+    public static void theFlashlightTheLookTheBlinkAndTheMirror(GameTestHelper h){
+        var f=place(h);var p=f.player("wax_guard",P);var q=f.player("wax_second",P);var l=f.level(P);var b=f.base(P);
+        final int LAPEL=3,SCROLL=4;
+        h.startSequence().thenIdle(5).thenExecute(()->Waxworks.ensure(l,b)).thenWaitUntil(()->{
+            Waxworks.ensure(l,b);
+            for(int who=0;who<Waxworks.FIGURES;who++)h.assertTrue(Waxworks.find(l,b,who)!=null,"figure "+who+" is on its mark");
+        }).thenExecute(()->{
+            Waxworks.arrive(p,b,f.own(p,P));Waxworks.arrive(q,b,f.own(q,P));
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-6.5,-90,0);q.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,180,0);
+            f.click(p,P,WaxSite.LOCKERS[0]);f.click(p,P,WaxSite.LOCKERS[1]);
+            h.assertTrue(WaxNight.has(p)&&p.getInventory().countItem(LastSeenRegistry.FLASHLIGHT.get())==1&&f.own(p,P).getBoolean("Light"),"the locker lends one flashlight, and no second");
+            h.assertTrue(told(p).contains(WaxTexts.LOCKER_EMPTY),"a second hand on the locker finds the hook empty");
+            h.assertFalse(WaxNight.has(q),"the second reader has not been to the locker");
+            var s=NativeTestPlayers.survival(h,"wax_spectator");f.players.add(s);s.setGameMode(GameType.SPECTATOR);s.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-6.5,-90,0);
+            WaxNight.locker(s,f.own(s,P));
+            h.assertFalse(WaxNight.has(s),"a spectator is lent nothing");
+            // Not yet held: no light.
+            pocket(p);aim(p,l,b,-6.5,-26.5,net.minecraft.world.phys.Vec3.atCenterOf(b.offset(-12,1,-27)),0);
+        }).thenIdle(4).thenExecute(()->{
+            h.assertTrue(WaxNight.beamOf(p.getUUID())==null,"a flashlight in the pocket lights nothing");
+            hold(p);
+        }).thenIdle(4).thenExecute(()->{
+            var at=WaxNight.beamOf(p.getUUID());
+            h.assertTrue(at!=null&&l.getBlockState(at).is(net.minecraft.world.level.block.Blocks.LIGHT)&&at.getX()-b.getX()>=-12&&at.getX()-b.getX()<=-10,"held, it lights where it points: "+(at==null?null:at.subtract(b))+" from "+p.position().subtract(net.minecraft.world.phys.Vec3.atLowerCornerOf(b))+" yaw "+p.getYRot()+" pitch "+p.getXRot());
+            pocket(p);
+        }).thenIdle(4).thenExecute(()->{
+            h.assertTrue(WaxNight.beamOf(p.getUUID())==null&&l.getBrightness(LightLayer.BLOCK,b.offset(-12,1,-27))<5,"put away, the light goes out");
+            // Looked at straight, a statesman keeps his head where it was set.
+            var lapel=Waxworks.find(l,b,LAPEL);aim(p,l,b,-6.5,-27.5,lapel.getEyePosition(),0);
+        }).thenIdle(40).thenExecute(()->{
+            var lapel=Waxworks.find(l,b,LAPEL);
+            h.assertTrue(Math.abs(headTurn(lapel,LAPEL))<1,"watched, his head stays where it was set: "+headTurn(lapel,LAPEL));
+            aim(p,l,b,-6.5,-27.5,lapel.getEyePosition(),-50);
+        }).thenIdle(40).thenExecute(()->{
+            var lapel=Waxworks.find(l,b,LAPEL);float turn=headTurn(lapel,LAPEL);
+            h.assertTrue(turn>20&&turn<=WaxNight.TURN_MAX,"at the edge of sight, his head has turned toward the reader: "+turn);
+            Waxworks.ensure(l,b);
+            h.assertTrue(Math.abs(headTurn(Waxworks.find(l,b,LAPEL),LAPEL)-turn)<1,"and keeps the turn when the figures are put on their marks again");
+            // The blink: without the light, nothing.
+            var scroll=Waxworks.find(l,b,SCROLL);pocket(p);aim(p,l,b,-6.5,-28.5,scroll.getEyePosition(),0);told(p);
+        }).thenIdle(WaxNight.HOLD+20).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getInt("Blinked")==0&&!blinkSent(p),"without the light on the face, nothing blinks");
+            hold(p);
+        }).thenIdle(WaxNight.HOLD+10).thenExecute(()->{
+            h.assertTrue((f.own(p,P).getInt("Blinked")&1<<SCROLL)!=0&&blinkSent(p),"the face held in the beam for four seconds blinks, for this reader: "+f.own(p,P).getInt("Blinked"));
+            h.assertFalse(blinkSent(q)||f.own(q,P).getInt("Blinked")!=0,"and nobody else sees it");
+            // The mirror: standing in front of him, facing him.
+            var mirror=Waxworks.find(l,b,WaxSite.MIRROR);aim(p,l,b,-6.5,-31.5,mirror.getEyePosition(),0);
+        }).thenIdle(WaxNight.MIRROR_SEEN+10).thenExecute(()->{
+            h.assertTrue(f.own(p,P).getBoolean("Mirrored")&&!f.own(q,P).getBoolean("Mirrored"),"the statesman across from the door copies the reader in front of him, and that reader alone");
+            var feet=WaxSite.feet(WaxSite.FIGURES.get(WaxSite.MIRROR));
+            h.assertFalse(WaxNight.before(new net.minecraft.world.phys.Vec3(feet.x+3,0,feet.z),new net.minecraft.world.phys.Vec3(-1,0,0),feet,WaxSite.FIGURES.get(WaxSite.MIRROR).yaw()),"behind him, there is nothing to copy");
+            // Out of the museum, the flashlight goes back.
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()+12.5,0,0);
+        }).thenIdle(25).thenExecute(()->{
+            h.assertFalse(WaxNight.has(p),"out of the museum, the flashlight goes back on its hook");
+            h.assertTrue(WaxNight.beamOf(p.getUUID())==null,"and its light is out");
             done();h.succeed();
         });
     }

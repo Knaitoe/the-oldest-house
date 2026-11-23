@@ -606,7 +606,7 @@ public final class LiteraryRenderers {
             if(!head.visible){hat.visible=false;mounted(age);}
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Kept.cast(a.phase()))kept(a.gesture(),age,a.getId());
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.NotYet.cast(a.phase()))mended(a.gesture(),age,a.getId());
-            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Waxworks.cast(a.phase()))wax(a.gesture());
+            if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Waxworks.cast(a.phase()))wax(a);
             // 0.4.221: the arcade's regulars, hands on the stick and the buttons, working them.
             // 0.4.224: the pizza counter's teenager, slumped on the counter, chin on a fist, the other hand flat on a magazine, head tipped.
             if(a.role()==LiteraryActor.STRANGER&&io.github.knaitoe.theoldesthouse.labyrinth.Polybius.teen(a.phase())){rightArm.xRot=-2.1F;rightArm.yRot=.35F;rightArm.zRot=.15F;leftArm.xRot=-1.15F;leftArm.yRot=-.1F;head.xRot=.32F+net.minecraft.util.Mth.sin(age*.05F)*.03F;head.zRot=-.22F;body.xRot=.22F;rightLeg.xRot=-.1F;}
@@ -651,6 +651,13 @@ public final class LiteraryRenderers {
          * 0.4.749, the waxworks: a figure on its mark, set the way the modeller set it. Nothing moves, not the breath, not the eyes:
          * no blink, no sway. The head keeps the turn the server gives it (part 2's look), and the rest holds its pose.
          */
+        public void wax(LiteraryActor a){wax(a.gesture());var copy=WaxClient.mirror(a);if(copy!=null)copied(copy);eyelids.visible=WaxClient.blinking(a);}
+        /** 0.4.750: the statesman copying the reader in front of him (WaxClient.mirror). */
+        void copied(float[] c){
+            head.yRot=c[0]*net.minecraft.util.Mth.DEG_TO_RAD;head.xRot=c[1]*net.minecraft.util.Mth.DEG_TO_RAD;
+            if(c[2]>0){body.xRot=.5F;rightArm.xRot+=.4F;leftArm.xRot+=.4F;rightLeg.z=leftLeg.z=4F;rightLeg.y=leftLeg.y=12.2F;head.y=4.2F;body.y=3.2F;leftArm.y=rightArm.y=5.2F;}
+            hat.copyFrom(head);
+        }
         public void wax(int pose){
             float hx=head.xRot,hy=head.yRot;
             for(var part:new ModelPart[]{head,body,leftArm,rightArm,leftLeg,rightLeg}){part.xRot=0;part.yRot=0;part.zRot=0;}
