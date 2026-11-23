@@ -118,7 +118,7 @@ public enum DoorBleed {
     KEPT(new Spec().drawn(1).light(0xFF5A2A,Rhythm.BEAT).rate(.5F).glow(.6F).sound("bleed.kept")),
     // 0.4.663: the ward's hum under the door, and a strip of its light, steady.
     // 0.4.749: the museum's ventilation under the door, and no light at all.
-    WAXWORKS(new Spec().sound("bleed.waxworks")),
+    WAXWORKS(new Spec().light(0xC8D4CC,Rhythm.STEADY).glow(.3F).sound("bleed.waxworks")),
     NOT_YET(new Spec().light(0xD8E2DC,Rhythm.STEADY).glow(.4F).sound("bleed.not_yet")),
     // 0.4.667: morning daylight under the door, and the avenue beyond it.
     LAST_SEEN(new Spec().drawn(1).light(0xFFF4DC,Rhythm.STEADY).glow(.5F).sound("bleed.last_seen")),

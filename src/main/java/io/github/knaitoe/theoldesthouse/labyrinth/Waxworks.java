@@ -1,5 +1,7 @@
 package io.github.knaitoe.theoldesthouse.labyrinth;
 
+import io.github.knaitoe.theoldesthouse.TheOldestHouse;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -12,6 +14,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 /**
  * 0.4.749, the waxworks, the first part (docs/WAXWORKS_0_4_749.md), from the owner's request of 23 November. The place alone:
@@ -19,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
  * galleries, and its twenty-four figures (stranger phases 290 to 313), each on its mark. Nothing moves yet; the House does not deal it
  * until part 2, when the reader has a flashlight and a shift.
  */
+@EventBusSubscriber(modid=TheOldestHouse.MOD_ID)
 public final class Waxworks {
     private Waxworks(){}
     public static final LabyrinthPlace PLACE=LabyrinthPlace.WAXWORKS;
@@ -36,10 +41,27 @@ public final class Waxworks {
 
     /** A reader in: the figures are put on their marks if they are not there, and the building's night sound goes round them once. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
-        var l=p.serverLevel();ensure(l,b);
+        var l=p.serverLevel();ensure(l,b);SITES.add(b.asLong());
         own.putInt("Visits",own.getInt("Visits")+1);
         l.playSound(null,b.offset(0,1,-6),WaxRegistry.ROOM.get(),SoundSource.AMBIENT,.6F,1F);
     }
+
+    /**
+     * Run 1776: the galleries run seventy blocks from the door, and on arrival their entity sections can still be unloaded, so
+     * while a living reader is anywhere in the museum the figures are looked for again every second.
+     */
+    static final java.util.Set<Long> SITES=java.util.concurrent.ConcurrentHashMap.newKeySet();
+    @SubscribeEvent public static void keepFigures(net.neoforged.neoforge.event.tick.ServerTickEvent.Post e){
+        var server=e.getServer();
+        if(SITES.isEmpty()||server.getTickCount()%20!=11)return;
+        var l=server.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        for(long site:List.copyOf(SITES)){
+            var b=BlockPos.of(site);
+            if(l.players().stream().anyMatch(p->!p.isSpectator()&&p.isAlive()&&p.distanceToSqr(Vec3.atCenterOf(b))<112*112))ensure(l,b);
+            else SITES.remove(site);
+        }
+    }
+    @SubscribeEvent public static void stopped(net.neoforged.neoforge.event.server.ServerStoppedEvent e){SITES.clear();}
 
     /** The figure with this index, if its body is there. */
     public static @Nullable LiteraryActor find(ServerLevel l,BlockPos b,int who){
