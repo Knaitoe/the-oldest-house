@@ -135,6 +135,8 @@ public final class StairCompany {
             figure("the man who came down the road",S,Fallow.FIRST+Fallow.STRANGER,Story.FALLOW),
             // 0.4.721: Amber, who held the notebook.
             figure("Amber, with her notebook",S,TheListPeople.FIRST+TheListPeople.AMBER,Story.THE_LIST),
+            // 0.4.753: the one by the wall in the Hall of Statesmen, with no plaque.
+            figure("the one with no plaque",S,Waxworks.FIRST+WaxSite.STRANGER,Story.WAXWORKS),
             figure("the swimmer, out of the water",S,LastSwimmer.STOOD,Story.LAST_SWIMMER),
             figure("Mr. Harrigan, on his feet",LiteraryActor.HARRIGAN,HarriganVignette.STANDING_PHASE,Story.HARRIGAN),
             // 0.4.655: eight of the stories' own creatures, each drawn by its own story's renderer in the place of the body that stands for it.

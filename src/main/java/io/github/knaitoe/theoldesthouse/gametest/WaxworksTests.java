@@ -159,7 +159,7 @@ public final class WaxworksTests {
             for(int who=0;who<Waxworks.FIGURES;who++)Waxworks.talk(p,Waxworks.find(l,b,who),f.own(p,P));
         }).thenIdle(2).thenExecute(()->{
             var why=told(p);
-            for(String line:List.of(WaxTexts.punched("11:52"),WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.log(0,0,false),WaxTexts.DESK_PHONE,WaxTexts.CHAIR,WaxTexts.CLOCK,
+            for(String line:List.of(WaxTexts.punched("11:52"),WaxTexts.LOCKER_OPEN,WaxTexts.DESK,WaxTexts.log(0,0,false),WaxTexts.CALLED,WaxTexts.CHAIR,WaxTexts.CLOCK,
                 WaxTexts.CAMERA,WaxTexts.FRONT,WaxTexts.SIGN,WaxTexts.BOOTH,WaxTexts.TABLE,WaxTexts.DRESSER,WaxTexts.STOVE,WaxTexts.ROPE,WaxTexts.COFFIN,WaxTexts.GRAVESTONE,
                 WaxTexts.VAT,WaxTexts.BENCH,WaxTexts.BENCH_HEAD,WaxTexts.BENCH_HANDS,WaxTexts.HEADS,WaxTexts.PLINTH,WaxTexts.plaque(0)))
                 h.assertTrue(why.contains(line),"each says what it is: missing \""+line+"\" in "+why);
@@ -170,7 +170,7 @@ public final class WaxworksTests {
             h.assertTrue(text.contains("all five rooms")&&WaxSite.GALLERIES.size()==5,"and the five rooms of the round");
             for(String word:List.of(" he "," she "," his "," her "," him "))h.assertFalse(text.toLowerCase(java.util.Locale.ROOT).contains(word),"the notice says nothing of who has the night: "+word);
             h.assertTrue(LiteraryTexts.accountTitle(P).length()<=32,"the account's title fits a book: "+LiteraryTexts.accountTitle(P));
-            h.assertFalse(LiteraryVignettes.canDeal(f.data(),p.getUUID(),P),"the House does not deal it yet");
+            h.assertTrue(Waxworks.dealable(f.data(),p.getUUID()),"0.4.753: with its account, the House deals it");
             done();h.succeed();
         });
     }
@@ -368,6 +368,69 @@ public final class WaxworksTests {
         });
     }
 
+    private static String account(ServerPlayer p,LiteraryTests.Fixture f){
+        return String.join(" ",LiteraryTexts.ending(p.getGameProfile().getName(),P,f.own(p,P)).get(net.minecraft.core.component.DataComponents.WRITTEN_BOOK_CONTENT).pages().stream().map(x->x.raw().getString()).toList()).replaceAll("\\s+"," ");
+    }
+    /**
+     * 0.4.753, the account: the telephone on the desk, the police at five, six o'clock with every round in the log, and the night guard's
+     * log in each reader's own hand. One reader calls, one does not, and a spectator earns nothing.
+     */
+    @GameTest(template="empty",batch="waxworks_account",timeoutTicks=1600)
+    public static void thePhoneThePoliceAndTheLog(GameTestHelper h){
+        var f=place(h);var p=f.player("wax_caller",P);var q=f.player("wax_partner",P);var l=f.level(P);var b=f.base(P);
+        final ServerPlayer[] s={null};WaxShift.forget(l,b);
+        h.startSequence().thenIdle(5).thenExecute(()->Waxworks.ensure(l,b)).thenWaitUntil(()->{
+            Waxworks.ensure(l,b);
+            for(int who=0;who<Waxworks.FIGURES;who++)h.assertTrue(Waxworks.find(l,b,who)!=null,"figure "+who+" is on its mark");
+        }).thenExecute(()->{
+            Waxworks.arrive(p,b,f.own(p,P));Waxworks.arrive(q,b,f.own(q,P));
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-3.5,90,0);q.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-2.5,90,0);
+            told(p);f.click(p,P,WaxSite.PHONE);
+            h.assertTrue(told(p).contains(WaxTexts.DESK_PHONE)&&!f.own(p,P).getBoolean("Called"),"before a card is punched the telephone is only a telephone");
+            f.click(p,P,WaxSite.TIMECLOCK);f.click(q,P,WaxSite.TIMECLOCK);
+            var sp=NativeTestPlayers.survival(h,"wax_watching");f.players.add(sp);sp.setGameMode(GameType.SPECTATOR);sp.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-14.5,0,0);s[0]=sp;
+            p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-14.5,180,0);q.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-14.5,180,0);
+            WaxShift.phone(sp,b,f.own(sp,P));
+            var n=WaxShift.night(b);h.assertFalse(n.called,"a spectator calls nobody");
+            told(p);f.click(p,P,WaxSite.PHONE);
+            h.assertTrue(n.called&&f.own(p,P).getBoolean("CalledTonight")&&told(p).contains(WaxTexts.CALLED),"the night guard calls the police: "+f.own(p,P));
+            told(q);f.click(q,P,WaxSite.PHONE);
+            h.assertTrue(told(q).contains(WaxTexts.CALLED_AGAIN)&&!f.own(q,P).getBoolean("Called"),"once a night: the other reader only hears it ring");
+            // Something out of place, unnoticed, and five o'clock.
+            var i=new WaxShift.Irr(0,0);i.stage=1;n.irregular.add(i);
+            n.t=WaxShift.POLICE-2;
+        }).thenWaitUntil(()->h.assertTrue(WaxShift.night(b).police,"five o'clock: the police come")).thenExecute(()->{
+            var n=WaxShift.night(b);
+            h.assertTrue(n.irregular.stream().allMatch(x->x.noticed),"what was out of place is put down to them, and goes home");
+            h.assertTrue(f.own(p,P).getBoolean("PoliceTonight")&&f.own(q,P).getBoolean("PoliceTonight")&&!f.own(s[0],P).getBoolean("PoliceTonight"),"everyone on the shift sees them; the spectator is not on it");
+            h.assertTrue(told(p).contains(WaxTexts.POLICE)&&told(q).contains(WaxTexts.POLICE),"and is told");
+            told(p);f.click(p,P,WaxSite.PHONE);h.assertTrue(told(p).contains(WaxTexts.POLICE_GONE),"afterward the phone says they have been");
+            // Every round in the log, and six.
+            n.rounds=(1<<WaxShift.HOURS)-1;n.t=WaxShift.SIX-2;
+        }).thenWaitUntil(()->h.assertTrue(WaxShift.night(b).over,"six o'clock")).thenExecute(()->{
+            var n=WaxShift.night(b);h.assertTrue(n.kept&&!n.failed,"the shift is kept");
+            var one=f.own(p,P);var two=f.own(q,P);
+            h.assertTrue(one.getBoolean("Ready")&&one.getString("Outcome").equals("called_the_police"),"the caller's account is ready: "+one);
+            h.assertTrue(two.getBoolean("Ready")&&two.getString("Outcome").equals("kept_the_shift"),"and the other's: "+two);
+            h.assertFalse(f.own(s[0],P).getBoolean("Ready"),"the spectator earns nothing");
+            var text=account(p,f);
+            h.assertTrue(text.contains("I called the police from the desk phone.")&&text.contains("They counted twenty-three."),"the caller's log: "+text);
+            h.assertTrue(text.contains("Night log. Merriman's.")&&text.contains("Seen."),"opens on the night and ends at six: "+text);
+            h.assertFalse(text.contains("blinked")||text.contains("stood the way I stood"),"and says nothing the reader did not see: "+text);
+            var other=account(q,f);
+            h.assertTrue(other.contains("Somebody else on the shift called the police.")&&!other.contains("I called the police"),"the other's: "+other);
+            // A reader who saw a blink, the mirror and the twenty-fourth has them in their log, and never what the twenty-fourth was.
+            var seen=f.own(q,P);seen.putInt("Blinked",1<<WaxSite.STRANGER|1<<2);seen.putBoolean("Mirrored",true);seen.putBoolean("FoundTwentyFourth",true);seen.putInt("Noticed",2);seen.putInt("NoticedOnScreen",1);
+            io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.save(f.data(),q.getUUID(),P,seen);
+            var full=account(q,f);
+            h.assertTrue(full.contains("I counted eight where the plaques say seven")&&full.contains("the ticket seller and the one by the wall with no plaque")&&full.contains("he stood the way I stood")&&full.contains("Twice something was not where it had been"),"what that reader saw: "+full);
+            h.assertTrue(full.contains("I did not ask him about the one with no plaque."),"and it ends without saying what it was: "+full);
+            f.source(p,P);f.read(p,P,WaxSite.LOG);
+            h.assertTrue(f.own(p,P).getBoolean("Completed")&&WitnessAccount.has(f.data(),p.getUUID(),WitnessAccount.Story.WAXWORKS),"read after the notice, it is theirs");
+            h.assertFalse(WitnessAccount.has(f.data(),q.getUUID(),WitnessAccount.Story.WAXWORKS),"the other reader's is still theirs to read");
+            done();h.succeed();
+        });
+    }
     private static boolean sat(ServerPlayer p){
         NativeTestPlayers.flush(p);
         for(var packet:NativeTestPlayers.packets(p))if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.WaxMonitorPayload)return true;

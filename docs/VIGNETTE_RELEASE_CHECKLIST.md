@@ -18,6 +18,8 @@ November 17 candidate 0.4.673 (docs/FALLOW_0_4_673.md): a shared afternoon with 
 
 November 17 candidate 0.4.672 (docs/FALLOW_0_4_672.md): a place built for what will happen in it. Can a reader walk every way the later parts will need (the House's door round the counter, out to the road, down into the cellar) with only what the place gives them, and are the ways that must stay shut (the trailer, the pads, a shut door) really shut? Does anything that looks walked through (wheat, a lifted flap, an open door's curb) have no more body than it shows, and anything a body must climb down (the cellar's steps) leave room over the head at every step? Is the haze near enough that the scene's edge is never seen, and gone under a roof?
 
+November 23 candidate 0.4.753 (docs/WAXWORKS_0_4_753.md): a story finished in parts. When it becomes a source, are the pool pin, the literary source count, the Pell forged line, the stair figure, the advancement and the lang keys all updated together, and does the account say only what that reader saw?
+
 November 23 candidate 0.4.752 (docs/WAXWORKS_0_4_752.md): a screen that shows the world. Is a wrong guess at it slower than a right one, so guessing at every feed does not pay? Has it been seen in a client frame, and if not, does the doc say so?
 
 November 23 candidate 0.4.751 (docs/WAXWORKS_0_4_751.md): a shared clock with a personal start. Does a reader who never joined the shift share its failure or its credit? Can every figure the count needs be seen from somewhere a reader can stand?

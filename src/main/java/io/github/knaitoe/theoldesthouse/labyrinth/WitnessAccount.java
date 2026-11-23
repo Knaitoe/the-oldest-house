@@ -148,7 +148,10 @@ public final class WitnessAccount {
         FALLOW("fallow","Fallow","survival","A light came over the wheat and brought down a gas station. Afterward a man walked down the road wearing our faces and asked where the girl was."),
         // 0.4.721 (docs/THE_LIST_0_4_721.md): resolved by the account on the tape deck in the reader's room, ready to everyone in Lamesa
         // when the fourth night ends, and to the one who went in wherever they are.
-        THE_LIST("the_list","The list","memory","Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list.");
+        THE_LIST("the_list","The list","memory","Four nights in a cotton town I wore a sack over my head and carried a hay hook, and there were five names on a list."),
+        // 0.4.753 (docs/WAXWORKS_0_4_753.md): resolved by the night guard's log on the security office desk, ready to everyone still on
+        // the shift at six with every hour's round in the log.
+        WAXWORKS("waxworks","The night shift","survival","I kept a night shift in a wax museum with a flashlight and counted the figures every hour. The plaques said twenty-three.");
         public final String id, title, kind, text;
         Story(String id,String title,String kind,String text){this.id=id;this.title=title;this.kind=kind;this.text=text;}
         public static @Nullable Story of(String id){for(Story story:values())if(story.id.equals(id))return story;return null;}

@@ -51,6 +51,24 @@ public final class WaxTexts {
         SHORT="Six. The log is short a round, and nobody comes to the front door.",
         NOTHING_MOVED="You look again. Nothing on that screen is out of place.",
         NOT_ON_SHIFT="The log is not yours to write in. Your card is not in the rack.";
+    // 0.4.753, the telephone and the police at five.
+    public static final String CALLED="The dispatcher takes the address and the name of the museum. Somebody will come by toward five, she says. Keep the doors locked.",
+        CALLED_LATE="The dispatcher takes the address. Somebody will come by, she says. Keep the doors locked.",
+        CALLED_AGAIN="The line rings and rings. The police have already been called tonight.",
+        POLICE="Five. Two officers at the front door. They put the lights up in every gallery and walk the museum through, counting. Twenty-three. One of them signs the log, and they go, and the lights go down again.",
+        POLICE_GONE="The officers have been and gone. Their signature is in the log.";
+    /** What the night guard calls each figure, in the order of WaxSite.FIGURES. */
+    private static final String[] NAMES={"the founder","the doorman","the ticket seller",
+        "the statesman with his hand on his lapel","the statesman with the scroll","the statesman in the middle of the hall","the general","the judge","the lady","the orator",
+        "the father at supper","the mother with the dish","the daughter","the son",
+        "the one rising from the coffin","the gravedigger","the sleepwalker","the hooded one","the count",
+        "the apprentice","the modeller","the unfinished one","the one under the sheet",
+        "the one by the wall with no plaque"};
+    static String name(int who){return who>=0&&who<NAMES.length?NAMES[who]:"one of them";}
+    static String list(List<String> xs){
+        if(xs.size()==1)return xs.get(0);
+        return String.join(", ",xs.subList(0,xs.size()-1))+" and "+xs.get(xs.size()-1);
+    }
     private static final String[] HOURS={"twelve","one","two","three","four","five"};
     private static final String[] NUMBERS={"none","one","two","three","four","five","six","seven","eight","nine","ten"};
     private static final String[] GALLERY_NAMES={"The foyer","The Hall of Statesmen","The kitchen","The chamber","The workshop"};
@@ -66,6 +84,7 @@ public final class WaxTexts {
     public static String log(int rounds,int noticed,boolean kept){
         return "The shift log. "+cap(number(rounds))+" of six rounds written up"+(noticed>0?", and "+number(noticed)+(noticed==1?" thing":" things")+" noted out of place":"")+"."+(kept?" At the bottom, in a hand that is not yours: Seen. Day man.":"");
     }
+    static String times(int n){return n==1?"Once":n==2?"Twice":cap(number(n))+" times";}
     static String cap(String s){return s.isEmpty()?s:Character.toUpperCase(s.charAt(0))+s.substring(1);}
     /** What each figure's plaque says, in the order of WaxSite.FIGURES. The twenty-fourth has none. */
     private static final String[] PLAQUES={
@@ -129,10 +148,36 @@ public final class WaxTexts {
             "The cameras are for the insurance. Watch them anyway. If anything has been moved, write down which and where. Do not move it back. That is my job.",
             "Phone is on the desk. You will not need it.\n\nThey are wax. I have done nights for nine years. They are wax.\n\nR.T."));
     }
-    /** The account. Nothing asks for it until part 3; it says only what anybody could see of the place. */
+    /**
+     * 0.4.753, the account: the night guard's log, in the reader's hand, made from what that reader did and saw. It records the counts,
+     * whether they found twenty-four, each blink they saw and on which figure, whether the mirror copied them, and whether they called the
+     * police. It never says what the twenty-fourth was.
+     */
     public static ItemStack account(String name,CompoundTag own){
-        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.WAXWORKS),name,pages(
-            "A wax museum after closing, with no lights on in its galleries. Statesmen, a family at supper, a crypt, a workshop. "
-                +"A desk under six screens. The notice by the clock said there were twenty-three."));
+        var pages=new ArrayList<String>();
+        int shifts=Math.max(1,own.getInt("Shifts")),fails=own.getInt("Fails");
+        pages.add("Night log. Merriman's.\n\nPunched in at eight minutes to twelve. Flashlight from the locker. The galleries dark, as per the notice."
+            +(shifts>1?" This was not my first night here."+(fails>0?" "+times(fails)+" before, the screens went dark before six and I was put out of the building.":""):""));
+        int galleries=own.getInt("Galleries");
+        String counts="Rounds on the hour. I walked the five rooms with the light and wrote up "+(galleries==1?"one count":number(galleries)+" counts")+" in the log.";
+        counts+=own.getBoolean("FoundTwentyFourth")
+            ?" In the Hall of Statesmen I counted eight where the plaques say seven. I counted again. Eight. There is one figure in that hall with no plaque and nothing on the floor to say where it stands, by the wall nearest the corridor."
+            :" Every count came to what the notice says. Twenty-three.";
+        pages.add(counts);
+        int blinked=own.getInt("Blinked");
+        if(blinked!=0){
+            var who=new ArrayList<String>();for(int i=0;i<NAMES.length;i++)if((blinked&1<<i)!=0)who.add(name(i));
+            pages.add(who.size()==1?"I held the light on the face of "+who.get(0)+" for a while. It blinked. Once, and then not again."
+                :"I held the light on the faces of "+list(who)+". Each of them blinked. Once each, and then not again.");
+        }
+        if(own.getBoolean("Mirrored"))pages.add("The statesman in the middle of the hall stands with his hands at his sides. When I stood in front of him with the light, he stood the way I stood. When I crouched, he was lower. I have written down that it was late.");
+        int noticed=own.getInt("Noticed"),screen=own.getInt("NoticedOnScreen");
+        if(noticed>0)pages.add(times(noticed)+" something was not where it had been, and I wrote down which and where"+(screen>0?" ("+number(screen)+" of them on the screens)":"")+". I did not move anything back. That is the day man's job.");
+        if(own.getBoolean("CalledTonight"))pages.add("At "+own.getString("CalledAt")+" I called the police from the desk phone."+(own.getBoolean("PoliceTonight")?" Two of them came at five. They put the lights up in every gallery and walked through with me. They counted twenty-three. One of them signed the log, and they left, and I put the lights down again, as per the notice.":""));
+        else if(own.getBoolean("PoliceTonight"))pages.add("Somebody else on the shift called the police. Two of them came at five. They put the lights up in every gallery and walked through, and counted twenty-three. One of them signed the log, and they left.");
+        pages.add("Six. The day man's key in the front door. He read the log through and signed it at the bottom: Seen."
+            +(own.getBoolean("FoundTwentyFourth")?" I did not ask him about the one with no plaque. He did not say."
+                :" He asked me how many I counted. I told him twenty-three."));
+        return HouseWriting.book(LiteraryTexts.accountTitle(LabyrinthPlace.WAXWORKS),name,pages(pages.toArray(String[]::new)));
     }
 }

@@ -121,6 +121,7 @@ STORY_ICONS = {
     'last_seen': 'minecraft:player_head',
     'fallow': 'minecraft:wheat',
     'the_list': 'minecraft:paper',
+    'waxworks': 'minecraft:candle',
 }
 BACKGROUNDS = {'house': NS + ':textures/block/manor/damask.png', 'account': NS + ':textures/block/detail_paper.png'}
 

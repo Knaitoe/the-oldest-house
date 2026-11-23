@@ -37,8 +37,8 @@ public final class Waxworks {
     public static boolean is(LiteraryActor a){return a.role()==LiteraryActor.STRANGER&&cast(a.phase());}
     public static int which(LiteraryActor a){return a.phase()-FIRST;}
     static void cue(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}
-    /** Not dealt until part 4, when it has its account. */
-    public static boolean dealable(LabyrinthData d,UUID reader){return false;}
+    /** 0.4.753: dealt now that it has its account. */
+    public static boolean dealable(LabyrinthData d,UUID reader){return true;}
 
     /** A reader in: the figures are put on their marks if they are not there, and the building's night sound goes round them once. */
     public static void arrive(ServerPlayer p,BlockPos b,CompoundTag own){
@@ -120,7 +120,7 @@ public final class Waxworks {
             case ROPE->cue(p,WaxTexts.ROPE);
             case CAMERA->cue(p,WaxTexts.CAMERA);
             case MONITOR->WaxMonitors.sit(p,b,own);
-            case DESK->cue(p,stage==1?WaxShift.log(b):stage==2?WaxTexts.DESK_PHONE:WaxTexts.DESK);
+            case DESK->cue(p,stage==1?WaxShift.log(b):stage==2?WaxShift.phone(p,b,own):WaxTexts.DESK);
             case CHAIR->cue(p,WaxTexts.CHAIR);
             case CLOCK->cue(p,WaxTexts.CLOCK);
             case TIMECLOCK->WaxShift.punch(p,b,own);

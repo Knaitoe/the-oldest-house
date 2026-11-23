@@ -50,7 +50,7 @@ public final class WaxShift {
     /** An irregularity: the figure, whether it is turned (0) or gone (1), how near it has come (0 in its gallery, 3 in the office). */
     public static final class Irr{public final int who,kind;public int stage,since;public boolean noticed;public Irr(int who,int kind){this.who=who;this.kind=kind;}}
     public static final class Night{
-        public int t,empty,hourSaid=-1;public boolean failed,over,kept;
+        public int t,empty,hourSaid=-1;public boolean failed,over,kept,called,police;
         public final Set<UUID> punched=new HashSet<>();
         /** This hour's figures lit, by figure; galleries counted this hour; the hours whose round is in the log; the counts, hour by gallery. */
         public int lit,counted,rounds;public final int[][] counts=new int[HOURS][WaxSite.GALLERIES.size()];
@@ -73,13 +73,35 @@ public final class WaxShift {
         var n=NIGHTS.computeIfAbsent(b.asLong(),k->new Night());
         if(n.over){Waxworks.cue(p,WaxTexts.PUNCH_OVER);return;}
         if(!n.punched.add(p.getUUID())){Waxworks.cue(p,WaxTexts.PUNCH_AGAIN);return;}
-        own.putBoolean("Punched",true);own.putInt("Shifts",own.getInt("Shifts")+1);
+        own.putBoolean("Punched",true);own.putInt("Shifts",own.getInt("Shifts")+1);own.remove("CalledTonight");own.remove("PoliceTonight");own.remove("CalledAt");
         Waxworks.cue(p,WaxTexts.punched(n.t<BEFORE?"11:52":time(n.t)));
         p.serverLevel().playSound(null,b.offset(WaxSite.TIMECLOCK),WaxRegistry.PUNCH.get(),SoundSource.BLOCKS,.6F,1F);
     }
     public static String time(int t){
         if(t<BEFORE){int m=52+t*8/BEFORE;return "11:"+(m<10?"0":"")+m;}
         int into=t-BEFORE,h=into/HOUR,m=(into%HOUR)*60/HOUR;return (h==0?12:h)+":"+(m<10?"0":"")+m;
+    }
+    /** The time of day the police are at the front door, when somebody has called them: five o'clock. */
+    public static final int POLICE=BEFORE+5*HOUR;
+    /** 0.4.753, the desk telephone: somebody on the shift calls the police once a night, and they come at five. */
+    public static String phone(ServerPlayer p,BlockPos b,CompoundTag own){
+        var n=night(b);
+        if(p.isSpectator()||n==null||!n.punched.contains(p.getUUID())||n.over)return WaxTexts.DESK_PHONE;
+        if(n.police)return WaxTexts.POLICE_GONE;
+        if(n.called)return WaxTexts.CALLED_AGAIN;
+        n.called=true;own.putBoolean("Called",true);own.putBoolean("CalledTonight",true);own.putString("CalledAt",n.t<BEFORE?"11:52":time(n.t));
+        p.serverLevel().playSound(null,b.offset(WaxSite.PHONE),SoundEvents.UI_BUTTON_CLICK.value(),SoundSource.BLOCKS,.4F,.6F);
+        return n.t>=POLICE?WaxTexts.CALLED_LATE:WaxTexts.CALLED;
+    }
+    /** Five o'clock, called: two officers walk the galleries with the lights up, count twenty-three and go. What was out of place goes home. */
+    static void police(ServerLevel l,BlockPos b,Night n,List<ServerPlayer> shift,LabyrinthData data){
+        n.police=true;
+        for(var i:n.irregular)i.noticed=true;
+        l.playSound(null,b.offset(WaxSite.FRONT_LEFT),SoundEvents.IRON_DOOR_OPEN,SoundSource.BLOCKS,.8F,.8F);
+        for(var p:shift){
+            var own=LiteraryVignettes.personal(data,p.getUUID(),Waxworks.PLACE);own.putBoolean("PoliceTonight",true);LiteraryVignettes.save(data,p.getUUID(),Waxworks.PLACE,own);
+            Waxworks.cue(p,WaxTexts.POLICE);
+        }
     }
     /** The log on the desk: the rounds so far, what has been noticed. */
     public static String log(BlockPos b){
@@ -109,6 +131,7 @@ public final class WaxShift {
             default->new Place(Vec3.atBottomCenterOf(IN_OFFICE[k%IN_OFFICE.length]),0,false);
         };
     }
+    static boolean facesDoor(WaxSite.Figure f){var door=Vec3.atBottomCenterOf(DOOR_IN[f.gallery()]).subtract(WaxSite.feet(f));return Math.abs(Mth.wrapDegrees((float)(Mth.atan2(door.z,door.x)*Mth.RAD_TO_DEG)-90-f.yaw()))<30;}
     static float towardOffice(BlockPos from){var d=Vec3.atCenterOf(new BlockPos(0,0,-17)).subtract(Vec3.atCenterOf(from));return (float)(Mth.atan2(d.z,d.x)*Mth.RAD_TO_DEG)-90;}
     /** Which gallery a figure stands in now, or -1 when it has left its gallery. */
     static int where(BlockPos site,int who){var n=night(site);var i=n==null?null:n.of(who);return i!=null&&(i.stage>0||i.kind==1)?-1:WaxSite.FIGURES.get(who).gallery();}
@@ -127,9 +150,10 @@ public final class WaxShift {
             if(n.over||shift.isEmpty())continue;
             n.t++;
             if(n.t%20==0)clock(l,b,n,shift);
+            if(n.called&&!n.police&&n.t>=POLICE)police(l,b,n,shift,data);
             if(n.t%5==0){count(l,b,n,shift,data);notice(l,b,n,shift,data);}
             if(n.t%20==10)move(l,b,n,readers);
-            if(n.t>=FIRST&&n.t%20==15&&n.made<1+(n.t-FIRST)/EVERY&&n.t<SIX-EVERY)make(l,b,n,readers);
+            if(n.t>=FIRST&&!n.police&&n.t%20==15&&n.made<1+(n.t-FIRST)/EVERY&&n.t<SIX-EVERY)make(l,b,n,readers);
             if(n.arrived()>=ENOUGH){fail(l,b,n,shift,data);continue;}
             if(n.t>=SIX)six(l,b,n,shift,data);
         }
@@ -196,7 +220,9 @@ public final class WaxShift {
         }
         if(can.isEmpty())return;
         int who=can.get(l.random.nextInt(can.size()));
-        n.irregular.add(new Irr(who,l.random.nextInt(3)==0?1:0));n.made++;WaxNight.unturn(who);
+        // 0.4.753: one already facing its gallery's door cannot be seen to turn to it, so it is gone from its plinth instead.
+        int kind=l.random.nextInt(3)==0||facesDoor(WaxSite.FIGURES.get(who))?1:0;
+        n.irregular.add(new Irr(who,kind));n.made++;WaxNight.unturn(who);
         var a=Waxworks.find(l,b,who);if(a!=null)Waxworks.stand(a,b,WaxSite.FIGURES.get(who),0);
     }
     /** Unnoticed ones come nearer, unseen; noticed ones go home, unseen. */
@@ -264,7 +290,11 @@ public final class WaxShift {
         if(n.kept)l.playSound(null,b.offset(WaxSite.FRONT_LEFT),SoundEvents.IRON_TRAPDOOR_OPEN,SoundSource.BLOCKS,.8F,.7F);
         for(var p:shift){
             var own=LiteraryVignettes.personal(data,p.getUUID(),Waxworks.PLACE);
-            if(n.kept){own.putBoolean("Kept",true);own.putInt("Rounds",Integer.bitCount(n.rounds));own.putInt("NoticedTogether",n.noticed);}
+            if(n.kept){
+                own.putBoolean("Kept",true);own.putInt("Rounds",Integer.bitCount(n.rounds));own.putInt("NoticedTogether",n.noticed);own.remove("Short");
+                // 0.4.753: a kept shift readies the account, the log on the desk.
+                LiteraryVignettes.ready(p,Waxworks.PLACE,own,own.getBoolean("CalledTonight")?"called_the_police":"kept_the_shift");
+            }
             else own.putBoolean("Short",true);
             LiteraryVignettes.save(data,p.getUUID(),Waxworks.PLACE,own);
             Waxworks.cue(p,n.kept?WaxTexts.KEPT:WaxTexts.SHORT);
