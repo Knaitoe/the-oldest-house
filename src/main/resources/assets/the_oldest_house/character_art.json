@@ -1800,6 +1800,30 @@
     "phase": 313
   },
   {
+    "name": "literary_cold_mother",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 314
+  },
+  {
+    "name": "literary_cold_girl",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 315
+  },
+  {
+    "name": "literary_cold_priest",
+    "logical": 128,
+    "model": "literary",
+    "role": "STRANGER",
+    "number": 0,
+    "phase": 316
+  },
+  {
     "name": "literary_notyet_ines",
     "logical": 128,
     "model": "literary",

@@ -56,6 +56,8 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         }
         // 0.4.749: the guard's chair in the waxworks and the chairs at its kitchen tableau, their seats ten up.
         if(WaxBlock.is(state,WaxBlock.Kind.CHAIR))return new ActorSeat(10,state.getValue(WaxBlock.FACING));
+        // 0.4.754: the cold room's kitchen chairs, the mother's and the one carried up to the bed, their seats ten up.
+        if(ColdBlock.is(state,ColdBlock.Kind.CHAIR))return new ActorSeat(10,state.getValue(ColdBlock.FACING));
         // 0.4.667: the office chairs in Last Seen, their seats ten pixels up.
         if(LastSeenBlock.is(state,LastSeenBlock.Kind.CHAIR))return new ActorSeat(10,state.getValue(LastSeenBlock.FACING));
         // Roderick's chair (0.4.182), its seat nine pixels up.

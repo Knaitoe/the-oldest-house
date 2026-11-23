@@ -299,6 +299,24 @@
   "limbs": 1.1,
   "shoulders": 1.1
  },
+ "literary_cold_girl": {
+  "depth": 1.16,
+  "height": 0.95,
+  "limbs": 1.1,
+  "shoulders": 1.1
+ },
+ "literary_cold_mother": {
+  "depth": 1,
+  "height": 0.94,
+  "limbs": 1,
+  "shoulders": 1
+ },
+ "literary_cold_priest": {
+  "depth": 0.84,
+  "height": 1.02,
+  "limbs": 0.88,
+  "shoulders": 0.9
+ },
  "literary_corner_luli": {
   "depth": 0.9,
   "height": 0.96,

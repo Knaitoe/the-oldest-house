@@ -424,6 +424,8 @@ public final class GroupSweepTests {
     @AfterBatch(batch="group_ones_inside") public static void onesInsideDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="group_waxworks",timeoutTicks=TIMEOUT) public static void waxworks(GameTestHelper h){sweep(h,LabyrinthPlace.WAXWORKS);}
     @AfterBatch(batch="group_waxworks") public static void waxworksDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="group_cold_room",timeoutTicks=TIMEOUT) public static void coldRoom(GameTestHelper h){sweep(h,LabyrinthPlace.COLD_ROOM);}
+    @AfterBatch(batch="group_cold_room") public static void coldRoomDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="group_the_list",timeoutTicks=TIMEOUT) public static void theList(GameTestHelper h){sweep(h,LabyrinthPlace.THE_LIST);}
     @AfterBatch(batch="group_the_list") public static void theListDone(ServerLevel l){close();}
 }

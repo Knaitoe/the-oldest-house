@@ -62,6 +62,7 @@ final class OnwardPlacements {
         r.put(TALL_GRASS,TallGrassSite.GATE.getX(),0,TallGrassSite.GATE.getZ(),NORTH,()->Blocks.SPRUCE_DOOR); // 0.4.349: the field gate in the brush across the road
         r.put(THE_DRAWING,DrawingSite.HALL_DOOR.getX(),0,DrawingSite.HALL_DOOR.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.407: the meeting hall's door off the square
         r.put(KEPT,KeptSite.ONWARD.getX(),0,KeptSite.ONWARD.getZ(),SOUTH,OnwardRegistry.SERVICE); // 0.4.410: a service door in the hall's north wall
+        r.put(COLD_ROOM,ColdSite.ONWARD.getX(),0,ColdSite.ONWARD.getZ(),SOUTH,OnwardRegistry.SERVICE); // 0.4.754: the kitchen's back door
         r.put(WAXWORKS,WaxSite.ONWARD.getX(),0,WaxSite.ONWARD.getZ(),EAST,OnwardRegistry.SERVICE); // 0.4.749: the staff's way out of the office
         r.put(NOT_YET,NotYetSite.ONWARD.getX(),0,NotYetSite.ONWARD.getZ(),SOUTH,OnwardRegistry.SERVICE); // 0.4.663: a service door past the far door
         r.put(LAST_SEEN,LastSeenSite.ONWARD.getX(),0,LastSeenSite.ONWARD.getZ(),SOUTH,()->Blocks.SPRUCE_DOOR); // 0.4.667: a house door across the avenue, facing the park

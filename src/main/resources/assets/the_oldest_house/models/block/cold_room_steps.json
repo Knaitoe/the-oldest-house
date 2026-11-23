@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "the_oldest_house:block/cold_room_flags",
+    "top": "the_oldest_house:block/cold_room_flags",
+    "side": "the_oldest_house:block/cold_room_flags"
+  }
+}

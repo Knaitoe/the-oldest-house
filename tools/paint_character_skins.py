@@ -418,6 +418,11 @@ LOOKS = {
     'literary_wax_unfinished': Look('#d8b49a','#d8b49a','close','#d8b49a','#d8b49a','shirt','#d8b49a',eyes='#e8e8e0',mark='museum'),
     'literary_wax_covered': Look('#cac4b4','#cac4b4','close','#cac4b4','#cac4b4','smock','#cac4b4',eyes='#cac4b4',mark='museum'),
     'literary_wax_stranger': Look('#d2b49a','#3a2e26','short','#4a4e54','#2e3238','jacket','#d8d2c4',eyes='#4a4a46',mark='museum'),
+    # 0.4.754, the cold room (docs/COLD_ROOM_0_4_754.md): the mother in a cardigan over her housedress; her daughter in a nightdress,
+    # barefoot, with the sunken eyes and the slack mouth of the possessed mark; the priest in his black suit and collar, glasses on.
+    'literary_cold_mother': Look('#d8b89c','#5a3a26','tied','#6a625a','#3a3836','cardigan','#d8d0bc',eyes='#4a5a4a',age=1),
+    'literary_cold_girl': Look('#d8ccc0','#6a4a2a','long','#d8d4c8','#c8c4b8','dress','#d8d4c8',eyes='#3a3a3a',face_style='child',mark='possessed'),
+    'literary_cold_priest': Look('#c8a88c','#c8c4bc','receding','#1e1e22','#1a1a1e','cleric','#e8e4da',eyes='#4a5040',age=2,glasses=True),
     'literary_notyet_ines': Look('#c9a48a','#3a2c24','long','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4a4036',mark='notyet_ines',sleeve=4,level_eyes=True,shoes='#c09a80'),
     'literary_notyet_bram': Look('#b4876a','#5a4a3c','close','#a8b2ac','#a8b2ac','tee','#8d9892',eyes='#4e4a3e',age=1,beard='stubble',mark='notyet_bram',sleeve=4,level_eyes=True,shoes='#a87e62'),
     # 0.4.667, Last Seen (docs/LAST_SEEN_0_4_667.md): the ten who come back to the park, each in what they were last seen in, the

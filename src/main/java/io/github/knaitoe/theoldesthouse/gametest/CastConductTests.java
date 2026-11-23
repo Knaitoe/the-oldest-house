@@ -183,6 +183,7 @@ public final class CastConductTests {
     @GameTest(template="empty",batch="cast_not_yet",timeoutTicks=TIMEOUT) public static void notYet(GameTestHelper h){sweep(h,LabyrinthPlace.NOT_YET,c->{});}
     @AfterBatch(batch="cast_not_yet") public static void notYetDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_waxworks",timeoutTicks=TIMEOUT) public static void waxworks(GameTestHelper h){sweep(h,LabyrinthPlace.WAXWORKS,c->{});}
+    @GameTest(template="empty",batch="cast_cold_room",timeoutTicks=TIMEOUT) public static void coldRoom(GameTestHelper h){sweep(h,LabyrinthPlace.COLD_ROOM,c->{});}
     @GameTest(template="empty",batch="cast_last_seen",timeoutTicks=TIMEOUT) public static void lastSeen(GameTestHelper h){sweep(h,LabyrinthPlace.LAST_SEEN,c->{});}
     @AfterBatch(batch="cast_last_seen") public static void lastSeenDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="cast_fallow",timeoutTicks=TIMEOUT) public static void fallow(GameTestHelper h){sweep(h,LabyrinthPlace.FALLOW,c->{});}

@@ -7337,5 +7337,32 @@
       }
     ],
     "subtitle": "subtitles.the_oldest_house.bleed.waxworks"
+  },
+  "cold_room.room": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:cold_room/room",
+        "attenuation_distance": 24
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cold_room.room"
+  },
+  "cold_room.boards": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:cold_room/boards",
+        "attenuation_distance": 12
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.cold_room.boards"
+  },
+  "bleed.cold_room": {
+    "sounds": [
+      {
+        "name": "the_oldest_house:bleed/cold_room",
+        "attenuation_distance": 10
+      }
+    ],
+    "subtitle": "subtitles.the_oldest_house.bleed.cold_room"
   }
 }

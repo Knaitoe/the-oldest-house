@@ -2247,5 +2247,19 @@
   "subtitles.the_oldest_house.waxworks.room": "The museum ventilation hums",
   "subtitles.the_oldest_house.waxworks.punch": "A time clock stamps a card",
   "subtitles.the_oldest_house.waxworks.monitors": "Monitors whine",
-  "subtitles.the_oldest_house.bleed.waxworks": "Ventilation hums in an empty building, behind a door"
+  "subtitles.the_oldest_house.bleed.waxworks": "Ventilation hums in an empty building, behind a door",
+  "block.the_oldest_house.cold_room_fitting": "Rented House Fitting",
+  "block.the_oldest_house.cold_room_boards": "Hall Boards",
+  "block.the_oldest_house.cold_room_runner": "Stair Runner",
+  "block.the_oldest_house.cold_room_paper": "Faded Wallpaper",
+  "block.the_oldest_house.cold_room_plaster": "Plaster Ceiling",
+  "block.the_oldest_house.cold_room_lino": "Kitchen Linoleum",
+  "block.the_oldest_house.cold_room_brick": "House Brick",
+  "block.the_oldest_house.cold_room_render": "Rendered Wall",
+  "block.the_oldest_house.cold_room_flags": "Worn Flags",
+  "block.the_oldest_house.cold_room_treads": "Stair Treads",
+  "block.the_oldest_house.cold_room_steps": "Outside Steps",
+  "subtitles.the_oldest_house.cold_room.room": "Wind presses at the windows",
+  "subtitles.the_oldest_house.cold_room.boards": "Stair boards creak",
+  "subtitles.the_oldest_house.bleed.cold_room": "Wind presses at a window, behind a door"
 }

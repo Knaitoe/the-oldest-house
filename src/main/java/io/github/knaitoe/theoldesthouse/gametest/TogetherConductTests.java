@@ -150,6 +150,7 @@ public final class TogetherConductTests {
     @GameTest(template="empty",batch="together_not_yet",timeoutTicks=TIMEOUT) public static void notYet(GameTestHelper h){together(h,LabyrinthPlace.NOT_YET);}
     @AfterBatch(batch="together_not_yet") public static void notYetDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="together_waxworks",timeoutTicks=TIMEOUT) public static void waxworks(GameTestHelper h){together(h,LabyrinthPlace.WAXWORKS);}
+    @GameTest(template="empty",batch="together_cold_room",timeoutTicks=TIMEOUT) public static void coldRoom(GameTestHelper h){together(h,LabyrinthPlace.COLD_ROOM);}
     @GameTest(template="empty",batch="together_last_seen",timeoutTicks=TIMEOUT) public static void lastSeen(GameTestHelper h){together(h,LabyrinthPlace.LAST_SEEN);}
     @AfterBatch(batch="together_last_seen") public static void lastSeenDone(ServerLevel l){close();}
     @GameTest(template="empty",batch="together_fallow",timeoutTicks=TIMEOUT) public static void fallow(GameTestHelper h){together(h,LabyrinthPlace.FALLOW);}
