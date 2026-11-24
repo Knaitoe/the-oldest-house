@@ -7,6 +7,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -38,12 +44,26 @@ public final class PieceClient {
                     var mc=Minecraft.getInstance();
                     renderer=new BlockEntityWithoutLevelRenderer(mc.getBlockEntityRenderDispatcher(),mc.getEntityModels()){
                         @Override public void renderByItem(ItemStack stack,ItemDisplayContext context,PoseStack pose,MultiBufferSource buffers,int light,int overlay){
-                            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(StoryPieces.state(stack),pose,buffers,light,overlay,ModelData.EMPTY,null);
+                            drawModel(StoryPieces.state(stack),pose,buffers,light,overlay);
                         }
                     };
                 }
                 return renderer;
             }
         },items.toArray(Item[]::new));
+    }
+    /**
+     * The block's baked model only. renderSingleBlock would hand a block drawn by its block entity back to the item renderer of
+     * block.asItem(), which is this piece, and recurse until the stack overflows (run 1792, the Backseat clients). Such a block draws
+     * whatever its baked model holds here.
+     */
+    static void drawModel(BlockState state,PoseStack pose,MultiBufferSource buffers,int light,int overlay){
+        if(state.getRenderShape()==RenderShape.INVISIBLE)return;
+        var mc=Minecraft.getInstance();var blocks=mc.getBlockRenderer();
+        BakedModel model=blocks.getBlockModel(state);
+        int color=mc.getBlockColors().getColor(state,null,null,0);
+        float r=(color>>16&255)/255F,g=(color>>8&255)/255F,b=(color&255)/255F;
+        for(RenderType type:model.getRenderTypes(state,RandomSource.create(42L),ModelData.EMPTY))
+            blocks.getModelRenderer().renderModel(pose.last(),buffers.getBuffer(RenderTypeHelper.getEntityRenderType(type,false)),state,model,r,g,b,light,overlay,ModelData.EMPTY,type);
     }
 }
