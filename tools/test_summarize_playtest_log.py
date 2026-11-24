@@ -159,6 +159,31 @@ class JourneyMeasures(unittest.TestCase):
             report(summarize([event(0, "session_start", inLabyrinth=True), event(20, "session_end", inLabyrinth=True)]))
         self.assertNotIn("went from their door", quiet.getvalue())
 
+    def test_pacing_measures_stays_returns_and_progress(self):
+        p = metrics(event(0, "session_start", place="cross_hall"),
+                    event(1, "arrive", place="cross_hall", story=False),
+                    event(3, "arrive", place="waxworks", story=True),
+                    event(15, "story_leave", place="waxworks", resolved=False),
+                    event(16, "arrive", place="cross_hall", story=False),
+                    event(20, "arrive", place="waxworks", story=True),
+                    event(30, "story_resolve", place="waxworks"),
+                    event(31, "story_leave", place="waxworks", resolved=True),
+                    event(32, "arrive", place="cold_room", story=True),
+                    event(34, "story_leave", place="cold_room", resolved=False),
+                    event(40, "session_end"))["pacing"]
+        self.assertEqual([round(stay["minutes"]) for stay in p["story_stays"]], [12, 11, 2])
+        self.assertEqual(p["story_minutes_by_place"]["waxworks"]["resolved"], 1)
+        self.assertEqual(p["revisits"], {"cross_hall": 1, "waxworks": 1})
+        self.assertEqual(p["return_gaps"], [{"place": "waxworks", "minutes": 5}])
+        self.assertEqual(p["never_returned"], {"cold_room": 1})
+        self.assertEqual(p["resolution_minutes"], [30])
+
+    def test_pacing_ignores_a_spectator(self):
+        p = metrics(event(0, "session_start", place="cross_hall"),
+                    event(1, "arrive", place="waxworks", story=True, spectator=True),
+                    event(5, "session_end"))["pacing"]
+        self.assertEqual(p["story_stays"], [])
+
     def test_loader_handles_truncated_last_line_without_losing_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "log.jsonl"

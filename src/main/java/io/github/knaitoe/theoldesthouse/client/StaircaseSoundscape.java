@@ -17,7 +17,11 @@ public final class StaircaseSoundscape {
     private StaircaseSoundscape(){}
     private static boolean whale(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR)||!HouseSightlineState.hasOrigin())return false;
-        var room=LabyrinthPlaces.placeBounds(HouseSightlineState.origin(),LabyrinthPlace.WHALE);return room!=null&&room.isInside(mc.player.blockPosition());
+        return inWhale(HouseSightlineState.origin(),mc.player.blockPosition());
+    }
+    /** The institute or the reader's own copy of it: the origin follows the copy band the reader stands in. */
+    public static boolean inWhale(net.minecraft.core.BlockPos origin,net.minecraft.core.BlockPos at){
+        var room=LabyrinthPlaces.placeBounds(SceneInstances.originAt(origin,at),LabyrinthPlace.WHALE);return room!=null&&room.isInside(at);
     }
     @SubscribeEvent public static void quietInstitute(ClientTickEvent.Post event){if(whale()){var mc=Minecraft.getInstance();mc.getMusicManager().stopPlaying();mc.getSoundManager().stop(null,SoundSource.MUSIC);}}
     @SubscribeEvent public static void sound(PlaySoundEvent event){
@@ -25,8 +29,7 @@ public final class StaircaseSoundscape {
         if(sound==null||mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.INTERIOR))return;
         if(whale()&&sound.getSource()==SoundSource.MUSIC){event.setSound(null);return;}
         if(sound.getLocation().getNamespace().equals("minecraft")&&sound.getLocation().getPath().equals("ambient.cave")){
-            var whale=LabyrinthPlaces.placeBounds(HouseSightlineState.origin(),LabyrinthPlace.WHALE);
-            if(whale!=null&&whale.isInside(mc.player.blockPosition())){event.setSound(null);return;}
+            if(whale()){event.setSound(null);return;}
         }
         if(!StaircaseScore.at(HouseSightlineState.origin(),mc.player.blockPosition())&&!StaircaseScore.foot())return;
         var id=sound.getLocation();if(!id.getNamespace().equals("minecraft")||id.getPath().endsWith(".step"))return;

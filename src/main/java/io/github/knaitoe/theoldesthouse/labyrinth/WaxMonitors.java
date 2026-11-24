@@ -26,6 +26,8 @@ public final class WaxMonitors {
     public static final int RING=5,FEEDS=6,AGAIN=40;
     /** Who is at the monitors, the feed they have up, and when they may next mark one. */
     static final Map<UUID,Integer> WATCHING=new ConcurrentHashMap<>();
+    /** Which museum each watcher sits in: a feed watched in one copy holds nothing still in another. */
+    static final Map<UUID,Long> WATCHING_AT=new ConcurrentHashMap<>();
     static final Map<UUID,Long> NEXT=new ConcurrentHashMap<>();
 
     /** A hand on a screen: sat down at the bank, if the reader is in the office. */
@@ -35,17 +37,19 @@ public final class WaxMonitors {
         if(!WaxSite.inOffice(r)){Waxworks.cue(p,WaxTexts.MONITOR);return;}
         var n=WaxShift.night(b);
         HousePackets.send(p,new WaxMonitorPayload(b,n!=null&&n.failed,n==null?"11:52":WaxShift.time(n.t)));
-        WATCHING.put(p.getUUID(),0);own.putBoolean("Monitors",true);
+        WATCHING.put(p.getUUID(),0);WATCHING_AT.put(p.getUUID(),b.asLong());own.putBoolean("Monitors",true);
     }
     /** From the reader's client: the feed they have up, or that they stood up; and a mark on it. */
     public static void feed(ServerPlayer p,int feed,boolean note){
         var b=WaxNight.site(p);
-        if(b==null||feed<0||feed>=FEEDS||!WaxSite.inOffice(p.position().subtract(b.getX(),b.getY(),b.getZ()))){WATCHING.remove(p.getUUID());return;}
-        WATCHING.put(p.getUUID(),feed);
+        if(b==null||feed<0||feed>=FEEDS||!WaxSite.inOffice(p.position().subtract(b.getX(),b.getY(),b.getZ()))){WATCHING.remove(p.getUUID());WATCHING_AT.remove(p.getUUID());return;}
+        WATCHING.put(p.getUUID(),feed);WATCHING_AT.put(p.getUUID(),b.asLong());
         if(note)note(p,b,feed);
     }
-    /** Whether somebody at the monitors has this feed up. */
-    public static boolean watched(int feed){return WATCHING.containsValue(feed);}
+    /** Whether somebody at this museum's monitors has this feed up. */
+    public static boolean watched(BlockPos site,int feed){
+        long at=site.asLong();for(var e:WATCHING.entrySet())if(e.getValue()==feed&&WATCHING_AT.getOrDefault(e.getKey(),Long.MIN_VALUE)==at)return true;return false;
+    }
     /** The feed this reader has up, or -1. */
     public static int watching(UUID reader){return WATCHING.getOrDefault(reader,-1);}
     /** The feed that shows a place an irregular figure can be: its gallery's at first, the ring's in the corridor, none in the office. */
@@ -68,8 +72,8 @@ public final class WaxMonitors {
         if(WATCHING.isEmpty()||e.getServer().getTickCount()%10!=0)return;
         for(var id:List.copyOf(WATCHING.keySet())){
             var p=e.getServer().getPlayerList().getPlayer(id);var b=p==null?null:WaxNight.site(p);
-            if(b==null||p.isSpectator()||!WaxSite.inOffice(p.position().subtract(b.getX(),b.getY(),b.getZ())))WATCHING.remove(id);
+            if(b==null||p.isSpectator()||!WaxSite.inOffice(p.position().subtract(b.getX(),b.getY(),b.getZ()))){WATCHING.remove(id);WATCHING_AT.remove(id);}
         }
     }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent e){WATCHING.clear();NEXT.clear();}
+    @SubscribeEvent public static void stopped(ServerStoppedEvent e){WATCHING.clear();WATCHING_AT.clear();NEXT.clear();}
 }

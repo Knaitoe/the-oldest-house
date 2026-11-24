@@ -63,6 +63,8 @@ public final class WaxNight {
     static final Map<UUID,BlockPos> BEAMS=new ConcurrentHashMap<>();
     /** 0.4.751: each reader's own head turns, figure by figure, and what was last sent to them. */
     static final Map<UUID,float[]> TURNED=new ConcurrentHashMap<>();
+    /** The museum each reader's turns belong to: a move in one copy never sets another's figures back. */
+    static final Map<UUID,Long> TURNED_AT=new ConcurrentHashMap<>();
     static final Map<UUID,float[]> SENT=new ConcurrentHashMap<>();
     /** Per reader: the figure under the beam and for how long; the mirror's count. */
     record Focus(int who,int ticks){}
@@ -135,9 +137,9 @@ public final class WaxNight {
         // Lights out where the readers have gone, and lent lights back from anyone outside the museum.
         for(var id:List.copyOf(BEAMS.keySet())){var p=server.getPlayerList().getPlayer(id);if(p==null||p.level()!=l||!onShift(p)||!holding(p)||site(p)==null)unbeam(l,id);}
         if(server.getTickCount()%10==3)for(var p:server.getPlayerList().getPlayers())if(site(p)==null&&has(p))reclaim(p);
-        if(Waxworks.SITES.isEmpty()){if(!TURNED.isEmpty()){TURNED.clear();SENT.clear();}return;}
+        if(Waxworks.SITES.isEmpty()){if(!TURNED.isEmpty()){TURNED.clear();TURNED_AT.clear();SENT.clear();}return;}
         // A reader who has left forgets what turned.
-        if(server.getTickCount()%20==7)for(var id:List.copyOf(TURNED.keySet())){var p=server.getPlayerList().getPlayer(id);if(p==null||site(p)==null){TURNED.remove(id);SENT.remove(id);if(p!=null)HousePackets.send(p,new WaxLookPayload(new int[0],new float[0]));}}
+        if(server.getTickCount()%20==7)for(var id:List.copyOf(TURNED.keySet())){var p=server.getPlayerList().getPlayer(id);if(p==null||site(p)==null){TURNED.remove(id);TURNED_AT.remove(id);SENT.remove(id);if(p!=null)HousePackets.send(p,new WaxLookPayload(new int[0],new float[0]));}}
         var data=LabyrinthData.get(server);
         for(long s:List.copyOf(Waxworks.SITES)){
             var b=BlockPos.of(s);
@@ -153,7 +155,7 @@ public final class WaxNight {
     @SubscribeEvent public static void stopping(ServerStoppingEvent e){
         var l=e.getServer().getLevel(NovelRooms.dimension(Waxworks.PLACE));
         if(l!=null)for(var id:List.copyOf(BEAMS.keySet()))unbeam(l,id);
-        BEAMS.clear();TURNED.clear();SENT.clear();FOCUS.clear();MIRRORED.clear();
+        BEAMS.clear();TURNED.clear();TURNED_AT.clear();SENT.clear();FOCUS.clear();MIRRORED.clear();
     }
 
     /** The beam: a lit cell where it lands, in front of whatever it hits. */
@@ -190,7 +192,7 @@ public final class WaxNight {
                 double off=off(p,at);if(off<EDGE_NEAR||off>EDGE_FAR||!clear(l,p,at))continue;
                 var to=p.getEyePosition().subtract(at);
                 float want=Mth.clamp(Mth.wrapDegrees((float)(Mth.atan2(to.z,to.x)*Mth.RAD_TO_DEG)-90-set),-TURN_MAX,TURN_MAX);
-                var turn=TURNED.computeIfAbsent(p.getUUID(),k->new float[Waxworks.FIGURES]);
+                var turn=TURNED.computeIfAbsent(p.getUUID(),k->new float[Waxworks.FIGURES]);TURNED_AT.put(p.getUUID(),b.asLong());
                 float now=turn[who];if(Math.abs(want-now)<.5F)continue;
                 turn[who]=now+Mth.clamp(want-now,-STEP,STEP);
             }
@@ -206,7 +208,7 @@ public final class WaxNight {
         HousePackets.send(p,new WaxLookPayload(ids,by));SENT.put(p.getUUID(),turn.clone());
     }
     /** A figure that has been moved (WaxShift) starts again from where it was set: nobody's turn of its head carries over. */
-    static void unturn(int who){for(var t:TURNED.values())t[who]=0;}
+    static void unturn(BlockPos b,int who){long at=b.asLong();for(var e:TURNED.entrySet())if(TURNED_AT.getOrDefault(e.getKey(),at)==at)e.getValue()[who]=0;}
 
     /** The blink, private: the beam held on a face, close, for four seconds. */
     static void blink(ServerLevel l,BlockPos b,ServerPlayer p,LabyrinthData data){

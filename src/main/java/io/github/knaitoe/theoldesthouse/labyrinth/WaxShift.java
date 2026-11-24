@@ -214,7 +214,7 @@ public final class WaxShift {
         var can=new ArrayList<Integer>();
         for(int who=0;who<Waxworks.FIGURES;who++){
             var f=WaxSite.FIGURES.get(who);
-            if(who==WaxSite.STRANGER||who==WaxSite.MIRROR||f.pose()==WaxSite.COVERED||taken.contains(who)||occupied.contains(f.gallery())||WaxMonitors.watched(f.gallery()))continue;
+            if(who==WaxSite.STRANGER||who==WaxSite.MIRROR||f.pose()==WaxSite.COVERED||taken.contains(who)||occupied.contains(f.gallery())||WaxMonitors.watched(b,f.gallery()))continue;
             var a=Waxworks.find(l,b,who);if(a==null||seen(l,readers,a.getEyePosition()))continue;
             can.add(who);
         }
@@ -222,7 +222,7 @@ public final class WaxShift {
         int who=can.get(l.random.nextInt(can.size()));
         // 0.4.753: one already facing its gallery's door cannot be seen to turn to it, so it is gone from its plinth instead.
         int kind=l.random.nextInt(3)==0||facesDoor(WaxSite.FIGURES.get(who))?1:0;
-        n.irregular.add(new Irr(who,kind));n.made++;WaxNight.unturn(who);
+        n.irregular.add(new Irr(who,kind));n.made++;WaxNight.unturn(b,who);
         var a=Waxworks.find(l,b,who);if(a!=null)Waxworks.stand(a,b,WaxSite.FIGURES.get(who),0);
     }
     /** Unnoticed ones come nearer, unseen; noticed ones go home, unseen. */
@@ -231,15 +231,15 @@ public final class WaxShift {
             var i=it.next();var a=Waxworks.find(l,b,i.who);if(a==null)continue;
             var f=WaxSite.FIGURES.get(i.who);
             int feed=WaxMonitors.feedOf(i.who,i.stage),nextFeed=WaxMonitors.feedOf(i.who,Math.min(ARRIVED,i.stage+1));
-            if(feed>=0&&WaxMonitors.watched(feed)||!i.noticed&&nextFeed>=0&&WaxMonitors.watched(nextFeed))continue;
+            if(feed>=0&&WaxMonitors.watched(b,feed)||!i.noticed&&nextFeed>=0&&WaxMonitors.watched(b,nextFeed))continue;
             if(i.noticed){
-                if(!seen(l,readers,a.getEyePosition())&&!seen(l,readers,WaxSite.feet(f).add(b.getX(),b.getY()+1.6,b.getZ()))){it.remove();WaxNight.unturn(i.who);Waxworks.stand(a,b,f,0);}
+                if(!seen(l,readers,a.getEyePosition())&&!seen(l,readers,WaxSite.feet(f).add(b.getX(),b.getY()+1.6,b.getZ()))){it.remove();WaxNight.unturn(b,i.who);Waxworks.stand(a,b,f,0);}
                 continue;
             }
             i.since+=20;if(i.since<NEARER||i.stage>=ARRIVED)continue;
             i.stage++;var next=place(b,i.who);i.stage--;
             if(next==null||seen(l,readers,a.getEyePosition())||seen(l,readers,next.at().add(b.getX(),b.getY()+1.6,b.getZ())))continue;
-            i.stage++;i.since=0;WaxNight.unturn(i.who);Waxworks.stand(a,b,f,0);
+            i.stage++;i.since=0;WaxNight.unturn(b,i.who);Waxworks.stand(a,b,f,0);
             if(i.stage>=ARRIVED)l.playSound(null,b.offset(0,1,-17),WaxRegistry.MONITORS.get(),SoundSource.BLOCKS,.4F,.6F);
         }
     }
@@ -311,6 +311,6 @@ public final class WaxShift {
             screens(l,b,1);
             var at=b.offset(WaxSite.CLOCK);var st=l.getBlockState(at);if(WaxBlock.is(st,WaxBlock.Kind.CLOCK))l.setBlock(at,st.setValue(WaxBlock.STAGE,0),Block.UPDATE_CLIENTS);
         }
-        for(var i:n.irregular){WaxNight.unturn(i.who);var a=Waxworks.find(l,b,i.who);if(a!=null)Waxworks.stand(a,b,WaxSite.FIGURES.get(i.who),0);}
+        for(var i:n.irregular){WaxNight.unturn(b,i.who);var a=Waxworks.find(l,b,i.who);if(a!=null)Waxworks.stand(a,b,WaxSite.FIGURES.get(i.who),0);}
     }
 }

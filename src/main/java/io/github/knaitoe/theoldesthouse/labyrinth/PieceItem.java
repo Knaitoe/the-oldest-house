@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -40,8 +40,11 @@ public final class PieceItem extends BlockItem {
     @Override protected @Nullable BlockState getPlacementState(BlockPlaceContext c){
         var s=getBlock().getStateForPlacement(c);if(s==null)return null;
         var props=c.getItemInHand().get(DataComponents.BLOCK_STATE);if(props!=null)s=props.apply(s);
-        if(getBlock() instanceof HorizontalDirectionalBlock&&s.hasProperty(HorizontalDirectionalBlock.FACING))
-            s=s.setValue(HorizontalDirectionalBlock.FACING,c.getHorizontalDirection().getOpposite());
+        // Every piece with a facing turns to whoever sets it down, whatever block class carries the property and whatever facing the
+        // kind was recorded with in its story.
+        var toward=c.getHorizontalDirection().getOpposite();
+        if(s.hasProperty(BlockStateProperties.HORIZONTAL_FACING))s=s.setValue(BlockStateProperties.HORIZONTAL_FACING,toward);
+        else if(s.hasProperty(BlockStateProperties.FACING)&&BlockStateProperties.FACING.getPossibleValues().contains(toward))s=s.setValue(BlockStateProperties.FACING,toward);
         return canPlace(c,s)?s:null;
     }
 }

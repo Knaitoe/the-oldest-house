@@ -119,6 +119,66 @@ def refusal_episodes(events):
     return count
 
 
+def pacing(rows):
+    """What a whole expedition asks of a reader: time in each story room, rooms come back to, the wait to find an unfinished story
+    again, and when each account was resolved. Spectators and refuges confer nothing; minutes are played minutes."""
+    stays, open_stay, seen, revisits = [], None, set(), Counter()
+    left, gaps, abandoned = {}, [], Counter()
+    resolved_at = []
+
+    def close(row):
+        nonlocal open_stay
+        if open_stay:
+            open_stay["minutes"] = max(0.0, row["_minute"] - open_stay["start"])
+            stays.append(open_stay)
+            open_stay = None
+
+    for row in rows:
+        if row.get("spectator"):
+            continue
+        name, place = row["event"], row.get("place")
+        if name == "arrive" and row.get("_inside"):
+            close(row)
+            if place in seen:
+                revisits[place] += 1
+            seen.add(place)
+            if place in left:
+                gaps.append({"place": place, "minutes": row["_minute"] - left.pop(place)})
+            if row.get("story"):
+                open_stay = {"place": place, "start": row["_minute"], "resolved": False}
+        elif name == "story_resolve" and row.get("_inside"):
+            resolved_at.append(row["_minute"])
+            if open_stay:
+                open_stay["resolved"] = True
+        elif name == "story_leave":
+            close(row)
+            if not row.get("resolved") and place:
+                left[place] = row["_minute"]
+        elif name in {"session_end", "session_start"} or not row.get("_inside"):
+            close(row)
+    if open_stay and rows:
+        close(rows[-1])
+    for place in left:
+        abandoned[place] += 1
+    by_place = defaultdict(lambda: {"minutes": 0.0, "stays": 0, "resolved": 0})
+    for stay in stays:
+        entry = by_place[stay["place"]]
+        entry["minutes"] += stay["minutes"]
+        entry["stays"] += 1
+        entry["resolved"] += stay["resolved"]
+    lengths = sorted(stay["minutes"] for stay in stays)
+    return {
+        "story_stays": stays,
+        "story_minutes_by_place": dict(by_place),
+        "median_story_stay_minutes": lengths[len(lengths) // 2] if lengths else None,
+        "longest_story_stay_minutes": lengths[-1] if lengths else None,
+        "revisits": dict(revisits),
+        "return_gaps": gaps,
+        "never_returned": dict(abandoned),
+        "resolution_minutes": resolved_at,
+    }
+
+
 def summarize(events):
     players = {}
     for pid, visits in sessions(events).items():
@@ -195,6 +255,7 @@ def summarize(events):
             "incomplete_sessions": sum(not session.complete for session in visits),
             "estimated_occupancy": any("inLabyrinth" not in event for session in visits for event in session.events),
             "firsts": firsts, "sessions": by_session, "events": annotated,
+            "pacing": pacing(annotated),
         }
     return players
 
@@ -236,6 +297,20 @@ def report(players):
         scenes = [event for event in rows if event["event"] == "note_scene_leave"]
         if scenes:
             print(f"  note scenes {len(scenes)}, finished {sum(bool(event.get('finished')) for event in scenes)}")
+        pace = player["pacing"]
+        if pace["story_stays"]:
+            print(f"  story stays {len(pace['story_stays'])}: median {pace['median_story_stay_minutes']:.1f} min, longest {pace['longest_story_stay_minutes']:.1f} min")
+            for place, entry in sorted(pace["story_minutes_by_place"].items(), key=lambda pair: -pair[1]["minutes"])[:6]:
+                print(f"    {place}: {entry['minutes']:.1f} min over {entry['stays']} stays, {entry['resolved']} resolved")
+        if pace["revisits"]:
+            print("  rooms come back to: " + ", ".join(f"{place} x{count}" for place, count in Counter(pace["revisits"]).most_common(6)))
+        if pace["return_gaps"]:
+            waits = sorted(gap["minutes"] for gap in pace["return_gaps"])
+            print(f"  unfinished stories found again {len(waits)} times; median wait {waits[len(waits) // 2]:.1f} min, longest {waits[-1]:.1f} min")
+        if pace["never_returned"]:
+            print("  left unfinished and not found again: " + ", ".join(sorted(pace["never_returned"])))
+        if pace["resolution_minutes"]:
+            print("  accounts resolved at minute: " + ", ".join(f"{minute:.0f}" for minute in pace["resolution_minutes"]))
         for index, session in enumerate(player["sessions"], 1):
             status = "ended" if session["complete"] else "last observed"
             print(f"  session {index}: {session['minutes']:.1f} min; {session['labyrinth_minutes']:.1f} labyrinth; {status} at {session['ended_at']}")

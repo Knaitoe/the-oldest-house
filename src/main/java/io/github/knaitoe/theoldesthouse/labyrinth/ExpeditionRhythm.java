@@ -21,7 +21,7 @@ public final class ExpeditionRhythm {
     }
     /** Called only after the far door's native movement succeeds, never for a retreat. */
     public static void crossedHazard(ServerPlayer player,LabyrinthData.Door from){
-        if(!player.isAlive()||player.isSpectator()||!from.dimension.equals(HouseDimensions.INTERIOR))return;
+        if(!player.isAlive()||player.isSpectator()||!HouseDimensions.isHouseDimension(from.dimension))return; // yard hazards stand outside (Downed Line)
         for(var place:LabyrinthPlace.values())if(LabyrinthPacing.physicalTrial(place))for(var spec:place.doors())
             if(LabyrinthData.DEALT.equals(spec.destination())&&place.doorId(spec).equals(from.id)){
                 request(LabyrinthData.get(player.server),player.getUUID());TrialMarks.crossed(player,place);

@@ -82,6 +82,22 @@ public final class RhythmTests {
         }finally{NativeTestPlayers.remove(p);}
     }
     @GameTest(template="empty")
+    public static void aYardHazardsFarDoorEarnsItsMarkToo(GameTestHelper h){
+        var place=LabyrinthPlace.DOWNED_LINE;
+        h.assertTrue(LabyrinthPacing.physicalTrial(place)&&NovelRooms.dimension(place).equals(io.github.knaitoe.theoldesthouse.house.HouseDimensions.OUTSIDE),"Downed Line is a trial that stands outside");
+        var p=NativeTestPlayers.survival(h,"yard_walker");var d=LabyrinthData.get(p.server);var fixture=new LabyrinthData();
+        LabyrinthBuilder.registerDoors(fixture,place,new BlockPos(0,80,0));
+        try{
+            var entry=fixture.door(place.entryDoorId());ExpeditionRhythm.crossedHazard(p,entry);
+            h.assertTrue(TrialMarks.count(d,p.getUUID())==0,"going back the way in is no crossing");
+            LabyrinthData.Door far=null;for(var spec:place.doors())if(LabyrinthData.DEALT.equals(spec.destination()))far=fixture.door(place.doorId(spec));
+            h.assertTrue(far!=null,"Downed Line has a far door");
+            ExpeditionRhythm.crossedHazard(p,far);
+            h.assertTrue(ExpeditionRhythm.pending(d,p.getUUID())&&TrialMarks.marks(d,p.getUUID()).equals(List.of(place.id())),"the yard's far door earns the calm deal and its mark");
+            h.succeed();
+        }finally{NativeTestPlayers.remove(p);}
+    }
+    @GameTest(template="empty")
     public static void retreatGuidanceIsPersonalOnceAndNeverPromisesALockedExit(GameTestHelper h){
         var p=NativeTestPlayers.survival(h,"retreat_reader");var peer=NativeTestPlayers.survival(h,"retreat_peer");var fixture=new LabyrinthData();
         // 0.4.464: the House's levels are made here and not left to whichever case ran before; run by itself this case found none.

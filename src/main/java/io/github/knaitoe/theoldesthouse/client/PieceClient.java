@@ -12,6 +12,9 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -65,5 +68,18 @@ public final class PieceClient {
         float r=(color>>16&255)/255F,g=(color>>8&255)/255F,b=(color&255)/255F;
         for(RenderType type:model.getRenderTypes(state,RandomSource.create(42L),ModelData.EMPTY))
             blocks.getModelRenderer().renderModel(pose.last(),buffers.getBuffer(RenderTypeHelper.getEntityRenderType(type,false)),state,model,r,g,b,light,overlay,ModelData.EMPTY,type);
+        drawBlockEntity(state,pose,buffers,light,overlay);
+    }
+    /** A block drawn by its block entity: a loose one of its own, drawn by its renderer the way a chest item is. One that will not draw is left to its model. */
+    private static final java.util.Map<BlockState,BlockEntity> LOOSE=new java.util.HashMap<>();
+    private static final java.util.Set<BlockState> BROKEN=new java.util.HashSet<>();
+    static void drawBlockEntity(BlockState state,PoseStack pose,MultiBufferSource buffers,int light,int overlay){
+        if(!(state.getBlock() instanceof EntityBlock entity)||BROKEN.contains(state))return;
+        try{
+            var be=LOOSE.computeIfAbsent(state,s->entity.newBlockEntity(BlockPos.ZERO,s));
+            if(be==null){BROKEN.add(state);return;}
+            if(Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(be)==null)return;
+            Minecraft.getInstance().getBlockEntityRenderDispatcher().renderItem(be,pose,buffers,light,overlay);
+        }catch(RuntimeException ex){BROKEN.add(state);LOOSE.remove(state);}
     }
 }

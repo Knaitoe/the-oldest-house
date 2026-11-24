@@ -478,7 +478,8 @@ public final class WaxworksTests {
             WaxMonitors.sit(s,b,f.own(s,P));
             h.assertFalse(sat(s),"a spectator does not sit down");
             WaxMonitors.feed(p,2,false);
-            h.assertTrue(WaxMonitors.watched(2)&&!WaxMonitors.watched(1),"the feed the reader has up is watched");
+            h.assertTrue(WaxMonitors.watched(b,2)&&!WaxMonitors.watched(b,1),"the feed the reader has up is watched");
+            h.assertFalse(WaxMonitors.watched(b.offset(-SceneInstances.STEP,0,0),2),"in this museum only: another copy's same feed is not held still");
             // An irregularity in the Hall of Statesmen.
             var n=WaxShift.night(b);var i=new WaxShift.Irr(3,0);n.irregular.add(i);told(p);
             WaxMonitors.feed(p,2,true);
@@ -497,7 +498,7 @@ public final class WaxworksTests {
             h.assertTrue(WaxMonitors.watching(p.getUUID())==-1,"standing up leaves the feed");
             WaxMonitors.feed(p,4,false);p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-5.5,0,0);
         }).thenIdle(12).thenExecute(()->{
-            h.assertTrue(WaxMonitors.watching(p.getUUID())==-1&&!WaxMonitors.watched(4),"and so does walking out of the office");
+            h.assertTrue(WaxMonitors.watching(p.getUUID())==-1&&!WaxMonitors.watched(b,4),"and so does walking out of the office");
             done();h.succeed();
         });
     }
