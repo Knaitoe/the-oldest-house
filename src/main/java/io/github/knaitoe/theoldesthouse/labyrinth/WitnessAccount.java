@@ -260,6 +260,8 @@ public final class WitnessAccount {
                 ?"A passage in your account is readable now. It describes a cell."
                 :"You can set this part of the account down now."),false);
         HouseAdvancements.sync(player);
+        // 0.4.758: the story's pieces, and its keepsake the first time (docs/BUILDING_OUTSIDE_0_4_758.md).
+        StoryPieces.ended(player,story);
         return true;
     }
     /**

@@ -1,0 +1,19 @@
+{
+  "_comment": "0.4.758 (docs/BUILDING_OUTSIDE_0_4_758.md): each story's block set and keepsake. A block belongs to a story when its id starts with one of the story's prefixes; skip names whole blocks, or block[kind] for single kinds. Read by StoryPieces and by tools/write_story_piece_models.py.",
+  "stories": [
+    {
+      "story": "cold_room",
+      "prefixes": ["cold_room_"],
+      "skip": [],
+      "keepsake": "cold_room_fitting[crucifix]",
+      "line": "Off the nail over the bed in the back room. It hangs the right way up."
+    },
+    {
+      "story": "waxworks",
+      "prefixes": ["waxworks_"],
+      "skip": [],
+      "keepsake": "waxworks_fitting[plinth]",
+      "line": "The stand under the twenty-fourth figure. Nobody painted a plaque for it."
+    }
+  ]
+}

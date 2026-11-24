@@ -21,7 +21,10 @@
     "NotYetGetUpMixin",
     "HouseSleepMixin",
     "HouseSleepAccess",
-    "CompoundContainerAccess"
+    "CompoundContainerAccess",
+    "StonecutterPiecesMixin",
+    "RecipeManagerPiecesMixin",
+    "PieceBreakMixin"
   ],
   "injectors": {
     "defaultRequire": 1

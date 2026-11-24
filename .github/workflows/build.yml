@@ -103,6 +103,7 @@ jobs:
           python3 tools/generate_waxworks_audio.py --check
           python3 tools/draw_cold_room_art.py --check
           python3 tools/generate_cold_room_audio.py --check
+          python3 tools/write_story_piece_models.py --check
           python3 tools/draw_fallow_art.py --check
           python3 tools/generate_fallow_audio.py --check
           python3 tools/draw_the_list_art.py --check
@@ -2864,12 +2865,30 @@ jobs:
           assert completed and int(completed[-1])==declared, (completed,declared)
           print(f'All {declared} native cold room cases passed; the complete suite remains required.')
           PY_CHECK
+      - name: 'Native story pieces: the sets taught, the keepsake once, the stonecutter, furniture outside'
+        timeout-minutes: 8
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx4g
+        run: |
+          rm -rf run/world
+          set -o pipefail
+          timeout --signal=QUIT --kill-after=20s 7m gradle runGameTestServer -PgameTestNamespaces=the_oldest_house_pieces --no-daemon -Dorg.gradle.jvmargs=-Xmx1g 2>&1 | tee build/pieces-native.log
+          python3 - <<'PY_CHECK'
+          from pathlib import Path
+          import re
+          completed=re.findall(r'All (\d+) required tests passed',Path('build/pieces-native.log').read_text())
+          declared=len(re.findall(r'@GameTest\s*\(',Path('src/main/java/io/github/knaitoe/theoldesthouse/gametest/StoryPiecesTests.java').read_text()))
+          assert completed and int(completed[-1])==declared, (completed,declared)
+          print(f'All {declared} native story piece cases passed; the complete suite remains required.')
+          PY_CHECK
       - name: Upload cold room diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cold-room-diagnostics-${{ github.sha }}
-          path: build/cold-room-native.log
+          path: |
+            build/cold-room-native.log
+            build/pieces-native.log
 
   fallow-gameplay:
     needs: quick

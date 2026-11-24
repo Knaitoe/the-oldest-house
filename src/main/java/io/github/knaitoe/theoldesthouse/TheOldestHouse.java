@@ -116,6 +116,8 @@ public final class TheOldestHouse {
         io.github.knaitoe.theoldesthouse.labyrinth.NotYetRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.WaxRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.ColdRegistry.register(modEventBus);
+        // 0.4.758: the stories' pieces, for building outside the House (docs/BUILDING_OUTSIDE_0_4_758.md).
+        io.github.knaitoe.theoldesthouse.labyrinth.StoryPieces.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.LastSeenRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.FallowRegistry.register(modEventBus);
         io.github.knaitoe.theoldesthouse.labyrinth.TheListRegistry.register(modEventBus);
