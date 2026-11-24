@@ -28,7 +28,7 @@ public final class VignetteAnimationTests {
     private static LiteraryTests.Fixture fixture(GameTestHelper h){return active=new LiteraryTests.Fixture(h);}
     private static void close(){if(active!=null){active.close();active=null;}}
 
-    @GameTest(template="empty",batch="literary_bly_motion",timeoutTicks=1900)
+    @GameTest(template="empty",batch="literary_bly_motion",timeoutTicks=2800)
     public static void originalLadyWalksEveryTickSinksGraduallyAndKeepsThePersonalClosetGate(GameTestHelper h){
         var f=fixture(h);var place=LabyrinthPlace.BLY_ROUTE;var p=f.player("bly_motion",place);var peer=f.player("bly_observer",place);
         f.source(p,place);f.at(p,place,-6,0,-9);f.look(p,f.base(place).offset(-8,1,-9));f.at(peer,place,4,0,-3);
@@ -38,7 +38,9 @@ public final class VignetteAnimationTests {
             var lady=(LiteraryActor)f.in.getEntity(state.getUUID("Lady"));if(lady==null)return;
             if(id[0]==null)id[0]=lady.getUUID();h.assertTrue(lady.getUUID().equals(id[0]),"the actual Lady retains her original UUID throughout both route and lake");
             long now=f.in.getGameTime();int clock=(int)Math.floorMod(now,900);
-            if(cycle[0]<0&&clock>=100&&clock<=105){cycle[0]=Math.floorDiv(now,900);previous[0]=lady.position();}
+            // She starts a cycle only while unseen (LiteraryMotion.lady), so a cycle begun while watched starts late, with one unseen
+            // step back to the top of the route; measure a cycle she has already begun (run 1794).
+            if(cycle[0]<0&&clock>=100&&clock<=105&&lady.getPersistentData().getLong("BlyCycle0496")==Math.floorDiv(now,900)){cycle[0]=Math.floorDiv(now,900);previous[0]=lady.position();}
             if(cycle[0]!=Math.floorDiv(now,900)||previous[0]==null)return;
             Vec3 step=lady.position().subtract(previous[0]);previous[0]=lady.position();
             if(clock>105&&clock<700){h.assertTrue(step.horizontalDistance()<=.061,"native Lady strides never jump a five-tick distance: "+step);if(step.horizontalDistance()>.04)strides[0]++;}
