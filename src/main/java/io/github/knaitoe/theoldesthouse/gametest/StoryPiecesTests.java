@@ -50,9 +50,10 @@ public final class StoryPiecesTests {
     @GameTest(template="empty",batch="pieces")
     public static void everySetHasItemsRecipesAndAKeepsake(GameTestHelper h){
         var recipes=h.getLevel().getServer().getRecipeManager();
-        for(var story:new WitnessAccount.Story[]{COLD,WAX}){
+        h.assertTrue(StoryPieces.stories().size()>=60,"the manifest names the stories: "+StoryPieces.stories().size());
+        for(var story:StoryPieces.stories()){
             var pieces=StoryPieces.pieces(story);
-            h.assertTrue(pieces.size()>10,story.id+" has its pieces: "+pieces.size());
+            h.assertTrue(!pieces.isEmpty(),story.id+" has its pieces");
             for(var piece:pieces){
                 h.assertTrue(piece.block().asItem() instanceof PieceItem,piece.recipe()+" has its piece item");
                 var r=recipes.byKey(piece.recipe());
@@ -64,6 +65,8 @@ public final class StoryPiecesTests {
             var keep=StoryPieces.keepsake(story);
             h.assertTrue(keep!=null,story.id+" names a keepsake among its pieces");
         }
+        h.assertTrue(StoryPieces.pieces(COLD).size()>10&&StoryPieces.pieces(WAX).size()>10,"the back bedroom and the waxworks keep their whole sets");
+        h.assertTrue(StoryPieces.story(net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"nursery_wallpaper")))==WitnessAccount.Story.WALLPAPER,"the nursery's wallpaper belongs to the pattern, not the bedroom with no way out");
         h.assertTrue("crucifix".equals(StoryPieces.keepsake(COLD).kind()),"the back bedroom's keepsake is the crucifix");
         h.assertTrue(StoryPieces.name(ColdRegistry.FITTING.get(),"kitchen_table").getString().equals("Kitchen table"),"a kind is named in words");
         h.succeed();

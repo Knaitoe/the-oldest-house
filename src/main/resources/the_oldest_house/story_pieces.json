@@ -1,16 +1,645 @@
 {
-  "_comment": "0.4.758 (docs/BUILDING_OUTSIDE_0_4_758.md): each story's block set and keepsake. A block belongs to a story when its id starts with one of the story's prefixes; skip names whole blocks, or block[kind] for single kinds. Read by StoryPieces and by tools/write_story_piece_models.py.",
+  "_comment": "0.4.758 (docs/BUILDING_OUTSIDE_0_4_758.md): each story's block set and keepsake. A block belongs to a story when its id starts with one of the story's prefixes; skip names whole blocks, or block[kind] for single kinds. Read by StoryPieces and by tools/write_story_piece_models.py. Two-high blocks (doors, wardrobes) and blocks built of parts are left out by the mod.",
   "stories": [
     {
+      "story": "wallpaper_nursery",
+      "prefixes": [
+        "nursery_wallpaper"
+      ],
+      "skip": [],
+      "keepsake": "nursery_wallpaper",
+      "line": "The pattern off the nursery wall."
+    },
+    {
+      "story": "pell_house",
+      "prefixes": [
+        "pell_"
+      ],
+      "skip": [],
+      "keepsake": "pell_thing[floor_lamp]",
+      "line": "The lamp from the corner of the Pells' lounge. Its shade was mended twice."
+    },
+    {
+      "story": "the_list",
+      "prefixes": [
+        "list_"
+      ],
+      "skip": [],
+      "keepsake": "list_fitting[gin]",
+      "line": "A piece of the gin at the edge of Lamesa. There is still lint in its seams."
+    },
+    {
+      "story": "bike_night",
+      "prefixes": [
+        "calder_",
+        "bike_",
+        "night_bike"
+      ],
+      "skip": [],
+      "keepsake": "calder_fitting[bench_cut]",
+      "line": "A bench from the park in Calder, with initials cut into the seat."
+    },
+    {
+      "story": "fallow",
+      "prefixes": [
+        "fallow_"
+      ],
+      "skip": [],
+      "keepsake": "fallow_fitting[pump]",
+      "line": "A pump from the station on the county road. The last price is still on its face."
+    },
+    {
+      "story": "a_sort_of_thing",
+      "prefixes": [
+        "king_"
+      ],
+      "skip": [],
+      "keepsake": "king_fitting[chessmen]",
+      "line": "The chessmen from the King's table. One piece was always missing."
+    },
+    {
+      "story": "ones_already_inside",
+      "prefixes": [
+        "lodging_"
+      ],
+      "skip": [],
+      "keepsake": "lodging_fitting[number]",
+      "line": "A number off a door in the lodging house. There were more rooms than numbers."
+    },
+    {
+      "story": "a_little_longer",
+      "prefixes": [
+        "longer_"
+      ],
+      "skip": [],
+      "keepsake": "longer_fitting[kettle]",
+      "line": "The kettle from the back of Rowan's shop."
+    },
+    {
+      "story": "second_person",
+      "prefixes": [
+        "sp_"
+      ],
+      "skip": [],
+      "keepsake": "sp_fitting[book]",
+      "line": "The book from the flat above the launderette."
+    },
+    {
+      "story": "place_for_you",
+      "prefixes": [
+        "pfy_"
+      ],
+      "skip": [],
+      "keepsake": "pfy_fitting[kettle]",
+      "line": "Mara's kettle. Two cups were always set out beside it."
+    },
+    {
+      "story": "people_lights",
+      "prefixes": [
+        "people_"
+      ],
+      "skip": [],
+      "keepsake": "people_fitting[newel]",
+      "line": "The newel post from the foot of the stairs Stan built."
+    },
+    {
+      "story": "last_swimmer",
+      "prefixes": [
+        "swimmer_"
+      ],
+      "skip": [],
+      "keepsake": "swimmer_fitting[pace_clock]",
+      "line": "The pace clock from the end of the pool."
+    },
+    {
+      "story": "vacant_possession",
+      "prefixes": [
+        "vacant_"
+      ],
+      "skip": [],
+      "keepsake": "vacant_fitting[docket]",
+      "line": "The docket from the empty flat. Every line on it is ticked."
+    },
+    {
+      "story": "left_right",
+      "prefixes": [
+        "left_right_"
+      ],
+      "skip": [],
+      "keepsake": "left_right_fitting[payphone]",
+      "line": "The payphone from the side of the road where the game was played."
+    },
+    {
+      "story": "dead_air",
+      "prefixes": [
+        "dead_air_"
+      ],
+      "skip": [],
+      "keepsake": "dead_air_fitting[crt]",
+      "line": "A monitor from the studio the broadcast came from."
+    },
+    {
+      "story": "work_print",
+      "prefixes": [
+        "work_print_"
+      ],
+      "skip": [],
+      "keepsake": "work_print_fitting[splicer]",
+      "line": "The splicer from the edit bay where the work print was cut."
+    },
+    {
+      "story": "polaroid_trail",
+      "prefixes": [
+        "polaroid_"
+      ],
+      "skip": [],
+      "keepsake": "polaroid_fitting[album]",
+      "line": "The album from the end of the trail. Its last pages are empty."
+    },
+    {
+      "story": "polybius",
+      "prefixes": [
+        "polybius_"
+      ],
+      "skip": [],
+      "keepsake": "polybius_fitting[cabinet]",
+      "line": "A cabinet from the arcade in the strip mall."
+    },
+    {
+      "story": "replacement",
+      "prefixes": [
+        "replacement_"
+      ],
+      "skip": [],
+      "keepsake": "replacement_fitting[mailbox]",
+      "line": "A mailbox from the street. The name on it was painted over."
+    },
+    {
+      "story": "state_route",
+      "prefixes": [
+        "state_route_"
+      ],
+      "skip": [
+        "state_route_anchor"
+      ],
+      "keepsake": "state_route_fitting[mile]",
+      "line": "A mile marker from State Route 9."
+    },
+    {
+      "story": "deer_road",
+      "prefixes": [
+        "deer_road_"
+      ],
+      "skip": [
+        "deer_road_anchor"
+      ],
+      "keepsake": "deer_road_fitting[sign]",
+      "line": "The deer crossing sign from the road."
+    },
+    {
+      "story": "whistlers",
+      "prefixes": [
+        "lookout_"
+      ],
+      "skip": [],
+      "keepsake": "lookout_fitting[fire_finder]",
+      "line": "The fire finder from the north tower's cab."
+    },
+    {
+      "story": "silo",
+      "prefixes": [
+        "silo_"
+      ],
+      "skip": [],
+      "keepsake": "silo_hatch",
+      "line": "The hatch from the top of the silo."
+    },
+    {
+      "story": "dare_in_the_dark",
+      "prefixes": [
+        "dare_"
+      ],
+      "skip": [],
+      "keepsake": "dare_fitting[plaque]",
+      "line": "The plaque off the third-floor bathroom door."
+    },
+    {
+      "story": "feet_up",
+      "prefixes": [
+        "feet_up_"
+      ],
+      "skip": [],
+      "keepsake": "feet_up_fitting[rules_page]",
+      "line": "The page the rules of the game were written on."
+    },
+    {
+      "story": "the_kept",
+      "prefixes": [
+        "kept_"
+      ],
+      "skip": [],
+      "keepsake": "kept_fitting[chandelier]",
+      "line": "A chandelier from the machine's halls. There is frost on it."
+    },
+    {
+      "story": "the_black_city",
+      "prefixes": [
+        "city_"
+      ],
+      "skip": [],
+      "keepsake": "city_fitting[logbook]",
+      "line": "The logbook from the camp below the pass."
+    },
+    {
+      "story": "the_house_on_the_corner",
+      "prefixes": [
+        "corner_"
+      ],
+      "skip": [],
+      "keepsake": "corner_fitting[jar]",
+      "line": "A jar from the house on the corner."
+    },
+    {
+      "story": "the_drawing",
+      "prefixes": [
+        "drawing_"
+      ],
+      "skip": [],
+      "keepsake": "drawing_fitting[box]",
+      "line": "The box the slips were drawn from in the square."
+    },
+    {
+      "story": "marsh_supper",
+      "prefixes": [
+        "marsh_"
+      ],
+      "skip": [],
+      "keepsake": "marsh_fitting[bell]",
+      "line": "The supper bell from the Marshes' porch."
+    },
+    {
+      "story": "growing_things",
+      "prefixes": [
+        "growing_"
+      ],
+      "skip": [],
+      "keepsake": "growing_fitting[spade]",
+      "line": "The spade from the garden by the back steps."
+    },
+    {
+      "story": "last_crossing",
+      "prefixes": [
+        "crossing_"
+      ],
+      "skip": [],
+      "keepsake": "crossing_fitting[nameplate]",
+      "line": "The nameplate off the flood station's pump."
+    },
+    {
+      "story": "pinehook",
+      "prefixes": [
+        "pinehook_"
+      ],
+      "skip": [],
+      "keepsake": "pinehook_fitting[recorder]",
+      "line": "The recorder from the weekend at Pinehook. The tape is still in it."
+    },
+    {
+      "story": "last_orders",
+      "prefixes": [
+        "bar_",
+        "pool_table",
+        "dartboard"
+      ],
+      "skip": [],
+      "keepsake": "bar_booth[candle]",
+      "line": "The candle from a booth in the bar. It was lit at last orders."
+    },
+    {
+      "story": "borrasca",
+      "prefixes": [
+        "borrasca_"
+      ],
+      "skip": [
+        "borrasca_names"
+      ],
+      "keepsake": "borrasca_fitting[marker_one]",
+      "line": "The first marker from the trail above Drisking."
+    },
+    {
+      "story": "lake_house",
+      "prefixes": [
+        "lake_house_"
+      ],
+      "skip": [],
+      "keepsake": "lake_house_fitting[key_bowl]",
+      "line": "The key bowl from the hall of the house in the third lake."
+    },
+    {
+      "story": "winchester",
+      "prefixes": [
+        "winchester_"
+      ],
+      "skip": [],
+      "keepsake": "winchester_fitting[clock]",
+      "line": "The hall clock from the house that was never finished."
+    },
+    {
+      "story": "seance",
+      "prefixes": [
+        "seance_"
+      ],
+      "skip": [],
+      "keepsake": "seance_fitting[album]",
+      "line": "The family's album from the room where they sat."
+    },
+    {
+      "story": "usher",
+      "prefixes": [
+        "usher"
+      ],
+      "skip": [],
+      "keepsake": "usher[candelabra]",
+      "line": "A candelabra from the house of Usher."
+    },
+    {
+      "story": "masque",
+      "prefixes": [
+        "masque"
+      ],
+      "skip": [],
+      "keepsake": "masque[mask]",
+      "line": "A mask from the seventh room."
+    },
+    {
+      "story": "hotel",
+      "prefixes": [
+        "hotel_",
+        "stanley"
+      ],
+      "skip": [],
+      "keepsake": "hotel_prop[typewriter]",
+      "line": "The typewriter from the caretaker's office."
+    },
+    {
+      "story": "ghosts_set",
+      "prefixes": [
+        "ghosts_",
+        "barrett_home"
+      ],
+      "skip": [],
+      "keepsake": "ghosts_set[camera]",
+      "line": "The camera the house was filmed with."
+    },
+    {
+      "story": "three_fingers",
+      "prefixes": [
+        "cottage"
+      ],
+      "skip": [],
+      "keepsake": "cottage[chessboard]",
+      "line": "The chessboard from the cottage on the mill road."
+    },
+    {
+      "story": "costume_night",
+      "prefixes": [
+        "costume_prop"
+      ],
+      "skip": [],
+      "keepsake": "costume_prop[candy_bowl]",
+      "line": "The candy bowl from the contest on the beach."
+    },
+    {
+      "story": "movie_night",
+      "prefixes": [
+        "movie_"
+      ],
+      "skip": [],
+      "keepsake": "movie_prop[projector]",
+      "line": "The projector from the dock."
+    },
+    {
+      "story": "winter_lake",
+      "prefixes": [
+        "winter_prop"
+      ],
+      "skip": [],
+      "keepsake": "winter_prop[snowballs]",
+      "line": "A heap of snowballs from the near bank."
+    },
+    {
+      "story": "elk_lot",
+      "prefixes": [
+        "roadhouse"
+      ],
+      "skip": [],
+      "keepsake": "roadhouse[neon_beer]",
+      "line": "The beer sign from the window of the Last Stop."
+    },
+    {
+      "story": "elk_fan",
+      "prefixes": [
+        "fan_ladder",
+        "elk_tape"
+      ],
+      "skip": [],
+      "keepsake": "elk_tape",
+      "line": "A strip of the tape from the fan room."
+    },
+    {
+      "story": "holy_rabbit",
+      "prefixes": [
+        "rabbit_carved_trunk"
+      ],
+      "skip": [],
+      "keepsake": "rabbit_carved_trunk",
+      "line": "The trunk with the carving, from the hollow."
+    },
+    {
+      "story": "ted_caver",
+      "prefixes": [
+        "cave_"
+      ],
+      "skip": [],
+      "keepsake": "cave_marks",
+      "line": "The marked rock from the cave."
+    },
+    {
+      "story": "barn_well",
+      "prefixes": [
+        "well_",
+        "farm_"
+      ],
+      "skip": [],
+      "keepsake": "well_cover",
+      "line": "The cover off the well."
+    },
+    {
+      "story": "goatman",
+      "prefixes": [
+        "trailer_"
+      ],
+      "skip": [],
+      "keepsake": "trailer_supper_table",
+      "line": "The supper table from the trailer."
+    },
+    {
+      "story": "zampano_courtyard",
+      "prefixes": [
+        "zampano_cabinet"
+      ],
+      "skip": [],
+      "keepsake": "zampano_cabinet",
+      "line": "Zampanò's cabinet of drawers."
+    },
+    {
+      "story": "hospital",
+      "prefixes": [
+        "night_ward"
+      ],
+      "skip": [],
+      "keepsake": "night_ward[call_dome]",
+      "line": "The call light from over a bed on the night ward."
+    },
+    {
+      "story": "layered_man",
+      "prefixes": [
+        "cellar_flesh"
+      ],
+      "skip": [],
+      "keepsake": "cellar_flesh",
+      "line": "From the cellar wall."
+    },
+    {
+      "story": "backseat",
+      "prefixes": [
+        "backseat_car"
+      ],
+      "skip": [],
+      "keepsake": "backseat_car",
+      "line": "The back seat."
+    },
+    {
+      "story": "child_room",
+      "prefixes": [
+        "nursery",
+        "child_wallpaper"
+      ],
+      "skip": [
+        "nursery_wallpaper"
+      ],
+      "keepsake": "nursery[music_box]",
+      "line": "The music box from the bedroom with no way out."
+    },
+    {
+      "story": "crimson_hall",
+      "prefixes": [
+        "crimson_floor"
+      ],
+      "skip": [],
+      "keepsake": "crimson_floor",
+      "line": "A board from the crimson hall's floor."
+    },
+    {
+      "story": "whale",
+      "prefixes": [
+        "institute_",
+        "pigeonhole"
+      ],
+      "skip": [],
+      "keepsake": "pigeonhole",
+      "line": "Box 7 from the post room."
+    },
+    {
+      "story": "elk_carcasses",
+      "prefixes": [
+        "yacht_"
+      ],
+      "skip": [],
+      "keepsake": "yacht_porthole",
+      "line": "A porthole from the yacht."
+    },
+    {
+      "story": "camp_blood",
+      "prefixes": [
+        "camp_"
+      ],
+      "skip": [],
+      "keepsake": "camp_session[initials]",
+      "line": "The plank from the mess hall, with initials cut into it."
+    },
+    {
+      "story": "model_home",
+      "prefixes": [
+        "model_home_",
+        "tract_"
+      ],
+      "skip": [],
+      "keepsake": "tract_house[family_photo]",
+      "line": "The family photograph from the model home."
+    },
+    {
+      "story": "drowned_town",
+      "prefixes": [
+        "proofrock_",
+        "school_desk",
+        "town_fixture",
+        "town_sign"
+      ],
+      "skip": [],
+      "keepsake": "school_desk",
+      "line": "A desk from Indian Lake High."
+    },
+    {
+      "story": "harrigan",
+      "prefixes": [
+        "harrigan_finish"
+      ],
+      "skip": [],
+      "keepsake": "harrigan_finish[plaque]",
+      "line": "The plaque from Mr. Harrigan's casket."
+    },
+    {
+      "story": "floorboards",
+      "prefixes": [
+        "loose_floorboard"
+      ],
+      "skip": [],
+      "keepsake": "loose_floorboard",
+      "line": "The loose board from the floor."
+    },
+    {
+      "story": "not_yet",
+      "prefixes": [
+        "not_yet_"
+      ],
+      "skip": [],
+      "keepsake": "not_yet_fitting[chart]",
+      "line": "The chart from the foot of the cot."
+    },
+    {
+      "story": "last_seen",
+      "prefixes": [
+        "last_seen_"
+      ],
+      "skip": [],
+      "keepsake": "last_seen_fitting[bench]",
+      "line": "A bench from the park."
+    },
+    {
       "story": "cold_room",
-      "prefixes": ["cold_room_"],
+      "prefixes": [
+        "cold_room_"
+      ],
       "skip": [],
       "keepsake": "cold_room_fitting[crucifix]",
       "line": "Off the nail over the bed in the back room. It hangs the right way up."
     },
     {
       "story": "waxworks",
-      "prefixes": ["waxworks_"],
+      "prefixes": [
+        "waxworks_"
+      ],
       "skip": [],
       "keepsake": "waxworks_fitting[plinth]",
       "line": "The stand under the twenty-fourth figure. Nobody painted a plaque for it."

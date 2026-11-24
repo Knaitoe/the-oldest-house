@@ -31,13 +31,26 @@ def text(obj):
     return json.dumps(obj, indent=2) + '\n'
 
 
+def assembled(block):
+    """Mirrors StoryPieces.assembled: two-high blocks and blocks built of parts get no item."""
+    d = json.loads((ASSETS / 'blockstates' / f'{block}.json').read_text())
+    keys = set()
+    for k in d.get('variants', {}):
+        keys.update(kv for kv in k.split(',') if kv)
+    for part in d.get('multipart', []):
+        w = part.get('when', {})
+        for c in w.get('OR', [w]):
+            keys.update(f'{a}={v}' for a, b in c.items() for v in str(b).split('|'))
+    return 'half=upper' in keys or any(kv.startswith(('part=', 'piece=')) for kv in keys)
+
+
 def pieces():
     manifest = json.loads((RES / 'the_oldest_house/story_pieces.json').read_text())
     blocks = sorted(p.stem for p in (ASSETS / 'blockstates').glob('*.json'))
     out = []
     for story in manifest['stories']:
         for block in blocks:
-            if any(block.startswith(p) for p in story['prefixes']) and block not in story['skip']:
+            if any(block.startswith(p) for p in story['prefixes']) and block not in story['skip'] and not assembled(block):
                 out.append(block)
     return sorted(set(out))
 

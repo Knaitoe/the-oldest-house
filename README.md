@@ -2,9 +2,9 @@
 
 *This House Has Ghosts in It* is a horror mod for Minecraft Java Edition 1.21.1 on NeoForge. It is in private development; nothing here is a public release.
 
-Development candidate **0.4.758** lets readers build the stories outside the House. Finishing a story teaches its reader that story's pieces, cut at a stonecutter from what each is made of, and gives them its keepsake once. A piece set down in their own world is furniture. The back bedroom and the waxworks have their sets so far. See [docs/BUILDING_OUTSIDE_0_4_758.md](docs/BUILDING_OUTSIDE_0_4_758.md).
+Development candidate **0.4.759** gives every story with blocks of its own a set to build with outside the House and a keepsake: 69 stories, from the Pell house's floor lamp to the first marker above Drisking. See [docs/BUILDING_OUTSIDE_0_4_758.md](docs/BUILDING_OUTSIDE_0_4_758.md).
 
-Previous: 0.4.757 finishes the cold room: from the ninth page she makes each reader an offer from their own records, the blank last page waits for someone to say "Take me instead.", and if nobody does, the morning comes. The House now deals it, and it is a Witness source of the understanding kind. See [docs/COLD_ROOM_0_4_757.md](docs/COLD_ROOM_0_4_757.md).
+Previous: 0.4.758 lets readers build the stories outside the House. Finishing a story teaches its reader that story's pieces, cut at a stonecutter from what each is made of, and gives them its keepsake once. A piece set down in their own world is furniture. The back bedroom and the waxworks have their sets so far. See [docs/BUILDING_OUTSIDE_0_4_758.md](docs/BUILDING_OUTSIDE_0_4_758.md).
 
 Earlier: 0.4.707 finished night one of *The list* (part 3b; `docs/THE_LIST_0_4_707.md`), and the House now deals the town: from ten crossings down, to a reader who has not had night one, five readers to a town. The first through the door is the one Deek picks, and the night begins round them. After the reader comes to under the water tower, Amber is up at her front window with a page out of a notebook. Each reader who passes in the street gets a page of their own held up to the glass, then a second: TOMORROW. BACK DOOR. AFTER TEN. A knock on her glass is answered. Night one ends when the one who went in lies down on their own bed, or when first light comes round on its own; each reader keeps that they have had it and where they were when it got light.
 

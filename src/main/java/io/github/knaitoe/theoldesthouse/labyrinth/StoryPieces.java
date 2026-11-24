@@ -102,7 +102,7 @@ public final class StoryPieces {
         e.<Item>register(Registries.ITEM,helper->{
             for(var entry:blocks.entrySet()){
                 var path=entry.getKey();var block=entry.getValue();var set=setFor(path);
-                if(set.skip.contains(path)||Item.BY_BLOCK.containsKey(block))continue;
+                if(set.skip.contains(path)||Item.BY_BLOCK.containsKey(block)||assembled(block))continue;
                 var id=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,path);
                 if(BuiltInRegistries.ITEM.containsKey(id))continue;
                 helper.register(id,new PieceItem(block,new Item.Properties()));
@@ -117,6 +117,12 @@ public final class StoryPieces {
             }
         });
     }
+    /** Left out: a block that stands two high (a door, a wardrobe) or is built of parts; one item would place only a part of it. */
+    private static boolean assembled(Block b){
+        var def=b.getStateDefinition();
+        return def.getProperty("half") instanceof net.minecraft.world.level.block.state.properties.EnumProperty<?> half&&half.getPossibleValues().contains(net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER)
+            ||def.getProperty("part")!=null||def.getProperty("piece")!=null;
+    }
     private static void add(List<Piece> pieces,Piece p){pieces.add(p);BY_RECIPE.put(p.recipe,p);}
     private static ResourceLocation recipeId(String path,@Nullable String kind){
         return ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"piece/"+path+(kind==null?"":"/"+kind));
@@ -126,6 +132,8 @@ public final class StoryPieces {
     /** Every piece item, in block order. */
     public static List<Item> items(){var out=new ArrayList<Item>();for(var b:STORY_OF.keySet())out.add(b.asItem());out.sort(Comparator.comparing(i->BuiltInRegistries.ITEM.getKey(i).getPath()));return out;}
     public static @Nullable WitnessAccount.Story story(Block b){return STORY_OF.get(b);}
+    /** Every story the manifest names, in its order. */
+    public static List<WitnessAccount.Story> stories(){var out=new ArrayList<WitnessAccount.Story>();for(var t:SETS)out.add(t.story);return out;}
     public static List<Piece> pieces(WitnessAccount.Story story){return BY_STORY.getOrDefault(story,List.of());}
     public static boolean isPieceRecipe(ResourceLocation id){return BY_RECIPE.containsKey(id);}
     public static @Nullable Piece keepsake(WitnessAccount.Story story){
