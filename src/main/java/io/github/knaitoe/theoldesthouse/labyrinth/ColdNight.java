@@ -87,6 +87,7 @@ public final class ColdNight {
             var w=who(l,b);var readers=w.get(0);var watchers=w.get(1);
             if(readers.isEmpty()){if(++n.empty>=EMPTY){putBack(l,b);NIGHTS.remove(s);ColdRoom.ensure(l,b);}continue;}
             n.empty=0;n.t++;
+            if(n.t%40==15)ColdRoom.ensure(l,b,true);
             if(n.t%20==10)ColdRite.tick(l,b,n,readers);
             if(ColdRite.quiet(n)||n.rite.over())continue;
             if(n.t>=FIRST_STIR&&n.t-n.lastStir>=STIR&&n.t%20==0)stir(l,b,n,readers,watchers);

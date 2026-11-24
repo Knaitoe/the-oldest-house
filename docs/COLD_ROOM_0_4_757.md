@@ -83,3 +83,9 @@ noticed.
   spectator is not finished; the account names the other reader; nothing in the room moves after.
 - The earlier cold room cases; the group, cast and two-reader sweeps; the Witness pool, stair company, Pell forged lines and
   advancement cases.
+
+## The cast made late
+
+The mother, her daughter and the priest are made when a reader comes in. Where the house's entities had not loaded by then nobody was
+made, and nothing tried again while anyone was inside (CI run 1787: the cast sweep met nobody in 600 ticks). While readers are in
+the house, the night now makes whoever is missing every two seconds and leaves the others where they are.

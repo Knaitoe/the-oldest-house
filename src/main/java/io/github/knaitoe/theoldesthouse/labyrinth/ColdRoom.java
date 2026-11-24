@@ -59,7 +59,13 @@ public final class ColdRoom {
         return null;
     }
     /** Each of the three is made where they keep if they are not there; nobody is made where the house's entities are not loaded. */
-    public static void ensure(ServerLevel l,BlockPos b){
+    public static void ensure(ServerLevel l,BlockPos b){ensure(l,b,false);}
+    /**
+     * 0.4.757 (CI run 1787): the cast is made when a reader comes in, but where the house's entities had not loaded by then nobody was
+     * made at all, and nothing tried again while anyone was inside. The night now calls this every two seconds with {@code missingOnly},
+     * making whoever is still missing and leaving the rest where they are.
+     */
+    public static void ensure(ServerLevel l,BlockPos b,boolean missingOnly){
         for(int who=0;who<CAST;who++){
             var at=b.offset(home(who));
             if(!l.isLoaded(at)||!l.areEntitiesLoaded(ChunkPos.asLong(at)))continue;
@@ -69,7 +75,7 @@ public final class ColdRoom {
                 a.bind(PLACE,null);a.appearance(LiteraryActor.STRANGER,FIRST+who);
                 place(a,b,who);
                 if(!l.addFreshEntity(a))continue;
-            }
+            }else if(missingOnly)continue;
             place(a,b,who);
         }
     }
