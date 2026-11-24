@@ -159,4 +159,33 @@ public final class StoryPiecesTests {
             });
         }catch(RuntimeException ex){NativeTestPlayers.remove(p);throw ex;}
     }
+
+    @GameTest(template="empty",batch="pieces",timeoutTicks=200)
+    public static void aPistonCannotMoveAPieceSetDown(GameTestHelper h){
+        var p=NativeTestPlayers.survival(h,"piece_piston");var l=h.getLevel();
+        var floor=h.absolutePos(new BlockPos(3,1,2));var at=floor.above();var piston=at.west();var power=piston.west();var beyond=at.east();
+        try{
+            for(var c:new BlockPos[]{floor,floor.west(),floor.west(2),floor.east()})l.setBlockAndUpdate(c,Blocks.STONE.defaultBlockState());
+            for(var c:new BlockPos[]{at,piston,power,beyond})l.setBlockAndUpdate(c,Blocks.AIR.defaultBlockState());
+            var stack=StoryPieces.keepsake(COLD).stack();p.setItemInHand(InteractionHand.MAIN_HAND,stack);
+            p.moveTo(at.getX()+.5,at.getY(),at.getZ()+2.5,180,20);
+            var result=stack.useOn(new UseOnContext(p,InteractionHand.MAIN_HAND,new BlockHitResult(Vec3.atCenterOf(floor).add(0,.5,0),Direction.UP,floor,false)));
+            h.assertTrue(result.consumesAction()&&PlacedPieces.has(l,at),"the piece is set down and remembered: "+result);
+            var placed=l.getBlockState(at);
+            l.setBlockAndUpdate(piston,Blocks.STICKY_PISTON.defaultBlockState().setValue(net.minecraft.world.level.block.piston.PistonBaseBlock.FACING,Direction.EAST));
+            l.setBlockAndUpdate(power,Blocks.REDSTONE_BLOCK.defaultBlockState());
+            h.runAfterDelay(6,()->{
+                h.assertTrue(l.getBlockState(at)==placed,"a piston does not push it: "+l.getBlockState(at)+" beyond "+l.getBlockState(beyond));
+                h.assertTrue(!l.getBlockState(piston).getValue(net.minecraft.world.level.block.piston.PistonBaseBlock.EXTENDED),"the piston stays in");
+                l.setBlockAndUpdate(power,Blocks.AIR.defaultBlockState());
+                h.runAfterDelay(6,()->{
+                    h.assertTrue(l.getBlockState(at)==placed&&PlacedPieces.has(l,at),"nor pulls it, and it is still remembered there");
+                    h.assertTrue(p.gameMode.destroyBlock(at),"its reader can still break it");
+                    l.getEntitiesOfClass(ItemEntity.class,new AABB(at).inflate(2)).forEach(d->d.discard());
+                    l.setBlockAndUpdate(piston,Blocks.AIR.defaultBlockState());
+                    NativeTestPlayers.remove(p);h.succeed();
+                });
+            });
+        }catch(RuntimeException ex){NativeTestPlayers.remove(p);throw ex;}
+    }
 }

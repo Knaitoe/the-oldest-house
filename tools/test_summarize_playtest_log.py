@@ -184,6 +184,37 @@ class JourneyMeasures(unittest.TestCase):
                     event(5, "session_end"))["pacing"]
         self.assertEqual(p["story_stays"], [])
 
+    def test_a_reconnect_inside_a_story_keeps_both_parts_of_the_stay(self):
+        p = metrics(event(0, "session_start", place="cross_hall", inLabyrinth=True, activity="ordinary", session="a"),
+                    event(1, "arrive", place="waxworks", story=True, inLabyrinth=True, activity="story", session="a"),
+                    event(6, "session_end", place="waxworks", inLabyrinth=True, activity="story", session="a"),
+                    event(20, "session_start", place="waxworks", inLabyrinth=True, activity="story", session="b"),
+                    event(24, "location", place="waxworks", inLabyrinth=True, activity="story", session="b"),
+                    event(26, "session_end", place="waxworks", inLabyrinth=True, activity="story", session="b"))["pacing"]
+        self.assertEqual([round(stay["minutes"]) for stay in p["story_stays"]], [5, 6])
+        self.assertEqual(p["story_minutes_by_place"]["waxworks"]["stays"], 2)
+
+    def test_spectating_ends_the_stay(self):
+        p = metrics(event(0, "session_start", place="cross_hall", inLabyrinth=True, activity="ordinary"),
+                    event(1, "arrive", place="waxworks", story=True, inLabyrinth=True, activity="story"),
+                    event(4, "location", place="waxworks", inLabyrinth=False, activity="story", spectator=True),
+                    event(30, "location", place="waxworks", inLabyrinth=False, activity="story", spectator=True),
+                    event(31, "session_end", place="waxworks", inLabyrinth=False, spectator=True))
+        self.assertEqual([round(stay["minutes"]) for stay in p["pacing"]["story_stays"]], [3])
+        self.assertEqual(round(p["labyrinth_minutes"]), 4)
+
+    def test_a_reader_put_out_of_a_story_is_waiting_to_find_it_again(self):
+        p = metrics(event(0, "session_start", place="cross_hall"),
+                    event(1, "arrive", place="cold_room", story=True),
+                    event(5, "story_put_out", place="cold_room"),
+                    event(6, "arrive", place="cross_hall", story=False),
+                    event(14, "arrive", place="cold_room", story=True),
+                    event(20, "story_put_out", place="cold_room"),
+                    event(22, "session_end"))["pacing"]
+        self.assertEqual([round(stay["minutes"]) for stay in p["story_stays"]], [4, 6])
+        self.assertEqual(p["return_gaps"], [{"place": "cold_room", "minutes": 9}])
+        self.assertEqual(p["never_returned"], {"cold_room": 1})
+
     def test_loader_handles_truncated_last_line_without_losing_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "log.jsonl"

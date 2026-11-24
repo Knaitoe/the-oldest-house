@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * 0.4.752, the waxworks, part 3b (docs/WAXWORKS_0_4_752.md): the bank of six monitors in the office. A hand on a screen sits the reader
- * down at them: the six feeds, drawn on that reader's client from the museum itself by its six cameras (WaxCameras). The feed they have
+ * down at them: the six feeds, the one they have up drawn live on that reader's client from the museum itself (WaxCameras, 0.4.761: the other five stand dark). The feed they have
  * up is watched: nothing moves in a gallery whose feed somebody is watching. "Something's moved" on a feed notes an irregularity the
  * feed shows; on a feed that shows nothing out of place it notes nothing, and the next mark waits two seconds.
  */

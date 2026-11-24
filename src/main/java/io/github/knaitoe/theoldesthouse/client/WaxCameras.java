@@ -40,6 +40,8 @@ public final class WaxCameras {
     private static final DynamicTexture[] images=new DynamicTexture[FEEDS];private static final ResourceLocation[] ids=new ResourceLocation[FEEDS];
     private static final int[] frames=new int[FEEDS];
     private static TextureTarget target;private static Lens lens;private static boolean recording;private static int channel,cycle;
+    /** 0.4.761: the one feed up on the bank. Only it is drawn, as only it counts as watched; the other five stand dark. */
+    private static int live;
     private static BlockPos base;private static boolean dark;private static String time="11:52";
     public static boolean recording(){return recording;}
     public static TextureTarget target(){return target;}
@@ -62,7 +64,7 @@ public final class WaxCameras {
     @SubscribeEvent public static void capture(RenderLevelStageEvent event){
         if(event.getStage()!=RenderLevelStageEvent.Stage.AFTER_LEVEL||recording||base==null||dark)return;
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||!(mc.screen instanceof MonitorScreen)||++cycle%2!=0)return;
-        initialize();channel=(channel+1)%FEEDS;
+        initialize();channel=live;
         var cam=WaxSite.CAMERAS.get(channel);var at=Vec3.atCenterOf(base.offset(cam.at()));
         double yaw=Math.toRadians(cam.yaw());at=at.add(-Math.sin(yaw)*.45,-.1,Math.cos(yaw)*.45);
         lens.aim(at,cam.yaw(),channel==5?12F:26F);
@@ -99,13 +101,13 @@ public final class WaxCameras {
     static void stood(){PacketDistributor.sendToServer(new WaxFeedPayload(-1,false));}
 
     public static final class MonitorScreen extends Screen {
-        private int selected;
+        private int selected=live;
         MonitorScreen(){super(Component.literal("Security monitors"));}
         @Override protected void init(){PacketDistributor.sendToServer(new WaxFeedPayload(selected,false));}
         @Override public boolean isPauseScreen(){return false;}
         @Override public void renderBackground(GuiGraphics g,int x,int y,float partial){}
         private int panelW(){return Math.max(48,Math.min(220,Math.min((width-24)/3,(height-64)*4/6)));}
-        private void select(int i){if(i==selected)return;selected=i;PacketDistributor.sendToServer(new WaxFeedPayload(selected,false));}
+        private void select(int i){if(i==selected)return;selected=i;live=i;frames[i]=0;PacketDistributor.sendToServer(new WaxFeedPayload(selected,false));}
         private void note(){PacketDistributor.sendToServer(new WaxFeedPayload(selected,true));}
         @Override public boolean keyPressed(int key,int scan,int mods){
             if(key>=49&&key<=54){select(key-49);return true;}
@@ -126,13 +128,16 @@ public final class WaxCameras {
             for(int i=0;i<FEEDS;i++){
                 int px=left+i%3*w,py=top+i/3*h;
                 if(dark)snow(g,px,py,w,h,now+i*17);
-                else if(ids[i]!=null&&frames[i]>0)g.blit(ids[i],px+1,py+1,0,0,w-2,h-2,w-2,h-2);
-                else g.fill(px+1,py+1,px+w-1,py+h-1,0xff101410);
+                else if(i==selected&&ids[i]!=null&&frames[i]>0)g.blit(ids[i],px+1,py+1,0,0,w-2,h-2,w-2,h-2);
+                else{
+                    g.fill(px+1,py+1,px+w-1,py+h-1,0xff070908);
+                    if(i!=selected)g.drawCenteredString(font,"NO FEED",px+w/2,py+h/2-4,0xff4a524c);
+                }
                 for(int line=py;line<py+h;line+=3)g.fill(px,line,px+w,line+1,0x2a000000);
                 int edge=i==selected?0xffe6e2b8:0xff3a423c;
                 g.fill(px,py,px+w,py+1,edge);g.fill(px,py+h-1,px+w,py+h,edge);g.fill(px,py,px+1,py+h,edge);g.fill(px+w-1,py,px+w,py+h,edge);
                 g.drawString(font,"CAM "+(i+1)+"  "+NAMES[i],px+4,py+4,i==selected?0xffe6e2b8:0xffb9c2b9,false);
-                g.drawString(font,time,px+w-4-font.width(time),py+h-12,0xffb9c2b9,false);
+                if(i==selected)g.drawString(font,"LIVE  "+time,px+w-4-font.width("LIVE  "+time),py+h-12,0xffd9a08a,false);
             }
             int by=top+2*h+8;boolean over=mx>=width/2-70&&mx<width/2+70&&my>=by&&my<by+14;
             g.fill(width/2-70,by,width/2+70,by+14,over?0xff3a423c:0xff222824);
@@ -146,6 +151,6 @@ public final class WaxCameras {
     }
     public static void clear(){
         var mc=Minecraft.getInstance();for(int i=0;i<FEEDS;i++){if(ids[i]!=null)mc.getTextureManager().release(ids[i]);ids[i]=null;images[i]=null;frames[i]=0;}
-        if(target!=null)target.destroyBuffers();target=null;lens=null;recording=false;base=null;dark=false;
+        if(target!=null)target.destroyBuffers();target=null;lens=null;recording=false;base=null;dark=false;live=0;
     }
 }

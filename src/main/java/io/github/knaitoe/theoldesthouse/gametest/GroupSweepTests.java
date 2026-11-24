@@ -35,7 +35,9 @@ import net.neoforged.neoforge.gametest.*;
  * <li>the first reader drops out of the game: the others keep what they have earned, every copy still stands, and nobody else is put
  * out of the story;</li>
  * <li>the first reader comes back as the same player: their door opens onto the copy they were in, and what they had read is still
- * theirs.</li>
+ * theirs;</li>
+ * <li>a reader who has already resolved the story comes in among them (not in a private story): nothing of theirs is repeated or lost,
+ * and nothing reaches the others.</li>
  * </ul>
  */
 @GameTestHolder(TheOldestHouse.MOD_ID+"_group") @PrefixGameTestTemplate(false)
@@ -226,11 +228,56 @@ public final class GroupSweepTests {
                 if(read.contains(back.getUUID()))h.assertTrue(f.own(back,place).getBoolean("Read_Source"),tag()+": the first reader's reading is still theirs when they come back");
                 h.runAfterDelay(AFTER,()->{
                     others(0,"after the first reader came back");
-                    h.succeed();
-                    close();
+                    veteran();
                 });
             });
         }
+        /**
+         * 0.4.760 (the owner's review: mixed-progress groups): a reader who has already resolved this story comes in with the others.
+         * Their credit is neither repeated nor lost, none of it reaches anyone else, and nobody else's place, life or reading changes.
+         * A private story's copies are all held by now and nobody shares them, so there a veteran cannot be among the others at all.
+         */
+        void veteran(){
+            var story=WitnessAccount.Story.of(place.id());
+            if(story==null||kind==Kind.PRIVATE){finish();return;}
+            var vet=NativeTestPlayers.survival(h,"group_vet_"+place.ordinal());f.players.add(vet);hall(vet);
+            WitnessAccount.resolve(f.data(),vet.getUUID(),story,"earlier");
+            int vetCount=WitnessAccount.count(f.data(),vet.getUUID());
+            var had=new HashMap<UUID,Boolean>();for(var p:group)had.put(p.getUUID(),WitnessAccount.has(f.data(),p.getUUID(),story));
+            // A shared story has one room; a party fills each copy before the next; a story of their own gives them a copy nobody is in.
+            int want=kind==Kind.SHARED?0:kind==Kind.PARTY?group.size()/SceneInstances.party(place):1;
+            // A Pell house is let to a reader whose ending has landed only while nobody is in it: with every house held, their door opens
+            // onto a hall (SceneInstances.pell), and the readers inside are left as they are.
+            if(place==LabyrinthPlace.PELL_HOUSE){
+                var e=SceneInstances.enter(vet,place);
+                h.assertTrue(e.door()==null&&!e.waiting(),tag()+": a reader who had finished it is not let into a house others are in: "+e);
+                h.assertTrue(WitnessAccount.count(f.data(),vet.getUUID())==vetCount,tag()+": nor credited again");
+                h.runAfterDelay(AFTER,()->{others(0,"with a reader who had finished it turned away");f.players.remove(vet);NativeTestPlayers.remove(vet);finish();});
+                return;
+            }
+            final LabyrinthData.Door[] door={null};final int[] k={-1};
+            until(h,()->{
+                if(kind==Kind.SHARED){door[0]=SceneInstances.entry(f.data(),place,0);k[0]=0;return door[0]!=null;}
+                var e=SceneInstances.enter(vet,place);
+                if(e.door()==null||SceneInstances.building())return false;
+                door[0]=e.door();k[0]=e.copy();return true;
+            },2400,()->tag()+": the door never opened for a reader who had finished the story",()->{
+                h.assertTrue(k[0]==want,tag()+": a reader who had finished it goes into copy "+want+", where there is room, not "+k[0]);
+                arrive(vet,bases.get(k[0]),door[0]);
+                h.runAfterDelay(AFTER,()->{
+                    h.assertTrue(WitnessAccount.has(f.data(),vet.getUUID(),story),tag()+": the reader who had finished it keeps the story");
+                    h.assertTrue(WitnessAccount.count(f.data(),vet.getUUID())==vetCount,tag()+": coming back is not credited twice");
+                    for(int i=0;i<group.size();i++){
+                        var p=group.get(i);
+                        h.assertTrue(WitnessAccount.has(f.data(),p.getUUID(),story)==had.get(p.getUUID()),tag()+": reader "+(i+1)+"'s account of the story is not changed by a reader who had finished it");
+                    }
+                    others(0,"with a reader who had finished it among them");
+                    f.players.remove(vet);NativeTestPlayers.remove(vet);
+                    finish();
+                });
+            });
+        }
+        void finish(){h.succeed();close();}
         /** Waits in the hall at the House's origin. */
         void hall(ServerPlayer p){p.teleportTo(f.in,f.origin.getX()+.5,f.origin.getY()+2,f.origin.getZ()+.5,0,0);p.setNoGravity(true);p.setDeltaMovement(Vec3.ZERO);}
         /** In at a copy's base as its door brings a reader: onto the floor just inside, then every scene's own welcome. */

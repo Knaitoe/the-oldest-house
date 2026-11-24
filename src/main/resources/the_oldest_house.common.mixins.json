@@ -24,7 +24,8 @@
     "CompoundContainerAccess",
     "StonecutterPiecesMixin",
     "RecipeManagerPiecesMixin",
-    "PieceBreakMixin"
+    "PieceBreakMixin",
+    "PiecePistonMixin"
   ],
   "injectors": {
     "defaultRequire": 1

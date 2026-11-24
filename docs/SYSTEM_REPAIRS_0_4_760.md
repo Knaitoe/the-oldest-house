@@ -27,6 +27,17 @@ boundary: the world, a scene copy, or one reader.
   - The stack overflow of run 1792 (0.4.759 follow-up, `f21ba1ab`) is the reason the hand never goes back through
     `renderSingleBlock`.
 
+### 0.4.761
+
+- **Pistons leave a set-down piece where it is.** A piece outside the House is remembered by where it stands (`PlacedPieces`), so
+  a piston that moved it would leave a piece nobody could break and a record pointing at nothing. Pistons now neither push nor pull
+  a story piece (`PiecePistonMixin`); a piston against one stays in. Case: `StoryPiecesTests.aPistonCannotMoveAPieceSetDown` (a
+  sticky piston powered, then unpowered, beside a piece the reader set down; the piece stays, is still remembered, and still breaks
+  for its reader).
+- **Only the feed up on the bank is live.** All six waxworks monitors used to update while only the selected one counted as
+  watched, so a reader could watch five galleries at a glance while the House treated them as unwatched. Now only the selected feed
+  is drawn, marked LIVE; the other five stand dark with NO FEED. Switching feeds shows black until the new feed's first frame.
+
 ## Pacing measurement
 
 `tools/summarize_playtest_log.py` now reports, for each reader, from the opt-in journey log:
@@ -39,9 +50,35 @@ boundary: the world, a scene copy, or one reader.
 Spectators confer nothing, and minutes are played minutes, as for the existing measures. Two cases cover these
 (`test_pacing_measures_stays_returns_and_progress`, `test_pacing_ignores_a_spectator`).
 
+0.4.761 corrects three ways these numbers misled:
+
+- a reader who reconnects inside a story (no fresh arrival) resumes the stay from the first row back in it, rather than losing it;
+- switching to spectator ends the stay, and spectating minutes are not labyrinth minutes;
+- being put out of a story (`story_put_out`) is an unfinished departure, so the time to find it again is measured too.
+
+Cases: `test_a_reconnect_inside_a_story_keeps_both_parts_of_the_stay`, `test_spectating_ends_the_stay`,
+`test_a_reader_put_out_of_a_story_is_waiting_to_find_it_again`.
+
 These numbers are what frequency and spacing changes should follow. Room-count spacing alone cannot tell whether a stretch with the
 waxworks' twelve-minute shift and The List's nights is too much. The 33-account Witness requirement stays as it is until real
 journeys have been measured.
+
+## Multiplayer checks
+
+- **Mixed progress.** Every story's group sweep (`GroupSweepTests`) now ends with a reader who has already resolved the story
+  coming in among the others (not in a private story, whose copies nobody shares). Their credit is neither repeated nor lost, none of
+  it reaches anyone else, and nobody else's place, life or reading changes.
+- **Reconnect during a committed sequence.** The ten locks that hold a reader in (`LiteraryVignettes.retreatLocked` and
+  `VignetteGate.exitLocked`) were read for what a logout does to them:
+  - kept in saved or shared state, so the lock still holds on return: the Foyer, the Last Stop capture, the closing hall, the
+    storeroom, the stillness and The list's nights (which also play on without a slasher who is away);
+  - finished on return: the cabin's cut completes at login;
+  - reset with the site: Fallow and Last Seen keep their day in memory and reset it once the site has been empty for a while, so a
+    reader who comes back late finds a fresh day rather than a held one.
+
+  Only Uncanny, Holloway and the clapping game have a case that logs a reader out under the lock and back in. The other seven are
+  the next cases to write, each in its own story's tests, since each lock is reached only by playing that story to it.
+- **Leaving before the account is read** is not yet covered.
 
 ## Still to do, in the review's order
 

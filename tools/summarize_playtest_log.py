@@ -133,11 +133,25 @@ def pacing(rows):
             stays.append(open_stay)
             open_stay = None
 
+    def open_at(row, place):
+        nonlocal open_stay
+        open_stay = {"place": place, "start": row["_minute"], "resolved": False}
+
     for row in rows:
-        if row.get("spectator"):
-            continue
         name, place = row["event"], row.get("place")
-        if name == "arrive" and row.get("_inside"):
+        # Leaving a story, by the door or put out of it, ends the stay; unresolved, it is a story to find again.
+        if name in {"story_leave", "story_put_out"}:
+            close(row)
+            if place and (name == "story_put_out" or not row.get("resolved")):
+                left[place] = row["_minute"]
+            continue
+        # A spectator, a refuge or the end of a session is no participation: the stay ends there.
+        if name == "session_end" or row.get("spectator") or not row.get("_inside"):
+            close(row)
+            continue
+        if open_stay and place and place != open_stay["place"]:
+            close(row)
+        if name == "arrive":
             close(row)
             if place in seen:
                 revisits[place] += 1
@@ -145,17 +159,19 @@ def pacing(rows):
             if place in left:
                 gaps.append({"place": place, "minutes": row["_minute"] - left.pop(place)})
             if row.get("story"):
-                open_stay = {"place": place, "start": row["_minute"], "resolved": False}
-        elif name == "story_resolve" and row.get("_inside"):
+                open_at(row, place)
+            continue
+        if name == "story_resolve":
             resolved_at.append(row["_minute"])
             if open_stay:
                 open_stay["resolved"] = True
-        elif name == "story_leave":
-            close(row)
-            if not row.get("resolved") and place:
-                left[place] = row["_minute"]
-        elif name in {"session_end", "session_start"} or not row.get("_inside"):
-            close(row)
+            continue
+        # Back in a story room without an arrival (a reconnect inside it, or the end of spectating): the stay resumes.
+        if open_stay is None and place and row.get("_activity") == "story":
+            if place in left:
+                gaps.append({"place": place, "minutes": row["_minute"] - left.pop(place)})
+            seen.add(place)
+            open_at(row, place)
     if open_stay and rows:
         close(rows[-1])
     for place in left:
@@ -212,7 +228,7 @@ def summarize(events):
                 if name in {"story_resolve", "note_scene_enter", "strangeness"} or name == "arrive" and event.get("story"):
                     quiet = 0
                 minute = (played_ms + time - start) / MINUTE
-                row = dict(event, _minute=minute, _session=index, _inside=current[0])
+                row = dict(event, _minute=minute, _session=index, _inside=current[0], _activity=current[1])
                 annotated.append(row)
                 key = None
                 if name == "opening_stage":
