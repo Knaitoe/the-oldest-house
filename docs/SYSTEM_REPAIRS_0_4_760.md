@@ -38,6 +38,31 @@ boundary: the world, a scene copy, or one reader.
   watched, so a reader could watch five galleries at a glance while the House treated them as unwatched. Now only the selected feed
   is drawn, marked LIVE; the other five stand dark with NO FEED. Switching feeds shows black until the new feed's first frame.
 
+### 0.4.762: endings
+
+The owner's next pass is consistency at story endings: does the physical outcome register, does its aftermath have time to land, and
+can every surviving reader leave? The group sweep (`GroupSweepTests`) now ends every story with a living reader coming to the end
+while the others are still in it. The reader is made ready and reads their account where it lies (the diner, the state route, the
+ward's drawer and the foyer give the end by their own act, and there it is given through the reader). Then:
+
+- the account resolves the story for that reader, and for nobody else unless the story is one the others follow as witnesses;
+- 200 ticks later the reader is alive and still in the story, not put out before the end has landed;
+- the reader can leave, and nobody who could leave before is held because they finished.
+
+What it found:
+
+- **A finished reader held by someone else's hunt.** In the stillness, a later reader passing halfway brings the thing in, and while
+  it is in the hall nobody leaves; that held a reader whose story there was already over. The closing hall held the same way while a
+  run went on. Both locks now let a reader whose story is complete go (`Stillness.locked`, `ClosingHall.locked`). Case:
+  `StillnessTests.aReaderWhoseStoryIsOverIsNotHeldByAnotherReadersHunt`.
+- **Being carried out was invisible to the pacing numbers.** A reader taken back to the hall under a fade
+  (`LabyrinthDoors.sendBack`) other than by a failure left no record. It now logs `story_sent_back` with whether the story was
+  resolved, and the summarizer counts an unresolved one as a story to find again. Case:
+  `test_a_reader_carried_out_of_a_story_is_tracked_like_one_who_left`.
+
+The sweep reads each account with the reader made ready; the story's own way to its end (the act, the choice, the fall) stays in
+each story's own tests.
+
 ## Pacing measurement
 
 `tools/summarize_playtest_log.py` now reports, for each reader, from the opt-in journey log:
@@ -90,4 +115,4 @@ journeys have been measured.
    regain bearings.
 4. Pivotal moments seen from the reader's position in darkness, extending the actual-client proofs to the older catalogue.
 
-No layout, protocol or Witness change. Version 0.4.760.
+No layout, protocol or Witness change. Version 0.4.762.

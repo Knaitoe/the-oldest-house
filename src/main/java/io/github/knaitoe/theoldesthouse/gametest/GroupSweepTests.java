@@ -36,6 +36,8 @@ import net.neoforged.neoforge.gametest.*;
  * out of the story;</li>
  * <li>the first reader comes back as the same player: their door opens onto the copy they were in, and what they had read is still
  * theirs;</li>
+ * <li>one living reader comes to the end and reads their account: it is theirs alone, they are still alive and in the story a while
+ * later and free to leave, and nobody else is held because they finished;</li>
  * <li>a reader who has already resolved the story comes in among them (not in a private story): nothing of theirs is repeated or lost,
  * and nothing reaches the others.</li>
  * </ul>
@@ -47,6 +49,8 @@ public final class GroupSweepTests {
     private static final int TIMEOUT=30000;
     /** How long the others are watched after the first drops out, and after they come back. */
     static final int AFTER=60;
+    /** How long after reading their account a reader is watched: the aftermath's time to land. */
+    static final int AFTER_END=200;
     private static LiteraryTests.Fixture open;
 
     /** How a story's door takes a group in. */
@@ -233,13 +237,54 @@ public final class GroupSweepTests {
             });
         }
         /**
+         * 0.4.762 (the owner: "consistency at story endings: does the physical outcome register, does its aftermath have time to land,
+         * and can every surviving player leave?"). One living reader, with the others still in the story, comes to the end and reads
+         * their account. It resolves their story and nobody else's; a while later they are still alive and still in the story, not
+         * put out before the end has landed; and neither they nor any other living reader is held from leaving.
+         * The story's own way to the end is played in its own tests; here the reader is made ready, so every story's account is read
+         * with a group around it.
+         */
+        void ending(){
+            var story=WitnessAccount.Story.of(place.id());
+            if(story==null||!paper(place)){finish();return;}
+            ServerPlayer p=null;for(int i=group.size()-1;i>=0;i--)if(group.get(i).isAlive()){p=group.get(i);break;}
+            if(p==null){finish();return;}
+            final var reader=p;
+            var had=new HashMap<UUID,Boolean>();for(var q:group)had.put(q.getUUID(),WitnessAccount.has(f.data(),q.getUUID(),story));
+            // A reader still playing may be held by a sequence they are committed to; one reader's ending must not hold anyone new.
+            var held=new HashSet<UUID>();for(var q:group)if(q.isAlive()&&LiteraryVignettes.retreatLocked(q))held.add(q.getUUID());
+            var own=f.own(reader,place);own.putBoolean("Ready",true);LiteraryVignettes.save(f.data(),reader.getUUID(),place,own);
+            // A reader ready in the stillness has stood and been counted, so walking to the account sets nothing off for the rest.
+            if(place==LabyrinthPlace.STILLNESS)Stillness.edit(l.getServer(),t->{var list=t.getList("Done",net.minecraft.nbt.Tag.TAG_STRING);list.add(net.minecraft.nbt.StringTag.valueOf(reader.getStringUUID()));t.put("Done",list);});
+            if(ELSEWHERE.contains(place)){
+                // The account is handed over, or the story resolves, by the story's own act (its own tests read it); the end is given
+                // the way that act gives it, through the reader.
+                WitnessAccount.resolve(reader,story,"sweep");own=f.own(reader,place);own.putBoolean("Completed",true);LiteraryVignettes.save(f.data(),reader.getUUID(),place,own);
+            }else{
+                var b=LiteraryVignettes.base(reader,place);
+                var at=place==LabyrinthPlace.TUNNEL_PERIPHERY?TunnelPassage.account(l,b):LiteraryRooms.ending(place);
+                try{f.read(reader,place,at);}catch(GameTestAssertException e){throw new GameTestAssertException(tag()+": the ready reader's account at "+at.toShortString()+" opens and reads: "+e.getMessage());}
+            }
+            h.assertTrue(WitnessAccount.has(f.data(),reader.getUUID(),story),tag()+": reading their account resolves the story for the reader who read it");
+            // A story the others can follow gives them its end as witnesses (VignetteThreads.ended); any other keeps it to its reader.
+            if(!SharedVignettes.followable(place))for(var q:group)if(q!=reader)h.assertTrue(WitnessAccount.has(f.data(),q.getUUID(),story)==had.get(q.getUUID()),tag()+": one reader's ending is not "+q.getGameProfile().getName()+"'s");
+            h.runAfterDelay(AFTER_END,()->{
+                h.assertTrue(reader.isAlive(),tag()+": the reader who finished is alive "+AFTER_END+" ticks after their account");
+                h.assertTrue(LiteraryVignettes.inside(reader,place),tag()+": the reader who finished is still in the story "+AFTER_END+" ticks after their account, not put out before it lands (at "+reader.blockPosition().toShortString()+" in "+reader.level().dimension().location()+")");
+                h.assertTrue(!LiteraryVignettes.retreatLocked(reader),tag()+": the reader who has finished can leave");
+                for(var q:group)if(q!=reader&&q.isAlive()&&!held.contains(q.getUUID()))h.assertTrue(!LiteraryVignettes.retreatLocked(q),tag()+": "+q.getGameProfile().getName()+", free to leave before, is not held because another reader finished");
+                others(0,"after one reader's ending");
+                finish();
+            });
+        }
+        /**
          * 0.4.760 (the owner's review: mixed-progress groups): a reader who has already resolved this story comes in with the others.
          * Their credit is neither repeated nor lost, none of it reaches anyone else, and nobody else's place, life or reading changes.
          * A private story's copies are all held by now and nobody shares them, so there a veteran cannot be among the others at all.
          */
         void veteran(){
             var story=WitnessAccount.Story.of(place.id());
-            if(story==null||kind==Kind.PRIVATE){finish();return;}
+            if(story==null||kind==Kind.PRIVATE){ending();return;}
             var vet=NativeTestPlayers.survival(h,"group_vet_"+place.ordinal());f.players.add(vet);hall(vet);
             WitnessAccount.resolve(f.data(),vet.getUUID(),story,"earlier");
             int vetCount=WitnessAccount.count(f.data(),vet.getUUID());
@@ -252,7 +297,7 @@ public final class GroupSweepTests {
                 var e=SceneInstances.enter(vet,place);
                 h.assertTrue(e.door()==null&&!e.waiting(),tag()+": a reader who had finished it is not let into a house others are in: "+e);
                 h.assertTrue(WitnessAccount.count(f.data(),vet.getUUID())==vetCount,tag()+": nor credited again");
-                h.runAfterDelay(AFTER,()->{others(0,"with a reader who had finished it turned away");f.players.remove(vet);NativeTestPlayers.remove(vet);finish();});
+                h.runAfterDelay(AFTER,()->{others(0,"with a reader who had finished it turned away");f.players.remove(vet);NativeTestPlayers.remove(vet);ending();});
                 return;
             }
             final LabyrinthData.Door[] door={null};final int[] k={-1};
@@ -275,7 +320,7 @@ public final class GroupSweepTests {
                     }
                     others(0,"with a reader who had finished it among them");
                     f.players.remove(vet);NativeTestPlayers.remove(vet);
-                    finish();
+                    ending();
                 });
             });
         }
@@ -290,6 +335,9 @@ public final class GroupSweepTests {
         }
     }
     private static boolean paper(LabyrinthPlace place){return LiteraryRooms.isLiterary(place);}
+    /** Stories whose account is not read off a surface the reader is made ready at: handed over (the diner's counter, the route's gate,
+     *  the cot's drawer) or resolved by the foyer's own encounter. */
+    private static final Set<LabyrinthPlace> ELSEWHERE=EnumSet.of(LabyrinthPlace.SECOND_WAITRESS,LabyrinthPlace.STATE_ROUTE,LabyrinthPlace.NOT_YET,LabyrinthPlace.MOTION_LIGHT);
     private static void close(){SceneInstances.fixtureCap(null);SceneInstances.clear();if(open!=null){var f=open;open=null;f.close();}}
 
     // ---------------------------------------------------------------------------------------------- every story

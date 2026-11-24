@@ -83,6 +83,21 @@ public final class StillnessTests {
     }
     @AfterBatch(batch="still_hunt") public static void huntDone(ServerLevel l){close();}
 
+    /** 0.4.762 (the owner: can every surviving player leave?): a reader whose story is over is not held by a hunt a later reader sets off. */
+    @GameTest(template="empty",batch="still_finished",timeoutTicks=600)
+    public static void aReaderWhoseStoryIsOverIsNotHeldByAnotherReadersHunt(GameTestHelper h){
+        var f=fixture(h);var done=f.player("still_done",P);var later=f.player("still_later",P);
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
+            .thenExecute(()->{var own=f.own(done,P);own.putBoolean("Ready",true);own.putBoolean("Completed",true);LiteraryVignettes.save(f.data(),done.getUUID(),P,own);
+                place(f,done,.5,-20.5);place(f,later,.5,-26.5);})
+            .thenWaitUntil(()->h.assertTrue(mode(f)==Stillness.HUNTING,"the later reader past halfway brings it in: "+mode(f)))
+            .thenExecute(()->{
+                h.assertTrue(Stillness.locked(later),"the reader still in it is held while it is in the hall");
+                h.assertTrue(!Stillness.locked(done)&&!LiteraryVignettes.retreatLocked(done),"the reader whose story is over may go");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="still_finished") public static void finishedDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="still_over",timeoutTicks=900)
     public static void stillUnderItTheBreathsAreCountedAndItMovesOn(GameTestHelper h){
         var f=fixture(h);var p=f.player("still_over",P);

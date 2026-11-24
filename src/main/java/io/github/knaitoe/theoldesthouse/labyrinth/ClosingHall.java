@@ -374,8 +374,8 @@ public final class ClosingHall {
         if(st>=1&&st<9&&Mth.floor(r.z)==ClosingHallSite.SQUEEZE_Z&&Mth.floor(r.x)<=-ClosingHallSite.halfWidth(st)&&r.y<1)return true;
         return st==8&&ClosingHallSite.inHall(r);
     }
-    /** While it closes, nobody in the hall goes back out the way they came. */
-    public static boolean locked(ServerPlayer p){if(!inside(p))return false;var b=base(p);if(b==null)return false;var t=set(p.server);return running(t)&&ClosingHallSite.inHall(rel(p,b));}
+    /** While it closes, nobody in the hall goes back out the way they came, but a reader whose story is over here may (0.4.762). */
+    public static boolean locked(ServerPlayer p){if(!inside(p))return false;var b=base(p);if(b==null)return false;var t=set(p.server);return running(t)&&ClosingHallSite.inHall(rel(p,b))&&!own(p).getBoolean("Completed");}
     public static boolean leftSomeone(ServerPlayer p){var own=own(p);return !own.getString("LeftBehind209").isEmpty()&&!own.getBoolean("Completed");}
 
     /** The first door a reader opens on a visit to the dark halls: a small handprint on its inside, for a reader who left a child. */

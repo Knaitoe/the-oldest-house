@@ -263,7 +263,8 @@ public final class Stillness {
             LabyrinthDoors.sendBack(q,2,20,20);}
         for(var o:group)if(o!=q)cue(o,q.getGameProfile().getName()+" moved.");
     }
-    public static boolean locked(ServerPlayer p){if(!inside(p))return false;var b=base(p);if(b==null)return false;return present(mode(set(p.server)));}
+    /** While it is in the room, nobody goes back out the way they came; a reader whose story is over here may go (0.4.762: a later reader's hunt held them). */
+    public static boolean locked(ServerPlayer p){if(!inside(p))return false;var b=base(p);if(b==null)return false;return present(mode(set(p.server)))&&!own(p).getBoolean("Completed");}
     /** Test hook: changes the shared state directly. */
     public static void edit(MinecraftServer s,java.util.function.Consumer<CompoundTag> change){var t=set(s);change.accept(t);set(s,t);}
     @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){LAST.remove(e.getEntity().getUUID());PULSE.remove(e.getEntity().getUUID());}

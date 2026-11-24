@@ -215,6 +215,19 @@ class JourneyMeasures(unittest.TestCase):
         self.assertEqual(p["return_gaps"], [{"place": "cold_room", "minutes": 9}])
         self.assertEqual(p["never_returned"], {"cold_room": 1})
 
+    def test_a_reader_carried_out_of_a_story_is_tracked_like_one_who_left(self):
+        p = metrics(event(0, "session_start", place="cross_hall"),
+                    event(1, "arrive", place="sleeping_king", story=True),
+                    event(4, "story_sent_back", place="sleeping_king", resolved=False),
+                    event(5, "arrive", place="cross_hall", story=False),
+                    event(12, "arrive", place="sleeping_king", story=True),
+                    event(15, "story_resolve", place="sleeping_king"),
+                    event(16, "story_sent_back", place="sleeping_king", resolved=True),
+                    event(18, "session_end"))["pacing"]
+        self.assertEqual([round(stay["minutes"]) for stay in p["story_stays"]], [3, 4])
+        self.assertEqual(p["return_gaps"], [{"place": "sleeping_king", "minutes": 8}])
+        self.assertEqual(p["never_returned"], {})
+
     def test_loader_handles_truncated_last_line_without_losing_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "log.jsonl"

@@ -139,8 +139,9 @@ def pacing(rows):
 
     for row in rows:
         name, place = row["event"], row.get("place")
-        # Leaving a story, by the door or put out of it, ends the stay; unresolved, it is a story to find again.
-        if name in {"story_leave", "story_put_out"}:
+        # Leaving a story, by the door, put out of it or carried out under a fade, ends the stay; unresolved, it is a story to find
+        # again.
+        if name in {"story_leave", "story_put_out", "story_sent_back"}:
             close(row)
             if place and (name == "story_put_out" or not row.get("resolved")):
                 left[place] = row["_minute"]
@@ -296,6 +297,11 @@ def report(players):
             print(f"  left Witness story rooms {len(leaves)} times, {len(retreats)} unresolved (retreats)")
             for place, count in Counter(event.get("place", "?") for event in retreats).most_common(5):
                 print(f"    retreated from {place} x{count}")
+        carried = [event for event in rows if event["event"] == "story_sent_back" and not event.get("resolved")]
+        if carried:
+            print(f"  carried out of Witness story rooms unresolved {len(carried)} times")
+            for place, count in Counter(event.get("place", "?") for event in carried).most_common(5):
+                print(f"    carried out of {place} x{count}")
         put_out = [event for event in rows if event["event"] == "story_put_out"]
         if put_out:
             print(f"  stories that failed the reader and went from their door: {len(put_out)}")

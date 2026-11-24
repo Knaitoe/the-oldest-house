@@ -836,6 +836,7 @@ public final class LabyrinthDoors {
         } else {
             target = back;
         }
+        VignetteGate.carriedOut(player);
         fadeTo(player, target, fadeIn, hold, fadeOut,p->{
             if(back!=null)LabyrinthData.get(p.server).consumeReturn(p.getUUID(),back);
             INSIDE.remove(p.getUUID());

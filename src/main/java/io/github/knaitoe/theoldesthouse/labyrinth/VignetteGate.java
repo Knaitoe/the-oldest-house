@@ -33,6 +33,18 @@ public final class VignetteGate {
         o.putBoolean("Failed",true);save(d,p.getUUID(),o);
         io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"story_put_out","place",place.id(),"depth",d.returnDepth(p.getUUID()));
     }
+    /**
+     * 0.4.762 (the owner: forced ejections escaped the unfinished-return tracking). LabyrinthDoors.sendBack is about to carry this
+     * reader out of a story without its door. A failure has already said so (story_put_out); any other carrying out (a fade at the end,
+     * a sleep, a death averted) is logged here as story_sent_back, resolved or not, so the journey log sees the stay end and, if the
+     * story is unfinished, that it is one to find again.
+     */
+    static void carriedOut(ServerPlayer p){
+        if(p.isSpectator())return;var d=LabyrinthData.get(p.server);var o=own(d,p.getUUID());var place=LabyrinthPlace.byId(o.getString("Place"));if(place==null||!place.isVignette()||o.getBoolean("Failed"))return;
+        var origin=io.github.knaitoe.theoldesthouse.house.HouseSavedData.get(p.server).houseOrigin();if(origin==null||LabyrinthDoors.placeOf(p,origin)!=place)return;
+        var story=WitnessAccount.Story.of(place.id());if(story==null)return;
+        io.github.knaitoe.theoldesthouse.house.PlaytestLog.event(p,"story_sent_back","place",place.id(),"resolved",WitnessAccount.has(d,p.getUUID(),story),"depth",d.returnDepth(p.getUUID()));
+    }
     /** Whether the story this reader is in has failed them this visit, and they are not out of it yet. */
     public static boolean failedVisit(LabyrinthData d,UUID id){return own(d,id).getBoolean("Failed");}
     /** 0.4.599: LabyrinthDoors.sendBack has put this reader in the hall. If their story failed them, it is gone from the door they took. */
