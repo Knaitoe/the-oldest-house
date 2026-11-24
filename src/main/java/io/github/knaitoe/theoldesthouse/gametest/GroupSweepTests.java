@@ -244,8 +244,8 @@ public final class GroupSweepTests {
             WitnessAccount.resolve(f.data(),vet.getUUID(),story,"earlier");
             int vetCount=WitnessAccount.count(f.data(),vet.getUUID());
             var had=new HashMap<UUID,Boolean>();for(var p:group)had.put(p.getUUID(),WitnessAccount.has(f.data(),p.getUUID(),story));
-            // A shared story has one room; a party fills each copy before the next; a story of their own gives them a copy nobody is in.
-            int want=kind==Kind.SHARED?0:kind==Kind.PARTY?group.size()/SceneInstances.party(place):1;
+            // A shared story has one room; a story of their own gives them a copy nobody is in.
+            int want=kind==Kind.SHARED?0:1;
             // A Pell house is let to a reader whose ending has landed only while nobody is in it: with every house held, their door opens
             // onto a hall (SceneInstances.pell), and the readers inside are left as they are.
             if(place==LabyrinthPlace.PELL_HOUSE){
@@ -262,7 +262,9 @@ public final class GroupSweepTests {
                 if(e.door()==null||SceneInstances.building())return false;
                 door[0]=e.door();k[0]=e.copy();return true;
             },2400,()->tag()+": the door never opened for a reader who had finished the story",()->{
-                h.assertTrue(k[0]==want,tag()+": a reader who had finished it goes into copy "+want+", where there is room, not "+k[0]);
+                // A party's copies fill by who is where, so there the check is only that the copy chosen had room for one more.
+                if(kind==Kind.PARTY)h.assertTrue(SceneInstances.held(l.getServer(),place,k[0],vet.getUUID())<SceneInstances.party(place),tag()+": a reader who had finished it goes into a copy with room, not full copy "+k[0]);
+                else h.assertTrue(k[0]==want,tag()+": a reader who had finished it goes into copy "+want+", where there is room, not "+k[0]);
                 arrive(vet,bases.get(k[0]),door[0]);
                 h.runAfterDelay(AFTER,()->{
                     h.assertTrue(WitnessAccount.has(f.data(),vet.getUUID(),story),tag()+": the reader who had finished it keeps the story");
