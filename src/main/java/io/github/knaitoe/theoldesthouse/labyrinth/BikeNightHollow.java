@@ -231,8 +231,9 @@ public final class BikeNightHollow {
     private static void through(ServerLevel l,BikeNight.Night n,ServerPlayer p){
         var own=BikeNight.own(p);var ways=n.hollow.ways.get(p.getUUID());
         own.putBoolean("Through",true);
-        own.putString("ThroughOn",p.getVehicle() instanceof NightBike bike?bike.make().getSerializedName():"foot");
-        own.putBoolean("ThroughOnPegs",p.getVehicle() instanceof NightBike carried&&carried.getFirstPassenger()!=p);
+        // 0.4.763: on the back of Gus's bike is on somebody else's pegs.
+        own.putString("ThroughOn",p.getVehicle() instanceof NightBike bike?bike.make().getSerializedName():p.getVehicle() instanceof PackBike?"pegs":"foot");
+        own.putBoolean("ThroughOnPegs",p.getVehicle() instanceof NightBike carried&&carried.getFirstPassenger()!=p||p.getVehicle() instanceof PackBike);
         own.putString("HollowWays",ways==null||ways.isEmpty()?"plain":String.join(",",ways));
         own.putInt("HollowFell",n.hollow.fell.getOrDefault(p.getUUID(),0));
         BikeNight.save(p,own);

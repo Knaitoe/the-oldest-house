@@ -13,7 +13,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -77,11 +79,35 @@ public final class PackBike extends RiddenBike {
     @Override protected double saddle(){return saddleOf(look());}
     @Override protected void parkAs(ServerLevel l,@Nullable BlockPos at,boolean lying){}
     @Override protected boolean takes(Entity e){return laid()==0&&e instanceof LiteraryActor;}
-    /** Gus's, standing where he left it, can be touched: he says whose it is. Nobody else's can, and nobody takes any of them. */
-    @Override public boolean isPickable(){return !isRemoved()&&look()==GUS&&getPassengers().isEmpty();}
+    /**
+     * Gus's, standing where he left it, can be touched: he says whose it is. Nobody else's can, and nobody takes any of them.
+     * 0.4.763 (the owner: "Let the player ride on the tailgate of the npcs bike"): with Gus on it and nobody behind him, a hand on
+     * it puts a reader up on its back pegs, as a Hopper's are ridden (NightBike); the sneak key steps them off.
+     */
+    @Override public boolean isPickable(){return !isRemoved()&&look()==GUS&&laid()==0&&(getPassengers().isEmpty()||gusAlone());}
+    private boolean gusAlone(){return getPassengers().size()==1&&getPassengers().get(0) instanceof LiteraryActor;}
+    /** The game puts a reader first among a vehicle's riders; the one pedalling is the one of the House's people on it. */
+    @Override protected @Nullable Entity pedaller(){for(var e:getPassengers())if(e instanceof LiteraryActor)return e;return null;}
+    @Override protected boolean canAddPassenger(Entity e){return look()==GUS&&laid()==0&&e instanceof Player&&gusAlone()||super.canAddPassenger(e);}
+    /** The one on his pegs stands over the back axle, as on a Hopper; his is drawn on the Wasp's frame. */
+    @Override protected Vec3 getPassengerAttachmentPoint(Entity rider,EntityDimensions d,float scale){
+        if(!(rider instanceof Player)||pedaller()==null)return super.getPassengerAttachmentPoint(rider,d,scale);
+        double s=rider instanceof LivingEntity le?le.getScale():1;var m=NightBike.Make.WASP;
+        return new Vec3(0,m.backY()/16+.6*s,(m.backX()-8)/16).yRot(-getYRot()*Mth.DEG_TO_RAD);
+    }
+    /** Whoever is on Gus's pegs, if anyone. */
+    public @Nullable ServerPlayer onPegs(){if(pedaller()==null)return null;for(var e:getPassengers())if(e instanceof ServerPlayer p)return p;return null;}
     @Override public boolean canBeHitByProjectile(){return false;}
     @Override public InteractionResult interact(Player p,InteractionHand hand){
-        if(look()!=GUS||!getPassengers().isEmpty())return InteractionResult.PASS;
+        if(look()!=GUS||laid()!=0)return InteractionResult.PASS;
+        if(gusAlone()){
+            if(p.isPassenger()||p.isSecondaryUseActive())return InteractionResult.PASS;
+            if(level().isClientSide)return InteractionResult.SUCCESS;
+            if(!p.startRiding(this))return InteractionResult.PASS;
+            if(p instanceof ServerPlayer reader)BikeNightGus.onHisPegs(reader);
+            return InteractionResult.CONSUME;
+        }
+        if(!getPassengers().isEmpty())return InteractionResult.PASS;
         if(level().isClientSide)return InteractionResult.SUCCESS;
         if(hand==InteractionHand.MAIN_HAND&&p instanceof ServerPlayer reader)BikeNightGus.hisBike(reader);
         return InteractionResult.CONSUME;

@@ -58,12 +58,13 @@ public final class BikeNightBullies {
     /** What one of them on foot is doing: going to where he will stand; there. */
     public static final int TO_POST=0,POSTED=1;
     /**
-     * In ticks: how long the park is played in before they come; how long the car's lights take to go by, and the gap after; how long
+     * In ticks: how long the park is played in before they come (0.4.763, the owner: "make the bike night bullies appear quicker": a
+     * minute, from three); how long the car's lights take to go by, and the gap after; how long
      * they may take to reach the gate; how long Tully is at the padlock; how long a hit stops one of them; how long they stand about
      * before Tully has had enough; the gap between jeers and how much longer it may be; the gap between Ray-Ray's kicks; how long one
      * of them may take to walk somewhere, and to get back to his bike.
      */
-    public static final int ARRIVE=3600,SWEEP_TICKS=70,SWEEP_GAP=30,COMING_MOST=320,UNLOCK=60,STUN=60,PATIENCE=1800,JEER_EVERY=110,JEER_MORE=70,KICK_EVERY=150,WALK_MOST=400,MOUNT_MOST=240;
+    public static final int ARRIVE=1200,SWEEP_TICKS=70,SWEEP_GAP=30,COMING_MOST=320,UNLOCK=60,STUN=60,PATIENCE=1800,JEER_EVERY=110,JEER_MORE=70,KICK_EVERY=150,WALK_MOST=400,MOUNT_MOST=240;
     /** How many times round the playground they go, and how many balls of sand it takes. */
     public static final int LAPS=2,HITS=3;
     /** Blocks a tick: riding up, circling, and in the chase; walking, and running for a bike. */

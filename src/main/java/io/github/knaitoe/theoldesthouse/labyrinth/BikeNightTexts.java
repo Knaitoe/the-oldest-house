@@ -193,6 +193,8 @@ public final class BikeNightTexts {
      * a reader; of one gone round to wait ahead of them; near the graveyard; and when every reader's bike has been had.
      */
     public static final String GUS_HIS_BIKE="That one's mine. It was my brother's. The flag was my idea.";
+    /** 0.4.763: a reader up on his pegs. */
+    public static final String GUS_PEGS="Hold on to me, not the flag. Look where you want to go.";
     public static final String[] GUS_RIDE={
         "I'm right behind you! Mostly!",
         "My legs. My legs are not happy.",
@@ -393,7 +395,7 @@ public final class BikeNightTexts {
     public static List<String> gusLines(){
         var all=new ArrayList<String>(List.of(GUS_GREETING,GUS_TALK_NO_BIKE,GUS_SWAP,GUS_JUMP,GUS_PAST,GUS_OVER,GUS_OVER_AGAIN,GUS_SLIDE,GUS_SLIDE_BIKE,GUS_BARS,GUS_EARLY,GUS_THROWN,GUS_FLUNG,GUS_DOME,GUS_SPRING,GUS_FOUNTAIN,GUS_PHONE,GUS_POST,GUS_DID_TOO,GUS_SEESAW_ON,GUS_SEESAW_OFF,GUS_SWING_OFFER,GUS_HIGH,GUS_CAR,GUS_THEM,GUS_GATE,GUS_CAP,GUS_RUN,GUS_CAUGHT));
         all.addAll(List.of(GUS_HIT));
-        all.addAll(List.of(GUS_HIS_BIKE,GUS_CHURCH,GUS_NOBODY,GUS_YARD,GUS_YARD_ON));all.addAll(List.of(GUS_CAP_BACK));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
+        all.addAll(List.of(GUS_HIS_BIKE,GUS_PEGS,GUS_CHURCH,GUS_NOBODY,GUS_YARD,GUS_YARD_ON));all.addAll(List.of(GUS_CAP_BACK));all.addAll(List.of(GUS_RIDE));all.addAll(List.of(GUS_BEHIND));all.addAll(List.of(GUS_ROUND));
         all.addAll(List.of(GUS_GREET_MORE));all.addAll(List.of(GUS_IDLE));all.addAll(List.of(GUS_STORY));all.addAll(List.of(GUS_TALK));all.addAll(List.of(GUS_SAND));
         for(var make:List.of("wasp","hare","comet","hopper","lamp","rattler"))all.add(gusBike(make));
         return all;

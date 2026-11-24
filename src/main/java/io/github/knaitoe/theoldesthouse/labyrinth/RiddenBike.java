@@ -463,7 +463,7 @@ public abstract class RiddenBike extends Entity {
      * into a wall: faster than CRASH, everyone on it comes off and it lies in the road. True if they came off.
      */
     public boolean struck(){
-        if(done||speed<=CRASH||!(getFirstPassenger() instanceof ServerPlayer p))return false;
+        if(done||speed<=CRASH||!(pedaller() instanceof ServerPlayer p))return false;
         off(p,lean>=0?1:-1,Off.HEAD_ON);return true;
     }
 
@@ -473,9 +473,16 @@ public abstract class RiddenBike extends Entity {
      */
     public void balk(){if(done)return;setDeltaMovement(0,getDeltaMovement().y,0);show(lean,0);}
 
+    /**
+     * 0.4.763: whoever is pedalling. On a reader's bike, its first rider; the game puts a reader first among any riders, so on a bike
+     * somebody else pedals (PackBike, a reader up on Gus's pegs) it says otherwise.
+     */
+    protected @Nullable Entity pedaller(){return getFirstPassenger();}
+    /** Whether {@code e} is the one pedalling, and so has the hop, the keys and the needle's crouch. */
+    public boolean pedalledBy(@Nullable Entity e){return e!=null&&pedaller()==e;}
     /** Only the one pedalling takes the bike with them when they get off: a second rider stepping down leaves it going. */
     @Override protected void removePassenger(Entity e){
-        boolean pedalling=getFirstPassenger()==e;super.removePassenger(e);
+        boolean pedalling=pedaller()==e;super.removePassenger(e);
         if(!level().isClientSide&&!done&&pedalling&&e instanceof ServerPlayer p)park(p,false);
     }
 

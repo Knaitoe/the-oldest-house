@@ -420,6 +420,10 @@ public final class BikeNightGus {
     }
     /** A hand on his bike while it stands there. He says whose it is, once. */
     static void hisBike(ServerPlayer p){saw(BikeNight.night(p),"hisbike",BikeNightTexts.GUS_HIS_BIKE);}
+    /** 0.4.763: a reader up on his pegs. He says so once a night; he goes where the one behind him is looking when nobody else needs him. */
+    static void onHisPegs(ServerPlayer p){NightBikes.cue(p,NightBikes.PEGS);saw(BikeNight.night(p),"pegs",BikeNightTexts.GUS_PEGS);}
+    /** How far ahead, along the look of whoever is on his pegs, he makes for when they are all he has to ride for, in blocks. */
+    public static final double PEGS_AHEAD=10;
     /** He drops what he is doing and makes for his bike: off the sand by the side path if he is on it, and up behind it. */
     static void toHisBike(BikeNight.Night n,Friend g,LiteraryActor a){
         if(a.isPassenger())a.stopRiding();
@@ -451,8 +455,16 @@ public final class BikeNightGus {
         if(bike==null)return;
         if(a.getVehicle()!=bike){a.startRiding(bike,true);a.gesture(RIDE);}
         a.setYRot(bike.getYRot());a.setYHeadRot(bike.getYRot());a.setYBodyRot(bike.getYRot());
-        ServerPlayer friend=null;double best=Double.MAX_VALUE;
-        for(var p:BikeNightHunt.prey(n.pack,here)){double d=flat(BikeNightFold.near(n.base,bike.position(),p.position()),bike.position())*(p.getUUID().equals(g.friend)?.5:1);if(d<best){best=d;friend=p;}}
+        ServerPlayer friend=null;double best=Double.MAX_VALUE;var behind=bike.onPegs();
+        for(var p:BikeNightHunt.prey(n.pack,here)){if(p==behind)continue;double d=flat(BikeNightFold.near(n.base,bike.position(),p.position()),bike.position())*(p.getUUID().equals(g.friend)?.5:1);if(d<best){best=d;friend=p;}}
+        // 0.4.763: with only the one on his pegs to ride for, he rides where they look.
+        if(friend==null&&behind!=null){
+            var look=behind.getLookAngle();var flatLook=new Vec3(look.x,0,look.z);if(flatLook.lengthSqr()<1e-4)flatLook=Vec3.directionFromRotation(0,bike.getYRot());
+            var at=bike.position();var there=at.add(flatLook.normalize().scale(PEGS_AHEAD));double d=PEGS_AHEAD;
+            if(BikeNightHollow.gus(l,n,g,bike,behind,there,d))return;
+            if(BikeNightGraveyard.friend(l,n,g.way,bike,there,d))return;
+            g.way.plan=null;bike.toward(there,RIDE_PACE);return;
+        }
         if(friend==null){
             bike.toward(null,0);
             if(!n.pack.caught.isEmpty()&&g.once.add("nobody"))later(g,n,BikeNightTexts.GUS_NOBODY,40);

@@ -63,6 +63,21 @@ What it found:
 The sweep reads each account with the reader made ready; the story's own way to its end (the act, the choice, the fall) stays in
 each story's own tests.
 
+### 0.4.763: Bike night quick fixes
+
+The owner: "make the bike night bullies appear quicker. Let the player ride on the tailgate of the npcs bike."
+
+- **The three come sooner.** `BikeNightBullies.ARRIVE` is a minute of the night (1200 ticks), from three.
+- **On Gus's pegs.** With Gus on his bike and nobody behind him, a hand on it puts a reader up on its back pegs, drawn over the
+  back axle as on a Hopper (`PackBike`); the sneak key steps them off and he rides on. He says so once a night. With other readers
+  to ride beside he carries the reader along; with only the one behind him he rides where they look (`BikeNightGus.PEGS_AHEAD`,
+  ten blocks along their look, by the park's, the graveyard's and the Hollow's own ways). Out by the back gate on his pegs is "on
+  the pegs of somebody else's bike" in the account.
+- The game puts a player first among a vehicle's riders, so a bike now asks who is pedalling (`RiddenBike.pedaller`,
+  `pedalledBy`) rather than taking its first rider: on Gus's bike a reader on the pegs neither parks it by stepping off nor gets
+  the hop, keys or needle (`BikeClient`). Case: `BikeNightTests.aReaderRidesOnGussPegsAndHeGoesWhereTheyLook`; the ride case now
+  expects his bike to take a hand while he is alone on it.
+
 ## Pacing measurement
 
 `tools/summarize_playtest_log.py` now reports, for each reader, from the opt-in journey log:
@@ -115,4 +130,4 @@ journeys have been measured.
    regain bearings.
 4. Pivotal moments seen from the reader's position in darkness, extending the actual-client proofs to the older catalogue.
 
-No layout, protocol or Witness change. Version 0.4.762.
+No layout, protocol or Witness change. Version 0.4.763.

@@ -3210,7 +3210,7 @@ public final class BikeNightTests {
                 h.assertTrue(BikeNightGus.doing(b)==BikeNightGus.RIDING&&gus[0].getVehicle()==his[0],"waiting for him to be on his bike: doing "+BikeNightGus.doing(b)+", "+last[0]+" from it");})
             .thenExecute(()->{
                 h.assertTrue(last[0]<2.4,"he went to it on his own feet: "+last[0]+" from it when he got on");
-                h.assertTrue(gus[0].gesture()==BikeNightGus.RIDE&&his[0].getPassengers().size()==1&&!his[0].isPickable(),"his hands are on the bars; and with him on it, it is not to be touched");
+                h.assertTrue(gus[0].gesture()==BikeNightGus.RIDE&&his[0].getPassengers().size()==1&&his[0].isPickable(),"his hands are on the bars; and with him alone on it, a hand on it is a hand up onto its pegs (0.4.763)");
             })
             // In the park he comes over to the reader, and stops a little way off.
             .thenWaitUntil(()->h.assertTrue(his[0].position().distanceTo(mine[0].position())<BikeNightGus.KEEP+.6&&his[0].speedNow()<.02,"waiting for him beside the reader at the rack: "+his[0].position().distanceTo(mine[0].position())))
@@ -3233,6 +3233,40 @@ public final class BikeNightTests {
             .thenSucceed();
     }
     @AfterBatch(batch="gus_ride") public static void gusRideDone(ServerLevel l){done();}
+
+    /** 0.4.763 (the owner: "Let the player ride on the tailgate of the npcs bike"): a hand on Gus's bike while he rides it puts a reader on its pegs; with nobody else to ride for he goes where they look; the sneak key steps them off and he rides on. */
+    @GameTest(template="empty",batch="gus_pegs",timeoutTicks=6000)
+    public static void aReaderRidesOnGussPegsAndHeGoesWhereTheyLook(GameTestHelper h){
+        var f=park(h);BikeNightGus.keptHome=false;var b=f.base(P);var l=f.level(P);f.build(P);final ServerPlayer[] p={null};final LiteraryActor[] gus={null};final PackBike[] his={null};final Vec3[] from={null};
+        h.startSequence().thenExecute(()->f.chunks.hold(l,whole(f)))
+            .thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the place is resident"))
+            .thenExecute(()->p[0]=f.player("gus_pegs_reader",P))
+            .thenWaitUntil(()->{gus[0]=BikeNightGus.find(l,b);his[0]=BikeNightGus.bikeOf(l,b);
+                h.assertTrue(BikeNight.begun(b)&&gus[0]!=null&&his[0]!=null&&BikeNight.here(p[0]),"waiting for the night, Gus and his bike");})
+            .thenExecute(()->{BikeNightSite.gateOpen(l,b);BikeNightGus.rideNow(b);})
+            .thenWaitUntil(()->h.assertTrue(BikeNightGus.doing(b)==BikeNightGus.RIDING&&gus[0].getVehicle()==his[0],"waiting for him to be on his bike"))
+            .thenExecute(()->{
+                h.assertTrue(his[0].isPickable(),"with only him on it, his bike can be touched");
+                var at=his[0].position();p[0].moveTo(at.x+1,at.y,at.z,0,0);
+                var before="vehicle "+p[0].getVehicle()+", passengers "+his[0].getPassengers()+", shift "+p[0].isShiftKeyDown()+", laid "+his[0].laid();
+                var r=his[0].interact(p[0],net.minecraft.world.InteractionHand.MAIN_HAND);
+                h.assertTrue(r.consumesAction()&&p[0].getVehicle()==his[0]&&his[0].onPegs()==p[0],"a hand on it puts the reader on his pegs: "+r+", now on "+p[0].getVehicle()+"; before: "+before);
+                h.assertTrue(gus[0].getVehicle()==his[0]&&his[0].getPassengers().size()==2&&!his[0].isPickable(),"he is still on it, and nobody else gets on");
+                var rel=his[0].getPassengerRidingPosition(p[0]).subtract(his[0].getPassengerRidingPosition(gus[0]));
+                var back=net.minecraft.world.phys.Vec3.directionFromRotation(0,his[0].getYRot()).scale(-1);
+                h.assertTrue(rel.x*back.x+rel.z*back.z>.2,"the reader rides behind him: "+rel);
+                // Looking up the side path, the way into the park's north.
+                p[0].setYRot(180);p[0].setYHeadRot(180);p[0].setXRot(0);from[0]=his[0].position();
+            })
+            .thenIdle(80)
+            .thenExecute(()->{
+                var went=his[0].position().subtract(from[0]);
+                h.assertTrue(went.z<-2.5&&p[0].getVehicle()==his[0],"with nobody else to ride for he went the way the reader looked: "+went);
+                p[0].stopRiding();
+                h.assertTrue(!p[0].isPassenger()&&gus[0].getVehicle()==his[0],"stepping off leaves him on his bike");
+            }).thenSucceed();
+    }
+    @AfterBatch(batch="gus_pegs") public static void gusPegsDone(ServerLevel l){done();}
 
     @GameTest(template="empty",batch="gus_calls",timeoutTicks=12000)
     public static void onTheRideGusCallsOutWhereTheThreeAreAndTheyNeverGoForHim(GameTestHelper h){

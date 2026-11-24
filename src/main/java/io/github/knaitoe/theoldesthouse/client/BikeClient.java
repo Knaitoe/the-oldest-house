@@ -51,7 +51,7 @@ public final class BikeClient {
         float up=(float)(Mth.lerp(partial,e.getEntity().yo,e.getEntity().getY())-Mth.lerp(partial,b.yo,b.getY()));
         pose.translate(0,-up,0);pose.mulPose(Axis.YP.rotationDegrees(-(yaw+90)));pose.mulPose(Axis.XP.rotationDegrees(b.shownLean(partial)*RiddenBike.LEAN_DEGREES));
         // 0.4.463: the one pedalling, wound up for a hop, comes down and forward over the bars, about their hips.
-        float crouch=b.getFirstPassenger()==e.getEntity()?b.shownCrouch(partial):0;
+        float crouch=b.pedalledBy(e.getEntity())?b.shownCrouch(partial):0;
         if(crouch>.001F){float hips=up+.675F*e.getEntity().getScale();pose.translate(0,hips-CROUCH_DROP*crouch,0);pose.mulPose(Axis.ZP.rotationDegrees(-CROUCH_TILT*crouch));pose.translate(0,-hips,0);}
         pose.mulPose(Axis.YP.rotationDegrees(yaw+90));pose.translate(0,up,0);
         LEANED.add(e.getEntity());
@@ -62,13 +62,13 @@ public final class BikeClient {
         var b=riding();if(b==null||!Minecraft.getInstance().options.getCameraType().isFirstPerson())return;
         float partial=(float)e.getPartialTick();
         e.setRoll(e.getRoll()+b.shownLean(partial)*ROLL*Comfort.effects());
-        if(b.getFirstPassenger()==Minecraft.getInstance().player)e.setPitch(e.getPitch()+b.shownCrouch(partial)*DIP*Comfort.effects());
+        if(b.pedalledBy(Minecraft.getInstance().player))e.setPitch(e.getPitch()+b.shownCrouch(partial)*DIP*Comfort.effects());
     }
 
     /** The keys the game does not send for a rider: jump and sprint, to the server whenever either changes while this reader pedals. */
     @SubscribeEvent public static void keys(ClientTickEvent.Post e){
         var mc=Minecraft.getInstance();var p=mc.player;var b=riding();
-        boolean pedalling=b!=null&&b.getFirstPassenger()==p;
+        boolean pedalling=b!=null&&b.pedalledBy(p);
         if(!pedalling){wasPedalling=false;return;}
         boolean open=mc.screen==null;
         boolean jump=open&&p.input!=null&&p.input.jumping,turbo=open&&mc.options.keySprint.isDown();
@@ -79,7 +79,7 @@ public final class BikeClient {
     /** The needle under the crosshair, the hop winding up under it, and the Rattler's card. */
     static void balance(GuiGraphics g,float partial){
         var b=riding();var mc=Minecraft.getInstance();if(b==null||mc.options.hideGui)return;
-        boolean pedalling=b.getFirstPassenger()==mc.player;
+        boolean pedalling=b.pedalledBy(mc.player);
         draw(g,g.guiWidth()/2,g.guiHeight()/2+22,b.shownLean(partial),pedalling?b.shownCrouch(partial):0,pedalling&&b instanceof NightBike night&&night.make()==NightBike.Make.RATTLER?night.turbo():-1);
     }
     /**
