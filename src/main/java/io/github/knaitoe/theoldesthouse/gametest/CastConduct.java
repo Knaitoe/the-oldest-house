@@ -292,6 +292,9 @@ public final class CastConduct implements AutoCloseable {
             if(to==null&&a.addressee()!=null)for(var r:those)if(r.getUUID().equals(a.addressee())){to=r;best=r.distanceTo(a);kept=true;}
             if(to==null)for(var r:those){double d=r.distanceTo(a);if(d<best){best=d;to=r;}}
             if(to==null||!kept&&(best>12||!a.hasLineOfSight(to)))continue;
+            // 0.4.757: a reader standing almost inside them (CI run 1786: 0.9 blocks off) has no direction worth turning to; the
+            // angle swings with every step either takes.
+            if(Math.hypot(to.getX()-a.getX(),to.getZ()-a.getZ())<1.2)continue;
             if(justMoved(to)){if(!turn.again())later.add(new Turn(a,turn.text(),level.getGameTime()+10,turn.lived(),true,turn.to()));continue;}
             float off=off(a,to),want=want(a,to);
             // 0.4.564: a line nobody asked for, with more than one reader there, may be said to any of them in reach and in sight; an

@@ -92,13 +92,13 @@ public final class ColdRoomTests {
             for(var at:ColdSite.RADIATOR)h.assertTrue(fitting(l,b,at,ColdBlock.Kind.RADIATOR),"the radiator at "+at.toShortString());
             h.assertTrue(is(l,b,-1,6,-22,net.minecraft.world.level.block.Blocks.GLASS_PANE)&&is(l,b,0,7,-22,net.minecraft.world.level.block.Blocks.GLASS_PANE),"the window over the radiator");
             h.assertTrue(is(l,b,0,-1,ColdSite.STEP_TOP_Z,ColdRegistry.STEPS.get())&&is(l,b,0,ColdSite.FOOT_Y-1,ColdSite.FOOT_Z0,ColdRegistry.material("flags")),"the steps outside fall to the street");
-            h.assertTrue(fitting(l,b,ColdSite.STREETLAMP.above(2),ColdBlock.Kind.STREETLAMP)&&l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,b.offset(ColdSite.STREETLAMP.above(3)))>0,"the lamp at the foot of the steps is lit");
+            h.assertTrue(fitting(l,b,ColdSite.STREETLAMP.above(2),ColdBlock.Kind.STREETLAMP),"the lamp at the foot of the steps");
             var walk=walked(l,b,new BlockPos(0,0,-1));
             h.assertTrue(walk.contains(new BlockPos(-6,0,-5)),"the kitchen, through its door: "+walk.size());
             h.assertTrue(walk.contains(new BlockPos(0,5,-11))&&walk.contains(new BlockPos(-1,5,-15))&&walk.contains(new BlockPos(1,5,-19)),"up the stair, across the landing and into the bedroom");
             h.assertFalse(walk.stream().anyMatch(c->c.getZ()<ColdSite.HOUSE_NORTH),"nothing outside is reached on foot from the house");
             ColdRoom.ensure(l,b);
-        }).thenWaitUntil(()->{
+        }).thenWaitUntil(()->h.assertTrue(l.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,b.offset(ColdSite.STREETLAMP.above(3)))>0,"the lamp at the foot of the steps is lit, once the light has spread")).thenWaitUntil(()->{
             ColdRoom.ensure(l,b);
             for(int who=0;who<ColdRoom.CAST;who++)h.assertTrue(ColdRoom.find(l,b,who)!=null,"person "+who+" is where they keep");
         }).thenExecute(()->{
