@@ -72,6 +72,19 @@ public final class WaxworksTests {
         float yaw=(float)(Math.toDegrees(Math.atan2(to.z,to.x))-90)+off;float pitch=(float)-Math.toDegrees(Math.atan2(to.y,Math.sqrt(to.x*to.x+to.z*to.z)));
         p.teleportTo(l,b.getX()+x,b.getY(),b.getZ()+z,yaw,off==0?pitch:0);p.setYHeadRot(yaw);p.setXRot(off==0?pitch:0);p.setYRot(yaw);
     }
+    /** The reader three blocks from the figure, on whichever side has a clear line to it, aimed at it. */
+    private static void inSight(ServerPlayer p,ServerLevel l,BlockPos b,LiteraryActor a){
+        var at=a.getEyePosition();
+        for(int[] d:new int[][]{{0,3},{0,-3},{3,0},{-3,0},{2,2},{-2,2},{2,-2},{-2,-2}}){
+            double x=a.getX()+d[0],z=a.getZ()+d[1];var feet=BlockPos.containing(x,a.getY(),z);
+            if(!l.getBlockState(feet).getCollisionShape(l,feet).isEmpty()||!l.getBlockState(feet.above()).getCollisionShape(l,feet.above()).isEmpty())continue;
+            var eye=new net.minecraft.world.phys.Vec3(x,a.getY()+p.getEyeHeight(),z);
+            var hit=l.clip(new net.minecraft.world.level.ClipContext(eye,at,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,p));
+            if(hit.getType()!=net.minecraft.world.phys.HitResult.Type.MISS&&hit.getLocation().distanceToSqr(at)>.25)continue;
+            aim(p,l,b,x-b.getX(),z-b.getZ(),at,0);return;
+        }
+        aim(p,l,b,a.getX()-b.getX(),a.getZ()-b.getZ()+3,at,0);
+    }
     private static void pocket(ServerPlayer p){for(int i=0;i<9;i++)if(!WaxNight.mine(p.getInventory().getItem(i),p)&&!WaxNight.mine(p.getOffhandItem(),p)){p.getInventory().selected=i;return;}}
     private static void hold(ServerPlayer p){for(int i=0;i<9;i++)if(WaxNight.mine(p.getInventory().getItem(i),p)){p.getInventory().selected=i;return;}}
     private static float headTurn(LiteraryActor a,int who){return net.minecraft.util.Mth.wrapDegrees(a.getYHeadRot()-WaxSite.FIGURES.get(who).yaw());}
@@ -328,11 +341,14 @@ public final class WaxworksTests {
         }).thenIdle(45).thenExecute(()->{
             var n=WaxShift.night(b);var i=n.irregular.get(0);var a=Waxworks.find(l,b,i.who);
             h.assertFalse(i.noticed,"somebody not on the shift notices nothing");
-            q.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-13.5,0,0);
-            var ring=a.position();aim(p,l,b,ring.x-b.getX(),ring.z-b.getZ()+3,a.getEyePosition(),0);told(p);
-        }).thenIdle(45).thenExecute(()->{
-            var n=WaxShift.night(b);
+            q.teleportTo(l,b.getX()+1.5,b.getY(),b.getZ()-13.5,0,0);told(p);
+        }).thenWaitUntil(()->{
+            // 0.4.757: the irregular figure is picked at random, so the guard stands wherever, three blocks off, it is in clear sight
+            // (three blocks south of some ring places is inside a wall), and keeps the light on it.
+            var n=WaxShift.night(b);if(!n.irregular.isEmpty()&&!n.irregular.get(0).noticed){var a=Waxworks.find(l,b,n.irregular.get(0).who);if(a!=null)inSight(p,l,b,a);}
             h.assertTrue(n.irregular.isEmpty()||n.irregular.get(0).noticed,"the night guard, looking at it with the light, notices");
+        }).thenExecute(()->{
+            var n=WaxShift.night(b);
             h.assertTrue(n.noticed==1&&f.own(p,P).getInt("Noticed")==1,"it goes in the log, and on that reader's record");
             h.assertTrue(told(p).stream().anyMatch(t->t.endsWith("It goes in the log.")&&t.startsWith("That one")),"and they are told what they saw");
             p.teleportTo(l,b.getX()+.5,b.getY(),b.getZ()-13.5,0,0);

@@ -23,7 +23,7 @@ public final class ColdSite {
     private ColdSite(){}
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     /** The whole place: the house and, north of it, the steps. */
-    public static final int WEST=-10,EAST=6,NORTH=-45,TOP=11,BOTTOM=-17;
+    public static final int WEST=-10,EAST=6,NORTH=-45,TOP=11,BOTTOM=-12;
     /** The house's own shell, brick; everything else in the bounds is the night outside. */
     public static final int HOUSE_WEST=-10,HOUSE_EAST=4,HOUSE_NORTH=-22,HOUSE_TOP=9;
     /** An area of the house: its air from (x0,y0,z0) to (x1,y1,z1), standing on y0. */
@@ -73,10 +73,10 @@ public final class ColdSite {
     public static final BlockPos ONWARD=new BlockPos(-6,0,-10);
 
     // ------------------------------------------------------------------------------------------------ outside
-    /** The steps: the first tread under the window's wall, at y nought, one down a block north, to the last at y -14. */
-    public static final int STEP_X0=-2,STEP_X1=1,STEP_TOP_Z=-24,STEPS=15;
-    /** The landing at the foot of the steps, its floor's top at y -15 (standing at -14), and the lamp beside it. */
-    public static final int FOOT_Z0=-39,FOOT_Z1=-43,FOOT_Y=-14;
+    /** The steps: the first tread under the window's wall, at y nought, one down a block north, to the last at y -9 (0.4.757: ten, so the whole place, sky to the steps' footing, keeps within its slot's 24 rows). */
+    public static final int STEP_X0=-2,STEP_X1=1,STEP_TOP_Z=-24,STEPS=10;
+    /** The landing at the foot of the steps, its floor's top at y -11 (standing at -10), and the lamp beside it. */
+    public static final int FOOT_Z0=-39,FOOT_Z1=-43,FOOT_Y=-10;
     public static final BlockPos STREETLAMP=new BlockPos(3,FOOT_Y,-40);
     /** Where a reader comes to at the foot of the steps (part 4). */
     public static final BlockPos FOOT=new BlockPos(0,FOOT_Y,-41);

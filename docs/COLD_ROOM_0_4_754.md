@@ -20,7 +20,7 @@ Built whole in its interior slot. All positions are from the floor under the Hou
   straps buckled to the frame; a bedside table either side of the pillow, the lamp's (lit) and the flask's; the cross on a nail over
   the pillow; the chest of drawers on the west wall with the book shut on it; a kitchen chair carried up; the radiator under the
   window, two panes in the north wall.
-- **Outside**: the steps fall north from under the window, one block down a block, fifteen of them, between two rendered walls that
+- **Outside**: the steps fall north from under the window, one block down a block, fifteen of them (ten since 0.4.757, so the place keeps within its slot), between two rendered walls that
   stand two above them, to a landing and a street lamp. It is seen through the window and is not reached on foot from the house.
 
 Materials (`cold_room_*`): boards, runner, paper, plaster, lino, brick, render, flags; the stair treads (of the boards) and the outside

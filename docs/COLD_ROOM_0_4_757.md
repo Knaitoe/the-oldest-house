@@ -61,6 +61,16 @@ The account ("The account: the cold room") waits on the kitchen table, in the re
   that is not in the book, and I came back up the steps by myself."
 - WitnessPool 97 / 33 / 73.
 
+## The steps, shorter
+
+The house stood 29 rows tall, sky to the footing under its fifteen steps, and a slot holds 24: the steps' footing was carved into the
+slot below (`HazardVarietyTests#everyInteriorRoomStandsInTheSlotItIsCarvedIn`, CI run 1785). The steps are now ten, down to a landing
+at y -10, and the place runs from y -12 to 11. The window still looks down them to the lamp at the bottom.
+
+The waxworks' shift case stood the night guard three blocks south of a figure chosen at random, which for some figures is inside a
+wall (CI run 1785). The guard now stands three blocks off on whichever side has a clear line, and keeps the light on it until it is
+noticed.
+
 ## Checks
 
 - `ColdRoomTests#theOfferAnsweredAndTheOneWhoIsTaken`: two readers and a spectator. At the ninth page each reader is offered, the first
