@@ -265,3 +265,19 @@ answer to the whistle is still IN, LATTICE or ROAD. The rest records how the rea
 Changed from the design, on the owner's earlier rules: no fireflies or other particles; no hum, laugh or second voice,
 only the text lines; the curtain lift became a hand to the glass; the strap, the shoes and the milk are not built; the
 den is a blanket; the bicycle is a fixed block; "lock it" is answered by shutting the screen door.
+
+## Added in 0.4.766
+
+At the owner's request, the details left out of 0.4.764 are built, and particles are allowed here:
+
+- **The strap**: a leather strap on a nail beside the screen door (left of it, at head height).
+- **The shoes**: a pair of small shoes on the top step, side by side, toes to the wall.
+- **The milk**: when the reader sits at the pulled-out chair, or 200 ticks after coming in if they do not, the cook carries
+  a glass of milk to the table, sets it down beside the plate, stands at the chair a moment looking at it, and goes back to
+  the stove.
+- **Particles**, each sent only to its own reader: fireflies over the yard every few ticks while the reader is outside,
+  thickest at the trees and the gravel road and drifting away from the house (never inside it); moths at the porch bulb
+  while the lights are on; steam off the stove while someone is cooking.
+
+The read and the account are unchanged.
+

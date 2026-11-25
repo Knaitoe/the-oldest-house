@@ -65,6 +65,14 @@ public final class HouseReadPorch {
         NEIGHBOR_AT=new Vec3(-18.5,1,-17.5),DOG_START=new Vec3(-4.5,0,1.5),DOG_DEN=new Vec3(-2.5,0,-5.5);
     public static final BlockPos STOVE_AT=new BlockPos(3,3,-23),ARMCHAIR_AT=new BlockPos(3,3,-10),UPSTAIRS=new BlockPos(0,8,-8),BIKE_AT=new BlockPos(12,0,-12);
     static final String DOG_TAG="house_read_porch_dog";
+    /** 0.4.766: the strap on its nail beside the screen door, the small shoes on the top step, and where the milk is set down. */
+    public static final BlockPos STRAP_AT=new BlockPos(-1,4,-7),SHOES_AT=new BlockPos(1,3,-2),MILK_AT=new BlockPos(1,4,-17);
+    /** How long after coming in, if the reader has not sat down, the one who cooked brings the milk anyway. */
+    public static final int MILK_UNSAT=200;
+    /** Where the fireflies gather thickest: the trees round the yard and the gravel road out. */
+    static final int[][] FIREFLY_SPOTS={{-19,-35},{19,-33},{18,-13},{-19,8},{19,8},{7,-43},{13,-30},{13,-40},{13,0}};
+    static final net.minecraft.core.particles.DustParticleOptions FIREFLY=new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.85F,1F,.4F),.55F),
+        MOTH=new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(.62F,.57F,.5F),.4F);
     /** Glide speed indoors, a block every twelve ticks or so. */
     static final double PACE=.085;
 
@@ -74,6 +82,9 @@ public final class HouseReadPorch {
         HouseReadRooms.fitting(l,b,-3,3,-9,HouseReadPropBlock.Part.TABLE_END,Direction.EAST);HouseReadRooms.fitting(l,b,-2,3,-9,HouseReadPropBlock.Part.TABLE_END,Direction.WEST);
         put(l,b,STOVE_AT,io.github.knaitoe.theoldesthouse.house.TractHouseBlock.of(io.github.knaitoe.theoldesthouse.house.TractHouseBlock.Kind.STOVE,Direction.SOUTH));
         HouseReadRooms.fitting(l,b,ARMCHAIR_AT.getX(),ARMCHAIR_AT.getY(),ARMCHAIR_AT.getZ(),HouseReadPropBlock.Part.ARMCHAIR,Direction.SOUTH);
+        // 0.4.766: a strap on a nail beside the door, and small shoes on the top step with their toes to the wall.
+        HouseReadRooms.fitting(l,b,STRAP_AT.getX(),STRAP_AT.getY(),STRAP_AT.getZ(),HouseReadPropBlock.Part.STRAP,Direction.SOUTH);
+        HouseReadRooms.fitting(l,b,SHOES_AT.getX(),SHOES_AT.getY(),SHOES_AT.getZ(),HouseReadPropBlock.Part.SHOES,Direction.SOUTH);
         for(int y=0;y<2;y++)put(l,b,UPSTAIRS.above(y),HouseReadRegistry.WINDOW.get().defaultBlockState());
         put(l,b,new BlockPos(0,8,-11),Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,9));
         // The den: a blanket laid out on the dirt.
@@ -162,6 +173,7 @@ public final class HouseReadPorch {
         // The doorway, if still outside thirty seconds after it.
         if(t.contains("Truck")&&!t.contains("Doorway")&&out&&!road&&!under&&!t.getBoolean("LightsOut")&&age>=t.getInt("Truck")+DOORWAY_AFTER){t.putInt("Doorway",age);if(first.isEmpty())t.putBoolean("BeforeAnswerAtDoorway",true);}
         if(cook!=null)cook(p,b,t,cook,age,cue,first,wentIn,under,road,still,eye);
+        air(p,b,t,age,wentIn);
         var small=actor(p,t,"Small");if(small!=null){small.gesture(GLASS);if(cue>0)look(small,eye,false);}
         var sitter=actor(p,t,"Sitter");if(sitter!=null){sitter.gesture(STILL);sitter.setXRot(40);}
         var n=actor(p,t,"Neighbor");if(n!=null){if(n.gesture()==RAISED){int lift=t.getInt("NeighborWave")+1;t.putInt("NeighborWave",lift);if(lift>60)n.gesture(IDLE);}look(n,eye,false);}
@@ -172,6 +184,24 @@ public final class HouseReadPorch {
             else if(age>t.getInt("InAt")+400||p.isPassenger()){t.putString("Door","open");HouseRead.flag(p,HouseReadSites.Room.PORCH,"LeftOpen");}}
         if(!first.isEmpty()&&!t.getBoolean("Lateness")){t.putBoolean("Lateness",true);if(t.getBoolean("BeforeAnswerAtDoorway"))HouseRead.flag(p,HouseReadSites.Room.PORCH,"ComeOutFor");else if(t.getBoolean("BeforeAnswerAtTruck"))HouseRead.flag(p,HouseReadSites.Room.PORCH,"AfterTruck");}
     }
+    /**
+     * 0.4.766, the owner: fireflies and other particles, each reader's own. Fireflies over the yard, thickest at the trees and the
+     * road and drifting away from the house; moths at the porch bulb while it is on; steam off the stove while someone cooks.
+     */
+    private static void air(ServerPlayer p,BlockPos b,CompoundTag t,int age,boolean wentIn){
+        var l=p.serverLevel();var rng=l.random;boolean lit=!t.getBoolean("LightsOut");
+        if(!wentIn&&age%3==0){
+            var away=p.position().subtract(at(b,new Vec3(.5,3,-16)));away=new Vec3(away.x,0,away.z);away=away.lengthSqr()<1e-4?new Vec3(0,0,1):away.normalize();
+            Vec3 spot;
+            if(rng.nextInt(5)<2){var s=FIREFLY_SPOTS[rng.nextInt(FIREFLY_SPOTS.length)];spot=new Vec3(b.getX()+s[0]+.5+rng.nextGaussian()*2.5,b.getY()+.4+rng.nextDouble()*2.8,b.getZ()+s[1]+.5+rng.nextGaussian()*2.5);}
+            else{double ahead=3+rng.nextDouble()*7;spot=p.position().add(away.scale(ahead)).add(rng.nextGaussian()*2.4,.3+rng.nextDouble()*2.2,rng.nextGaussian()*2.4);}
+            if(!inHouse(b,spot))l.sendParticles(p,FIREFLY,true,spot.x,spot.y,spot.z,0,away.x,.12,away.z,.015);
+        }
+        if(lit&&age%5==0){var bulb=at(b,new Vec3(1.5,4.45,-6.55));l.sendParticles(p,MOTH,false,bulb.x+rng.nextGaussian()*.28,bulb.y+rng.nextGaussian()*.2,bulb.z+Math.abs(rng.nextGaussian())*.3,1,.02,.02,.02,0);}
+        if(lit&&age%12==0){var top=at(b,new Vec3(STOVE_AT.getX()+.5,STOVE_AT.getY()+1.05,STOVE_AT.getZ()+.5));l.sendParticles(p,net.minecraft.core.particles.ParticleTypes.WHITE_SMOKE,false,top.x,top.y,top.z,1,.12,.02,.12,.004);}
+    }
+    /** Inside the house's own walls, where no firefly comes. */
+    static boolean inHouse(BlockPos b,Vec3 at){double x=at.x-b.getX(),y=at.y-b.getY(),z=at.z-b.getZ();return x>-6.5&&x<7&&z>-24.5&&z<-7.5&&y>2;}
     private static boolean gravelOnce(ServerPlayer p,CompoundTag t){return !t.getBoolean("Stopped")&&onGravel(p);}
 
     private static void cook(ServerPlayer p,BlockPos b,CompoundTag t,LiteraryActor cook,int age,int cue,String first,boolean wentIn,boolean under,boolean road,int still,Vec3 eye){
@@ -179,6 +209,14 @@ public final class HouseReadPorch {
         // Inside: to the stove, back turned; when the reader sits, to their shoulder a moment, and back.
         if(wentIn){
             if(p.isPassenger()&&!t.contains("SatAt"))t.putInt("SatAt",age);
+            // 0.4.766: a glass of milk set down by the plate, when the reader sits or a while after coming in if they do not;
+            // the one who cooked stands at the chair a moment with it, and goes back to the stove.
+            if(!t.contains("MilkFrom")){int from=Math.min(t.contains("SatAt")?t.getInt("SatAt")+40:Integer.MAX_VALUE,t.contains("InAt")?t.getInt("InAt")+MILK_UNSAT:Integer.MAX_VALUE);if(age>=from)t.putInt("MilkFrom",age);}
+            if(t.contains("MilkFrom")&&age<t.getInt("MilkFrom")+100){
+                if(!glide(cook,at(b,SHOULDER),90)){cook.gesture(CARRY);return;}
+                if(!t.getBoolean("Milk")){var cell=b.offset(MILK_AT);if(p.serverLevel().getBlockState(cell).isAir()){put(p.serverLevel(),b,MILK_AT,HouseReadRooms.part(HouseReadPropBlock.Part.MILK));heard(p,SoundEvents.GLASS_PLACE,cell,.5f,1.3f);}t.putBoolean("Milk",true);}
+                cook.gesture(STILL);look(cook,Vec3.atCenterOf(b.offset(MILK_AT)),true);return;
+            }
             boolean shoulder=t.contains("SatAt")&&age>=t.getInt("SatAt")+40&&age<t.getInt("SatAt")+120;
             if(shoulder){cook.gesture(STILL);if(glide(cook,at(b,SHOULDER),90))look(cook,eye,true);}
             else if(place.equals("door")||place.equals("step")||place.equals("porch")){cook.gesture(IDLE);if(glide(cook,at(b,place.equals("door")?INSIDE_DOOR:PORCH),180))t.putString("CookAt",place.equals("door")?"counter":"door");}

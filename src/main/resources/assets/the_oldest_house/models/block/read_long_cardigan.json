@@ -124,6 +124,11 @@
     "cutoffs_front": "the_oldest_house:block/house_read/cutoffs_front",
     "tank_front": "the_oldest_house:block/house_read/tank_front",
     "jersey_front": "the_oldest_house:block/house_read/jersey_front",
+    "strap": "the_oldest_house:block/house_read/strap",
+    "shoe": "the_oldest_house:block/house_read/shoe",
+    "shoe_sole": "the_oldest_house:block/house_read/shoe_sole",
+    "milk": "the_oldest_house:block/house_read/milk",
+    "milk_top": "the_oldest_house:block/house_read/milk_top",
     "particle": "the_oldest_house:block/house_read/long_cardigan"
   },
   "elements": [
