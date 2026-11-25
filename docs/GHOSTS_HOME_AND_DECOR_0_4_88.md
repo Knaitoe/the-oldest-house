@@ -18,21 +18,21 @@ Mod 0.4.88 / protocol 64 / layout 43. 574 declared cases. 44 sources, 33 require
 
 ### materials_atlas.png
 
-SHA-256: `c90a4cbfa55592ba006c95ee3a3b1847380c11e52ff759f8cf58baeecfad7794`.
+SHA-256: `2f6f36488178dd6317ae39428dd98129d0f020d49914172a2c121168878e25e9`.
 
 
 ### meals_atlas.png
 
-SHA-256: `d3c5132e83526d952bd3d1a290115a160f146a95d3c3e4342529a6db0d9a080c`.
+SHA-256: `9c283da51d89f22757ddd55e6c82c072a529c5b7efa14e5b592e921c723f8c9a`.
 
 
 ### equipment_atlas.png
 
-SHA-256: `1c47a7fadfeccf2582f72cf2ae7bcb3ce983dac415d4fd6460dd6a4291893f34`.
+SHA-256: `0f52d20d096f76b7cd570d2c9688b68bccece6856bc8dd2104d61cec34b0138e`.
 
 
 ### call_sheet.png
 
-SHA-256: `a482ca37db771015114cdbeb1c05f4a14324c301530f523c468bf2745bf69e67`.
+SHA-256: `5184ce671193d016afea8c56f03b9845731028c8ff30148d60253c03203ef8bc`.
 
 
