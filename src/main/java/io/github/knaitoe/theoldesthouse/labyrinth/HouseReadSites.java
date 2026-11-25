@@ -202,6 +202,8 @@ public final class HouseReadSites {
         // The garment worn leaves its hook or place; the one it replaces goes back.
         for(var pos:wardrobe(base(p.server,p.getUUID(),Room.COATROOM))){var state=p.serverLevel().getBlockState(pos);if(!state.is(HouseReadRegistry.FITTING.get()))continue;var there=HouseReadWardrobe.of(state.getValue(HouseReadPropBlock.PART));if(there!=null&&there.boots()==worn.boots())p.serverLevel().setBlock(pos,state.setValue(HouseReadPropBlock.TURNED,there==worn),Block.UPDATE_CLIENTS);}
         var layer=new ItemStack(garment);CustomData.update(DataComponents.CUSTOM_DATA,layer,t->t.putUUID("HouseReadLoan",p.getUUID()));p.setItemSlot(slot,layer);p.setTicksFrozen(0);visit.putBoolean("Dressed",true);
+        // 0.4.765: the talking past the curtain stops for a few seconds when something goes on.
+        visit.putInt("HushUntil",visit.getInt("Age")+HUSH);p.connection.send(new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(DoorSounds.Carry.VOICES.sound.getId(),null));
         // The first time each garment goes on, the House says what it looks like (0.4.172; it used to guess at the reader).
         var guessed=visit.getList("Guessed",Tag.TAG_STRING);if(!guessed.contains(StringTag.valueOf(worn.id()))){guessed.add(StringTag.valueOf(worn.id()));visit.put("Guessed",guessed);p.sendSystemMessage(Component.literal(worn.look()).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC));}
         own.put(Room.COATROOM.key(),visit);save(p.server,p.getUUID(),own);p.inventoryMenu.broadcastChanges();act(p,Room.COATROOM,"wore the "+worn.name());dressed(p,worn);
@@ -261,6 +263,9 @@ public final class HouseReadSites {
         var target=at.getCenter();var delta=target.subtract(p.getEyePosition());if(delta.lengthSqr()>1024||p.getLookAngle().dot(delta.normalize())<.15)return false;
         var start=p.getEyePosition();for(int i=0;i<12;i++){var hit=p.serverLevel().clip(new net.minecraft.world.level.ClipContext(start,target,net.minecraft.world.level.ClipContext.Block.VISUAL,net.minecraft.world.level.ClipContext.Fluid.NONE,p));if(hit.getType()==HitResult.Type.MISS||hit.getBlockPos().equals(at))return true;var block=p.serverLevel().getBlockState(hit.getBlockPos()).getBlock();if(!(block==Blocks.GLASS||block instanceof StainedGlassBlock)&&!(block instanceof IronBarsBlock)&&!(block instanceof HouseReadPropBlock))return false;start=hit.getLocation().add(delta.normalize().scale(.15));if(start.distanceToSqr(target)<.025)return true;}return false;
     }
+    /** 0.4.765: called through the coatroom's curtain once; how long the talking stops when a garment goes on. */
+    public static final String COMPANY="Is that you? Put something dry on. We've got company.";
+    public static final int HUSH=60;
     static void sound(ServerPlayer p,SoundEvent event,BlockPos at,float volume){LiteraryVignettes.heard(p,event,at,volume,1);}
     /** Words said to this reader from elsewhere in the house: on the action bar (speech is never chat), quoted, grey and italic. */
     static void called(ServerPlayer p,String words){p.displayClientMessage(net.minecraft.network.chat.Component.literal("“"+words+"”").withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);}
@@ -268,6 +273,12 @@ public final class HouseReadSites {
         var room=inside(p);HouseReadKitchen.small(p,room==Room.KITCHEN&&p.isAlive()&&!p.isSpectator());HouseReadStory.tick(p,room);var own=state(p.server,p.getUUID());if(room==null){if(!own.getString("Active").isEmpty())left(p);return;}if(!LiteraryVignettes.participant(p)||LabyrinthDoors.isBusy(p)||HouseReadStory.holding(p))return;
         var b=base(p.server,p.getUUID(),room);var visit=own.getCompound(room.key());if(!visit.getBoolean("Entered"))return;int age=visit.getInt("Age")+1;visit.putInt("Age",age);
         if(room==Room.COATROOM){if(!visit.getBoolean("Dressed"))p.setTicksFrozen(100);if(age>=200)visit.putBoolean("NoteArmed",true);
+            // 0.4.765: company past the curtain. One call when the reader comes in; talking through the curtain after, which stops
+            // for a few seconds each time something goes on and stops for good when the curtain parts. Nobody comes through it.
+            if(age==30)called(p,COMPANY);
+            if(age>=40&&!visit.getBoolean("CurtainParted")&&age>=visit.getInt("HushUntil")&&age-visit.getInt("VoicesAt")>=DoorSounds.Carry.VOICES.every+10){visit.putInt("VoicesAt",age);sound(p,DoorSounds.Carry.VOICES.sound.get(),b.offset(0,1,-11),.7f);}
+            // The bench under the window, out of sight of the curtain.
+            if(p.isPassenger()&&!visit.getBoolean("BenchSat")&&p.getX()>b.getX()+2.5&&p.getZ()<b.getZ()-1&&p.getZ()>b.getZ()-4){visit.putBoolean("BenchSat",true);var list=visit.getList("Actions",Tag.TAG_STRING);if(list.size()<64)list.add(StringTag.valueOf("sat on the bench under the window, out of sight of the curtain"));visit.put("Actions",list);}
             // 0.4.166: the curtain hangs shut until the House has what the room is for; then it parts.
             if(!visit.getBoolean("CurtainParted")&&HouseReadStory.ready(p,room)){visit.putBoolean("CurtainParted",true);for(int y=0;y<=1;y++){var at=b.offset(HouseReadRooms.CURTAIN_AT).above(y);var c=p.serverLevel().getBlockState(at);if(c.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(at,c.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);}sound(p,SoundEvents.WOOL_PLACE,b.offset(HouseReadRooms.CURTAIN_AT),.5f);}
             // 0.4.150: standing at the uncovered, unturned glass in the borrowed layers for two seconds, looking into it.

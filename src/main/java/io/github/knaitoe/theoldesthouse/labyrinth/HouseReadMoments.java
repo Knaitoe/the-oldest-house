@@ -111,7 +111,11 @@ public final class HouseReadMoments {
                 case OUTLET->p.displayClientMessage(Component.literal("The phone's charger, still plugged in."),true);
                 case SIGN->p.displayClientMessage(Component.literal("Back in a moment."),true);
                 case WALL_CLOCK->p.displayClientMessage(Component.literal("A plain office clock, a few minutes slow."),true);
-                case RECEPTION,CALENDAR->{note(p,b,room,"The calendar shows this month.");}
+                case RECEPTION->{var t=visit(p,room);
+                    // 0.4.765: the sign-in sheet on the counter, read once; after that the counter is the calendar beyond it again.
+                    if(!t.getBoolean("Sheet")){t.putBoolean("Sheet",true);save(p,room,t);p.displayClientMessage(Component.literal(SHEET).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);HouseReadSites.act(p,room,"read the sign-in sheet on the counter");}
+                    else note(p,b,room,"The calendar shows this month.");}
+                case CALENDAR->{note(p,b,room,"The calendar shows this month.");}
                 case CLOCK_BASE,CLOCK_FACE->p.displayClientMessage(Component.literal("The clock keeps its own steady time."),true);
                 case TABLE_END,TABLE_MID,SIDE_TABLE->{}
                 default->{return false;}
@@ -122,7 +126,7 @@ public final class HouseReadMoments {
             if(part==SINK){part=TAP;}
             if(part==TOWEL_BAR){HouseReadSites.act(p,room,"felt the dry towel on the bar");p.displayClientMessage(Component.literal("A dry towel on the bar."),true);return true;}
             if(part==TOWEL){HouseReadSites.act(p,room,"felt the dry towel beside the sink");p.displayClientMessage(Component.literal("A dry towel, folded beside the sink."),true);return true;}
-            if(part==LIGHT_SWITCH){var t=visit(p,room);boolean off=!t.getBoolean("LightOff"),done=t.getBoolean("Done");t.putBoolean("LightOff",off);t.putBoolean("NoteArmed",true);
+            if(part==LIGHT_SWITCH){var t=visit(p,room);boolean off=!t.getBoolean("LightOff"),done=t.getBoolean("Done");t.putBoolean("LightOff",off);if(off&&t.getBoolean("Knocked")&&!t.contains("GoneAt"))t.putInt("GoneAt",t.getInt("Age")+10);t.putBoolean("NoteArmed",true);
                 // 0.4.166: the House needs the routine; the switch alone no longer opens the bedroom.
                 if(done)t.putBoolean("BedroomOpen",true);save(p,room,t);lights(p,b,off);p.serverLevel().setBlock(at,p.serverLevel().getBlockState(at).setValue(HouseReadPropBlock.TURNED,off),Block.UPDATE_CLIENTS);if(done)unlock(p,b,room);HouseReadSites.sound(p,SoundEvents.LEVER_CLICK,at,.3f);HouseReadSites.act(p,room,off?(t.getInt("Touches")==0?"turned the light off without touching the counter":"turned the bathroom light off"):"turned the bathroom light back on");if(off&&!HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(BATHROOM.key()).getBoolean("LightOff")){int touched=t.getInt("Touches");HouseRead.see(p,BATHROOM,s->{s.putBoolean("LightOff",true);if(touched==0)s.putBoolean("Untouched",true);});}return true;}
             if(part==TAP){var t=visit(p,room);boolean running=!t.getBoolean("TapRunning");t.putBoolean("TapRunning",running);t.putInt("TapSoundAt",t.getInt("Age"));save(p,room,t);var sink=b.offset(HouseReadRemainingRooms.SINK_AT);p.serverLevel().setBlock(sink,p.serverLevel().getBlockState(sink).setValue(HouseReadPropBlock.TURNED,running),Block.UPDATE_CLIENTS);arm(p,room,running?"ran the hot tap":"turned off the hot tap");if(running)tap(p);if(running)HouseReadSites.sound(p,HouseReadRegistry.TAP.get(),at,.5f);else p.connection.send(new ClientboundStopSoundPacket(HouseReadRegistry.TAP.getId(),SoundSource.BLOCKS));return true;}
@@ -130,7 +134,11 @@ public final class HouseReadMoments {
             if(part==MIRROR||part==MIRROR_TOP)return true;
         }
         if(room==SHELTER){
-            if(part==JUKEBOX){var t=visit(p,room);start(p,b,t);save(p,room,t);note(p,b,room,"One free credit. A slow instrumental; no names on the song strips.");return true;}
+            if(part==JUKEBOX){var t=visit(p,room);
+                // 0.4.765: once the song is on, the jukebox is something to do with one's hands: its strips, read one at a time
+                // (unless it carries the room's card, which it still opens).
+                if(t.getBoolean("SongStarted")&&!p.serverLevel().getBlockState(b.offset(HouseReadRooms.note(room))).getValue(HouseReadPropBlock.WRITING)){int n=t.getInt("Strips");t.putInt("Strips",n+1);save(p,room,t);p.displayClientMessage(Component.literal(STRIPS.get(n%STRIPS.size())).withStyle(net.minecraft.ChatFormatting.GRAY,net.minecraft.ChatFormatting.ITALIC),true);if(n==0)HouseReadSites.act(p,room,"read the jukebox's song strips while the song played");return true;}
+                start(p,b,t);save(p,room,t);note(p,b,room,"One free credit. A slow instrumental; no names on the song strips.");return true;}
             if(part==BOTTLE){HouseReadSites.act(p,room,"looked at the cold bottle on the rail");return true;}
             // 0.4.172: the dock lantern, while the song plays, is staying out by it with neither stranger; it ends the song.
             if(part==DECK_LANTERN&&at.equals(b.offset(HouseReadRemainingRooms.DOCK_LANTERN))){var t=visit(p,room);HouseReadShelter.lantern(p,b,t);save(p,room,t);return true;}
@@ -157,6 +165,7 @@ public final class HouseReadMoments {
         t.putInt("Held",item);t.putLong("HeldAt",at.asLong());t.putInt("Touches",t.getInt("Touches")+1);t.putBoolean("NoteArmed",true);save(p,BATHROOM,t);
         p.serverLevel().setBlock(at,state.setValue(HouseReadPropBlock.LIFTED,index+1),Block.UPDATE_CLIENTS);
         HouseReadSites.act(p,BATHROOM,"picked up the "+ROUTINES[item]+" from position "+(position+1));routine(p,item,position);
+        {var v=visit(p,BATHROOM);int age=v.getInt("Age");if(v.getBoolean("Knocked")&&!v.contains("GoneAt")&&age-v.getInt("ShiftedAt")>=60){v.putInt("ShiftedAt",age);save(p,BATHROOM,v);var base=HouseReadSites.base(p.server,p.getUUID(),BATHROOM);if(base!=null)HouseReadSites.sound(p,SoundEvents.WOOD_STEP,base.offset(HouseReadRooms.entry(BATHROOM)).south(),.35f);}}
         p.displayClientMessage(Component.literal("The "+ROUTINES[item]+". Use it at the mirror."),true);return true;
     }
     /** The routine item in hand goes back to its own place on the counter. */
@@ -188,6 +197,9 @@ public final class HouseReadMoments {
             if(age%20==1)HouseReadSites.sound(p,HouseReadRegistry.CLOCK.get(),b.offset(-6,0,-10),.30f);
             if(age%120==1)HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(-8,2,-5),.4f);
             if(age%5==0)p.serverLevel().sendParticles(p,ParticleTypes.FALLING_WATER,false,b.getX()+8+p.getRandom().nextDouble()*3,b.getY()+3.8,b.getZ()-10+p.getRandom().nextDouble()*12,2,.2,.1,.2,0);
+            clerk(p,b,t);
+            // 0.4.765: low voices behind the office door until the reader is called through it.
+            if(!t.getBoolean("Called")&&age>=60&&age-t.getInt("VoicesAt")>=DoorSounds.Carry.VOICES.every+40){t.putInt("VoicesAt",age);HouseReadSites.sound(p,DoorSounds.Carry.VOICES.sound.get(),b.offset(exit(room)).north(),.45f);}
             // The receptionist calls the reader through, and the House takes them on.
             // 0.4.166: the call waits until the House has seen how the reader passes the time; a first pick-up after the forty
             // seconds is given three seconds of its own before the door clicks.
@@ -202,8 +214,14 @@ public final class HouseReadMoments {
             if(age%120==1){HouseReadSites.sound(p,HouseReadRegistry.RAIN.get(),b.offset(-6,2,-5),.32f);HouseReadSites.sound(p,HouseReadRegistry.RADIATOR.get(),b.offset(-6,0,-1),.25f);}
             if(t.getBoolean("TapRunning")){if(age-t.getInt("TapSoundAt")>=60){HouseReadSites.sound(p,HouseReadRegistry.TAP.get(),b.offset(HouseReadRemainingRooms.TAP_AT),.5f);t.putInt("TapSoundAt",age);}if(age%5==0)p.serverLevel().sendParticles(p,ParticleTypes.CLOUD,false,b.getX()+.5,b.getY()+1.1,b.getZ()-8.4,1,.12,.04,.1,.005);}
             if(age>=200)t.putBoolean("NoteArmed",true);
+            // 0.4.765: someone in the hall. A knock on the door behind the reader and one line; a board shifting out there when the
+            // reader picks something up; steps going away down the hall once the light is out. The door is never tried.
+            var hall=b.offset(HouseReadRooms.entry(BATHROOM)).south();
+            if(age==KNOCK_AT&&!t.getBoolean("LightOff")){t.putBoolean("Knocked",true);for(int i=0;i<2;i++)HouseReadSites.sound(p,DoorSounds.KNOCK_FAR.get(),hall,.6f);}
+            if(age==KNOCK_AT+20&&t.getBoolean("Knocked"))HouseReadSites.called(p,TAKE_YOUR_TIME);
+            if(t.contains("GoneAt")){int gone=age-t.getInt("GoneAt");if(gone>=0&&gone<=24&&gone%8==0)HouseReadSites.sound(p,SoundEvents.WOOD_STEP,hall.south(1+gone/8),.4f-gone*.01f);}
             // After the routine the light goes out by itself; in the dark the House takes the reader on to bed.
-            if(t.contains("LightsOutAt")&&age>=t.getInt("LightsOutAt")&&!t.getBoolean("LightOff")){t.putBoolean("LightOff",true);t.putBoolean("BedroomOpen",true);lights(p,b,true);var sw=b.offset(HouseReadRemainingRooms.SWITCH_AT);var s=p.serverLevel().getBlockState(sw);if(s.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(sw,s.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);unlock(p,b,room);HouseReadSites.sound(p,SoundEvents.LEVER_CLICK,sw,.3f);HouseRead.flag(p,BATHROOM,"LightOff");}
+            if(t.contains("LightsOutAt")&&age>=t.getInt("LightsOutAt")&&!t.getBoolean("LightOff")){t.putBoolean("LightOff",true);if(t.getBoolean("Knocked"))t.putInt("GoneAt",age+10);t.putBoolean("BedroomOpen",true);lights(p,b,true);var sw=b.offset(HouseReadRemainingRooms.SWITCH_AT);var s=p.serverLevel().getBlockState(sw);if(s.is(HouseReadRegistry.FITTING.get()))p.serverLevel().setBlock(sw,s.setValue(HouseReadPropBlock.TURNED,true),Block.UPDATE_CLIENTS);unlock(p,b,room);HouseReadSites.sound(p,SoundEvents.LEVER_CLICK,sw,.3f);HouseRead.flag(p,BATHROOM,"LightOff");}
             if(t.getBoolean("BedroomOpen")&&p.getZ()<b.getZ()-10.6&&p.getX()>b.getX()+3&&p.getX()<b.getX()+6){save(p,room,t);HouseReadSites.leave(p,true);}
         }else if(room==SHELTER){
             HouseReadShelter.ensure(p,b,t);
@@ -286,4 +304,23 @@ public final class HouseReadMoments {
     }
     static void literal(CompoundTag t,String words){var list=t.getList("Actions",Tag.TAG_STRING);if(list.size()<64)list.add(StringTag.valueOf(words));t.put("Actions",list);}
     public static void clear(){LAST_MUSIC.clear();}
+    /** 0.4.765: the waiting room's sign-in sheet; the shape behind the frosted glass, which never slides it open. */
+    public static final String SHEET="The sign-in sheet. The last line already has your name on it, in someone else's handwriting.";
+    static final Vec3 CLERK_AT=new Vec3(2.5,.5,-13.4);
+    private static void clerk(ServerPlayer p,BlockPos b,CompoundTag t){
+        var l=p.serverLevel();var spot=new Vec3(b.getX()+CLERK_AT.x,b.getY()+CLERK_AT.y,b.getZ()+CLERK_AT.z);
+        if(!t.hasUUID("Clerk")){if(!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(BlockPos.containing(spot))))return;var a=LiteraryRegistry.ACTOR.get().create(l);if(a==null)return;
+            a.appearance(LiteraryActor.SILHOUETTE,HouseReadPorch.SITTER);a.bind(LabyrinthPlace.READ_WAITING,p.getUUID());a.setNoGravity(true);a.noPhysics=true;a.setNoAi(true);a.setCustomNameVisible(false);
+            a.moveTo(spot.x,spot.y,spot.z,0,0);a.setYHeadRot(0);a.yBodyRot=0;a.gesture(HouseReadPorch.SIT);if(l.addFreshEntity(a))t.putUUID("Clerk",a.getUUID());return;}
+        if(!(l.getEntity(t.getUUID("Clerk")) instanceof LiteraryActor a))return;
+        // Head down over the desk; up, toward the reader, while they stand at the counter. It never gets up.
+        boolean at=p.getZ()<b.getZ()-9&&Math.abs(p.getX()-b.getX()-.5)<7;
+        float yaw=at?(float)Math.toDegrees(Math.atan2(-(p.getX()-a.getX()),p.getZ()-a.getZ())):0;a.setYHeadRot(Math.max(-60,Math.min(60,yaw)));a.setXRot(at?0:35);
+        if(at&&!t.getBoolean("ClerkLooked")){t.putBoolean("ClerkLooked",true);}
+    }
+    /** 0.4.765: the bathroom's knock, a few seconds in, and the one line said through the door after it. */
+    public static final int KNOCK_AT=40;
+    public static final String TAKE_YOUR_TIME="Take your time.";
+    /** The song strips, read in turn while the song plays. */
+    public static final List<String> STRIPS=List.of("The strips are typed. The names have run in the damp.","One strip is newer than the rest, and blank.","The button under the playing one is worn pale.","Someone has written a date on a strip in pencil, and rubbed it out.");
 }

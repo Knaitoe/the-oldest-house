@@ -42,8 +42,17 @@ public final class HouseReadShelter {
     public static int age(ServerPlayer p){return switch(HouseRead.value(LabyrinthData.get(p.server),p.getUUID(),HouseRead.Trait.AGE,false)){case "ANALOG"->2;case "TRANSITIONAL"->1;default->0;};}
     /** What the account and the hints call them: the boy and the girl, or the man and the woman for older readers. */
     static String name(boolean man,int age){return man?age>0?"the man":"the boy":age>0?"the woman":"the girl";}
+    /**
+     * 0.4.765, the quiet rooms' double readings: one of the two, chosen per reader, looks up at them as they come in and then looks
+     * away (LOOK_FROM to LOOK_TO). Each makes room on the rail the first time the reader comes near (ROOM_NEAR), sliding along it
+     * toward the lake. The first time each is looked at during the song they look out at the rain for SHY ticks before they come.
+     * Neither says anything; being looked at can be an invitation or being sized up, and the room keeps no answer for it.
+     */
+    public static final int LOOK_FROM=10,LOOK_TO=50,SHY=30,ROOM_TICKS=12;
+    static final double ROOM_NEAR=5.5,ROOM_STEP=.075;
     public static void ensure(ServerPlayer p,BlockPos b,CompoundTag t){
         if(!t.contains("CastAge"))t.putInt("CastAge",age(p));
+        if(!t.contains("LooksUp"))t.putString("LooksUp",p.getRandom().nextBoolean()?"Man":"Woman");
         for(int i=0;i<2;i++){String key=i==0?"Man":"Woman";if(t.hasUUID(key))continue;double x=b.getX()+.5+(i==0?-HouseReadRemainingRooms.FIGURE_X:HouseReadRemainingRooms.FIGURE_X),z=b.getZ()+HouseReadRemainingRooms.FIGURE_Z;if(!p.serverLevel().areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(BlockPos.containing(x,b.getY(),z))))continue;var actor=LiteraryRegistry.ACTOR.get().create(p.serverLevel());if(actor==null)continue;
             // Each leans back on their own rail, facing across the floor.
             float yaw=i==0?-90:90;actor.appearance(i==0?LiteraryActor.READ_MAN:LiteraryActor.READ_WOMAN,phase(t.getInt("CastAge"),false));actor.bind(LabyrinthPlace.READ_SHELTER,p.getUUID());actor.setNoGravity(true);actor.moveTo(x,b.getY(),z,yaw,0);actor.setYHeadRot(yaw);actor.yBodyRot=yaw;actor.setCustomNameVisible(false);if(p.serverLevel().addFreshEntity(actor))t.putUUID(key,actor.getUUID());}
@@ -55,12 +64,37 @@ public final class HouseReadShelter {
         if(dance.equals(man?"man":"woman")||dance.equals("both"))partner(a,p,man,dance.equals("both"),t.getBoolean("Settled"),t);
         else if(t.getBoolean("Settled")||!dance.isEmpty()){if(a.gesture()==HAND)a.gesture(STAND);if(p.distanceToSqr(a)<100)face(a,p,true);}
         else if(t.getBoolean("SongStarted")&&t.getInt("SongAge")<900){
-            approach(p,a,t,man,age);
+            if(!shy(p,a,t,man))approach(p,a,t,man,age);
             // A step away does not undo standing beside them; walking off does.
             boolean near=p.distanceToSqr(a)<9;int linger=near?t.getInt(key)+1:Math.max(0,t.getInt(key)-3);t.putInt(key,linger);
             if(linger>=60&&near){a.appearance(a.role(),phase(age,true));if(!t.getBoolean(key+"Noted")){t.putBoolean(key+"Noted",true);t.putBoolean("NoteArmed",true);boolean older=age>0;HouseReadMoments.literal(t,man?(older?"stood beside the man by the rail":"stood beside the boy by the rail"):(older?"stood beside the woman with the bottle":"stood beside the girl with the bottle"));HouseRead.first(p,HouseReadSites.Room.SHELTER,"Stood",man?"man":"woman");}}
         }
+        if(dance.isEmpty()&&!t.getBoolean("Settled"))before(p,a,t,man);
         a.setDeltaMovement(Vec3.ZERO);own.put(HouseReadSites.Room.SHELTER.key(),t);HouseReadSites.save(p.server,p.getUUID(),own);
+    }
+    /**
+     * The first look during the song: they turn to the rain before they come. Returns whether they are still turned away. While
+     * turned away the reader's look does not bring them, and they stay on the rail.
+     */
+    private static boolean shy(ServerPlayer p,LiteraryActor a,CompoundTag t,boolean man){
+        String key=man?"Man":"Woman";int age=t.getInt("Age");
+        if(t.getBoolean(key+"Came"))return false;
+        if(!t.contains(key+"ShyAt")){if(!watched(p,a))return false;t.putInt(key+"ShyAt",age);}
+        if(age>=t.getInt(key+"ShyAt")+SHY)return false;
+        // Out over the lake, toward the rain, head only.
+        a.setYHeadRot(man?-150:150);if(a.gesture()!=LEAN)a.gesture(LEAN);return true;
+    }
+    /** The look up on coming in, and making room on the rail when the reader first comes near. */
+    private static void before(ServerPlayer p,LiteraryActor a,CompoundTag t,boolean man){
+        String key=man?"Man":"Woman";int age=t.getInt("Age");if(t.getBoolean(key+"Came"))return;
+        float lean=man?-90:90;boolean leaning=a.gesture()==LEAN;
+        if(key.equals(t.getString("LooksUp"))&&age>=LOOK_FROM&&age<LOOK_TO){if(leaning)face(a,p,false);t.putBoolean("LookedUp",true);}
+        else if(key.equals(t.getString("LooksUp"))&&age>=LOOK_TO&&!t.getBoolean("LookedAway")){t.putBoolean("LookedAway",true);if(leaning)a.setYHeadRot(lean);}
+        if(!t.contains(key+"RoomAt")&&p.distanceToSqr(a)<ROOM_NEAR*ROOM_NEAR)t.putInt(key+"RoomAt",age);
+        if(t.contains(key+"RoomAt")){int since=age-t.getInt(key+"RoomAt");
+            if(since<ROOM_TICKS){var before=a.position();a.move(MoverType.SELF,new Vec3(0,0,-ROOM_STEP));a.walkAnimation.update((float)a.position().distanceTo(before)*8,.4f);face(a,p,false);}
+            else if(since==ROOM_TICKS&&leaning)a.setYHeadRot(lean);}
+        if(t.getBoolean("LookedUp")&&!t.getBoolean("LookedBack")&&age<LOOK_TO+20&&key.equals(t.getString("LooksUp"))&&HouseReadMoments.framed(p,a)){t.putBoolean("LookedBack",true);HouseReadMoments.literal(t,"looked back at "+name(man,t.getInt("CastAge"))+", who had looked up first");}
     }
     /** Looked at, they come across the floor; not looked at, they stay where they are and never follow. Near enough, a hand. */
     private static void approach(ServerPlayer p,LiteraryActor a,CompoundTag t,boolean man,int age){
