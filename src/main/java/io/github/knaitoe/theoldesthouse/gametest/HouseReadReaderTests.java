@@ -28,6 +28,7 @@ public final class HouseReadReaderTests {
     @AfterBatch(batch="read_yard") public static void yardDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_glass") public static void glassDone(ServerLevel ignored){close();}
     @AfterBatch(batch="read_body163") public static void bodyDone(ServerLevel ignored){close();}
+    @AfterBatch(batch="read_evening") public static void eveningDone(ServerLevel ignored){close();}
     private static void close(){HouseReadSites.clear();if(active!=null){active.close();active=null;}}
     private static LiteraryTests.Fixture fixture(GameTestHelper h){active=new LiteraryTests.Fixture(h);return active;}
     private static ServerPlayer player(GameTestHelper h,LiteraryTests.Fixture f,String name){var p=NativeTestPlayers.survival(h,name);f.players.add(p);io.github.knaitoe.theoldesthouse.opening.OpeningSequence.state(p).markEntered();p.setNoGravity(true);return p;}
