@@ -116,8 +116,10 @@ journeys have been measured.
   - reset with the site: Fallow and Last Seen keep their day in memory and reset it once the site has been empty for a while, so a
     reader who comes back late finds a fresh day rather than a held one.
 
-  Only Uncanny, Holloway and the clapping game have a case that logs a reader out under the lock and back in. The other seven are
-  the next cases to write, each in its own story's tests, since each lock is reached only by playing that story to it.
+  Uncanny, Holloway, the clapping game and the stillness (`StillnessTests`, a reader logged out mid-hunt: their part kept, held
+  on return exactly while it is still in the hall, let out once it goes) have a case that logs a reader out under the lock and
+  back in. The other six are the next cases to write, each in its own story's tests, since each lock is reached only by playing
+  that story to it.
 - **Leaving before the account is read** is not yet covered.
 
 ## Still to do, in the review's order

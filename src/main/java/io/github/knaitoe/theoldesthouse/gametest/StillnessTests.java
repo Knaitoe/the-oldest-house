@@ -98,6 +98,29 @@ public final class StillnessTests {
     }
     @AfterBatch(batch="still_finished") public static void finishedDone(ServerLevel l){close();}
 
+    private static boolean present(int m){return m==Stillness.ENTERING||m==Stillness.HUNTING||m==Stillness.OVER||m==Stillness.LEAVING;}
+    /** 0.4.766 (the endings pass): a reader who logs out under it comes back to the same hall, still held while it is there, their part of the story kept; once it goes they may leave. */
+    @GameTest(template="empty",batch="still_return",timeoutTicks=900)
+    public static void aReaderWhoLogsOutUnderItIsHeldOnReturnAndKeepsTheirPart(GameTestHelper h){
+        var f=fixture(h);var p=f.player("still_return",P);var id=p.getUUID();ServerPlayer[] back={null};net.minecraft.nbt.CompoundTag[] before={null};
+        h.startSequence().thenExecute(()->hold(f)).thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the hall is resident"))
+            .thenExecute(()->{f.source(p,P);place(f,p,.5,-26.5);})
+            .thenWaitUntil(()->h.assertTrue(mode(f)==Stillness.HUNTING,"it comes in: "+mode(f)))
+            .thenExecute(()->{h.assertTrue(Stillness.locked(p)&&LiteraryVignettes.retreatLocked(p),"held while it is in the hall");before[0]=f.own(p,P).copy();
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));f.players.remove(p);NativeTestPlayers.remove(p);})
+            .thenIdle(20)
+            .thenExecute(()->{var q=NativeTestPlayers.survival(h,"still_return",id);f.players.add(q);q.setNoGravity(true);place(f,q,.5,-26.5);back[0]=q;})
+            .thenIdle(2)
+            .thenExecute(()->{var q=back[0];var own=f.own(q,P);
+                for(var key:before[0].getAllKeys())h.assertTrue(own.contains(key),"their part of the story is kept across the logout ("+key+"): "+own);
+                h.assertTrue(!own.getBoolean("Completed"),"and nothing is finished for them by being away");
+                h.assertTrue(Stillness.locked(q)==present(mode(f)),"on return they are held exactly while it is still in the hall: mode "+mode(f));
+                Stillness.edit(q.server,t->{t.putDouble("X",StillnessSite.LAIR.x);t.putDouble("Z",StillnessSite.LAIR.z+.2);});})
+            .thenWaitUntil(()->h.assertTrue(mode(f)==Stillness.GONE&&!Stillness.locked(back[0])&&!LiteraryVignettes.retreatLocked(back[0]),"once it goes the doors let them out: "+mode(f)))
+            .thenSucceed();
+    }
+    @AfterBatch(batch="still_return") public static void returnDone(ServerLevel l){close();}
+
     @GameTest(template="empty",batch="still_over",timeoutTicks=900)
     public static void stillUnderItTheBreathsAreCountedAndItMovesOn(GameTestHelper h){
         var f=fixture(h);var p=f.player("still_over",P);
