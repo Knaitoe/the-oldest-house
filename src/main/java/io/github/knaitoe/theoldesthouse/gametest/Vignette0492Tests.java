@@ -86,6 +86,29 @@ public final class Vignette0492Tests {
         }).thenSucceed();
     }
     @AfterBatch(batch="review492_bar_capture") public static void barDone(ServerLevel l){close();}
+    @AfterBatch(batch="review492_capture_login") public static void captureLoginDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="review492_capture_login",timeoutTicks=2400)
+    public static void aReaderTakenByTheMenWhoLogsOutIsStillHeldOnReturnAndTheCaptureFinishes(GameTestHelper h){
+        var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("men_login",place);var id=p.getUUID();lease(f,place);f.at(p,place,-17.5,0,-22.5);
+        ServerPlayer[] back={null};net.minecraft.nbt.CompoundTag[] before={null};Vec3[] at={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready()&&LiteraryVignettes.shared(f.data(),place).hasUUID("Wade"),"the original native cast and sections are ready")).thenExecute(()->{
+            var night=LiteraryVignettes.shared(f.data(),place);night.putInt("CrashAt",0);night.putInt("Night",ElkLotNight.MEN_OUT+ElkLotNight.SEARCH+ElkLotNight.STAGE*3);LiteraryVignettes.shared(f.data(),place,night);
+            var own=f.own(p,place);own.putBoolean("ElkSeen",true);LiteraryVignettes.save(f.data(),p.getUUID(),place,own);
+        })
+        .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("CaptureTicks0492")>0,"the men reach the reader and the capture begins"))
+        .thenExecute(()->{h.assertTrue(ElkLotEnding.held(p)&&LiteraryVignettes.retreatLocked(p),"held while the men have them");before[0]=f.own(p,place).copy();at[0]=p.position();
+            NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));f.players.remove(p);NativeTestPlayers.remove(p);})
+        .thenIdle(20)
+        .thenExecute(()->{var q=NativeTestPlayers.survival(h,"men_login",id);f.players.add(q);q.connection.resetPosition();q.teleportTo(f.level(place),at[0].x,at[0].y,at[0].z,0,0);back[0]=q;})
+        .thenIdle(2)
+        .thenExecute(()->{var q=back[0];var own=f.own(q,place);
+            for(var key:before[0].getAllKeys())h.assertTrue(own.contains(key),"their part of the night is kept across the logout ("+key+"): "+own);
+            h.assertTrue(own.getInt("CaptureTicks0492")>0&&ElkLotEnding.held(q)&&LiteraryVignettes.retreatLocked(q),"on return the men still have them: "+own);
+            h.assertTrue(!own.getBoolean("Ready")&&!WitnessAccount.has(f.data(),id,WitnessAccount.Story.ELK_LOT),"and being away finished nothing for them");})
+        .thenWaitUntil(()->h.assertTrue(f.own(back[0],place).getBoolean("Ready"),"the capture still finishes after the return: capture "+f.own(back[0],place).getInt("CaptureTicks0492")))
+        .thenExecute(()->h.assertTrue(!ElkLotEnding.held(back[0])&&!LiteraryVignettes.retreatLocked(back[0])&&ElkLotEnding.MEN.equals(f.own(back[0],place).getString("Outcome")),"and once it does they are let go, with the men's outcome"))
+        .thenSucceed();
+    }
     @GameTest(template="empty",batch="review492_bar_furniture04112",timeoutTicks=900)
     public static void theOriginalMenFindAReaderAcrossTheActualPoolTableAndMarlaIsWithinReach(GameTestHelper h){
         var f=fixture(h);var place=ElkLot.PLACE;var p=f.player("bar_furniture",place);var b=f.base(place);lease(f,place);var ids=new HashMap<String,UUID>();
