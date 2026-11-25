@@ -1,194 +1,229 @@
-# The porch as a whole evening — a proposal (November 25)
+# The porch: one evening, read two ways — a proposal (November 25)
 
-The owner, 25 November:
+The owner, 25 November, on the first draft of this (a long supper indoors and a list of new tags, both withdrawn):
 
-> We should also better design the quiet room vignettes. More read tags, a better developed haven vignette at least. Can you script design docs for this too?
+> No, most of what you've suggested is obtuse and without impact. I meant the overall flow of the porch evening. Something should immediately attract the reader and beckon them inside - a silhouette through the window - it should seem simultaneously comforting and dangerous. Outside, there should similarly be things both distracting and potentially warding them away from the danger. The dialogue, cues, and interactions have to be deliberate and intentional and allow players their own interpretation of danger or safety.
 
-This is the second of two documents. `docs/READ_TAGS_PROPOSAL.md` proposes the new tags; this one is the room most of them are
-read in. **Nothing is built, and nothing will be until the owner has read both.** The yard, the whistle, the voice's line and the
-carving on the rail are the owner's and are kept exactly. Everything past the screen door is mine.
+This is the redesign to that direction. **Nothing is built.** The yard, the whistle, the voice's first line and the carving on
+the rail are the owner's and are kept exactly.
 
-## What the porch is today
+## The one rule
 
-- A yard at dusk, a whistle, and two hundred ticks to answer it: in through the screen door (`HAVEN`), under the porch
-  (`DANGER`), down the gravel (`RUNAWAY`).
-- A reader who goes in finds "a kitchen with a plate kept warm and no one at the table", may sit in one chair, and leaves by the
-  front hall.
-- It is the last quiet room, and its closing card is *"Welcome home. I've set a place for you at the table."*
+**Every cue in the yard is a single thing that can be taken as safe or as a threat, and the room never says which.**
 
-What is wrong with it:
+- No cue is only comforting and none is only frightening. If a thing can be read one way only, it is cut or changed.
+- Nothing resolves. No face is seen, no blow lands, no kindness is proved. The reader leaves with their own reading and nothing
+  to check it against.
+- The House reads what the reader *did* about it. Two readers who saw the same silhouette and heard the same line will have gone
+  different ways, and that difference is the room's whole purpose.
 
-- **The answer the room is named for is its emptiest.** A reader who goes in gets one chair and a door. The home is never shown.
-- **The card promises a table and the room has no supper.**
-- **The other two answers end the room.** A reader who hides or runs is read once and let out.
-- **It is the capstone and knows nothing.** Five rooms came before it and none of what they learned is in this house.
+## The flow
 
-## In short
+The room runs on where the reader is, not on a clock. The yard is about thirty blocks deep, from the swing set where the reader
+arrives to the back steps.
 
-- **Going in is now the evening.** Hands washed, the table set, people at it, supper, the dishes, the stairs, a bed. About eight
-  minutes, with nothing to solve and nothing that goes wrong.
-- **The house is this reader's.** Its era, the faces at the table, the coat on the hook and the things on the bathroom sink come
-  from what the five earlier rooms read.
-- **Six new tags are read by living the evening:** how many plates, what is on the reader's, whether a question is answered,
-  what gets done unasked, how the light is left, and what is taken up to bed.
-- **Hiding and running get an evening too,** shorter, with the same six tags read from different things: a plate left in the
-  oven, a counter at the end of the road.
-- **Nobody is seen arriving.** The reader sets places and, when they look back from the counter, somebody is sitting at one.
-
-## The yard (unchanged, with two additions)
-
-As built: the swing set, the gravel, the porch bulb, the supper whistle, the voice.
-
-> "Wash your hands before you sit down, alright? It's getting cold."
-
-Additions:
-
-- **A dog under the porch and a cat on the rail,** the same distance either side of the steps (`ANIMAL`, if the owner keeps it).
-  Whichever the reader goes to first follows them for the rest of the evening.
-- **Hesitation is kept.** A reader who climbs a step and comes down, or starts down the gravel and turns, has that written as an
-  observation. It changes no read.
-
-The window stays two hundred ticks and sorts `HOME` as it does now. What follows depends on the answer.
-
-## Haven: the evening
-
-The reader is at child height from the screen door on, as at the kitchen table.
-
-### The house
-
-A two-story clapboard house, built whole: mudroom, kitchen with a table for eight, front room, hall, stairs, a bathroom, two
-bedrooms and the reader's own. The way on is the front door, locked until the reader has gone to bed.
-
-What the earlier rooms put in it:
-
-| Read | What it sets |
-| --- | --- |
-| `AGE` | The front room's set: a console radio and a paper, a television on a cart with the six o'clock news, or a flat screen with a game left paused. The kitchen phone: wall set with a cord, cordless on a base, or a cell charging on the counter. |
-| `TONE` | The faces and hands of everyone at the table, within two crayons of the reader's own. |
-| `HAIR` | The reader's routine, and only theirs, laid out on the upstairs sink. |
-| `SELF` | The coat the reader first took in the coatroom, small, on the lowest hook in the mudroom. |
-| `DRAWN_TO` | Nothing. This is a child's evening. |
-
-A reader with no read for one of these gets today's plain version of that thing.
-
-### The beats
-
-| | What happens | What is read |
+| | Where | What happens |
 | --- | --- | --- |
-| **1. The sink** | A step stool at the kitchen sink, a bar of soap. The voice has already asked. | Observation only: *washed*, *ran the tap and didn't*, *walked past*. |
-| **2. The table** | A stack of eight plates on the counter, eight chairs, nothing laid. *"Set the table for me?"* The reader carries plates one at a time and stops when it looks right to them. | **`TABLE`**: the count when they stop for ten seconds or sit. |
-| **3. The people** | Each time the reader turns back to the counter, one more of the places they laid has somebody in it. Nobody sits at a place that was not laid. | Second signal for `TABLE`: cups, or chairs pulled out. |
-| **4. Where to sit** | The reader's own chair is whichever laid place they take. | Observation: *at the end*, *between two*, *nearest the door*. (`CLOSE`, if kept.) |
-| **5. Supper** | Four dishes go round: a roast, greens, bread, a pie. The reader serves their own plate. Eating is a use on the plate, a bite at a time. | **`EATS`**: what they took, then what they left. |
-| **6. The question** | Somebody asks how the day was. The talk panel: a long reply, a short one, or nothing until the talk moves on. Later, a second question from somebody else. | **`SPEAKS`**. |
-| **7. After** | People get up. Plates stay on the table, the tap drips, the dog is at the screen door, the smallest one has a shoe untied. Forty seconds; then somebody asks for one thing, once. | **`CARE`**. |
-| **8. The front room** | The set is on. A place on the rug, a place on the couch beside somebody, the stairs. No clock on this; the reader goes up when they go up. A second whistle of sorts: *"Bed."* after three minutes. | Observation. |
-| **9. Upstairs** | The bathroom, with the reader's routine on the sink. Doing it is offered and never needed. | Second signal for `HAIR`. |
-| **10. The room** | A bed, a shelf with a dozen small things, room in the hand for one. A lamp, a night-light in the wall, the door and the hall light beyond it. | **`KEEPS`**: what they take and where it goes. **`NIGHT`**: the room as it is when they lie down. |
-| **11. The hall light** | A minute after the reader lies down, somebody comes up, stands at the door, and turns the hall light off. | Second signal for `NIGHT`: whether the reader gets up to change anything. |
-| **12. The card** | Black. *"Welcome home. I've set a place for you at the table."* The front door is open. | |
+| **1. The window** | On arrival | The first thing in view, dead ahead: the kitchen window, lit, with a thin curtain and **somebody behind it.** |
+| **2. The whistle** | Six seconds in, or on the first step toward the house | The supper whistle, then the voice. The silhouette's head turns toward the yard. |
+| **3. The lawn** | Crossing it | The house's cues come one at a time as the reader nears. The yard's own pulls are to either side, all in view from the start. |
+| **4. The truck** | Ninety seconds in, if the reader is still outside | Headlights sweep the yard. Somebody else is home. The sound of the house changes. |
+| **5. The doorway** | Thirty seconds after the truck, if still outside | The screen door opens and the one who cooked stands in it, backlit. |
+| **6. The answer** | Whenever the reader commits | In through the door, under the porch, or down the road. Each has a short, quiet end that is also double. |
 
-### The people at the table
+A reader who walks straight in sees stages 1 to 3 and is inside in under a minute. A reader who stays out is pressed harder at 4
+and 5. Nobody is held longer than about three minutes.
 
-- **They are never named and never called anything.** No "Mom", no "Dad", no "Grandma". The voice from the kitchen is *the one
-  who cooked*. Others are told apart by where they sit and what they do: the one who reads at the table, the one who talks with
-  their mouth full, the smallest one.
-- **How many there are is the reader's doing.** One plate: the reader eats with the one who cooked standing at the counter. Two:
-  the two of them. Five: a full, loud table.
-- **Their ages spread by the count,** oldest first: the one who cooked, then an older one, then others the reader's size and
-  smaller.
-- **They talk to each other, not at the reader,** except for the two questions and the one request.
-- **They are painted for this room** (eight sheets) and tinted to the reader's `TONE`.
+## The pull inside: the silhouette
 
-### What it must not do
+Somebody stands at the kitchen counter behind the curtain, seen only as a shape against the light. They are never seen any
+other way: no face, no clothes, nothing that says who they are to the reader.
 
-- **No scare, no wrongness, no turn.** Nobody's face slips. The door upstairs is not tried. This is the one house in the game
-  where nothing is the matter, and the rest of the game is frightening partly because this evening happened.
-- **No judgement.** A reader who lays one plate, eats nothing, says nothing and takes nothing to bed has as good an evening as
-  any, and the card is the same.
-- **No test showing.** Nobody says "you only set one". The carving on the rail gains its writing unseen, as now.
+What the shape does, and how each can be taken:
 
-## Danger: after the light goes off
+| The shape | Taken as safe | Taken as a threat |
+| --- | --- | --- |
+| An arm rising and falling at the counter, steady. A knife on a board, heard faintly. | Supper is being made. | It is a knife. |
+| It hums. Four bars of something, then the same four again. | Somebody content at their work. | Somebody keeping themselves level. |
+| At the whistle, the head turns to the window and stays turned. | They are looking out for the reader. | They are looking at the reader. |
+| When the reader's foot first touches gravel, the chopping stops. | They heard, and are glad. | They heard. |
+| It lifts the curtain's edge with one finger and lets it fall. | Checking the reader is on their way. | Checking where the reader is. |
+| It carries one plate to the table and sets it down. Only one. | A place kept for the reader. | Nobody else is eating tonight. |
+| If the reader stands still on the lawn for ten seconds, it stands still too. | Waiting. | Waiting. |
 
-Today this reader is let out by the side gate. Proposed instead:
+The shape is the room's hook and must be in the reader's first frame. Everything else in the yard is placed so that looking at it
+means looking away from the window.
 
-- The kitchen light goes off and the porch bulb clicks, as now. The screen door is left unlatched.
-- **The kitchen, dark.** A plate in the oven under a pan lid, with all four dishes on it. The reader eats standing or carries it
-  out to the step. **`EATS`** from what is left on it.
-- **The table** still has the places from supper: the count is whatever the House already suspects, or four. One place was laid
-  and not used. Observation only; `TABLE` is not read here.
-- **A note under the plate,** two words, unsigned. Observation: *read it*, *left it*.
-- **The stairs,** which creak on the third and seventh. The reader's room. The same shelf (**`KEEPS`**) and the same three
-  lights (**`NIGHT`**), with one more thing to do: the door has a bolt on the inside.
-- Nobody comes up. Nobody is on the stairs. The hall-light beat does not happen.
-- **`SPEAKS` and `CARE` are not read.** They are picked up at their second places later (the Last Stop; the Ghosts set).
-- The card is this reader's own, already written: the House's closing line for the porch.
+## What is heard from the house
 
-## Runaway: the end of the road
+The owner's sounds, kept, each already double:
 
-Today the gravel becomes a dirt road to a door. Proposed instead:
+- **Forks on plates:** people are eating. Or one person is, and has started without waiting.
+- **The six o'clock news, low:** it is hard to tell from two people talking with their voices held down.
+- **An ice tray cracked:** a drink being made. It sounds like something breaking.
+- **Heels on the linoleum** after the voice. The carving on the rail is about this sound and how hard it lands. The step is
+  recorded once, at one weight, and played the same for everybody.
 
-- The road reaches a two-lane and a lit counter: a roadside place with six stools, two booths, one person working.
-- **The reader has what was in their pockets:** a few coins on the counter when they sit.
-- **`EATS`:** a card with four things on it and coins for one.
-- **`TABLE`:** a stool at the counter, a booth alone, or the booth where two others already are. Read weakly (tentative only).
-- **`SPEAKS`:** the one working asks where they're headed. The same three ways to answer.
-- **`KEEPS`:** a bag the reader is carrying, opened on the seat: a dozen small things packed in a hurry. The one they take out
-  and set on the counter is the read.
-- **`NIGHT`:** not read. **`CARE`:** the reader can bus their own plate.
-- A bus pulls in. Its door is the way on.
+Added:
 
-## Fairness between the three
+- **A laugh,** once, short, that stops. No second voice joins it.
+- **The tap run hard, then off.**
+- **A cupboard shut.** Not slammed. Not gently.
 
-- Each answer gets a scene of its own length: about eight minutes, four, and four.
-- Every tag is read in at least two of the three, and every tag has a second place later in the House, so no reader is left
-  unread because of how they answered a whistle.
-- A reader's `HOME` read is still only what they did in the yard. Nothing inside changes it.
+## What is said
 
-## What the evening leaves in the House
+One voice, the owner's "tired adult voice", flat: never warm and never sharp. The lines are written to hold both readings at
+that one delivery. Which is said depends on where the reader is and what they have done.
 
-- **The place stays set.** Later, deep in the halls, the Family Copy and the familiar room lay the reader's count of plates and
-  put their kept thing on the shelf.
-- **The kept thing is real.** The one thing the reader took up to bed is in their pocket when they leave: a small, useless item
-  with a name. The hall stand will hold it for the cell.
-- **The late return** (from the earlier list of ideas): once, far past the quiet rooms, a door opens on this kitchen again in
-  daylight, with the table cleared and the reader at full height. Nobody is there. The plates are in the rack, the reader's
-  count of them. It is not a story and has no account.
+| When | The line | Safe | Threat |
+| --- | --- | --- | --- |
+| After the whistle (the owner's) | "Wash your hands before you sit down, alright? It's getting cold." | Supper is ready. | A condition, and a clock. |
+| The reader has not moved in twenty seconds | "I can see you out there." | A fond thing to say. | A fact. |
+| The reader goes to the swing | "Five minutes. I mean it." | Indulgence. | A limit. |
+| The reader goes toward the road | "Don't make me come out there." | What everybody's people say. | What it says. |
+| The reader goes under the porch | Nothing. The humming stops. | They have not noticed. | They have. |
+| The second whistle | "I'm not calling again." | They will, of course. | They will not. |
+| The truck pulls in | "Look who's home." | Good news. | A warning passed along. |
+| The reader's foot on the bottom step | "There you are." | Relief. | Got you. |
+| The reader stops at the screen door | "Well, come on. I won't bite." | A joke. | A joke somebody chose to make. |
+| The reader comes in | "Shut it behind you. Lock it." | Keeping the night out. | Keeping the reader in. |
 
-## More than one reader
+Rules for the lines:
 
-Unchanged: each reader has their own copy and their own evening. Friends meet again in the hall beyond, and the only thing they
-can compare is what they say to each other.
+- **No endearment and no name.** Nothing that settles what the speaker is to the reader.
+- **No question the reader can answer.** They cannot talk back, so nothing is clarified.
+- **Each line once.** A line repeated becomes nagging, and nagging is safe.
+
+## The house's own details
+
+Seen as the reader nears the steps:
+
+| The thing | Safe | Threat |
+| --- | --- | --- |
+| The porch bulb, on, with moths at it. It dims for a second when the tap runs. | A light left on for the reader. | A house with something wrong in its walls. |
+| The screen door, propped open with a brick. | Come in. | Somebody made sure it would not shut. |
+| A leather strap on a nail beside the door. | The dog's lead. | There is no dog in the yard. |
+| A pair of small shoes on the top step, side by side, toes to the wall. | The reader's own, left there. | Somebody small was told to line them up. |
+| The reader's chair, seen through the door, already pulled out. | A place ready. | A place assigned. |
+| The lit front-room window: somebody in an armchair, head down, not moving. | Asleep in front of the news. | Not moving. |
+
+## The pulls away: the yard
+
+Each thing outside does two jobs. It is somewhere better to be than the kitchen for a minute, and it is a reason, for a reader
+looking for one, not to go in. All are in view from the swing set. All can be used.
+
+| The thing | What the reader can do | As distraction | As warning |
+| --- | --- | --- | --- |
+| **The swing set.** One swing is still moving when the reader arrives. | Ride it. | The evening is not over yet. | Somebody just got off it in a hurry. |
+| **Fireflies,** thickest toward the trees and the road. | Follow them; they drift ahead and away from the house. | Something to chase. | The yard itself leads out. |
+| **A bicycle** on its side in the gravel, pointed at the road, front wheel still ticking round. | Stand it up. It does not ride. | Somebody's bike. | Dropped, and pointed the way out. |
+| **Under the porch.** Through the lattice: a blanket, a flashlight, three comic books, a jar with holes punched in the lid. | Crawl in. The flashlight works. | A fort. | Somebody has needed this place before, often enough to furnish it. |
+| **The dog.** A dog in the yard that comes to the reader. At the whistle it goes under the porch and lies down. | Pet it. Follow it. | Its supper is under there. | It knows the whistle. |
+| **The upstairs window.** Somebody small, a shape like the one below. A hand goes flat against the glass and stays. | Look. Nothing else. | A wave. | Stop. |
+| **Next door.** Over the fence, another porch with its light on and somebody on the steps who lifts a hand. If the reader comes to the fence: "You go on in now. You know how they get." | Stand at the fence. The gate does not open. | They get cross when supper goes cold. | They know how they get. |
+| **The mailbox** at the end of the gravel, its flag up. | Open it: one letter, addressed to the house, unopened, postmarked a long way off. | The mail. | Somebody got out, and writes. |
+
+Placement:
+
+- The swing and the bicycle are on the way to nothing. They hold a reader in the yard and commit them to no answer.
+- The lattice is beside the steps, so going to it means walking toward the house first. A reader hides only by passing close.
+- The road is behind the reader when they arrive. Choosing it means turning their back on the window.
+
+## The truck
+
+If the reader is still outside at ninety seconds:
+
+- Headlights turn in off the road and sweep the whole yard, the reader included, and stop on the house.
+- An engine runs a moment longer than it needs to, then cuts. A door. Boots on gravel, then on the front steps, out of sight.
+- The humming in the kitchen stops. The voice: "Look who's home."
+- Inside: a second voice, low, no words. The front-room figure has not moved.
+- From here the kitchen's sounds are fewer. The forks stop.
+
+Safe: the last one is home, and supper was waiting on them. Threat: the one who cooked went quiet when they came in.
+
+The truck is the room's one push. It is there so that a reader who has decided nothing is given something new to decide about,
+and it is as double as everything else.
+
+## The doorway
+
+If the reader is still outside thirty seconds after the truck:
+
+- The screen door opens. The one who cooked stands in it with the kitchen behind them: a shape, a dish towel in one hand,
+  something in the other that the light does not reach.
+- They do not come down the steps. "There you are." is not said here; it is for the bottom step.
+- They stand for fifteen seconds. Then, without a word, they sit down on the top step and leave room beside them.
+- If the reader still does not come, they get up and go in. The door is left open. The bulb stays on.
+
+Sitting down is the one gesture in the room that leans kind, and it is given only to the reader who held out longest. The thing
+in the other hand is never shown.
+
+## The three answers, and how each ends
+
+Each end is short and stays double. None confirms what the reader guessed.
+
+**In through the screen door.**
+- The kitchen, lit by one lamp that is behind the one who cooked, so they are a shape indoors too, at the stove with their back
+  turned.
+- "Shut it behind you. Lock it." The reader can, or can leave it. Either is seen and nothing is said.
+- The plate is on the table at the pulled-out chair. The sink is beside it. The reader sits or does not.
+- The one who cooked sets down a glass of milk, stands behind the reader's chair for a moment, and goes back to the stove.
+- Black. The House's line for the porch.
+
+**Under the porch.**
+- Boots cross the boards overhead and stop above the reader. The screen door opens.
+- To the dark, not loud: "Your plate's in the oven."
+- The door closes. The kitchen light goes off. The porch bulb stays on a moment, then clicks.
+- The dog is still beside the reader. The side gate is open.
+
+**Down the road.**
+- The whistle again, behind, fainter than it should be for the distance.
+- At the mailbox, if the reader looks back: the shape is in the doorway with one arm raised. A wave or a point; it holds for as
+  long as the reader looks and is gone when they look again.
+- If the reader does not look back, nothing happens at all, and the trees close over the gravel.
+
+## What the House takes from it
+
+The read is the three it has now, taken from the answer:
+
+- in through the door: `HAVEN`;
+- under the porch: `DANGER`;
+- down the road: `RUNAWAY`.
+
+What is added is small, and is what the reader did with the room's doubles:
+
+- **Locked the door or left it.** Kept with `HAVEN`; the account says which.
+- **Looked back from the mailbox or did not.** Kept with `RUNAWAY`.
+- **Came out from under the porch for the plate or left by the gate.** Kept with `DANGER`.
+- **How late.** Whether the reader went before the truck, after it, or had to be come out for.
+
+The account recites these as things done and draws nothing from them. *"You locked it."* is the whole sentence.
+
+## Keeping it balanced
+
+The room fails if it leans. A yard that is plainly a horror set sends everyone down the road; a yard that is plainly cozy sends
+everyone in.
+
+- **Count the readings.** Every row in the tables above has both columns filled. A new cue is added only with both.
+- **One delivery.** Every line is recorded once, flat. No alternate takes by read, by reader or by answer.
+- **No music.** Score would decide it for the reader.
+- **Check it in play.** The opt-in playtest log already records the answer. If more than about two in three go the same way, the
+  room is leaning, and a cue on the heavy side is cut before one on the light side is added.
 
 ## What it needs
 
-- **Site:** the house's interior (it is a shell today) and a roadside counter. A `supper` block family: plate, plate with each
-  dish, serving dishes, cup, step stool, the shelf's small things, night-light, bolt. About 50 textures.
-- **Cast:** eight painted people for the table, one for the counter; the dog and the cat.
-- **Screens:** the talk panel, as it is.
-- **Sound, subtitled:** forks, a chair pulled in, the news low, an ice tray, stairs, a hall switch, a bus.
-- **Systems reused:** child height (kitchen table), unseen changes, the talk panel, the House's body, tinting by `TONE`.
-
-## How it would be built
-
-1. The house's rooms, empty, and the three ways the yard now leads on.
-2. The table: plates, places, people arriving unseen. `TABLE`.
-3. Supper and the question. `EATS`, `SPEAKS`.
-4. After supper, the front room, the stairs. `CARE`.
-5. The room, the shelf, the lights, the hall light, the card. `KEEPS`, `NIGHT`.
-6. What the earlier reads put in the house.
-7. The dark kitchen for `DANGER`.
-8. The counter for `RUNAWAY`.
-9. The second readings in later stories, the account's sentences, the late return.
+- **The silhouette:** one figure drawn only as a shape behind a curtain and in a backlit doorway, with six actions (chop, hum
+  and sway, head turn, curtain, carry the plate, stand). A second small shape for the upstairs window.
+- **The house:** today's shell with a lit kitchen seen through the window and door, one lamp, the table and chair, the stove.
+- **The yard's things:** the bicycle, the den under the lattice, the strap, the shoes, the mailbox letter, the neighbor's porch
+  and figure, the dog, the truck (lights and sound; it is never seen whole).
+- **Sound, subtitled:** the knife, the hum, the laugh, the tap, the cupboard, the truck, the boots, ten lines in one voice.
+- **Nothing new in the read's code** beyond the four small facts above.
 
 ## Questions for the owner
 
-1. **Length.** Eight minutes is four times any other quiet room. Right for the last one, or too long before the House turns?
-2. **The people.** Unnamed and told apart by habit, as written, or should the reader's own account give them words later?
-3. **Arriving unseen.** People appear at laid places when the reader looks away. Warm, or does it tip into the uncanny too early?
-4. **Child height all evening?** Or full height, as the yard is now?
-5. **`DANGER`'s kitchen.** Is the plate in the oven and the bolt on the door the right weight, or too much for a quiet room?
-6. **The note under the plate.** What are its two words? I have not written them; I think they are the owner's.
-7. **The late return.** Wanted, and if so how deep?
-8. **The other five rooms.** This pass rebuilds only the porch. Should the waiting room, bathroom, coatroom and shelter get the
-   same treatment next, each with a tag of its own read by living in it a little longer?
+1. **The lines.** Are the ten in the right register, and are any too plainly one thing?
+2. **The truck.** One push is in the design. Is it wanted, or should the yard hold still until the reader chooses?
+3. **The thing in the other hand** at the doorway. Never shown, as written, or cut as too pointed?
+4. **Next door's line.** "You know how they get." is the nearest the room comes to telling. Keep, soften, or cut the neighbor?
+5. **Indoors.** The end inside is under a minute, with the one who cooked still only a shape. Enough, or should going in have
+   more to it?
