@@ -117,9 +117,10 @@ journeys have been measured.
     reader who comes back late finds a fresh day rather than a held one.
 
   Uncanny, Holloway, the clapping game and the stillness (`StillnessTests`, a reader logged out mid-hunt: their part kept, held
-  on return exactly while it is still in the hall, let out once it goes) have a case that logs a reader out under the lock and
-  back in. The other six are the next cases to write, each in its own story's tests, since each lock is reached only by playing
-  that story to it.
+  on return exactly while it is still in the hall, let out once it goes) and the Foyer (`FoyerOutcomeTests`, a reader it was let
+  in on: their part kept, still held on return, and the House's failure return still lands and lets them go) have a case that
+  logs a reader out under the lock and back in. The other five are the next cases to write, each in its own story's tests, since
+  each lock is reached only by playing that story to it.
 - **Leaving before the account is read** is not yet covered.
 
 ## Still to do, in the review's order

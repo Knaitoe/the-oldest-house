@@ -85,6 +85,30 @@ public final class FoyerOutcomeTests {
         }).thenSucceed();
     }
 
+    @AfterBatch(batch="foyer_return_login") public static void loginDone(ServerLevel l){close();}
+    @GameTest(template="empty",batch="foyer_return_login",timeoutTicks=1500)
+    public static void aReaderLetInWhoLogsOutIsStillHeldOnReturnUntilTheHouseTakesThemBack(GameTestHelper h){
+        var f=fixture(h);ServerPlayer[] p={null},back={null};UUID[] id={null};net.minecraft.nbt.CompoundTag[] before={null};
+        h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"the foyer and its yard are resident")).thenExecute(()->{
+            p[0]=player(h,f,"foyer_login");id[0]=p[0].getUUID();f.at(p[0],P,2.5,0,-11.5);
+            var own=f.own(p[0],P);own.putInt("FoyerClock136",200);own.putInt("FoyerStill131",FoyerEncounter.GLASS_STILL-1);own.putBoolean("FoyerThreat136",true);own.putBoolean("FoyerDarkLast136",false);LiteraryVignettes.save(f.data(),p[0].getUUID(),P,own);
+            lull(f);for(int i=0;i<1+(40+FoyerEncounter.HAND_WARNING)/5;i++)tick(f,p[0]);
+            lull(f);for(int i=0;i<1+(FoyerEncounter.GLASS_HOLD+40)/5;i++)tick(f,p[0]);
+            h.assertTrue(FoyerEncounter.held(f.own(p[0],P))&&LiteraryVignettes.retreatLocked(p[0]),"left in the dark, it is let in and the reader is held: "+f.own(p[0],P));
+            before[0]=f.own(p[0],P).copy();
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p[0]));f.players.remove(p[0]);NativeTestPlayers.remove(p[0]);})
+        .thenIdle(20)
+        .thenExecute(()->{var q=NativeTestPlayers.survival(h,"foyer_login",id[0]);f.players.add(q);q.connection.resetPosition();f.at(q,P,2.5,0,-11.5);back[0]=q;})
+        .thenIdle(2)
+        .thenExecute(()->{var q=back[0];var own=f.own(q,P);
+            for(var key:before[0].getAllKeys())h.assertTrue(own.contains(key),"their part of the foyer is kept across the logout ("+key+"): "+own);
+            h.assertTrue(FoyerEncounter.held(own)&&LiteraryVignettes.retreatLocked(q),"on return it is still inside and they are still held");
+            h.assertTrue(!own.getBoolean("Completed")&&!WitnessAccount.has(f.data(),id[0],WitnessAccount.Story.MOTION_LIGHT),"and being away finished nothing for them");})
+        .thenWaitUntil(()->h.assertTrue(f.own(back[0],P).getBoolean("FoyerFailureReturned136")&&!LabyrinthDoors.isBusy(back[0]),"the House still takes them back after the return: "+f.own(back[0],P)))
+        .thenExecute(()->h.assertTrue(!LiteraryVignettes.retreatLocked(back[0]),"and once back they are no longer held"))
+        .thenSucceed();
+    }
+
     private static void export(LiteraryTests.Fixture f,String name,int x0,int x1,int z0,int z1,int y0,int y1,float yaw){
         var l=f.level(P);var b=f.base(P);var file=new JsonObject();file.addProperty("name",name);file.addProperty("viewYaw",yaw);
         var palette=new JsonArray();var blocks=new JsonArray();Map<BlockState,Integer> states=new LinkedHashMap<>();
