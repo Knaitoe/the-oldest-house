@@ -15,8 +15,8 @@ import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
 
 /**
- * 0.4.517, Bike night's keepsake (docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md). The proposal: "The keepsake: The developer suggests the bike itself,
- * owner-bound, rideable in the Overworld and the House with its perk." Gus's page: "there are always some in the rack that nobody
+ * 0.4.517, Bike night's keepsake (docs/BIKE_NIGHT_KEEPSAKE_0_4_517.md). The keepsake is the bike itself, owner-bound, rideable in
+ * the Overworld and the House with its perk. Gus's page: "there are always some in the rack that nobody
  * comes back for."
  *
  * <p>Whoever rides out by the back gate keeps the bike they rode. It is this, in the hand: one of the six, the one it was. Used, it is
