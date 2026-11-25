@@ -239,6 +239,57 @@ public final class HouseReadReaderTests {
           }).thenSucceed();
     }
 
+    /**
+     * 0.4.764 (the owner, November 25: "Something should immediately attract the reader and beckon them inside - a silhouette through
+     * the window - it should seem simultaneously comforting and dangerous ... allow players their own interpretation of danger or
+     * safety."): the porch read two ways. A shape at the kitchen window, a small one upstairs, one in the front-room chair, one next
+     * door and a dog, all this reader's; ten lines said once each; the truck at ninety seconds and the doorway after it; boots overhead
+     * and the plate in the oven for the reader under the porch; and what each did with it kept beside the read, which is unchanged.
+     */
+    @GameTest(template="empty",batch="read_evening",timeoutTicks=8000)
+    public static void thePorchEveningIsReadTwoWaysAndEachReaderKeepsWhatTheyDidWithIt(GameTestHelper h){
+        var f=fixture(h);var in=player(h,f,"evening_in");var hid=player(h,f,"evening_hid");var readers=List.of(in,hid);var at=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(at).inflate(8));Map<UUID,BlockPos> base=new HashMap<>();LabyrinthData.Door[] from={null};
+        h.onEachTick(()->readers.forEach(HouseReadReaderTests::transition));
+        var sequence=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"source loaded")).thenExecute(()->{from[0]=source(f);for(var p:readers){stand(p,f.in,at,.5,0,2);HouseReadSites.prepare(p,HouseReadSites.Room.PORCH);}});
+        for(var p:readers)sequence.thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.PORCH),"each reader's own yard is built"));
+        sequence.thenExecute(()->{for(var p:readers){var b=HouseReadSites.base(p.server,p.getUUID(),HouseReadSites.Room.PORCH);base.put(p.getUUID(),b);f.chunks.hold(f.out,HouseReadRooms.bounds(b,HouseReadSites.Room.PORCH));seed(p,HouseReadSites.Room.PORCH,from[0]);stand(p,f.out,b,.5,0,9.5);}})
+          .thenWaitUntil(()->h.assertTrue(readers.stream().allMatch(p->visit(p,HouseReadSites.Room.PORCH).hasUUID("Cook")&&visit(p,HouseReadSites.Room.PORCH).hasUUID("Dog")&&visit(p,HouseReadSites.Room.PORCH).hasUUID("Small")),"each yard has its own shapes and its own dog"))
+          .thenExecute(()->{
+              var b=base.get(in.getUUID());var cook=(LiteraryActor)f.out.getEntity(visit(in,HouseReadSites.Room.PORCH).getUUID("Cook"));
+              h.assertTrue(cook!=null&&cook.role()==LiteraryActor.SILHOUETTE&&cook.phase()==HouseReadPorch.COOK&&cook.owner().orElse(null).equals(in.getUUID()),"the one who cooked is a shape bound to its reader");
+              h.assertTrue(cook.position().distanceTo(Vec3.atLowerCornerOf(b).add(-1.5,3,-9.75))<.6&&cook.gesture()==HouseReadPorch.CHOP,"before the whistle it stands at the counter behind the kitchen window, working: "+cook.position()+" "+cook.gesture());
+              h.assertTrue(!cook.broadcastToPlayer(hid),"and nobody else's game is sent it");
+              h.assertTrue(!visit(in,HouseReadSites.Room.PORCH).contains("Whistle"),"nothing calls yet");
+          })
+          .thenWaitUntil(()->h.assertTrue(readers.stream().allMatch(p->visit(p,HouseReadSites.Room.PORCH).contains("Whistle")),"six seconds in, the whistle"))
+          .thenExecute(()->{var cook=(LiteraryActor)f.out.getEntity(visit(in,HouseReadSites.Room.PORCH).getUUID("Cook"));h.assertTrue(cook.gesture()!=HouseReadPorch.CHOP,"at the whistle the knife stops and the head comes up");})
+          .thenWaitUntil(()->h.assertTrue(visit(in,HouseReadSites.Room.PORCH).getCompound("Said").getBoolean(HouseReadPorch.SEE_YOU),"twenty seconds stood still on the lawn: I can see you out there"))
+          .thenExecute(()->{
+              // Under the porch for one; the other waits on in the yard.
+              stand(hid,f.out,base.get(hid.getUUID()),.5,0,-5);
+              var v=visit(in,HouseReadSites.Room.PORCH);h.assertTrue(v.getCompound("Said").getAllKeys().stream().allMatch(k->k.equals(HouseReadPorch.SEE_YOU)||k.equals(HouseReadPorch.AGAIN)),"each line once, and only what was earned: "+v.getCompound("Said"));
+              v.putInt("Age",HouseReadPorch.TRUCK-2);})
+          .thenWaitUntil(()->h.assertTrue(visit(hid,HouseReadSites.Room.PORCH).getCompound("Said").getBoolean(HouseReadPorch.OVEN),"under the porch when the window closes: boots overhead, then the plate is in the oven"))
+          .thenWaitUntil(()->h.assertTrue(visit(hid,HouseReadSites.Room.PORCH).getBoolean("LightsOut"),"and then the lights go"))
+          .thenExecute(()->h.assertTrue(raw(hid,HOME).equals(new HouseRead.Category("DANGER",HouseRead.Strength.SETTLED)),"the read is still only the answer"))
+          .thenWaitUntil(()->h.assertTrue(visit(in,HouseReadSites.Room.PORCH).getCompound("Said").getBoolean(HouseReadPorch.HOME),"ninety seconds still outside: headlights, a door, boots, and look who's home"))
+          .thenExecute(()->{var v=visit(in,HouseReadSites.Room.PORCH);h.assertTrue(!visit(hid,HouseReadSites.Room.PORCH).contains("Truck"),"no truck for the reader whose evening already ended");v.putInt("Age",v.getInt("Truck")+HouseReadPorch.DOORWAY_AFTER-2);})
+          .thenWaitUntil(()->h.assertTrue(visit(in,HouseReadSites.Room.PORCH).getString("CookAt").equals("door"),"thirty seconds after it the one who cooked comes to the door"))
+          .thenExecute(()->{var b=base.get(in.getUUID());h.assertTrue(f.out.getBlockState(b.offset(HouseReadRooms.SCREEN)).getValue(DoorBlock.OPEN),"and the screen door stands open");stand(in,f.out,b,.5,0,.5);})
+          .thenWaitUntil(()->h.assertTrue(visit(in,HouseReadSites.Room.PORCH).getCompound("Said").getBoolean(HouseReadPorch.THERE),"the bottom step: there you are"))
+          .thenExecute(()->stand(in,f.out,base.get(in.getUUID()),.5,3,-12.5))
+          .thenWaitUntil(()->h.assertTrue(visit(in,HouseReadSites.Room.PORCH).getCompound("Said").getBoolean(HouseReadPorch.SHUT),"in through the door: shut it behind you"))
+          .thenExecute(()->{var b=base.get(in.getUUID());HouseReadPorch.openScreen(in,b,false);})
+          .thenWaitUntil(()->h.assertTrue(HouseRead.seen(f.data(),in.getUUID()).getCompound("porch").getBoolean("Shut"),"shutting it is kept"))
+          .thenExecute(()->{
+              h.assertTrue(raw(in,HOME).equals(new HouseRead.Category("HAVEN",HouseRead.Strength.TENTATIVE)),"going in is still a haven, however late");
+              var porch=HouseReadProse.porch(HouseRead.seen(f.data(),in.getUUID()).getCompound("porch"));
+              h.assertTrue(porch.contains("once somebody had come to the door for you")&&porch.contains("shut the screen door behind you"),"the account says when and what, and draws nothing from it: "+porch);
+              var dog=f.out.getEntity(visit(hid,HouseReadSites.Room.PORCH).getUUID("Dog"));h.assertTrue(dog instanceof net.minecraft.world.entity.animal.Wolf w&&w.isInSittingPose()&&!w.isTame(),"the dog went under the porch at the whistle and lay down, and is nobody's");
+              for(var line:HouseReadPorch.LINES)h.assertTrue(!line.contains("you're")&&!line.matches(".*\\b(honey|sweetheart|kiddo|mom|dad)\\b.*"),"no line says who the speaker is to the reader: "+line);
+          }).thenSucceed();
+    }
+
     @GameTest(template="empty",batch="read_glass",timeoutTicks=4000)
     public static void theHallGlassTurnedBeforeOrAfterDressingAndAMixedOutfitAreRead(GameTestHelper h){
         var f=fixture(h);var unseen=player(h,f,"glass_before");var mixed=player(h,f,"glass_mixed");var at=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(at).inflate(8));Map<UUID,BlockPos> base=new HashMap<>();LabyrinthData.Door[] from={null};

@@ -14,6 +14,9 @@ public record ActorSeat(int seatHeight,@Nullable Direction facing){
         var state=a.level().getBlockState(a.blockPosition());
         if(state.is(io.github.knaitoe.theoldesthouse.house.HouseBlocks.HOUSEHOLD_FURNITURE.get())){var kind=state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.KIND);return kind.seat?new ActorSeat(kind.seatHeight,state.getValue(io.github.knaitoe.theoldesthouse.house.HouseholdFurnitureBlock.FACING)):null;}
         if(state.is(LiteraryRegistry.ROADHOUSE.get())){var kind=state.getValue(RoadhouseBlock.KIND);return kind.seat()?new ActorSeat(kind.seatHeight,state.getValue(RoadhouseBlock.FACING)):null;}
+        // 0.4.764: the porch: the one in the front-room armchair, and the one who cooked sat on the top step.
+        if(a.role()==LiteraryActor.SILHOUETTE&&HouseReadPorch.cast(a.phase())&&a.gesture()==HouseReadPorch.SIT)return new ActorSeat(0,null);
+        if(state.is(HouseReadRegistry.FITTING.get())&&state.getValue(HouseReadPropBlock.PART)==HouseReadPropBlock.Part.ARMCHAIR)return new ActorSeat(8,state.getValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING));
         if(MoviePropBlock.is(state,MoviePropBlock.Kind.LAWN_CHAIR))return new ActorSeat(5,state.getValue(MoviePropBlock.FACING));
         // Brad's kit box in the God of the Pitt (0.4.220), eight pixels high.
         if(PittBlock.is(state,PittBlock.Kind.BRAD))return new ActorSeat(8,state.getValue(PittBlock.FACING));

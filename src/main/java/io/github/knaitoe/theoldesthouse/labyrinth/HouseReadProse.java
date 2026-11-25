@@ -66,13 +66,17 @@ public final class HouseReadProse {
         };
     }
     public static String porch(CompoundTag t){
-        return switch(t.getString("First")){
-            case "in"->"went straight in when the whistle blew"+(t.getBoolean("Table")?" and sat down to the warm plate":"");
+        // 0.4.764: how late, and what the reader did with the evening's doubles, recited without comment.
+        String late=t.getBoolean("ComeOutFor")?", once somebody had come to the door for you":t.getBoolean("AfterTruck")?", after the truck came in":"";
+        String door=t.getBoolean("Shut")?", and shut the screen door behind you":t.getBoolean("LeftOpen")?", and left the screen door open":"";
+        String main=switch(t.getString("First")){
+            case "in"->(late.isEmpty()?"went straight in when the whistle blew":"went in"+late)+(t.getBoolean("Table")?" and sat down to the warm plate":"")+door;
             case "lattice"->"went under the porch behind the lattice when the whistle blew"+(t.getBoolean("Hidden")?" and stayed there until the kitchen light went off":"");
             case "window"->"looked in at the lit window when the whistle blew and stayed out on the lawn"+(t.getBoolean("Hidden")?", then hid under the porch until the kitchen light went off":"");
-            case "road"->"walked down the gravel to the road when the whistle blew"+(t.getBoolean("Trees")?" and kept on past the mailbox into the trees without looking back":"");
+            case "road"->"walked down the gravel to the road when the whistle blew"+(t.getBoolean("Trees")?" and kept on past the mailbox into the trees without looking back":t.getBoolean("SawWave")?" and looked back once from the road":"");
             default->switch(t.getString("Out")){case "kitchen"->"went in by the back door and out through the front hall";case "gate"->"left the yard by the side gate";case "road"->"took the dirt road out through the trees";default->"";};
         };
+        return main.isEmpty()||t.getString("First").equals("in")?main:main+late;
     }
     /**
      * 0.4.168: the kitchen table. Only acts, never colours: whether the face and the hands were drawn in the same crayon, and

@@ -227,3 +227,41 @@ everyone in.
 4. **Next door's line.** "You know how they get." is the nearest the room comes to telling. Keep, soften, or cut the neighbor?
 5. **Indoors.** The end inside is under a minute, with the one who cooked still only a shape. Enough, or should going in have
    more to it?
+
+## As built (0.4.764)
+
+Built in `HouseReadPorch` and called from the porch's tick in `HouseReadSites`. The read itself is unchanged: the first
+answer to the whistle is still IN, LATTICE or ROAD. The rest records how the reader got there.
+
+- **Inside, through the window:** the cook chops at the counter behind the front window. It works the knife with the sound
+  of the knife, keeps its back turned, and turns its head after the whistle. A small shape stands at the upstairs glass.
+  A second shape sits in the armchair, head down. All three belong to their reader alone.
+- **The cook answers stillness:** a reader who stands still for twenty seconds sees the cook stand still too. At twenty more
+  seconds it says "I can see you out there."
+- **Lines (action bar text, once each):**
+  "Five minutes. I mean it." at the swing.
+  "Don't make me come out there." on the gravel.
+  "I'm not calling again." on the second whistle.
+  "There you are." on the step.
+  "Well, come on. I won't bite." at the screen.
+  "Shut it behind you. Lock it." on going in.
+  "Your plate's in the oven." heard from under the porch.
+  "You go on in now. You know how they get." from the neighbor at the fence.
+  "Look who's home." from the truck.
+- **The truck:** comes in ninety seconds after the scene opens if the reader is still out in the yard, unanswered or
+  not. Its lights sweep the yard, the engine and boots are heard, and it is never seen. Thirty seconds later, if the reader
+  is still out, the cook comes to the door, onto the porch and sits on the top step. Going back in, it leaves the door
+  open. A reader whose evening already ended under the porch gets neither.
+- **Under the porch:** the steps overhead, the screen door and the oven line come as before. The cook stands still
+  while the reader is there.
+- **The road:** looking back from the road shows the cook in the doorway with a hand raised. It is gone once the reader
+  looks away.
+- **The yard:** a dog follows the reader until the whistle, then goes into the den under the lattice and lies down with
+  one whine. It can be petted, and it never fights or is tamed. The yard also has a bicycle by the house, a letter in the
+  mailbox (read on right-click) and the neighbor's lit porch past the picket fence.
+- **The account** adds whether somebody had to come to the door, or the truck had come in, and whether the screen door was
+  shut or left open.
+
+Changed from the design, on the owner's earlier rules: no fireflies or other particles; no hum, laugh or second voice,
+only the text lines; the curtain lift became a hand to the glass; the strap, the shoes and the milk are not built; the
+den is a blanket; the bicycle is a fixed block; "lock it" is answered by shutting the screen door.

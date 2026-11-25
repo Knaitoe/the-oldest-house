@@ -30,7 +30,7 @@ public final class HouseReadRooms {
     public static BlockState part(HouseReadPropBlock.Part part){return HouseReadRegistry.FITTING.get().defaultBlockState().setValue(HouseReadPropBlock.PART,part);}
     public static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part){put(l,b,at,part(part));}
     private static void fitting(ServerLevel l,BlockPos b,BlockPos at,HouseReadPropBlock.Part part,Direction facing){put(l,b,at,part(part).setValue(HorizontalDirectionalBlock.FACING,facing));}
-    private static void fitting(ServerLevel l,BlockPos b,int x,int y,int z,HouseReadPropBlock.Part part,Direction facing){fitting(l,b,new BlockPos(x,y,z),part,facing);}
+    static void fitting(ServerLevel l,BlockPos b,int x,int y,int z,HouseReadPropBlock.Part part,Direction facing){fitting(l,b,new BlockPos(x,y,z),part,facing);}
     private static void box(ServerLevel l,BlockPos b,int x,int y,int z,int X,int Y,int Z,Block block){box(l,b,x,y,z,X,Y,Z,block.defaultBlockState());}
     public static void door(ServerLevel l,BlockPos b,BlockPos at,Block block,Direction facing){var s=block.defaultBlockState().setValue(DoorBlock.FACING,facing);put(l,b,at,s.setValue(DoorBlock.HALF,DoubleBlockHalf.LOWER));put(l,b,at.above(),s.setValue(DoorBlock.HALF,DoubleBlockHalf.UPPER));}
     /** Each room's way back. The shelter's sits beside its jukebox on the land side (0.4.159). */
@@ -123,6 +123,8 @@ public final class HouseReadRooms {
         // An old swing set on painted posts, rope, and a seat that can be gently nudged.
         for(int x:new int[]{-12,-7})box(l,b,x,0,2,x,3,2,HouseReadRegistry.POST.get());box(l,b,-12,4,2,-7,4,2,HouseReadRegistry.POST.get().defaultBlockState().setValue(RotatedPillarBlock.AXIS,Direction.Axis.X));
         for(int x:new int[]{-10,-9})box(l,b,x,1,2,x,3,2,HouseReadRegistry.ROPE.get());fitting(l,b,new BlockPos(-10,0,2),SWING);fitting(l,b,new BlockPos(-9,0,2),SWING);
-        for(int[] tree:new int[][]{{-19,-35},{-17,-22},{19,-33},{18,-13},{-19,8},{19,8},{7,-43}}){box(l,b,tree[0],0,tree[1],tree[0],6,tree[1],Blocks.OAK_LOG.defaultBlockState());box(l,b,tree[0]-2,4,tree[1]-2,tree[0]+2,8,tree[1]+2,Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));}
+        // 0.4.764: the evening read two ways (HouseReadPorch).
+        HouseReadPorch.build(l,b);
+        for(int[] tree:new int[][]{{-19,-35},{19,-33},{18,-13},{-19,8},{19,8},{7,-43}}){box(l,b,tree[0],0,tree[1],tree[0],6,tree[1],Blocks.OAK_LOG.defaultBlockState());box(l,b,tree[0]-2,4,tree[1]-2,tree[0]+2,8,tree[1]+2,Blocks.OAK_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT,true));}
     }
 }
