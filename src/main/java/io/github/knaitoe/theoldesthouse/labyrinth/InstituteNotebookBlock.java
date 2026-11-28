@@ -19,7 +19,10 @@ public final class InstituteNotebookBlock extends BaseEntityBlock {
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,TABLE);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         if(s.getValue(FACING).getAxis()==Direction.Axis.Z)return s.getValue(TABLE)?READING:BOOK;
         var turnedBook=Block.box(2,0,3,14,2,13);return s.getValue(TABLE)?Shapes.or(Block.box(0,12,0,16,14,16),Block.box(2,0,2,4,12,4),Block.box(12,0,2,14,12,4),Block.box(2,0,12,4,12,14),Block.box(12,0,12,14,12,14),Block.box(2,14,3,14,16,13)):turnedBook;
     }

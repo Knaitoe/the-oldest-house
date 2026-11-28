@@ -23,7 +23,10 @@ public final class LiteraryPropBlock extends BaseEntityBlock {
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override protected RenderShape getRenderShape(BlockState s){return s.getValue(KIND)==Kind.LEDGER?RenderShape.ENTITYBLOCK_ANIMATED:RenderShape.MODEL;}
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new LiteraryModelBlockEntity(p,s);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return switch(s.getValue(KIND)){
         case CLOCK->Block.box(2,0,2,14,30,14);case COFFIN,ELK_HIDE->Block.box(1,0,0,15,9,16);
         case FAN->Shapes.or(Block.box(5,9.52,5,11,13.52,11),Block.box(6,13.52,6,10,16,10));case MINIATURE->Block.box(0,0,0,16,7,16);
         case CAMERA,TRIPOD,LIGHT_STAND->Block.box(5,0,5,11,23,11);

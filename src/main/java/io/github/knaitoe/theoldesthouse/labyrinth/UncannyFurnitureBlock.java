@@ -40,7 +40,10 @@ public final class UncannyFurnitureBlock extends HorizontalDirectionalBlock {
         case FLUORESCENT,FLUSH_LIGHT->s.getValue(OPEN)?0:12;case EXTERIOR_LAMP->9;case SCONCE->8;case DESK_LAMP->s.getValue(OPEN)?0:8;
         case SIGN_LEFT,SIGN_CENTER,SIGN_RIGHT->7;default->0;
     };}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var result=Shapes.empty();int turns=switch(s.getValue(FACING)){case EAST->1;case SOUTH->2;case WEST->3;default->0;};
         for(var b:UncannyFurnitureShapes.boxes(s.getValue(KIND),s.getValue(OPEN))){
             double x0=b[0],z0=b[2],x1=b[3],z1=b[5];

@@ -42,7 +42,10 @@ public final class LetterPlateBlock extends HorizontalDirectionalBlock implement
             if(!plate.look().isEmpty())p.displayClientMessage(Component.literal(plate.look()).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case NOTE->Shapes.or(MarshBlock.turned(f,1,7,7,15,16,9),MarshBlock.turned(f,7,0,7,9,7,9));

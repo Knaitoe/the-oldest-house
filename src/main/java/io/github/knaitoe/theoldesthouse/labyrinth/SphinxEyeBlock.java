@@ -37,7 +37,10 @@ public final class SphinxEyeBlock extends Block {
     public static boolean is(BlockState s){return s.is(PuzzleRegistry.SPHINX_EYE.get());}
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(TILE,LOOK,FACE);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(FACE)){case UP->Block.box(0,15,0,16,16,16);case SOUTH->Block.box(0,0,15,16,16,16);default->Block.box(0,0,0,16,1,16);};}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return switch(s.getValue(FACE)){case UP->Block.box(0,15,0,16,16,16);case SOUTH->Block.box(0,0,15,16,16,16);default->Block.box(0,0,0,16,1,16);};}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Shapes.empty();}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level level,BlockPos pos,Player player,BlockHitResult hit){

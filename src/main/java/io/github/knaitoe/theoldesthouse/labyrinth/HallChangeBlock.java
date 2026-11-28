@@ -28,7 +28,10 @@ public final class HallChangeBlock extends Block {
         return l.getBlockState(support).isCollisionShapeFullBlock(l,support);
     }
     @Override protected BlockState updateShape(BlockState s,Direction d,BlockState other,LevelAccessor l,BlockPos p,BlockPos neighbour){return canSurvive(s,l,p)?s:Blocks.AIR.defaultBlockState();}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         if(rug(s))return box(1,0,1,15,s.getValue(KIND)==Kind.RUG_FOLDED?4:1,15);
         return switch(s.getValue(FACING)){case NORTH->box(2,2,12,14,14,16);case SOUTH->box(2,2,0,14,14,4);case EAST->box(0,2,2,4,14,14);default->box(12,2,2,16,14,14);};
     }

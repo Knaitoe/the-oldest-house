@@ -43,7 +43,10 @@ public final class HazardBlock extends Block implements EntityBlock {
         public MirrorWall(BlockPos p,BlockState s){super(HazardRegistry.MIRROR_WALL.get(),p,s);}
     }
     public static int light(BlockState s){return s.getValue(STAGE)==0&&(s.getValue(KIND)==Kind.HEAT_LAMP||s.getValue(KIND)==Kind.SCONCE)?14:0;}
-    @Override public VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
+    @Override public VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return switch(s.getValue(KIND)){
         case RAIL->Shapes.or(box(6,0,6,10,16,10),box(0,11,6,16,14,10));
         case HOOK->Shapes.or(box(7,8,7,9,16,9),box(7,5,7,13,8,9));
         case NUMBER_FOUR->box(14,0,0,16,16,16);

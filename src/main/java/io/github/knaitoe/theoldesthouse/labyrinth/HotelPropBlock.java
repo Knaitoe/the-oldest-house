@@ -26,7 +26,10 @@ public final class HotelPropBlock extends HorizontalDirectionalBlock implements 
         case HOSE_RACK->Block.box(0,0,11,16,16,16);case PATCH->Shapes.block();case HEADSTONE->Block.box(3,0,5,13,20,11);
         case RECEPTION->Shapes.or(Shapes.block(),Block.box(10,16,4,14,20,8));
         };}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var shape=north(s.getValue(KIND));int turns=(s.getValue(FACING).get2DDataValue()+2)%4;var out=new VoxelShape[]{Shapes.empty()};shape.forAllBoxes((x0,y0,z0,x1,y1,z1)->{for(int i=0;i<turns;i++){double nx0=1-z1,nx1=1-z0;z0=x0;z1=x1;x0=nx0;x1=nx1;}out[0]=Shapes.or(out[0],Shapes.box(x0,y0,z0,x1,y1,z1));});return out[0];}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){var shape=north(s.getValue(KIND));int turns=(s.getValue(FACING).get2DDataValue()+2)%4;var out=new VoxelShape[]{Shapes.empty()};shape.forAllBoxes((x0,y0,z0,x1,y1,z1)->{for(int i=0;i<turns;i++){double nx0=1-z1,nx1=1-z0;z0=x0;z1=x1;x0=nx0;x1=nx1;}out[0]=Shapes.or(out[0],Shapes.box(x0,y0,z0,x1,y1,z1));});return out[0];}
     /** Rotate a real native hit back to the mesh's authored north orientation. */
     public static net.minecraft.world.phys.Vec3 localHit(BlockState s,net.minecraft.world.phys.Vec3 hit){int turns=(4-(s.getValue(FACING).get2DDataValue()+2)%4)%4;for(int i=0;i<turns;i++)hit=new net.minecraft.world.phys.Vec3(1-hit.z,hit.y,hit.x);return hit;}
 }

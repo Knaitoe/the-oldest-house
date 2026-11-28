@@ -27,7 +27,10 @@ public final class TrailerFixtureBlock extends Block {
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}
     @Override protected BlockState rotate(BlockState s,Rotation r){return s.setValue(FACING,r.rotate(s.getValue(FACING)));}
     @Override protected BlockState mirror(BlockState s,Mirror m){return s.rotate(m.getRotation(s.getValue(FACING)));}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         if(kind==Kind.COOLER)return box(1,0,1,15,14,15);
         if(kind==Kind.WHEEL)return s.getValue(FACING).getAxis()==Direction.Axis.X?Shapes.or(box(5,0,4,11,16,12),box(5,4,0,11,12,16)):Shapes.or(box(4,0,5,12,16,11),box(0,4,5,16,12,11));
         if(kind==Kind.WINDOW){

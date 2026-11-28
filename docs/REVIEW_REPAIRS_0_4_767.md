@@ -99,9 +99,12 @@ the sizes below come from reading the code.
 - **Two shape caches.** The roundabout and the dome kept their shapes in a map that the server's thread and the client's both
   fill in a single-player game. Filling such a map from two threads at once can throw; they are now maps made for it.
 
-Not done, and the largest thing left: 154 shape methods in 119 blocks build their shape afresh on every call, and the game
-asks for a block's shape whenever anything moves beside it or a line of sight crosses it. Five blocks already keep theirs. The
-change is the same for each block, but there are many of them, and three depend on who is asking.
+- **A block's shape, built once.** The game asks a block for its shape whenever anything moves beside it or a line of sight
+  crosses it, and does not keep the answer. 103 of the House's blocks built theirs afresh on every such call, from boxes
+  joined together (the hotel's props walked every box of their shape and joined them again each time). Each now builds a
+  state's shape once and keeps it, as five blocks already did. The change was made by rule, to the methods whose body uses
+  nothing but the state: the body moves unchanged into `shapeBuilt0767` and `getShape` looks the state up. The rest were
+  left: they return a shape already kept, or their collision depends on who is asking.
 
 ### What the server accepts from a client
 
@@ -287,7 +290,9 @@ meant, or because the change is large enough to want its own release.
   "fewer each visit" beat mostly does not happen. The fish beside it is repaired; the cats want the same wait.
 - **The pick-up of a keepsake's line.** A keepsake set down and broken comes back without its line. The notes say that once
   set down it is furniture, which may cover it.
-- **154 shape methods in 119 blocks build their shape on every call** (under "The cost of each tick").
+- **Collision shapes built on every call.** The outlines are now kept (under "The cost of each tick"). Twenty-three blocks
+  still build a collision shape of their own on each call; fifteen of those depend on who is asking, so they cannot simply
+  be kept by state.
 - **Six patches replace a call outright** (`@Redirect`): the sleep count, the grip on ice, the mob tracking range, the
   landscape's far mobs, the font, and the lazy section buffers. Two mods cannot both replace one call, and the configs make a
   failed patch stop the game, so a pack with another mod at the same call will not start. The library that lets such patches

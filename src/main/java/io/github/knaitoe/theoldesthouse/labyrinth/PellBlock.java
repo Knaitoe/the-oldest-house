@@ -57,7 +57,10 @@ public final class PellBlock extends HorizontalDirectionalBlock {
     private static VoxelShape corner(Direction f,double lo,double hi,double top){return Shapes.or(MarshBlock.turned(f,0,0,lo,hi,top,hi),MarshBlock.turned(f,lo,0,0,hi,top,lo));}
     /** Swung back against the west jamb (as the model is drawn, facing north). */
     private static VoxelShape swung(Direction f,double thick,double top){return MarshBlock.turned(f,0,0,0,thick,top,16);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);int stage=s.getValue(STAGE);
         return switch(s.getValue(KIND)){
             case FENCE->stage==1?corner(f,7,9,16):plane(f,7,9,16);

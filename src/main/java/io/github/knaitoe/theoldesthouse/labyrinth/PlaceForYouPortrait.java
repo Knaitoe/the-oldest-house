@@ -28,7 +28,10 @@ public final class PlaceForYouPortrait extends BaseEntityBlock {
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.ENTITYBLOCK_ANIMATED;}
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new Portrait(p,s);}
     /** The frame against the wall behind it, or the nail alone; nothing to walk into either way. */
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         boolean hung=s.getValue(HUNG);double lo=hung?1.5:7,hi=hung?14.5:9,y0=hung?1.5:14.5,y1=hung?14.5:16,d=hung?2.4:1;
         return switch(s.getValue(HorizontalDirectionalBlock.FACING)){
             case SOUTH->Block.box(lo,y0,0,hi,y1,d);

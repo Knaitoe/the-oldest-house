@@ -24,7 +24,10 @@ public final class GhostsCaseBlock extends BaseEntityBlock {
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,OPEN);}
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new GhostsCaseBlockEntity(p,s);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return Block.box(1,0,1,15,s.getValue(OPEN)?21:14,15);}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return Block.box(1,0,1,15,s.getValue(OPEN)?21:14,15);}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos at,Player p,BlockHitResult hit){if(!l.isClientSide&&l.getBlockEntity(at) instanceof GhostsCaseBlockEntity box)p.openMenu(box);return InteractionResult.sidedSuccess(l.isClientSide);}
     @Override protected void tick(BlockState s,ServerLevel l,BlockPos p,RandomSource random){if(l.getBlockEntity(p) instanceof GhostsCaseBlockEntity box)box.recheck();}
     @Override protected void onRemove(BlockState s,Level l,BlockPos p,BlockState next,boolean moving){if(s.getBlock()!=next.getBlock()&&l.getBlockEntity(p) instanceof GhostsCaseBlockEntity box){Containers.dropContents(l,p,box);l.updateNeighbourForOutputSignal(p,this);}super.onRemove(s,l,p,next,moving);}

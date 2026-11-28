@@ -43,7 +43,10 @@ public final class WinterPropBlock extends Block {
     public static BlockState of(Kind k){return WinterLakeRegistry.PROP.get().defaultBlockState().setValue(KIND,k);}
     public static @Nullable Kind kind(BlockState s){return s.is(WinterLakeRegistry.PROP.get())?s.getValue(KIND):null;}
     public static boolean ice(BlockState s){var k=kind(s);return k!=null&&k.ice();}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         return switch(s.getValue(KIND)){case CATTAILS->box(3,0,3,13,14,13);case SNOWBALLS->box(2,0,2,14,7,14);default->Shapes.block();};
     }
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){

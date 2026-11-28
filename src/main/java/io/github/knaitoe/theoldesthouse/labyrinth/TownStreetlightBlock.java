@@ -32,7 +32,10 @@ public final class TownStreetlightBlock extends HorizontalDirectionalBlock imple
         case WEST->Block.box(outer?6:0,12,6,outer?16:8,16,10);
         default->Block.box(outer?0:8,12,6,outer?10:16,16,10);
     };}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return switch(s.getValue(KIND)){
         case BASE->BASE;case POLE->POLE;case TOP->Shapes.or(POLE,arm(s.getValue(FACING),false));case ARM->Shapes.or(arm(s.getValue(FACING),true),Block.box(7,0,7,9,12,9));case HEAD->HEAD;
     };}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}

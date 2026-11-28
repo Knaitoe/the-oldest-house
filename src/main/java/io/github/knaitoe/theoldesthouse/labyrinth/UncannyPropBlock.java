@@ -26,7 +26,10 @@ public final class UncannyPropBlock extends BaseEntityBlock {
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.ENTITYBLOCK_ANIMATED;}
     @Override public SoundType getSoundType(BlockState s,LevelReader l,BlockPos at,net.minecraft.world.entity.Entity entity){return s.getValue(KIND)==Kind.FLESH?UncannyFleshBlock.SOUNDS:super.getSoundType(s,l,at,entity);}
     public static int light(BlockState s){return switch(s.getValue(KIND)){case FLOODLIGHT->s.getValue(STAGE)==0?15:0;case SIGNAL,STOPLIGHT->10;case MONITOR->3;default->0;};}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         return switch(s.getValue(KIND)){
             case FLESH->Shapes.block();
             case FALSE_DOOR->FoyerDoorGeometry.shape(s);

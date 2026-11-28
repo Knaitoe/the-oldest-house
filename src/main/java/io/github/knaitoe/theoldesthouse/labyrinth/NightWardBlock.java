@@ -51,7 +51,10 @@ public final class NightWardBlock extends HorizontalDirectionalBlock {
         case CALL_DOME,CALL_DOME_ON->new double[][]{{5,13,5,11,16,11}};
         default->new double[][]{{0,0,0,16,16,16}};
     };}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var result=Shapes.empty();int turns=switch(s.getValue(FACING)){case EAST->1;case SOUTH->2;case WEST->3;default->0;};
         for(var b:boxes(s.getValue(KIND))){double x0=b[0],z0=b[2],x1=b[3],z1=b[5];for(int i=0;i<turns;i++){double a=16-z1,e=16-z0;z0=x0;z1=x1;x0=a;x1=e;}result=Shapes.or(result,Block.box(x0,b[1],z0,x1,b[4],z1));}
         return result;

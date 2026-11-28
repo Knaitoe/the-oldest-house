@@ -32,7 +32,10 @@ public final class LakeHouseLightBlock extends BaseEntityBlock implements Simple
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(LIT,WATERLOGGED);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.MODEL;}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return box(4,0,4,12,14,12);}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return box(4,0,4,12,14,12);}
     @Override protected FluidState getFluidState(BlockState s){return s.getValue(WATERLOGGED)?Fluids.WATER.getSource(false):super.getFluidState(s);}
     @Override protected BlockState updateShape(BlockState s,Direction d,BlockState n,LevelAccessor l,BlockPos at,BlockPos next){if(s.getValue(WATERLOGGED))l.scheduleTick(at,Fluids.WATER,Fluids.WATER.getTickDelay(l));return super.updateShape(s,d,n,l,at,next);}
     @Override public BlockEntity newBlockEntity(BlockPos at,BlockState s){return new Lamp(at,s);}

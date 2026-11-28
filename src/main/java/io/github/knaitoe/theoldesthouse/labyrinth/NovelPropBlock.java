@@ -19,7 +19,10 @@ public final class NovelPropBlock extends HorizontalDirectionalBlock {
     public NovelPropBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.NORTH).setValue(KIND,Kind.PROJECTOR));}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return switch(s.getValue(KIND)){
         case PROJECTOR->net.minecraft.world.phys.shapes.Shapes.or(Block.box(2,0,3,14,3,13),Block.box(3,3,4,13,11,13),Block.box(5,4,1,11,10,4),Block.box(3,10,4,5,16,10),Block.box(10,10,4,12,16,10));
         case INCUBATOR->Shapes.or(Block.box(1,0,1,15,4,15),Block.box(1,4,1,15,14,15));
         case MAIL_SLOT,ARCHIVE_FILES->Block.box(0,0,0,16,16,16);};}

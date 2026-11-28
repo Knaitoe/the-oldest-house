@@ -48,7 +48,10 @@ public final class HomeCabinetBlock extends HorizontalDirectionalBlock implement
     public static BlockPos lower(BlockState s,BlockPos pos){return s.getValue(HALF)==DoubleBlockHalf.UPPER?pos.below():pos;}
     public static boolean is(BlockState s){return s.is(PolybiusRegistry.HOME_CABINET.get());}
 
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);
         return s.getValue(HALF)==DoubleBlockHalf.LOWER?PolybiusBlock.box(f,1,0,1,15,16,15):PolybiusBlock.box(f,1,0,2,15,16,15);
     }

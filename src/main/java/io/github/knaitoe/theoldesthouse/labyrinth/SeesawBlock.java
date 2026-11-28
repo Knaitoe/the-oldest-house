@@ -83,7 +83,10 @@ public final class SeesawBlock extends HorizontalDirectionalBlock implements Ent
     /** Which end of its board an END block is: 0 if it lies the way the stand faces. */
     public static int endOf(Level l,BlockPos at){var b=board(l,at);return b!=null&&l.getBlockState(at).getValue(FACING)==b.getBlockState().getValue(FACING)?0:1;}
 
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);
         return switch(s.getValue(PART)){
             // The stand's two posts and the axle between them, which runs across the way it faces.

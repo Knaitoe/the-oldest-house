@@ -24,7 +24,10 @@ public final class DeerCarBlock extends Block {
     @Override protected MapCodec<? extends Block> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(CELL,MASK);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.INVISIBLE;}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var shape=DeerCarCells.shape(s.getValue(CELL),s.getValue(MASK));return shape.isEmpty()?Block.box(7,7,7,9,9,9):shape;}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){var shape=DeerCarCells.shape(s.getValue(CELL),s.getValue(MASK));return shape.isEmpty()?Block.box(7,7,7,9,9,9):shape;}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return DeerCarCells.shape(s.getValue(CELL),s.getValue(MASK));}
     @Override protected VoxelShape getVisualShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){return DeerCarCells.sight(s.getValue(CELL),s.getValue(MASK));}
     @Override protected boolean propagatesSkylightDown(BlockState s,BlockGetter l,BlockPos at){return true;}

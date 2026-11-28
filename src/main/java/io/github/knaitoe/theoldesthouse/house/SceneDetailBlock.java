@@ -32,7 +32,10 @@ public final class SceneDetailBlock extends HorizontalDirectionalBlock {
         var footprint=Block.box(bounds.minX*16,15.999,bounds.minZ*16,bounds.maxX*16,16,bounds.maxZ*16);
         return !Shapes.joinIsNotEmpty(footprint,backing.getShape(level,support),BooleanOp.ONLY_FIRST);
     }
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         double[][] boxes=switch(s.getValue(KIND)) {
             case BOOKS -> new double[][]{{2,0,3,14,2,12},{3,2,4,13,4,11},{1,4,2,13,6,11},{2,6,3,12,8,10},{3,8,4,14,10,12}};
             case TEA_SET -> new double[][]{{1,0,2,15,1,14},{3,1,4,7,5,8},{7,2,5,8,4,7},{10,1,8,14,5,12},{9,2,9,10,4,11}};

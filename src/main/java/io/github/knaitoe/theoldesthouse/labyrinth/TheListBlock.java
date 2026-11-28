@@ -134,7 +134,10 @@ public final class TheListBlock extends HorizontalDirectionalBlock {
     private static VoxelShape t(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){return MarshBlock.turned(f,x0,y0,z0,x1,y1,z1);}
     /** The two ladders, the seed house's and the tower's, are climbed. */
     @Override public boolean isLadder(BlockState s,LevelReader l,BlockPos p,LivingEntity e){var k=s.getValue(KIND);int stage=s.getValue(STAGE);return k==Kind.SEED&&stage==3||k==Kind.TOWER&&stage==2;}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);int stage=s.getValue(STAGE);
         return switch(s.getValue(KIND)){
             case COTTON->Block.box(2,0,2,14,stage==3?11:stage==1?10:14,14);

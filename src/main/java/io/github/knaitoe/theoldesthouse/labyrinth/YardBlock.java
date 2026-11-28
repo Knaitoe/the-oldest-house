@@ -55,7 +55,10 @@ public final class YardBlock extends HorizontalDirectionalBlock {
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext c){return defaultBlockState().setValue(FACING,c.getHorizontalDirection().getOpposite());}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         return switch(s.getValue(KIND)){
             // 0.4.583: the bulb's shape is its mount's (YardLights): hung, on a wall, on a post, hung under a half block.
             case BULB->switch(s.getValue(STAGE)){case YardLights.WALL->WorkPrintBlock.box(s.getValue(FACING),5,4,7,11,13,16);case YardLights.POST->Block.box(5,0,5,11,9,11);default->Block.box(6,2,6,10,16,10);};

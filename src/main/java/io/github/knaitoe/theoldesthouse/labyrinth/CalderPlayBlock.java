@@ -77,7 +77,10 @@ public final class CalderPlayBlock extends HorizontalDirectionalBlock implements
     public static boolean is(BlockState s,Kind kind){return s.is(BikeNightRegistry.PLAY.get())&&s.getValue(KIND)==kind;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);int stage=s.getValue(STAGE);
         return switch(s.getValue(KIND)){
             case POST->stage==END?Shapes.or(Block.box(6.5,0,6.5,9.5,4,9.5),MarshBlock.turned(f,8,1,6.5,16,4,9.5))

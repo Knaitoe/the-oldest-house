@@ -16,7 +16,10 @@ public final class WellCoverBlock extends BaseEntityBlock {
     public WellCoverBlock(BlockBehaviour.Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(OPEN,true));}
     @Override protected MapCodec<? extends BaseEntityBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(OPEN);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return s.getValue(OPEN)?box(0,16,0,16,32,3):box(0,13,0,16,16,16);}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return s.getValue(OPEN)?box(0,16,0,16,32,3):box(0,13,0,16,16,16);}
     @Override protected RenderShape getRenderShape(BlockState s){return RenderShape.ENTITYBLOCK_ANIMATED;}
     @Override public BlockEntity newBlockEntity(BlockPos p,BlockState s){return new WellCoverBlockEntity(p,s);}
 }

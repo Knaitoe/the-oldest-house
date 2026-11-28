@@ -96,7 +96,10 @@ public final class BorrascaShopBlock extends HorizontalDirectionalBlock {
     static int light(BlockState s){return s.getValue(KIND)==Kind.OPEN||s.getValue(KIND)==Kind.JUKEBOX&&s.getValue(STAGE)==0?7:s.getValue(KIND)==Kind.PUMP_TOP||s.getValue(KIND)==Kind.CABINET_TOP?5:0;}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,STAGE);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case MENU,PEGBOARD,PRICE,MAP,PHOTOS,CARDS,CHART->MarshBlock.turned(f,0,0,14,16,16,16);

@@ -54,7 +54,10 @@ public final class BorrowedLightBlock extends HorizontalDirectionalBlock impleme
         var r=f.getClockWise();return new int[]{x+r.getStepX(),z+r.getStepZ()};
     }
     static VoxelShape box(Direction f,double x0,double y0,double z0,double x1,double y1,double z1){return DareFittingBlock.box(f,x0,y0,z0,x1,y1,z1);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var f=s.getValue(FACING);
         return switch(s.getValue(KIND)){
             case LAMP->box(f,2,2,4,14,14,16);

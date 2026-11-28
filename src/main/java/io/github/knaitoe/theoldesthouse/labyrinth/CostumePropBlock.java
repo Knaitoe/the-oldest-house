@@ -42,7 +42,10 @@ public final class CostumePropBlock extends Block {
     private static VoxelShape turned(Direction d,double x0,double y0,double z0,double x1,double y1,double z1){
         return switch(d){case SOUTH->box(16-x1,y0,16-z1,16-x0,y1,16-z0);case EAST->box(16-z1,y0,x0,16-z0,y1,x1);case WEST->box(z0,y0,16-x1,z1,y1,16-x0);default->box(x0,y0,z0,x1,y1,z1);};
     }
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos at,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){
         var d=s.getValue(FACING);
         return switch(s.getValue(KIND)){case BULBS->turned(d,0,9,6,16,14,10);case RADIO->turned(d,3,0,5,13,8,11);case APPLE_TUB->box(1,0,1,15,9,15);
             case CANDY_BOWL->box(4,0,4,12,4,12);case BOARD,BOARD_TOP->turned(d,1,0,6,15,16,10);};

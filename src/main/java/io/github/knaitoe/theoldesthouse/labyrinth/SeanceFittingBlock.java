@@ -21,7 +21,10 @@ public final class SeanceFittingBlock extends HorizontalDirectionalBlock {
     public static BlockState of(Kind kind,Direction facing){return ClassicsRegistry.FITTING.get().defaultBlockState().setValue(KIND,kind).setValue(FACING,facing);}
     @Override protected MapCodec<? extends HorizontalDirectionalBlock> codec(){return CODEC;}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(FACING,KIND,OPEN);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(KIND)){
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){return switch(s.getValue(KIND)){
         case CABINET->switch(s.getValue(FACING)){case SOUTH->Block.box(0,0,0,16,16,13);case EAST->Block.box(0,0,0,13,16,16);case WEST->Block.box(3,0,0,16,16,16);default->Block.box(0,0,3,16,16,16);};
         case LETTERS->Block.box(1,0,1,15,15.5,15);
         case SITTING->Block.box(2,0,2,14,15,14);

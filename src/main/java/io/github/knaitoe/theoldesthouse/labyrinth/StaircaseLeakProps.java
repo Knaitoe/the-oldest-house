@@ -51,7 +51,10 @@ public final class StaircaseLeakProps extends Block {
     public StaircaseLeakProps(Properties properties){super(properties);registerDefaultState(stateDefinition.any().setValue(KIND,Kind.CUP_BLUE).setValue(BlockStateProperties.HORIZONTAL_FACING,Direction.NORTH));}
     public static BlockState state(Kind kind){return StaircaseLeakRegistry.PROP.get().defaultBlockState().setValue(KIND,kind);}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b){b.add(KIND,BlockStateProperties.HORIZONTAL_FACING);}
-    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);if(k.table())return box(0,0,0,16,13,16);return box(1,0,1,15,15,15);}
+    @Override protected VoxelShape getShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var kept=SHAPES_0767.get(s);if(kept==null){kept=shapeBuilt0767(s);SHAPES_0767.put(s,kept);}return kept;}
+    // 0.4.767: the shape of each state, built once and kept; it was built again on every call (docs/REVIEW_REPAIRS_0_4_767.md).
+    private static final java.util.Map<BlockState,VoxelShape> SHAPES_0767=new java.util.concurrent.ConcurrentHashMap<>();
+    private VoxelShape shapeBuilt0767(BlockState s){var k=s.getValue(KIND);if(k.table())return box(0,0,0,16,13,16);return box(1,0,1,15,15,15);}
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){var k=s.getValue(KIND);
         if(k==Kind.DRAWER||k==Kind.DRAWER_OPEN)return box(1,0,1,15,16,15);
         if(k.table())return box(0,0,0,16,12,16);
