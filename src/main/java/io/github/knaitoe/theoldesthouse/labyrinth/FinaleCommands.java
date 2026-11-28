@@ -17,9 +17,11 @@ public final class FinaleCommands {
         var id=WeaponHistory.favorite(p);net.minecraft.world.item.ItemStack original=net.minecraft.world.item.ItemStack.EMPTY;int slot=-1;
         for(int i=0;i<p.getInventory().getContainerSize();i++)if(WeaponHistory.wounds(p.getInventory().getItem(i),id)){original=p.getInventory().removeItemNoUpdate(i);slot=i;break;}
         if(original.isEmpty()){original=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_SWORD);WeaponHistory.record(p,original,Integer.MAX_VALUE-1001);}
-        var old=p.getMainHandItem();p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);if(!old.isEmpty()&&!p.getInventory().add(old))p.drop(old,false);
-        old=p.getOffhandItem();p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,net.minecraft.world.item.ItemStack.EMPTY);if(!old.isEmpty()&&!p.getInventory().add(old))p.drop(old,false);
+        // 0.4.767: the hands are filled first and what they held is put away after. Put away first, it could go into the hand
+        // slot just emptied, and the weapon then set there replaced it: the operator's held thing was deleted.
+        var held=p.getMainHandItem().copy();var other=p.getOffhandItem().copy();
         p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,original);p.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SHIELD));
+        if(!held.isEmpty()&&!p.getInventory().add(held))p.drop(held,false);if(!other.isEmpty()&&!p.getInventory().add(other))p.drop(other,false);
         var at=FinaleArchitecture.cell(origin).north(12);level.getChunkAt(at);p.teleportTo(level,at.getX()+.5,at.getY(),at.getZ()+.5,0,0);p.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SURVIVAL);
         FinaleProgress.phase(p.server,p.getUUID(),FinaleProgress.Phase.STAIRCASE);source.sendSuccess(()->Component.literal("Original weapon and shield equipped. Open the cell or use /ghosthouse finale start. Block its rush, then strike while it is stunned. This plays a permanent ending; use a test world."),false);return 1;
     }

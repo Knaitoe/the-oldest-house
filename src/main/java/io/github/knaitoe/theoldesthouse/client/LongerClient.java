@@ -20,7 +20,7 @@ public final class LongerClient {
     private LongerClient(){}
     static boolean here(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE)||!HouseSightlineState.hasOrigin())return false;
-        return LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==LabyrinthPlace.LITTLE_LONGER;
+        return HerePlace.get()==LabyrinthPlace.LITTLE_LONGER;
     }
     public static boolean precipitating(){return com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()&&here();}
     public static float rain(net.minecraft.world.level.Level level,float nativeRain){return level==Minecraft.getInstance().level&&here()?1:nativeRain;}

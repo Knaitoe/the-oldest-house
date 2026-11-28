@@ -132,6 +132,8 @@ public final class LastCrossing {
         Run(BlockPos b,long id){base=b;this.id=id;}
     }
     private static final Map<Long,Run> RUNS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return RUNS.containsKey(b.asLong());}
     public static void clearAll(){RUNS.clear();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
 

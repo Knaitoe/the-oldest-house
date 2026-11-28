@@ -203,7 +203,8 @@ public final class FeetUp {
         var w=world(s,h.place);
         if(!h.loaded){h.loaded=true;h.fallenAt.clear();for(long at:w.getLongArray(FALLEN))h.fallenAt.add(BlockPos.of(at));}
         if(readers.isEmpty()){if(h.occupiedLast&&h.lastBase!=null){reset(l,h,h.lastBase,w);world(s,h.place,w);}h.occupiedLast=false;return;}
-        h.occupiedLast=true;h.lastBase=b;
+        // 0.4.767: the lamps are found once and remembered by where they stand; a house found at another base looks again.
+        h.occupiedLast=true;if(!b.equals(h.lastBase))h.lamps=null;h.lastBase=b;
         long clock=w.getLong(CLOCK)+1;w.putLong(CLOCK,clock);
         for(var p:readers)reader(p,l,h,b,w,clock,readers);
         boards(l,h,b,readers,w);fan(l,h,b,readers);lift(l,h,b,readers,w);help(l,h,b,w);

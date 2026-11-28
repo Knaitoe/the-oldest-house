@@ -42,6 +42,8 @@ public final class LiteraryVignettes {
     private static final int F=Block.UPDATE_CLIENTS|Block.UPDATE_KNOWN_SHAPE;
     private record Crawl(ServerPlayer p,Pose forced,Pose displayed){}
     private static final Map<UUID,Crawl> CRAWLS=new HashMap<>();
+    /** 0.4.767: readers who have just come into the game, and how many passes each has waited for the place they stand in to load. */
+    private static final Map<UUID,Integer> RETURNED=new HashMap<>();
     private LiteraryVignettes(){}
     private static String state(LabyrinthPlace place){return "literary_0436_"+place.id();}
     public static String stateId(LabyrinthPlace place){return state(place);}
@@ -398,7 +400,7 @@ public final class LiteraryVignettes {
     }
     public static void elkWound(ServerPlayer p){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),LabyrinthPlace.ELK_LOT);own.putBoolean("ElkWounded",true);ElkFollows.struck(p,own);save(d,p.getUUID(),LabyrinthPlace.ELK_LOT,own);}
     public static void ate(ServerPlayer p,ItemStack s){var custom=s.get(DataComponents.CUSTOM_DATA);if(custom==null)return;var t=custom.copyTag();if(!t.hasUUID(OWNER)||!t.getUUID(OWNER).equals(p.getUUID()))return;var place=current(p);if(place==null)return;var own=personal(LabyrinthData.get(p.server),p.getUUID(),place);
-        if(place==LabyrinthPlace.HOLY_RABBIT&&s.is(LiteraryRegistry.MEAL.get())&&t.getInt("Night")==own.getInt("Night")&&own.getInt("AteNight")!=own.getInt("Night")&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))&&p.distanceToSqr(base(p,place).offset(0,0,-24).getCenter())<64){own.putBoolean("Committed",true);own.putString("CommitAction","ate_an_owned_meal");own.putInt("Meals",own.getInt("Meals")+1);own.putInt("AteNight",own.getInt("Night"));own.putInt("Drowse",0);HolyRabbit.hunger(p);}
+        if(place==LabyrinthPlace.HOLY_RABBIT&&s.is(LiteraryRegistry.MEAL.get())&&t.getInt("Night")==own.getInt("Night")&&own.getInt("AteNight")!=own.getInt("Night")&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))&&p.distanceToSqr(base(p,place).offset(0,0,-24).getCenter())<100){own.putBoolean("Committed",true);own.putString("CommitAction","ate_an_owned_meal");own.putInt("Meals",own.getInt("Meals")+1);own.putInt("AteNight",own.getInt("Night"));own.putInt("Drowse",0);HolyRabbit.hunger(p);}
         if(place==LabyrinthPlace.FAMILY_COPY&&s.is(LiteraryRegistry.STEW.get())&&own.getInt("Visit")==4&&t.hasUUID("MealToken")&&own.hasUUID("MealToken")&&t.getUUID("MealToken").equals(own.getUUID("MealToken"))){own.putBoolean("DinnerEaten",true);own.putInt("Beat",4);}
         save(LabyrinthData.get(p.server),p.getUUID(),place,own);
     }
@@ -537,8 +539,51 @@ public final class LiteraryVignettes {
         else if(!active&&c!=null)HousePackets.send(p,new NovelScenePayload(17,0,"",0,0));
     }
     private static void restore(Crawl c){c.p().setForcedPose(c.forced());c.p().setPose(c.forced()==null?c.displayed():c.forced());c.p().refreshDimensions();}
-    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();MarshSupper.clearAll();Drawing.clearAll();Corner.clearAll();BlackCity.clearAll();Kept.clearAll();NotYetMending.clearAll();NotYetTrial.clearAll();LastSeen.clearAll();Fallow.clearAll();TheList.clearAll();LastOrders.clearAll();BikeNight.clearAll();PellHouse.clearAll();LodgingHouse.clearAll();LongerRowan.clearAll();TallGrass.clearAll();GrowingThings.clearAll();LastCrossing.clearAll();Pinehook.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();LastSwimmer.clearAll();PeopleLights.clearAll();PlaceForYou.clearAll();SecondPerson.clearAll();DeerRoad.clearAll();StateRoute.clearAll();Talk.clearAll();SourceMark.clearAll();VacantPossession.clearAll();}
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);}}
+    /**
+     * 0.4.767: the server has stopped. Everything below was only ever forgotten by the tests. In a single-player game what a
+     * story keeps in memory outlived the world it was made in and was met again in the next world opened that session, and a
+     * new server's tick count starts again at nothing while the old stamps stayed: after a save and quit, a knock at a door
+     * made no sound and no reply until the new session had run as long as the old; a sphinx room took no answer in a world
+     * with an earlier clock; a house found its lamps where the last world's stood.
+     */
+    public static void stopped(){
+        clearAll();
+        DoorSounds.clearAll();FeetUp.clearAll();DareInTheDark.clearAll();DarkHalls.clearAll();DeadAirGame.clearAll();HomeRead.clearAll();KitchenFittings.clearAll();
+        LeftRightGame.clearAll();PittGame.clearAll();PolaroidTrail.clearAll();QuietRooms.clearAll();SphinxDream.clearAll();TruantService.clearAll();WinterLake.clearAll();
+        Sphinx.clearAll();SphinxField.clearAll();SphinxShelf.clearAll();SphinxStair.clearAll();HeaderTanks.clearAll();FuseRooms.clearAll();TraceRooms.clearAll();
+        TallyCounterItem.clearAll();LookoutNight.clearAll();WayOut.clearAll();CostumeNight.clearAll();MovieNightCast.clearAll();
+    }
+    public static void clearAll(){for(var c:CRAWLS.values())restore(c);CRAWLS.clear();RETURNED.clear();LiteraryMotion.clearAll();HolyRabbit.clearAll();ElkLotEnding.clearAll();ElkDrag.clearAll();MovieNight.clearAll();MarshSupper.clearAll();Drawing.clearAll();Corner.clearAll();BlackCity.clearAll();Kept.clearAll();NotYetMending.clearAll();NotYetTrial.clearAll();LastSeen.clearAll();Fallow.clearAll();TheList.clearAll();LastOrders.clearAll();BikeNight.clearAll();PellHouse.clearAll();LodgingHouse.clearAll();LongerRowan.clearAll();TallGrass.clearAll();GrowingThings.clearAll();LastCrossing.clearAll();Pinehook.clearAll();NurseryToys.clearAll();GhostsSet.clearAll();ClosingHall.clearAll();Storeroom.clearAll();Stillness.clearAll();Line.clearAll();OwnLight.clearAll();Polybius.clearAll();Replacement.clearAll();LastSwimmer.clearAll();PeopleLights.clearAll();PlaceForYou.clearAll();SecondPerson.clearAll();DeerRoad.clearAll();StateRoute.clearAll();Talk.clearAll();SourceMark.clearAll();VacantPossession.clearAll();}
+    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity() instanceof ServerPlayer p){crawl(p,false);scale(p,false);HolyRabbit.release(p);RETURNED.remove(p.getUUID());}}
+    @SubscribeEvent public static void login(PlayerEvent.PlayerLoggedInEvent e){if(e.getEntity() instanceof ServerPlayer p)RETURNED.put(p.getUUID(),0);}
+    /**
+     * 0.4.767: a reader who comes back into the game standing in a story. Thirteen stories keep what is going on (the day, the
+     * night, the run) only in memory, make it when a reader arrives by a door, and drop it when the server stops or the place has
+     * stood empty a while. A reader who logged out inside one came back to a place where nothing ran: its people stood still and
+     * nothing could be finished until they walked out and in again. In three of them the way out was shut as well, with nothing
+     * left to open it: the station's cellar after the light, the corner house, and the seed house on the list's night. Such a
+     * reader now arrives again, as by the door, once the place is loaded (or after ten seconds), and finds the place begun again.
+     */
+    private static void returned(ServerPlayer p,LabyrinthPlace place,LabyrinthData d){
+        var id=p.getUUID();int waited=RETURNED.get(id);var b=base(p,place);
+        if(b==null||running(place,b)||!personal(d,id,place).getBoolean("Here")){RETURNED.remove(id);return;}
+        if(waited<40&&!standing(p.serverLevel(),b,place)){IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);RETURNED.put(id,waited+1);return;}
+        RETURNED.remove(id);onArrive(p,place);
+    }
+    /** Whether a story that keeps its day in memory has one for this place. Every other story answers yes. */
+    private static boolean running(LabyrinthPlace place,BlockPos b){
+        return switch(place){
+            case FALLOW->Fallow.running(b);case THE_LIST->TheList.running(b);case LAST_SEEN->LastSeen.running(b);case PINEHOOK->Pinehook.running(b);
+            case LAST_CROSSING->LastCrossing.running(b);case THE_DRAWING->Drawing.running(b);case CORNER_HOUSE->Corner.running(b);case BLACK_CITY->BlackCity.running(b);
+            case KEPT->Kept.running(b);case LAST_ORDERS->LastOrders.running(b);case MARSH_SUPPER->MarshSupper.running(b);case TALL_GRASS->TallGrass.running(b);
+            case GROWING_THINGS->GrowingThings.running(b);default->true;};
+    }
+    /** Whether every chunk a place stands on is loaded. */
+    private static boolean standing(ServerLevel l,BlockPos b,LabyrinthPlace place){
+        var box=IndianLakeRooms.bounds(b,place);
+        for(int x=((int)box.minX-1)>>4;x<=((int)box.maxX+1)>>4;x++)for(int z=((int)box.minZ-1)>>4;z<=((int)box.maxZ+1)>>4;z++)if(!l.hasChunk(x,z))return false;
+        return true;
+    }
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void frozenFood(LivingEntityUseItemEvent.Start e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!retreatLocked(p))return;var s=e.getItem();if(s.is(Items.SNOWBALL)&&s.has(DataComponents.FOOD))return;if(s.is(LiteraryRegistry.MEAL.get())){var t=s.get(DataComponents.CUSTOM_DATA);if(t!=null&&t.copyTag().hasUUID(OWNER)&&t.copyTag().getUUID(OWNER).equals(p.getUUID()))return;}if(s.has(DataComponents.FOOD)){e.setCanceled(true);p.displayClientMessage(Component.literal("It is frozen hard. He is bringing something down to you."),true);}}
     @SubscribeEvent(priority=EventPriority.LOWEST) public static void snowNibble(PlayerInteractEvent.RightClickItem e){if(e.isCanceled()||!(e.getEntity() instanceof ServerPlayer p)||!inside(p,LabyrinthPlace.HOLY_RABBIT)||!p.getItemInHand(e.getHand()).is(Items.SNOWBALL))return;var snow=p.getItemInHand(e.getHand());snow.set(DataComponents.FOOD,new net.minecraft.world.food.FoodProperties.Builder().nutrition(0).saturationModifier(0).alwaysEdible().build());p.startUsingItem(e.getHand());e.setCanceled(true);e.setCancellationResult(InteractionResult.CONSUME);}
     @SubscribeEvent public static void pearl(EntityJoinLevelEvent e){if(e.getEntity() instanceof ThrownEnderpearl pearl&&pearl.getOwner() instanceof ServerPlayer p&&retreatLocked(p)){e.setCanceled(true);pearl.discard();}}
@@ -547,7 +592,7 @@ public final class LiteraryVignettes {
         else if(place==LabyrinthPlace.CONFESSION){var d=LabyrinthData.get(p.server);var own=personal(d,p.getUUID(),place);if(ConfessionAnswers.heard(p,own,e.getRawText())){e.setCanceled(true);save(d,p.getUUID(),place,own);}}}
     @SubscribeEvent public static void travel(net.neoforged.neoforge.event.tick.PlayerTickEvent.Pre e){if(e.getEntity() instanceof ServerPlayer p&&retreatLocked(p)){p.stopFallFlying();p.stopRiding();}}
     @SubscribeEvent public static void tick(ServerTickEvent.Post event){var server=event.getServer();LiteraryCopies.tick(server);LiteraryCabinChoices.reconcileClosure(server);ElkLotNight.tick(server);if(server.getTickCount()%5!=0)return;GhostsCrew.refresh(server);UsherStory.left(server);
-        for(var p:server.getPlayerList().getPlayers()){var place=current(p);if(place!=LabyrinthPlace.HOLY_RABBIT)HolyRabbit.release(p);if(place!=LabyrinthPlace.SLEEPING_KING)KingBreath.leave(p);if(place==null){crawl(p,false);scale(p,false);continue;}var d=LabyrinthData.get(server);var own=personal(d,p.getUUID(),place);if(!own.getBoolean("Here"))continue;var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);own.putInt("Present",Math.min(72000,own.getInt("Present")+5));own.putInt("ThisVisitTicks",Math.min(72000,own.getInt("ThisVisitTicks")+5));
+        for(var p:server.getPlayerList().getPlayers()){var place=current(p);if(place!=LabyrinthPlace.HOLY_RABBIT)HolyRabbit.release(p);if(place!=LabyrinthPlace.SLEEPING_KING)KingBreath.leave(p);if(place==null){crawl(p,false);scale(p,false);RETURNED.remove(p.getUUID());continue;}var d=LabyrinthData.get(server);if(RETURNED.containsKey(p.getUUID()))returned(p,place,d);var own=personal(d,p.getUUID(),place);if(!own.getBoolean("Here"))continue;var b=base(p,place);IndianLakeRooms.keepLoaded(p.serverLevel(),b,place);own.putInt("Present",Math.min(72000,own.getInt("Present")+5));own.putInt("ThisVisitTicks",Math.min(72000,own.getInt("ThisVisitTicks")+5));
             boolean child=place==LabyrinthPlace.CHILD_ROOM||place==LabyrinthPlace.HOLY_RABBIT||place==LabyrinthPlace.BIKE_NIGHT||(place==LabyrinthPlace.BORRASCA&&own.getInt("Visit")<=2)||(place==LabyrinthPlace.WHEEL&&own.getBoolean("Memory"));scale(p,child);crawl(p,(place==LabyrinthPlace.GHOSTS_SET&&GhostsSet.cameraCrawl(p,b))||(place==LabyrinthPlace.MAPPING_INTERIOR&&MappingHouse.crawling(p,b))||(place==LabyrinthPlace.CHILD_ROOM&&ChildRoom.crawling(p,b))||(place==LabyrinthPlace.ELK_CARCASSES&&ElkHunt.crawl(p,b,CRAWLS.containsKey(p.getUUID())))||(place==LabyrinthPlace.POLAROID_TRAIL&&PolaroidTrail.crawling(p,b))||(place==LabyrinthPlace.DEAD_AIR&&DeadAirGame.crawling(p,b))||(place==LabyrinthPlace.PITT&&PittGame.crawling(p,b))||(place==LabyrinthPlace.CLOSING_HALL&&ClosingHall.crawling(p,b))||(place==LabyrinthPlace.KEPT&&b!=null&&KeptSite.crawling(p.blockPosition().subtract(b))));
             if(!own.getBoolean("Interrupted"))switch(place){case PAINTED_INTERIOR,SECOND_WAITRESS,TUNNEL_PERIPHERY,MISSING_SLEEP,LAYERED_MAN,MOTION_LIGHT->UncannyStories.reader(p,b,place,own);case DARE_IN_THE_DARK->DareInTheDark.reader(p,b,own);case DEER_ROAD->DeerRoad.reader(p,b,own);case STATE_ROUTE->StateRoute.reader(p,b,own);case MARSH_SUPPER->MarshSupper.reader(p,b,own);case THE_DRAWING->Drawing.reader(p,b,own);case CORNER_HOUSE->Corner.reader(p,b,own);case BLACK_CITY->BlackCity.reader(p,b,own);case KEPT->Kept.reader(p,b,own);case NOT_YET->NotYet.reader(p,b,own);case LAST_ORDERS->LastOrders.reader(p,b,own);case BIKE_NIGHT->BikeNight.reader(p,b,own);case PELL_HOUSE->PellHouse.reader(p,b,own);case ONES_INSIDE->LodgingHouse.reader(p,b,own);case TALL_GRASS->TallGrass.reader(p,b,own);case GROWING_THINGS->GrowingThings.reader(p,b,own);case LAST_CROSSING->LastCrossing.reader(p,b,own);case HILL_NURSERY->hill(p,b,own);case MINIATURES->miniatures(p,b,own);case MASQUE->masque(p,b,own);case USHER->usher(p,b,own);case WINCHESTER->WinchesterHouse.reader(p,b,own);case CHILD_ROOM->child(p,b,own);case CRIMSON_HALL->crimson(p,b,own);case BLY_ROUTE->bly(p,b,own);case ELK_LOT->{if(ElkLot.built(d,b))ElkLotNight.reader(p,b,own);else lot(p,b,own);}case ELK_FAN->fan(p,b,own);case MAPPING_INTERIOR->mapping(p,b,own);case HOLY_RABBIT->rabbit(p,b,own);case CONFESSION->confession(p,b,own);case ELK_CARCASSES->ElkHunt.tick(p,b,own);case WINTER_LAKE->WinterLake.reader(p,b,own);case COSTUME_NIGHT,MOVIE_NIGHT,CAMP_BLOOD->hunt(p,b,place,own);case DEVILS_ROCK->DevilsRockNights.reader(p,b,own);case WHEEL->WheelHouse.reader(p,b,own);case GHOSTS_SET->GhostsSet.reader(p,b,own);case END_WORLD_CABIN->CabinBargain.tick(p,b,own);case FAMILY_COPY,OLD_CABIN->LiteraryCopies.sceneTick(p,place,own);case THREE_FINGERS->ThreeFingers.reader(p,b,own);case SLEEPING_KING->KingBreath.reader(p,b,own);case LAKE_HOUSE->LakeHouse.reader(p,b,own);case BORRASCA->BorrascaStory.reader(p,b,own);default->{}}
             HousePackets.send(p,new io.github.knaitoe.theoldesthouse.network.EndingBookPayload(b.offset(place==LabyrinthPlace.ELK_LOT&&!ElkLot.built(d,b)?ElkLot.OLD_ENDING:place==LabyrinthPlace.TUNNEL_PERIPHERY?TunnelPassage.account(p.serverLevel(),b):place==LabyrinthPlace.NOT_YET?NotYet.drawer(own):LiteraryRooms.ending(place)),own.getBoolean("Ready")&&!own.getBoolean("Taken_Ending")));

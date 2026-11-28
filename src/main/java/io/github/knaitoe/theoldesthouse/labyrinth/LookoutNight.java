@@ -90,6 +90,8 @@ public final class LookoutNight {
         var t=tower(l.getServer(),b);t.putInt("TtyLit",t.getInt("Clock")+40);t.putString("LastTape",line);tower(l.getServer(),b,t);
     }
     private static final Map<UUID,Long> QUIET=new HashMap<>();
+    /** 0.4.767: forgotten when the server stops (LiteraryVignettes.stopped); these hold the stopped world's clock. */
+    public static void clearAll(){QUIET.clear();}
     private static void quiet(ServerPlayer p,int ticks){QUIET.put(p.getUUID(),p.serverLevel().getGameTime()+ticks);}
     private static boolean barFree(ServerPlayer p){return p.serverLevel().getGameTime()>=QUIET.getOrDefault(p.getUUID(),0L);}
     static void sound(ServerLevel l,Vec3 at,SoundEvent s,float volume,float pitch){l.playSound(null,at.x,at.y,at.z,s,SoundSource.AMBIENT,volume,pitch);}

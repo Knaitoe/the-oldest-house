@@ -21,7 +21,7 @@ public final class DeerRoadClient {
     private DeerRoadClient(){}
     static boolean onRoad(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE)||!HouseSightlineState.hasOrigin())return false;
-        return LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==LabyrinthPlace.DEER_ROAD;
+        return HerePlace.get()==LabyrinthPlace.DEER_ROAD;
     }
     public static boolean precipitating(){return com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()&&onRoad();}
     public static float rain(net.minecraft.world.level.Level level,float nativeRain){return level==Minecraft.getInstance().level&&onRoad()?1:nativeRain;}

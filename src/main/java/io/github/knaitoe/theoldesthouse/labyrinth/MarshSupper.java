@@ -73,6 +73,8 @@ public final class MarshSupper {
         Supper(BlockPos b){base=b;}
     }
     private static final Map<Long,Supper> SUPPERS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return SUPPERS.containsKey(b.asLong());}
     /** Readers walking away through the maze, and when they turned their backs on the house: the windows go out behind them. */
     private static final Map<UUID,Long> LEAVING=new HashMap<>();
     public static void clearAll(){SUPPERS.clear();LEAVING.clear();WITH.clear();CLAPPER.clear();}

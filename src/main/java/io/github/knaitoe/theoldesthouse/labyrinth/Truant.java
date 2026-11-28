@@ -161,7 +161,8 @@ public final class Truant {
         Map<LabyrinthPlace,List<ServerPlayer>> here=new EnumMap<>(LabyrinthPlace.class);
         for(var p:server.getPlayerList().getPlayers()){var place=placeOf(p,origin);if(place!=null)here.computeIfAbsent(place,k->new ArrayList<>()).add(p);}
         if(l.getGameTime()%10==0)relight(l,here,false);
-        if(here.isEmpty()&&OCCUPIED.isEmpty())return;
+        // 0.4.767: with nobody there the move is not asked for again, and the chunks it was holding stayed held.
+        if(here.isEmpty()&&OCCUPIED.isEmpty()){TruantBody.clear();return;}
         tick(l,origin,here);
     }
 

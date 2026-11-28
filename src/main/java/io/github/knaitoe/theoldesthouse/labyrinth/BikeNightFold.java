@@ -142,7 +142,9 @@ public final class BikeNightFold {
     }
     /** Somebody carried through the fold: under the mist, their bike with them and whoever is on it, its way and its lean kept. */
     static void carry(ServerLevel l,BikeNight.Night n,Entity body,double by){
-        var riders=body instanceof NightBike bike?List.copyOf(bike.getPassengers()):List.<Entity>of(body);
+        // 0.4.767: any bike's riders, Gus's too. A reader on his pegs went through the fold with him and got no mist, no sound
+        // and no count of it.
+        var riders=body instanceof RiddenBike ridden?List.copyOf(ridden.getPassengers()):List.<Entity>of(body);
         if(body instanceof RiddenBike bike)bike.fold(by);
         // On foot: where they are, by the fold's width (the connection takes the place itself; the flags only keep the client's way on).
         else if(body instanceof ServerPlayer p)p.connection.teleport(p.getX(),p.getY(),p.getZ()+by,p.getYRot(),p.getXRot(),EnumSet.allOf(RelativeMovement.class));

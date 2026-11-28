@@ -85,9 +85,20 @@ public final class CourtyardFountain {
 
     // ------------------------------------------------------------------------------------------------ the fish
     /** On a reader's arrival: one fish in the basin, unless the cat is off the mat or this reader has already had one. */
+    /** Readers who arrived before the basin had loaded, and the courtyard each arrived in. */
+    private static final java.util.Map<java.util.UUID,BlockPos> ARRIVED=new java.util.HashMap<>();
     public static void ensureFish(ServerPlayer p,BlockPos b){
-        var l=p.serverLevel();var data=LabyrinthData.get(p.server);var all=data.state(NovelVignettes.STATE);
+        var l=p.serverLevel();var basin=b.offset(CENTRE);
+        // 0.4.767: not before the basin's own entities have loaded. This is asked as the reader arrives, and the courtyard stands
+        // far from anywhere, so the fish left there last time has usually not loaded yet: it was taken for gone and another
+        // was put in, one more for every visit, none of which can be hurt or will ever despawn. The reader is remembered and
+        // the basin looked at once it has loaded (ambience); a fish already there is the fish, and a second is taken out.
+        if(!l.hasChunkAt(basin)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(basin))){ARRIVED.put(p.getUUID(),b.immutable());return;}
+        var data=LabyrinthData.get(p.server);var all=data.state(NovelVignettes.STATE);
         if(!l.getBlockState(b.offset(CENTRE).north()).is(Blocks.WATER))return;
+        var there=l.getEntitiesOfClass(Cod.class,new net.minecraft.world.phys.AABB(basin).inflate(8),c->c.isAlive()&&c.getTags().contains(FISH));
+        for(int i=1;i<there.size();i++)there.get(i).discard();
+        if(!there.isEmpty()){if(!all.hasUUID(FISH)||!all.getUUID(FISH).equals(there.get(0).getUUID())){all.putUUID(FISH,there.get(0).getUUID());data.setState(NovelVignettes.STATE,all);}return;}
         if(all.hasUUID(FISH)&&l.getEntity(all.getUUID(FISH)) instanceof Cod alive&&alive.isAlive())return;
         if(all.getBoolean("CatCoaxed")||NovelVignettes.personal(data,p.getUUID()).getBoolean(FISH))return;
         var fish=EntityType.COD.create(l);if(fish==null)return;
@@ -114,7 +125,13 @@ public final class CourtyardFountain {
     // ------------------------------------------------------------------------------------------------ the sound of it
     @SubscribeEvent public static void ambience(ServerTickEvent.Post e){
         var s=e.getServer();if(s.getTickCount()%10!=0)return;var origin=HouseSavedData.get(s).houseOrigin();if(origin==null)return;
-        var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;var b=LabyrinthPlaces.base(origin,PLACE);var bowl=b.offset(BOWL);
+        var l=s.getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
+        for(var waiting:java.util.List.copyOf(ARRIVED.entrySet())){
+            var reader=s.getPlayerList().getPlayer(waiting.getKey());var yard=waiting.getValue();
+            if(reader==null||reader.level()!=l||reader.distanceToSqr(Vec3.atCenterOf(yard.offset(CENTRE)))>96*96){ARRIVED.remove(waiting.getKey());continue;}
+            if(l.hasChunkAt(yard.offset(CENTRE))&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(yard.offset(CENTRE)))){ARRIVED.remove(waiting.getKey());ensureFish(reader,yard);}
+        }
+        var b=LabyrinthPlaces.base(origin,PLACE);var bowl=b.offset(BOWL);
         if(!l.hasChunkAt(bowl)||!bowl(l.getBlockState(bowl))||l.players().stream().noneMatch(p->p.distanceToSqr(Vec3.atCenterOf(bowl))<400))return;
         // The continuous animated jet is part of the native bowl mesh; moving droplets follow the nozzle and overflow.
         l.sendParticles(ParticleTypes.SPLASH,bowl.getX()+.5,bowl.getY()+.95,bowl.getZ()+.5,3,.035,.10,.035,.025);

@@ -190,8 +190,15 @@ public final class PeopleLights {
             if(++e.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(e.base)){clearActors(l,e.base);PeopleLightsSite.reset(l,e.base);}it.remove();}}
         // Anything carried out of the house some other way goes back where it belongs.
         if(server.getTickCount()%20==0)for(var p:server.getPlayerList().getPlayers()){
-            boolean in=LiteraryVignettes.current(p)==PLACE&&LiteraryVignettes.base(p,PLACE)!=null&&PeopleLightsSite.inside(rel(p.position(),LiteraryVignettes.base(p,PLACE)))&&p.isAlive();
-            if(!in&&holding(p)!=0)release(p);
+            // 0.4.767: what the reader had in their hand when they picked the case or the chair up is kept in their record and was
+            // given back only while the borrowed thing was still on them. Tossed (it is put back in the house and the item
+            // discarded) or dropped by a death, it was not, and their own thing stayed in the record until the next thing
+            // borrowed wrote over it. It is now given back whenever nothing borrowed is carried, and to the reader who respawns,
+            // not to the one who died.
+            if(!p.isAlive())continue;
+            boolean in=LiteraryVignettes.current(p)==PLACE&&LiteraryVignettes.base(p,PLACE)!=null&&PeopleLightsSite.inside(rel(p.position(),LiteraryVignettes.base(p,PLACE)));
+            if(holding(p)!=0){if(!in)release(p);}
+            else if(own(p).contains("Before253"))release(p);
         }
     }
 

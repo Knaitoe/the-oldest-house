@@ -41,6 +41,14 @@ public final class HolyRabbit {
     private record Frost(ServerPlayer player,int before){}
     private static final Map<UUID,Frost> FROST=new HashMap<>();
     private HolyRabbit(){}
+    /** Whether tonight's meal is still to be had: in the reader's pack or hand, or lying near them. */
+    private static boolean mealAbout(ServerPlayer p,CompoundTag own){
+        if(!own.hasUUID("MealToken"))return false;var token=own.getUUID("MealToken");
+        java.util.function.Predicate<ItemStack> tonight=s->{if(!s.is(LiteraryRegistry.MEAL.get()))return false;var c=s.get(DataComponents.CUSTOM_DATA);if(c==null)return false;var t=c.copyTag();return t.hasUUID("MealToken")&&t.getUUID("MealToken").equals(token);};
+        var pack=p.getInventory();for(int i=0;i<pack.getContainerSize();i++)if(tonight.test(pack.getItem(i)))return true;
+        if(tonight.test(p.containerMenu.getCarried()))return true;
+        return !p.serverLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,p.getBoundingBox().inflate(12),e->tonight.test(e.getItem())).isEmpty();
+    }
 
     public static void hunger(ServerPlayer p){p.getFoodData().setFoodLevel(1);p.getFoodData().setSaturation(0);p.getFoodData().setExhaustion(0);}
     private static boolean sheltered(ServerPlayer p,BlockPos b){return Math.abs(p.getX()-b.getX())<3.5&&p.getZ()<b.getZ()-20&&p.getZ()>b.getZ()-29;}
@@ -180,10 +188,15 @@ public final class HolyRabbit {
         if(rabbit!=null&&own.getInt("HarvestTicks0491")==0&&!own.getBoolean("RabbitDiscarded0491")&&HouseWatchers.sees(p,rabbit.getEyePosition()))own.putInt("RabbitMornings",own.getInt("RabbitMornings")|(1<<Math.min(7,night)));
         HolyRabbitDialogue.tick(p,father,own,night,ticks);
         boolean returned=night>=3||own.getInt("FatherWaypoint0488")>=WALK.length;
-        if(ticks>=200&&returned&&own.getInt("MealNight")<night&&p.distanceToSqr(b.offset(0,0,-24).getCenter())<100){
+        // 0.4.767: the night's meal was handed over once. A reader who ate it out of reach of the shelter (it was handed at ten
+        // blocks and counted only at eight), or lost it (dropped, gone with a death, left on the ground by a full pack), had no
+        // other, and the night then never ended: held in the cold, hungry, and not able to die of either. A meal that is neither
+        // eaten nor about is handed over again, ten seconds after the last; the old one's token no longer counts.
+        boolean again=own.getInt("MealNight")>=night&&own.getInt("AteNight")<night&&ticks-own.getInt("MealAt0767")>=200&&!mealAbout(p,own);
+        if(ticks>=200&&returned&&(own.getInt("MealNight")<night||again)&&p.distanceToSqr(b.offset(0,0,-24).getCenter())<100){
             var meal=LiteraryVignettes.mark(p,PLACE,"Meal"+night,new ItemStack(LiteraryRegistry.MEAL.get()));var token=UUID.randomUUID();
             CustomData.update(DataComponents.CUSTOM_DATA,meal,t->{t.putInt("Night",night);t.putUUID("MealToken",token);});
-            own.putUUID("MealToken",token);own.putInt("MealNight",night);LiteraryVignettes.give(p,meal);
+            own.putUUID("MealToken",token);own.putInt("MealNight",night);own.putInt("MealAt0767",ticks);LiteraryVignettes.give(p,meal);
             HolyRabbitDialogue.meal(p,father,own,night);
         }
         if(night<3&&ticks>=DAY_TICKS&&own.getInt("MealNight")>=night&&own.getInt("AteNight")==night){

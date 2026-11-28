@@ -120,6 +120,8 @@ public final class Drawing {
         int marked(){return markedIn(year);}
     }
     private static final Map<Long,Day> DAYS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return DAYS.containsKey(b.asLong());}
     /** Readers whose day has been cut: the square is empty for them. */
     private static final Set<UUID> CUT_OUT=new HashSet<>();
     /** Readers being set at the head of the lane once the white has come up. */

@@ -59,6 +59,8 @@ public final class BlackCity {
         Site(BlockPos base){this.base=base;}
     }
     private static final Map<Long,Site> SITES=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return SITES.containsKey(b.asLong());}
     /** Readers in the dark after it took them, and how long until they come to. */
     private static final Map<UUID,Integer> DARK=new HashMap<>();
     private static final Map<UUID,Long> SENT=new HashMap<>();

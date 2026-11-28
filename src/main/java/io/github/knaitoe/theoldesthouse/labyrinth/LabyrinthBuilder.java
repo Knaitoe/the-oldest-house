@@ -285,6 +285,10 @@ public final class LabyrinthBuilder {
         }
         LabyrinthPlace place = pending.peek();
         if (place != null && geometry == null && !due(server, place)) {
+            // 0.4.767: the slot's chunks were leased while it was due and kept when it stopped being so (the deepest reader
+            // logged out part-way), so they stayed loaded with nobody online. They are let go here; chunksReady leases them
+            // again when the slot is due once more, and the fill carries on from the column it had reached.
+            releasePreparation();
             active = false;
             return;
         }

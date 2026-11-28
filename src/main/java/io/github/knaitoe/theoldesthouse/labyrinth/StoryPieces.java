@@ -229,6 +229,17 @@ public final class StoryPieces {
         if(kind!=null)stack.set(DataComponents.BLOCK_STATE,new BlockItemStateProperties(Map.of("kind",name(kind,s.getValue(kind)))));
         return stack;
     }
+    /**
+     * What a set-down piece leaves when something other than a hand destroys it: itself, and its place forgotten. Null for
+     * anything else. A hand's break is dealt with first ({@link #broken}), which forgets the place, so nothing is given twice.
+     */
+    public static @Nullable java.util.List<ItemStack> destroyed(BlockState s,net.minecraft.world.level.storage.loot.LootParams.Builder params){
+        if(!isPiece(s.getBlock()))return null;
+        var at=params.getOptionalParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN);if(at==null)return null;
+        var l=params.getLevel();var pos=BlockPos.containing(at);
+        if(HouseDimensions.isHouseDimension(l.dimension())||!PlacedPieces.has(l,pos))return null;
+        PlacedPieces.remove(l,pos);return java.util.List.of(stackOf(s));
+    }
     private static void broken(BlockEvent.BreakEvent e){
         if(e.isCanceled()||!(e.getLevel() instanceof ServerLevel l)||!isPiece(e.getState().getBlock())||!PlacedPieces.has(l,e.getPos()))return;
         PlacedPieces.remove(l,e.getPos());

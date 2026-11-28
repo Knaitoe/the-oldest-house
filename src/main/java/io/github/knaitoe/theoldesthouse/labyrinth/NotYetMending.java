@@ -251,6 +251,9 @@ public final class NotYetMending {
     // ------------------------------------------------------------------------------------------------ the hatch
     /** Every five ticks for each reader in the place: whether to watch them for the hatch, their seams for everyone, their screens. */
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
+        // 0.4.767: an open hatch was remembered only in memory, by the tick that opened it. If the game stopped in the two seconds
+        // it stood open, nothing shut it again, and the passage was an open shaft from then on. One found open is remembered here.
+        if(NotYetSite.hatchOpen(p.serverLevel(),b))OPEN.putIfAbsent(b.asLong(),0);
         if(!own.getBoolean("Fallen")&&!p.isCreative()&&!held(p))WATCH.add(p.getUUID());else WATCH.remove(p.getUUID());
         show(p,own.getInt("Mended"));
         long now=p.server.getTickCount();var woken=WOKEN.get(p.getUUID());

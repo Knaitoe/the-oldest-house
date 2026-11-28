@@ -238,6 +238,8 @@ public final class TheOldestHouse {
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onAttackEntity);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(HarriganVignette::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onGhostLoaded);
+        NeoForge.EVENT_BUS.addListener(HarriganVignette::onGhostDespawn);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.DrownedTown::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave::onServerTick);
         NeoForge.EVENT_BUS.addListener(io.github.knaitoe.theoldesthouse.labyrinth.PreservedCave::onGameEvent);

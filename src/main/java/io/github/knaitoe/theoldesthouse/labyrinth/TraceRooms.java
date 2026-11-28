@@ -263,6 +263,8 @@ public final class TraceRooms {
 
     // ------------------------------------------------------------------ doors on closers
     private static final Map<Long,Long> OPENED=new HashMap<>();
+    /** 0.4.767: forgotten when the server stops (LiteraryVignettes.stopped); these hold the stopped server's tick counts. */
+    public static void clearAll(){OPENED.clear();HERE.clear();}
     /** The doors on closers, in a room's own coordinates. */
     static List<BlockPos> springs(LabyrinthPlace place){return place==CLOAK?List.of(CLOAK_DOOR):place==SPRUNG?List.of(SPRUNG_A,SPRUNG_B):place==DraftRooms.AIRING?List.of(DraftRooms.AB,DraftRooms.BC):List.of();}
     /** 0.4.245: the rooms whose doors are on closers: the cloakroom, the sprung rooms, and the airing rooms (whose far door the air opens, not the closers). */

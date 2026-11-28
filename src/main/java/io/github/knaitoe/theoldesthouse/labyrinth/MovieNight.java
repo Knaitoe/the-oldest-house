@@ -279,8 +279,9 @@ public final class MovieNight {
         world.putLong("Position"+i,canoe.blockPosition().asLong());LiteraryVignettes.shared(d,PLACE,copy,world);
     }
     @SubscribeEvent public static void canoeRemoved(EntityLeaveLevelEvent event){
-        var entity=event.getEntity();QUEUED.remove(entity.getUUID());
-        if(!(event.getLevel() instanceof ServerLevel level)||!entity.getTags().contains(CANOE))return;
+        // 0.4.767: the server's level only. The client posts this for its own copies of entities, from its own thread.
+        var entity=event.getEntity();if(!(event.getLevel() instanceof ServerLevel level))return;QUEUED.remove(entity.getUUID());
+        if(!entity.getTags().contains(CANOE))return;
         var d=LabyrinthData.get(level.getServer());
         // 0.4.562: whichever copy of the lake the canoe was lent from.
         for(int k=0;k<=SceneInstances.copies(d,PLACE);k++){var world=LiteraryVignettes.shared(d,PLACE,k);

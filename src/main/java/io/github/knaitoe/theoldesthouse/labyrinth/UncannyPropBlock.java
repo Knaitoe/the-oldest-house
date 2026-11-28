@@ -53,7 +53,9 @@ public final class UncannyPropBlock extends BaseEntityBlock {
         public Fitting(BlockPos at,BlockState s){super(UncannyRegistry.FITTING.get(),at,s);}
         @Override protected void saveAdditional(net.minecraft.nbt.CompoundTag t,net.minecraft.core.HolderLookup.Provider r){super.saveAdditional(t,r);if(getBlockState().getValue(KIND)==Kind.COURTYARD_PENDULUM)t.put("CourtyardMotion131",swing.save());if(!meal.isEmpty())t.put("ServedMeal131",meal.save(r));}
         @Override protected void loadAdditional(net.minecraft.nbt.CompoundTag t,net.minecraft.core.HolderLookup.Provider r){super.loadAdditional(t,r);if(t.contains("CourtyardMotion131"))swing.load(t.getCompound("CourtyardMotion131"));meal=net.minecraft.world.item.ItemStack.parseOptional(r,t.getCompound("ServedMeal131"));}
-        @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider r){return saveWithoutMetadata(r);}
+        // 0.4.767: never an empty tag. A client ignores an empty update, and an emptied plate saves as nothing at all, so the
+        // meal went on being drawn on the plate after the reader had taken it up.
+        @Override public net.minecraft.nbt.CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.Provider r){var t=saveWithoutMetadata(r);if(t.isEmpty())t.putBoolean("Empty",true);return t;}
         @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket(){return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);}
         public void syncMotion(){setChanged();if(level instanceof ServerLevel)level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),Block.UPDATE_CLIENTS);}
     }

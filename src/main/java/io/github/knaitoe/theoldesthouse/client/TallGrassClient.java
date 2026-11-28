@@ -32,7 +32,7 @@ public final class TallGrassClient {
 
     static boolean onRoad(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE)||!HouseSightlineState.hasOrigin())return false;
-        return LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==TallGrass.PLACE;
+        return HerePlace.get()==TallGrass.PLACE;
     }
     @SubscribeEvent public static void render(RenderLevelStageEvent e){
         if(e.getStage()!=RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS||!onRoad())return;

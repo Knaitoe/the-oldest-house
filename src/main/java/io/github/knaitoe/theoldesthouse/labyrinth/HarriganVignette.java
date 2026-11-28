@@ -996,12 +996,29 @@ public final class HarriganVignette {
         if (key == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(key)) {
             // A name that is no creature may still be a player who is offline; the cache is absent on some servers.
             var cache = caller.server.getProfileCache();
-            var profile = cache == null ? java.util.Optional.<com.mojang.authlib.GameProfile>empty() : cache.get(rawTarget);
-            if (profile.isPresent()) {
-                callPlayer(caller, data, p, today, profile.get().getId(), profile.get().getName());
-            } else {
+            if (cache == null) {
                 log(caller, HIM, "?");
+                return;
             }
+            // 0.4.767: asked off the server's thread, and answered on it. A name the cache does not hold is looked up over the
+            // network, with retries and waits of up to five seconds each, and that was done here, on the tick: one mistyped
+            // creature ("zombi") stopped the whole server for as long as the lookup took, and could be sent again every half
+            // second. The answer now comes when it comes; the reader's state is read again then, since time has passed.
+            UUID callerId = caller.getUUID();
+            MinecraftServer server = caller.server;
+            cache.getAsync(rawTarget).thenAcceptAsync(profile -> {
+                ServerPlayer back = server.getPlayerList().getPlayer(callerId);
+                if (back == null) return;
+                LabyrinthData now = LabyrinthData.get(server);
+                CompoundTag state = playerState(now, callerId);
+                if (usedToday(state, server) || state.hasUUID("PendingPlayer")) return;
+                if (profile.isPresent()) {
+                    callPlayer(back, now, state, HouseCalendar.today(server), profile.get().getId(), profile.get().getName());
+                } else {
+                    log(back, HIM, "?");
+                }
+                sendPhone(back, false, null);
+            }, server);
             return;
         }
         EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(key);
@@ -1429,6 +1446,30 @@ public final class HarriganVignette {
     }
 
     @Nullable
+    /**
+     * 0.4.767: a ghost that comes back from disk with nobody keeping it. The ghost is a zombie that cannot be hurt and never
+     * despawns, and the only record of it is in memory: the record is dropped when the server stops (after the world has been
+     * saved, so the zombie itself stays in the save) and whenever the ghost's chunk unloads. Each one left behind that way stood
+     * in the world for good, unkillable, a third-strike ghost still doing its ten damage; and a reader who outran one sent for
+     * a player got another made behind them, and another. One loaded from disk that no record names is not let back in.
+     */
+    public static void onGhostLoaded(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
+        if (event.loadedFromDisk() && event.getEntity().getTags().contains(GHOST_TAG)
+                && !ACTIVE_GHOSTS.containsValue(event.getEntity().getUUID())) {
+            event.setCanceled(true);
+        }
+    }
+
+    /**
+     * 0.4.767: the ghost is a zombie, and on Peaceful the game removes a monster on its first tick whatever else is asked of
+     * it. With somebody sent for, a new one was then made every half second all night and the errand never ended.
+     */
+    public static void onGhostDespawn(net.neoforged.neoforge.event.entity.living.MobDespawnEvent event) {
+        if (event.getEntity().getTags().contains(GHOST_TAG)) {
+            event.setResult(net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.DENY);
+        }
+    }
+
     private static Zombie activeGhost(MinecraftServer server, UUID owner) {
         UUID entityId = ACTIVE_GHOSTS.get(owner);
         if (entityId == null) {

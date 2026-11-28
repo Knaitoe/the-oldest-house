@@ -430,7 +430,10 @@ public final class VacantPossession {
             if(++flat.empty>=EMPTY_RESET){var l=server.getLevel(NovelRooms.dimension(PLACE));if(l!=null&&l.isLoaded(flat.base)){clearActors(l,flat.base);VacantSite.reset(l,flat.base,true);}it.remove();}}
         // A piece carried out of the flat some other way (a door, a death, a logout) goes back to the reader's own things.
         if(server.getTickCount()%20==0)for(var p:server.getPlayerList().getPlayers()){
-            boolean in=LiteraryVignettes.current(p)==PLACE&&LiteraryVignettes.base(p,PLACE)!=null&&VacantSite.inside(rel(p.position(),LiteraryVignettes.base(p,PLACE)))&&p.isAlive();
+            // 0.4.767: not to a reader who has died. Their own thing was put back into the dead reader's hand, after the game had
+            // already dropped what they carried, and was gone when they respawned. It waits for the one who respawns.
+            if(!p.isAlive())continue;
+            boolean in=LiteraryVignettes.current(p)==PLACE&&LiteraryVignettes.base(p,PLACE)!=null&&VacantSite.inside(rel(p.position(),LiteraryVignettes.base(p,PLACE)));
             if(in)continue;
             boolean has=holding(p);var own=has?own(p):null;
             if(!has){own=LiteraryVignettes.personal(LabyrinthData.get(server),p.getUUID(),PLACE);if(!own.contains("Carrying228"))continue;}

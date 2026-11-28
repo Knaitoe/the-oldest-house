@@ -1815,6 +1815,12 @@ public final class TheListHunt {
         release(l,r);l.getChunkSource().addRegionTicket(TICKET,c,3,r.id);r.ticket=c;
     }
     static void release(@Nullable ServerLevel l,Runner r){if(r.ticket!=null&&l!=null)l.getChunkSource().removeRegionTicket(TICKET,r.ticket,3,r.id);r.ticket=null;}
+    /**
+     * 0.4.767: nobody is in town. A runner keeps the ground under them loaded, and only the hunt's own tick ever let it go; that
+     * tick stops when the town is empty, so readers who logged out or died away mid-chase left up to five patches of the town
+     * loaded for good. They are let go here, and leased again on the first tick somebody is back.
+     */
+    static void idle(ServerLevel l,BlockPos b){var h=HUNTS.get(b.asLong());if(h!=null)for(var r:h.runners.values())release(l,r);}
 
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){HUNTS.clear();}
     public static void clearAll(){HUNTS.clear();TheListCar.clearAll();TheListJack.clearAll();TheListGin.clearAll();}

@@ -22,7 +22,7 @@ public final class StateRouteClient {
     private StateRouteClient(){}
     static boolean onRoad(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE)||!HouseSightlineState.hasOrigin())return false;
-        return LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==LabyrinthPlace.STATE_ROUTE;
+        return HerePlace.get()==LabyrinthPlace.STATE_ROUTE;
     }
     public static boolean precipitating(){return com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()&&onRoad()&&!dark();}
     public static float rain(net.minecraft.world.level.Level level,float nativeRain){return level==Minecraft.getInstance().level&&onRoad()?(dark()?.4F:1):nativeRain;}

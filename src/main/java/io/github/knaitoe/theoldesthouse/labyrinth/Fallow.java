@@ -223,6 +223,8 @@ public final class Fallow {
     // ------------------------------------------------------------------------------------------------ the afternoon
     /** The sites a reader is in or has just left: each one's afternoon, on its own clock. */
     static final Map<Long,Site> ACTIVE=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     /** When things happen, in ticks of the afternoon's clock, which only runs while somebody is there. */
     public static final int CHORES=100,KEEPER_GOES=220,BEAN_TIME=480,FAYE_TIME=760,OTIS_TIME=1080,STRANGER_TIME=1400;
     /** How long someone waits at the register before leaving the money; how long the man waits for the time; how near he asks. */

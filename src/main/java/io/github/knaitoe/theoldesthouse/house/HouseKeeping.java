@@ -227,6 +227,32 @@ public final class HouseKeeping extends SavedData {
         var now=where(p);update(p,now);
         // 0.4.704: the thing on the hall stand is put back for a reader in the manor, after a restart or once the hall has loaded.
         if(now==Where.MANOR&&p.tickCount%20==0)HallStandDisplay.show(p);
+        if(now==Where.OUTSIDE&&p.isAlive()&&p.tickCount%40==0)handBack(p);
+    }
+    /**
+     * 0.4.767: a reader the House is closed to gets their own things back. What a reader carried in goes to the chest of drawers
+     * when they cross the hall, and the drawers open only to a hand in the front hall. Every ending puts the reader outside
+     * straight from where it ends, never back through the hall, and then keeps them out of every House dimension; the escape
+     * also takes the House away for everybody. So at every ending the reader was told their own things were still in the
+     * drawers and could never go and get them, the Witness ending's "Your belongings." notwithstanding. Once a reader is
+     * outside and the House is shut to them (their story is over, or it has collapsed), the drawer, the thing on the hall
+     * stand and its arrows come to them: into their pack while there is room, and the rest at their feet, where it does not
+     * despawn and only they can pick it up.
+     */
+    static void handBack(ServerPlayer p){
+        var data=get(p.server);var keep=data.keep(p.getUUID());
+        if(keep.drawer.isEmpty()&&keep.kept.isEmpty()&&keep.quiver.isEmpty())return;
+        if(!HouseSavedData.get(p.server).isCollapsed()&&!io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.lockedOut(p))return;
+        var theirs=new ArrayList<>(keep.drawer);if(!keep.kept.isEmpty())theirs.add(keep.kept);if(!keep.quiver.isEmpty())theirs.add(keep.quiver);
+        keep.drawer.clear();keep.homes.clear();keep.kept=ItemStack.EMPTY;keep.quiver=ItemStack.EMPTY;data.setDirty();
+        boolean atFeet=false;
+        for(var stack:theirs){
+            var s=stack.copy();p.getInventory().add(s);if(s.isEmpty())continue;
+            var e=new net.minecraft.world.entity.item.ItemEntity(p.serverLevel(),p.getX(),p.getY()+.2,p.getZ(),s);
+            e.setNoPickUpDelay();e.setUnlimitedLifetime();e.setTarget(p.getUUID());p.serverLevel().addFreshEntity(e);atFeet=true;
+        }
+        p.inventoryMenu.broadcastChanges();
+        say(p,atFeet?"Your own things from the chest of drawers are with you again. What you had no room for is at your feet.":"Your own things from the chest of drawers are with you again.");
     }
     /** The reader is now {@code now}: whatever crossing that is, the House does its part. */
     public static void update(ServerPlayer p,Where now){
@@ -471,23 +497,28 @@ public final class HouseKeeping extends SavedData {
      * reader's favourite weapon is followed too: picked up past the hall by its own reader while it is still their favourite, it stays
      * with them as their own; picked up by anybody else, or once it is no longer the favourite, it is like their other things.
      */
-    private static final Map<UUID,UUID> SET_DOWN=new HashMap<>();
-    public static void clearAll(){SET_DOWN.clear();}
+    private static final String SET_DOWN="HouseSetDownBy";
+    /**
+     * 0.4.767: whose it is goes with the dropped thing itself and is saved with it. It was kept in memory by the item's id, so
+     * after a restart the thing was nobody's: picked up, it was no longer counted among its reader's own, and the hall let it
+     * past; picked up beyond the hall by somebody else, it was theirs.
+     */
+    public static void clearAll(){}
     @SubscribeEvent public static void tossed(ItemTossEvent e){
         if(!(e.getPlayer() instanceof ServerPlayer p)||p.level().isClientSide())return;
         var s=e.getEntity().getItem();if(allowed(s)||where(p)!=Where.MANOR)return;
         var keep=of(p);int own=take(keep.loose,s,s.getCount());if(own<=0)return;
-        get(p.server).setDirty();SET_DOWN.put(e.getEntity().getUUID(),p.getUUID());
+        get(p.server).setDirty();e.getEntity().getPersistentData().putUUID(SET_DOWN,p.getUUID());
     }
     @SubscribeEvent public static void pickup(ItemEntityPickupEvent.Pre e){
         if(!(e.getPlayer() instanceof ServerPlayer p)||p.level().isClientSide())return;
-        var item=e.getItemEntity();var owner=SET_DOWN.get(item.getUUID());if(owner==null)return;
+        var item=e.getItemEntity();var marked=item.getPersistentData();if(!marked.hasUUID(SET_DOWN))return;var owner=marked.getUUID(SET_DOWN);
         var data=get(p.server);
         if(where(p)==Where.BEYOND&&!(owner.equals(p.getUUID())&&favourite(p,item.getItem()))){
-            e.setCanPickup(TriState.FALSE);add(data.keep(owner).drawer,item.getItem());item.discard();SET_DOWN.remove(item.getUUID());data.setDirty();
+            e.setCanPickup(TriState.FALSE);add(data.keep(owner).drawer,item.getItem());item.discard();marked.remove(SET_DOWN);data.setDirty();
             say(p,"The House takes it back to the chest of drawers in the front hall.");return;
         }
-        SET_DOWN.remove(item.getUUID());add(data.keep(p.getUUID()).loose,item.getItem());data.setDirty();
+        marked.remove(SET_DOWN);add(data.keep(p.getUUID()).loose,item.getItem());data.setDirty();
     }
     /** On the action bar, as the House's other lines are. */
     static void say(ServerPlayer p,String line){p.displayClientMessage(Component.literal(line).withStyle(ChatFormatting.GRAY,ChatFormatting.ITALIC),true);}

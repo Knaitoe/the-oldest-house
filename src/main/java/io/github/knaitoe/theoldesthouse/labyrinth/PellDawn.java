@@ -170,7 +170,10 @@ public final class PellDawn {
         // The account, for each reader the morning is for.
         for(var p:here){
             if(!p.isAlive()||p.isSpectator()||!h.atEnd.contains(p.getUUID()))continue;
-            var own=PellHouse.own(p);if(own.getBoolean("Dawned"))continue;
+            var own=PellHouse.own(p);
+            // 0.4.767: Tilly's account says Callum was on the step if this is kept, and nothing ever kept it, so it never said so.
+            if(h.callumStepped&&!own.getBoolean("SawCallumStep")){own.putBoolean("SawCallumStep",true);PellHouse.save(p,own);}
+            if(own.getBoolean("Dawned"))continue;
             own.putBoolean("Dawned",true);own.putBoolean("SawCarCome",true);
             // 0.4.542: their ending has landed, read or not: the house is never dealt to them again as it was, and the door they came
             // in by is only a passage (LabyrinthDealer.finishedFor). The account waits under the mat, here and in the house's

@@ -20,7 +20,7 @@ public final class StormFieldClient {
     private StormFieldClient(){}
     static boolean inField(){
         var mc=Minecraft.getInstance();if(mc.player==null||mc.level==null||!mc.level.dimension().equals(HouseDimensions.OUTSIDE)||!HouseSightlineState.hasOrigin())return false;
-        return LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition())==YardStorm.PLACE;
+        return HerePlace.get()==YardStorm.PLACE;
     }
     /** The storm's stage as the windsock shows it: 0 overcast, 1 rain, 2 the storm; -1 out of the field. */
     static int stage(){

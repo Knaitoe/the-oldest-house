@@ -117,6 +117,8 @@ public final class TheList {
 
     // ------------------------------------------------------------------------------------------------ the night
     static final Map<Long,Site> ACTIVE=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return ACTIVE.containsKey(b.asLong());}
     static final class Site{final BlockPos base;int tick,empty;final Map<UUID,Vec3> stepped=new HashMap<>();Site(BlockPos b){base=b;}}
     static final int EMPTY_FORGET=100;
     /** Everyone in the town, inside or out. */
@@ -144,7 +146,7 @@ public final class TheList {
         var l=e.getServer().getLevel(NovelRooms.dimension(PLACE));if(l==null)return;
         for(var it=ACTIVE.values().iterator();it.hasNext();){
             var s=it.next();var here=readers(l,s.base);
-            if(here.isEmpty()){if(++s.empty>=EMPTY_FORGET)it.remove();continue;}
+            if(here.isEmpty()){TheListHunt.idle(l,s.base);if(++s.empty>=EMPTY_FORGET)it.remove();continue;}
             s.empty=0;s.tick++;
             var rnd=l.getRandom();var one=here.get(rnd.nextInt(here.size()));var r=one.position().subtract(Vec3.atLowerCornerOf(s.base));
             boolean out=!TheListSite.indoors(r);

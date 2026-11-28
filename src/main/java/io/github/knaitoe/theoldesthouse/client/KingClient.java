@@ -53,7 +53,7 @@ public final class KingClient {
 
     public static void accept(KingStatePayload p){
         var level=Minecraft.getInstance().level;if(level==null)return;long until=level.getGameTime()+LAPSE;
-        for(var e:p.readers()){KingBreath.STATES.put(e.reader(),e.state());UNTIL.put(e.reader(),until);}
+        for(var e:p.readers()){KingBreath.clientSet(e.reader(),e.state());UNTIL.put(e.reader(),until);}
     }
     /** How much of a thing a player is, as this client knows it; anybody it does not know of is a thing. */
     public static int state(Entity e){return e instanceof Player&&UNTIL.containsKey(e.getUUID())?KingBreath.of(e):KingBreath.THING;}
@@ -62,9 +62,9 @@ public final class KingClient {
 
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){
         var level=Minecraft.getInstance().level;if(level==null||UNTIL.isEmpty())return;long now=level.getGameTime();
-        UNTIL.entrySet().removeIf(en->{if(en.getValue()>=now&&en.getValue()-now<=LAPSE+5)return false;KingBreath.STATES.remove(en.getKey());return true;});
+        UNTIL.entrySet().removeIf(en->{if(en.getValue()>=now&&en.getValue()-now<=LAPSE+5)return false;KingBreath.clientForget(en.getKey());return true;});
     }
-    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){UNTIL.keySet().forEach(KingBreath.STATES::remove);UNTIL.clear();}
+    @SubscribeEvent public static void logout(ClientPlayerNetworkEvent.LoggingOut e){UNTIL.keySet().forEach(KingBreath::clientForget);UNTIL.clear();}
 
     // ------------------------------------------------------------------------------------------------ the body
     @SubscribeEvent public static void before(RenderPlayerEvent.Pre e){

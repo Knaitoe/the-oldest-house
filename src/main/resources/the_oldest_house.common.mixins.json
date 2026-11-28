@@ -16,6 +16,7 @@
     "ArtifactPaddleMixin",
     "ArtifactSnowMixin",
     "CraftingKeyMixin",
+    "CrafterKeyMixin",
     "TeleportBaselineMixin",
     "NotYetSleepMixin",
     "NotYetGetUpMixin",

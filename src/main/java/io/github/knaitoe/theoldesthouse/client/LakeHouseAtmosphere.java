@@ -21,8 +21,8 @@ public final class LakeHouseAtmosphere {
     private static int state;
     private LakeHouseAtmosphere(){}
     public static void accept(LakeHouseViewPayload p){state=p.state();}
-    private static boolean lake(){var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var place=LabyrinthPlaces.placeAt(HouseSightlineState.origin(),mc.player.blockPosition());return place==LabyrinthPlace.LAKE_HOUSE||place==LabyrinthPlace.LAKE_HOUSE_EMPTY;}
-    public static long time(long normal){return lake()&&(state&4)!=0?0:normal;}
+    private static boolean lake(){var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null||mc.level.dimension()!=HouseDimensions.OUTSIDE)return false;var place=HerePlace.get();return place==LabyrinthPlace.LAKE_HOUSE||place==LabyrinthPlace.LAKE_HOUSE_EMPTY;}
+    public static long time(long normal){return (state&4)!=0&&lake()?0:normal;}
     @SubscribeEvent public static void tick(ClientTickEvent.Post e){if(!lake())state=0;}
     @SubscribeEvent public static void fog(ViewportEvent.RenderFog e){
         var mc=Minecraft.getInstance();if(!lake()||mc.player==null||!mc.player.isUnderWater()||(state&2)!=0)return;

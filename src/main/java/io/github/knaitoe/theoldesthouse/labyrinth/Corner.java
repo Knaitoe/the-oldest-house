@@ -78,6 +78,8 @@ public final class Corner {
         Day(BlockPos b){base=b;}
     }
     private static final Map<Long,Day> DAYS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return DAYS.containsKey(b.asLong());}
     /** The hour last sent to each reader. */
     private static final Map<UUID,Long> SENT=new HashMap<>();
     public static void clearAll(){DAYS.clear();SENT.clear();}

@@ -341,7 +341,9 @@ public final class LastCrossingTexts {
         if(t.getBoolean("PlateClean"))text.append("When I laid my palm on the handprint plate it left a breath of fog on the near side and nothing on the far. ");
         // Night One.
         if(t.getBoolean("Gripped")){text.append("On the first night a hand came up through the broken corner of the intake grate and took hold of me. ");
-            if(t.getBoolean("FoughtFree"))text.append("I beat it off myself. ");else if(t.getBoolean("PulledUp"))text.append("Somebody reached down through the landing's rail and pulled me up over it. ");else if(t.getBoolean("Freed"))text.append("Somebody beat it off me. ");
+            // 0.4.767: how the reader got free is kept as a word ("hand", "struck"), and who pulled them up is kept on the one who
+            // pulled. Both were asked for here as flags, which a word never is, so neither sentence was ever written.
+            if(t.getBoolean("FoughtFree"))text.append("I beat it off myself. ");else if(t.getString("Freed").equals("hand"))text.append("Somebody reached down through the landing's rail and pulled me up over it. ");else if(t.getString("Freed").equals("struck"))text.append("Somebody beat it off me. ");
             text.append("After that there was a second breath under my own. ");
             if(t.getBoolean("Told"))text.append("I told Vera. ");
             if(t.getBoolean("Exposed"))text.append(alone?"I laid my palm on the plate and let Vera see a second print come up on the far side. ":"I laid my palm on the plate and let the others see a second print come up on the far side. ");}

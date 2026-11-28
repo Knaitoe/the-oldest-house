@@ -289,7 +289,8 @@ public final class MotherOfStrays {
             if (data.hasUUID(ENTRY)) {
                 UUID id = data.getUUID(ENTRY);
                 if (page.stream().noneMatch(entry -> entry.id.equals(id))) {if(pet.isAlive())pet.discard();}
-                else displayed.put(id, pet);
+                // 0.4.767: one body for each kept pet; a second for the same one (made by the fault above, in a world already played) goes.
+                else if (displayed.putIfAbsent(id, pet) != null) pet.discard();
             }
         }
         // The bell pages through every archived pet, twelve live bodies at a time.
@@ -417,8 +418,14 @@ public final class MotherOfStrays {
             warnRansom(player,collection);
             BlockPos base = base(player.server);
             if (base != null) {
-                refreshShelves(player.serverLevel(), base, collection);
-                refreshPets(player.serverLevel(), base, collection);
+                // 0.4.767: only once the den's own entities have loaded. This runs in the same step as the move, and a den come to
+                // from far off has not got its saved animals and frames back yet: none were found, so every kept pet on the
+                // page was made again beside the one about to load, and again on the next such visit. Until they have loaded
+                // the shelves are marked stale, and the den's own tick lays them out (it waits for the same thing).
+                if (RoomActors.ready(player.serverLevel(), box(base.offset(-11, -4, -26), base.offset(12, 14, 1)))) {
+                    refreshShelves(player.serverLevel(), base, collection);
+                    refreshPets(player.serverLevel(), base, collection);
+                } else shelfRevision = -1;
             }
         }
     }
@@ -781,6 +788,8 @@ public final class MotherOfStrays {
         if (level == null || base == null || !LabyrinthBuilder.isPlaceReady(server, LabyrinthPlace.MOTHER_DEN)) return;
         AABB bounds = box(base.offset(-11, -4, -26), base.offset(12, 14, 1));
         if (level.players().stream().noneMatch(p -> bounds.contains(p.position()))) return;
+        // 0.4.767: nothing is looked for, or made for want of finding it, before the den's saved entities are there.
+        if (!RoomActors.ready(level, bounds)) return;
         MotherEntity keeper = collection.banished() ? null : ensureKeeper(level, base);
         if (keeper != null) keeper.setCorruption(collection.corruption());
         if(keeper!=null&&collection.all().stream().anyMatch(e->e.livingClaim)) {

@@ -35,7 +35,9 @@
         "bike_",
         "night_bike"
       ],
-      "skip": [],
+      "skip": [
+        "bike_beam"
+      ],
       "keepsake": "calder_fitting[bench_cut]",
       "line": "A bench from the park in Calder, with initials cut into the seat."
     },
@@ -44,7 +46,9 @@
       "prefixes": [
         "fallow_"
       ],
-      "skip": [],
+      "skip": [
+        "fallow_shadow"
+      ],
       "keepsake": "fallow_fitting[pump]",
       "line": "A pump from the station on the county road. The last price is still on its face."
     },
@@ -53,7 +57,9 @@
       "prefixes": [
         "king_"
       ],
-      "skip": [],
+      "skip": [
+        "king_verge"
+      ],
       "keepsake": "king_fitting[chessmen]",
       "line": "The chessmen from the King's table. One piece was always missing."
     },
@@ -191,7 +197,9 @@
         "deer_road_"
       ],
       "skip": [
-        "deer_road_anchor"
+        "deer_road_anchor",
+        "deer_road_car",
+        "deer_road_fitting[carcass]"
       ],
       "keepsake": "deer_road_fitting[sign]",
       "line": "The deer crossing sign from the road."

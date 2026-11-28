@@ -226,6 +226,9 @@ public final class BikeNightHunt {
             // From under them: it is not stood anywhere, as it would be if they had got off it.
             if(nb.getFirstPassenger()==p){make=nb.make();nb.taken();}else p.stopRiding();
         }
+        // 0.4.767: a reader caught on Gus's pegs comes off them. They stayed on, so they were told they had been thrown while he
+        // rode on where they looked, and were put out a while later still riding.
+        else if(p.getVehicle() instanceof PackBike)p.stopRiding();
         if(make==null)for(var m:NightBike.Make.values())if(p.getUUID().equals(n.owner[m.ordinal()])){
             make=m;var at=n.at[m.ordinal()];
             if(at!=null&&l.isLoaded(at)&&l.getBlockState(at).getBlock() instanceof NightBikeBlock)l.setBlock(at,Blocks.AIR.defaultBlockState(),3);

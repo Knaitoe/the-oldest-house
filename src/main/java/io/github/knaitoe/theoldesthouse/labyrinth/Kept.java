@@ -69,6 +69,8 @@ public final class Kept {
         Scene(BlockPos b){base=b;}
     }
     private static final Map<Long,Scene> SCENES=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return SCENES.containsKey(b.asLong());}
     /** How long each reader has had their eyes shut by a cell, and how far each noticed reader has got. */
     private static final Map<UUID,Integer> CLOSED=new HashMap<>(),NOTICED=new HashMap<>();
     public static void clearAll(){SCENES.clear();CLOSED.clear();NOTICED.clear();}

@@ -43,6 +43,8 @@ public final class TallyCounterItem extends Item {
     /** Ten seconds between warnings from behind; one waking each four seconds of sleep at most. */
     public static final int BEHIND_EVERY=200,WATCH_EVERY=80,BEHIND_RANGE=8,WATCH_RANGE=10,COUNT_RANGE=16,OUT_THERE=32;
     private static final Map<UUID,Long> LAST=new HashMap<>();
+    /** 0.4.767: forgotten when the server stops (LiteraryVignettes.stopped); these hold the stopped world's clock. */
+    public static void clearAll(){LAST.clear();}
     /** A click where the counter keeps no count: in a neighbour's world that is not the reader's own. */
     public static final String NOT_HERE="It clicks, but the number doesn't turn here.";
     private static final String[] WORDS={"None","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen","Twenty"};

@@ -193,6 +193,8 @@ public final class LastSeen {
         Day(BlockPos b,long id){base=b;this.id=id;Arrays.fill(held,-1);}
     }
     static final Map<Long,Day> DAYS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return DAYS.containsKey(b.asLong());}
     @Nullable static Day day(@Nullable BlockPos b){return b==null?null:DAYS.get(b.asLong());}
     /** The morning's stage at a park, or -1 if nobody has been there since the server started. */
     public static int stage(BlockPos b){var d=day(b);return d==null?-1:d.stage;}

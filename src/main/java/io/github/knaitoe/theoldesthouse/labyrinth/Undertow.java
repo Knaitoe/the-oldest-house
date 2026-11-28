@@ -26,6 +26,8 @@ import net.minecraft.world.level.Level;
 public class Undertow extends Zombie {
     public Undertow(EntityType<? extends Zombie> type,Level level){super(type,level);setCanPickUpLoot(false);setCanBreakDoors(false);setPersistenceRequired();}
     public static AttributeSupplier.Builder attributes(){return Zombie.createAttributes().add(Attributes.MAX_HEALTH,16).add(Attributes.ATTACK_DAMAGE,3).add(Attributes.SPAWN_REINFORCEMENTS_CHANCE,0).add(Attributes.FOLLOW_RANGE,28);}
+    /** 0.4.767: on Peaceful the game removes a monster on its first tick, asked to persist or not; the crossing's nights made and lost their drowned without end. */
+    @Override protected boolean shouldDespawnInPeaceful(){return false;}
     @Override protected void addBehaviourGoals(){
         goalSelector.addGoal(2,new net.minecraft.world.entity.ai.goal.ZombieAttackGoal(this,1.0,false));
         goalSelector.addGoal(7,new net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal(this,1.0));

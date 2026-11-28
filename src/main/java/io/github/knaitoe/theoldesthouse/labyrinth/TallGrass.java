@@ -81,6 +81,8 @@ public final class TallGrass {
         Field(BlockPos b){base=b;}
     }
     private static final Map<Long,Field> FIELDS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return FIELDS.containsKey(b.asLong());}
     private static final Map<UUID,String> WITH=new HashMap<>();
     public static void clearAll(){FIELDS.clear();WITH.clear();CAPS.clear();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
@@ -156,7 +158,8 @@ public final class TallGrass {
             f.tick++;var here=readers(l,f.base);
             if(here.isEmpty()){if(++f.empty>=EMPTY_RESET&&l.isLoaded(f.base.offset(TallGrassSite.NOTICE))){reset(l,f);FIELDS.remove(f.base.asLong());}continue;}
             f.empty=0;
-            if(f.fresh){if(!l.isLoaded(f.base.offset(TallGrassSite.NOTICE)))continue;f.fresh=false;reset(l,f);}
+            // 0.4.767: and its entities, as the other stories ask: the driver and the car left from last time are cleared by looking.
+            if(f.fresh){var notice=f.base.offset(TallGrassSite.NOTICE);if(!l.isLoaded(notice)||!l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(notice)))continue;f.fresh=false;reset(l,f);}
             if(f.tick%10==0)TallGrassSite.hazards(l,f.base,f.tick%20==0);
             springBack(l,f);
             if(f.end==NONE){voices(l,f,here);hazardSounds(l,f,here);moves(l,f,here);if(f.tick%20==0)maybeBegin(l,f,here);}

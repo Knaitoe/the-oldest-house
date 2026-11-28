@@ -221,6 +221,18 @@ public final class DareInTheDark {
         if(l.getBlockState(head).isAir()){l.setBlock(head,Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL,9),Block.UPDATE_CLIENTS);LIGHTS.put(p.getUUID(),GlobalPos.of(l.dimension(),head));}
     }
     private static void clear(@Nullable ServerLevel l,BlockPos at){if(l!=null&&l.getBlockState(at).is(Blocks.LIGHT))l.setBlock(at,Blocks.AIR.defaultBlockState(),Block.UPDATE_CLIENTS);}
+    /**
+     * 0.4.767: the candle's light is an invisible block at the reader's face, remembered only in memory. A reader who left the
+     * game holding the candle lit, or a server that stopped, left that block in the world for good, in a room meant to be
+     * dark, and one more each time. It is taken away when its reader leaves and before the server saves and stops.
+     */
+    @SubscribeEvent public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e){
+        var id=e.getEntity().getUUID();PRESENT.remove(id);var old=LIGHTS.remove(id);var server=e.getEntity().getServer();
+        if(old!=null&&server!=null)clear(server.getLevel(old.dimension()),old.pos());
+    }
+    @SubscribeEvent public static void stopping(net.neoforged.neoforge.event.server.ServerStoppingEvent e){
+        for(var old:LIGHTS.values())clear(e.getServer().getLevel(old.dimension()),old.pos());LIGHTS.clear();PRESENT.clear();
+    }
 
     // ------------------------------------------------------------------------------------------------ the client's glass
     private static void send(ServerPlayer p,CompoundTag own,boolean force){

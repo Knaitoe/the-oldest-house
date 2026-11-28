@@ -104,6 +104,9 @@ public final class HouseLifecycleEvents {
         io.github.knaitoe.theoldesthouse.opening.CompanionOrders.clearAll();
         Growl.clearAll();
         io.github.knaitoe.theoldesthouse.labyrinth.FinaleController.clearAll();
+        // 0.4.767: and the stories, which nothing here forgot (LiteraryVignettes.stopped).
+        io.github.knaitoe.theoldesthouse.labyrinth.LiteraryVignettes.stopped();
+        HallStandDisplay.clearAll();HouseKeeping.clearAll();
     }
 
     public static void onPlayerWakeUp(PlayerWakeUpEvent event) {

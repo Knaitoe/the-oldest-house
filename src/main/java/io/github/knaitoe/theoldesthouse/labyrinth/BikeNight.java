@@ -328,7 +328,9 @@ public final class BikeNight {
                 n.tell.remove(t.getKey());it.remove();}
         }
     }
-    static boolean loaded(ServerLevel l,Night n){return l.isLoaded(n.base.offset(BikeNightSite.FLICKER))&&l.isLoaded(n.base.offset(BikeNightSite.bikeAt(NightBike.Make.RATTLER)));}
+    // 0.4.767: and their entities. A night begins by clearing whoever was left standing from the last, found by looking; with only
+    // the blocks loaded they were not found, stayed where they stood, and the night made its people again beside them.
+    static boolean loaded(ServerLevel l,Night n){var lamp=n.base.offset(BikeNightSite.FLICKER);var rack=n.base.offset(BikeNightSite.bikeAt(NightBike.Make.RATTLER));return l.isLoaded(lamp)&&l.isLoaded(rack)&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(lamp))&&l.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(rack));}
     /** The failing lamp: lit for a few seconds, out for a moment; now and then out for longer, and each time a little longer. */
     static void lamp(ServerLevel l,Night n){
         if(n.tick<n.lampNext)return;var rnd=l.getRandom();
@@ -561,6 +563,12 @@ public final class BikeNight {
     }
 
     // ------------------------------------------------------------------------------------------------ each reader
+    /**
+     * 0.4.767: a reader who leaves the game on Gus's pegs steps off them first. The game takes a mount away with a player who
+     * logs out on it when they are its only player, and everything else riding it too: Gus and his bike both went, for every
+     * reader in the night, and he is only made again when somebody is back near the park.
+     */
+    @SubscribeEvent public static void leftOnPegs(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e){if(e.getEntity().getVehicle() instanceof PackBike)e.getEntity().stopRiding();}
     public static void reader(ServerPlayer p,BlockPos b,CompoundTag own){
         if(b==null)return;var n=NIGHTS.computeIfAbsent(b.asLong(),k->new Night(b));var id=p.getUUID();
         if(p.getVehicle() instanceof io.github.knaitoe.theoldesthouse.house.SeatEntity seat&&seat.pumped()){

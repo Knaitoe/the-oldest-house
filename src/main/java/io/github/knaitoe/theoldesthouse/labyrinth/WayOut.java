@@ -54,6 +54,13 @@ public final class WayOut {
     private record Echo(long at,Vec3 pos,net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound){}
     private static final Map<UUID,ArrayDeque<Echo>> ECHOES=new HashMap<>();
     private static final Map<UUID,Vec3> STEPPED=new HashMap<>();
+    /**
+     * 0.4.767: a reader who leaves the game is forgotten here. They were kept, and the client is told it is in the meadow only
+     * when a reader is first added: one who logged back in standing there had no meadow fog (so the edge of the built land
+     * showed) and no tape for the rest of the scene. Their count of ticks is left as it was.
+     */
+    @SubscribeEvent public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e){var id=e.getEntity().getUUID();HERE.remove(id);ECHOES.remove(id);STEPPED.remove(id);}
+    public static void clearAll(){HERE.clear();ECHOES.clear();STEPPED.clear();}
     private WayOut(){}
 
     public static CompoundTag own(MinecraftServer s,UUID id){return LabyrinthData.get(s).stateEntry(STATE,id.toString());}

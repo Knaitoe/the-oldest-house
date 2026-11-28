@@ -116,6 +116,8 @@ public final class LastOrders {
         }
     }
     private static final Map<Long,Scene> SCENES=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return SCENES.containsKey(b.asLong());}
     /** Each reader's ending, as it plays out: the feast, or the evening taken. */
     private static final Map<UUID,Integer> FEASTS=new HashMap<>(),TAKEN=new HashMap<>();
     public static void clearAll(){SCENES.clear();FEASTS.clear();TAKEN.clear();}

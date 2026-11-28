@@ -95,6 +95,8 @@ public final class GrowingThings {
         Day(BlockPos b){base=b;}
     }
     private static final Map<Long,Day> DAYS=new HashMap<>();
+    /** 0.4.767: whether this place has anything going on in memory; a reader who logs back in where it has not arrives again (LiteraryVignettes.returned). */
+    static boolean running(BlockPos b){return DAYS.containsKey(b.asLong());}
     public static void clearAll(){DAYS.clear();SEEDS.clear();LOOKS.clear();}
     @SubscribeEvent public static void stopped(ServerStoppedEvent e){clearAll();}
 

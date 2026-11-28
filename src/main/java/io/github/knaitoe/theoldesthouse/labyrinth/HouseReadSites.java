@@ -308,7 +308,7 @@ public final class HouseReadSites {
     /** The porch (0.4.159): the 200 ticks after the whistle are its window; what the reader does first in them sets HOME. */
     private static void porch(ServerPlayer p,BlockPos b,CompoundTag visit,int age){
         // 0.4.764: six seconds in, at the swing, or at the first steps across the lawn toward the house.
-        if(!visit.contains("Whistle")&&age>=visit.getInt("WhistleAgain")&&(age>=120||p.distanceToSqr(b.offset(-10,0,2).getCenter())<16||p.getY()<b.getY()+1.5&&p.getZ()<b.getZ()+5&&!underPorch(p,b))){visit.putInt("Whistle",age);sound(p,HouseReadRegistry.WHISTLE.get(),b.offset(0,4,-8),1.6f);if(visit.getInt("WhistleAgain")>0)HouseReadPorch.say(p,visit,HouseReadPorch.AGAIN);}
+        if(!visit.contains("Whistle")&&age>=visit.getInt("WhistleAgain")&&(age>=120||p.distanceToSqr(b.offset(-10,0,2).getCenter())<16||p.getY()<b.getY()+1.5&&p.getZ()<b.getZ()+5&&!underPorch(p,b))){visit.putInt("Whistle",age);if(!visit.contains("FirstWhistle"))visit.putInt("FirstWhistle",age);sound(p,HouseReadRegistry.WHISTLE.get(),b.offset(0,4,-8),1.6f);if(visit.getInt("WhistleAgain")>0)HouseReadPorch.say(p,visit,HouseReadPorch.AGAIN);}
         int cue=visit.getInt("Whistle");boolean window=cue>0&&age<=cue+200;var seen=HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.PORCH.key());boolean first=seen.contains("First");
         if(cue>0){
             if(underPorch(p,b)){remember(visit,"UnderLattice","stood under the porch behind the lattice");if(window&&!first){home(p,"lattice","DANGER");first=true;}}
@@ -343,7 +343,12 @@ public final class HouseReadSites {
         // 0.4.172 (owner: "Can you remove the sparkle effects too?"): no glow drifting over the yard from here.
         // 0.4.766: the owner's fireflies, moths and stove steam are HouseReadPorch.air's, sent from its tick below.
         if(visit.getBoolean("TurnedBack")&&!visit.getBoolean("LookedBackKept")){visit.putBoolean("LookedBackKept",true);HouseRead.flag(p,Room.PORCH,"LookedBack");}
-        HouseReadPorch.tick(p,b,visit,age,cue,HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.PORCH.key()).getString("First"),visit.getBoolean("WentIn"),underPorch(p,b),onRoad(p,b));
+        // 0.4.767: the yard is told when the whistle first blew. An unanswered whistle is taken back for five seconds of every
+        // fifteen so that it can blow again, and the yard was handed that: for those five seconds it was "before the whistle",
+        // so the dog left the den and came back across the lawn, the one cooking went back to chopping with their head down, and
+        // the count toward the hand at the glass and the plate carried out began again each time and never got there.
+        int heard=visit.contains("FirstWhistle")?visit.getInt("FirstWhistle"):cue;
+        HouseReadPorch.tick(p,b,visit,age,heard,HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.PORCH.key()).getString("First"),visit.getBoolean("WentIn"),underPorch(p,b),onRoad(p,b));
     }
     private static void home(ServerPlayer p,String first,String value){HouseRead.first(p,Room.PORCH,"First",first);HouseRead.signal(p,HouseRead.Trait.HOME,value,false);}
     @SubscribeEvent public static void screen(PlayerInteractEvent.RightClickBlock e){if(e.getLevel().isClientSide||e.getHand()!=net.minecraft.world.InteractionHand.MAIN_HAND||!(e.getEntity() instanceof ServerPlayer p)||!LiteraryVignettes.participant(p)||inside(p)!=Room.PORCH)return;var b=base(p.server,p.getUUID(),Room.PORCH);if(e.getPos().equals(b.offset(HouseReadRooms.SCREEN))||e.getPos().equals(b.offset(HouseReadRooms.SCREEN).above()))act(p,Room.PORCH,"used the screen door");}

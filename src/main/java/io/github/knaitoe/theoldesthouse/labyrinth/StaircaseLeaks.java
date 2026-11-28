@@ -190,6 +190,10 @@ public final class StaircaseLeaks {
         p.inventoryMenu.broadcastChanges();p.connection.send(new ClientboundSetHealthPacket(p.getHealth(),p.getFoodData().getFoodLevel(),p.getFoodData().getSaturationLevel()));p.connection.send(new ClientboundSetExperiencePacket(p.experienceProgress,p.totalExperience,p.experienceLevel));
     }
     private static void enter(ServerPlayer p,Offer offer,Room room){
+        // 0.4.767: the reader's own inventory screen may be open when the room takes them, with a stack on the cursor or in the
+        // crafting grid. Neither is part of what is kept for their return, and what is kept replaces their inventory when they
+        // come back, so those stacks were lost. Closing the screen first puts them in the inventory, where they are kept.
+        p.closeContainer();
         var e=engine(p.server);var s=new CompoundTag();s.putInt("Index",offer.index);s.putInt("Kind",room.kind.ordinal());if(offer.door!=null)s.putLong("Door",offer.door.asLong());else if(!offer.test)StaircaseHousehold.mark(p,"leak:"+offer.index);if(offer.test)s.putBoolean("Test",true);s.putLong("Paper",offer.paper.asLong());s.putInt("Slot",room.slot);s.putLong("RoomBase",room.base.asLong());s.put("Return",snapshot(p));s.putLong("Started",p.serverLevel().getGameTime());s.put("Chore",new CompoundTag());
         var waits=new ListTag();for(var pet:CompanionOrders.followingAll(p)){var tag=new CompoundTag();tag.putUUID("Id",pet.getUUID());tag.putBoolean("NoAI",pet.isNoAi());waits.add(tag);pet.getNavigation().stop();pet.getPersistentData().putUUID(WAITING,p.getUUID());pet.getPersistentData().putBoolean(WAITING+"NoAI",pet.isNoAi());pet.setNoAi(true);}
         s.put("Pets",waits);e.sources.put(p.getUUID(),new Lease(p.serverLevel(),p.getBoundingBox().inflate(34,5,34)));e.sessions.put(p.getUUID(),s);persist(p,s);

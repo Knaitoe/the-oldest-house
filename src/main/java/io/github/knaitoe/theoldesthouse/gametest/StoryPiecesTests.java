@@ -58,6 +58,9 @@ public final class StoryPiecesTests {
                 h.assertTrue(piece.block().asItem() instanceof PieceItem,piece.recipe()+" has its piece item");
                 var r=recipes.byKey(piece.recipe());
                 h.assertTrue(r.isPresent(),piece.recipe()+" is cut at a stonecutter");
+                // 0.4.767: nothing in a set is invisible. Five were (a lamp's beam, a shadow, the brook's edge, the car's and the
+                // doe's weight on the road): a piece that cannot be seen cannot be aimed at, and one of them could not be removed.
+                h.assertTrue(StoryPieces.state(r.get().value().getResultItem(h.getLevel().registryAccess())).getRenderShape()!=net.minecraft.world.level.block.RenderShape.INVISIBLE,piece.recipe()+" can be seen once it is set down");
                 var out=r.get().value().getResultItem(h.getLevel().registryAccess());
                 h.assertTrue(out.is(piece.block().asItem())&&java.util.Objects.equals(StoryPieces.kind(out),piece.kind()),piece.recipe()+" cuts the piece it names");
                 h.assertTrue(StoryPieces.state(out).is(piece.block()),piece.recipe()+" places its own block");

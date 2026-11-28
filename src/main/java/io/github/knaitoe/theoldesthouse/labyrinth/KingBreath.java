@@ -55,9 +55,18 @@ public final class KingBreath {
     public static final int NOWHERE=0,LINE=1,SORT=2,THING=3,TOO_MUCH=4;
     private static final ResourceLocation ROOTED=ResourceLocation.fromNamespaceAndPath(TheOldestHouse.MOD_ID,"king_rooted");
 
-    /** How much of a thing each reader in the country is; anybody else is their whole self. The client fills it from the payload too. */
+    /** How much of a thing each reader in the country is; anybody else is their whole self. The server's own record. */
     public static final Map<UUID,Integer> STATES=new ConcurrentHashMap<>();
-    public static int of(Entity e){return e instanceof Player?STATES.getOrDefault(e.getUUID(),THING):THING;}
+    /**
+     * 0.4.767: what the client has been told, kept apart. The client used to fill the server's map from the payload and take
+     * readers out of it when their news lapsed. In a single-player or LAN game that is one map for both: when the host left the
+     * country, the host's client struck the guests out of the server's record two seconds later, and for a pass a guest who was
+     * a line counted as their whole self (the Queen could take them for her run), or left still rooted.
+     */
+    private static final Map<UUID,Integer> TOLD=new ConcurrentHashMap<>();
+    public static void clientSet(UUID id,int state){TOLD.put(id,state);}
+    public static void clientForget(UUID id){TOLD.remove(id);}
+    public static int of(Entity e){return e instanceof Player?(e.level().isClientSide()?TOLD:STATES).getOrDefault(e.getUUID(),THING):THING;}
 
     /** The breath, per country: how far through it, the last server tick it was counted on, and the shift the land now shows (-1 unknown). */
     private static final class Clock{int ticks;int last=-1;int shown=-1;int shownLevel=-1;}
