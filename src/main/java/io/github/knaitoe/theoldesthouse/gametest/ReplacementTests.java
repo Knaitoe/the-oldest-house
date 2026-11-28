@@ -108,7 +108,10 @@ public final class ReplacementTests {
             .thenWaitUntil(()->h.assertTrue(f.own(p,P).getBoolean("LeftBehind218"),"leaving the street with Pip still in the crate"))
             .thenExecute(()->{var own=f.own(p,P);
                 h.assertTrue(!own.getBoolean("Ready")&&own.getList("Held218",11).isEmpty(),"no account, and nothing held any longer");
-                var at=Replacement.home(f.in.getServer());var home=f.in.getServer().getLevel(HouseDimensions.INTERIOR).getEntitiesOfClass(Cat.class,new AABB(at,at).inflate(6),c->"Pip".equals(c.getCustomName()==null?"":c.getCustomName().getString()));
+                // 0.4.767: this reader's Pip. Every Pip sent home waits at the same spot in the manor, and the test world is kept
+                // between runs: with another case's Pip already there (or an earlier run's) the first one found was not this
+                // reader's, and the case failed on the order it was run in.
+                var at=Replacement.home(f.in.getServer());var home=f.in.getServer().getLevel(HouseDimensions.INTERIOR).getEntitiesOfClass(Cat.class,new AABB(at,at).inflate(6),c->"Pip".equals(c.getCustomName()==null?"":c.getCustomName().getString())&&p.getUUID().equals(c.getOwnerUUID()));
                 h.assertTrue(!home.isEmpty()&&home.get(0).isOrderedToSit()&&!home.get(0).isInvulnerable()&&p.getUUID().equals(home.get(0).getOwnerUUID()),"Pip has gone home to the manor, and waits there, sitting, still the reader's");})
             .thenSucceed();
     }

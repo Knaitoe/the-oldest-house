@@ -263,6 +263,10 @@ host's own state decide things for the server, so a LAN game behaved differently
 - **The porch's particle check passed on any particle.** It counted every particle packet, so the moths alone satisfied
   "fireflies and moths". It now counts the fireflies and the moths separately and needs both.
 
+- **A case that failed on the order it was run in.** The Replacement case for a companion sent home looked for any cat named
+  Pip at the manor and took the first. Every Pip sent home waits at the same spot and the test world is kept between runs,
+  so after another case's Pip, or an earlier run's, it took the wrong one. It now looks for its own reader's.
+
 ### Housekeeping
 
 - `TensionSafetyTests.java` was stored with Windows line endings while the repository's rules ask for Unix ones in Java
