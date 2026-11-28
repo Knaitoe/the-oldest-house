@@ -218,10 +218,26 @@ public final class BuildBlocks {
             if(cursor<commands.size()){var c=commands.get(cursor);if(c instanceof Fill f)t.putLong("FillIndex",f.cursor);else if(c instanceof Clear clear){t.putInt("ClearSection",clear.section);t.putLong("ClearCell",clear.inner);}}
             return t;
         }
-        public void resume(net.minecraft.nbt.CompoundTag t){
-            if(t.isEmpty())return;if(t.getInt("Count")!=commands.size())throw new IllegalStateException("Saved construction plan differs from its authored layout");
-            int next=t.getInt("Cursor");if(next<0||next>commands.size())throw new IllegalArgumentException("Invalid saved construction cursor");cursor=next;
-            if(cursor<commands.size()){var c=commands.get(cursor);if(c instanceof Fill f){long i=t.getLong("FillIndex");if(i<0||i>=f.size)throw new IllegalArgumentException("Invalid fill cursor");f.cursor=i;}else if(c instanceof Clear clear){int section=t.getInt("ClearSection");long cell=t.getLong("ClearCell");if(section<0||section>=clear.sections||cell< -1||cell>=4096)throw new IllegalArgumentException("Invalid clear cursor");clear.section=section;clear.inner=cell;}}
+        /**
+         * Takes up a saved cursor, and says whether it did. A cursor that does not fit this plan was saved against another
+         * one: an earlier version of the scene with other commands (0.4.766 added two to the porch), or a save cut off
+         * part-way. It cannot be mapped onto this plan, so the plan is left at its first command and the build starts over.
+         * This used to throw. Every caller resumes from a server tick, so the server stopped, and stopped again on each
+         * restart, for as long as that cursor stayed in the save. Starting over costs the slices already spent: a block
+         * command only sets a cell that differs. A callback that had already run under the old plan runs again.
+         */
+        public boolean resume(net.minecraft.nbt.CompoundTag t){
+            if(t.isEmpty())return false;
+            int next=t.getInt("Cursor");
+            if(t.getInt("Count")!=commands.size()||next<0||next>commands.size())return startOver(t);
+            if(next<commands.size()){var c=commands.get(next);
+                if(c instanceof Fill f){long i=t.getLong("FillIndex");if(i<0||i>=f.size)return startOver(t);f.cursor=i;}
+                else if(c instanceof Clear clear){int section=t.getInt("ClearSection");long cell=t.getLong("ClearCell");if(section<0||section>=clear.sections||cell< -1||cell>=4096)return startOver(t);clear.section=section;clear.inner=cell;}}
+            cursor=next;return true;
+        }
+        private boolean startOver(net.minecraft.nbt.CompoundTag saved){
+            io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.warn("A saved construction cursor (command {} of {}) does not fit this build's plan of {} commands; building from the start",saved.getInt("Cursor"),saved.getInt("Count"),commands.size());
+            return false;
         }
         /** The recorded native state without applying a plan; upgrade comparisons never execute its callbacks. */
         public BlockState plannedState(BlockPos at){return authoredStateAt(at);}

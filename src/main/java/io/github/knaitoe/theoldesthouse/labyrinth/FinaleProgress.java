@@ -12,11 +12,19 @@ public final class FinaleProgress {
     private FinaleProgress() {}
     public static CompoundTag world(MinecraftServer server) { return LabyrinthData.get(server).state(STATE); }
     public static CompoundTag player(MinecraftServer server, UUID id) { return LabyrinthData.get(server).stateEntry(STATE,id.toString()); }
-    public static Phase phase(CompoundTag record) {
-        try { return Phase.valueOf(record.getString("Phase")); }
+    public static Phase phase(CompoundTag record) { return phaseNamed(record.getString("Phase")); }
+    /**
+     * 0.4.767: a reader who has not met the finale has no phase written, which is nearly every reader. Enum.valueOf("") throws,
+     * and this is asked some fifty times a tick for every player online, wherever they are, so an exception was built, filled
+     * with a stack trace and caught a thousand times a second for each of them. The empty name is answered first.
+     */
+    private static Phase phaseNamed(String name) {
+        if (name.isEmpty()) return Phase.UNSEEN;
+        try { return Phase.valueOf(name); }
         catch (IllegalArgumentException ignored) { return Phase.UNSEEN; }
     }
-    public static Phase phase(MinecraftServer server, UUID id) { return phase(player(server, id)); }
+    /** Read where it lies: the record is not copied to learn one word of it. */
+    public static Phase phase(MinecraftServer server, UUID id) { return phaseNamed(LabyrinthData.get(server).stateEntryString(STATE, id.toString(), "Phase")); }
     public static void save(MinecraftServer server, UUID id, CompoundTag record) {
         CompoundTag world = world(server); world.put(id.toString(), record.copy());
         LabyrinthData.get(server).setState(STATE, world);

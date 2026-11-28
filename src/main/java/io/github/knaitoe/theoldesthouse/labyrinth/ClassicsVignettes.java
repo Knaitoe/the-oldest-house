@@ -64,7 +64,7 @@ public final class ClassicsVignettes {
     public static void save(LabyrinthData data,UUID reader,CompoundTag own){var all=data.state(STATE);all.put(reader.toString(),own.copy());data.setState(STATE,all);}
     private static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
     public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(place==LabyrinthPlace.SEANCE)return SceneInstances.base(p,place);var origin=HouseSavedData.get(p.server).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,place);}
-    public static boolean inside(ServerPlayer p,LabyrinthPlace place){var b=base(p,place);return participant(p)&&p.level().dimension().equals(HouseDimensions.INTERIOR)&&b!=null&&IndianLakeRooms.bounds(b,place).contains(p.position());}
+    public static boolean inside(ServerPlayer p,LabyrinthPlace place){if(!p.level().dimension().equals(HouseDimensions.INTERIOR))return false;var b=base(p,place);return participant(p)&&b!=null&&IndianLakeRooms.bounds(b,place).contains(p.position());}
     public static @Nullable LabyrinthPlace current(ServerPlayer p){for(var place:List.of(LabyrinthPlace.SEANCE,LabyrinthPlace.WALLPAPER_NURSERY))if(inside(p,place))return place;return null;}
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){
         if(!isClassic(place)||!participant(p))return;var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());

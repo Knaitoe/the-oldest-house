@@ -291,7 +291,7 @@ public final class TruantService {
             var r=Truant.rel(b,target.position());
             if(r.z<SHAFT_Z0+.8&&r.z>SHAFT_Z0-.4&&r.x>SHAFT_X0-.3&&r.x<SHAFT_X1+1.3&&r.y>LANDING-.5){
                 DROPPED.add(target.getUUID());DROPPING=true;LURCH=0;
-                l.setBlock(brake,l.getBlockState(brake).setValue(TruantFittingBlock.STAGE,0),FLAGS);Truant.gesture(a,0);
+                var lever=l.getBlockState(brake);if(lever.hasProperty(TruantFittingBlock.STAGE))l.setBlock(brake,lever.setValue(TruantFittingBlock.STAGE,0),FLAGS);Truant.gesture(a,0);
                 l.playSound(null,brake,PuzzleRegistry.TRUANT_BRAKE.get(),SoundSource.BLOCKS,1F,.7F);
                 Truant.say(a,"Mind the gap.");
             }

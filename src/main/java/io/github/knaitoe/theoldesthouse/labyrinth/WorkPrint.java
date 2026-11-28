@@ -426,7 +426,8 @@ public final class WorkPrint {
         var b=base(p);if(b==null)return;var l=p.serverLevel();
         var mark=Vec3.atBottomCenterOf(b.offset(WorkPrintShop.MARK));
         if(!wearing(p)||Math.hypot(p.getX()-mark.x,p.getZ()-mark.z)>.7||Math.abs(p.getY()-mark.y)>1){
-            if(SET.remove(p.getUUID())!=null&&l.getBlockState(b.offset(WorkPrintShop.TRIPOD)).getValue(WorkPrintBlock.STAGE)==1)stage(l,b.offset(WorkPrintShop.TRIPOD),0);
+            var tripod=l.getBlockState(b.offset(WorkPrintShop.TRIPOD));
+            if(SET.remove(p.getUUID())!=null&&tripod.hasProperty(WorkPrintBlock.STAGE)&&tripod.getValue(WorkPrintBlock.STAGE)==1)stage(l,b.offset(WorkPrintShop.TRIPOD),0);
             return;
         }
         var tripod=l.getBlockState(b.offset(WorkPrintShop.TRIPOD));

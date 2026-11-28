@@ -34,8 +34,10 @@ public final class HouseReadSites {
     /**
      * 0.4.159 rebuilt the waiting room, coatroom and shelter; a copy prepared ahead but never entered is built again.
      * 0.4.163: the porch's swing hangs from its ropes and the note is carved into the railing.
+     * 0.4.766: the porch's strap and shoes. The number was not raised for them, and nothing read it: the rule above had been
+     * lost, so a porch built ahead under 0.4.765 kept neither. 0.4.767 raises it and {@link #prepare} applies the rule again.
      */
-    public static final int LAYOUT=172;
+    public static final int LAYOUT=767;
     public enum Room {
         WAITING(LabyrinthPlace.READ_WAITING,483328), BATHROOM(LabyrinthPlace.READ_BATHROOM,491520),
         COATROOM(LabyrinthPlace.READ_COATROOM,466944), SHELTER(LabyrinthPlace.READ_SHELTER,499712), PORCH(LabyrinthPlace.READ_PORCH,475136),
@@ -100,6 +102,10 @@ public final class HouseReadSites {
         var d=LabyrinthData.get(p.server);if(store!=d){rebind();store=d;}var own=state(p.server,p.getUUID());
         if(!own.contains("Index")){var world=d.stateEntry(STATE,"World");int index=world.getInt("NextIndex");if(index>=4096)return null;own.putInt("Index",index);world.putInt("NextIndex",index+1);d.setStateEntry(STATE,"World",world);save(p.server,p.getUUID(),own);}
         var b=base(p.server,p.getUUID(),room);var l=p.server.getLevel(room.dimension());
+        // A room built ahead under an older layout and never entered is built again: the build clears its area first, and
+        // its people are only made when the reader arrives. A room the reader has been in is left as they knew it.
+        var made=own.getCompound(room.key());
+        if(made.getBoolean("Built")&&!made.getBoolean("Entered")&&made.getInt("Layout")<LAYOUT){made.remove("Built");made.remove("BuildCursor");own.put(room.key(),made);save(p.server,p.getUUID(),own);}
         if(l!=null&&own.getCompound(room.key()).getBoolean("Built")&&l.getChunkSource().getChunkNow(b.getX()>>4,b.getZ()>>4)!=null&&l.areEntitiesLoaded(ChunkPos.asLong(b)))return d.door(doorId(p.getUUID(),room,"entry"));
         var job=new Job(p.getUUID(),room);if(!job.equals(building))WAITING.add(job);return null;
     }
@@ -185,7 +191,11 @@ public final class HouseReadSites {
         else HouseTransitionEvents.beginDoorTransition(p,from.dimension,null,HouseReadSites::left,Vec3.atBottomCenterOf(from.lower.relative(from.facing,2)),from.facing.toYRot());
     }
     public static void left(ServerPlayer p){
-        var own=state(p.server,p.getUUID());String key=own.getString("Active");if(key.isEmpty())return;var visit=own.getCompound(key);restore(p,visit);HouseReadMoments.left(p,Room.valueOf(key.toUpperCase(Locale.ROOT)),visit);p.setTicksFrozen(visit.getInt("BeforeFrozen"));visit.putBoolean("Here",false);own.put(key,visit);own.remove("Active");save(p.server,p.getUUID(),own);
+        var own=state(p.server,p.getUUID());String key=own.getString("Active");if(key.isEmpty())return;
+        // 0.4.767: a room this version does not have is forgotten; its name used to throw, on every tick the reader was outside it.
+        Room was=null;for(var room:Room.values())if(room.key().equals(key))was=room;
+        if(was==null){own.remove("Active");save(p.server,p.getUUID(),own);return;}
+        var visit=own.getCompound(key);restore(p,visit);HouseReadMoments.left(p,was,visit);p.setTicksFrozen(visit.getInt("BeforeFrozen"));visit.putBoolean("Here",false);own.put(key,visit);own.remove("Active");save(p.server,p.getUUID(),own);
         for(var sound:HouseReadRegistry.sounds())p.connection.send(new ClientboundStopSoundPacket(sound.getId(),SoundSource.BLOCKS));
     }
     static void act(ServerPlayer p,Room room,String action){var own=state(p.server,p.getUUID());var visit=own.getCompound(room.key());var actions=visit.getList("Actions",Tag.TAG_STRING);if(actions.size()<64)actions.add(StringTag.valueOf(action));visit.put("Actions",actions);if(room==Room.COATROOM&&(action.startsWith("wore ")||action.startsWith("turned ")||action.startsWith("draped ")))visit.putBoolean("NoteArmed",true);own.put(room.key(),visit);save(p.server,p.getUUID(),own);}
@@ -330,7 +340,8 @@ public final class HouseReadSites {
             // Still hidden when the kitchen light goes off settles it.
             if(seen.getString("First").equals("lattice")||seen.getString("First").equals("window")){HouseRead.flag(p,Room.PORCH,"Hidden");HouseRead.signal(p,HouseRead.Trait.HOME,"DANGER",true);}}}
         if(!visit.getBoolean("WentIn")&&inHouse(p,b)){visit.putBoolean("WentIn",true);visit.putBoolean("NoteArmed",true);var actions=visit.getList("Actions",Tag.TAG_STRING);actions.add(StringTag.valueOf("went through the screen door"));visit.put("Actions",actions);if(window&&!first){home(p,"in","HAVEN");first=true;}}
-        // 0.4.172 (owner: "Can you remove the sparkle effects too?"): no glow drifting over the yard.
+        // 0.4.172 (owner: "Can you remove the sparkle effects too?"): no glow drifting over the yard from here.
+        // 0.4.766: the owner's fireflies, moths and stove steam are HouseReadPorch.air's, sent from its tick below.
         if(visit.getBoolean("TurnedBack")&&!visit.getBoolean("LookedBackKept")){visit.putBoolean("LookedBackKept",true);HouseRead.flag(p,Room.PORCH,"LookedBack");}
         HouseReadPorch.tick(p,b,visit,age,cue,HouseRead.seen(LabyrinthData.get(p.server),p.getUUID()).getCompound(Room.PORCH.key()).getString("First"),visit.getBoolean("WentIn"),underPorch(p,b),onRoad(p,b));
     }

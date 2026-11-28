@@ -35,8 +35,10 @@ def models(model,cube,faced):
  # The strap: a nail high on the wall and the strap hanging from it, folded once, with a buckle at the bottom.
  M('strap',[C([7.5,13,0],[8.5,14,2.2],'metal'),C([7,3,.6],[9,13,1.4],'strap'),C([6.8,4,1.4],[9.2,5.5,1.8],'metal'),C([7.2,12,1.4],[8.8,13,1.9],'strap')])
  # Two small shoes side by side on the step, toes to the wall (north at facing south).
+ # 0.4.767: a stair's upper tread is only its back half (z 0 to 8), and the shoes ran from 3 to 12, so their heels hung in the
+ # air half a block above the lower tread. They now stand wholly on the upper tread, a little shorter.
  shoes=[]
  for x in (3,9):
-  shoes+=[C([x,0,3],[x+4,1,12],'shoe_sole'),faced([x+.25,1,6.5],[x+3.75,3.5,12],'shoe',up='shoe_sole'),C([x+.5,1,3.5],[x+3.5,2.2,6.5],'shoe')]
+  shoes+=[C([x,0,.5],[x+4,1,8],'shoe_sole'),faced([x+.25,1,3.5],[x+3.75,3.5,8],'shoe',up='shoe_sole'),C([x+.5,1,1],[x+3.5,2.2,3.5],'shoe')]
  M('shoes',shoes)
  M('milk',[faced([6,0,6],[10,6.5,10],'milk',up='milk_top',down='milk_top')])

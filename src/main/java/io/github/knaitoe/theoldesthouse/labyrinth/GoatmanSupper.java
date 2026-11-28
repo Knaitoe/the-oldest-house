@@ -170,8 +170,10 @@ public final class GoatmanSupper {
             var t=cooked.getCompound(i);if(!t.contains("Heat")||t.getBoolean(BURNT))continue;int heat=t.getInt("Heat")+1;t.putInt("Heat",heat);
             if(heat==HOT_TICKS)hot=true;
             if(heat>=BURN_TICKS){
-                var item=ItemStack.parseOptional(l.registryAccess(),t.getCompound("Item"));CustomData.update(DataComponents.CUSTOM_DATA,item,c->c.putBoolean(BURNT,true));blacken(item);
-                t.put("Item",item.save(l.registryAccess()));t.putBoolean(BURNT,true);burned=changed=true;
+                // 0.4.767: an item this version cannot read comes back empty, and saving an empty stack throws.
+                var item=ItemStack.parseOptional(l.registryAccess(),t.getCompound("Item"));
+                if(!item.isEmpty()){CustomData.update(DataComponents.CUSTOM_DATA,item,c->c.putBoolean(BURNT,true));blacken(item);t.put("Item",item.save(l.registryAccess()));}
+                t.putBoolean(BURNT,true);burned=changed=true;
             }
         }
         for(int i=cooking.size()-1;i>=0;i--){

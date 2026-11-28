@@ -114,6 +114,30 @@ public final class HallwayCarveTests {
         });
     }
 
+    /**
+     * 0.4.767: a cursor saved against another plan (an earlier version of the scene, with other commands) used to throw out of
+     * the server tick when the build resumed, and again on every restart. It now leaves the plan at its first command.
+     */
+    @GameTest(template="empty",batch="door_boundary",timeoutTicks=100)
+    public static void aCursorSavedAgainstAnotherPlanStartsTheBuildOverInsteadOfStoppingTheServer(GameTestHelper h) {
+        var level=h.getLevel();var at=h.absolutePos(new BlockPos(1,2,1));var stone=Blocks.STONE.defaultBlockState();var air=Blocks.AIR.defaultBlockState();
+        Runnable three=()->{for(int y=0;y<3;y++)BuildBlocks.set(level,at.above(y),stone,3);};
+        for(int y=0;y<3;y++)level.setBlock(at.above(y),air,3);
+        var fits=new net.minecraft.nbt.CompoundTag();fits.putInt("Count",3);fits.putInt("Cursor",2);
+        var kept=BuildBlocks.record(level,three);
+        h.assertTrue(kept.resume(fits)&&kept.tick(),"a cursor that fits its plan is taken up");
+        h.assertTrue(level.getBlockState(at).isAir()&&level.getBlockState(at.above()).isAir()&&level.getBlockState(at.above(2)).is(Blocks.STONE),"and only the commands after it run");
+        level.setBlock(at.above(2),air,3);
+        for(var bad:List.of(new int[]{2,1},new int[]{3,4},new int[]{3,-1})){
+            var saved=new net.minecraft.nbt.CompoundTag();saved.putInt("Count",bad[0]);saved.putInt("Cursor",bad[1]);
+            var fresh=BuildBlocks.record(level,three);
+            h.assertTrue(!fresh.resume(saved),"a cursor at "+bad[1]+" of "+bad[0]+" commands does not fit a plan of three");
+            h.assertTrue(fresh.tick()&&level.getBlockState(at).is(Blocks.STONE)&&level.getBlockState(at.above()).is(Blocks.STONE)&&level.getBlockState(at.above(2)).is(Blocks.STONE),"and the build starts over from its first command");
+            for(int y=0;y<3;y++)level.setBlock(at.above(y),air,3);
+        }
+        h.succeed();
+    }
+
     @GameTest(template="empty",batch="door_boundary",timeoutTicks=100)
     public static void actualWaitingPlayerAtTheFarDoorNeverStartsAnOverworldBreach(GameTestHelper h) {
         var server=h.getLevel().getServer(); var level=HouseTestLevel.get(server,HouseDimensions.INTERIOR);

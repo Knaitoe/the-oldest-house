@@ -97,7 +97,8 @@ public final class Vignette0492Tests {
         })
         .thenWaitUntil(()->h.assertTrue(f.own(p,place).getInt("CaptureTicks0492")>0,"the men reach the reader and the capture begins"))
         .thenExecute(()->{h.assertTrue(ElkLotEnding.held(p)&&LiteraryVignettes.retreatLocked(p),"held while the men have them");before[0]=f.own(p,place).copy();at[0]=p.position();
-            NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));f.players.remove(p);NativeTestPlayers.remove(p);})
+            // Leaving the player list is the logout: it posts the one PlayerLoggedOutEvent a real disconnect does.
+            f.players.remove(p);NativeTestPlayers.remove(p);})
         .thenIdle(20)
         .thenExecute(()->{var q=NativeTestPlayers.survival(h,"men_login",id);f.players.add(q);q.connection.resetPosition();q.teleportTo(f.level(place),at[0].x,at[0].y,at[0].z,0,0);back[0]=q;})
         .thenIdle(2)

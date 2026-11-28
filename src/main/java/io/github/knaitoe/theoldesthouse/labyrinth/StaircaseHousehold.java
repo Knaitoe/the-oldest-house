@@ -145,7 +145,7 @@ public final class StaircaseHousehold {
     }
     /** Back from a household room through its door (StaircaseLeaks.returnNow). A forced return records nothing and keeps the door. */
     static void returned(ServerPlayer p,CompoundTag session,boolean forced){
-        var kind=StaircaseLeakRooms.Kind.values()[session.getInt("Kind")];var chore=session.getCompound("Chore");
+        var kind=StaircaseLeaks.kind(session);var chore=session.getCompound("Chore");
         if(forced&&!chore.contains("Result"))return;
         String result=chore.contains("Result")?chore.getString("Result"):"failure";
         if(!chore.contains("Result"))StaircaseLeaks.caption(p,StaircaseHouseholdTexts.walkedOut(kind));

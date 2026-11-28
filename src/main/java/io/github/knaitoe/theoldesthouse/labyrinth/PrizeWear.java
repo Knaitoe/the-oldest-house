@@ -65,7 +65,8 @@ public final class PrizeWear {
      * neighbour's world that is not the reader's own (docs/NEIGHBOURS.md R3), where what is in the hand may be taken from them.
      */
     public static boolean takeOff(ServerPlayer p){
-        if(!p.isCrouching()||!p.getMainHandItem().isEmpty()||p.isSpectator()||io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level()))return false;
+        // 0.4.767: not while dead. A prize taken off into a dead reader's hand is not carried over to the one who respawns.
+        if(!p.isAlive()||!p.isCrouching()||!p.getMainHandItem().isEmpty()||p.isSpectator()||io.github.knaitoe.theoldesthouse.house.Neighbours.notOwnWorld(p.level()))return false;
         int worn=saved(p.server,p.getUUID());if(worn==0)return false;
         boolean right=p.getMainArm()==HumanoidArm.RIGHT;
         int[] order=right?new int[]{RIGHT_RING,LEFT_RING,RIGHT_WRIST,LEFT_WRIST}:new int[]{LEFT_RING,RIGHT_RING,LEFT_WRIST,RIGHT_WRIST};

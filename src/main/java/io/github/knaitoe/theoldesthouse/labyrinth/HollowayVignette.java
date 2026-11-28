@@ -88,7 +88,10 @@ public final class HollowayVignette {
     @SubscribeEvent public static void death(LivingDeathEvent e){if(e.getEntity() instanceof ServerPlayer p)depart(p);}
     @SubscribeEvent public static void tick(ServerTickEvent.Post e){
         var s=e.getServer();var b=base(s);var l=s.getLevel(HouseDimensions.INTERIOR);if(b==null||l==null)return;
-        for(var speech:l.getEntitiesOfClass(net.minecraft.world.entity.Display.TextDisplay.class,new AABB(b).inflate(100),v->v.getTags().contains("HouseHollowaySpeech"))){
+        // 0.4.767: words over a head are looked for only while somebody is in the interior to see them. The search covers two
+        // hundred blocks each way and ran on every tick of every server, the camp empty or not; a line left up is taken down
+        // on the first tick somebody is there.
+        if(!l.players().isEmpty())for(var speech:l.getEntitiesOfClass(net.minecraft.world.entity.Display.TextDisplay.class,new AABB(b).inflate(100),v->v.getTags().contains("HouseHollowaySpeech"))){
             var tag=speech.getPersistentData();var actor=tag.hasUUID("Speaker")?l.getEntity(tag.getUUID("Speaker")):null;
             if(l.getGameTime()>=tag.getLong("Until")||actor==null||!actor.isAlive())speech.discard();else speech.moveTo(actor.getX(),actor.getY()+2.35,actor.getZ());
         }

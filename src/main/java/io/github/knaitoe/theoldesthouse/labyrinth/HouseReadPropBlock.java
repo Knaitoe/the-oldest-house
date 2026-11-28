@@ -49,7 +49,9 @@ public final class HouseReadPropBlock extends BaseEntityBlock {
     @Override protected VoxelShape getCollisionShape(BlockState s,BlockGetter l,BlockPos p,CollisionContext c){return switch(s.getValue(PART)){
         // 0.4.166: the coatroom's curtain stops a body until it parts (turned), when the room is complete.
         case CURTAIN->s.getValue(TURNED)?Shapes.empty():Shapes.block();
-        case TIN_LEFT,TIN_RIGHT,SHEET,RADIO,PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,ROUTINE_E,ROUTINE_F,ROUTINE_G,ROUTINE_H,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP->Shapes.empty();default->getShape(s,l,p,c);};}
+        case TIN_LEFT,TIN_RIGHT,SHEET,RADIO,PLATE,TOWEL,PAPER,MAGAZINES,GLASSES,PHONE,ROUTINE_A,ROUTINE_B,ROUTINE_C,ROUTINE_D,ROUTINE_E,ROUTINE_F,ROUTINE_G,ROUTINE_H,LIGHT_SWITCH,POSTCARD,TAP,BELL,CALENDAR,STRING_LIGHT,BOTTLE,SIGN,WALL_CLOCK,OUTLET,BATH_MAT,RUNNER,VANITY_LIGHT,TOWEL_BAR,EMPTY_HANGER,SCARF_HOOK,PENDANT,PORCH_LIGHT,DECK_LANTERN,LAMP,
+        // 0.4.766: the porch's small things stop nobody; the shoes stand on the top step, in the way up.
+        STRAP,SHOES,MILK->Shapes.empty();default->getShape(s,l,p,c);};}
     @Override protected VoxelShape getOcclusionShape(BlockState s,BlockGetter l,BlockPos p){return Shapes.empty();}
     @Override protected InteractionResult useWithoutItem(BlockState s,Level l,BlockPos at,Player player,BlockHitResult hit){
         if(player.isSpectator()||!player.isAlive()||player.distanceToSqr(at.getCenter())>36)return InteractionResult.PASS;

@@ -96,7 +96,8 @@ public final class FoyerOutcomeTests {
             lull(f);for(int i=0;i<1+(FoyerEncounter.GLASS_HOLD+40)/5;i++)tick(f,p[0]);
             h.assertTrue(FoyerEncounter.held(f.own(p[0],P))&&LiteraryVignettes.retreatLocked(p[0]),"left in the dark, it is let in and the reader is held: "+f.own(p[0],P));
             before[0]=f.own(p[0],P).copy();
-            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p[0]));f.players.remove(p[0]);NativeTestPlayers.remove(p[0]);})
+            // Leaving the player list is the logout: it posts the one PlayerLoggedOutEvent a real disconnect does.
+            f.players.remove(p[0]);NativeTestPlayers.remove(p[0]);})
         .thenIdle(20)
         .thenExecute(()->{var q=NativeTestPlayers.survival(h,"foyer_login",id[0]);f.players.add(q);q.connection.resetPosition();f.at(q,P,2.5,0,-11.5);back[0]=q;})
         .thenIdle(2)

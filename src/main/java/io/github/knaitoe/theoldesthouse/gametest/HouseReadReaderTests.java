@@ -44,7 +44,8 @@ public final class HouseReadReaderTests {
     private static void night(LabyrinthData d,UUID id,CompoundTag seen){var own=d.stateEntry(HouseRead.STATE,id.toString());own.put("Seen",seen);d.setStateEntry(HouseRead.STATE,id.toString(),own);}
     private static long looks(ServerPlayer p){var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));long n=0;while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);else if(packet instanceof net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket c&&c.payload() instanceof io.github.knaitoe.theoldesthouse.network.HouseReadLookPayload)n++;}return n;}
     private static boolean isPart(ServerLevel l,BlockPos at,HouseReadPropBlock.Part part){var s=l.getBlockState(at);return s.getBlock() instanceof HouseReadPropBlock&&s.getValue(HouseReadPropBlock.PART)==part;}
-    private static long particles(ServerPlayer p){var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));long n=0;while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);else if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket)n++;}return n;}
+    /** The dust sent to a reader since the last look, added to {@code seen}: [0] the yard's fireflies (the only dust sent to be seen from afar, each on its own heading), [1] the moths at the bulb. Stove steam is not dust and is not counted. */
+    private static void particles(ServerPlayer p,long[] seen){var queue=new ArrayDeque<net.minecraft.network.protocol.Packet<?>>(NativeTestPlayers.packets(p));while(!queue.isEmpty()){var packet=queue.removeFirst();if(packet instanceof net.minecraft.network.protocol.BundlePacket<?> bundle)bundle.subPackets().forEach(queue::add);else if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket c&&c.getParticle() instanceof net.minecraft.core.particles.DustParticleOptions)seen[c.isOverrideLimiter()&&c.getCount()==0?0:1]++;}}
     private static final Pattern GENDERED=Pattern.compile("\\b(he|she|him|his|her|hers|himself|herself)\\b",Pattern.CASE_INSENSITIVE);
     private static final String OWNER="You read the local page until the door clicked, and put the silk on before the bathroom light went out. In the hall, you took the trench coat off the peg without looking in the glass, stood by the girl under the eaves until the song finished, and went straight in when the whistle blew.";
 
@@ -251,7 +252,7 @@ public final class HouseReadReaderTests {
      */
     @GameTest(template="empty",batch="read_evening",timeoutTicks=8000)
     public static void thePorchEveningIsReadTwoWaysAndEachReaderKeepsWhatTheyDidWithIt(GameTestHelper h){
-        var f=fixture(h);var in=player(h,f,"evening_in");var hid=player(h,f,"evening_hid");var readers=List.of(in,hid);var at=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(at).inflate(8));Map<UUID,BlockPos> base=new HashMap<>();LabyrinthData.Door[] from={null};
+        var f=fixture(h);var in=player(h,f,"evening_in");var hid=player(h,f,"evening_hid");var readers=List.of(in,hid);long[] air={0,0};var at=f.origin.offset(0,0,-5);f.chunks.hold(f.in,new AABB(at).inflate(8));Map<UUID,BlockPos> base=new HashMap<>();LabyrinthData.Door[] from={null};
         h.onEachTick(()->readers.forEach(HouseReadReaderTests::transition));
         var sequence=h.startSequence().thenWaitUntil(()->h.assertTrue(f.chunks.ready(),"source loaded")).thenExecute(()->{from[0]=source(f);for(var p:readers){stand(p,f.in,at,.5,0,2);HouseReadSites.prepare(p,HouseReadSites.Room.PORCH);}});
         for(var p:readers)sequence.thenWaitUntil(()->h.assertTrue(ready(p,HouseReadSites.Room.PORCH),"each reader's own yard is built"));
@@ -265,9 +266,12 @@ public final class HouseReadReaderTests {
               h.assertTrue(!visit(in,HouseReadSites.Room.PORCH).contains("Whistle"),"nothing calls yet");
               // 0.4.766: the strap on its nail by the door and the small shoes on the top step.
               h.assertTrue(isPart(f.out,b.offset(HouseReadPorch.STRAP_AT),HouseReadPropBlock.Part.STRAP)&&isPart(f.out,b.offset(HouseReadPorch.SHOES_AT),HouseReadPropBlock.Part.SHOES),"the strap hangs by the door and the shoes are on the top step");
+              // 0.4.767: a stair's upper tread is its back half, so shoes standing on it end there; and they stop nobody on the way up.
+              var shoes=b.offset(HouseReadPorch.SHOES_AT);var worn=f.out.getBlockState(shoes);
+              h.assertTrue(worn.getShape(f.out,shoes).max(net.minecraft.core.Direction.Axis.Z)<=.5&&worn.getCollisionShape(f.out,shoes).isEmpty(),"the shoes stand wholly on the upper tread and are stepped past: "+worn.getShape(f.out,shoes).bounds());
               h.assertTrue(!isPart(f.out,b.offset(HouseReadPorch.MILK_AT),HouseReadPropBlock.Part.MILK),"and no milk is poured yet");
           })
-          .thenWaitUntil(()->h.assertTrue(particles(in)>0,"fireflies over the yard, and the moths at the bulb, are sent to the reader"))
+          .thenWaitUntil(()->{particles(in,air);h.assertTrue(air[0]>0&&air[1]>0,"fireflies over the yard, and the moths at the bulb, are sent to the reader: "+air[0]+" fireflies, "+air[1]+" moths");})
           .thenWaitUntil(()->h.assertTrue(readers.stream().allMatch(p->visit(p,HouseReadSites.Room.PORCH).contains("Whistle")),"six seconds in, the whistle"))
           .thenExecute(()->{var cook=(LiteraryActor)f.out.getEntity(visit(in,HouseReadSites.Room.PORCH).getUUID("Cook"));h.assertTrue(cook.gesture()!=HouseReadPorch.CHOP,"at the whistle the knife stops and the head comes up");})
           .thenWaitUntil(()->h.assertTrue(visit(in,HouseReadSites.Room.PORCH).getCompound("Said").getBoolean(HouseReadPorch.SEE_YOU),"twenty seconds stood still on the lawn: I can see you out there"))

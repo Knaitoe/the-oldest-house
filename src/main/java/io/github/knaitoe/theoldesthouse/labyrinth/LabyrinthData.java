@@ -562,6 +562,22 @@ public final class LabyrinthData extends SavedData {
         CompoundTag state=states.get(vignette);return state==null?new CompoundTag():state.getCompound(key).copy();
     }
 
+    /**
+     * 0.4.767: one text field of one record, read where it lies. For questions asked about every player on every tick, where
+     * copying the record first was most of the cost.
+     */
+    public String stateEntryString(String vignette,String key,String field){
+        CompoundTag state=states.get(vignette);return state==null?"":state.getCompound(key).getString(field);
+    }
+
+    /**
+     * 0.4.767: replace one record and keep its key even when the record is empty, as putting it into a copy of the whole
+     * state and setting that did. {@link #setStateEntry} drops an empty record's key.
+     */
+    public void putStateEntry(String vignette,String key,CompoundTag tag){
+        states.computeIfAbsent(vignette,ignored->new CompoundTag()).put(key,tag.copy());setDirty();
+    }
+
     /** Index saved work without copying other readers' inventories or room palettes. */
     public Set<String> stateKeys(String name){
         var state=states.get(name);return state==null?Set.of():Set.copyOf(state.getAllKeys());

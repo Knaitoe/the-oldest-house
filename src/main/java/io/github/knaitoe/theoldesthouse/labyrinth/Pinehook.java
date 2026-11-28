@@ -1472,8 +1472,10 @@ public final class Pinehook {
             case RACK->{
                 if(stage==3){cue(p,"An empty rack on the wall.");return true;}
                 Talk.begin(p,TALK,"The rack");Talk.line(p,"",PinehookTexts.RACK_LOOK);var replies=new ArrayList<Talk.Reply>();
-                if((stage&1)==0)replies.add(Talk.act("Take the oars.",q->{Talk.close(q);var rr=runOf(q);if(rr==null)return;stage(q.serverLevel(),rr,PinehookSite.RACK,PinehookBlock.stage(at(q.serverLevel(),rr,PinehookSite.RACK))|1);give(q,thing("oars"));mark(q,"TookOars");}));
-                if((stage&2)==0)replies.add(Talk.act("Take the boat hook.",q->{Talk.close(q);var rr=runOf(q);if(rr==null)return;stage(q.serverLevel(),rr,PinehookSite.RACK,PinehookBlock.stage(at(q.serverLevel(),rr,PinehookSite.RACK))|2);give(q,thing("hook"));mark(q,"TookHook");}));
+                // 0.4.767: the rack is looked at again when the answer comes. Two readers offered the oars at the same moment
+                // each took a pair, and the same for the hook; the second now finds the place on the rack empty.
+                if((stage&1)==0)replies.add(Talk.act("Take the oars.",q->{Talk.close(q);var rr=runOf(q);if(rr==null)return;int now=PinehookBlock.stage(at(q.serverLevel(),rr,PinehookSite.RACK));if((now&1)!=0){cue(q,"The oars are gone from the rack.");return;}stage(q.serverLevel(),rr,PinehookSite.RACK,now|1);give(q,thing("oars"));mark(q,"TookOars");}));
+                if((stage&2)==0)replies.add(Talk.act("Take the boat hook.",q->{Talk.close(q);var rr=runOf(q);if(rr==null)return;int now=PinehookBlock.stage(at(q.serverLevel(),rr,PinehookSite.RACK));if((now&2)!=0){cue(q,"The boat hook is gone from the rack.");return;}stage(q.serverLevel(),rr,PinehookSite.RACK,now|2);give(q,thing("hook"));mark(q,"TookHook");}));
                 replies.add(Talk.act("Leave it.",Talk::close));Talk.ask(p,replies);}
             case PADDLE->{set(l,r.base,relPos,Blocks.AIR.defaultBlockState());r.paddleTaken=true;give(p,thing("paddle"));mark(p,"TookPaddle");cue(p,PinehookTexts.PADDLE_LOOK+" You take it.");}
             case JUNCTION->{

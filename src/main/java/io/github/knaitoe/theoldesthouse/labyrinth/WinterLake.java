@@ -185,7 +185,10 @@ public final class WinterLake {
         if(!w.contains("Night")&&w.contains("Changed")){
             var changed=w.getList("Changed",Tag.TAG_COMPOUND);var left=new ListTag();
             for(int i=0;i<changed.size();i++){var c=changed.getCompound(i);var at=BlockPos.of(c.getLong("Pos"));
-                if(!l.isLoaded(at)){left.add(c);continue;}l.setBlock(at,WinterPropBlock.of(WinterPropBlock.Kind.valueOf(c.getString("Kind"))),F);}
+                if(!l.isLoaded(at)){left.add(c);continue;}
+                // 0.4.767: a kind this version does not have is dropped from the list; it used to throw from the server's tick.
+                WinterPropBlock.Kind kind;try{kind=WinterPropBlock.Kind.valueOf(c.getString("Kind"));}catch(IllegalArgumentException unknown){continue;}
+                l.setBlock(at,WinterPropBlock.of(kind),F);}
             if(left.isEmpty())w.remove("Changed");else{w.put("Changed",left);all=false;}
         }
         return all;

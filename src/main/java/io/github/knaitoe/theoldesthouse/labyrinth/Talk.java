@@ -107,6 +107,9 @@ public final class Talk {
     /** A reply from the panel: honoured once, for the offer it was made to, and only while that offer stands. */
     public static void reply(ServerPlayer p,int token,int index){
         var e=OPEN.get(p.getUUID());if(e==null||e.disconnectedAt>=0||e.token!=token||index<0||index>=e.replies.size())return;
+        // 0.4.767: an offer outlives its reader's death, and what follows an answer acts on the reader's world where they stand.
+        // A reader who has died, or is only watching, answers nothing; the panel is gone from their screen already.
+        if(!p.isAlive()||p.isSpectator())return;
         if(e.available!=null&&!e.available.test(p)){close(p);return;}
         var chosen=e.replies.get(index);e.replies=List.of();e.token=tokens++;
         // 0.4.354: what's said comes out as the reader's voice makes it, and the panel shows the reader the same words everyone heard.

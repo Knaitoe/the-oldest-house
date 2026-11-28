@@ -45,7 +45,9 @@ public final class BorrascaPayphone {
         if(have<price)return new Call(number,0,List.of(grown?"The phone wants two quarters. The wallet doesn't have them.":"The phone wants a quarter. Your pockets don't have one."),false);
         var call=answer(own,number,visit,grown);
         if(call.charged()&&price>0){own.putInt("Cents",have-price);var held=BorrascaPeople.carried(p,grown);if(held!=null)BorrascaPurseItem.mark(held,p.getUUID(),have-price);}
-        own.putBoolean("Called"+number+"_"+visit,true);
+        // 0.4.767: only a number that rang is remembered. A number not in service costs nothing, so a reader with one quarter
+        // could add a key to their record for every number they tried, without end.
+        if(call.rings()>0)own.putBoolean("Called"+number+"_"+visit,true);
         return call;
     }
     private static Call answer(CompoundTag own,String number,int visit,boolean grown){

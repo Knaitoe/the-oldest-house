@@ -58,6 +58,8 @@ public final class StaircaseLeaks {
     }
     private static final class Engine {
         final MinecraftServer server;final LabyrinthData data;final Map<UUID,Offer> offers=new HashMap<>();final Map<UUID,CompoundTag> sessions=new HashMap<>();final Set<UUID> idle=new HashSet<>();final Map<UUID,Lease> sources=new HashMap<>();final Map<Integer,Room> work=new LinkedHashMap<>();
+        /** 0.4.767: rooms whose saved template this version cannot read; each is said once in the log and then left alone. */
+        final Set<Integer> unreadable=new HashSet<>();
         final ArrayDeque<String> savedWork=new ArrayDeque<>();
         Engine(MinecraftServer server){this.server=server;data=LabyrinthData.get(server);for(var key:data.stateKeys(ROOMS))if(!key.equals("meta"))savedWork.add(key);}
         void close(){for(var lease:sources.values())lease.close();for(var room:work.values())room.close();offers.clear();sessions.clear();idle.clear();sources.clear();work.clear();}
@@ -91,7 +93,7 @@ public final class StaircaseLeaks {
     }
     public static boolean active(ServerPlayer p){return session(p)!=null;}
     /** 0.4.214: rooms and sessions name their kind; older ones are known by their sheet. */
-    static StaircaseLeakRooms.Kind kind(CompoundTag t){return t.contains("Kind")?StaircaseLeakRooms.Kind.values()[t.getInt("Kind")]:StaircaseLeakRooms.kind(t.getInt("Index"));}
+    static StaircaseLeakRooms.Kind kind(CompoundTag t){var all=StaircaseLeakRooms.Kind.values();int k=t.getInt("Kind");return t.contains("Kind")&&k>=0&&k<all.length?all[k]:StaircaseLeakRooms.kind(t.getInt("Index"));}
     public static StaircaseLeakRooms.Kind activeKind(ServerPlayer p){var s=session(p);return s==null?null:kind(s);}
     /** This reader has already been through the room this sheet opens. */
     public static boolean done(ServerPlayer p,int index){return own(p).getCompound("Done").getBoolean(Integer.toString(index));}
@@ -146,7 +148,11 @@ public final class StaircaseLeaks {
         room.put("Template",StaircaseLeakRooms.authored(kind,test?new int[0]:record.getIntArray("KitchenCups")).save());e.data.setStateEntry(ROOMS,Integer.toString(slot),room);
         slots.putInt(key,slot);record.put("Slots",slots);save(p,record);request(e,slot);return slot;
     }
-    private static Room request(Engine e,int slot){var old=e.work.get(slot);if(old!=null)return old;var level=e.server.getLevel(HouseDimensions.INTERIOR);var record=e.data.stateEntry(ROOMS,Integer.toString(slot));if(level==null||record.isEmpty())return null;var room=new Room(level,slot,record);e.work.put(slot,room);return room;}
+    private static Room request(Engine e,int slot){var old=e.work.get(slot);if(old!=null)return old;var level=e.server.getLevel(HouseDimensions.INTERIOR);var record=e.data.stateEntry(ROOMS,Integer.toString(slot));if(level==null||record.isEmpty()||e.unreadable.contains(slot))return null;
+        // 0.4.767: a template saved against another shape of room throws when it is read, and this is asked from the server's
+        // tick for every saved room. Every caller already takes "no room" for an answer.
+        Room room;try{room=new Room(level,slot,record);}catch(RuntimeException unread){e.unreadable.add(slot);io.github.knaitoe.theoldesthouse.TheOldestHouse.LOGGER.warn("Staircase room {} has a saved template this version cannot read; it is left as it stands",slot,unread);return null;}
+        e.work.put(slot,room);return room;}
     private static void build(Engine e){
         // Restart unfinished restoration after a save reload, one saved record at a time.
         if(e.work.size()<2&&!e.savedWork.isEmpty()){var key=e.savedWork.removeFirst();var saved=e.data.stateEntry(ROOMS,key);if(saved.getBoolean("Dirty"))request(e,Integer.parseInt(key));}

@@ -89,7 +89,8 @@ public final class DomeBlock extends Block implements EntityBlock {
     public static double across(double high){double up=high-HEART;return Math.sqrt(Math.max(0,BALL*BALL-up*up));}
     /** How high the skin is, a distance out from the middle; under the sand's level past its feet. */
     public static double over(double out){return out>=BALL?-1:HEART+Math.sqrt(BALL*BALL-out*out);}
-    private static final Map<Integer,VoxelShape> SOLIDS=new HashMap<>(),REACHED=new HashMap<>();
+    // 0.4.767: asked for by the server's thread and the client's at once in a single-player game, so not a plain HashMap.
+    private static final Map<Integer,VoxelShape> SOLIDS=new java.util.concurrent.ConcurrentHashMap<>(),REACHED=new java.util.concurrent.ConcurrentHashMap<>();
 
     public DomeBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(PART,Part.CELL).setValue(X,MID).setValue(Y,0).setValue(Z,MID));}
     public static BlockState of(Part part){return BikeNightRegistry.DOME.get().defaultBlockState().setValue(PART,part);}

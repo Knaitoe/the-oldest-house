@@ -56,7 +56,8 @@ public final class RoundaboutBlock extends Block implements EntityBlock {
     /** The deck's radius, in blocks; how high its top is over the sand; how tall the hub's post is, in pixels. */
     public static final double RADIUS=23./16,DECK=3./16;
     public static final int POST=14;
-    private static final Map<Cell,VoxelShape> SHAPES=new HashMap<>(),REACHED=new HashMap<>();
+    // 0.4.767: asked for by the server's thread and the client's at once in a single-player game, so not a plain HashMap.
+    private static final Map<Cell,VoxelShape> SHAPES=new java.util.concurrent.ConcurrentHashMap<>(),REACHED=new java.util.concurrent.ConcurrentHashMap<>();
     public RoundaboutBlock(Properties p){super(p);registerDefaultState(stateDefinition.any().setValue(CELL,Cell.HUB));}
     public static BlockState of(Cell cell){return BikeNightRegistry.ROUNDABOUT.get().defaultBlockState().setValue(CELL,cell);}
     public static boolean is(BlockState s){return s.is(BikeNightRegistry.ROUNDABOUT.get())&&s.getValue(CELL)!=Cell.WHEEL;}

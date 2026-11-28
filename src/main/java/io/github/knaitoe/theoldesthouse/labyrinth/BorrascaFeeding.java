@@ -254,7 +254,8 @@ public final class BorrascaFeeding {
             var d=e.hasUUID("Id")?l.getEntity(e.getUUID("Id")):null;
             if(z<=OUT_END){
                 if(d!=null)d.discard();
-                var kind=BorrascaShopBlock.Kind.valueOf(e.getString("Kind"));
+                // 0.4.767: a kind this version does not have leaves no pile; it used to throw from the server's tick.
+                BorrascaShopBlock.Kind kind;try{kind=BorrascaShopBlock.Kind.valueOf(e.getString("Kind"));}catch(IllegalArgumentException unknown){continue;}
                 var at=BorrascaRooms.at(b,kind==BorrascaShopBlock.Kind.WRISTBAND?PILE_BAND:e.getInt("Stage")==0?PILE_REMAINS:PILE_HAIR);
                 if(l.getBlockState(at).isAir())l.setBlock(at,BorrascaShopBlock.of(kind,Direction.NORTH,e.getInt("Stage")),Block.UPDATE_CLIENTS);
                 LiteraryVignettes.heard(p,BorrascaRegistry.MACHINE_WET.get(),at,.5F,1.1F);

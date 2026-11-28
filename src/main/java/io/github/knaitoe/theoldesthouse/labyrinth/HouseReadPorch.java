@@ -173,7 +173,7 @@ public final class HouseReadPorch {
         // The doorway, if still outside thirty seconds after it.
         if(t.contains("Truck")&&!t.contains("Doorway")&&out&&!road&&!under&&!t.getBoolean("LightsOut")&&age>=t.getInt("Truck")+DOORWAY_AFTER){t.putInt("Doorway",age);if(first.isEmpty())t.putBoolean("BeforeAnswerAtDoorway",true);}
         if(cook!=null)cook(p,b,t,cook,age,cue,first,wentIn,under,road,still,eye);
-        air(p,b,t,age,wentIn);
+        air(p,b,t,age);
         var small=actor(p,t,"Small");if(small!=null){small.gesture(GLASS);if(cue>0)look(small,eye,false);}
         var sitter=actor(p,t,"Sitter");if(sitter!=null){sitter.gesture(STILL);sitter.setXRot(40);}
         var n=actor(p,t,"Neighbor");if(n!=null){if(n.gesture()==RAISED){int lift=t.getInt("NeighborWave")+1;t.putInt("NeighborWave",lift);if(lift>60)n.gesture(IDLE);}look(n,eye,false);}
@@ -187,10 +187,13 @@ public final class HouseReadPorch {
     /**
      * 0.4.766, the owner: fireflies and other particles, each reader's own. Fireflies over the yard, thickest at the trees and the
      * road and drifting away from the house; moths at the porch bulb while it is on; steam off the stove while someone cooks.
+     * The drift is in where they appear: ahead of the reader, on the side away from the house. A mote's own motion is the
+     * game's, which scatters dust whichever way it is sent. 0.4.767: they are sent whenever the reader is outside, as the
+     * as-built note says; they used to stop for good once the reader had been indoors, so the yard was bare on the way out.
      */
-    private static void air(ServerPlayer p,BlockPos b,CompoundTag t,int age,boolean wentIn){
+    private static void air(ServerPlayer p,BlockPos b,CompoundTag t,int age){
         var l=p.serverLevel();var rng=l.random;boolean lit=!t.getBoolean("LightsOut");
-        if(!wentIn&&age%3==0){
+        if(outside(p,b)&&age%3==0){
             var away=p.position().subtract(at(b,new Vec3(.5,3,-16)));away=new Vec3(away.x,0,away.z);away=away.lengthSqr()<1e-4?new Vec3(0,0,1):away.normalize();
             Vec3 spot;
             if(rng.nextInt(5)<2){var s=FIREFLY_SPOTS[rng.nextInt(FIREFLY_SPOTS.length)];spot=new Vec3(b.getX()+s[0]+.5+rng.nextGaussian()*2.5,b.getY()+.4+rng.nextDouble()*2.8,b.getZ()+s[1]+.5+rng.nextGaussian()*2.5);}

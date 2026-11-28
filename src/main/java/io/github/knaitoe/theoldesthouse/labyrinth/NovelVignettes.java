@@ -48,13 +48,17 @@ public final class NovelVignettes {
     private NovelVignettes(){}
     public static boolean isNovel(LabyrinthPlace p){return PLACES.contains(p);}
     public static boolean canDeal(LabyrinthData data,UUID id,LabyrinthPlace p){var story=WitnessAccount.Story.of(p.id());return p.kind()==LabyrinthPlace.Kind.RECURRING||story!=null&&!WitnessAccount.has(data,id,story);}
-    public static CompoundTag personal(LabyrinthData data,UUID id){return data.state(STATE).getCompound(id.toString()).copy();}
-    public static void save(LabyrinthData data,UUID id,CompoundTag record){var all=data.state(STATE);all.put(id.toString(),record);data.setState(STATE,all);}
+    // 0.4.767: these copied the whole state (every reader's record, photographs and all) once to read a record and twice to
+    // write one, for every reader on every tick. They now copy the one record; what is kept is the same.
+    public static CompoundTag personal(LabyrinthData data,UUID id){return data.stateEntry(STATE,id.toString());}
+    public static void save(LabyrinthData data,UUID id,CompoundTag record){data.putStateEntry(STATE,id.toString(),record);}
     private static boolean participant(ServerPlayer p){return p.isAlive()&&p.gameMode.getGameModeForPlayer()!=GameType.SPECTATOR&&!FinaleProgress.terminal(FinaleProgress.phase(p.server,p.getUUID()));}
     /** The scene where this reader is: the copy they stand in or keep, for a scene with copies (0.4.154). */
     public static @Nullable BlockPos base(ServerPlayer p,LabyrinthPlace place){if(SceneInstances.copyable(place))return SceneInstances.base(p,place);var origin=HouseSavedData.get(p.server).houseOrigin();return origin==null?null:LabyrinthPlaces.base(origin,place);}
-    public static boolean inside(ServerPlayer p,LabyrinthPlace place){var b=base(p,place);
-        return b!=null&&participant(p)&&p.level().dimension().equals(NovelRooms.dimension(place))&&IndianLakeRooms.bounds(b,place).contains(p.position());}
+    public static boolean inside(ServerPlayer p,LabyrinthPlace place){
+        // 0.4.767: the dimension is asked first; finding the base copies the scene's record of copies.
+        if(!p.level().dimension().equals(NovelRooms.dimension(place)))return false;var b=base(p,place);
+        return b!=null&&participant(p)&&IndianLakeRooms.bounds(b,place).contains(p.position());}
     public static @Nullable LabyrinthPlace current(ServerPlayer p){for(var place:PLACES)if(inside(p,place))return place;return null;}
     public static void onArrive(ServerPlayer p,LabyrinthPlace place){
         recordVisit(p,place);var data=LabyrinthData.get(p.server);var own=personal(data,p.getUUID());own.remove("Cue");own.remove("CueUntil");own.remove("CuePlace");save(data,p.getUUID(),own);HousePackets.send(p,new NovelScenePayload(0,0,"",0,0));if(!isNovel(place)||!participant(p))return;

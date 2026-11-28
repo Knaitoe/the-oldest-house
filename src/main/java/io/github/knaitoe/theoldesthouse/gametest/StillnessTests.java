@@ -107,7 +107,8 @@ public final class StillnessTests {
             .thenExecute(()->{f.source(p,P);place(f,p,.5,-26.5);})
             .thenWaitUntil(()->h.assertTrue(mode(f)==Stillness.HUNTING,"it comes in: "+mode(f)))
             .thenExecute(()->{h.assertTrue(Stillness.locked(p)&&LiteraryVignettes.retreatLocked(p),"held while it is in the hall");before[0]=f.own(p,P).copy();
-                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));f.players.remove(p);NativeTestPlayers.remove(p);})
+                // Leaving the player list is the logout: it posts the one PlayerLoggedOutEvent a real disconnect does.
+                f.players.remove(p);NativeTestPlayers.remove(p);})
             .thenIdle(20)
             .thenExecute(()->{var q=NativeTestPlayers.survival(h,"still_return",id);f.players.add(q);q.setNoGravity(true);place(f,q,.5,-26.5);back[0]=q;})
             .thenIdle(2)

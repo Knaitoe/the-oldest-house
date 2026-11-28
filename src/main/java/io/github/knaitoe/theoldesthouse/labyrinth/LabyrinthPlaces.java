@@ -250,13 +250,36 @@ public final class LabyrinthPlaces {
     @Nullable
     public static LabyrinthPlace placeAt(BlockPos origin, BlockPos pos) {
         for (var lake : new LabyrinthPlace[]{LabyrinthPlace.LAKE_HOUSE,LabyrinthPlace.LAKE_HOUSE_EMPTY}) {var b=base(origin,lake);if(b!=null&&IndianLakeRooms.bounds(b,lake).contains(net.minecraft.world.phys.Vec3.atCenterOf(pos)))return lake;}
-        for (LabyrinthPlace place : LabyrinthPlace.values()) {
-            BoundingBox slot = reach(origin, place);
-            if (slot != null && slot.isInside(pos)) {
-                return place;
+        Reaches reaches = reaches(origin);
+        BoundingBox[] boxes = reaches.boxes();
+        for (int i = 0; i < boxes.length; i++) {
+            if (boxes[i] != null && boxes[i].isInside(pos)) {
+                return reaches.places()[i];
             }
         }
         // 0.4.153: a private scene's copies stand outside the grid.
         return SceneInstances.placeAt(origin, pos);
+    }
+
+    /**
+     * 0.4.767: every place's lookup box for one origin, in the order of the places, worked out once. A box depends only on the
+     * origin and the place, and placeAt used to work all of them out on every call: some 250 places, five small objects each,
+     * asked for a dozen or more times a tick for every reader in the House, twice a tick for every player anywhere, and
+     * several times a frame by the client's fog. The client asks from its own thread and for a copy's shifted origin as well,
+     * so the map is a concurrent one, and it is emptied if it ever holds 256 origins.
+     */
+    private record Reaches(LabyrinthPlace[] places, BoundingBox[] boxes) {}
+    private static final java.util.Map<BlockPos, Reaches> REACHES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static Reaches reaches(BlockPos origin) {
+        Reaches found = REACHES.get(origin);
+        if (found == null) {
+            LabyrinthPlace[] places = LabyrinthPlace.values();
+            BoundingBox[] boxes = new BoundingBox[places.length];
+            for (int i = 0; i < places.length; i++) boxes[i] = reach(origin, places[i]);
+            if (REACHES.size() >= 256) REACHES.clear();
+            found = new Reaches(places, boxes);
+            REACHES.put(origin.immutable(), found);
+        }
+        return found;
     }
 }

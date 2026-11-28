@@ -348,8 +348,13 @@ public final class HouseRemembers {
         if (i < 0) return;
         var tread = view.stairs.get(i);
         if (tread.equals(view.toyAt) && view.toy >= 0) return;
+        // 0.4.767: the treads are remembered for as long as the reader stays in the manor, and the stair is ordinary manor
+        // structure that can be broken. A tread that is no longer a stair used to stop the server here, from its tick; the
+        // list is now found again, and the teddy stays where it sat until it is.
+        var stair = p.serverLevel().getBlockState(tread);
+        if (!(stair.getBlock() instanceof StairBlock)) { view.stairs = null; return; }
         if (view.toy >= 0) p.connection.send(new ClientboundRemoveEntitiesPacket(view.toy));
-        var facing = p.serverLevel().getBlockState(tread).getValue(StairBlock.FACING);
+        var facing = stair.getValue(StairBlock.FACING);
         var teddy = LiteraryRegistry.NURSERY.get().defaultBlockState().setValue(NurseryBlock.KIND, NurseryBlock.Kind.TEDDY)
                 .setValue(NurseryBlock.FACING, facing.getOpposite());
         // On the low half of the tread, away from the riser.

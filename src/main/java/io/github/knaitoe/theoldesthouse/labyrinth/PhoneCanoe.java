@@ -25,8 +25,9 @@ public final class PhoneCanoe {
     public static final int FILM_TICKS=180,SKY_TICKS=140,FADE_TICKS=32,END=FILM_TICKS+SKY_TICKS+FADE_TICKS;
     public static final BlockPos DOCK=new BlockPos(0,0,-10),BOAT=new BlockPos(0,0,-13),STEEPLE=new BlockPos(0,-1,-37);
     private PhoneCanoe(){}
-    public static CompoundTag personal(LabyrinthData data,UUID player){return data.state(ID).getCompound(player.toString()).copy();}
-    private static void save(LabyrinthData data,UUID player,CompoundTag state){CompoundTag all=data.state(ID);all.put(player.toString(),state);data.setState(ID,all);}
+    // 0.4.767: one record is copied, not every reader's; this is read for every player in every world on every tick.
+    public static CompoundTag personal(LabyrinthData data,UUID player){return data.stateEntry(ID,player.toString());}
+    private static void save(LabyrinthData data,UUID player,CompoundTag state){data.putStateEntry(ID,player.toString(),state);}
     public static boolean canDeal(LabyrinthData data,UUID player){return !personal(data,player).getBoolean("Finished")&&!WitnessAccount.has(data,player,WitnessAccount.Story.PHONE_CANOE);}
     public static boolean bound(ServerPlayer player){return personal(LabyrinthData.get(player.server),player.getUUID()).getInt("Phase")>=3&&inside(player);}
     /** 0.4.154: the copy of the lake this reader stands in or keeps. */
@@ -136,7 +137,7 @@ public final class PhoneCanoe {
         }
         if(tick>=FILM_TICKS){LakePhoneCamera camera=camera(player,base);if(camera!=null&&(tick%20==0||tick==FILM_TICKS))send(player,3,camera.getId(),tick);}
         if(tick==FILM_TICKS+SKY_TICKS){
-            ItemStack phone=ItemStack.parseOptional(player.registryAccess(),state.getCompound("Item"));
+            ItemStack phone=ItemStack.parseOptional(player.registryAccess(),state.getCompound("Item"));if(phone.isEmpty()){interrupt(player);return;}
             frame(player,phone,tick,"The same sky. The camera has not turned back.",dropPosition(state,base),0,-88);
             state.put("Item",phone.save(player.registryAccess()));PreservedCave.updateDroppedPhone(player,phone);
             HousePackets.send(player,new HouseFadePayload(12,20,20));

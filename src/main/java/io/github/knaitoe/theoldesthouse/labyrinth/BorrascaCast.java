@@ -97,8 +97,11 @@ public final class BorrascaCast {
     public static void remember(CompoundTag own,String key,LiteraryActor actor){if(actor!=null)own.putLong(key+"At",actor.blockPosition().asLong());}
     public static BlockPos destination(CompoundTag own,String key,BlockPos base){var lies=body(own,key);if(lies!=null)return lies.subtract(base);return own.getInt("CastVisit")==own.getInt("Visit")&&own.contains(key+"At")?BlockPos.of(own.getLong(key+"At")).subtract(base):target(key,key.equals("CastKimber")&&own.getBoolean("FriendMissing")?Math.max(3,own.getInt("Visit")):own.getInt("Visit"));}
     public static void release(UUID id){var lease=leases.remove(id);if(lease!=null)for(var c:lease.chunks)lease.level.getChunkSource().removeRegionTicket(TICKET,c,3,id);}
-    public static void clear(){for(var id:List.copyOf(leases.keySet()))release(id);store=null;}
+    public static void clear(){for(var id:List.copyOf(leases.keySet()))release(id);store=null;BorrascaArcade.SESSIONS.clear();}
     public static int heldChunks(){return leases.values().stream().mapToInt(l->l.chunks.size()).sum();}
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){release(e.getEntity().getUUID());}
+    // 0.4.767: a game at the drugstore's cabinets ended only when the reader's client sent its score. A client that crashed or
+    // timed out with the screen up never did, and every cabinet then answered "You're already playing." until the server was
+    // restarted. A reader who leaves is no longer playing, as at the Polybius cabinet.
+    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent e){release(e.getEntity().getUUID());BorrascaArcade.SESSIONS.remove(e.getEntity().getUUID());}
     @SubscribeEvent public static void stop(ServerStoppedEvent e){clear();}
 }
